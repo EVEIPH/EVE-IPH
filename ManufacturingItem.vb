@@ -2,88 +2,88 @@
 Public Class ManufacturingItem
     Implements ICloneable
 
-    Public RecordID As Long ' Unique record id
+    Public Property RecordID As Long ' Unique record id
 
-    Public BPID As Long
-    Public ItemGroup As String
-    Public ItemGroupID As Integer
-    Public ItemCategory As String
-    Public ItemCategoryID As Integer
-    Public ItemTypeID As Long
-    Public ItemName As String
-    Public TechLevel As String
-    Public Owned As String
-    Public BPME As Double
-    Public BPTE As Double
-    Public Inputs As String
-    Public Profit As Double
-    Public ProfitPercent As Double
-    Public IPH As Double
-    Public TotalCost As Double
-    Public CalcType As String ' Type of calculation to get the profit - either Components, Raw Mats or Build/Buy
-    Public BlueprintType As BPType
+    Public Property BPID As Long
+    Public Property ItemGroup As String
+    Public Property ItemGroupID As Integer
+    Public Property ItemCategory As String
+    Public Property ItemCategoryID As Integer
+    Public Property ItemTypeID As Long
+    Public Property ItemName As String
+    Public Property TechLevel As String
+    Public Property Owned As String
+    Public Property BPME As Double
+    Public Property BPTE As Double
+    Public Property Inputs As String
+    Public Property Profit As Double
+    Public Property ProfitPercent As Double
+    Public Property IPH As Double
+    Public Property TotalCost As Double
+    Public Property CalcType As String ' Type of calculation to get the profit - either Components, Raw Mats or Build/Buy
+    Public Property BlueprintType As BPType
 
-    Public Runs As Integer
-    Public SingleInventedBPCRunsperBPC As Integer
-    Public ProductionLines As Integer
-    Public LaboratoryLines As Integer
+    Public Property Runs As Integer
+    Public Property SingleInventedBPCRunsperBPC As Integer
+    Public Property ProductionLines As Integer
+    Public Property LaboratoryLines As Integer
 
     ' Inputs
-    Public Decryptor As Decryptor
-    Public Relic As String
+    Public Property Decryptor As Decryptor
+    Public Property Relic As String
 
     ' Can do variables
-    Public CanBuildBP As Boolean
-    Public CanInvent As Boolean
-    Public CanRE As Boolean
+    Public Property CanBuildBP As Boolean
+    Public Property CanInvent As Boolean
+    Public Property CanRE As Boolean
 
-    Public SVR As Object ' Sales volume ratio, set to an object because this can be Nothing
-    Public SVRxIPH As Object ' could be nothing
+    Public Property SVR As Object ' Sales volume ratio, set to an object because this can be Nothing
+    Public Property SVRxIPH As Object ' could be nothing
 
-    Public ManufacturingFacility As IndustryFacility
-    Public ManufacturingFacilityUsage As Double
-    Public ComponentManufacturingFacility As IndustryFacility
-    Public ComponentManufacturingFacilityUsage As Double
-    Public CapComponentManufacturingFacility As IndustryFacility
-    Public CapComponentManufacturingFacilityUsage As Double
+    Public Property ManufacturingFacility As IndustryFacility
+    Public Property ManufacturingFacilityUsage As Double
+    Public Property ComponentManufacturingFacility As IndustryFacility
+    Public Property ComponentManufacturingFacilityUsage As Double
+    Public Property CapComponentManufacturingFacility As IndustryFacility
+    Public Property CapComponentManufacturingFacilityUsage As Double
 
-    Public CopyCost As Double
-    Public CopyFacilityUsage As Double
-    Public CopyFacility As IndustryFacility
+    Public Property CopyCost As Double
+    Public Property CopyFacilityUsage As Double
+    Public Property CopyFacility As IndustryFacility
 
-    Public InventionCost As Double
-    Public InventionFacilityUsage As Double
-    Public InventionFacility As IndustryFacility
+    Public Property InventionCost As Double
+    Public Property InventionFacilityUsage As Double
+    Public Property InventionFacility As IndustryFacility
 
-    Public BPProductionTime As String
-    Public TotalProductionTime As String
-    Public CopyTime As String
-    Public InventionTime As String
+    Public Property BPProductionTime As String
+    Public Property TotalProductionTime As String
+    Public Property CopyTime As String
+    Public Property InventionTime As String
 
-    Public ItemMarketPrice As Double
+    Public Property ItemMarketPrice As Double
 
-    Public BrokerFees As Double
-    Public Taxes As Double
+    Public Property BrokerFees As Double
+    Public Property Taxes As Double
 
-    Public BaseJobCost As Double
-    Public NumBPs As Integer
-    Public InventionChance As Double
-    Public Race As String
-    Public VolumeperItem As Double
-    Public TotalVolume As Double
+    Public Property BaseJobCost As Double
+    Public Property NumBPs As Integer
+    Public Property InventionChance As Double
+    Public Property Race As String
+    Public Property VolumeperItem As Double
+    Public Property TotalVolume As Double
 
-    Public JobFee As Double
-    Public TeamFee As Double
+    Public Property JobFee As Double
+    Public Property TeamFee As Double
 
-    Public ManufacturingTeam As IndustryTeam
-    Public ComponentTeam As IndustryTeam
-    Public InventionTeam As IndustryTeam
-    Public CopyTeam As IndustryTeam
+    Public Property ManufacturingTeam As IndustryTeam
+    Public Property ComponentTeam As IndustryTeam
+    Public Property InventionTeam As IndustryTeam
+    Public Property CopyTeam As IndustryTeam
 
-    Public ManufacturingTeamUsage As Double
-    Public ComponentTeamUsage As Double
-    Public CopyTeamUsage As Double
-    Public InventionTeamUsage As Double
+    Public Property ManufacturingTeamUsage As Double
+    Public Property ComponentTeamUsage As Double
+    Public Property CopyTeamUsage As Double
+    Public Property InventionTeamUsage As Double
 
     Public Function Clone() As Object Implements System.ICloneable.Clone
         Dim CopyofMe As New ManufacturingItem
