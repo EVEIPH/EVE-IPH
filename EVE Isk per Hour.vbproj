@@ -1,0 +1,586 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{51FD6CD9-84DB-4892-800F-4E45B7E79D57}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>EVE_Isk_per_Hour.My.MyApplication</StartupObject>
+    <RootNamespace>EVE_Isk_per_Hour</RootNamespace>
+    <AssemblyName>EVE Isk per Hour</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>WindowsForms</MyType>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>..\Root Directory\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Root Directory\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>Off</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon07_02.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Itanium'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Itanium\Debug\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>Itanium</PlatformTarget>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Itanium'">
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Itanium\Release\</OutputPath>
+    <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>Itanium</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Root Directory\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.79.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Root Directory\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Windows.Forms" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationEvents.vb" />
+    <Compile Include="Blueprint.vb" />
+    <Compile Include="Character.vb" />
+    <Compile Include="DoubleTrackBar - No designer.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="frmCRESTMarketViewer.Designer.vb">
+      <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCRESTMarketViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmUsageViewer.Designer.vb">
+      <DependentUpon>frmUsageViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmUsageViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCostSplitViewer.Designer.vb">
+      <DependentUpon>frmCostSplitViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCostSplitViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSelectManufacturingTabColumns.Designer.vb">
+      <DependentUpon>frmSelectManufacturingTabColumns.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSelectManufacturingTabColumns.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CorporationFacilities.vb" />
+    <Compile Include="EVEBlueprints.vb" />
+    <Compile Include="EVECREST.vb" />
+    <Compile Include="frmMLPLCalc.Designer.vb">
+      <DependentUpon>frmMLPLCalc.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMLPLCalc.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmRefinery.Designer.vb">
+      <DependentUpon>frmRefinery.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmRefinery.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmInventionMats.Designer.vb">
+      <DependentUpon>frmInventionMats.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmInventionMats.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCopyandPaste.Designer.vb">
+      <DependentUpon>frmCopyandPaste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCopyandPaste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EVEAssets.vb" />
+    <Compile Include="EVESkillList.vb" />
+    <Compile Include="ControlArrayUtils.vb" />
+    <Compile Include="Corporation.vb" />
+    <Compile Include="DecryptorList.vb" />
+    <Compile Include="EVEAPI.vb" />
+    <Compile Include="EVECentralAPI.vb" />
+    <Compile Include="EVEMarketDataAPI.vb" />
+    <Compile Include="EVEMarketeerAPI.vb" />
+    <Compile Include="frmAbout.Designer.vb">
+      <DependentUpon>frmAbout.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAbout.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAPIError.Designer.vb">
+      <DependentUpon>frmAPIError.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAPIError.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAssetsViewer.Designer.vb">
+      <DependentUpon>frmAssetsViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAssetsViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmBlueprintManagement.Designer.vb">
+      <DependentUpon>frmBlueprintManagement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmBlueprintManagement.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCharacterSkills.Designer.vb">
+      <DependentUpon>frmCharacterSkills.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCharacterSkills.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCharacterStandings.Designer.vb">
+      <DependentUpon>frmCharacterStandings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCharacterStandings.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmError.Designer.vb">
+      <DependentUpon>frmError.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmError.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmIndustryBeltFlip.Designer.vb">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIndustryBeltFlip.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmIndustryJobsViewer.Designer.vb">
+      <DependentUpon>frmIndustryJobsViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIndustryJobsViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmInventionMonitor.Designer.vb">
+      <DependentUpon>frmInventionMonitor.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmInventionMonitor.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmLoadCharacterAPI.Designer.vb">
+      <DependentUpon>frmLoadCharacterAPI.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmLoadCharacterAPI.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.Designer.vb">
+      <DependentUpon>frmMain.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMain.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmManageAccounts.Designer.vb">
+      <DependentUpon>frmManageAccounts.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmManageAccounts.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmManualPriceUpdate.Designer.vb">
+      <DependentUpon>frmManualPriceUpdate.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmManualPriceUpdate.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMineMinerals.Designer.vb">
+      <DependentUpon>frmMineMinerals.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMineMinerals.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPatchNotes.Designer.vb">
+      <DependentUpon>frmPatchNotes.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmPatchNotes.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPOSSettings.Designer.vb">
+      <DependentUpon>frmPOSSettings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmPOSSettings.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmReqSkills.Designer.vb">
+      <DependentUpon>frmReqSkills.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmReqSkills.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmResearchAgents.Designer.vb">
+      <DependentUpon>frmResearchAgents.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmResearchAgents.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSelectIndustryJobColumns.Designer.vb">
+      <DependentUpon>frmSelectIndustryJobColumns.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSelectIndustryJobColumns.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSetCharacterDefault.Designer.vb">
+      <DependentUpon>frmSetCharacterDefault.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSetCharacterDefault.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSettings.Designer.vb">
+      <DependentUpon>frmSettings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSettings.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmShoppingList.Designer.vb">
+      <DependentUpon>frmShoppingList.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmShoppingList.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Globals.vb" />
+    <Compile Include="EVEIndustryJobs.vb" />
+    <Compile Include="IndustryFacility.vb" />
+    <Compile Include="IndustryTeam.vb" />
+    <Compile Include="ListViewColumnSorter.vb" />
+    <Compile Include="Material.vb" />
+    <Compile Include="Materials.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="MyListView.Designer.vb">
+      <DependentUpon>MyListView.vb</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="MyListView.vb">
+      <SubType>Component</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="NPCStandings.vb" />
+    <Compile Include="ProgramSettings.vb" />
+    <Compile Include="ProgramUpdater.vb" />
+    <Compile Include="RefiningReprocessing.vb" />
+    <Compile Include="ResearchAgents.vb" />
+    <Compile Include="ShoppingList.vb" />
+    <Compile Include="SplashScreen.Designer.vb">
+      <DependentUpon>SplashScreen.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SplashScreen.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCRESTStatus.Designer.vb">
+      <DependentUpon>frmCRESTStatus.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCRESTStatus.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TopMostMessageBox.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="frmCRESTMarketViewer.resx">
+      <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmUsageViewer.resx">
+      <DependentUpon>frmUsageViewer.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCostSplitViewer.resx">
+      <DependentUpon>frmCostSplitViewer.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSelectManufacturingTabColumns.resx">
+      <DependentUpon>frmSelectManufacturingTabColumns.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMLPLCalc.resx">
+      <DependentUpon>frmMLPLCalc.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmRefinery.resx">
+      <DependentUpon>frmRefinery.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmInventionMats.resx">
+      <DependentUpon>frmInventionMats.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCopyandPaste.resx">
+      <DependentUpon>frmCopyandPaste.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAbout.resx">
+      <DependentUpon>frmAbout.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAPIError.resx">
+      <DependentUpon>frmAPIError.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAssetsViewer.resx">
+      <DependentUpon>frmAssetsViewer.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmBlueprintManagement.resx">
+      <DependentUpon>frmBlueprintManagement.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCharacterSkills.resx">
+      <DependentUpon>frmCharacterSkills.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCharacterStandings.resx">
+      <DependentUpon>frmCharacterStandings.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmError.resx">
+      <DependentUpon>frmError.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmIndustryBeltFlip.resx">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmIndustryJobsViewer.resx">
+      <DependentUpon>frmIndustryJobsViewer.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmInventionMonitor.resx">
+      <DependentUpon>frmInventionMonitor.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmLoadCharacterAPI.resx">
+      <DependentUpon>frmLoadCharacterAPI.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMain.resx">
+      <DependentUpon>frmMain.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmManageAccounts.resx">
+      <DependentUpon>frmManageAccounts.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmManualPriceUpdate.resx">
+      <DependentUpon>frmManualPriceUpdate.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMineMinerals.resx">
+      <DependentUpon>frmMineMinerals.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPatchNotes.en-US.resx">
+      <DependentUpon>frmPatchNotes.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPatchNotes.resx">
+      <DependentUpon>frmPatchNotes.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPOSSettings.resx">
+      <DependentUpon>frmPOSSettings.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmReqSkills.resx">
+      <DependentUpon>frmReqSkills.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmResearchAgents.resx">
+      <DependentUpon>frmResearchAgents.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSelectIndustryJobColumns.resx">
+      <DependentUpon>frmSelectIndustryJobColumns.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSetCharacterDefault.resx">
+      <DependentUpon>frmSetCharacterDefault.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSettings.resx">
+      <DependentUpon>frmSettings.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmShoppingList.resx">
+      <DependentUpon>frmShoppingList.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SplashScreen.resx">
+      <DependentUpon>SplashScreen.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCRESTStatus.resx">
+      <DependentUpon>frmCRESTStatus.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="My Project\app.manifest" />
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon07_02.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
