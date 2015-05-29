@@ -13148,35 +13148,35 @@ Partial Class frmMain
         Me.MyListView4.FullRowSelect = true
         Me.MyListView4.GridLines = true
         Me.MyListView4.HideSelection = false
-        Me.MyListView4.Location = New System.Drawing.Point(715, 214)
-        Me.MyListView4.MultiSelect = false
+        Me.MyListView4.Location = New System.Drawing.Point(855, 214)
+        Me.MyListView4.MultiSelect = False
         Me.MyListView4.Name = "MyListView4"
         Me.MyListView4.Size = New System.Drawing.Size(279, 391)
         Me.MyListView4.TabIndex = 39
-        Me.MyListView4.TabStop = false
-        Me.MyListView4.UseCompatibleStateImageBehavior = false
+        Me.MyListView4.TabStop = False
+        Me.MyListView4.UseCompatibleStateImageBehavior = False
         Me.MyListView4.View = System.Windows.Forms.View.Details
         '
         'MyListView3
         '
-        Me.MyListView3.FullRowSelect = true
-        Me.MyListView3.GridLines = true
-        Me.MyListView3.HideSelection = false
+        Me.MyListView3.FullRowSelect = True
+        Me.MyListView3.GridLines = True
+        Me.MyListView3.HideSelection = False
         Me.MyListView3.Location = New System.Drawing.Point(413, 214)
-        Me.MyListView3.MultiSelect = false
+        Me.MyListView3.MultiSelect = False
         Me.MyListView3.Name = "MyListView3"
         Me.MyListView3.Size = New System.Drawing.Size(279, 391)
         Me.MyListView3.TabIndex = 38
-        Me.MyListView3.TabStop = false
-        Me.MyListView3.UseCompatibleStateImageBehavior = false
+        Me.MyListView3.TabStop = False
+        Me.MyListView3.UseCompatibleStateImageBehavior = False
         Me.MyListView3.View = System.Windows.Forms.View.Details
         '
         'MyListView2
         '
-        Me.MyListView2.FullRowSelect = true
-        Me.MyListView2.GridLines = true
-        Me.MyListView2.HideSelection = false
-        Me.MyListView2.Location = New System.Drawing.Point(715, 13)
+        Me.MyListView2.FullRowSelect = True
+        Me.MyListView2.GridLines = True
+        Me.MyListView2.HideSelection = False
+        Me.MyListView2.Location = New System.Drawing.Point(855, 13)
         Me.MyListView2.MultiSelect = false
         Me.MyListView2.Name = "MyListView2"
         Me.MyListView2.Size = New System.Drawing.Size(279, 195)
