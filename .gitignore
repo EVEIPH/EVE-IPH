@@ -2,3 +2,4 @@ bin/*
 obj/*
 Service References/*
 *.suo
+*.user
