@@ -710,7 +710,7 @@ Public Class frmIndustryBeltFlip
 
     End Sub
 
-    ' Returns the total volume compressed or regular for the belt sent - DOESN'T WORK ANYMORE - TO DO
+    ' Returns the total volume compressed or regular for the belt sent - DOESN'T WORK ANYMORE - TODO
     Private Function GetTotalVolume(ByVal Belt As BeltType, ByVal Compress As Boolean) As Double
         Dim SQL As String = ""
         Dim readerBelts As SQLiteDataReader
