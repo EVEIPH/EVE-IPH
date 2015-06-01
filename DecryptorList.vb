@@ -55,6 +55,46 @@ Public Class DecryptorList
 
     End Function
 
+    ' Function returns the decryptor for the ME/TE/Runs values sent
+    Public Function GetDecryptor(ByVal BPME As Integer, ByVal BPTE As Integer, ByVal BPRuns As Integer, _
+                                 Optional ProbabilityModifier As Double = -1) As Decryptor
+
+        Dim RunsModifier As Integer
+        Dim MEModifier As Integer = BPME - BaseT2T3ME
+        Dim TEModifier As Integer = BPTE - BaseT2T3TE
+
+        If MEModifier = -2 And TEModifier = 2 Then
+            ' We used the decryptor with max run modifier of 9 (hardcode to get around the decryptor with 9 extra runs for 1 run bpcs, which then makes 10 and is the same as the base for modules)
+            RunsModifier = 9
+        Else
+            If BPRuns >= 10 Then
+                RunsModifier = BPRuns - 10
+            Else
+                RunsModifier = BPRuns - 1
+            End If
+        End If
+
+        For i = 0 To Decryptors.Count - 1
+            With Decryptors(i)
+                If .MEMod = MEModifier And .TEMod = TEModifier And .RunMod = RunsModifier And CBool(IIf(ProbabilityModifier <> -1, .ProductionMod = ProbabilityModifier, True)) Then
+                    Return (Decryptors(i))
+                End If
+            End With
+        Next
+
+        ' If still not found, look for just ME and TE
+        For i = 0 To Decryptors.Count - 1
+            With Decryptors(i)
+                If .MEMod = MEModifier And .TEMod = TEModifier Then
+                    Return (Decryptors(i))
+                End If
+            End With
+        Next
+
+        Return NoDecryptor
+
+    End Function
+
     ' Loads the racial decryptor into the class array list
     Private Sub LoadRacialDecryptor(ByVal DecryptorName As String)
         Dim readerDecryptor As SQLiteDataReader

@@ -921,6 +921,12 @@ Public Class EVEAPI
                         TempBlueprint.BPType = 0
                     End If
                     TempBlueprint.Owned = False
+                    If TempBlueprint.BPType = BPType.Original Then
+                        TempBlueprint.OwnedType = BPOwnedType.BPO
+                    Else
+                        TempBlueprint.OwnedType = BPOwnedType.BPC
+                    End If
+
                     TempBlueprint.Scanned = True ' We just scanned it
                     TempBlueprint.Favorite = False
                     TempBlueprint.AdditionalCosts = 0

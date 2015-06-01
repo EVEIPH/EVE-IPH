@@ -136,7 +136,7 @@ Partial Class frmBlueprintManagement
         Me.gbBPFilter.Controls.Add(Me.gbItemTypeFilter)
         Me.gbBPFilter.Controls.Add(Me.gbBlueprintType)
         Me.gbBPFilter.Controls.Add(Me.gbBPSelect)
-        Me.gbBPFilter.Location = New System.Drawing.Point(12, 378)
+        Me.gbBPFilter.Location = New System.Drawing.Point(6, 378)
         Me.gbBPFilter.Name = "gbBPFilter"
         Me.gbBPFilter.Size = New System.Drawing.Size(692, 234)
         Me.gbBPFilter.TabIndex = 0
@@ -990,10 +990,10 @@ Partial Class frmBlueprintManagement
         Me.lstBPs.FullRowSelect = True
         Me.lstBPs.GridLines = True
         Me.lstBPs.HideSelection = False
-        Me.lstBPs.Location = New System.Drawing.Point(12, 6)
+        Me.lstBPs.Location = New System.Drawing.Point(6, 6)
         Me.lstBPs.MultiSelect = False
         Me.lstBPs.Name = "lstBPs"
-        Me.lstBPs.Size = New System.Drawing.Size(828, 366)
+        Me.lstBPs.Size = New System.Drawing.Size(1105, 366)
         Me.lstBPs.TabIndex = 60
         Me.lstBPs.TabStop = False
         Me.lstBPs.UseCompatibleStateImageBehavior = False
@@ -1004,7 +1004,7 @@ Partial Class frmBlueprintManagement
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(851, 614)
+        Me.ClientSize = New System.Drawing.Size(1115, 614)
         Me.Controls.Add(Me.gbBPFilter)
         Me.Controls.Add(Me.cmbEdit)
         Me.Controls.Add(Me.txtBPEdit)

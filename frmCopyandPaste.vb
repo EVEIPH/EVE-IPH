@@ -32,7 +32,7 @@
         If SentWindowType = CopyPasteWindowType.Materials Then
             frmShop.CopyPasteMaterialText = txtPaste.Text
         ElseIf SentWindowType = CopyPasteWindowType.Blueprints Then
-            ' TO DO
+            ' TODO
         End If
 
         ' Close the form

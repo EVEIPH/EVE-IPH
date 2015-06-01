@@ -1577,7 +1577,7 @@ Public Class frmShoppingList
         Call frmMain.LoadBPfromDoubleClick(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
                                            chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
-                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "1") ' Any buildable component here is one 1 bp
+                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "0", "1") ' Any buildable component here is one 1 bp
     End Sub
 
     Private Sub lstItems_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstItems.ColumnClick
@@ -1629,7 +1629,7 @@ Public Class frmShoppingList
         Call frmMain.LoadBPfromDoubleClick(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
                                            chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
-                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, _
+                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, "0", _
                                            lstItems.SelectedItems(0).SubItems(4).Text)
     End Sub
 
