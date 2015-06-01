@@ -448,8 +448,9 @@ Public Class Blueprint
                 NumberofBPs = CInt(UserRuns)
             End If
 
-            ' For T1, assume that the most efficient is to run max runs on each line in one batch, so reset if bps are greater than lines
-            If TechLevel = 1 Then
+            ' For bps with unlimited runs, assume that the most efficient is to run max runs on each line in one batch, 
+            ' so reset if bps are greater than lines
+            If MaxRunsPerBP = 0 Then
                 If NumberofBPs > NumberofProductionLines Then
                     ' We can't run more bps than the lines entered, so reset this
                     NumberofBPs = NumberofProductionLines
@@ -457,7 +458,7 @@ Public Class Blueprint
                 Batches = 1
             Else
                 ' How many batches do we run in the production chain?
-                Batches = CInt(Math.Ceiling(UserRuns / (SingleInventedBPCRuns * NumberofProductionLines)))
+                Batches = CInt(Math.Ceiling(UserRuns / (MaxRunsPerBP * NumberofProductionLines)))
             End If
 
             ' set the minimum per bp, shouldn't go over the runs per bp since the user sends in the total numbps they need
@@ -948,7 +949,7 @@ Public Class Blueprint
     ' Determine ProductionTime of Components - they have 15 components, and 10 usable production lines, then take the max time, and sum up the rest and divide as sections of the max
     ' So if they have a 10 minute component, and 5, 1 minute components, we can make all in 2 jobs and the total time is 10 min. If they go over max jobs,
     ' then take the max component and add on the max job of the 2nd component
-    ' TO DO - FIX
+    ' TODO - FIX
     Private Function GetComponentProductionTime(ByVal SentTimes As List(Of Double)) As Double
         Dim MaxComponentTime As Double = 0
         Dim RemainingTimeSum As Double = 0
@@ -1563,7 +1564,7 @@ Public Class Blueprint
         ' Get and set the invention chance
         InventionChance = SetInventionChance(UseTypical)
 
-        ' Use the max runs for the T2 item and this should be the invented runs for one bpc - TO DO check industry_products for this value as quantity
+        ' Use the max runs for the T2 item and this should be the invented runs for one bpc - TODO check industry_products for this value as quantity
         If TechLevel = BlueprintTechLevel.T2 Then
             SingleInventedBPCRuns = MaxProductionLimit + InventionDecryptor.RunMod
         Else
@@ -1573,7 +1574,7 @@ Public Class Blueprint
             readerBP = DBCommand.ExecuteReader()
 
             ' Base it off of the relic type - need to look it up based on the TypeID
-            ' TO DO - use industry products to get the quantity for the runs on t3 - make new function
+            ' TODO - use industry products to get the quantity for the runs on t3 - make new function
             If readerBP.Read Then
                 ' Set the name
                 Relic = readerBP.GetString(0)

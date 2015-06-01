@@ -68,14 +68,16 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
                                             & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ALL_BLUEPRINTS.TECH_LEVEL IN (2,3) THEN -2 ELSE -1 END END AS BP_TYPE, " _
+                                            & "CASE WHEN ITEM_TYPE = 1 THEN -1 ELSE -2 END END AS BP_TYPE, " _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS " _
+                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
+                                            & "CASE WHEN OBP.OWNED_TYPE IS NOT NULL THEN OBP.OWNED_TYPE ELSE -1 END AS OWNED_TYPE, " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS WHERE OWNED = 1 OR (OWNED = 0 AND BP_TYPE <> -2)) AS OBP " _
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID AND OBP.USER_ID =  @USERBP_USERID, " _
@@ -91,14 +93,16 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
                                             & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ALL_BLUEPRINTS.TECH_LEVEL IN (2,3) THEN -2 ELSE -1 END END AS BP_TYPE, " _
+                                            & "CASE WHEN ITEM_TYPE = 1 THEN -1 ELSE -2 END END AS BP_TYPE, " _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS " _
+                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
+                                            & "CASE WHEN OBP.OWNED_TYPE IS NOT NULL THEN OBP.OWNED_TYPE ELSE -1 END AS OWNED_TYPE, " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID " _
                                             & "AND OBP.USER_ID = @ALLUSERBP_USERID, INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID ) AS X "
@@ -140,8 +144,8 @@ Public Module Public_Variables
     Public Const MineralGroupID As Integer = 18
 
     ' T2 BPC base ME/TE
-    Public Const BaseT2T3ME As Double = 2
-    Public Const BaseT2T3TE As Double = 4
+    Public Const BaseT2T3ME As Integer = 2
+    Public Const BaseT2T3TE As Integer = 4
 
     ' For team and industry tab loading
     Public Const BPTab As String = "BP"
@@ -253,6 +257,13 @@ Public Module Public_Variables
     Public Enum ScanType
         Personal = 0
         Corporation = 1
+    End Enum
+
+    Public Enum BPOwnedType
+        NotOwned = -1
+        BPO = 0
+        BPC = 1
+        InventedBPC = 2
     End Enum
 
     ' Types of Asset windows
@@ -753,6 +764,7 @@ Public Module Public_Variables
     End Function
 
 #End Region
+
     ' Get the rare ship id's and ship skins to weed out in the bps
     Public Sub SetRareandShipSkinBPs()
         Dim rsBP As SQLiteDataReader
@@ -1093,54 +1105,6 @@ Public Module Public_Variables
         End If
 
         Return False
-
-    End Function
-
-    ' Gets the query for S/M/L/XL queries
-    Public Function GetSMLXLQuery(Size As ItemSize) As String
-
-        Dim SizesClause = ""
-
-        Select Case Size
-            Case ItemSize.Small
-                ' Drones are light, missiles are rockets and light
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% S' OR ITEM_NAME Like '%Small%' OR (ITEM_NAME Like '%Micro%' AND ITEM_GROUP <> 'Propulsion Module' AND ITEM_NAME NOT LIKE 'Microwave%') OR ITEM_NAME Like '%Defender%' OR ITEM_NAME IN ('Cap Booster 25 Item','Cap Booster 50 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 5 ) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '1MN%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (561,564,567,570,574,577,1671,1672, 1037)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND (ITEM_NAME Like '%Rocket%' OR ITEM_NAME Like '%Light Missile%') AND ITEM_GROUP NOT IN ('Propulsion Module', 'Rig Launcher')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND volume < 10000)) OR "
-            Case ItemSize.Medium
-                ' Drones are medium, missiles are heavys and hams
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% M' OR ITEM_NAME Like '%Medium%' OR ITEM_NAME IN ('Cap Booster 75 Item','Cap Booster 100 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 10) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '10MN%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (562,565,568,572,575,578,1673,1674)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND ITEM_NAME Like '%Heavy%' AND ITEM_NAME Not Like '%Jolt%')  "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND ((volume >= 10000 AND volume < 50000) OR ITEM_GROUP_ID = 963))) OR "
-            Case ItemSize.Large
-                ' Drones are Heavy, missiles are cruise/torp, towers are regular towers (Caldari Control Tower)
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% L' OR (ITEM_NAME Like '%Large%' AND ITEM_NAME NOT Like '%X-Large%') OR ITEM_NAME IN ('Cap Booster 150 Item','Cap Booster 200 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 25) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '100MN%') "
-                SizesClause = SizesClause & "OR (ITEM_NAME Like ('%Control Tower')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND ITEM_NAME Like '%Heavy%' AND marketGroupID NOT IN (563,566,569,573,576,579,1675,1676)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (563,566,569,573,576,579,1675,1676)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND (ITEM_NAME Like '%Cruise%' OR ITEM_NAME Like '%Torpedo%')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND (volume >= 50000 AND volume < 500000))) OR "
-            Case ItemSize.ExtraLarge
-                ' Drones are fighters, missiles are citadel
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% XL' OR ITEM_NAME Like '%Capital%' OR ITEM_NAME Like '%Huge%' OR ITEM_NAME Like '%X-Large%' OR ITEM_NAME Like '%Giant%' OR ITEM_NAME IN ('Cap Booster 400 Item','Cap Booster 800 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 5000) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (771,772,773,774,775,776)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND ITEM_NAME Like '%Citadel%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Celestial' AND ITEM_NAME Like 'Station%') "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Super Weapon') "
-                SizesClause = SizesClause & "OR (ITEM_GROUP LIKE 'Bomb%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND volume >= 500000)) OR "
-        End Select
-
-        Return SizesClause
 
     End Function
 
@@ -1709,8 +1673,8 @@ InvalidDate:
     End Sub
 
     ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint
-    Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, _
-                            ByVal BPType As BPType, Optional Favorite As Boolean = False, Optional AdditionalCosts As Double = 0)
+    Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal BPType As BPType, _
+                            ByVal BPTypeOwned As BPOwnedType, Optional Favorite As Boolean = False, Optional AdditionalCosts As Double = 0)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
         Dim TempFavorite As Integer
@@ -1730,16 +1694,16 @@ InvalidDate:
 
         If Not readerBP.HasRows Then
             ' No record, So add it and mark as owned - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
-            SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, ME, TE, "
-            SQL = SQL & "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+            SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
+            SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
             SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
-            SQL = SQL & bpME & "," & bpTE & ",1," & BPType & ",1,0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+            SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & ",1," & CStr(BPType) & ",1," & CStr(BPTypeOwned) & ",0," & CStr(TempFavorite) & "," & CStr(AdditionalCosts) & ")"
             Call ExecuteNonQuerySQL(SQL)
 
         Else
             ' Update it 
-            SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & bpME & ", TE = " & bpTE & ", OWNED = 1, FAVORITE = " & TempFavorite & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " "
-            SQL = SQL & "WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID & " AND BP_TYPE = " & BPType
+            SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = 1, FAVORITE = " & CStr(TempFavorite) & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " "
+            SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID) & " AND BP_TYPE = " & CStr(BPType) & " AND OWNED_TYPE = " & CStr(BPTypeOwned)
             Call ExecuteNonQuerySQL(SQL)
         End If
 

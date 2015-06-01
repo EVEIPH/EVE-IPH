@@ -619,24 +619,6 @@ Partial Class frmMain
         Me.cmbCalcT3InventionFacilityType = New System.Windows.Forms.ComboBox()
         Me.lblCalcT3InventionFacilityManualME = New System.Windows.Forms.Label()
         Me.lblCalcT3InventionFacilityBonus = New System.Windows.Forms.Label()
-        Me.tabCalcFacilityCapitals = New System.Windows.Forms.TabPage()
-        Me.txtCalcCapitalFacilityManualTax = New System.Windows.Forms.TextBox()
-        Me.lblCalcCapitalFacilityManualTax = New System.Windows.Forms.Label()
-        Me.lblCalcCapitalFacilityDefault = New System.Windows.Forms.Label()
-        Me.btnCalcCapitalFacilitySave = New System.Windows.Forms.Button()
-        Me.lblCalcCapitalFacilityTaxRate = New System.Windows.Forms.Label()
-        Me.txtCalcCapitalFacilityManualTE = New System.Windows.Forms.TextBox()
-        Me.txtCalcCapitalFacilityManualME = New System.Windows.Forms.TextBox()
-        Me.cmbCalcCapitalFacilityorArray = New System.Windows.Forms.ComboBox()
-        Me.cmbCalcCapitalFacilitySystem = New System.Windows.Forms.ComboBox()
-        Me.cmbCalcCapitalFacilityRegion = New System.Windows.Forms.ComboBox()
-        Me.lblCalcCapitalFacilityManualTE = New System.Windows.Forms.Label()
-        Me.lblCalcCapitalFacilityLocation = New System.Windows.Forms.Label()
-        Me.lblCalcCapitalFacilityType = New System.Windows.Forms.Label()
-        Me.chkCalcCapitalFacilityIncludeUsage = New System.Windows.Forms.CheckBox()
-        Me.cmbCalcCapitalFacilityType = New System.Windows.Forms.ComboBox()
-        Me.lblCalcCapitalFacilityManualME = New System.Windows.Forms.Label()
-        Me.lblCalcCapitalFacilityBonus = New System.Windows.Forms.Label()
         Me.tabCalcFacilitySupers = New System.Windows.Forms.TabPage()
         Me.txtCalcSuperFacilityManualTax = New System.Windows.Forms.TextBox()
         Me.lblCalcSuperFacilityManualTax = New System.Windows.Forms.Label()
@@ -655,6 +637,24 @@ Partial Class frmMain
         Me.cmbCalcSuperFacilityType = New System.Windows.Forms.ComboBox()
         Me.lblCalcSuperFacilityManualME = New System.Windows.Forms.Label()
         Me.lblCalcSuperFacilityBonus = New System.Windows.Forms.Label()
+        Me.tabCalcFacilityCapitals = New System.Windows.Forms.TabPage()
+        Me.txtCalcCapitalFacilityManualTax = New System.Windows.Forms.TextBox()
+        Me.lblCalcCapitalFacilityManualTax = New System.Windows.Forms.Label()
+        Me.lblCalcCapitalFacilityDefault = New System.Windows.Forms.Label()
+        Me.btnCalcCapitalFacilitySave = New System.Windows.Forms.Button()
+        Me.lblCalcCapitalFacilityTaxRate = New System.Windows.Forms.Label()
+        Me.txtCalcCapitalFacilityManualTE = New System.Windows.Forms.TextBox()
+        Me.txtCalcCapitalFacilityManualME = New System.Windows.Forms.TextBox()
+        Me.cmbCalcCapitalFacilityorArray = New System.Windows.Forms.ComboBox()
+        Me.cmbCalcCapitalFacilitySystem = New System.Windows.Forms.ComboBox()
+        Me.cmbCalcCapitalFacilityRegion = New System.Windows.Forms.ComboBox()
+        Me.lblCalcCapitalFacilityManualTE = New System.Windows.Forms.Label()
+        Me.lblCalcCapitalFacilityLocation = New System.Windows.Forms.Label()
+        Me.lblCalcCapitalFacilityType = New System.Windows.Forms.Label()
+        Me.chkCalcCapitalFacilityIncludeUsage = New System.Windows.Forms.CheckBox()
+        Me.cmbCalcCapitalFacilityType = New System.Windows.Forms.ComboBox()
+        Me.lblCalcCapitalFacilityManualME = New System.Windows.Forms.Label()
+        Me.lblCalcCapitalFacilityBonus = New System.Windows.Forms.Label()
         Me.tabCalcFacilityT3Ships = New System.Windows.Forms.TabPage()
         Me.txtCalcT3FacilityManualTax = New System.Windows.Forms.TextBox()
         Me.lblCalcT3FacilityManualTax = New System.Windows.Forms.Label()
@@ -824,7 +824,6 @@ Partial Class frmMain
         Me.chkSystems5 = New System.Windows.Forms.CheckBox()
         Me.chkSystems3 = New System.Windows.Forms.CheckBox()
         Me.chkSystems1 = New System.Windows.Forms.CheckBox()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.chkSplitPrices = New System.Windows.Forms.CheckBox()
         Me.gbSplitPrices = New System.Windows.Forms.GroupBox()
@@ -1005,8 +1004,6 @@ Partial Class frmMain
         Me.rbtnBPShipBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPDeployableBlueprints = New System.Windows.Forms.RadioButton()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
-        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
-        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
         Me.lblBPTotalUnits = New System.Windows.Forms.Label()
         Me.lblBPTaxes = New System.Windows.Forms.Label()
@@ -1146,7 +1143,6 @@ Partial Class frmMain
         Me.cmbBPBlueprintSelection = New System.Windows.Forms.ComboBox()
         Me.tabMain = New System.Windows.Forms.TabControl()
         Me.tabPI = New System.Windows.Forms.TabPage()
-        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
         Me.chkPILava = New System.Windows.Forms.CheckBox()
@@ -1158,14 +1154,19 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
+        Me.cmbCalcManufacturingTeamActivity = New System.Windows.Forms.ComboBox()
+        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.cmbCalcManufacturingTeamActivity = New System.Windows.Forms.ComboBox()
-        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.OpenMarketDataToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -1232,8 +1233,8 @@ Partial Class frmMain
         Me.tabCalcFacilityCopy.SuspendLayout
         Me.tabCalcFacilityT2Invention.SuspendLayout
         Me.tabCalcFacilityT3Invention.SuspendLayout
-        Me.tabCalcFacilityCapitals.SuspendLayout
         Me.tabCalcFacilitySupers.SuspendLayout
+        Me.tabCalcFacilityCapitals.SuspendLayout
         Me.tabCalcFacilityT3Ships.SuspendLayout
         Me.tabCalcFacilitySubsystems.SuspendLayout
         Me.tabCalcFacilityBoosters.SuspendLayout
@@ -6079,13 +6080,14 @@ Partial Class frmMain
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityCopy)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityT2Invention)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityT3Invention)
-        Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityCapitals)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilitySupers)
+        Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityCapitals)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityT3Ships)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilitySubsystems)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityBoosters)
         Me.tabCalcFacilities.Controls.Add(Me.tabCalcFacilityNoPOS)
-        Me.tabCalcFacilities.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
+        Me.tabCalcFacilities.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabCalcFacilities.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabCalcFacilities.HotTrack = true
         Me.tabCalcFacilities.ItemSize = New System.Drawing.Size(49, 20)
         Me.tabCalcFacilities.Location = New System.Drawing.Point(546, 13)
@@ -7262,205 +7264,6 @@ Partial Class frmMain
         Me.lblCalcT3InventionFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         Me.lblCalcT3InventionFacilityBonus.Visible = false
         '
-        'tabCalcFacilityCapitals
-        '
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualTax)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualTax)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityDefault)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.btnCalcCapitalFacilitySave)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityTaxRate)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualTE)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualME)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityorArray)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilitySystem)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityRegion)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualTE)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityLocation)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityType)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.chkCalcCapitalFacilityIncludeUsage)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityType)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualME)
-        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityBonus)
-        Me.tabCalcFacilityCapitals.Location = New System.Drawing.Point(4, 44)
-        Me.tabCalcFacilityCapitals.Name = "tabCalcFacilityCapitals"
-        Me.tabCalcFacilityCapitals.Size = New System.Drawing.Size(302, 113)
-        Me.tabCalcFacilityCapitals.TabIndex = 5
-        Me.tabCalcFacilityCapitals.Text = "Capitals"
-        Me.tabCalcFacilityCapitals.UseVisualStyleBackColor = true
-        '
-        'txtCalcCapitalFacilityManualTax
-        '
-        Me.txtCalcCapitalFacilityManualTax.Location = New System.Drawing.Point(197, 89)
-        Me.txtCalcCapitalFacilityManualTax.MaxLength = 5
-        Me.txtCalcCapitalFacilityManualTax.Name = "txtCalcCapitalFacilityManualTax"
-        Me.txtCalcCapitalFacilityManualTax.Size = New System.Drawing.Size(35, 20)
-        Me.txtCalcCapitalFacilityManualTax.TabIndex = 21
-        Me.txtCalcCapitalFacilityManualTax.Text = "0%"
-        Me.txtCalcCapitalFacilityManualTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.txtCalcCapitalFacilityManualTax.Visible = false
-        '
-        'lblCalcCapitalFacilityManualTax
-        '
-        Me.lblCalcCapitalFacilityManualTax.AutoSize = true
-        Me.lblCalcCapitalFacilityManualTax.Location = New System.Drawing.Point(171, 92)
-        Me.lblCalcCapitalFacilityManualTax.Name = "lblCalcCapitalFacilityManualTax"
-        Me.lblCalcCapitalFacilityManualTax.Size = New System.Drawing.Size(28, 13)
-        Me.lblCalcCapitalFacilityManualTax.TabIndex = 20
-        Me.lblCalcCapitalFacilityManualTax.Text = "Tax:"
-        Me.lblCalcCapitalFacilityManualTax.Visible = false
-        '
-        'lblCalcCapitalFacilityDefault
-        '
-        Me.lblCalcCapitalFacilityDefault.ForeColor = System.Drawing.SystemColors.Highlight
-        Me.lblCalcCapitalFacilityDefault.Location = New System.Drawing.Point(218, 3)
-        Me.lblCalcCapitalFacilityDefault.Name = "lblCalcCapitalFacilityDefault"
-        Me.lblCalcCapitalFacilityDefault.Size = New System.Drawing.Size(79, 20)
-        Me.lblCalcCapitalFacilityDefault.TabIndex = 3
-        Me.lblCalcCapitalFacilityDefault.Text = "Default Facility"
-        Me.lblCalcCapitalFacilityDefault.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'btnCalcCapitalFacilitySave
-        '
-        Me.btnCalcCapitalFacilitySave.Enabled = false
-        Me.btnCalcCapitalFacilitySave.Location = New System.Drawing.Point(240, 88)
-        Me.btnCalcCapitalFacilitySave.Name = "btnCalcCapitalFacilitySave"
-        Me.btnCalcCapitalFacilitySave.Size = New System.Drawing.Size(56, 22)
-        Me.btnCalcCapitalFacilitySave.TabIndex = 22
-        Me.btnCalcCapitalFacilitySave.Text = "Save"
-        Me.btnCalcCapitalFacilitySave.UseVisualStyleBackColor = true
-        '
-        'lblCalcCapitalFacilityTaxRate
-        '
-        Me.lblCalcCapitalFacilityTaxRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalcCapitalFacilityTaxRate.Location = New System.Drawing.Point(170, 89)
-        Me.lblCalcCapitalFacilityTaxRate.Name = "lblCalcCapitalFacilityTaxRate"
-        Me.lblCalcCapitalFacilityTaxRate.Size = New System.Drawing.Size(65, 20)
-        Me.lblCalcCapitalFacilityTaxRate.TabIndex = 13
-        Me.lblCalcCapitalFacilityTaxRate.Text = "Tax: 50.0%"
-        Me.lblCalcCapitalFacilityTaxRate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        Me.lblCalcCapitalFacilityTaxRate.Visible = false
-        '
-        'txtCalcCapitalFacilityManualTE
-        '
-        Me.txtCalcCapitalFacilityManualTE.Location = New System.Drawing.Point(100, 89)
-        Me.txtCalcCapitalFacilityManualTE.MaxLength = 5
-        Me.txtCalcCapitalFacilityManualTE.Name = "txtCalcCapitalFacilityManualTE"
-        Me.txtCalcCapitalFacilityManualTE.Size = New System.Drawing.Size(35, 20)
-        Me.txtCalcCapitalFacilityManualTE.TabIndex = 12
-        Me.txtCalcCapitalFacilityManualTE.Text = "0%"
-        Me.txtCalcCapitalFacilityManualTE.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.txtCalcCapitalFacilityManualTE.Visible = false
-        '
-        'txtCalcCapitalFacilityManualME
-        '
-        Me.txtCalcCapitalFacilityManualME.Location = New System.Drawing.Point(39, 89)
-        Me.txtCalcCapitalFacilityManualME.MaxLength = 5
-        Me.txtCalcCapitalFacilityManualME.Name = "txtCalcCapitalFacilityManualME"
-        Me.txtCalcCapitalFacilityManualME.Size = New System.Drawing.Size(35, 20)
-        Me.txtCalcCapitalFacilityManualME.TabIndex = 10
-        Me.txtCalcCapitalFacilityManualME.Text = "0%"
-        Me.txtCalcCapitalFacilityManualME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.txtCalcCapitalFacilityManualME.Visible = false
-        '
-        'cmbCalcCapitalFacilityorArray
-        '
-        Me.cmbCalcCapitalFacilityorArray.FormattingEnabled = true
-        Me.cmbCalcCapitalFacilityorArray.ItemHeight = 13
-        Me.cmbCalcCapitalFacilityorArray.Location = New System.Drawing.Point(5, 65)
-        Me.cmbCalcCapitalFacilityorArray.Name = "cmbCalcCapitalFacilityorArray"
-        Me.cmbCalcCapitalFacilityorArray.Size = New System.Drawing.Size(291, 21)
-        Me.cmbCalcCapitalFacilityorArray.TabIndex = 7
-        Me.cmbCalcCapitalFacilityorArray.Text = "Select Facility / Array"
-        '
-        'cmbCalcCapitalFacilitySystem
-        '
-        Me.cmbCalcCapitalFacilitySystem.FormattingEnabled = true
-        Me.cmbCalcCapitalFacilitySystem.Location = New System.Drawing.Point(139, 42)
-        Me.cmbCalcCapitalFacilitySystem.Name = "cmbCalcCapitalFacilitySystem"
-        Me.cmbCalcCapitalFacilitySystem.Size = New System.Drawing.Size(157, 21)
-        Me.cmbCalcCapitalFacilitySystem.TabIndex = 6
-        Me.cmbCalcCapitalFacilitySystem.Text = "Select System"
-        '
-        'cmbCalcCapitalFacilityRegion
-        '
-        Me.cmbCalcCapitalFacilityRegion.FormattingEnabled = true
-        Me.cmbCalcCapitalFacilityRegion.Location = New System.Drawing.Point(5, 42)
-        Me.cmbCalcCapitalFacilityRegion.Name = "cmbCalcCapitalFacilityRegion"
-        Me.cmbCalcCapitalFacilityRegion.Size = New System.Drawing.Size(130, 21)
-        Me.cmbCalcCapitalFacilityRegion.TabIndex = 5
-        Me.cmbCalcCapitalFacilityRegion.Text = "Select Region"
-        '
-        'lblCalcCapitalFacilityManualTE
-        '
-        Me.lblCalcCapitalFacilityManualTE.AutoSize = true
-        Me.lblCalcCapitalFacilityManualTE.Location = New System.Drawing.Point(77, 92)
-        Me.lblCalcCapitalFacilityManualTE.Name = "lblCalcCapitalFacilityManualTE"
-        Me.lblCalcCapitalFacilityManualTE.Size = New System.Drawing.Size(24, 13)
-        Me.lblCalcCapitalFacilityManualTE.TabIndex = 11
-        Me.lblCalcCapitalFacilityManualTE.Text = "TE:"
-        Me.lblCalcCapitalFacilityManualTE.Visible = false
-        '
-        'lblCalcCapitalFacilityLocation
-        '
-        Me.lblCalcCapitalFacilityLocation.AutoSize = true
-        Me.lblCalcCapitalFacilityLocation.Location = New System.Drawing.Point(3, 27)
-        Me.lblCalcCapitalFacilityLocation.Name = "lblCalcCapitalFacilityLocation"
-        Me.lblCalcCapitalFacilityLocation.Size = New System.Drawing.Size(51, 13)
-        Me.lblCalcCapitalFacilityLocation.TabIndex = 4
-        Me.lblCalcCapitalFacilityLocation.Text = "Location:"
-        '
-        'lblCalcCapitalFacilityType
-        '
-        Me.lblCalcCapitalFacilityType.AutoSize = true
-        Me.lblCalcCapitalFacilityType.Location = New System.Drawing.Point(3, 9)
-        Me.lblCalcCapitalFacilityType.Name = "lblCalcCapitalFacilityType"
-        Me.lblCalcCapitalFacilityType.Size = New System.Drawing.Size(69, 13)
-        Me.lblCalcCapitalFacilityType.TabIndex = 0
-        Me.lblCalcCapitalFacilityType.Text = "Facility Type:"
-        '
-        'chkCalcCapitalFacilityIncludeUsage
-        '
-        Me.chkCalcCapitalFacilityIncludeUsage.AutoSize = true
-        Me.chkCalcCapitalFacilityIncludeUsage.Location = New System.Drawing.Point(139, 25)
-        Me.chkCalcCapitalFacilityIncludeUsage.Name = "chkCalcCapitalFacilityIncludeUsage"
-        Me.chkCalcCapitalFacilityIncludeUsage.Size = New System.Drawing.Size(95, 17)
-        Me.chkCalcCapitalFacilityIncludeUsage.TabIndex = 2
-        Me.chkCalcCapitalFacilityIncludeUsage.Text = "Include Usage"
-        Me.chkCalcCapitalFacilityIncludeUsage.UseVisualStyleBackColor = true
-        '
-        'cmbCalcCapitalFacilityType
-        '
-        Me.cmbCalcCapitalFacilityType.Enabled = false
-        Me.cmbCalcCapitalFacilityType.FormattingEnabled = true
-        Me.cmbCalcCapitalFacilityType.ItemHeight = 13
-        Me.cmbCalcCapitalFacilityType.Items.AddRange(New Object() {"NPC Station", "Outpost", "POS"})
-        Me.cmbCalcCapitalFacilityType.Location = New System.Drawing.Point(73, 6)
-        Me.cmbCalcCapitalFacilityType.Name = "cmbCalcCapitalFacilityType"
-        Me.cmbCalcCapitalFacilityType.Size = New System.Drawing.Size(62, 21)
-        Me.cmbCalcCapitalFacilityType.TabIndex = 1
-        Me.cmbCalcCapitalFacilityType.Text = "Type"
-        '
-        'lblCalcCapitalFacilityManualME
-        '
-        Me.lblCalcCapitalFacilityManualME.AutoSize = true
-        Me.lblCalcCapitalFacilityManualME.Location = New System.Drawing.Point(14, 92)
-        Me.lblCalcCapitalFacilityManualME.Name = "lblCalcCapitalFacilityManualME"
-        Me.lblCalcCapitalFacilityManualME.Size = New System.Drawing.Size(26, 13)
-        Me.lblCalcCapitalFacilityManualME.TabIndex = 9
-        Me.lblCalcCapitalFacilityManualME.Text = "ME:"
-        Me.lblCalcCapitalFacilityManualME.Visible = false
-        '
-        'lblCalcCapitalFacilityBonus
-        '
-        Me.lblCalcCapitalFacilityBonus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalcCapitalFacilityBonus.Location = New System.Drawing.Point(6, 89)
-        Me.lblCalcCapitalFacilityBonus.Name = "lblCalcCapitalFacilityBonus"
-        Me.lblCalcCapitalFacilityBonus.Size = New System.Drawing.Size(159, 20)
-        Me.lblCalcCapitalFacilityBonus.TabIndex = 8
-        Me.lblCalcCapitalFacilityBonus.Text = " Bonus: -20% ME; -20% TE"
-        Me.lblCalcCapitalFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        Me.lblCalcCapitalFacilityBonus.Visible = false
-        '
         'tabCalcFacilitySupers
         '
         Me.tabCalcFacilitySupers.Controls.Add(Me.txtCalcSuperFacilityManualTax)
@@ -7659,6 +7462,205 @@ Partial Class frmMain
         Me.lblCalcSuperFacilityBonus.Text = " Bonus: -20% ME; -20% TE"
         Me.lblCalcSuperFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         Me.lblCalcSuperFacilityBonus.Visible = false
+        '
+        'tabCalcFacilityCapitals
+        '
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualTax)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualTax)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityDefault)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.btnCalcCapitalFacilitySave)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityTaxRate)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualTE)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.txtCalcCapitalFacilityManualME)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityorArray)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilitySystem)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityRegion)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualTE)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityLocation)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityType)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.chkCalcCapitalFacilityIncludeUsage)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.cmbCalcCapitalFacilityType)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityManualME)
+        Me.tabCalcFacilityCapitals.Controls.Add(Me.lblCalcCapitalFacilityBonus)
+        Me.tabCalcFacilityCapitals.Location = New System.Drawing.Point(4, 44)
+        Me.tabCalcFacilityCapitals.Name = "tabCalcFacilityCapitals"
+        Me.tabCalcFacilityCapitals.Size = New System.Drawing.Size(302, 113)
+        Me.tabCalcFacilityCapitals.TabIndex = 5
+        Me.tabCalcFacilityCapitals.Text = "Capitals"
+        Me.tabCalcFacilityCapitals.UseVisualStyleBackColor = true
+        '
+        'txtCalcCapitalFacilityManualTax
+        '
+        Me.txtCalcCapitalFacilityManualTax.Location = New System.Drawing.Point(197, 89)
+        Me.txtCalcCapitalFacilityManualTax.MaxLength = 5
+        Me.txtCalcCapitalFacilityManualTax.Name = "txtCalcCapitalFacilityManualTax"
+        Me.txtCalcCapitalFacilityManualTax.Size = New System.Drawing.Size(35, 20)
+        Me.txtCalcCapitalFacilityManualTax.TabIndex = 21
+        Me.txtCalcCapitalFacilityManualTax.Text = "0%"
+        Me.txtCalcCapitalFacilityManualTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtCalcCapitalFacilityManualTax.Visible = false
+        '
+        'lblCalcCapitalFacilityManualTax
+        '
+        Me.lblCalcCapitalFacilityManualTax.AutoSize = true
+        Me.lblCalcCapitalFacilityManualTax.Location = New System.Drawing.Point(171, 92)
+        Me.lblCalcCapitalFacilityManualTax.Name = "lblCalcCapitalFacilityManualTax"
+        Me.lblCalcCapitalFacilityManualTax.Size = New System.Drawing.Size(28, 13)
+        Me.lblCalcCapitalFacilityManualTax.TabIndex = 20
+        Me.lblCalcCapitalFacilityManualTax.Text = "Tax:"
+        Me.lblCalcCapitalFacilityManualTax.Visible = false
+        '
+        'lblCalcCapitalFacilityDefault
+        '
+        Me.lblCalcCapitalFacilityDefault.ForeColor = System.Drawing.SystemColors.Highlight
+        Me.lblCalcCapitalFacilityDefault.Location = New System.Drawing.Point(218, 3)
+        Me.lblCalcCapitalFacilityDefault.Name = "lblCalcCapitalFacilityDefault"
+        Me.lblCalcCapitalFacilityDefault.Size = New System.Drawing.Size(79, 20)
+        Me.lblCalcCapitalFacilityDefault.TabIndex = 3
+        Me.lblCalcCapitalFacilityDefault.Text = "Default Facility"
+        Me.lblCalcCapitalFacilityDefault.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'btnCalcCapitalFacilitySave
+        '
+        Me.btnCalcCapitalFacilitySave.Enabled = false
+        Me.btnCalcCapitalFacilitySave.Location = New System.Drawing.Point(240, 88)
+        Me.btnCalcCapitalFacilitySave.Name = "btnCalcCapitalFacilitySave"
+        Me.btnCalcCapitalFacilitySave.Size = New System.Drawing.Size(56, 22)
+        Me.btnCalcCapitalFacilitySave.TabIndex = 22
+        Me.btnCalcCapitalFacilitySave.Text = "Save"
+        Me.btnCalcCapitalFacilitySave.UseVisualStyleBackColor = true
+        '
+        'lblCalcCapitalFacilityTaxRate
+        '
+        Me.lblCalcCapitalFacilityTaxRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCalcCapitalFacilityTaxRate.Location = New System.Drawing.Point(170, 89)
+        Me.lblCalcCapitalFacilityTaxRate.Name = "lblCalcCapitalFacilityTaxRate"
+        Me.lblCalcCapitalFacilityTaxRate.Size = New System.Drawing.Size(65, 20)
+        Me.lblCalcCapitalFacilityTaxRate.TabIndex = 13
+        Me.lblCalcCapitalFacilityTaxRate.Text = "Tax: 50.0%"
+        Me.lblCalcCapitalFacilityTaxRate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblCalcCapitalFacilityTaxRate.Visible = false
+        '
+        'txtCalcCapitalFacilityManualTE
+        '
+        Me.txtCalcCapitalFacilityManualTE.Location = New System.Drawing.Point(100, 89)
+        Me.txtCalcCapitalFacilityManualTE.MaxLength = 5
+        Me.txtCalcCapitalFacilityManualTE.Name = "txtCalcCapitalFacilityManualTE"
+        Me.txtCalcCapitalFacilityManualTE.Size = New System.Drawing.Size(35, 20)
+        Me.txtCalcCapitalFacilityManualTE.TabIndex = 12
+        Me.txtCalcCapitalFacilityManualTE.Text = "0%"
+        Me.txtCalcCapitalFacilityManualTE.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtCalcCapitalFacilityManualTE.Visible = false
+        '
+        'txtCalcCapitalFacilityManualME
+        '
+        Me.txtCalcCapitalFacilityManualME.Location = New System.Drawing.Point(39, 89)
+        Me.txtCalcCapitalFacilityManualME.MaxLength = 5
+        Me.txtCalcCapitalFacilityManualME.Name = "txtCalcCapitalFacilityManualME"
+        Me.txtCalcCapitalFacilityManualME.Size = New System.Drawing.Size(35, 20)
+        Me.txtCalcCapitalFacilityManualME.TabIndex = 10
+        Me.txtCalcCapitalFacilityManualME.Text = "0%"
+        Me.txtCalcCapitalFacilityManualME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtCalcCapitalFacilityManualME.Visible = false
+        '
+        'cmbCalcCapitalFacilityorArray
+        '
+        Me.cmbCalcCapitalFacilityorArray.FormattingEnabled = true
+        Me.cmbCalcCapitalFacilityorArray.ItemHeight = 13
+        Me.cmbCalcCapitalFacilityorArray.Location = New System.Drawing.Point(5, 65)
+        Me.cmbCalcCapitalFacilityorArray.Name = "cmbCalcCapitalFacilityorArray"
+        Me.cmbCalcCapitalFacilityorArray.Size = New System.Drawing.Size(291, 21)
+        Me.cmbCalcCapitalFacilityorArray.TabIndex = 7
+        Me.cmbCalcCapitalFacilityorArray.Text = "Select Facility / Array"
+        '
+        'cmbCalcCapitalFacilitySystem
+        '
+        Me.cmbCalcCapitalFacilitySystem.FormattingEnabled = true
+        Me.cmbCalcCapitalFacilitySystem.Location = New System.Drawing.Point(139, 42)
+        Me.cmbCalcCapitalFacilitySystem.Name = "cmbCalcCapitalFacilitySystem"
+        Me.cmbCalcCapitalFacilitySystem.Size = New System.Drawing.Size(157, 21)
+        Me.cmbCalcCapitalFacilitySystem.TabIndex = 6
+        Me.cmbCalcCapitalFacilitySystem.Text = "Select System"
+        '
+        'cmbCalcCapitalFacilityRegion
+        '
+        Me.cmbCalcCapitalFacilityRegion.FormattingEnabled = true
+        Me.cmbCalcCapitalFacilityRegion.Location = New System.Drawing.Point(5, 42)
+        Me.cmbCalcCapitalFacilityRegion.Name = "cmbCalcCapitalFacilityRegion"
+        Me.cmbCalcCapitalFacilityRegion.Size = New System.Drawing.Size(130, 21)
+        Me.cmbCalcCapitalFacilityRegion.TabIndex = 5
+        Me.cmbCalcCapitalFacilityRegion.Text = "Select Region"
+        '
+        'lblCalcCapitalFacilityManualTE
+        '
+        Me.lblCalcCapitalFacilityManualTE.AutoSize = true
+        Me.lblCalcCapitalFacilityManualTE.Location = New System.Drawing.Point(77, 92)
+        Me.lblCalcCapitalFacilityManualTE.Name = "lblCalcCapitalFacilityManualTE"
+        Me.lblCalcCapitalFacilityManualTE.Size = New System.Drawing.Size(24, 13)
+        Me.lblCalcCapitalFacilityManualTE.TabIndex = 11
+        Me.lblCalcCapitalFacilityManualTE.Text = "TE:"
+        Me.lblCalcCapitalFacilityManualTE.Visible = false
+        '
+        'lblCalcCapitalFacilityLocation
+        '
+        Me.lblCalcCapitalFacilityLocation.AutoSize = true
+        Me.lblCalcCapitalFacilityLocation.Location = New System.Drawing.Point(3, 27)
+        Me.lblCalcCapitalFacilityLocation.Name = "lblCalcCapitalFacilityLocation"
+        Me.lblCalcCapitalFacilityLocation.Size = New System.Drawing.Size(51, 13)
+        Me.lblCalcCapitalFacilityLocation.TabIndex = 4
+        Me.lblCalcCapitalFacilityLocation.Text = "Location:"
+        '
+        'lblCalcCapitalFacilityType
+        '
+        Me.lblCalcCapitalFacilityType.AutoSize = true
+        Me.lblCalcCapitalFacilityType.Location = New System.Drawing.Point(3, 9)
+        Me.lblCalcCapitalFacilityType.Name = "lblCalcCapitalFacilityType"
+        Me.lblCalcCapitalFacilityType.Size = New System.Drawing.Size(69, 13)
+        Me.lblCalcCapitalFacilityType.TabIndex = 0
+        Me.lblCalcCapitalFacilityType.Text = "Facility Type:"
+        '
+        'chkCalcCapitalFacilityIncludeUsage
+        '
+        Me.chkCalcCapitalFacilityIncludeUsage.AutoSize = true
+        Me.chkCalcCapitalFacilityIncludeUsage.Location = New System.Drawing.Point(139, 25)
+        Me.chkCalcCapitalFacilityIncludeUsage.Name = "chkCalcCapitalFacilityIncludeUsage"
+        Me.chkCalcCapitalFacilityIncludeUsage.Size = New System.Drawing.Size(95, 17)
+        Me.chkCalcCapitalFacilityIncludeUsage.TabIndex = 2
+        Me.chkCalcCapitalFacilityIncludeUsage.Text = "Include Usage"
+        Me.chkCalcCapitalFacilityIncludeUsage.UseVisualStyleBackColor = true
+        '
+        'cmbCalcCapitalFacilityType
+        '
+        Me.cmbCalcCapitalFacilityType.Enabled = false
+        Me.cmbCalcCapitalFacilityType.FormattingEnabled = true
+        Me.cmbCalcCapitalFacilityType.ItemHeight = 13
+        Me.cmbCalcCapitalFacilityType.Items.AddRange(New Object() {"NPC Station", "Outpost", "POS"})
+        Me.cmbCalcCapitalFacilityType.Location = New System.Drawing.Point(73, 6)
+        Me.cmbCalcCapitalFacilityType.Name = "cmbCalcCapitalFacilityType"
+        Me.cmbCalcCapitalFacilityType.Size = New System.Drawing.Size(62, 21)
+        Me.cmbCalcCapitalFacilityType.TabIndex = 1
+        Me.cmbCalcCapitalFacilityType.Text = "Type"
+        '
+        'lblCalcCapitalFacilityManualME
+        '
+        Me.lblCalcCapitalFacilityManualME.AutoSize = true
+        Me.lblCalcCapitalFacilityManualME.Location = New System.Drawing.Point(14, 92)
+        Me.lblCalcCapitalFacilityManualME.Name = "lblCalcCapitalFacilityManualME"
+        Me.lblCalcCapitalFacilityManualME.Size = New System.Drawing.Size(26, 13)
+        Me.lblCalcCapitalFacilityManualME.TabIndex = 9
+        Me.lblCalcCapitalFacilityManualME.Text = "ME:"
+        Me.lblCalcCapitalFacilityManualME.Visible = false
+        '
+        'lblCalcCapitalFacilityBonus
+        '
+        Me.lblCalcCapitalFacilityBonus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCalcCapitalFacilityBonus.Location = New System.Drawing.Point(6, 89)
+        Me.lblCalcCapitalFacilityBonus.Name = "lblCalcCapitalFacilityBonus"
+        Me.lblCalcCapitalFacilityBonus.Size = New System.Drawing.Size(159, 20)
+        Me.lblCalcCapitalFacilityBonus.TabIndex = 8
+        Me.lblCalcCapitalFacilityBonus.Text = " Bonus: -20% ME; -20% TE"
+        Me.lblCalcCapitalFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblCalcCapitalFacilityBonus.Visible = false
         '
         'tabCalcFacilityT3Ships
         '
@@ -9481,19 +9483,6 @@ Partial Class frmMain
         Me.chkSystems1.TabIndex = 0
         Me.chkSystems1.Text = "Jita"
         Me.chkSystems1.UseVisualStyleBackColor = true
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = true
-        Me.lstPricesView.GridLines = true
-        Me.lstPricesView.HideSelection = false
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = false
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = false
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
         'txtPriceItemFilter
         '
@@ -11484,34 +11473,6 @@ Partial Class frmMain
         Me.lblBPSelectBlueprint.TabIndex = 0
         Me.lblBPSelectBlueprint.Text = "Selected Blueprint"
         '
-        'lstBPComponentMats
-        '
-        Me.lstBPComponentMats.FullRowSelect = true
-        Me.lstBPComponentMats.GridLines = true
-        Me.lstBPComponentMats.HideSelection = false
-        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
-        Me.lstBPComponentMats.MultiSelect = false
-        Me.lstBPComponentMats.Name = "lstBPComponentMats"
-        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPComponentMats.TabIndex = 35
-        Me.lstBPComponentMats.TabStop = false
-        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
-        '
-        'lstBPRawMats
-        '
-        Me.lstBPRawMats.FullRowSelect = true
-        Me.lstBPRawMats.GridLines = true
-        Me.lstBPRawMats.HideSelection = false
-        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
-        Me.lstBPRawMats.MultiSelect = false
-        Me.lstBPRawMats.Name = "lstBPRawMats"
-        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPRawMats.TabIndex = 34
-        Me.lstBPRawMats.TabStop = false
-        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
-        '
         'gbBPInventionStats
         '
         Me.gbBPInventionStats.BackColor = System.Drawing.Color.Transparent
@@ -11900,6 +11861,8 @@ Partial Class frmMain
         Me.tabBPInventionEquip.Controls.Add(Me.tabT3Calcs)
         Me.tabBPInventionEquip.Controls.Add(Me.tabBPOptions)
         Me.tabBPInventionEquip.Controls.Add(Me.tabInventionCalcs)
+        Me.tabBPInventionEquip.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabBPInventionEquip.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabBPInventionEquip.ItemSize = New System.Drawing.Size(49, 20)
         Me.tabBPInventionEquip.Location = New System.Drawing.Point(140, 73)
         Me.tabBPInventionEquip.Multiline = true
@@ -12975,6 +12938,8 @@ Partial Class frmMain
         Me.tabMain.Controls.Add(Me.tabReactions)
         Me.tabMain.Controls.Add(Me.tabMining)
         Me.tabMain.Controls.Add(Me.tabPI)
+        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabMain.Location = New System.Drawing.Point(1, 26)
         Me.tabMain.Name = "tabMain"
         Me.tabMain.SelectedIndex = 0
@@ -12999,20 +12964,6 @@ Partial Class frmMain
         Me.tabPI.TabIndex = 6
         Me.tabPI.Text = "Planetary Interaction"
         Me.tabPI.UseVisualStyleBackColor = true
-        '
-        'MyListView6
-        '
-        Me.MyListView6.FullRowSelect = true
-        Me.MyListView6.GridLines = true
-        Me.MyListView6.HideSelection = false
-        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = false
-        Me.MyListView6.Name = "MyListView6"
-        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
-        Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = false
-        Me.MyListView6.UseCompatibleStateImageBehavior = false
-        Me.MyListView6.View = System.Windows.Forms.View.Details
         '
         'btnPISaveSettings
         '
@@ -13129,6 +13080,89 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = true
         '
+        'cmbCalcManufacturingTeamActivity
+        '
+        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = true
+        Me.cmbCalcManufacturingTeamActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
+        Me.cmbCalcManufacturingTeamActivity.Location = New System.Drawing.Point(3, 9)
+        Me.cmbCalcManufacturingTeamActivity.Name = "cmbCalcManufacturingTeamActivity"
+        Me.cmbCalcManufacturingTeamActivity.Size = New System.Drawing.Size(92, 21)
+        Me.cmbCalcManufacturingTeamActivity.TabIndex = 20
+        Me.cmbCalcManufacturingTeamActivity.Text = "Select Activity"
+        '
+        'ListOptionsMenu
+        '
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CalcBPStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
+        Me.ListOptionsMenu.Name = "ListOptionsMenu"
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(167, 70)
+        '
+        'CalcBPStripMenuItem
+        '
+        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
+        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(166, 22)
+        Me.CalcBPStripMenuItem.Text = "View Market Data"
+        '
+        'IgnoreBlueprintToolStripMenuItem
+        '
+        Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
+        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(166, 22)
+        Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
+        '
+        'lstBPComponentMats
+        '
+        Me.lstBPComponentMats.FullRowSelect = true
+        Me.lstBPComponentMats.GridLines = true
+        Me.lstBPComponentMats.HideSelection = false
+        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
+        Me.lstBPComponentMats.MultiSelect = false
+        Me.lstBPComponentMats.Name = "lstBPComponentMats"
+        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPComponentMats.TabIndex = 35
+        Me.lstBPComponentMats.TabStop = false
+        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
+        '
+        'lstBPRawMats
+        '
+        Me.lstBPRawMats.FullRowSelect = true
+        Me.lstBPRawMats.GridLines = true
+        Me.lstBPRawMats.HideSelection = false
+        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
+        Me.lstBPRawMats.MultiSelect = false
+        Me.lstBPRawMats.Name = "lstBPRawMats"
+        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPRawMats.TabIndex = 34
+        Me.lstBPRawMats.TabStop = false
+        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
+        '
+        'lstPricesView
+        '
+        Me.lstPricesView.FullRowSelect = true
+        Me.lstPricesView.GridLines = true
+        Me.lstPricesView.HideSelection = false
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = false
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = false
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
+        'MyListView6
+        '
+        Me.MyListView6.FullRowSelect = true
+        Me.MyListView6.GridLines = true
+        Me.MyListView6.HideSelection = false
+        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
+        Me.MyListView6.MultiSelect = false
+        Me.MyListView6.Name = "MyListView6"
+        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
+        Me.MyListView6.TabIndex = 75
+        Me.MyListView6.TabStop = false
+        Me.MyListView6.UseCompatibleStateImageBehavior = false
+        Me.MyListView6.View = System.Windows.Forms.View.Details
+        '
         'MyListView5
         '
         Me.MyListView5.FullRowSelect = true
@@ -13149,33 +13183,33 @@ Partial Class frmMain
         Me.MyListView4.GridLines = true
         Me.MyListView4.HideSelection = false
         Me.MyListView4.Location = New System.Drawing.Point(855, 214)
-        Me.MyListView4.MultiSelect = False
+        Me.MyListView4.MultiSelect = false
         Me.MyListView4.Name = "MyListView4"
         Me.MyListView4.Size = New System.Drawing.Size(279, 391)
         Me.MyListView4.TabIndex = 39
-        Me.MyListView4.TabStop = False
-        Me.MyListView4.UseCompatibleStateImageBehavior = False
+        Me.MyListView4.TabStop = false
+        Me.MyListView4.UseCompatibleStateImageBehavior = false
         Me.MyListView4.View = System.Windows.Forms.View.Details
         '
         'MyListView3
         '
-        Me.MyListView3.FullRowSelect = True
-        Me.MyListView3.GridLines = True
-        Me.MyListView3.HideSelection = False
+        Me.MyListView3.FullRowSelect = true
+        Me.MyListView3.GridLines = true
+        Me.MyListView3.HideSelection = false
         Me.MyListView3.Location = New System.Drawing.Point(413, 214)
-        Me.MyListView3.MultiSelect = False
+        Me.MyListView3.MultiSelect = false
         Me.MyListView3.Name = "MyListView3"
         Me.MyListView3.Size = New System.Drawing.Size(279, 391)
         Me.MyListView3.TabIndex = 38
-        Me.MyListView3.TabStop = False
-        Me.MyListView3.UseCompatibleStateImageBehavior = False
+        Me.MyListView3.TabStop = false
+        Me.MyListView3.UseCompatibleStateImageBehavior = false
         Me.MyListView3.View = System.Windows.Forms.View.Details
         '
         'MyListView2
         '
-        Me.MyListView2.FullRowSelect = True
-        Me.MyListView2.GridLines = True
-        Me.MyListView2.HideSelection = False
+        Me.MyListView2.FullRowSelect = true
+        Me.MyListView2.GridLines = true
+        Me.MyListView2.HideSelection = false
         Me.MyListView2.Location = New System.Drawing.Point(855, 13)
         Me.MyListView2.MultiSelect = false
         Me.MyListView2.Name = "MyListView2"
@@ -13198,28 +13232,6 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
-        '
-        'cmbCalcManufacturingTeamActivity
-        '
-        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = true
-        Me.cmbCalcManufacturingTeamActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
-        Me.cmbCalcManufacturingTeamActivity.Location = New System.Drawing.Point(3, 9)
-        Me.cmbCalcManufacturingTeamActivity.Name = "cmbCalcManufacturingTeamActivity"
-        Me.cmbCalcManufacturingTeamActivity.Size = New System.Drawing.Size(92, 21)
-        Me.cmbCalcManufacturingTeamActivity.TabIndex = 20
-        Me.cmbCalcManufacturingTeamActivity.Text = "Select Activity"
-        '
-        'ListOptionsMenu
-        '
-        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenMarketDataToolStripMenuItem})
-        Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(167, 26)
-        '
-        'OpenMarketDataToolStripMenuItem
-        '
-        Me.OpenMarketDataToolStripMenuItem.Name = "OpenMarketDataToolStripMenuItem"
-        Me.OpenMarketDataToolStripMenuItem.Size = New System.Drawing.Size(166, 22)
-        Me.OpenMarketDataToolStripMenuItem.Text = "View Market Data"
         '
         'frmMain
         '
@@ -13359,10 +13371,10 @@ Partial Class frmMain
         Me.tabCalcFacilityT2Invention.PerformLayout
         Me.tabCalcFacilityT3Invention.ResumeLayout(false)
         Me.tabCalcFacilityT3Invention.PerformLayout
-        Me.tabCalcFacilityCapitals.ResumeLayout(false)
-        Me.tabCalcFacilityCapitals.PerformLayout
         Me.tabCalcFacilitySupers.ResumeLayout(false)
         Me.tabCalcFacilitySupers.PerformLayout
+        Me.tabCalcFacilityCapitals.ResumeLayout(false)
+        Me.tabCalcFacilityCapitals.PerformLayout
         Me.tabCalcFacilityT3Ships.ResumeLayout(false)
         Me.tabCalcFacilityT3Ships.PerformLayout
         Me.tabCalcFacilitySubsystems.ResumeLayout(false)
@@ -14529,7 +14541,7 @@ End Sub
     Friend WithEvents lblMineRefining As System.Windows.Forms.Label
     Friend WithEvents cmbMineRefineryEff As System.Windows.Forms.ComboBox
     Friend WithEvents ListOptionsMenu As System.Windows.Forms.ContextMenuStrip
-    Friend WithEvents OpenMarketDataToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents CalcBPStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkUpdatePricesCRESTHistory As System.Windows.Forms.CheckBox
     Friend WithEvents txtBPFacilityManualTax As System.Windows.Forms.TextBox
     Friend WithEvents lblBPFacilityManualTax As System.Windows.Forms.Label
@@ -14601,5 +14613,6 @@ End Sub
     Friend WithEvents lblMineNumberMiners As System.Windows.Forms.Label
     Friend WithEvents mnuResetCRESTMarketPrices As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetCRESTIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents IgnoreBlueprintToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 
 End Class

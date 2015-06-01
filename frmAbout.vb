@@ -10,7 +10,7 @@
         End If
         Me.Text = String.Format("About {0}", ApplicationTitle)
         ' Initialize all of the text displayed on the About Box.
-        ' TO DO: Customize the application's assembly information in the "Application" pane of the project 
+        ' TODO: Customize the application's assembly information in the "Application" pane of the project 
         '    properties dialog (under the "Project" menu).
         Me.LabelProductName.Text = My.Application.Info.ProductName
         Me.LabelVersion.Text = String.Format("Version {0}", My.Application.Info.Version.ToString)

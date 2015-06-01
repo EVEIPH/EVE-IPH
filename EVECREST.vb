@@ -1557,7 +1557,7 @@ Public Class EVECREST
             ' Set the cache date by ref - if we are looking at market history, use special processing until we get this figured out
             If URL.Contains("/market/") And URL.Contains("/history/") Then
                 Dim Tempdate As DateTime
-                ' TO DO Fix processing to use the seconds from headers if it's from midnight
+                ' TODO Fix processing to use the seconds from headers if it's from midnight
                 Tempdate = DateValue(response.Headers.Get("Date"))
                 ' Strip off time here from GMT date and add one day so it gets set to midnight tomorrow GMT
                 CacheDate = DateAdd(DateInterval.Day, 1, CDate(Tempdate.ToShortDateString))

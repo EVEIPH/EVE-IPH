@@ -8,5 +8,8 @@
     <Setting Name="Setting" Type="System.Drawing.Font" Scope="Application">
       <Value Profile="(Default)">Microsoft Sans Serif, 8.25pt</Value>
     </Setting>
+    <Setting Name="MyDefault" Type="System.Drawing.Font" Scope="User">
+      <Value Profile="(Default)">Microsoft Sans Serif, 8.25pt</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

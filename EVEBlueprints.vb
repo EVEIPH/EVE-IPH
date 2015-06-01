@@ -50,7 +50,7 @@ Public Class EVEBlueprints
 
         ' Load the blueprints
         SQL = "SELECT ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, QUANTITY, ME, TE, "
-        SQL = SQL & "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS "
+        SQL = SQL & "RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS "
         SQL = SQL & "FROM OWNED_BLUEPRINTS WHERE USER_ID = " & SearchID
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -74,9 +74,10 @@ Public Class EVEBlueprints
             TempBlueprint.runs = readerBlueprints.GetInt32(8)
             TempBlueprint.BPType = readerBlueprints.GetInt32(9)
             TempBlueprint.Owned = CBool(readerBlueprints.GetInt32(10))
-            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(11))
-            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(12))
-            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(13)
+            TempBlueprint.OwnedType = CType(readerBlueprints.GetInt32(11), BPOwnedType)
+            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(12))
+            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(13))
+            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(14)
 
             ' Insert blueprint
             Blueprints.Add(TempBlueprint)
@@ -176,14 +177,11 @@ Public Class EVEBlueprints
                     With IndyBlueprints(i)
 
                         ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
-                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & .typeID & " AND USER_ID = " & AccountSearchID
+                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED_TYPE FROM OWNED_BLUEPRINTS "
+                        SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID = " & AccountSearchID & " "
                         DBCommand = New SQLiteCommand(SQL, DB)
                         readerBlueprints = DBCommand.ExecuteReader
                         readerBlueprints.Read()
-
-                        If .typeID = 803 Then
-                            Application.DoEvents()
-                        End If
 
                         If readerBlueprints.HasRows Then
 
@@ -211,18 +209,32 @@ Public Class EVEBlueprints
 
                         If Not IgnoreBP Then
                             If InsertBP Then
-                                ' Full insert always mark owned unless it's a BPC
-                                Dim OwnedFlag As String
 
-                                If .BPType = BPType.Copy Then
-                                    OwnedFlag = "0"
+                                readerBlueprints.Close()
+                                SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & .typeID
+                                DBCommand = New SQLiteCommand(SQL, DB)
+                                readerBlueprints = DBCommand.ExecuteReader
+                                readerBlueprints.Read()
+
+                                ' Full insert always mark owned, Also set the owned type to the same on first load
+                                Dim OwnedType As BPOwnedType
+
+                                If .BPType = BPType.Original Then
+                                    OwnedType = BPOwnedType.BPO
+                                ElseIf readerBlueprints.GetInt32(0) <> 1 And .BPType = BPType.Copy Then
+                                    ' Assume all bpcs they have of T2 items are invented, also mark as owned
+                                    OwnedType = BPOwnedType.InventedBPC
                                 Else
-                                    OwnedFlag = "1"
+                                    ' Has to be a copy
+                                    OwnedType = BPOwnedType.BPC
                                 End If
+
                                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, "
-                                SQL = SQL & "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                                SQL = SQL & "VALUES (" & AccountSearchID & "," & .itemID & "," & .locationID & "," & .typeID & ",'" & FormatDBString(.typeName) & "',"
-                                SQL = SQL & .flagID & "," & .quantity & "," & .materialEfficiency & "," & .timeEfficiency & "," & .runs & "," & .BPType & "," & OwnedFlag & "," & CStr(ScannedFlag) & ", 0, 0)"
+                                SQL = SQL & "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                                SQL = SQL & "VALUES (" & AccountSearchID & "," & .itemID & "," & .locationID & "," & .typeID & ",'"
+                                SQL = SQL & FormatDBString(.typeName) & "',"
+                                SQL = SQL & .flagID & "," & .quantity & "," & .materialEfficiency & "," & .timeEfficiency & ","
+                                SQL = SQL & .runs & "," & .BPType & ",1," & CStr(OwnedType) & "," & CStr(ScannedFlag) & ", 0, 0)"
                             Else
                                 ' Update the BP 
                                 SQL = "UPDATE OWNED_BLUEPRINTS SET "
@@ -236,9 +248,13 @@ Public Class EVEBlueprints
                                 SQL = SQL & "ITEM_ID = " & CStr(.itemID) & ","
                                 ' Could go from a copy to orginial (with single bp loading, will change with multi)
                                 SQL = SQL & "BP_TYPE = " & CStr(.BPType) & ","
+                                ' Mark all from API as owned
+                                SQL = SQL & "OWNED = 1,"
                                 If .BPType = BPType.Original Then
-                                    ' Mark this as owned
-                                    SQL = SQL & "OWNED = 1,"
+                                    ' If we are updating and the update is a bpo from a bpc, then switch the code
+                                    SQL = SQL & "OWNED_TYPE = " & CStr(CType(BPOwnedType.BPO, BPOwnedType)) & ","
+                                Else
+                                    SQL = SQL & "OWNED_TYPE = " & CStr(readerBlueprints.GetInt64(4)) & ", "
                                 End If
                                 SQL = SQL & "BLUEPRINT_NAME = '" & FormatDBString(.typeName) & "' " ' If it changes
 
@@ -252,11 +268,11 @@ Public Class EVEBlueprints
 
                             End If
 
+                            readerBlueprints.Close()
+                            readerBlueprints = Nothing
+
                             Call ExecuteNonQuerySQL(SQL)
                         End If
-
-                        readerBlueprints.Close()
-                        readerBlueprints = Nothing
 
                     End With
                 Next
@@ -292,6 +308,7 @@ Public Structure EVEBlueprint
     Dim runs As Integer
     Dim BPType As Integer
     Dim Owned As Boolean
+    Dim OwnedType As BPOwnedType
     Dim Scanned As Boolean
     Dim Favorite As Boolean
     Dim AdditionalCosts As Double
