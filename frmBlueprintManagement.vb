@@ -24,6 +24,8 @@ Public Class frmBlueprintManagement
     Private MEUpdate As Boolean
     Private TEUpdate As Boolean
     Private FavoriteUpdate As Boolean
+    Private OwnedTypeUpdate As Boolean
+    Private IgnoredBPUpdate As Boolean
     Private BPTypeUpdate As Boolean
 
     Private Const SelectTypeText As String = "Select Type"
@@ -381,7 +383,7 @@ Public Class frmBlueprintManagement
     End Sub
 
     Private Sub cmbEdit_LostFocus(sender As Object, e As System.EventArgs) Handles cmbEdit.LostFocus, cmbEdit.LostFocus
-        Call ProcessKeyDownBPEdit(Keys.Enter)
+        Call ProcessKeyDownBPEdit(Keys.Enter) ' Issue here!
         cmbEdit.Visible = False
     End Sub
 
@@ -446,14 +448,14 @@ Public Class frmBlueprintManagement
         lstBPs.Columns.Add("", 25, HorizontalAlignment.Center) ' -2 is autosize, but check boxes set to 25
         lstBPs.Columns.Add("BPTypeID", 0, HorizontalAlignment.Left) ' Hidden
         lstBPs.Columns.Add("Blueprint Group", 240, HorizontalAlignment.Left)
-        lstBPs.Columns.Add("Blueprint Name", 277, HorizontalAlignment.Left)
+        lstBPs.Columns.Add("Blueprint Name", 269, HorizontalAlignment.Left)
         lstBPs.Columns.Add("Tech", 52, HorizontalAlignment.Center)
         lstBPs.Columns.Add("ME", 40, HorizontalAlignment.Center)
         lstBPs.Columns.Add("TE", 40, HorizontalAlignment.Center)
         'lstBPs.Columns.Add("Copy", 40, HorizontalAlignment.Center)
         lstBPs.Columns.Add("Owned", 50, HorizontalAlignment.Center)
         lstBPs.Columns.Add("Owned Type", 78, HorizontalAlignment.Center)
-        lstBPs.Columns.Add("Fav", 40, HorizontalAlignment.Center)
+        lstBPs.Columns.Add("Fav", 48, HorizontalAlignment.Center)
         lstBPs.Columns.Add("Ignored", 48, HorizontalAlignment.Center)
         lstBPs.Columns.Add("Runs", 55, HorizontalAlignment.Center)
         lstBPs.Columns.Add("Quantity", 51, HorizontalAlignment.Right) ' This is different than the API value
@@ -630,14 +632,6 @@ Public Class frmBlueprintManagement
                     BPList.SubItems.Add("Unkonwn")
             End Select
 
-            'If CInt(readerBP.GetValue(16)) = BPType.Copy Then ' 16 = BP Type 
-            '    BPList.SubItems.Add("Yes")
-            'ElseIf CInt(readerBP.GetValue(16)) = BPType.Original Then
-            '    BPList.SubItems.Add("No")
-            'Else
-            '    BPList.SubItems.Add("Unknown")
-            'End If
-
             BPList.SubItems.Add(CStr(readerBP.GetDouble(9))) ' ME
             BPList.SubItems.Add(CStr(readerBP.GetDouble(10))) ' TE
 
@@ -677,7 +671,7 @@ Public Class frmBlueprintManagement
             ' Set runs for bpcs, or unlimited for bpo
             If readerBP.GetInt32(16) = BPType.Copy Then ' 16 = BP Type 
                 If readerBP.GetInt32(25) = 0 And readerBP.GetInt32(28) <> 1 Then
-                    ' If T2/T3 and value is 0, it's invented - look up base runs for the bpc assuming no decryptors, else get the value stored
+                    ' If T2/T3 and runs is 0, it's invented - look up base runs for the bpc assuming no decryptors, else get the value stored
                     If readerBP.GetInt32(28) = 2 Then
                         SQL = "SELECT quantity FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & CStr(readerBP.GetInt64(0)) & " AND activityID = 8"
                     Else ' T3
@@ -687,6 +681,20 @@ Public Class frmBlueprintManagement
                         SQL = SQL & "AND productTypeID = " & CStr(readerBP.GetInt64(0))
                     End If
 
+                    DBCommand = New SQLiteCommand(SQL, DB)
+                    rsLookup = DBCommand.ExecuteReader
+
+                    If rsLookup.Read Then
+                        BPList.SubItems.Add(CStr(rsLookup.GetInt32(0)))
+                    Else
+                        BPList.SubItems.Add("Unknown")
+                    End If
+
+                    rsLookup.Close()
+                    rsLookup = Nothing
+                ElseIf readerBP.GetInt32(26) = BPOwnedType.NotOwned Then
+                    ' Get max runs from all_blueprints for unowned copies
+                    SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(readerBP.GetInt64(0))
                     DBCommand = New SQLiteCommand(SQL, DB)
                     rsLookup = DBCommand.ExecuteReader
 
@@ -1741,19 +1749,43 @@ Public Class frmBlueprintManagement
             End If
 
             FavoriteUpdate = False
+            IgnoredBPUpdate = False
+            OwnedTypeUpdate = False
 
             Call ShowEditBoxes()
 
-        ElseIf iSubIndex = 8 Then
+        ElseIf iSubIndex = 8 Then ' Owned Type
+
+            MEUpdate = False
+            TEUpdate = False
+            FavoriteUpdate = False
+            IgnoredBPUpdate = False
+            OwnedTypeUpdate = True
+
+            Call ShowEditBoxes()
+
+        ElseIf iSubIndex = 9 Then ' Favorite
 
             MEUpdate = False
             TEUpdate = False
             FavoriteUpdate = True
+            IgnoredBPUpdate = False
+            OwnedTypeUpdate = False
+
+            Call ShowEditBoxes()
+
+        ElseIf iSubIndex = 10 Then ' Ignored
+
+            MEUpdate = False
+            TEUpdate = False
+            FavoriteUpdate = False
+            IgnoredBPUpdate = True
+            OwnedTypeUpdate = False
 
             Call ShowEditBoxes()
 
         Else
-            ' Not ME/TE so leave
+            ' Not updatable so leave
             Exit Sub
         End If
 
@@ -1764,6 +1796,8 @@ Public Class frmBlueprintManagement
         Dim MEValue As Integer
         Dim TEValue As Integer
         Dim FavoriteValue As String
+        Dim OwnedTypeValue As String
+        Dim IgnoredValue As String
         Dim TempBPType As BPType
         Dim TempBPOwnedType As BPOwnedType
 
@@ -1799,22 +1833,32 @@ Public Class frmBlueprintManagement
                 TEValue = CInt(CurrentRow.SubItems(6).Text)
             End If
 
+            If OwnedTypeUpdate Then
+                OwnedTypeValue = cmbEdit.Text
+            Else
+                OwnedTypeValue = CurrentRow.SubItems(8).Text
+            End If
+
             If FavoriteUpdate Then
                 FavoriteValue = cmbEdit.Text
             Else
-                FavoriteValue = CurrentRow.SubItems(8).Text
+                FavoriteValue = CurrentRow.SubItems(9).Text
+            End If
+
+            If IgnoredBPUpdate Then
+                IgnoredValue = cmbEdit.Text
+            Else
+                IgnoredValue = CurrentRow.SubItems(10).Text
             End If
 
             ' Check the numbers, if the same then don't mark as owned
-            If MEValue = CInt(CurrentRow.SubItems(5).Text) And TEValue = CInt(CurrentRow.SubItems(6).Text) And FavoriteValue = CurrentRow.SubItems(8).Text Then
+            If MEValue = CInt(CurrentRow.SubItems(5).Text) _
+                And TEValue = CInt(CurrentRow.SubItems(6).Text) _
+                And OwnedTypeValue = CurrentRow.SubItems(8).Text _
+                And FavoriteValue = CurrentRow.SubItems(9).Text _
+                And IgnoredValue = CurrentRow.SubItems(10).Text Then
                 ' Skip down
                 GoTo Tabs
-            End If
-
-            If CurrentRow.SubItems(8).Text = "Yes" Or chkMarkAsCopy.Checked Then
-                TempBPType = BPType.Copy
-            Else
-                TempBPType = BPType.Original
             End If
 
             ' TODAY - Save the type of BP, either BPO or Invented for T2, all others save as the type of bp in the grid (loaded from api)
@@ -1832,14 +1876,16 @@ Public Class frmBlueprintManagement
             ' Update the data in the current row
             CurrentRow.SubItems(5).Text = CStr(MEValue)
             CurrentRow.SubItems(6).Text = CStr(TEValue)
-            CurrentRow.SubItems(8).Text = FavoriteValue
+            CurrentRow.SubItems(8).Text = OwnedTypeValue
+            CurrentRow.SubItems(9).Text = FavoriteValue
+            CurrentRow.SubItems(10).Text = IgnoredValue
 
             ' Since they selected the row, update the ME/TE boxes with new data
             txtBPME.Text = CStr(MEValue)
             txtBPTE.Text = CStr(TEValue)
 
             ' Mark as owned and change color
-            CurrentRow.SubItems(6).Text = "Yes"
+            CurrentRow.SubItems(7).Text = "Yes"
             CurrentRow.ForeColor = Color.Blue
 
             If SentKey = Keys.Enter Then
@@ -1928,31 +1974,55 @@ Tabs:
         ' ME box is selected
         If iSubIndex = 5 Then
             ' Set the next and previous ME boxes (subitems)
-            NextCell = CurrentRow.SubItems.Item(6) ' On Same Line TE box
+            NextCell = CurrentRow.SubItems.Item(6) ' On Same Line 
             NextCellRow = CurrentRow
-            PreviousCell = PreviousRow.SubItems.Item(8) ' On previous line Favorite combo
+            PreviousCell = PreviousRow.SubItems.Item(10) ' On previous line 
             PreviousCellRow = PreviousRow
             MEUpdate = True
             TEUpdate = False
             FavoriteUpdate = False
         ElseIf iSubIndex = 6 Then ' TE box is selected
             ' Set the next and previous ME or favorite boxes (subitems)
-            NextCell = CurrentRow.SubItems.Item(8) ' On same line Favorite box
+            NextCell = CurrentRow.SubItems.Item(8) ' On same line 
             NextCellRow = CurrentRow
-            PreviousCell = CurrentRow.SubItems.Item(5) ' On same line ME box
+            PreviousCell = CurrentRow.SubItems.Item(5) ' On same line 
             PreviousCellRow = CurrentRow
             TEUpdate = True
             MEUpdate = False
             FavoriteUpdate = False
-        ElseIf iSubIndex = 8 Then ' Favorite combo
+        ElseIf iSubIndex = 8 Then ' Owned Type combo
             ' Set the next and previous ME boxes (subitems)
-            NextCell = NextRow.SubItems.Item(5) ' On next line ME box
-            NextCellRow = NextRow
-            PreviousCell = CurrentRow.SubItems.Item(6) ' On same line TE box
+            NextCell = CurrentRow.SubItems.Item(9) ' On On same line 
+            NextCellRow = CurrentRow
+            PreviousCell = CurrentRow.SubItems.Item(6) ' On same line 
             PreviousCellRow = CurrentRow
-            TEUpdate = False
             MEUpdate = False
+            TEUpdate = False
+            FavoriteUpdate = False
+            IgnoredBPUpdate = False
+            OwnedTypeUpdate = True
+        ElseIf iSubIndex = 9 Then ' Favorite combo
+            ' Set the next and previous ME boxes (subitems)
+            NextCell = CurrentRow.SubItems.Item(10) ' On same line
+            NextCellRow = CurrentRow
+            PreviousCell = CurrentRow.SubItems.Item(8) ' On same line 
+            PreviousCellRow = CurrentRow
+            MEUpdate = False
+            TEUpdate = False
             FavoriteUpdate = True
+            IgnoredBPUpdate = False
+            OwnedTypeUpdate = False
+        ElseIf iSubIndex = 10 Then ' Ignored combo
+            ' Set the next and previous ME boxes (subitems)
+            NextCell = NextRow.SubItems.Item(5) ' On next line 
+            NextCellRow = NextRow
+            PreviousCell = CurrentRow.SubItems.Item(9) ' On same line 
+            PreviousCellRow = CurrentRow
+            MEUpdate = False
+            TEUpdate = False
+            FavoriteUpdate = False
+            IgnoredBPUpdate = True
+            OwnedTypeUpdate = False
         Else
             NextCell = Nothing
             PreviousCell = Nothing
@@ -1980,14 +2050,32 @@ Tabs:
                 .Focus()
             End With
             cmbEdit.Visible = False
-        Else ' Favorites
+        Else ' OwnedType/Favorites/Ignored
             With cmbEdit
+                If OwnedTypeUpdate Then
+                    .Items.Clear()
+                    If CurrentRow.SubItems.Item(3).Text = "T1" Or CurrentRow.SubItems.Item(3).Text = "T2" Then
+                        .Items.Add("BPO") ' Only T1 and T2 have BPOs
+                    End If
+                    .Items.Add("BPC")
+                    If CurrentRow.SubItems.Item(3).Text = "T2" Then
+                        ' Only invented BPCs are T2, T3 can be just stored as a regular BPC
+                        .Items.Add("Invented BPC")
+                    End If
+                    .Items.Add("Unowned")
+                Else
+                    .Items.Clear()
+                    .Items.Add("Yes")
+                    .Items.Add("No")
+                End If
+
                 .Hide()
                 .SetBounds(lLeft + lstBPs.Left, CurrentCell.Bounds.Top + _
-                           lstBPs.Top, lWidth, CurrentCell.Bounds.Height)
+                            lstBPs.Top, lWidth, CurrentCell.Bounds.Height)
                 .Text = CurrentCell.Text
                 .Show()
                 .Focus()
+
             End With
             txtBPEdit.Visible = False
         End If

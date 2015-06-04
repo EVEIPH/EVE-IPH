@@ -1564,7 +1564,7 @@ Public Class Blueprint
         ' Get and set the invention chance
         InventionChance = SetInventionChance(UseTypical)
 
-        ' Use the max runs for the T2 item and this should be the invented runs for one bpc - TODO check industry_products for this value as quantity
+        ' Use the max runs for the T2 item and this should be the invented runs for one bpc - TODO check industry_products for this value as quantity (check bp management logic for code sample)
         If TechLevel = BlueprintTechLevel.T2 Then
             SingleInventedBPCRuns = MaxProductionLimit + InventionDecryptor.RunMod
         Else
