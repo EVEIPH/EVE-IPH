@@ -1168,7 +1168,9 @@ Public Class Blueprint
 
     ' Sets all price data for the user to get on this blueprint, Set public so can reset with fees/taxes
     Public Sub SetPriceData(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean)
-        Dim TaxesFeesUsage As Double = 0
+        Dim TaxesFees As Double = 0
+        Dim TotalUsage As Double = 0
+        Dim ComponentUsage As Double = 0
         Dim TempInventionCosts As Double = 0
         Dim TempCopyCosts As Double = 0
 
@@ -1184,14 +1186,14 @@ Public Class Blueprint
             BPBrokerFees = 0
         End If
 
-        TaxesFeesUsage = BPTaxes + BPBrokerFees + ManufacturingFacilityUsage
+        TaxesFees = BPTaxes + BPBrokerFees
 
         If ComponentManufacturingFacility.IncludeActivityUsage Then
-            TaxesFeesUsage += ComponentFacilityUsage
+            ComponentUsage += ComponentFacilityUsage
         End If
 
         If CapitalComponentManufacturingFacility.IncludeActivityUsage Then
-            TaxesFeesUsage += CapComponentFacilityUsage
+            ComponentUsage += CapComponentFacilityUsage
         End If
 
         ' Finalize invention and copying usage and total cost of all invention
@@ -1215,9 +1217,16 @@ Public Class Blueprint
             TempCopyCosts = 0
         End If
 
-        ' Totals
-        TotalRawCost = RawMaterials.GetTotalMaterialsCost + TempInventionCosts + TempCopyCosts + TaxesFeesUsage + AdditionalCosts
-        TotalComponentCost = ComponentMaterials.GetTotalMaterialsCost + TempInventionCosts + TempCopyCosts + TaxesFeesUsage + AdditionalCosts
+        TotalUsage = ManufacturingFacilityUsage + ComponentUsage + InventionUsage + CopyUsage
+
+        ' Totals 
+        TotalRawCost = RawMaterials.GetTotalMaterialsCost + TempInventionCosts + TempCopyCosts + TaxesFees + AdditionalCosts + TotalUsage
+        TotalComponentCost = ComponentMaterials.GetTotalMaterialsCost + TempInventionCosts + TempCopyCosts + TaxesFees + AdditionalCosts + (TotalUsage - ComponentUsage) ' don't build components
+
+        ' Don't include usage in the total cost above but if we are doing build/buy add it back
+        If BuildBuy Then
+            TotalComponentCost += ComponentUsage
+        End If
 
         ' Profit market cost - total cost of mats and invention and fees
         TotalRawProfit = ItemMarketCost - TotalRawCost

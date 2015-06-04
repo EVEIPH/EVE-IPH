@@ -3803,7 +3803,7 @@ NoBonus:
             RawCostSplit.SplitValue = SelectedBlueprint.GetManufacturingFacilityUsage
             f1.CostSplits.Add(RawCostSplit)
 
-            If SelectedBlueprint.HasComponents Then
+            If (SelectedBlueprint.HasComponents And chkBPBuildBuy.Checked = True) Or MaterialType = "Raw" Then
                 ' Component Facility Usage
                 RawCostSplit.SplitName = "Component Facility Usage"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage

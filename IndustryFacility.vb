@@ -55,6 +55,11 @@ Public Class IndustryFacility
         Dim rsLoader As SQLiteDataReader
         Dim Defaults As New ProgramSettings
 
+        ' First, figure out the type of facility if the type is set to None (bug fix for now)
+
+
+
+
         ' Only look up factory if we have an id
         If SearchFacilitySettings.Facility = "" Then
             ' Set it to Jita
@@ -100,7 +105,8 @@ Public Class IndustryFacility
 
         ' When loading a POS Facility with multi-use or Component array, which allows 'All' then do special processing
         With SearchFacilitySettings
-            If .FacilityType = POSFacility And (.Facility = "All" Or .Facility = "Component" Or .Facility = "Large" Or .Facility = "Equipment") Then
+            If .FacilityType = POSFacility And (.Facility = "All" Or .Facility = "Component" Or .Facility = "Large" _
+                                                Or .Facility = "Equipment") Then
                 ' Set the name to what was sent, save the sent info, and exit. This will only happen with the manufacturing tab section
                 SQL = "SELECT '" & .Facility & "' AS FACILITY_NAME, "
                 ' Need to load location from the settings since the location is specific to the user
