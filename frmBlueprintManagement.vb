@@ -156,13 +156,13 @@ Public Class frmBlueprintManagement
             chkMarkAsCopy.Checked = False
             chkMarkAsCopy.Enabled = False
             Call DisableMETE(True)
-            chkDisableMETE.Enabled = False
+            chkEnableMETE.Enabled = False
         Else
             chkMarkAsCopy.Enabled = True
-            If Not chkDisableMETE.Checked Then
+            If Not chkEnableMETE.Checked Then
                 Call DisableMETE(False)
             End If
-            chkDisableMETE.Enabled = True
+            chkEnableMETE.Enabled = True
         End If
     End Sub
 
@@ -422,8 +422,8 @@ Public Class frmBlueprintManagement
         Me.Hide()
     End Sub
 
-    Private Sub chkDisableMETE_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkDisableMETE.CheckedChanged
-        Call DisableMETE(chkDisableMETE.Checked)
+    Private Sub chkDisableMETE_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkEnableMETE.CheckedChanged
+        Call DisableMETE(chkEnableMETE.Checked)
     End Sub
 
     Private Sub DisableMETE(Value As Boolean)
@@ -536,7 +536,7 @@ Public Class frmBlueprintManagement
         txtBPSearch.Text = ""
 
         ' Start out not enabling this incase people accidently hit it
-        chkDisableMETE.Checked = True
+        chkEnableMETE.Checked = True
         Call DisableMETE(True)
 
         FirstLoad = False
@@ -1406,7 +1406,7 @@ Public Class frmBlueprintManagement
 
             If rbtnMarkasOwned.Checked = True Then
                 ' Need to add selected blueprints to the character blueprints table, and set the ME and TE's as given or as stored
-                If chkDisableMETE.Checked = True Then
+                If chkEnableMETE.Checked = True Then
                     ' Need to use the values in the grid, not the text boxes
                     TempME = CInt(item.SubItems(5).Text)
                     TempTE = CInt(item.SubItems(6).Text)
@@ -2151,4 +2151,47 @@ Tabs:
 
 #End Region
 
+    Private Sub frmBlueprintManagement_Load(sender As System.Object, e As System.EventArgs) Handles MyBase.Load
+
+    End Sub
+
+    Private Sub chkMarkasFavorite_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMarkasFavorite.CheckedChanged
+
+    End Sub
+
+    Private Sub gbUpdateOptions_Enter(sender As System.Object, e As System.EventArgs) Handles gbUpdateOptions.Enter
+
+    End Sub
+
+    Private Sub lblBPME_Click(sender As System.Object, e As System.EventArgs) Handles lblBPME.Click
+
+    End Sub
+
+    Private Sub lblBPTE_Click(sender As System.Object, e As System.EventArgs) Handles lblBPTE.Click
+
+    End Sub
+
+    Private Sub gbBackup_Enter(sender As System.Object, e As System.EventArgs) Handles gbBackup.Enter
+
+    End Sub
+
+    Private Sub grpScanAssets_Enter(sender As System.Object, e As System.EventArgs) Handles grpScanAssets.Enter
+
+    End Sub
+
+    Private Sub gbBPTextSearch_Enter(sender As System.Object, e As System.EventArgs) Handles gbBPTextSearch.Enter
+
+    End Sub
+
+    Private Sub gbRace_Enter(sender As System.Object, e As System.EventArgs) Handles gbRace.Enter
+
+    End Sub
+
+    Private Sub gbBlueprintTech_Enter(sender As System.Object, e As System.EventArgs) Handles gbBlueprintTech.Enter
+
+    End Sub
+
+    Private Sub gbBPSelect_Enter(sender As System.Object, e As System.EventArgs) Handles gbBPSelect.Enter
+
+    End Sub
 End Class

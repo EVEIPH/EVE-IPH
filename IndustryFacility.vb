@@ -57,7 +57,7 @@ Public Class IndustryFacility
 
         ' First, figure out the type of facility if the type is set to None (bandaid bug fix for now - don't know why saving these pos facilities saves type as "None")
         ' Only look up factory if we have an id
-        If SearchFacilitySettings.FacilityType = None And (SearchFacilitySettings.Facility <> "" Or SearchFacilitySettings.FacilityType <> None) Then
+        If SearchFacilitySettings.FacilityType = None And SearchFacilitySettings.Facility <> "" And SearchFacilitySettings.Facility <> None Then
             ' Try to look up the facility name first and if you find it, then set the type, else send it on
             SQL = "SELECT * FROM (SELECT DISTINCT ARRAY_NAME AS FACILITY_NAME, 'POS' AS FACILITY_TYPE FROM ASSEMBLY_ARRAYS UNION "
             SQL = SQL & "SELECT DISTINCT FACILITY_NAME, CASE WHEN OUTPOST = 0 THEN 'STATION' ELSE 'OUTPOST' END AS FACILITY_TYPE FROM STATION_FACILITIES) AS X "
@@ -72,46 +72,50 @@ Public Class IndustryFacility
 
             rsLoader.Close()
 
-        ElseIf SearchFacilitySettings.Facility = "" Then
+        End If
+
+        If SearchFacilitySettings.Facility = "" Or SearchFacilitySettings.FacilityType = None Then
+
             ' Set it to default for the production type, use BP settings
             Select Case SearchFacilitySettings.ProductionType
                 Case IndustryType.BoosterManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPBoosterManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPBoosterManufacturingFacility)
                 Case IndustryType.CapitalComponentManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPCapitalComponentManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCapitalComponentManufacturingFacility)
                 Case IndustryType.CapitalManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPCapitalManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCapitalManufacturingFacility)
                 Case IndustryType.ComponentManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPComponentManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPComponentManufacturingFacility)
                 Case IndustryType.Copying
-                    SearchFacilitySettings.Facility = DefaultBPCopyFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCopyFacility)
                 Case IndustryType.Invention
-                    SearchFacilitySettings.Facility = DefaultBPInventionFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPInventionFacility)
                 Case IndustryType.Manufacturing
-                    SearchFacilitySettings.Facility = DefaultBPManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPManufacturingFacility)
                 Case IndustryType.NoPOSManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPNoPOSFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPNoPOSFacility)
                 Case IndustryType.POSFuelBlockManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPPOSFuelBlockFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSFuelBlockFacility)
                 Case IndustryType.POSLargeShipManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPPOSLargeShipFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSLargeShipFacility)
                 Case IndustryType.POSModuleManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPPOSModuleFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSModuleFacility)
                 Case IndustryType.SubsystemManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPSubsystemManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPSubsystemManufacturingFacility)
                 Case IndustryType.SuperManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPSuperManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPSuperManufacturingFacility)
                 Case IndustryType.T3CruiserManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPT3CruiserManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3CruiserManufacturingFacility)
                 Case IndustryType.T3DestroyerManufacturing
-                    SearchFacilitySettings.Facility = DefaultBPT3DestroyerManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3DestroyerManufacturingFacility)
                 Case IndustryType.T3Invention
-                    SearchFacilitySettings.Facility = DefaultBPT3InventionFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3InventionFacility)
                 Case Else
-                    SearchFacilitySettings.Facility = DefaultBPManufacturingFacility.FacilityName
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPManufacturingFacility)
             End Select
+
         ElseIf SearchFacilitySettings.Facility = None Then
-            ' If none, then set the facility based on entry and exit
+            ' If none, then set the facility based on entry and exit (could be none for invention and copy)
             With SearchFacilitySettings
                 FacilityID = 0 ' not used
                 FacilityName = .Facility
@@ -398,6 +402,39 @@ Public Class IndustryFacility
         Call AllSettings.FacilitySaveSettings(SaveSettings, ProductionType, Tab)
 
     End Sub
+
+    ' Loads the facility settings from a current facility
+    Public Sub LoadFacilitySettingsfromFacility(SentFacility As IndustryFacility, DefaultFlag As Boolean)
+
+        Call LoadFacility(GetFacilitySettingsfromFacility(SentFacility), DefaultFlag)
+
+    End Sub
+
+    Private Function GetFacilitySettingsfromFacility(SentFacility As IndustryFacility) As FacilitySettings
+        Dim TempSettings As New FacilitySettings
+
+        With TempSettings
+            .Facility = SentFacility.FacilityName
+            .FacilityType = SentFacility.FacilityType
+            .ActivityID = SentFacility.ActivityID
+            .ProductionType = SentFacility.ProductionType
+            .MaterialMultiplier = SentFacility.MaterialMultiplier
+            .TimeMultiplier = SentFacility.TimeMultiplier
+
+            .SolarSystemID = SentFacility.SolarSystemID
+            .SolarSystemName = SentFacility.SolarSystemName
+            .RegionID = SentFacility.RegionID
+            .RegionName = SentFacility.RegionName
+            .ActivityCostperSecond = SentFacility.ActivityCostPerSecond
+
+            .IncludeActivityCost = SentFacility.IncludeActivityCost
+            .IncludeActivityTime = SentFacility.IncludeActivityTime
+            .IncludeActivityUsage = SentFacility.IncludeActivityUsage
+        End With
+
+        Return TempSettings
+
+    End Function
 
     ' Compares the sent facility to the current one and returns a boolean on equivlancy
     Public Function IsEqual(CompareFacility As IndustryFacility, Optional CompareCostCheck As Boolean = False, Optional CompareTimeCheck As Boolean = False) As Boolean

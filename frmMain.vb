@@ -3161,42 +3161,42 @@ NoBonus:
 
         If Not LoadDefault Then
             ' Need to set the settings for each based on the current selected facility then load it from that
-            Call SelectedBPManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPManufacturingFacility), LoadDefault)
-            Call SelectedBPCapitalManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCapitalManufacturingFacility), LoadDefault)
-            Call SelectedBPSuperManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPSuperManufacturingFacility), LoadDefault)
-            Call SelectedBPT3CruiserManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3CruiserManufacturingFacility), LoadDefault)
-            Call SelectedBPT3DestroyerManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3DestroyerManufacturingFacility), LoadDefault)
-            Call SelectedBPBoosterManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPBoosterManufacturingFacility), LoadDefault)
-            Call SelectedBPSubsystemManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPSubsystemManufacturingFacility), LoadDefault)
-            Call SelectedBPComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPComponentManufacturingFacility), LoadDefault)
-            Call SelectedBPCapitalComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCapitalComponentManufacturingFacility), LoadDefault)
-            Call SelectedBPCopyFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCopyFacility), LoadDefault)
-            Call SelectedBPInventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPInventionFacility), LoadDefault)
-            Call SelectedBPT3InventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3InventionFacility), LoadDefault)
-            Call SelectedBPNoPOSFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPNoPOSFacility), LoadDefault)
+            Call SelectedBPManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPManufacturingFacility, LoadDefault)
+            Call SelectedBPCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalManufacturingFacility, LoadDefault)
+            Call SelectedBPSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSuperManufacturingFacility, LoadDefault)
+            Call SelectedBPT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3CruiserManufacturingFacility, LoadDefault)
+            Call SelectedBPT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3DestroyerManufacturingFacility, LoadDefault)
+            Call SelectedBPBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPBoosterManufacturingFacility, LoadDefault)
+            Call SelectedBPSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSubsystemManufacturingFacility, LoadDefault)
+            Call SelectedBPComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPComponentManufacturingFacility, LoadDefault)
+            Call SelectedBPCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalComponentManufacturingFacility, LoadDefault)
+            Call SelectedBPCopyFacility.LoadFacilitySettingsfromFacility(SelectedBPCopyFacility, LoadDefault)
+            Call SelectedBPInventionFacility.LoadFacilitySettingsfromFacility(SelectedBPInventionFacility, LoadDefault)
+            Call SelectedBPT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedBPT3InventionFacility, LoadDefault)
+            Call SelectedBPNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedBPNoPOSFacility, LoadDefault)
 
             ' Load these as special cases
-            Call SelectedBPPOSFuelBlockFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSFuelBlockFacility), LoadDefault)
-            Call SelectedBPPOSLargeShipFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSLargeShipFacility), LoadDefault)
-            Call SelectedBPPOSModuleFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSModuleFacility), LoadDefault)
+            Call SelectedBPPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSFuelBlockFacility, LoadDefault)
+            Call SelectedBPPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSLargeShipFacility, LoadDefault)
+            Call SelectedBPPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSModuleFacility, LoadDefault)
 
             ' Load up the Manufacturing Tab facilities
-            Call SelectedCalcBaseManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcBaseManufacturingFacility), LoadDefault)
-            Call SelectedCalcCapitalManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCapitalManufacturingFacility), LoadDefault)
-            Call SelectedCalcSuperManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcSuperManufacturingFacility), LoadDefault)
-            Call SelectedCalcT3CruiserManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3CruiserManufacturingFacility), LoadDefault)
-            Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3DestroyerManufacturingFacility), LoadDefault)
-            Call SelectedCalcBoosterManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcBoosterManufacturingFacility), LoadDefault)
-            Call SelectedCalcSubsystemManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcSubsystemManufacturingFacility), LoadDefault)
-            Call SelectedCalcComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcComponentManufacturingFacility), LoadDefault)
-            Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCapitalComponentManufacturingFacility), LoadDefault)
-            Call SelectedCalcCopyFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCopyFacility), LoadDefault)
-            Call SelectedCalcInventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcInventionFacility), LoadDefault)
-            Call SelectedCalcT3InventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3InventionFacility), LoadDefault)
-            Call SelectedCalcNoPOSFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcNoPOSFacility), LoadDefault)
-            Call SelectedCalcPOSFuelBlockFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSFuelBlockFacility), LoadDefault)
-            Call SelectedCalcPOSLargeShipFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSLargeShipFacility), LoadDefault)
-            Call SelectedCalcPOSModuleFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSModuleFacility), LoadDefault)
+            Call SelectedCalcBaseManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBaseManufacturingFacility, LoadDefault)
+            Call SelectedCalcCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalManufacturingFacility, LoadDefault)
+            Call SelectedCalcSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSuperManufacturingFacility, LoadDefault)
+            Call SelectedCalcT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3CruiserManufacturingFacility, LoadDefault)
+            Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3DestroyerManufacturingFacility, LoadDefault)
+            Call SelectedCalcBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBoosterManufacturingFacility, LoadDefault)
+            Call SelectedCalcSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSubsystemManufacturingFacility, LoadDefault)
+            Call SelectedCalcComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcComponentManufacturingFacility, LoadDefault)
+            Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalComponentManufacturingFacility, LoadDefault)
+            Call SelectedCalcCopyFacility.LoadFacilitySettingsfromFacility(SelectedCalcCopyFacility, LoadDefault)
+            Call SelectedCalcInventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcInventionFacility, LoadDefault)
+            Call SelectedCalcT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3InventionFacility, LoadDefault)
+            Call SelectedCalcNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedCalcNoPOSFacility, LoadDefault)
+            Call SelectedCalcPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSFuelBlockFacility, LoadDefault)
+            Call SelectedCalcPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSLargeShipFacility, LoadDefault)
+            Call SelectedCalcPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSModuleFacility, LoadDefault)
 
         Else
             Call SelectedBPManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Manufacturing, BPTab), LoadDefault)
@@ -3323,33 +3323,6 @@ NoBonus:
         'End If
 
     End Sub
-
-    ' Loads the facility settings from a current facility
-    Private Function LoadFacilitySettingsfromFacility(SentFacility As IndustryFacility) As FacilitySettings
-        Dim TempSettings As New FacilitySettings
-
-        With TempSettings
-            .Facility = SentFacility.FacilityName
-            .FacilityType = SentFacility.FacilityType
-            .ActivityID = SentFacility.ActivityID
-            .ProductionType = SentFacility.ProductionType
-            .MaterialMultiplier = SentFacility.MaterialMultiplier
-            .TimeMultiplier = SentFacility.TimeMultiplier
-
-            .SolarSystemID = SentFacility.SolarSystemID
-            .SolarSystemName = SentFacility.SolarSystemName
-            .RegionID = SentFacility.RegionID
-            .RegionName = SentFacility.RegionName
-            .ActivityCostperSecond = SentFacility.ActivityCostPerSecond
-
-            .IncludeActivityCost = SentFacility.IncludeActivityCost
-            .IncludeActivityTime = SentFacility.IncludeActivityTime
-            .IncludeActivityUsage = SentFacility.IncludeActivityUsage
-        End With
-
-        Return TempSettings
-
-    End Function
 
     ' Loads the team settings from a current team
     Private Function LoadTeamSettingsfromTeam(SentTeam As IndustryTeam, SentTab As String) As TeamSettings
