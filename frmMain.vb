@@ -95,7 +95,7 @@ Public Class frmMain
 
     ' BP stats
     Private OwnedBP As Boolean
-    Private OwnedBPType As BPOwnedType
+
     ' For T2 BPOs mainly so we can load the stored ME/TE if it changes
     Private OwnedBPME As String
     Private OwnedBPPE As String
@@ -572,11 +572,6 @@ Public Class frmMain
         If UserApplicationSettings.ShowToolTips Then
             Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
             Me.ttMain.IsBalloon = True
-        End If
-
-        ' Temp addition
-        If UserApplicationSettings.IgnoreRareandShipSkinBPs Then
-            Call SetRareandShipSkinBPs()
         End If
 
         ' Nothing in shopping List
@@ -1171,7 +1166,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_GROUP_SPECIALTIES.GROUP_ID IN " & GroupIDList & " "
         End If
         SQL = SQL & "AND TEAM_ACTIVITY_ID = " & CStr(Activity) & " "
-        If Tab = BPTab And UserApplicationSettings.IgnoreRareandShipSkinBPs And cmbBPFacilitySystem.Text <> "" Then
+        If Tab = BPTab And cmbBPFacilitySystem.Text <> "" Then
             ' Link the query of teams to only that system
             SQL = SQL & "AND INDUSTRY_TEAMS.SOLAR_SYSTEM_NAME = '" & cmbBPFacilitySystem.Text & "' "
         End If
@@ -1184,7 +1179,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_GROUP_SPECIALTIES.GROUP_ID IN " & GroupIDList & " "
         End If
         SQL = SQL & "AND TEAM_ACTIVITY_ID = " & CStr(Activity) & " "
-        If Tab = BPTab And UserApplicationSettings.IgnoreRareandShipSkinBPs And cmbBPFacilitySystem.Text <> "" Then
+        If Tab = BPTab And cmbBPFacilitySystem.Text <> "" Then
             ' Link the query of teams to only that system
             SQL = SQL & "AND INDUSTRY_TEAMS_AUCTIONS.SOLAR_SYSTEM_NAME = '" & cmbBPFacilitySystem.Text & "' "
         End If
@@ -4841,8 +4836,27 @@ NoBonus:
                     readerBP = DBCommand.ExecuteReader
                     readerBP.Read()
 
-                    ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value. BP type is BPO (-1), also all components are saved as BPOs
-                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, BPType.Original, BPOwnedType.BPO)
+                    ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value, but set the type depending on the bp loaded
+                    Dim TempBPType As BPType
+                    Dim AdditionalCost As Double
+
+                    If (SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True) _
+                        Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T1 Then
+                        ' T2 BPO or T1 BPO
+                        TempBPType = BPType.Original
+                    Else
+                        ' Remaining T2 and T3 must be invited
+                        TempBPType = BPType.InventedBPC
+                    End If
+
+                    ' Check additional costs for saving with this bp
+                    If IsNumeric(txtBPAddlCosts.Text) Then
+                        AdditionalCost = CDbl(txtBPAddlCosts.Text)
+                    Else
+                        AdditionalCost = 0
+                    End If
+
+                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, TempBPType, False, False, AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
@@ -6538,6 +6552,10 @@ Tabs:
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
+    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
+        Call ResetBlueprintCombo(True, True, True, True, True, True)
+    End Sub
+
     Private Sub rbtnShipBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPShipBlueprints.CheckedChanged
         Call ResetBlueprintCombo(True, True, True, False, True, True)
     End Sub
@@ -6874,6 +6892,8 @@ Tabs:
         chkBPStoryline.Checked = UserBPTabSettings.TechStorylineCheck
         chkBPPirateFaction.Checked = UserBPTabSettings.TechPirateCheck
 
+        chkBPIncludeIgnoredBPs.Checked = UserBPTabSettings.IncludeIgnoredBPs
+
         chkBPSmall.Checked = UserBPTabSettings.SmallCheck
         chkBPMedium.Checked = UserBPTabSettings.MediumCheck
         chkBPLarge.Checked = UserBPTabSettings.LargeCheck
@@ -7085,6 +7105,8 @@ Tabs:
         TempSettings.TechFactionCheck = chkBPNavyFaction.Checked
         TempSettings.TechPirateCheck = chkBPPirateFaction.Checked
 
+        TempSettings.IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+
         TempSettings.SmallCheck = chkBPSmall.Checked
         TempSettings.MediumCheck = chkBPMedium.Checked
         TempSettings.LargeCheck = chkBPLarge.Checked
@@ -7152,7 +7174,6 @@ Tabs:
     ' Saves the BP data
     Private Sub btnBPSaveBP_Click(sender As System.Object, e As System.EventArgs) Handles btnBPSaveBP.Click
         Dim AdditionalCost As Double
-        Dim SaveBPOwnedType As BPOwnedType
         Dim SaveBPType As BPType
 
         ' Check additional costs for saving with this bp
@@ -7164,23 +7185,17 @@ Tabs:
 
         ' Save the BP
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
-                ' If they check ignore invention, save it as a T2 BPO
-                If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked Then
-                    SaveBPOwnedType = BPOwnedType.BPO
-                    SaveBPType = BPType.Original
-                Else
-                    ' T2/T3 copies
-                    SaveBPOwnedType = BPOwnedType.InventedBPC
-                    SaveBPType = BPType.Copy
-                End If
-            Else
-                ' Always save as BPOs
-                SaveBPOwnedType = BPOwnedType.BPO
+            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True  Then
+                ' T2 BPO 
                 SaveBPType = BPType.Original
+            ElseIf SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                ' Save T2/T3 an invented BPC, since if they aren't ignoring invention they have to use a decryptor or invention to get it
+                SaveBPType = BPType.InventedBPC
+            Else ' Everything else is a copy
+                SaveBPType = BPType.Copy
             End If
 
-            Call UpdateBPinDB(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetBPName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, SaveBPOwnedType, False, AdditionalCost)
+            Call UpdateBPinDB(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetBPName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, False, False, AdditionalCost)
 
             Call RefreshBP()
 
@@ -7294,7 +7309,7 @@ Tabs:
         End If
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
-        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, OWNED_TYPE, RUNS"
+        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS"
         SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
         SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 "
 
@@ -7308,7 +7323,7 @@ Tabs:
         Else
             ' Try again with corp
             readerBP.Close()
-            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, OWNED_TYPE, RUNS"
+            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS"
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED = 2 AND OWNED <> 0 "
 
@@ -7329,12 +7344,10 @@ Tabs:
             OwnedBPPE = txtBPTE.Text
             OwnedBP = True
             AddlCost = readerBP.GetDouble(2)
-            OwnedBPType = CType(readerBP.GetInt32(3), BPOwnedType)
-            OwnedBPRuns = readerBP.GetInt32(4)
+            OwnedBPRuns = readerBP.GetInt32(3)
         Else
             OwnedBP = False
             AddlCost = 0
-            OwnedBPType = BPOwnedType.NotOwned
             OwnedBPRuns = 1
 
             If TempTech = 1 Then ' All T1
@@ -7359,7 +7372,7 @@ Tabs:
             End If
         End If
 
-        If TempTech <> 1 And (OwnedBPType = BPOwnedType.InventedBPC Or OwnedBPType = BPOwnedType.NotOwned) Then
+        If TempTech <> 1 Then
             Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
 
@@ -7455,7 +7468,7 @@ Tabs:
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3
         If NewBP Then
-            If OwnedBPType = BPOwnedType.InventedBPC Then
+            If True Then
                 ' Load the decryptor based on ME/TE
                 Dim TempD As New DecryptorList
                 LoadingInventionDecryptors = True
@@ -7476,37 +7489,37 @@ Tabs:
             Call LoadRelicTypes(BPTypeID)
         End If
 
-            ' Make sure everything is enabled on first BP load
-            If ResetBPTab Then
-                btnBPRefreshBP.Enabled = True
-                btnBPCopyMatstoClip.Enabled = True
-                btnBPAddBPMatstoShoppingList.Enabled = True
-                txtBPRuns.Enabled = True
-                txtBPAddlCosts.Enabled = True
-                chkBPBuildBuy.Enabled = True
-                txtBPNumBPs.Enabled = True
-                txtBPLines.Enabled = True
-                chkBPFacilityIncludeUsage.Enabled = True
-                chkBPTaxes.Enabled = True
-                chkBPBrokerFees.Enabled = True
-                chkBPPricePerUnit.Enabled = True
+        ' Make sure everything is enabled on first BP load
+        If ResetBPTab Then
+            btnBPRefreshBP.Enabled = True
+            btnBPCopyMatstoClip.Enabled = True
+            btnBPAddBPMatstoShoppingList.Enabled = True
+            txtBPRuns.Enabled = True
+            txtBPAddlCosts.Enabled = True
+            chkBPBuildBuy.Enabled = True
+            txtBPNumBPs.Enabled = True
+            txtBPLines.Enabled = True
+            chkBPFacilityIncludeUsage.Enabled = True
+            chkBPTaxes.Enabled = True
+            chkBPBrokerFees.Enabled = True
+            chkBPPricePerUnit.Enabled = True
 
-                btnBPBack.Enabled = True
-                btnBPForward.Enabled = True
+            btnBPBack.Enabled = True
+            btnBPForward.Enabled = True
 
-                ResetBPTab = False ' Reset
-            End If
+            ResetBPTab = False ' Reset
+        End If
 
-            readerBP.Close()
-            readerBP = Nothing
-            DBCommand = Nothing
+        readerBP.Close()
+        readerBP = Nothing
+        DBCommand = Nothing
 
-            Application.DoEvents()
+        Application.DoEvents()
 
-            ' Update the grid
-            Call UpdateBPGrids(BPTypeID, TempTech, NewBP, ItemGroupID, ItemCategoryID)
-            txtBPRuns.SelectAll()
-            txtBPRuns.Focus()
+        ' Update the grid
+        Call UpdateBPGrids(BPTypeID, TempTech, NewBP, ItemGroupID, ItemCategoryID)
+        txtBPRuns.SelectAll()
+        txtBPRuns.Focus()
 
     End Sub
 
@@ -7823,7 +7836,7 @@ Tabs:
 
         ' Show and update labels for T2 if selected
         If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-            If OwnedBP And NewBPSelection And Not CType(BPOwnedType.InventedBPC, Boolean) Then
+            If OwnedBP And NewBPSelection Then
                 ' T2 BPO owner
                 FirstLoad = True
                 Call ResetInventionBoxes()
@@ -8219,14 +8232,9 @@ ExitForm:
 
         SQL = SQL & SizesClause
 
-        ' Temp for ignoring all the special edition stuff
-        If RareandShipSkinBPs.Count > 0 Then
-            SQL = SQL & " AND ALL_BLUEPRINTS.BLUEPRINT_ID NOT IN ("
-            For i = 0 To RareandShipSkinBPs.Count - 1
-                SQL = SQL & CStr(RareandShipSkinBPs(i)) & ","
-            Next
-            SQL = SQL.Substring(0, Len(SQL) - 1)
-            SQL = SQL & ")"
+        ' Ignore flag
+        If chkBPIncludeIgnoredBPs.Checked = False Then
+            SQL = SQL & "AND IGNORE = 0 "
         End If
 
         SQL = SQL & " ORDER BY X"
@@ -18527,15 +18535,8 @@ ExitCalc:
 
         End If
 
-        ' Temp for ignoring all the special edition stuff
-        If RareandShipSkinBPs.Count > 0 Then
-            WhereClause = WhereClause & " AND X.BP_ID NOT IN ("
-            For i = 0 To RareandShipSkinBPs.Count - 1
-                WhereClause = WhereClause & CStr(RareandShipSkinBPs(i)) & ","
-            Next
-            WhereClause = WhereClause.Substring(0, Len(WhereClause) - 1)
-            WhereClause = WhereClause & ")"
-        End If
+        ' Only bps not ignored - no option for this yet
+        WhereClause = WhereClause & " AND IGNORE = 0 "
 
         Return WhereClause
 
@@ -18818,8 +18819,8 @@ ExitCalc:
         Public ItemName As String
         Public TechLevel As String
         Public Owned As String
-        Public BPME As Double
-        Public BPTE As Double
+        Public BPME As Integer
+        Public BPTE As Integer
         Public Inputs As String
         Public Profit As Double
         Public ProfitPercent As Double

@@ -145,7 +145,7 @@ Public Class ShoppingList
                             ' Find the built item in the build list for this item - only need name and ME to look up
                             TempBuiltItem.ItemTypeID = .GetMaterialList(i).GetMaterialTypeID
                             TempBuiltItem.ItemName = .GetMaterialList(i).GetMaterialName
-                            TempBuiltItem.BuildME = CLng(.GetMaterialList(i).GetItemME)
+                            TempBuiltItem.BuildME = CInt(.GetMaterialList(i).GetItemME)
 
                             Call TotalBuildList.SetItemToFind(TempBuiltItem)
                             FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
@@ -1473,8 +1473,8 @@ Public Class BuiltItem
     Public ItemName As String
     Public ItemQuantity As Long
     Public ItemVolume As Double
-    Public BuildME As Double
-    Public BuildTE As Double
+    Public BuildME As Integer
+    Public BuildTE As Integer
     Public BuildMaterials As Materials
     ' These two fields are for shopping list update functions
     Public FacilityMEModifier As Double

@@ -824,6 +824,7 @@ Partial Class frmMain
         Me.chkSystems5 = New System.Windows.Forms.CheckBox()
         Me.chkSystems3 = New System.Windows.Forms.CheckBox()
         Me.chkSystems1 = New System.Windows.Forms.CheckBox()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.chkSplitPrices = New System.Windows.Forms.CheckBox()
         Me.gbSplitPrices = New System.Windows.Forms.GroupBox()
@@ -1004,6 +1005,8 @@ Partial Class frmMain
         Me.rbtnBPShipBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPDeployableBlueprints = New System.Windows.Forms.RadioButton()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
+        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
         Me.lblBPTotalUnits = New System.Windows.Forms.Label()
         Me.lblBPTaxes = New System.Windows.Forms.Label()
@@ -1143,6 +1146,7 @@ Partial Class frmMain
         Me.cmbBPBlueprintSelection = New System.Windows.Forms.ComboBox()
         Me.tabMain = New System.Windows.Forms.TabControl()
         Me.tabPI = New System.Windows.Forms.TabPage()
+        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
         Me.chkPILava = New System.Windows.Forms.CheckBox()
@@ -1154,19 +1158,16 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
-        Me.cmbCalcManufacturingTeamActivity = New System.Windows.Forms.ComboBox()
-        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
-        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
-        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
+        Me.cmbCalcManufacturingTeamActivity = New System.Windows.Forms.ComboBox()
+        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.chkBPIncludeIgnoredBPs = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -9484,6 +9485,19 @@ Partial Class frmMain
         Me.chkSystems1.Text = "Jita"
         Me.chkSystems1.UseVisualStyleBackColor = true
         '
+        'lstPricesView
+        '
+        Me.lstPricesView.FullRowSelect = true
+        Me.lstPricesView.GridLines = true
+        Me.lstPricesView.HideSelection = false
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = false
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = false
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
         'txtPriceItemFilter
         '
         Me.txtPriceItemFilter.Location = New System.Drawing.Point(80, 581)
@@ -11265,6 +11279,7 @@ Partial Class frmMain
         '
         'gbBPBlueprintType
         '
+        Me.gbBPBlueprintType.Controls.Add(Me.chkBPIncludeIgnoredBPs)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPCelestialsBlueprints)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPMiscBlueprints)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPStructureBlueprints)
@@ -11472,6 +11487,34 @@ Partial Class frmMain
         Me.lblBPSelectBlueprint.Size = New System.Drawing.Size(93, 13)
         Me.lblBPSelectBlueprint.TabIndex = 0
         Me.lblBPSelectBlueprint.Text = "Selected Blueprint"
+        '
+        'lstBPComponentMats
+        '
+        Me.lstBPComponentMats.FullRowSelect = true
+        Me.lstBPComponentMats.GridLines = true
+        Me.lstBPComponentMats.HideSelection = false
+        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
+        Me.lstBPComponentMats.MultiSelect = false
+        Me.lstBPComponentMats.Name = "lstBPComponentMats"
+        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPComponentMats.TabIndex = 35
+        Me.lstBPComponentMats.TabStop = false
+        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
+        '
+        'lstBPRawMats
+        '
+        Me.lstBPRawMats.FullRowSelect = true
+        Me.lstBPRawMats.GridLines = true
+        Me.lstBPRawMats.HideSelection = false
+        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
+        Me.lstBPRawMats.MultiSelect = false
+        Me.lstBPRawMats.Name = "lstBPRawMats"
+        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPRawMats.TabIndex = 34
+        Me.lstBPRawMats.TabStop = false
+        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
         '
         'gbBPInventionStats
         '
@@ -12965,6 +13008,20 @@ Partial Class frmMain
         Me.tabPI.Text = "Planetary Interaction"
         Me.tabPI.UseVisualStyleBackColor = true
         '
+        'MyListView6
+        '
+        Me.MyListView6.FullRowSelect = true
+        Me.MyListView6.GridLines = true
+        Me.MyListView6.HideSelection = false
+        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
+        Me.MyListView6.MultiSelect = false
+        Me.MyListView6.Name = "MyListView6"
+        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
+        Me.MyListView6.TabIndex = 75
+        Me.MyListView6.TabStop = false
+        Me.MyListView6.UseCompatibleStateImageBehavior = false
+        Me.MyListView6.View = System.Windows.Forms.View.Details
+        '
         'btnPISaveSettings
         '
         Me.btnPISaveSettings.Location = New System.Drawing.Point(315, 47)
@@ -13080,89 +13137,6 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = true
         '
-        'cmbCalcManufacturingTeamActivity
-        '
-        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = true
-        Me.cmbCalcManufacturingTeamActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
-        Me.cmbCalcManufacturingTeamActivity.Location = New System.Drawing.Point(3, 9)
-        Me.cmbCalcManufacturingTeamActivity.Name = "cmbCalcManufacturingTeamActivity"
-        Me.cmbCalcManufacturingTeamActivity.Size = New System.Drawing.Size(92, 21)
-        Me.cmbCalcManufacturingTeamActivity.TabIndex = 20
-        Me.cmbCalcManufacturingTeamActivity.Text = "Select Activity"
-        '
-        'ListOptionsMenu
-        '
-        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CalcBPStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
-        Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(167, 70)
-        '
-        'CalcBPStripMenuItem
-        '
-        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
-        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(166, 22)
-        Me.CalcBPStripMenuItem.Text = "View Market Data"
-        '
-        'IgnoreBlueprintToolStripMenuItem
-        '
-        Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
-        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(166, 22)
-        Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
-        '
-        'lstBPComponentMats
-        '
-        Me.lstBPComponentMats.FullRowSelect = true
-        Me.lstBPComponentMats.GridLines = true
-        Me.lstBPComponentMats.HideSelection = false
-        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
-        Me.lstBPComponentMats.MultiSelect = false
-        Me.lstBPComponentMats.Name = "lstBPComponentMats"
-        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPComponentMats.TabIndex = 35
-        Me.lstBPComponentMats.TabStop = false
-        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
-        '
-        'lstBPRawMats
-        '
-        Me.lstBPRawMats.FullRowSelect = true
-        Me.lstBPRawMats.GridLines = true
-        Me.lstBPRawMats.HideSelection = false
-        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
-        Me.lstBPRawMats.MultiSelect = false
-        Me.lstBPRawMats.Name = "lstBPRawMats"
-        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPRawMats.TabIndex = 34
-        Me.lstBPRawMats.TabStop = false
-        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = true
-        Me.lstPricesView.GridLines = true
-        Me.lstPricesView.HideSelection = false
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = false
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = false
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
-        '
-        'MyListView6
-        '
-        Me.MyListView6.FullRowSelect = true
-        Me.MyListView6.GridLines = true
-        Me.MyListView6.HideSelection = false
-        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = false
-        Me.MyListView6.Name = "MyListView6"
-        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
-        Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = false
-        Me.MyListView6.UseCompatibleStateImageBehavior = false
-        Me.MyListView6.View = System.Windows.Forms.View.Details
-        '
         'MyListView5
         '
         Me.MyListView5.FullRowSelect = true
@@ -13232,6 +13206,44 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
+        '
+        'cmbCalcManufacturingTeamActivity
+        '
+        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = true
+        Me.cmbCalcManufacturingTeamActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
+        Me.cmbCalcManufacturingTeamActivity.Location = New System.Drawing.Point(3, 9)
+        Me.cmbCalcManufacturingTeamActivity.Name = "cmbCalcManufacturingTeamActivity"
+        Me.cmbCalcManufacturingTeamActivity.Size = New System.Drawing.Size(92, 21)
+        Me.cmbCalcManufacturingTeamActivity.TabIndex = 20
+        Me.cmbCalcManufacturingTeamActivity.Text = "Select Activity"
+        '
+        'ListOptionsMenu
+        '
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CalcBPStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
+        Me.ListOptionsMenu.Name = "ListOptionsMenu"
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(167, 48)
+        '
+        'CalcBPStripMenuItem
+        '
+        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
+        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(166, 22)
+        Me.CalcBPStripMenuItem.Text = "View Market Data"
+        '
+        'IgnoreBlueprintToolStripMenuItem
+        '
+        Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
+        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(166, 22)
+        Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
+        '
+        'chkBPIncludeIgnoredBPs
+        '
+        Me.chkBPIncludeIgnoredBPs.AutoSize = True
+        Me.chkBPIncludeIgnoredBPs.Location = New System.Drawing.Point(98, 103)
+        Me.chkBPIncludeIgnoredBPs.Name = "chkBPIncludeIgnoredBPs"
+        Me.chkBPIncludeIgnoredBPs.Size = New System.Drawing.Size(122, 17)
+        Me.chkBPIncludeIgnoredBPs.TabIndex = 64
+        Me.chkBPIncludeIgnoredBPs.Text = "Include Ignored BPs"
+        Me.chkBPIncludeIgnoredBPs.UseVisualStyleBackColor = true
         '
         'frmMain
         '
@@ -14614,5 +14626,6 @@ End Sub
     Friend WithEvents mnuResetCRESTMarketPrices As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetCRESTIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents IgnoreBlueprintToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents chkBPIncludeIgnoredBPs As System.Windows.Forms.CheckBox
 
 End Class

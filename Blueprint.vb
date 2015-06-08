@@ -64,8 +64,8 @@ Public Class Blueprint
     ' Variables for calcuations
     Private BPProductionTime As Double ' Production Time for 1 Run of Blueprint 
     Private TotalProductionTime As Double ' Production Time for 1 run of BP plus any components (this is to compare buying components vs. making them)
-    Private iME As Double ' ME of Blueprint
-    Private iTE As Double ' TE of Blueprint
+    Private iME As Integer ' ME of Blueprint
+    Private iTE As Integer ' TE of Blueprint
     Private UserRuns As Long ' Number of runs for blueprint the user selects
     Private NumberofBPs As Integer ' Number of blueprints that the user is running
     Private NumberofProductionLines As Integer ' Number of production lines the user is using
@@ -159,7 +159,7 @@ Public Class Blueprint
     Private InventionFacility As IndustryFacility
 
     ' BP Constructor
-    Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Double, ByVal BPTE As Double,
+    Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
                    ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character, _
                    ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double, BPProductionTeam As IndustryTeam, _
                    ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionTeam As IndustryTeam, ByVal BPComponentProductionFacility As IndustryFacility, _
@@ -675,8 +675,8 @@ Public Class Blueprint
         Dim readerBP As SQLiteDataReader
         Dim readerME As SQLiteDataReader
 
-        Dim TempME As Double
-        Dim TempTE As Double
+        Dim TempME As Integer
+        Dim TempTE As Integer
         Dim OwnedBP As Boolean = False
 
         ' Recursion variables
@@ -1319,7 +1319,7 @@ Public Class Blueprint
     End Function
 
     ' Gets the ME/TE for the BP
-    Public Sub GetMETEforBP(ByVal BlueprintID As Long, ByVal BPTech As Integer, ByRef RefME As Double, ByRef RefTE As Double, ByRef OwnedBP As Boolean)
+    Public Sub GetMETEforBP(ByVal BlueprintID As Long, ByVal BPTech As Integer, ByRef RefME As Integer, ByRef RefTE As Integer, ByRef OwnedBP As Boolean)
         Dim SQL As String
         Dim readerLookup As SQLiteDataReader
 
@@ -1329,8 +1329,8 @@ Public Class Blueprint
         readerLookup = DBCommand.ExecuteReader
 
         If readerLookup.Read Then
-            RefME = readerLookup.GetDouble(0)
-            RefTE = readerLookup.GetDouble(1)
+            RefME = readerLookup.GetInt32(0)
+            RefTE = readerLookup.GetInt32(1)
             ' Check if owned
             OwnedBP = CBool(readerLookup.GetInt64(2))
         Else

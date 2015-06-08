@@ -50,7 +50,7 @@ Public Class EVEBlueprints
 
         ' Load the blueprints
         SQL = "SELECT ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, QUANTITY, ME, TE, "
-        SQL = SQL & "RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS "
+        SQL = SQL & "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS "
         SQL = SQL & "FROM OWNED_BLUEPRINTS WHERE USER_ID = " & SearchID
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -69,15 +69,14 @@ Public Class EVEBlueprints
             TempBlueprint.typeName = readerBlueprints.GetString(3)
             TempBlueprint.flagID = readerBlueprints.GetInt32(4)
             TempBlueprint.quantity = readerBlueprints.GetInt32(5)
-            TempBlueprint.timeEfficiency = readerBlueprints.GetDouble(6)
-            TempBlueprint.materialEfficiency = readerBlueprints.GetDouble(7)
+            TempBlueprint.timeEfficiency = readerBlueprints.GetInt32(6)
+            TempBlueprint.materialEfficiency = readerBlueprints.GetInt32(7)
             TempBlueprint.runs = readerBlueprints.GetInt32(8)
-            TempBlueprint.BPType = readerBlueprints.GetInt32(9)
+            TempBlueprint.BPType = CType(readerBlueprints.GetInt32(9), BPType)
             TempBlueprint.Owned = CBool(readerBlueprints.GetInt32(10))
-            TempBlueprint.OwnedType = CType(readerBlueprints.GetInt32(11), BPOwnedType)
-            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(12))
-            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(13))
-            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(14)
+            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(11))
+            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(12))
+            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(13)
 
             ' Insert blueprint
             Blueprints.Add(TempBlueprint)
@@ -95,6 +94,7 @@ Public Class EVEBlueprints
     ' Updates Blueprints from API for the character/corp and inserts them into the Database for later queries
     Private Sub UpdateBlueprints(BlueprintType As ScanType, UpdateAPI As Boolean)
         Dim readerBlueprints As SQLiteDataReader
+        Dim readerCheck As SQLiteDataReader
         Dim SQL As String
         Dim RefreshDate As Date ' To check the update of the API.
         Dim API As New EVEAPI
@@ -177,7 +177,7 @@ Public Class EVEBlueprints
                     With IndyBlueprints(i)
 
                         ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
-                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED_TYPE FROM OWNED_BLUEPRINTS "
+                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID FROM OWNED_BLUEPRINTS "
                         SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID = " & AccountSearchID & " "
                         DBCommand = New SQLiteCommand(SQL, DB)
                         readerBlueprints = DBCommand.ExecuteReader
@@ -208,33 +208,39 @@ Public Class EVEBlueprints
                         End If
 
                         If Not IgnoreBP Then
+
+                            ' Set the correct BP_Type for the BPs they have 
+                            Dim CurrentBPType As BPType = .BPType
+                            ' If T2 and a copy, set to invented copy if the ME/TE match, else use what was sent
+                            If CurrentBPType = BPType.Copy Then
+                                SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(.typeID)
+                                DBCommand = New SQLiteCommand(SQL, DB)
+                                readerCheck = DBCommand.ExecuteReader
+                                If readerCheck.Read() Then
+                                    If readerCheck.GetInt32(0) = BlueprintTechLevel.T2 Then
+                                        Dim TempDecryptorList As New DecryptorList
+                                        Dim FoundDecryptor As Decryptor = TempDecryptorList.GetDecryptor(.materialEfficiency, .timeEfficiency, .runs)
+                                        ' If it finds a decryptor, even no decryptor, then set it to invented, else assume it's a copy from a BPO
+                                        If FoundDecryptor.TypeID <> 0 Or (.materialEfficiency = BaseT2T3ME And .timeEfficiency = BaseT2T3TE) Then
+                                            CurrentBPType = BPType.InventedBPC
+                                        End If
+                                    ElseIf readerCheck.GetInt32(0) = BlueprintTechLevel.T3 Then
+                                        ' T3 bps are always invented BPCs
+                                        CurrentBPType = BPType.InventedBPC
+                                    End If
+                                End If
+                                readerCheck.Close()
+                                readerCheck = Nothing
+                            End If
+
                             If InsertBP Then
 
-                                readerBlueprints.Close()
-                                SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & .typeID
-                                DBCommand = New SQLiteCommand(SQL, DB)
-                                readerBlueprints = DBCommand.ExecuteReader
-                                readerBlueprints.Read()
-
-                                ' Full insert always mark owned, Also set the owned type to the same on first load
-                                Dim OwnedType As BPOwnedType
-
-                                If .BPType = BPType.Original Then
-                                    OwnedType = BPOwnedType.BPO
-                                ElseIf readerBlueprints.GetInt32(0) <> 1 And .BPType = BPType.Copy Then
-                                    ' Assume all bpcs they have of T2 items are invented, also mark as owned
-                                    OwnedType = BPOwnedType.InventedBPC
-                                Else
-                                    ' Has to be a copy
-                                    OwnedType = BPOwnedType.BPC
-                                End If
-
                                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, "
-                                SQL = SQL & "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                                SQL = SQL & "VALUES (" & AccountSearchID & "," & .itemID & "," & .locationID & "," & .typeID & ",'"
-                                SQL = SQL & FormatDBString(.typeName) & "',"
-                                SQL = SQL & .flagID & "," & .quantity & "," & .materialEfficiency & "," & .timeEfficiency & ","
-                                SQL = SQL & .runs & "," & .BPType & ",1," & CStr(OwnedType) & "," & CStr(ScannedFlag) & ", 0, 0)"
+                                SQL = SQL & "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                                SQL = SQL & "VALUES (" & CStr(AccountSearchID) & "," & CStr(.itemID) & "," & CStr(.locationID) & ","
+                                SQL = SQL & CStr(.typeID) & ",'" & FormatDBString(.typeName) & "',"
+                                SQL = SQL & CStr(.flagID) & ",1," & CStr(.materialEfficiency) & "," & CStr(.timeEfficiency) & ","
+                                SQL = SQL & .runs & "," & CStr(CurrentBPType) & ",1," & CStr(ScannedFlag) & ", 0, 0)"
                             Else
                                 ' Update the BP 
                                 SQL = "UPDATE OWNED_BLUEPRINTS SET "
@@ -243,19 +249,15 @@ Public Class EVEBlueprints
                                 SQL = SQL & "ME = " & CStr(.materialEfficiency) & ","
                                 SQL = SQL & "TE = " & CStr(.timeEfficiency) & ","
                                 SQL = SQL & "RUNS = " & CStr(.runs) & ","
-                                SQL = SQL & "QUANTITY = " & CStr(.quantity) & "," ' Helps determine copies (-2), bpos (-1), or stacks of BPO's (any number)
+                                SQL = SQL & "QUANTITY = 1," ' Helps determine copies (-2), bpos (-1), or stacks of BPO's (any number), 
+                                ' but we will set for 1 now and later the total of BPS with the same ME/TE
+
                                 ' Also reset the unqiue itemid
                                 SQL = SQL & "ITEM_ID = " & CStr(.itemID) & ","
                                 ' Could go from a copy to orginial (with single bp loading, will change with multi)
-                                SQL = SQL & "BP_TYPE = " & CStr(.BPType) & ","
+                                SQL = SQL & "BP_TYPE = " & CStr(CurrentBPType) & ","
                                 ' Mark all from API as owned
                                 SQL = SQL & "OWNED = 1,"
-                                If .BPType = BPType.Original Then
-                                    ' If we are updating and the update is a bpo from a bpc, then switch the code
-                                    SQL = SQL & "OWNED_TYPE = " & CStr(CType(BPOwnedType.BPO, BPOwnedType)) & ","
-                                Else
-                                    SQL = SQL & "OWNED_TYPE = " & CStr(readerBlueprints.GetInt64(4)) & ", "
-                                End If
                                 SQL = SQL & "BLUEPRINT_NAME = '" & FormatDBString(.typeName) & "' " ' If it changes
 
                                 If readerBlueprints.GetInt64(3) <> 0 Then
@@ -303,12 +305,11 @@ Public Structure EVEBlueprint
     Dim typeName As String
     Dim flagID As Integer
     Dim quantity As Integer
-    Dim timeEfficiency As Double
-    Dim materialEfficiency As Double
+    Dim timeEfficiency As Integer
+    Dim materialEfficiency As Integer
     Dim runs As Integer
-    Dim BPType As Integer
+    Dim BPType As BPType
     Dim Owned As Boolean
-    Dim OwnedType As BPOwnedType
     Dim Scanned As Boolean
     Dim Favorite As Boolean
     Dim AdditionalCosts As Double

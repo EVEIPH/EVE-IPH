@@ -67,8 +67,7 @@ Public Module Public_Variables
                                             & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
                                             & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ITEM_TYPE = 1 THEN -1 ELSE -2 END END AS BP_TYPE, " _
+                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
@@ -76,8 +75,7 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
                                             & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
-                                            & "CASE WHEN OBP.OWNED_TYPE IS NOT NULL THEN OBP.OWNED_TYPE ELSE -1 END AS OWNED_TYPE, " _
-                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS WHERE OWNED = 1 OR (OWNED = 0 AND BP_TYPE <> -2)) AS OBP " _
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID AND OBP.USER_ID =  @USERBP_USERID, " _
@@ -92,8 +90,7 @@ Public Module Public_Variables
                                             & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
                                             & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ITEM_TYPE = 1 THEN -1 ELSE -2 END END AS BP_TYPE, " _
+                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
@@ -101,8 +98,7 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
                                             & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
-                                            & "CASE WHEN OBP.OWNED_TYPE IS NOT NULL THEN OBP.OWNED_TYPE ELSE -1 END AS OWNED_TYPE, " _
-                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID " _
                                             & "AND OBP.USER_ID = @ALLUSERBP_USERID, INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID ) AS X "
@@ -217,8 +213,6 @@ Public Module Public_Variables
 
     Public APIAdded As Boolean ' To flag if a new api was added, then we can use to reload apis if needed in other areas (eg industry jobs)
 
-    Public RareandShipSkinBPs As New List(Of Long)
-
     Public MiningUpgradesCollection As New List(Of String)
 
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
@@ -259,11 +253,13 @@ Public Module Public_Variables
         Corporation = 1
     End Enum
 
-    Public Enum BPOwnedType
-        NotOwned = -1
-        BPO = 0
-        BPC = 1
-        InventedBPC = 2
+    ' BP Types: -1 is original, -2 is copy from API, others are built for IPH
+    Public Enum BPType
+        NotOwned = 0
+        ' These are assumed owned, since they are marked or loaded from API
+        Original = -1
+        Copy = -2
+        InventedBPC = -3
     End Enum
 
     ' Types of Asset windows
@@ -293,11 +289,6 @@ Public Module Public_Variables
         T3 = 3
     End Enum
 
-    ' BP Types: -1 is original, -2 is copy
-    Public Enum BPType
-        Original = -1
-        Copy = -2
-    End Enum
 
     Public Enum BeltType
         Small = 1
@@ -764,24 +755,6 @@ Public Module Public_Variables
     End Function
 
 #End Region
-
-    ' Get the rare ship id's and ship skins to weed out in the bps
-    Public Sub SetRareandShipSkinBPs()
-        Dim rsBP As SQLiteDataReader
-        Dim SQL As String
-
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_CATEGORY_ID = 6 "
-        SQL = SQL & "AND (MARKET_GROUP NOT IN ('Amarr','Caldari','Gallente','Minmatar','Navy Faction','Pirate Faction','Exhumers','Expedition Frigates','Faction Carrier','Mining Barges','ORE') "
-        SQL = SQL & "OR ITEM_NAME LIKE '%Edition%')"
-
-        DBCommand = New SQLiteCommand(SQL, DB)
-        rsBP = DBCommand.ExecuteReader
-
-        While rsBP.Read
-            RareandShipSkinBPs.Add(rsBP.GetInt64(0))
-        End While
-
-    End Sub
 
     ' Function takes a recordset reference and processes it to return the cache date from the query
     ' Assumes the first field is the cache date
@@ -1673,21 +1646,36 @@ InvalidDate:
     End Sub
 
     ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint
-    Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal BPType As BPType, _
-                            ByVal BPTypeOwned As BPOwnedType, Optional Favorite As Boolean = False, Optional AdditionalCosts As Double = 0)
+    Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType, _
+                            Optional Favorite As Boolean = False, Optional Ignore As Boolean = False, Optional AdditionalCosts As Double = 0)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
-        Dim TempFavorite As Integer
+        Dim TempFavorite As String
+        Dim TempIgnore As String
+        Dim TempOwned As String
 
         ' If not sent, it's not a favorite
         If Not Favorite Then
-            TempFavorite = 0
+            TempFavorite = "0"
         Else
-            TempFavorite = 1
+            TempFavorite = "1"
+        End If
+
+        If Not Ignore Then
+            TempIgnore = "0"
+        Else
+            TempIgnore = "1"
+        End If
+
+        ' Set the owned flag, only mark this BP as owned if it's not the unowned type
+        If SentBPType = BPType.NotOwned Then
+            TempOwned = "0"
+        Else
+            TempOwned = "1"
         End If
 
         ' See if the BP is in the DB
-        SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID=" & BPID & " AND USER_ID = " & SelectedCharacter.ID & " AND BP_TYPE = " & BPType
+        SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerBP = DBCommand.ExecuteReader
@@ -1695,17 +1683,22 @@ InvalidDate:
         If Not readerBP.HasRows Then
             ' No record, So add it and mark as owned - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
             SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
-            SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, OWNED_TYPE, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+            SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
             SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
-            SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & ",1," & CStr(BPType) & ",1," & CStr(BPTypeOwned) & ",0," & CStr(TempFavorite) & "," & CStr(AdditionalCosts) & ")"
+            SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & ",1," & CStr(SentBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
             Call ExecuteNonQuerySQL(SQL)
 
         Else
             ' Update it 
-            SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = 1, FAVORITE = " & CStr(TempFavorite) & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " "
-            SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID) & " AND BP_TYPE = " & CStr(BPType) & " AND OWNED_TYPE = " & CStr(BPTypeOwned)
+            SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
+            SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(SentBPType) & " "
+            SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
             Call ExecuteNonQuerySQL(SQL)
         End If
+
+        ' Update the bp ignore flag (note for all accounts on this pc)
+        SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
+        Call ExecuteNonQuerySQL(SQL)
 
         readerBP.Close()
         readerBP = Nothing

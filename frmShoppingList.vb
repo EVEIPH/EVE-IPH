@@ -1811,7 +1811,7 @@ Public Class frmShoppingList
                 TempBuiltItem.ItemTypeID = CLng(lstBuild.SelectedItems(i).SubItems(0).Text)
                 TempBuiltItem.ItemName = lstBuild.SelectedItems(i).SubItems(1).Text
                 TempBuiltItem.ItemQuantity = CLng(lstBuild.SelectedItems(i).SubItems(2).Text)
-                TempBuiltItem.BuildME = CLng(lstBuild.SelectedItems(i).SubItems(3).Text)
+                TempBuiltItem.BuildME = CInt(lstBuild.SelectedItems(i).SubItems(3).Text)
 
                 ' Remove it from shopping list, sending the grid quantity
                 TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltItem, 0)
@@ -2074,7 +2074,7 @@ Public Class frmShoppingList
                     TempBuiltItem.ItemTypeID = CLng(CurrentRow.SubItems(0).Text)
                     TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
                     TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
-                    TempBuiltItem.BuildME = CLng(CurrentRow.SubItems(3).Text)
+                    TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
 
                     ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue

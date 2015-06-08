@@ -227,6 +227,7 @@ Public Class ProgramSettings
     Public DefaultBPIgnoreInvention As Boolean = False
     Public DefaultBPIgnoreMinerals As Boolean = False
     Public DefaultBPIgnoreT1Item As Boolean = False
+    Public DefaultBPIncludeIgnoredBPs As Boolean = False
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = False
@@ -992,7 +993,6 @@ Public Class ProgramSettings
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, "ApplicationSettings", "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
                     .EVECentralRefreshInterval = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, "ApplicationSettings", "EVECentralRefreshInterval", DefaultEVECentralRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, "ApplicationSettings", "DisableSound", DefaultDisableSound))
-                    .IgnoreRareandShipSkinBPs = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, "ApplicationSettings", "IgnoreRareandShipSkinBPs", DefaultIgnoreRareandShipSkinBPs))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, "ApplicationSettings", "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                 End With
 
@@ -1056,7 +1056,6 @@ Public Class ProgramSettings
 
         TempSettings.DisableSVR = DefaultDisableSVR
         TempSettings.SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
-        TempSettings.IgnoreRareandShipSkinBPs = DefaultIgnoreRareandShipSkinBPs
         TempSettings.SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
         TempSettings.ShopListIncludeInventMats = DefaultShopListIncludeInventMats
@@ -1072,7 +1071,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(26) As Setting
+        Dim ApplicationSettingsList(25) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1100,8 +1099,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(22) = New Setting("LoadCRESTTeamDataonStartup", CStr(SentSettings.LoadCRESTTeamDataonStartup))
             ApplicationSettingsList(23) = New Setting("LoadCRESTFacilityDataonStartup", CStr(SentSettings.LoadCRESTFacilityDataonStartup))
             ApplicationSettingsList(24) = New Setting("LoadCRESTMarketDataonStartup", CStr(SentSettings.LoadCRESTMarketDataonStartup))
-            ApplicationSettingsList(25) = New Setting("IgnoreRareandShipSkinBPs", CStr(SentSettings.IgnoreRareandShipSkinBPs))
-            ApplicationSettingsList(26) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
+            ApplicationSettingsList(25) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
 
             Call WriteSettingsToFile(AppSettingsFileName, ApplicationSettingsList, "ApplicationSettings")
 
@@ -1244,6 +1242,7 @@ Public Class ProgramSettings
                     .IgnoreInvention = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, "BPSettings", "IgnoreInvention", DefaultBPIgnoreInvention))
                     .IgnoreMinerals = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, "BPSettings", "IgnoreMinerals", DefaultBPIgnoreMinerals))
                     .IgnoreT1Item = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, "BPSettings", "IgnoreT1Item", DefaultBPIgnoreT1Item))
+                    .IncludeIgnoredBPs = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, "BPSettings", "IncludeIgnoredBPs", DefaultBPIgnoreT1Item))
                 End With
 
             Else
@@ -1266,7 +1265,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(28) As Setting
+        Dim BPSettingsList(29) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1300,6 +1299,8 @@ Public Class ProgramSettings
             BPSettingsList(26) = New Setting("IgnoreInvention", CStr(SentSettings.IgnoreInvention))
             BPSettingsList(27) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
             BPSettingsList(28) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
+
+            BPSettingsList(29) = New Setting("IncludeIgnoredBPs", CStr(SentSettings.IncludeIgnoredBPs))
 
             Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, "BPSettings")
 
@@ -1350,6 +1351,8 @@ Public Class ProgramSettings
         LocalSettings.IgnoreInvention = DefaultBPIgnoreInvention
         LocalSettings.IgnoreMinerals = DefaultBPIgnoreMinerals
         LocalSettings.IgnoreT1Item = DefaultBPIgnoreT1Item
+
+        LocalSettings.IncludeIgnoredBPs = DefaultBPIncludeIgnoredBPs
 
         ' Save locally
         BPSettings = LocalSettings
@@ -4638,8 +4641,6 @@ Public Structure ApplicationSettings
     Dim SuggestBuildBPNotOwned As Boolean ' For Build/Buy suggestions
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
 
-    Dim IgnoreRareandShipSkinBPs As Boolean ' Links the team drop downs to only teams or auctions in the selected facility system
-
     Dim DisableSVR As Boolean ' For disabling SVR updates
 
     ' For shopping list
@@ -4661,6 +4662,7 @@ Public Structure BPTabSettings
     Dim TechStorylineCheck As Boolean
     Dim TechFactionCheck As Boolean
     Dim TechPirateCheck As Boolean
+    Dim IncludeIgnoredBPs As Boolean
 
     Dim SmallCheck As Boolean
     Dim MediumCheck As Boolean
