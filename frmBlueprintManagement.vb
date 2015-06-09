@@ -31,14 +31,6 @@ Public Class frmBlueprintManagement
 
     Private Const SelectTypeText As String = "Select Type"
 
-    Private Const BPO As String = "BPO"
-    Private Const BPC As String = "BPC"
-    Private Const InventedBPC As String = "Invented BPC"
-    Private Const UnownedBP As String = "Unowned"
-
-    Private Const Yes As String = "Yes"
-    Private Const No As String = "No"
-
     ' For Blueprints - copy or original
     Public Enum BlueprintType
         ' -1 is original, -2 is copy
@@ -662,7 +654,7 @@ Public Class frmBlueprintManagement
             End If
 
             ' BP Type
-            Select Case readerBP.GetInt32(16)
+            Select Case GetBPType(readerBP.GetInt32(16))
                 Case BPType.Original
                     BPList.SubItems.Add(BPO)
                 Case BPType.Copy

@@ -7309,7 +7309,7 @@ Tabs:
         End If
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
-        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS"
+        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
         SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
         SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 "
 
@@ -7323,7 +7323,7 @@ Tabs:
         Else
             ' Try again with corp
             readerBP.Close()
-            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS"
+            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED = 2 AND OWNED <> 0 "
 
@@ -7388,10 +7388,12 @@ Tabs:
             txtBPTE.Enabled = True
         End If
 
-        If TempTech = 1 Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1
+        Dim TempBPType As BPType = GetBPType(readerBP.GetInt32(4))
+
+        If TempTech <> 2 Or (TempTech = 2 And TempBPType <> BPType.Original) Then
+            chkBPIgnoreInvention.Enabled = False ' can't invent t1, dont' want to invent, or T3, which are always invented
         Else
-            chkBPIgnoreInvention.Enabled = True
+            chkBPIgnoreInvention.Enabled = True ' BPOs possible only, so mainly just T2
         End If
 
         BPTeamComboLoaded = True  ' Dont' trigger a reload  yet

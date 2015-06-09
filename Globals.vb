@@ -207,6 +207,14 @@ Public Module Public_Variables
     Public Const StationFacility As String = "Station"
     Public Const OutpostFacility As String = "Outpost"
 
+    Public Const BPO As String = "BPO"
+    Public Const BPC As String = "BPC"
+    Public Const InventedBPC As String = "Invented BPC"
+    Public Const UnownedBP As String = "Unowned"
+
+    Public Const Yes As String = "Yes"
+    Public Const No As String = "No"
+
     Public NoFacility As New IndustryFacility
 
     Public Const None As String = "None" ' For decryptors, facilities and teams
@@ -288,7 +296,6 @@ Public Module Public_Variables
         T2 = 2
         T3 = 3
     End Enum
-
 
     Public Enum BeltType
         Small = 1
@@ -755,6 +762,31 @@ Public Module Public_Variables
     End Function
 
 #End Region
+
+    Public Function GetBPType(BPTypeValue As Object) As BPType
+
+        If IsNothing(BPTypeValue) Then
+            Return BPType.NotOwned
+        End If
+
+        If IsDBNull(BPTypeValue) Then
+            Return BPType.NotOwned
+        End If
+
+        Select Case CInt(BPTypeValue)
+            Case BPType.Original
+                Return BPType.Original
+            Case BPType.Copy
+                Return BPType.Copy
+            Case BPType.InventedBPC
+                Return BPType.InventedBPC
+            Case BPType.NotOwned
+                Return BPType.NotOwned
+        End Select
+
+        Return BPType.NotOwned
+
+    End Function
 
     ' Function takes a recordset reference and processes it to return the cache date from the query
     ' Assumes the first field is the cache date
