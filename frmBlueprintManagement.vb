@@ -31,13 +31,6 @@ Public Class frmBlueprintManagement
 
     Private Const SelectTypeText As String = "Select Type"
 
-    ' For Blueprints - copy or original
-    Public Enum BlueprintType
-        ' -1 is original, -2 is copy
-        Original = -1
-        Copy = -2
-    End Enum
-
     Private Structure BlueprintAsset
         Dim TypeID As Long
         Dim BPType As Integer
@@ -435,6 +428,10 @@ Public Class frmBlueprintManagement
         Call EnableMETE(chkEnableMETE.Checked)
     End Sub
 
+    Private Sub rbtnRemoveAllSettings_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnRemoveAllSettings.CheckedChanged
+        Call EnableMETE(chkEnableMETE.Checked)
+    End Sub
+
     Private Sub EnableMETE(Value As Boolean)
         ' if true it enables, false disables
         lblBPME.Enabled = Value
@@ -475,6 +472,7 @@ Public Class frmBlueprintManagement
 
         ttBPManage.SetToolTip(btnBackupBPs, "Exports all Blueprint Data to a csv format for all user APIs")
         ttBPManage.SetToolTip(btnLoadBPs, "Loads exported Blueprint Data from csv format")
+        ttBPManage.SetToolTip(rbtnRemoveAllSettings, "Removes all saved blueprint data for selected blueprints")
 
     End Sub
 
@@ -654,7 +652,7 @@ Public Class frmBlueprintManagement
             End If
 
             ' BP Type
-            Select Case GetBPType(readerBP.GetInt32(16))
+            Select Case readerBP.GetInt32(16)
                 Case BPType.Original
                     BPList.SubItems.Add(BPO)
                 Case BPType.Copy
@@ -756,9 +754,9 @@ Public Class frmBlueprintManagement
         lstBPs.EndUpdate()
 
         If CheckAllItems Then
-            btnUpdateAll.Text = "Uncheck All"
+            btnSelectAll.Text = "Uncheck All"
         Else
-            btnUpdateAll.Text = "Select All"
+            btnSelectAll.Text = "Select All"
         End If
 
         readerBP.Close()
@@ -1309,7 +1307,7 @@ Public Class frmBlueprintManagement
     End Function
 
     ' Un-owns a BP if it is in the DB unless manually entered, then deletes it
-    Private Sub RemoveBPFromDB(ByVal BPID As Long)
+    Private Sub RemoveBPFromDB(ByVal BPID As Long, ByVal DeleteAll As Boolean)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
 
@@ -1320,7 +1318,7 @@ Public Class frmBlueprintManagement
         readerBP = DBCommand.ExecuteReader
 
         ' If Found then update then just reset the owned flag
-        If readerBP.HasRows Then
+        If readerBP.HasRows And Not DeleteAll Then
             ' Update it
             SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0 WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID
             Call ExecuteNonQuerySQL(SQL)
@@ -1381,14 +1379,14 @@ Public Class frmBlueprintManagement
         Call InitForm()
     End Sub
 
-    ' Updates all the items in the grid
-    Private Sub btnUpdateAll_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnUpdateAll.Click
+    ' Checks all the items in the grid
+    Private Sub btnSelectAll_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSelectAll.Click
         Dim item As ListViewItem
         Dim items As ListView.ListViewItemCollection
 
         ' Change to toggle "Select All" or "Uncheck All"
-        If btnUpdateAll.Text = "Select All" Then
-            btnUpdateAll.Text = "Uncheck All"
+        If btnSelectAll.Text = "Select All" Then
+            btnSelectAll.Text = "Uncheck All"
             items = lstBPs.Items
             lstBPs.BeginUpdate()
             For Each item In items
@@ -1396,7 +1394,7 @@ Public Class frmBlueprintManagement
             Next
             lstBPs.EndUpdate()
         Else
-            btnUpdateAll.Text = "Select All"
+            btnSelectAll.Text = "Select All"
             items = lstBPs.Items
             lstBPs.BeginUpdate()
             For Each item In items
@@ -1440,7 +1438,7 @@ Public Class frmBlueprintManagement
             If rbtnMarkasOwned.Checked Then
                 ' Save all BPs as copies - they can update if they want to, all items can have bpcs and it doesn't affect processing so this is easier
                 TempBPType = BPType.Copy
-            Else
+            ElseIf rbtnMarkasUnowned.Checked Then
                 Select Case item.SubItems(8).Text
                     Case BPO
                         TempBPType = BPType.Original
@@ -1453,13 +1451,13 @@ Public Class frmBlueprintManagement
                 End Select
             End If
 
-            ' Only remove if it's all zeros and default values
-            If item.SubItems(5).Text = "0" And item.SubItems(6).Text = "0" And item.SubItems(8).Text = UnownedBP _
+            ' Only remove if it's all zeros and default values or they select the option
+            If (item.SubItems(5).Text = "0" And item.SubItems(6).Text = "0" And item.SubItems(8).Text = UnownedBP _
                 And item.SubItems(9).Text = No And item.SubItems(10).Text = No And rbtnMarkasUnowned.Checked _
-                And chkMarkasFavorite.Checked = False And chkMarkasIgnored.Checked = False Then
+                And chkMarkasFavorite.Checked = False And chkMarkasIgnored.Checked = False) Or rbtnRemoveAllSettings.Checked = True Then
 
                 ' If unowned, just clear out the user data for these blueprints 
-                Call RemoveBPFromDB(CInt(item.SubItems(1).Text))
+                Call RemoveBPFromDB(CInt(item.SubItems(1).Text), rbtnRemoveAllSettings.Checked)
             Else
                 ' Need to add selected blueprints to the character blueprints table, and set the ME and TE's as given or as stored
                 If chkEnableMETE.Checked = True Or chkEnableMETE.Enabled = False Then

@@ -1677,7 +1677,7 @@ InvalidDate:
 
     End Sub
 
-    ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint
+    ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint - this is always due to user input, not API
     Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType, _
                             Optional Favorite As Boolean = False, Optional Ignore As Boolean = False, Optional AdditionalCosts As Double = 0)
         Dim SQL As String
@@ -1701,9 +1701,9 @@ InvalidDate:
 
         ' Set the owned flag, only mark this BP as owned if it's not the unowned type
         If SentBPType = BPType.NotOwned Then
-            TempOwned = "0"
+            TempOwned = "0" ' User updated, not owned
         Else
-            TempOwned = "1"
+            TempOwned = "-1" ' User updated, user owned (not API)
         End If
 
         ' See if the BP is in the DB
@@ -1713,7 +1713,7 @@ InvalidDate:
         readerBP = DBCommand.ExecuteReader
 
         If Not readerBP.HasRows Then
-            ' No record, So add it and mark as owned - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
+            ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
             SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
             SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
             SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"

@@ -93,13 +93,14 @@ Partial Class frmBlueprintManagement
         Me.rbtnAllBPs = New System.Windows.Forms.RadioButton()
         Me.rbtnOwned = New System.Windows.Forms.RadioButton()
         Me.gbUpdateOptions = New System.Windows.Forms.GroupBox()
+        Me.rbtnRemoveAllSettings = New System.Windows.Forms.RadioButton()
         Me.chkMarkasIgnored = New System.Windows.Forms.CheckBox()
         Me.chkMarkasFavorite = New System.Windows.Forms.CheckBox()
         Me.chkEnableMETE = New System.Windows.Forms.CheckBox()
         Me.rbtnMarkasUnowned = New System.Windows.Forms.RadioButton()
         Me.btnUpdateSelected = New System.Windows.Forms.Button()
         Me.txtBPTE = New System.Windows.Forms.TextBox()
-        Me.btnUpdateAll = New System.Windows.Forms.Button()
+        Me.btnSelectAll = New System.Windows.Forms.Button()
         Me.rbtnMarkasOwned = New System.Windows.Forms.RadioButton()
         Me.lblBPTE = New System.Windows.Forms.Label()
         Me.txtBPME = New System.Windows.Forms.TextBox()
@@ -510,7 +511,7 @@ Partial Class frmBlueprintManagement
         Me.btnScanCorpBPs.Name = "btnScanCorpBPs"
         Me.btnScanCorpBPs.Size = New System.Drawing.Size(143, 34)
         Me.btnScanCorpBPs.TabIndex = 38
-        Me.btnScanCorpBPs.Text = "Scan Corp Assets"
+        Me.btnScanCorpBPs.Text = "Scan Corp BPs"
         Me.btnScanCorpBPs.UseVisualStyleBackColor = True
         '
         'btnResetAll
@@ -528,7 +529,7 @@ Partial Class frmBlueprintManagement
         Me.btnScanPersonalBPs.Name = "btnScanPersonalBPs"
         Me.btnScanPersonalBPs.Size = New System.Drawing.Size(143, 34)
         Me.btnScanPersonalBPs.TabIndex = 37
-        Me.btnScanPersonalBPs.Text = "Scan Personal Assets"
+        Me.btnScanPersonalBPs.Text = "Scan Personal BPs"
         Me.btnScanPersonalBPs.UseVisualStyleBackColor = True
         '
         'btnRefresh
@@ -871,13 +872,14 @@ Partial Class frmBlueprintManagement
         '
         'gbUpdateOptions
         '
+        Me.gbUpdateOptions.Controls.Add(Me.rbtnRemoveAllSettings)
         Me.gbUpdateOptions.Controls.Add(Me.chkMarkasIgnored)
         Me.gbUpdateOptions.Controls.Add(Me.chkMarkasFavorite)
         Me.gbUpdateOptions.Controls.Add(Me.chkEnableMETE)
         Me.gbUpdateOptions.Controls.Add(Me.rbtnMarkasUnowned)
         Me.gbUpdateOptions.Controls.Add(Me.btnUpdateSelected)
         Me.gbUpdateOptions.Controls.Add(Me.txtBPTE)
-        Me.gbUpdateOptions.Controls.Add(Me.btnUpdateAll)
+        Me.gbUpdateOptions.Controls.Add(Me.btnSelectAll)
         Me.gbUpdateOptions.Controls.Add(Me.rbtnMarkasOwned)
         Me.gbUpdateOptions.Controls.Add(Me.lblBPTE)
         Me.gbUpdateOptions.Controls.Add(Me.txtBPME)
@@ -888,6 +890,17 @@ Partial Class frmBlueprintManagement
         Me.gbUpdateOptions.TabIndex = 7
         Me.gbUpdateOptions.TabStop = False
         Me.gbUpdateOptions.Text = "Update Options"
+        '
+        'rbtnRemoveAllSettings
+        '
+        Me.rbtnRemoveAllSettings.AutoSize = True
+        Me.rbtnRemoveAllSettings.Location = New System.Drawing.Point(10, 55)
+        Me.rbtnRemoveAllSettings.Name = "rbtnRemoveAllSettings"
+        Me.rbtnRemoveAllSettings.Size = New System.Drawing.Size(120, 17)
+        Me.rbtnRemoveAllSettings.TabIndex = 54
+        Me.rbtnRemoveAllSettings.TabStop = True
+        Me.rbtnRemoveAllSettings.Text = "Remove All Settings"
+        Me.rbtnRemoveAllSettings.UseVisualStyleBackColor = True
         '
         'chkMarkasIgnored
         '
@@ -914,7 +927,7 @@ Partial Class frmBlueprintManagement
         'chkEnableMETE
         '
         Me.chkEnableMETE.AutoSize = True
-        Me.chkEnableMETE.Location = New System.Drawing.Point(10, 55)
+        Me.chkEnableMETE.Location = New System.Drawing.Point(135, 79)
         Me.chkEnableMETE.Name = "chkEnableMETE"
         Me.chkEnableMETE.Size = New System.Drawing.Size(103, 17)
         Me.chkEnableMETE.TabIndex = 52
@@ -950,14 +963,14 @@ Partial Class frmBlueprintManagement
         Me.txtBPTE.Size = New System.Drawing.Size(31, 20)
         Me.txtBPTE.TabIndex = 44
         '
-        'btnUpdateAll
+        'btnSelectAll
         '
-        Me.btnUpdateAll.Location = New System.Drawing.Point(9, 103)
-        Me.btnUpdateAll.Name = "btnUpdateAll"
-        Me.btnUpdateAll.Size = New System.Drawing.Size(113, 33)
-        Me.btnUpdateAll.TabIndex = 49
-        Me.btnUpdateAll.Text = "Select All"
-        Me.btnUpdateAll.UseVisualStyleBackColor = True
+        Me.btnSelectAll.Location = New System.Drawing.Point(9, 103)
+        Me.btnSelectAll.Name = "btnSelectAll"
+        Me.btnSelectAll.Size = New System.Drawing.Size(113, 33)
+        Me.btnSelectAll.TabIndex = 49
+        Me.btnSelectAll.Text = "Select All"
+        Me.btnSelectAll.UseVisualStyleBackColor = True
         '
         'rbtnMarkasOwned
         '
@@ -1116,7 +1129,7 @@ Partial Class frmBlueprintManagement
     Friend WithEvents lblBPTE As System.Windows.Forms.Label
     Friend WithEvents txtBPME As System.Windows.Forms.TextBox
     Friend WithEvents lblBPME As System.Windows.Forms.Label
-    Friend WithEvents btnUpdateAll As System.Windows.Forms.Button
+    Friend WithEvents btnSelectAll As System.Windows.Forms.Button
     Friend WithEvents rbtnMarkasUnowned As System.Windows.Forms.RadioButton
     Friend WithEvents grpScanAssets As System.Windows.Forms.GroupBox
     Friend WithEvents btnScanPersonalBPs As System.Windows.Forms.Button
@@ -1166,4 +1179,5 @@ Partial Class frmBlueprintManagement
     Friend WithEvents rbtnIgnored As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnOnlyInventedBPCs As System.Windows.Forms.RadioButton
     Friend WithEvents chkNotIgnored As System.Windows.Forms.CheckBox
+    Friend WithEvents rbtnRemoveAllSettings As System.Windows.Forms.RadioButton
 End Class

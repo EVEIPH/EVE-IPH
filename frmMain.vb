@@ -3123,7 +3123,7 @@ NoBonus:
             ElseIf UpdateType = "TE" Then
                 SelectedFacility.TimeMultiplier = TempValue
             Else
-                SelectedFacility.TaxRate = CDbl(Temp)
+                SelectedFacility.TaxRate = CDbl(TempValue)
             End If
 
         End If
@@ -4082,6 +4082,26 @@ NoBonus:
 
     End Sub
 
+    Private Sub mnuResetIgnoredBPs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIgnoredBPs.Click
+        Dim Response As MsgBoxResult
+        Dim SQL As String
+
+        Response = MsgBox("This will reset all blueprints to non-ignored" & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0"
+            ExecuteNonQuerySQL(SQL)
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Ignored Blueprints reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
     Private Sub mnuResetAssets_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAssets.Click
         Dim Response As MsgBoxResult
         Dim SQL As String
@@ -4262,7 +4282,7 @@ NoBonus:
         Call ShowShoppingList()
     End Sub
 
-    Private Sub ManageBlueprintsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuManageBlueprintsToolStripMenuItem.Click
+    Private Sub mnuManageBlueprintsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuManageBlueprintsToolStripMenuItem.Click
         Dim f1 = New frmBlueprintManagement
         f1.ShowDialog()
         Call ResetRefresh()
@@ -4443,6 +4463,100 @@ NoBonus:
         Call InitBPTab()
 
         MsgBox("BP Tab Default Settings Restored", vbInformation, Application.ProductName)
+
+    End Sub
+
+    Private Sub mnuRestoreDefaultBPFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultBPFacilities.Click
+
+        ' BP 
+        Call SelectedBPManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Manufacturing), True)
+        DefaultBPManufacturingFacility = CType(SelectedBPManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCapitalManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalManufacturing), True)
+        DefaultBPCapitalManufacturingFacility = CType(SelectedBPCapitalManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPSuperManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SuperManufacturing), True)
+        DefaultBPSuperManufacturingFacility = CType(SelectedBPSuperManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPT3CruiserManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3CruiserManufacturing), True)
+        DefaultBPT3CruiserManufacturingFacility = CType(SelectedBPT3CruiserManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPT3DestroyerManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3DestroyerManufacturing), True)
+        DefaultBPT3DestroyerManufacturingFacility = CType(SelectedBPT3DestroyerManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPBoosterManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.BoosterManufacturing), True)
+        DefaultBPBoosterManufacturingFacility = CType(SelectedBPBoosterManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPSubsystemManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SubsystemManufacturing), True)
+        DefaultBPSubsystemManufacturingFacility = CType(SelectedBPSubsystemManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.ComponentManufacturing), True)
+        DefaultBPComponentManufacturingFacility = CType(SelectedBPComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCapitalComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalComponentManufacturing), True)
+        DefaultBPCapitalComponentManufacturingFacility = CType(SelectedBPCapitalComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCopyFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Copying), True)
+        DefaultBPCopyFacility = CType(SelectedBPCopyFacility.Clone, IndustryFacility)
+        Call SelectedBPInventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Invention), True)
+        DefaultBPInventionFacility = CType(SelectedBPInventionFacility.Clone, IndustryFacility)
+        Call SelectedBPT3InventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3Invention), True)
+        DefaultBPT3InventionFacility = CType(SelectedBPT3InventionFacility.Clone, IndustryFacility)
+        Call SelectedBPNoPOSFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.NoPOSManufacturing), True)
+        DefaultBPNoPOSFacility = CType(SelectedBPNoPOSFacility.Clone, IndustryFacility)
+
+        ' Load these as special cases
+        Call SelectedBPPOSFuelBlockFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSFuelBlockManufacturing), True)
+        DefaultBPPOSFuelBlockFacility = CType(SelectedBPPOSFuelBlockFacility.Clone, IndustryFacility)
+        Call SelectedBPPOSLargeShipFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSLargeShipManufacturing), True)
+        DefaultBPPOSLargeShipFacility = CType(SelectedBPPOSLargeShipFacility.Clone, IndustryFacility)
+        Call SelectedBPPOSModuleFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSModuleManufacturing), True)
+        DefaultBPPOSModuleFacility = CType(SelectedBPPOSModuleFacility.Clone, IndustryFacility)
+
+        ' Load all
+        Call InitBPTab()
+
+        ' Instead of saving, just load these locally and the next time they restart it will do the same until saved
+        Call AllSettings.DeleteAllFacilitySettingsFiles(BPTab)
+
+        MsgBox("BP Tab Default Facilities Restored", vbInformation, Application.ProductName)
+
+    End Sub
+
+    Private Sub mnuRestoreDefaultCalcFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultCalcFacilities.Click
+
+        ' Load up the Manufacturing Tab facilities
+        Call SelectedCalcBaseManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Manufacturing), True)
+        DefaultCalcBaseManufacturingFacility = CType(SelectedCalcBaseManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCapitalManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalManufacturing), True)
+        DefaultCalcCapitalManufacturingFacility = CType(SelectedCalcCapitalManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcSuperManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SuperManufacturing), True)
+        DefaultCalcSuperManufacturingFacility = CType(SelectedCalcSuperManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3CruiserManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3CruiserManufacturing), True)
+        DefaultCalcT3CruiserManufacturingFacility = CType(SelectedCalcT3CruiserManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3DestroyerManufacturing), True)
+        DefaultCalcT3DestroyerManufacturingFacility = CType(SelectedCalcT3DestroyerManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcBoosterManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.BoosterManufacturing), True)
+        DefaultCalcBoosterManufacturingFacility = CType(SelectedCalcBoosterManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcSubsystemManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SubsystemManufacturing), True)
+        DefaultCalcSubsystemManufacturingFacility = CType(SelectedCalcSubsystemManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.ComponentManufacturing), True)
+        DefaultCalcComponentManufacturingFacility = CType(SelectedCalcComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalComponentManufacturing), True)
+        DefaultCalcCapitalComponentManufacturingFacility = CType(SelectedCalcCapitalComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCopyFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Copying), True)
+        DefaultCalcCopyFacility = CType(SelectedCalcCopyFacility.Clone, IndustryFacility)
+        Call SelectedCalcInventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Invention), True)
+        DefaultCalcInventionFacility = CType(SelectedCalcInventionFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3InventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3Invention), True)
+        DefaultCalcT3InventionFacility = CType(SelectedCalcT3InventionFacility.Clone, IndustryFacility)
+        Call SelectedCalcNoPOSFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.NoPOSManufacturing), True)
+        DefaultCalcNoPOSFacility = CType(SelectedCalcNoPOSFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSFuelBlockFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSFuelBlockManufacturing), True)
+        DefaultCalcPOSFuelBlockFacility = CType(SelectedCalcPOSFuelBlockFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSLargeShipFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSLargeShipManufacturing), True)
+        DefaultCalcPOSLargeShipFacility = CType(SelectedCalcPOSLargeShipFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSModuleFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSModuleManufacturing), True)
+        DefaultCalcPOSModuleFacility = CType(SelectedCalcPOSModuleFacility.Clone, IndustryFacility)
+
+        ' Load all
+        Call InitManufacturingTab()
+
+        ' Instead of saving, just load these locally and the next time they restart it will do the same until saved
+        Call AllSettings.DeleteAllFacilitySettingsFiles(BPTab)
+
+        MsgBox("Manufacturing Tab Default Facilities Restored", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -5643,7 +5757,7 @@ Tabs:
         ' Update only the outpost values for the activity type 
         SQL = "UPDATE STATION_FACILITIES SET MATERIAL_MULTIPLIER = " & CStr(SentFacility.MaterialMultiplier)
         SQL = SQL & ", TIME_MULTIPLIER = " & CStr(SentFacility.TimeMultiplier)
-        SQL = SQL & ", FACILITY_TAX = " & CStr(SentFacility.TaxRate)
+        SQL = SQL & ", FACILITY_TAX = " & CStr(SentFacility.TaxRate) ' Change to a percent (double)
         SQL = SQL & ", OUTPOST = " & CStr(StationType.Outpost) & " "
         SQL = SQL & "WHERE FACILITY_NAME = '" & FormatDBString(SentFacility.FacilityName) & "' "
         SQL = SQL & "AND ACTIVITY_ID = " & CStr(Activity)
@@ -7372,7 +7486,15 @@ Tabs:
             End If
         End If
 
-        If TempTech <> 1 Then
+        Dim TempBPType As BPType
+
+        If OwnedBP Then
+            TempBPType = GetBPType(readerBP.GetInt32(4))
+        Else
+            TempBPType = BPType.NotOwned
+        End If
+
+        If TempTech <> 1 And TempBPType <> BPType.Original Then
             Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
 
@@ -7388,12 +7510,10 @@ Tabs:
             txtBPTE.Enabled = True
         End If
 
-        Dim TempBPType As BPType = GetBPType(readerBP.GetInt32(4))
-
-        If TempTech <> 2 Or (TempTech = 2 And TempBPType <> BPType.Original) Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1, dont' want to invent, or T3, which are always invented
+        If TempTech <> 2 Then
+            chkBPIgnoreInvention.Enabled = False ' can't invent t1, and T3 are always invented - so don't allow toggle
         Else
-            chkBPIgnoreInvention.Enabled = True ' BPOs possible only, so mainly just T2
+            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
         End If
 
         BPTeamComboLoaded = True  ' Dont' trigger a reload  yet
