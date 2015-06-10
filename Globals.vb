@@ -788,6 +788,31 @@ Public Module Public_Variables
 
     End Function
 
+    Public Function GetBPTypeString(BPTypeValue As Object) As String
+
+        If IsNothing(BPTypeValue) Then
+            Return UnownedBP
+        End If
+
+        If IsDBNull(BPTypeValue) Then
+            Return UnownedBP
+        End If
+
+        Select Case CInt(BPTypeValue)
+            Case BPType.Original
+                Return BPO
+            Case BPType.Copy
+                Return BPC
+            Case BPType.InventedBPC
+                Return InventedBPC
+            Case BPType.NotOwned
+                Return UnownedBP
+        End Select
+
+        Return UnownedBP
+
+    End Function
+
     ' Function takes a recordset reference and processes it to return the cache date from the query
     ' Assumes the first field is the cache date
     Public Function ProcessCacheDate(ByRef rsCache As SQLiteDataReader) As Date

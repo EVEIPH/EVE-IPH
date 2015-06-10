@@ -652,16 +652,7 @@ Public Class frmBlueprintManagement
             End If
 
             ' BP Type
-            Select Case readerBP.GetInt32(16)
-                Case BPType.Original
-                    BPList.SubItems.Add(BPO)
-                Case BPType.Copy
-                    BPList.SubItems.Add(BPC)
-                Case BPType.InventedBPC
-                    BPList.SubItems.Add(InventedBPC)
-                Case BPType.NotOwned
-                    BPList.SubItems.Add(UnownedBP)
-            End Select
+            BPList.SubItems.Add(GetBPTypeString(readerBP.GetInt32(16)))
 
             If readerBP.GetInt32(18) = 0 Then
                 BPList.SubItems.Add(No) ' Favorite
@@ -1439,16 +1430,7 @@ Public Class frmBlueprintManagement
                 ' Save all BPs as copies - they can update if they want to, all items can have bpcs and it doesn't affect processing so this is easier
                 TempBPType = BPType.Copy
             ElseIf rbtnMarkasUnowned.Checked Then
-                Select Case item.SubItems(8).Text
-                    Case BPO
-                        TempBPType = BPType.Original
-                    Case BPC
-                        TempBPType = BPType.Copy
-                    Case InventedBPC
-                        TempBPType = BPType.InventedBPC
-                    Case UnownedBP
-                        TempBPType = BPType.NotOwned
-                End Select
+                TempBPType = GetBPType(item.SubItems(8).Text)
             End If
 
             ' Only remove if it's all zeros and default values or they select the option
@@ -1930,16 +1912,7 @@ Public Class frmBlueprintManagement
             End If
 
             ' Set the bp type to make sure we set the owned flag correctly
-            Select Case OwnedTypeValue
-                Case BPO
-                    TempBPType = BPType.Original
-                Case BPC
-                    TempBPType = BPType.Copy
-                Case InventedBPC
-                    TempBPType = BPType.InventedBPC
-                Case UnownedBP
-                    TempBPType = BPType.NotOwned
-            End Select
+            TempBPType = GetBPType(OwnedTypeValue)
 
             Call UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CurrentRow.SubItems(2).Text, MEValue, TEValue, TempBPType, SetasFavorite, SetasIgnore)
 

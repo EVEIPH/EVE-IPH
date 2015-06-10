@@ -7372,8 +7372,8 @@ Tabs:
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID "
         SQL = SQL & "FROM ALL_BLUEPRINTS "
-        SQL = SQL & "LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-        SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID = " & SelectedCharacter.ID & " "
+        'SQL = SQL & "LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+        'SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID = " & SelectedCharacter.ID & " "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
 
         If SelectedBPText <> "" Then
@@ -7425,7 +7425,7 @@ Tabs:
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
         SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
-        SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 "
+        SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerBP = DBCommand.ExecuteReader()
@@ -16588,7 +16588,6 @@ CheckTechs:
         Dim TotalItemCount As Integer = 0
         Dim TempItemType As Integer = 0
         Dim TempOwned As Integer = 0
-        Dim TempBPType As Integer = 0
 
         Dim Response As MsgBoxResult
 
@@ -17003,18 +17002,16 @@ CheckTechs:
                 TempOwned = If(readerBPs.IsDBNull(14), 0, CInt(readerBPs.GetValue(14)))
 
                 If TempOwned = 0 Then
-                    InsertItem.Owned = "No"
+                    InsertItem.Owned = No
                 Else
-                    InsertItem.Owned = "Yes"
+                    InsertItem.Owned = Yes
                 End If
 
-                TempBPType = If(readerBPs.IsDBNull(14), -2, CInt(readerBPs.GetValue(16))) ' Default to bpc
+                ' BP Type
+                InsertItem.BlueprintType = GetBPType(readerBPs.GetInt32(16))
 
-                If TempBPType = BPType.Copy Then
-                    InsertItem.BlueprintType = BPType.Copy
-                Else
-                    InsertItem.BlueprintType = BPType.Original
-                End If
+                ' Save the runs for checking decryptors and relics later
+                InsertItem.SavedBPRuns = readerBPs.GetInt32(25)
 
                 ' ME value, either what the entered or in the table
                 Select Case TempItemType
@@ -17022,14 +17019,14 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPME = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             InsertItem.BPME = BaseT2T3ME
                         Else
                             ' Use what they entered
                             InsertItem.BPME = CInt(readerBPs.GetValue(9))
                         End If
                     Case Else
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPME = CInt(txtCalcTempME.Text)
                         Else
@@ -17044,14 +17041,14 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPTE = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             InsertItem.BPTE = BaseT2T3TE
                         Else
                             ' Use what they entered
                             InsertItem.BPTE = CInt(readerBPs.GetValue(10))
                         End If
                     Case Else
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPTE = CInt(txtCalcTempTE.Text)
                         Else
@@ -17179,7 +17176,7 @@ CheckTechs:
                             If CalcDecryptorCheckBoxes(j).Text <> None _
                                 And ((InsertItem.TechLevel = "T2" And chkCalcDecryptorforT2.Enabled And chkCalcDecryptorforT2.Checked) _
                                 Or (InsertItem.TechLevel = "T3" And chkCalcDecryptorforT3.Enabled And chkCalcDecryptorforT3.Checked)) _
-                                And (InsertItem.Owned = "No" Or (InsertItem.Owned = "Yes" And InsertItem.BlueprintType = BPType.Copy)) Then ' Only add decryptors to T2 or T3
+                                And (InsertItem.Owned = No Or (InsertItem.Owned = Yes And InsertItem.BlueprintType = BPType.Copy)) Then ' Only add decryptors to T2 or T3
 
                                 ' Select a decryptor
                                 DecryptorUsed = InventionDecryptors.GetDecryptor(CDbl(CalcDecryptorCheckBoxes(j).Text.Substring(0, 3)))
@@ -17217,6 +17214,9 @@ CheckTechs:
 
                             End If
 
+                            ' Now that we have the decryptor selected, see if they own that bpc and mark it as owned
+
+
                             ' Teams and facilities
                             If InsertItem.TechLevel = "T2" Then
                                 InsertItem.InventionFacility = SelectedCalcInventionFacility
@@ -17231,12 +17231,20 @@ CheckTechs:
                             InsertItem.InventionTeam = NoTeam ' Disable until CCP implements
                             Dim BaseInputs As String = InsertItem.Inputs
 
+                            ' Relics
                             If InsertItem.TechLevel = "T3" Then
                                 ' For T3 need to insert a relic for each one selected
                                 If chkCalcRERelic1.Checked Then
                                     InsertItem.Relic = chkCalcRERelic1.Text
                                     ' Add to the inputs
                                     InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
+
+                                    ' Check the runs saved on the owned bp and if it's less than or equal to 3, then set this with an owned flag
+                                    If InsertItem.SavedBPRuns <= 3 And InsertItem.Owned = Yes Then
+                                        InsertItem.Owned = Yes
+                                    Else
+                                        InsertItem.Owned = No
+                                    End If
                                     ' Insert the items based with decryptor data
                                     Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
                                                             chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
@@ -17245,6 +17253,14 @@ CheckTechs:
                                 If chkCalcRERelic2.Checked Then
                                     InsertItem.Relic = chkCalcRERelic2.Text
                                     InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
+
+                                    ' Check the runs saved on the owned bp and if it's less than or equal to 10, then set this with an owned flag
+                                    If InsertItem.SavedBPRuns <= 10 And InsertItem.Owned = Yes Then
+                                        InsertItem.Owned = Yes
+                                    Else
+                                        InsertItem.Owned = No
+                                    End If
+
                                     ' Insert the items based with decryptor data
                                     Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
                                                             chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
@@ -17253,6 +17269,14 @@ CheckTechs:
                                 If chkCalcRERelic3.Checked Then
                                     InsertItem.Relic = chkCalcRERelic3.Text
                                     InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
+
+                                    ' Check the runs saved on the owned bp and if it's less than or equal to 20, then set this with an owned flag
+                                    If InsertItem.SavedBPRuns <= 20 And InsertItem.Owned = Yes Then
+                                        InsertItem.Owned = Yes
+                                    Else
+                                        InsertItem.Owned = No
+                                    End If
+
                                     ' Insert the items based with decryptor data
                                     Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
                                                             chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
@@ -17891,11 +17915,7 @@ DisplayResults:
                     Case ProgramSettings.InventionChanceColumnName
                         BPList.SubItems.Add(FormatPercent(FinalItemList(i).InventionChance, 2))
                     Case ProgramSettings.BPTypeColumnName
-                        If FinalItemList(i).BlueprintType = BPType.Copy Then
-                            BPList.SubItems.Add("Copy")
-                        Else
-                            BPList.SubItems.Add("BPO")
-                        End If
+                        BPList.SubItems.Add(GetBPTypeSTring(FinalItemList(i).BlueprintType))
                     Case ProgramSettings.RaceColumnName
                         BPList.SubItems.Add(FinalItemList(i).Race)
                     Case ProgramSettings.VolumeperItemColumnName
@@ -17975,7 +17995,7 @@ DisplayResults:
             Next
 
             ' Color owned BP's
-            If FinalItemList(i).Owned = "Yes" Then
+            If FinalItemList(i).Owned = Yes Then
                 BPList.BackColor = Color.BlanchedAlmond
             ElseIf UserInventedBPs.Contains(FinalItemList(i).BPID) Then
                 ' It's an invented BP that we own the T1 BP for
@@ -18959,6 +18979,7 @@ ExitCalc:
         ' Inputs
         Public Decryptor As Decryptor
         Public Relic As String
+        Public SavedBPRuns As Integer ' The number of runs on the bp that they have, helpful for determing decryptor and relics
 
         ' Can do variables
         Public CanBuildBP As Boolean
@@ -19047,6 +19068,7 @@ ExitCalc:
             CopyofMe.Inputs = Inputs
             CopyofMe.Decryptor = Decryptor
             CopyofMe.Relic = Relic
+            CopyofMe.SavedBPRuns = SavedBPRuns
 
             CopyofMe.CanBuildBP = CanBuildBP
             CopyofMe.CanInvent = CanInvent
