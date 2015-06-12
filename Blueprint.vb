@@ -1577,25 +1577,17 @@ Public Class Blueprint
         If TechLevel = BlueprintTechLevel.T2 Then
             SingleInventedBPCRuns = MaxProductionLimit + InventionDecryptor.RunMod
         Else
-            SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(InventionT3BPCTypeID)
+            ' Base it off of the relic type - need to look it up based on the TypeID
+            SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
+            SQL = SQL & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionT3BPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerBP = DBCommand.ExecuteReader()
 
-            ' Base it off of the relic type - need to look it up based on the TypeID
-            ' TODO - use industry products to get the quantity for the runs on t3 - make new function
             If readerBP.Read Then
                 ' Set the name
                 Relic = readerBP.GetString(0)
-                If readerBP.GetString(0).Contains(IntactRelic) Then
-                    MaxProductionLimit = 20
-                ElseIf readerBP.GetString(0).Contains(MalfunctioningRelic) Then
-                    MaxProductionLimit = 10
-                ElseIf readerBP.GetString(0).Contains(WreckedRelic) Then
-                    MaxProductionLimit = 3
-                Else
-                    MaxProductionLimit = 3
-                End If
+                MaxProductionLimit = readerBP.GetInt32(1)
             Else
                 MaxProductionLimit = 3
                 Relic = WreckedRelic

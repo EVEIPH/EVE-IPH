@@ -1805,4 +1805,33 @@ InvalidDate:
 
     End Function
 
+    ' Looks up the relic based on the decryptor used and the runs sent on the bp the relic created
+    Public Function GetRelicfromInputs(ByVal DecryptorUsed As Decryptor, BPRuns As Integer) As String
+
+        Dim BaseRuns As Integer = BPRuns - DecryptorUsed.RunMod
+        'Dim SQL As String
+        'Dim readerBP As SQLiteDataReader
+
+        'Sql = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
+        'Sql = Sql & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionT3BPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
+
+        'DBCommand = New SQLiteCommand(Sql, DB)
+        'readerBP = DBCommand.ExecuteReader()
+
+        'If readerBP.Read Then
+
+        'End If
+
+        Select Case BaseRuns
+            Case Is <= 3
+
+            Case Is <= 10
+
+            Case Is <= 20
+
+        End Select
+
+
+    End Function
+
 End Module

@@ -7590,7 +7590,7 @@ Tabs:
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3
         If NewBP Then
-            If True Then
+            If TempBPType = BPType.InventedBPC Then
                 ' Load the decryptor based on ME/TE
                 Dim TempD As New DecryptorList
                 LoadingInventionDecryptors = True
@@ -7608,6 +7608,8 @@ Tabs:
             Else
                 Call ResetDecryptorCombos()
             End If
+
+
             Call LoadRelicTypes(BPTypeID)
         End If
 
