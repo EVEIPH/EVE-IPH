@@ -17194,31 +17194,6 @@ CheckTechs:
                                 InsertItem.BPTE = BaseT2T3TE
                             End If
 
-                            Dim BaseInputs As String = InsertItem.Inputs
-
-                            ' Relics
-                            If InsertItem.TechLevel = "T3" Then
-                                ' For T3 need to insert a relic for each one selected
-                                If chkCalcRERelic1.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic1.Text
-                                End If
-
-                                If chkCalcRERelic2.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic2.Text
-                                End If
-
-                                If chkCalcRERelic3.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic3.Text
-                                End If
-
-                                ' Add to the inputs
-                                InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
-
-                            Else
-                                ' No relic for T2
-                                InsertItem.Relic = ""
-                            End If
-
                             ' Teams and facilities
                             If InsertItem.TechLevel = "T2" Then
                                 InsertItem.InventionFacility = SelectedCalcInventionFacility
@@ -17232,19 +17207,30 @@ CheckTechs:
 
                             InsertItem.InventionTeam = NoTeam ' Disable until CCP implements
 
-                            ' We know the original decryptor and relic used for this bp so see if they match what we just 
-                            ' used and set the owned flag and it's invented, which all these are - also make sure the me/te are same
-                            ' as base if no decryptor used
-                            If InsertItem.Decryptor.Name = OriginalDecryptorUsed.Name And OriginalRelicUsed.Contains(InsertItem.Relic) _
-                                And OriginalBPOwnedFlag = True And InsertItem.BlueprintType = BPType.InventedBPC _
-                                And Not (OriginalDecryptorUsed.Name = NoDecryptor.Name And OrigME <> BaseT2T3ME And OrigTE <> BaseT2T3TE) Then
-                                InsertItem.Owned = Yes
-                            Else
-                                InsertItem.Owned = No
-                            End If
+                            Dim BaseInputs As String = InsertItem.Inputs
 
-                            ' Insert the item 
-                            Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                            ' Relics
+                            If InsertItem.TechLevel = "T3" Then
+                                ' Loop through each relic check box and process for each decryptor
+                                For k = 1 To CalcRelicCheckboxes.Count - 1
+                                    If CalcRelicCheckboxes(k).Checked Then
+                                        InsertItem.Relic = CalcRelicCheckboxes(k).Text
+                                        ' Add to the inputs
+                                        InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
+                                        ' Set the owned flag before inserting
+                                        Call SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
+                                        ' Insert the item 
+                                        Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                                    End If
+                                Next
+                            Else
+                                ' No relic for T2
+                                InsertItem.Relic = ""
+                                ' Set the owned flag before inserting
+                                Call SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
+                                ' Insert the item 
+                                Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                            End If
 
                             ' If they don't want to include decryptors, then exit loop after adding none
                             If (InsertItem.TechLevel = "T2" And (chkCalcDecryptorforT2.Enabled = False Or chkCalcDecryptorforT2.Checked = False)) _
@@ -18081,6 +18067,21 @@ ExitCalc:
         Return ""
 
     End Function
+
+    ' Sets the owned flag for an insert item
+    Private Sub SetItemOwnedFlag(ByRef SentItem As ManufacturingItem, ByVal SentOrigDecryptor As Decryptor, ByVal SentOrigRelic As String, _
+                                 ByVal SentOrigME As Integer, ByVal SentOrigTE As Integer, ByVal SentOriginalBPOwnedFlag As Boolean)
+        ' We know the original decryptor and relic used for this bp so see if they match what we just 
+        ' used and set the owned flag and it's invented, which all these are - also make sure the me/te are same
+        ' as base if no decryptor used
+        If SentItem.Decryptor.Name = SentOrigDecryptor.Name And SentOrigRelic.Contains(SentItem.Relic) _
+            And SentOriginalBPOwnedFlag = True And SentItem.BlueprintType = BPType.InventedBPC _
+            And Not (SentOrigDecryptor.Name = NoDecryptor.Name And SentOrigME <> BaseT2T3ME And SentOrigTE <> BaseT2T3TE) Then
+            SentItem.Owned = Yes
+        Else
+            SentItem.Owned = No
+        End If
+    End Sub
 
     ' Loads the cmbBPTypeFilter object with types based on the radio button selected - Ie, Drones will load Drone types (Small, Medium, Heavy...etc)
     Private Sub LoadCalcBPTypes()
