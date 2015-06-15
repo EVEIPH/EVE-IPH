@@ -831,11 +831,12 @@ Public Class ProgramSettings
     Private Const InventionTeamSettingsFileName As String = "InventionTeamSettings"
 
     ' 5 belts
-    Private Const IndustryBeltOreChecksFileName1 As String = "IndustryBeltOreChecksSettings1"
-    Private Const IndustryBeltOreChecksFileName2 As String = "IndustryBeltOreChecksSettings2"
-    Private Const IndustryBeltOreChecksFileName3 As String = "IndustryBeltOreChecksSettings3"
-    Private Const IndustryBeltOreChecksFileName4 As String = "IndustryBeltOreChecksSettings4"
-    Private Const IndustryBeltOreChecksFileName5 As String = "IndustryBeltOreChecksSettings5"
+    Private IndustryBeltOreChecksFileName As String = IndustryBeltOreChecksFileName
+    Private Const IndustryBeltOreChecksFileName1 As String = "1"
+    Private Const IndustryBeltOreChecksFileName2 As String = "2"
+    Private Const IndustryBeltOreChecksFileName3 As String = "3"
+    Private Const IndustryBeltOreChecksFileName4 As String = "4"
+    Private Const IndustryBeltOreChecksFileName5 As String = "5"
 
     ' Multiple asset windows
     Private Const AssetWindowFileNameDefault As String = "AssetWindowSettingsDefault"
@@ -892,14 +893,14 @@ Public Class ProgramSettings
     End Sub
 
     ' Gets a value from a referenced XML file by searching for it
-    Private Function GetSettingValue(ByRef XMLFile As String, ObjectType As SettingTypes, RootElement As String, ElementString As String, DefaultValue As Object) As Object
+    Private Function GetSettingValue(ByRef FileName As String, ObjectType As SettingTypes, RootElement As String, ElementString As String, DefaultValue As Object) As Object
         Dim m_xmld As New XmlDocument
         Dim m_nodelist As XmlNodeList
 
         Dim TempValue As String
 
         'Load the Xml file
-        m_xmld.Load(SettingsFolder & XMLFile)
+        m_xmld.Load(SettingsFolder & FileName & XMLfileType)
 
         'Get the settings
 
@@ -938,6 +939,17 @@ Public Class ProgramSettings
 
     End Function
 
+    ' Just checks if the file exists or not so we don't have to mess with file names
+    Private Function FileExists(FileName As String) As Boolean
+
+        If File.Exists(SettingsFolder & FileName & XMLfileType) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
     Private Structure Setting
         Dim Name As String
         Dim Value As String
@@ -964,7 +976,7 @@ Public Class ProgramSettings
         Dim TempSettings As ApplicationSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & AppSettingsFileName) Then
+            If FileExists(AppSettingsFileName) Then
 
                 'Get the settings
                 With TempSettings
@@ -1124,7 +1136,7 @@ Public Class ProgramSettings
         Dim TempSettings As ShoppingListSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & ShoppingListSettingsFileName) Then
+            If FileExists(ShoppingListSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .DataExportFormat = CStr(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeString, ShoppingListSettingsFileName, "DataExportFormat", DefaultDataExportFormat))
@@ -1211,7 +1223,7 @@ Public Class ProgramSettings
         Dim TempSettings As BPTabSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & BPSettingsFileName) Then
+            If FileExists(BPSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .BlueprintTypeSelection = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, "BPSettings", "BlueprintTypeSelection", DefaultBPSelectionType))
@@ -1303,7 +1315,7 @@ Public Class ProgramSettings
 
             BPSettingsList(29) = New Setting("IncludeIgnoredBPs", CStr(SentSettings.IncludeIgnoredBPs))
 
-            Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, "BPSettings")
+            Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving BP Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -1357,6 +1369,7 @@ Public Class ProgramSettings
 
         ' Save locally
         BPSettings = LocalSettings
+
         Return LocalSettings
 
     End Function
@@ -1370,7 +1383,7 @@ Public Class ProgramSettings
         Dim TempSettings As UpdatePriceTabSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & UpdatePricesFileName) Then
+            If FileExists(UpdatePricesFileName) Then
 
                 'Get the settings
                 With TempSettings
@@ -1626,80 +1639,80 @@ Public Class ProgramSettings
         Dim TempSettings As ManufacturingTabSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & ManufacturingSettingsFileName) Then
+            If FileExists(ManufacturingSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .BlueprintType = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "BlueprintType", DefaultBlueprintType))
-                    .CheckTech1 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTech1", DefaultCheckTech1))
-                    .CheckTech2 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTech2", DefaultCheckTech2))
-                    .CheckTech3 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTech3", DefaultCheckTech3))
-                    .CheckTechStoryline = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTechStoryline", DefaultCheckTechStoryline))
-                    .CheckTechNavy = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTechNavy", DefaultCheckTechNavy))
-                    .CheckTechPirate = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckTechPirate", DefaultCheckTechPirate))
-                    .ItemTypeFilter = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "ItemTypeFilter", DefaultItemTypeFilter))
-                    .TextItemFilter = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "TextItemFilter", DefaultTextItemFilter))
-                    .CheckBPTypeShips = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeShips", DefaultCheckBPTypeShips))
-                    .CheckBPTypeDrones = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeDrones", DefaultCheckBPTypeDrones))
-                    .CheckBPTypeComponents = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeComponents", DefaultCheckBPTypeComponents))
-                    .CheckBPTypeStructures = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeStructures", DefaultCheckBPTypeStructures))
-                    .CheckBPTypeMisc = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeMisc", DefaultCheckBPTypeTools))
-                    .CheckBPTypeModules = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeModules", DefaultCheckBPTypeModules))
-                    .CheckBPTypeAmmoCharges = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeAmmoCharges", DefaultCheckBPTypeAmmoCharges))
-                    .CheckBPTypeRigs = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeRigs", DefaultCheckBPTypeRigs))
-                    .CheckBPTypeSubsystems = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeSubsystems", DefaultCheckBPTypeSubsystems))
-                    .CheckBPTypeBoosters = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeBoosters", DefaultCheckBPTypeBoosters))
-                    .CheckBPTypeDeployables = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeDeployables", DefaultCheckBPTypeDeployables))
-                    .CheckBPTypeCelestials = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
-                    .CheckBPTypeStationParts = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
-                    .AveragePriceDuration = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "AveragePriceDuration", DefaultAveragePriceDuration))
-                    .CheckDecryptorNone = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptorNone", DefaultCheckDecryptorNone))
-                    .CheckDecryptor06 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor06", DefaultCheckDecryptor06))
-                    .CheckDecryptor09 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor09", DefaultCheckDecryptor09))
-                    .CheckDecryptor10 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor10", DefaultCheckDecryptor10))
-                    .CheckDecryptor11 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor11", DefaultCheckDecryptor11))
-                    .CheckDecryptor12 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor12", DefaultCheckDecryptor12))
-                    .CheckDecryptor15 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor15", DefaultCheckDecryptor15))
-                    .CheckDecryptor18 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor18", DefaultCheckDecryptor18))
-                    .CheckDecryptor19 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptor19", DefaultCheckDecryptor19))
-                    .CheckDecryptorUseforT2 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptorUseforT2", DefaultCheckDecryptorUseforT2))
-                    .CheckDecryptorUseforT3 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckDecryptorUseforT3", defaultCheckDecryptorUseforT3))
-                    .CheckIgnoreInvention = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIgnoreInvention", DefaultCheckIgnoreInvention))
-                    .CheckRelicWrecked = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRelicWrecked", DefaultCheckRelicWrecked))
-                    .CheckRelicIntact = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRelicIntact", DefaultCheckRelicIntact))
-                    .CheckRelicMalfunction = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRelicMalfunction", DefaultCheckRelicMalfunction))
-                    .CheckOnlyBuild = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckOnlyBuild", DefaultCheckOnlyBuild))
-                    .CheckOnlyInvent = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckOnlyInvent", DefaultCheckOnlyInvent))
-                    .CheckOnlyRE = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckOnlyRE", DefaultCheckOnlyRE))
-                    .CheckIncludeTaxes = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIncludeTaxes", DefaultCheckIncludeTaxes))
-                    .CheckIncludeBrokersFees = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIncludeBrokersFees", DefaultIncludeBrokersFees))
-                    .CheckIncludeUsage = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIncludeUsage", DefaultCheckIncludeUsage))
-                    .CheckRaceAmarr = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRaceAmarr", DefaultCheckRaceAmarr))
-                    .CheckRaceCaldari = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRaceCaldari", DefaultCheckRaceCaldari))
-                    .CheckRaceGallente = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRaceGallente", DefaultCheckRaceGallente))
-                    .CheckRaceMinmatar = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRaceMinmatar", DefaultCheckRaceMinmatar))
-                    .CheckRacePirate = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRacePirate", DefaultCheckRacePirate))
-                    .CheckRaceOther = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckRaceOther", DefaultCheckRaceOther))
-                    .SortBy = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "SortBy", DefaultSortBy))
-                    .PriceCompare = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "PriceCompare", DefaultPriceCompare))
-                    .CheckIncludeT2Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIncludeT2Owned", DefaultCheckIncludeT2Owned))
-                    .CheckIncludeT3Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckIncludeT3Owned", DefaultCheckIncludeT3Owned))
-                    .IgnoreSVRThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, "ManufacturingSettings", "IgnoreLowSVRThreshold", DefaultIgnoreSVRThreshold))
-                    .CheckSVRIncludeNull = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckSVRIncludeNull", DefaultCheckSVRIncludeNull))
-                    .AveragePriceRegion = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, "ManufacturingSettings", "AveragePriceRegion", DefaultSVRRegion))
-                    .ProductionLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, "ManufacturingSettings", "ProductionLines", DefaultCalcProductionLines))
-                    .LaboratoryLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, "ManufacturingSettings", "LaboratoryLines", DefaultCalcLaboratoryLines))
-                    .Runs = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, "ManufacturingSettings", "Runs", DefaultCalcRuns))
-                    .BPRuns = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, "ManufacturingSettings", "BPRuns", DefaultCalcBPRuns))
-                    .CheckSmall = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckSmall", DefaultCalcSizeChecks))
-                    .CheckMedium = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckMedium", DefaultCalcSizeChecks))
-                    .CheckLarge = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckLarge", DefaultCalcSizeChecks))
-                    .CheckXL = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckXL", DefaultCalcSizeChecks))
-                    .CheckCapitalComponentsFacility = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckCapitalComponentsFacility", DefaultCheckT3Destroyers))
-                    .CheckT3DestroyerFacility = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckT3DestroyerFacility", DefaultCheckCapComponents))
-                    .CheckAutoCalcNumBPs = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "CheckAutoCalcNumBPs", DefaultCheckAutoCalcNumBPs))
-                    .IgnoreInvention = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "IgnoreInvention", DefaultCalcIgnoreInvention))
-                    .IgnoreMinerals = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "IgnoreMinerals", DefaultCalcIgnoreMinerals))
-                    .IgnoreT1Item = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, "ManufacturingSettings", "IgnoreT1Item", DefaultCalcIgnoreT1Item))
+                    .BlueprintType = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "BlueprintType", DefaultBlueprintType))
+                    .CheckTech1 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTech1", DefaultCheckTech1))
+                    .CheckTech2 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTech2", DefaultCheckTech2))
+                    .CheckTech3 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTech3", DefaultCheckTech3))
+                    .CheckTechStoryline = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTechStoryline", DefaultCheckTechStoryline))
+                    .CheckTechNavy = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTechNavy", DefaultCheckTechNavy))
+                    .CheckTechPirate = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckTechPirate", DefaultCheckTechPirate))
+                    .ItemTypeFilter = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "ItemTypeFilter", DefaultItemTypeFilter))
+                    .TextItemFilter = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "TextItemFilter", DefaultTextItemFilter))
+                    .CheckBPTypeShips = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeShips", DefaultCheckBPTypeShips))
+                    .CheckBPTypeDrones = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeDrones", DefaultCheckBPTypeDrones))
+                    .CheckBPTypeComponents = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeComponents", DefaultCheckBPTypeComponents))
+                    .CheckBPTypeStructures = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStructures", DefaultCheckBPTypeStructures))
+                    .CheckBPTypeMisc = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeMisc", DefaultCheckBPTypeTools))
+                    .CheckBPTypeModules = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeModules", DefaultCheckBPTypeModules))
+                    .CheckBPTypeAmmoCharges = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeAmmoCharges", DefaultCheckBPTypeAmmoCharges))
+                    .CheckBPTypeRigs = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeRigs", DefaultCheckBPTypeRigs))
+                    .CheckBPTypeSubsystems = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeSubsystems", DefaultCheckBPTypeSubsystems))
+                    .CheckBPTypeBoosters = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeBoosters", DefaultCheckBPTypeBoosters))
+                    .CheckBPTypeDeployables = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeDeployables", DefaultCheckBPTypeDeployables))
+                    .CheckBPTypeCelestials = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
+                    .CheckBPTypeStationParts = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
+                    .AveragePriceDuration = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "AveragePriceDuration", DefaultAveragePriceDuration))
+                    .CheckDecryptorNone = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorNone", DefaultCheckDecryptorNone))
+                    .CheckDecryptor06 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor06", DefaultCheckDecryptor06))
+                    .CheckDecryptor09 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor09", DefaultCheckDecryptor09))
+                    .CheckDecryptor10 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor10", DefaultCheckDecryptor10))
+                    .CheckDecryptor11 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor11", DefaultCheckDecryptor11))
+                    .CheckDecryptor12 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor12", DefaultCheckDecryptor12))
+                    .CheckDecryptor15 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor15", DefaultCheckDecryptor15))
+                    .CheckDecryptor18 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor18", DefaultCheckDecryptor18))
+                    .CheckDecryptor19 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor19", DefaultCheckDecryptor19))
+                    .CheckDecryptorUseforT2 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorUseforT2", DefaultCheckDecryptorUseforT2))
+                    .CheckDecryptorUseforT3 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorUseforT3", DefaultCheckDecryptorUseforT3))
+                    .CheckIgnoreInvention = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIgnoreInvention", DefaultCheckIgnoreInvention))
+                    .CheckRelicWrecked = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicWrecked", DefaultCheckRelicWrecked))
+                    .CheckRelicIntact = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicIntact", DefaultCheckRelicIntact))
+                    .CheckRelicMalfunction = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicMalfunction", DefaultCheckRelicMalfunction))
+                    .CheckOnlyBuild = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyBuild", DefaultCheckOnlyBuild))
+                    .CheckOnlyInvent = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyInvent", DefaultCheckOnlyInvent))
+                    .CheckOnlyRE = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyRE", DefaultCheckOnlyRE))
+                    .CheckIncludeTaxes = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeTaxes", DefaultCheckIncludeTaxes))
+                    .CheckIncludeBrokersFees = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeBrokersFees", DefaultIncludeBrokersFees))
+                    .CheckIncludeUsage = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeUsage", DefaultCheckIncludeUsage))
+                    .CheckRaceAmarr = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceAmarr", DefaultCheckRaceAmarr))
+                    .CheckRaceCaldari = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceCaldari", DefaultCheckRaceCaldari))
+                    .CheckRaceGallente = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceGallente", DefaultCheckRaceGallente))
+                    .CheckRaceMinmatar = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceMinmatar", DefaultCheckRaceMinmatar))
+                    .CheckRacePirate = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRacePirate", DefaultCheckRacePirate))
+                    .CheckRaceOther = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceOther", DefaultCheckRaceOther))
+                    .SortBy = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "SortBy", DefaultSortBy))
+                    .PriceCompare = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "PriceCompare", DefaultPriceCompare))
+                    .CheckIncludeT2Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeT2Owned", DefaultCheckIncludeT2Owned))
+                    .CheckIncludeT3Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeT3Owned", DefaultCheckIncludeT3Owned))
+                    .IgnoreSVRThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "IgnoreLowSVRThreshold", DefaultIgnoreSVRThreshold))
+                    .CheckSVRIncludeNull = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckSVRIncludeNull", DefaultCheckSVRIncludeNull))
+                    .AveragePriceRegion = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "AveragePriceRegion", DefaultSVRRegion))
+                    .ProductionLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "ProductionLines", DefaultCalcProductionLines))
+                    .LaboratoryLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "LaboratoryLines", DefaultCalcLaboratoryLines))
+                    .Runs = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "Runs", DefaultCalcRuns))
+                    .BPRuns = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "BPRuns", DefaultCalcBPRuns))
+                    .CheckSmall = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckSmall", DefaultCalcSizeChecks))
+                    .CheckMedium = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckMedium", DefaultCalcSizeChecks))
+                    .CheckLarge = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckLarge", DefaultCalcSizeChecks))
+                    .CheckXL = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckXL", DefaultCalcSizeChecks))
+                    .CheckCapitalComponentsFacility = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckCapitalComponentsFacility", DefaultCheckT3Destroyers))
+                    .CheckT3DestroyerFacility = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckT3DestroyerFacility", DefaultCheckCapComponents))
+                    .CheckAutoCalcNumBPs = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckAutoCalcNumBPs", DefaultCheckAutoCalcNumBPs))
+                    .IgnoreInvention = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreInvention", DefaultCalcIgnoreInvention))
+                    .IgnoreMinerals = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreMinerals", DefaultCalcIgnoreMinerals))
+                    .IgnoreT1Item = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreT1Item", DefaultCalcIgnoreT1Item))
                 End With
 
             Else
@@ -1881,7 +1894,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(69) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
             ManufacturingSettingsList(70) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
 
-            Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, "ManufacturingSettings")
+            Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving Manufacturing Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -1910,7 +1923,7 @@ Public Class ProgramSettings
             ReDim TempSettings.CorpsStanding(NumberofDCSettingsCorpRecords)
             ReDim TempSettings.CorpsChecked(NumberofDCSettingsCorpRecords)
 
-            If File.Exists(SettingsFolder & DatacoreSettingsFileName) Then
+            If FileExists(DatacoreSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .PricesFrom = CStr(GetSettingValue(DatacoreSettingsFileName, SettingTypes.TypeString, DatacoreSettingsFileName, "PricesFrom", DefaultReactPOSFuelCost))
@@ -2078,21 +2091,21 @@ Public Class ProgramSettings
         Dim TempSettings As ReactionsTabSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & ReactionSettingsFileName) Then
+            If FileExists(ReactionSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .POSFuelCost = CDbl(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeDouble, "ReactionSettings", "POSFuelCost", DefaultReactPOSFuelCost))
-                    .CheckTaxes = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckTaxes", DefaultReactCheckTaxes))
-                    .CheckFees = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckFees", DefaultReactCheckFees))
-                    .CheckAdvMoonMats = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckAdvMoonMats", DefaultReactItemChecks))
-                    .CheckProcessedMoonMats = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckProcessedMoonMats", DefaultReactItemChecks))
-                    .CheckHybrid = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckHybrid", DefaultReactItemChecks))
-                    .CheckComplexBio = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckComplexBio", DefaultReactItemChecks))
-                    .CheckSimpleBio = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckSimpleBio", DefaultReactItemChecks))
-                    .CheckBuildBasic = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckBuildBasic", DefaultReactItemChecks))
-                    .CheckIgnoreMarket = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckIgnoreMarket", DefaultReactItemChecks))
-                    .CheckRefine = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, "ReactionSettings", "CheckRefine", DefaultReactItemChecks))
-                    .NumberofPOS = CInt(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeInteger, "ReactionSettings", "NumberofPOS", DefaultReactNumPOS))
+                    .POSFuelCost = CDbl(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "POSFuelCost", DefaultReactPOSFuelCost))
+                    .CheckTaxes = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckTaxes", DefaultReactCheckTaxes))
+                    .CheckFees = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckFees", DefaultReactCheckFees))
+                    .CheckAdvMoonMats = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckAdvMoonMats", DefaultReactItemChecks))
+                    .CheckProcessedMoonMats = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckProcessedMoonMats", DefaultReactItemChecks))
+                    .CheckHybrid = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckHybrid", DefaultReactItemChecks))
+                    .CheckComplexBio = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckComplexBio", DefaultReactItemChecks))
+                    .CheckSimpleBio = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckSimpleBio", DefaultReactItemChecks))
+                    .CheckBuildBasic = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckBuildBasic", DefaultReactItemChecks))
+                    .CheckIgnoreMarket = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckIgnoreMarket", DefaultReactItemChecks))
+                    .CheckRefine = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckRefine", DefaultReactItemChecks))
+                    .NumberofPOS = CInt(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "NumberofPOS", DefaultReactNumPOS))
                 End With
 
             Else
@@ -2154,7 +2167,7 @@ Public Class ProgramSettings
             ReactionSettingsList(10) = New Setting("CheckRefine", CStr(SentSettings.CheckRefine))
             ReactionSettingsList(11) = New Setting("NumberofPOS", CStr(SentSettings.NumberofPOS))
 
-            Call WriteSettingsToFile(ReactionSettingsFileName, ReactionSettingsList, "ReactionSettings")
+            Call WriteSettingsToFile(ReactionSettingsFileName, ReactionSettingsList, ReactionSettingsFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving Reaction Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -2176,84 +2189,84 @@ Public Class ProgramSettings
         Dim TempSettings As MiningTabSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & MiningSettingsFileName) Then
+            If FileExists(MiningSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .OreType = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "OreType", DefaultMiningOreType))
-                    .CheckHighYieldOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckHighYieldOres", DefaultMiningCheckHighYieldOres))
-                    .CheckHighSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckHighSecOres", DefaultMiningCheckHighSecOres))
-                    .CheckLowSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckLowSecOres", DefaultMiningCheckLowSecOres))
-                    .CheckNullSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckNullSecOres", DefaultMiningCheckNullSecOres))
-                    .CheckSovAmarr = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovAmarr", DefaultMiningCheckSovAmarr))
-                    .CheckSovCaldari = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovCaldari", DefaultMiningCheckSovCaldari))
-                    .CheckSovGallente = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovGallente", DefaultMiningCheckSovGallente))
-                    .CheckSovMinmatar = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovMinmatar", DefaultMiningCheckSovMinmatar))
-                    .CheckIncludeFees = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckIncludeFees", DefaultMiningCheckIncludeFees))
-                    .CheckIncludeTaxes = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
-                    .CheckIncludeJumpFuelCosts = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckIncludeJumpFuelCosts", DefaultMiningCheckIncludeJumpFuelCosts))
-                    .TotalJumpFuelCost = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, "MiningSettings", "TotalJumpFuelCost", DefaultMiningTotalJumpFuelCost))
-                    .TotalJumpFuelM3 = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, "MiningSettings", "TotalJumpFuelM3", DefaultMiningTotalJumpFuelM3))
-                    .JumpCompressedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "JumpCompressedOre", DefaultMiningJumpCompressedOre))
-                    .JumpMinerals = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "JumpMinerals", DefaultMiningJumpMinerals))
-                    .OreMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "OreMiningShip", DefaultMiningMiningShip))
-                    .IceMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "IceMiningShip", DefaultMiningIceMiningShip))
-                    .GasMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "GasMiningShip", DefaultMiningGasMiningShip))
-                    .OreStrip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "OreStrip", DefaultMiningOreStrip))
-                    .IceStrip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "IceStrip", DefaultMiningIceStrip))
-                    .GasHarvester = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "GasHarvester", DefaultMiningGasHarvester))
-                    .NumOreMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumOreMiners", DefaultMiningNumOreMiners))
-                    .NumIceMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumIceMiners", DefaultMiningNumIceMiners))
-                    .NumGasHarvesters = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumGasHarvesters", DefaultMiningNumGasHarvesters))
-                    .OreUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "OreUpgrade", DefaultMiningOreUpgrade))
+                    .OreType = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreType", DefaultMiningOreType))
+                    .CheckHighYieldOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckHighYieldOres", DefaultMiningCheckHighYieldOres))
+                    .CheckHighSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckHighSecOres", DefaultMiningCheckHighSecOres))
+                    .CheckLowSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckLowSecOres", DefaultMiningCheckLowSecOres))
+                    .CheckNullSecOres = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckNullSecOres", DefaultMiningCheckNullSecOres))
+                    .CheckSovAmarr = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovAmarr", DefaultMiningCheckSovAmarr))
+                    .CheckSovCaldari = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovCaldari", DefaultMiningCheckSovCaldari))
+                    .CheckSovGallente = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovGallente", DefaultMiningCheckSovGallente))
+                    .CheckSovMinmatar = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMinmatar", DefaultMiningCheckSovMinmatar))
+                    .CheckIncludeFees = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
+                    .CheckIncludeTaxes = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
+                    .CheckIncludeJumpFuelCosts = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeJumpFuelCosts", DefaultMiningCheckIncludeJumpFuelCosts))
+                    .TotalJumpFuelCost = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelCost", DefaultMiningTotalJumpFuelCost))
+                    .TotalJumpFuelM3 = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelM3", DefaultMiningTotalJumpFuelM3))
+                    .JumpCompressedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpCompressedOre", DefaultMiningJumpCompressedOre))
+                    .JumpMinerals = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpMinerals", DefaultMiningJumpMinerals))
+                    .OreMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreMiningShip", DefaultMiningMiningShip))
+                    .IceMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningShip", DefaultMiningIceMiningShip))
+                    .GasMiningShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasMiningShip", DefaultMiningGasMiningShip))
+                    .OreStrip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreStrip", DefaultMiningOreStrip))
+                    .IceStrip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceStrip", DefaultMiningIceStrip))
+                    .GasHarvester = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasHarvester", DefaultMiningGasHarvester))
+                    .NumOreMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumOreMiners", DefaultMiningNumOreMiners))
+                    .NumIceMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumIceMiners", DefaultMiningNumIceMiners))
+                    .NumGasHarvesters = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumGasHarvesters", DefaultMiningNumGasHarvesters))
+                    .OreUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreUpgrade", DefaultMiningOreUpgrade))
                     ' Changed the text in the box on 4/11/2015
                     If Not MiningUpgradesCollection.Contains(.OreUpgrade) Then
                         ' Set to default
                         .OreUpgrade = DefaultMiningOreUpgrade
                     End If
-                    .IceUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "IceUpgrade", DefaultMiningIceUpgrade))
+                    .IceUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceUpgrade", DefaultMiningIceUpgrade))
                     ' Changed the text in the box on 4/11/2015
                     If Not MiningUpgradesCollection.Contains(.IceUpgrade) Then
                         ' Set to default
                         .IceUpgrade = DefaultMiningOreUpgrade
                     End If
-                    .GasUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "GasUpgrade", DefaultMiningGasUpgrade))
-                    .NumOreUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumOreUpgrades", DefaultMiningNumOreUpgrades))
-                    .NumIceUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumIceUpgrades", DefaultMiningNumIceUpgrades))
-                    .NumGasUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumGasUpgrades", DefaultMiningNumGasUpgrades))
-                    .MichiiImplant = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "MichiiImplant", DefaultMiningMichiiImplant))
-                    .T2Crystals = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "T2Crystals", DefaultMiningT2Crystals))
-                    .OreImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "OreImplant", DefaultMiningOreImplant))
-                    .IceImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "IceImplant", DefaultMiningIceImplant))
-                    .GasImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "GasImplant", DefaultMiningGasImplant))
-                    .CheckUseHauler = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckUseHauler", DefaultMiningCheckUseHauler))
-                    .RoundTripMin = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "RoundTripMin", DefaultMiningRoundTripMin))
-                    .RoundTripSec = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "RoundTripSec", DefaultMiningRoundTripSec))
-                    .Haulerm3 = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "Haulerm3", DefaultMiningHaulerm3))
-                    .CheckUseFleetBooster = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckUseFleetBooster", DefaultMiningCheckUseFleetBooster))
-                    .BoosterShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, "MiningSettings", "BoosterShip", DefaultMiningBoosterShip))
-                    .BoosterShipSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "BoosterShipSkill", DefaultMiningBoosterShipSkill))
-                    .MiningFormanSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "MiningFormanSkill", DefaultMiningMiningFormanSkill))
-                    .MiningDirectorSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "MiningDirectorSkill", DefaultMiningMiningDirectorSkill))
-                    .WarfareLinkSpecSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "WarfareLinkSpecSkill", DefaultMiningWarfareLinkSpecSkill))
-                    .CheckMineForemanLaserOpBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "CheckMineForemanLaserOpBoost", DefaultMiningCheckMineForemanLaserOpBoost))
-                    .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
-                    .CheckMiningForemanMindLink = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
-                    .CheckRorqDeployed = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckRorqDeployed", DefaultMiningRorqDeployed))
-                    .MiningDroneM3perHour = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, "MiningSettings", "MiningDroneM3perHour", DefaultMiningDroneM3perHour))
-                    .RefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "RefinedOre", DefaultMiningRefinedOre))
-                    .UnrefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "UnrefinedOre", DefaultMiningUnrefinedOre))
-                    .CompressedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CompressedOre", DefaultMiningCompressedOre))
-                    .IndustrialReconfig = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "IndustrialReconfig", DefaultMiningIndustrialReconfig))
-                    .MercoxitMiningRig = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "MercoxitMiningRig", DefaultMiningRig))
-                    .IceMiningRig = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "IceMiningRig", DefaultMiningRig))
-                    .CheckSovWormhole = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovWormhole", DefaultMiningCheckSovWormhole))
-                    .CheckSovC1 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC1", DefaultMiningCheckSovC1))
-                    .CheckSovC2 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC2", DefaultMiningCheckSovC2))
-                    .CheckSovC3 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC3", DefaultMiningCheckSovC3))
-                    .CheckSovC4 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC4", DefaultMiningCheckSovC4))
-                    .CheckSovC5 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC5", DefaultMiningCheckSovC5))
-                    .CheckSovC6 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, "MiningSettings", "CheckSovC6", DefaultMiningCheckSovC6))
-                    .NumberofMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, "MiningSettings", "NumberofMiners", DefaultMiningNumberofMiners))
+                    .GasUpgrade = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasUpgrade", DefaultMiningGasUpgrade))
+                    .NumOreUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumOreUpgrades", DefaultMiningNumOreUpgrades))
+                    .NumIceUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumIceUpgrades", DefaultMiningNumIceUpgrades))
+                    .NumGasUpgrades = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumGasUpgrades", DefaultMiningNumGasUpgrades))
+                    .MichiiImplant = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MichiiImplant", DefaultMiningMichiiImplant))
+                    .T2Crystals = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "T2Crystals", DefaultMiningT2Crystals))
+                    .OreImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreImplant", DefaultMiningOreImplant))
+                    .IceImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceImplant", DefaultMiningIceImplant))
+                    .GasImplant = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasImplant", DefaultMiningGasImplant))
+                    .CheckUseHauler = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckUseHauler", DefaultMiningCheckUseHauler))
+                    .RoundTripMin = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "RoundTripMin", DefaultMiningRoundTripMin))
+                    .RoundTripSec = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "RoundTripSec", DefaultMiningRoundTripSec))
+                    .Haulerm3 = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "Haulerm3", DefaultMiningHaulerm3))
+                    .CheckUseFleetBooster = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckUseFleetBooster", DefaultMiningCheckUseFleetBooster))
+                    .BoosterShip = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterShip", DefaultMiningBoosterShip))
+                    .BoosterShipSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterShipSkill", DefaultMiningBoosterShipSkill))
+                    .MiningFormanSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningFormanSkill", DefaultMiningMiningFormanSkill))
+                    .MiningDirectorSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningDirectorSkill", DefaultMiningMiningDirectorSkill))
+                    .WarfareLinkSpecSkill = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "WarfareLinkSpecSkill", DefaultMiningWarfareLinkSpecSkill))
+                    .CheckMineForemanLaserOpBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserOpBoost", DefaultMiningCheckMineForemanLaserOpBoost))
+                    .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
+                    .CheckMiningForemanMindLink = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
+                    .CheckRorqDeployed = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
+                    .MiningDroneM3perHour = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "MiningDroneM3perHour", DefaultMiningDroneM3perHour))
+                    .RefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
+                    .UnrefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
+                    .CompressedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
+                    .IndustrialReconfig = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "IndustrialReconfig", DefaultMiningIndustrialReconfig))
+                    .MercoxitMiningRig = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MercoxitMiningRig", DefaultMiningRig))
+                    .IceMiningRig = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "IceMiningRig", DefaultMiningRig))
+                    .CheckSovWormhole = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovWormhole", DefaultMiningCheckSovWormhole))
+                    .CheckSovC1 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC1", DefaultMiningCheckSovC1))
+                    .CheckSovC2 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC2", DefaultMiningCheckSovC2))
+                    .CheckSovC3 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC3", DefaultMiningCheckSovC3))
+                    .CheckSovC4 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC4", DefaultMiningCheckSovC4))
+                    .CheckSovC5 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC5", DefaultMiningCheckSovC5))
+                    .CheckSovC6 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC6", DefaultMiningCheckSovC6))
+                    .NumberofMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumberofMiners", DefaultMiningNumberofMiners))
                 End With
 
             Else
@@ -2423,7 +2436,7 @@ Public Class ProgramSettings
             MiningSettingsList(63) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
             MiningSettingsList(64) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
 
-            Call WriteSettingsToFile(MiningSettingsFileName, MiningSettingsList, "MiningSettings")
+            Call WriteSettingsToFile(MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving Mining Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -2445,7 +2458,7 @@ Public Class ProgramSettings
         Dim TempSettings As IndustryJobsColumnSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & IndustryJobsColumnSettingsFileName) Then
+            If FileExists(IndustryJobsColumnSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .JobState = CInt(GetSettingValue(IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "JobState", DefaultJobState))
@@ -2568,7 +2581,6 @@ Public Class ProgramSettings
 
         End With
 
-
         ' Save locally
         IndustryJobsColumnSettings = LocalSettings
         Return LocalSettings
@@ -2650,7 +2662,7 @@ Public Class ProgramSettings
         Dim TempSettings As ManufacturingTabColumnSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & ManufacturingTabColumnSettingsFileName) Then
+            If FileExists(ManufacturingTabColumnSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .ItemCategory = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, ManufacturingTabColumnSettingsFileName, "ItemCategory", DefaultMTItemCategory))
@@ -3136,7 +3148,7 @@ Public Class ProgramSettings
         Dim TempSettings As IndustryFlipBeltSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & IndustryFlipBeltSettingsFileName) Then
+            If FileExists(IndustryFlipBeltSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .CycleTime = CDbl(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "CycleTime", DefaultCycleTime))
@@ -3222,73 +3234,72 @@ Public Class ProgramSettings
     ' Loads the tab settings
     Public Function LoadIndustryBeltOreChecksSettings(Belt As BeltType) As IndustryBeltOreChecks
         Dim TempSettings As IndustryBeltOreChecks = Nothing
-        Dim IndustryBeltOreChecksFileName As String = ""
 
         Select Case Belt
             Case BeltType.Small
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName1
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
             Case BeltType.Moderate
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName2
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName3
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
             Case BeltType.ExtraLarge
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName4
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
             Case BeltType.Giant
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName5
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
         End Select
 
         Try
-            If File.Exists(SettingsFolder & IndustryBeltOreChecksFileName) Then
+            If FileExists(IndustryBeltOreChecksFileName) Then
                 'Get the settings
                 With TempSettings
-                    .Plagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Plagioclase", DefaultPlagioclase))
-                    .Spodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Spodumain", DefaultSpodumain))
-                    .Kernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Kernite", DefaultKernite))
-                    .Hedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Hedbergite", DefaultHedbergite))
-                    .Arkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Arkonor", DefaultArkonor))
-                    .Bistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Bistot", DefaultBistot))
-                    .Pyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Pyroxeres", DefaultPyroxeres))
-                    .Crokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Crokite", DefaultCrokite))
-                    .Jaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Jaspet", DefaultJaspet))
-                    .Omber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Omber", DefaultOmber))
-                    .Scordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Scordite", DefaultScordite))
-                    .Gneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Gneiss", DefaultGneiss))
-                    .Veldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Veldspar", DefaultVeldspar))
-                    .Hemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Hemorphite", DefaultHemorphite))
-                    .DarkOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "DarkOchre", DefaultDarkOchre))
-                    .Mercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "Mercoxit", DefaultMercoxit))
-                    .CrimsonArkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "CrimsonArkonor", DefaultCrimsonArkonor))
-                    .PrimeArkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "PrimeArkonor", DefaultPrimeArkonor))
-                    .TriclinicBistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "TriclinicBistot", DefaultTriclinicBistot))
-                    .MonoclinicBistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "MonoclinicBistot", DefaultMonoclinicBistot))
-                    .SharpCrokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "SharpCrokite", DefaultSharpCrokite))
-                    .CrystallineCrokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "CrystallineCrokite", DefaultCrystallineCrokite))
-                    .OnyxOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "OnyxOchre", DefaultOnyxOchre))
-                    .ObsidianOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "ObsidianOchre", DefaultObsidianOchre))
-                    .VitricHedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "VitricHedbergite", DefaultVitricHedbergite))
-                    .GlazedHedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "GlazedHedbergite", DefaultGlazedHedbergite))
-                    .VividHemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "VividHemorphite", DefaultVividHemorphite))
-                    .RadiantHemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "RadiantHemorphite", DefaultRadiantHemorphite))
-                    .PureJaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "PureJaspet", DefaultPureJaspet))
-                    .PristineJaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "PristineJaspet", DefaultPristineJaspet))
-                    .LuminousKernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "LuminousKernite", DefaultLuminousKernite))
-                    .FieryKernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "FieryKernite", DefaultFieryKernite))
-                    .AzurePlagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "AzurePlagioclase", DefaultAzurePlagioclase))
-                    .RichPlagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "RichPlagioclase", DefaultRichPlagioclase))
-                    .SolidPyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "SolidPyroxeres", DefaultSolidPyroxeres))
-                    .ViscousPyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "ViscousPyroxeres", DefaultViscousPyroxeres))
-                    .CondensedScordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "CondensedScordite", DefaultCondensedScordite))
-                    .MassiveScordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "MassiveScordite", DefaultMassiveScordite))
-                    .BrightSpodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "BrightSpodumain", DefaultBrightSpodumain))
-                    .GleamingSpodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "GleamingSpodumain", DefaultGleamingSpodumain))
-                    .ConcentratedVeldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "ConcentratedVeldspar", DefaultConcentratedVeldspar))
-                    .DenseVeldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "DenseVeldspar", DefaultDenseVeldspar))
-                    .IridescentGneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "IridescentGneiss", DefaultIridescentGneiss))
-                    .PrismaticGneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "PrismaticGneiss", DefaultPrismaticGneiss))
-                    .SilveryOmber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "SilveryOmber", DefaultSilveryOmber))
-                    .GoldenOmber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "GoldenOmber", DefaultGoldenOmber))
-                    .MagmaMercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "MagmaMercoxit", DefaultMagmaMercoxit))
-                    .VitreousMercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, "IndustryBeltOreChecksSettings", "VitreousMercoxit", DefaultVitreousMercoxit))
+                    .Plagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Plagioclase", DefaultPlagioclase))
+                    .Spodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Spodumain", DefaultSpodumain))
+                    .Kernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Kernite", DefaultKernite))
+                    .Hedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Hedbergite", DefaultHedbergite))
+                    .Arkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Arkonor", DefaultArkonor))
+                    .Bistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Bistot", DefaultBistot))
+                    .Pyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Pyroxeres", DefaultPyroxeres))
+                    .Crokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Crokite", DefaultCrokite))
+                    .Jaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Jaspet", DefaultJaspet))
+                    .Omber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Omber", DefaultOmber))
+                    .Scordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Scordite", DefaultScordite))
+                    .Gneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Gneiss", DefaultGneiss))
+                    .Veldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Veldspar", DefaultVeldspar))
+                    .Hemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Hemorphite", DefaultHemorphite))
+                    .DarkOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "DarkOchre", DefaultDarkOchre))
+                    .Mercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "Mercoxit", DefaultMercoxit))
+                    .CrimsonArkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "CrimsonArkonor", DefaultCrimsonArkonor))
+                    .PrimeArkonor = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "PrimeArkonor", DefaultPrimeArkonor))
+                    .TriclinicBistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "TriclinicBistot", DefaultTriclinicBistot))
+                    .MonoclinicBistot = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "MonoclinicBistot", DefaultMonoclinicBistot))
+                    .SharpCrokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "SharpCrokite", DefaultSharpCrokite))
+                    .CrystallineCrokite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "CrystallineCrokite", DefaultCrystallineCrokite))
+                    .OnyxOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "OnyxOchre", DefaultOnyxOchre))
+                    .ObsidianOchre = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "ObsidianOchre", DefaultObsidianOchre))
+                    .VitricHedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "VitricHedbergite", DefaultVitricHedbergite))
+                    .GlazedHedbergite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "GlazedHedbergite", DefaultGlazedHedbergite))
+                    .VividHemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "VividHemorphite", DefaultVividHemorphite))
+                    .RadiantHemorphite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "RadiantHemorphite", DefaultRadiantHemorphite))
+                    .PureJaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "PureJaspet", DefaultPureJaspet))
+                    .PristineJaspet = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "PristineJaspet", DefaultPristineJaspet))
+                    .LuminousKernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "LuminousKernite", DefaultLuminousKernite))
+                    .FieryKernite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "FieryKernite", DefaultFieryKernite))
+                    .AzurePlagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "AzurePlagioclase", DefaultAzurePlagioclase))
+                    .RichPlagioclase = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "RichPlagioclase", DefaultRichPlagioclase))
+                    .SolidPyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "SolidPyroxeres", DefaultSolidPyroxeres))
+                    .ViscousPyroxeres = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "ViscousPyroxeres", DefaultViscousPyroxeres))
+                    .CondensedScordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "CondensedScordite", DefaultCondensedScordite))
+                    .MassiveScordite = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "MassiveScordite", DefaultMassiveScordite))
+                    .BrightSpodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "BrightSpodumain", DefaultBrightSpodumain))
+                    .GleamingSpodumain = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "GleamingSpodumain", DefaultGleamingSpodumain))
+                    .ConcentratedVeldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "ConcentratedVeldspar", DefaultConcentratedVeldspar))
+                    .DenseVeldspar = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "DenseVeldspar", DefaultDenseVeldspar))
+                    .IridescentGneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "IridescentGneiss", DefaultIridescentGneiss))
+                    .PrismaticGneiss = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "PrismaticGneiss", DefaultPrismaticGneiss))
+                    .SilveryOmber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "SilveryOmber", DefaultSilveryOmber))
+                    .GoldenOmber = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "GoldenOmber", DefaultGoldenOmber))
+                    .MagmaMercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "MagmaMercoxit", DefaultMagmaMercoxit))
+                    .VitreousMercoxit = CBool(GetSettingValue(IndustryBeltOreChecksFileName, SettingTypes.TypeBoolean, IndustryBeltOreChecksFileName, "VitreousMercoxit", DefaultVitreousMercoxit))
                 End With
 
             Else
@@ -3397,19 +3408,18 @@ Public Class ProgramSettings
     ' Saves the tab settings to XML
     Public Sub SaveIndustryBeltOreChecksSettings(SentSettings As IndustryBeltOreChecks, Belt As BeltType)
         Dim IndustryBeltOreChecksList(47) As Setting
-        Dim IndustryBeltOreChecksFileName As String = ""
 
         Select Case Belt
             Case BeltType.Small
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName1
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
             Case BeltType.Moderate
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName2
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName3
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
             Case BeltType.ExtraLarge
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName4
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
             Case BeltType.Giant
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName5
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
         End Select
 
         Try
@@ -3462,7 +3472,7 @@ Public Class ProgramSettings
             IndustryBeltOreChecksList(46) = New Setting("MagmaMercoxit", CStr(SentSettings.MagmaMercoxit))
             IndustryBeltOreChecksList(47) = New Setting("VitreousMercoxit", CStr(SentSettings.VitreousMercoxit))
 
-            Call WriteSettingsToFile(IndustryBeltOreChecksFileName, IndustryBeltOreChecksList, "IndustryBeltOreChecksSettings")
+            Call WriteSettingsToFile(IndustryBeltOreChecksFileName, IndustryBeltOreChecksList, IndustryBeltOreChecksFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving Industry Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -3503,64 +3513,64 @@ Public Class ProgramSettings
         End Select
 
         Try
-            If File.Exists(SettingsFolder & AssetWindowFileName) Then
+            If FileExists(AssetWindowFileName) Then
 
                 'Get the settings
                 With TempSettings
                     ' Main window
-                    .AssetType = CStr(GetSettingValue(AssetWindowFileName, SettingTypes.TypeString, "AssetWindowSettings", "AssetType", DefaultAssetType))
-                    .SortbyName = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "SortbyName", DefaultAssetSortbyName))
+                    .AssetType = CStr(GetSettingValue(AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "AssetType", DefaultAssetType))
+                    .SortbyName = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SortbyName", DefaultAssetSortbyName))
 
                     ' Search Settings
-                    .ItemFilterText = CStr(GetSettingValue(AssetWindowFileName, SettingTypes.TypeString, "AssetWindowSettings", "ItemFilterText", DefaultAssetItemTextFilter))
-                    .AllItems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AllItems", DefaultAllItems))
-                    .AllRawMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AllRawMats", DefaultAssetItemChecks))
-                    .Minerals = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Minerals", DefaultAssetItemChecks))
-                    .IceProducts = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "IceProducts", DefaultAssetItemChecks))
-                    .Gas = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Gas", DefaultAssetItemChecks))
-                    .Misc = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Misc", DefaultAssetItemChecks))
-                    .BPCs = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "BPCs", DefaultAssetItemChecks))
-                    .AncientRelics = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AncientRelics", DefaultAssetItemChecks))
-                    .AncientSalvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AncientSalvage", DefaultAssetItemChecks))
-                    .Salvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Salvage", DefaultAssetItemChecks))
-                    .StationComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "StationComponents", DefaultAssetItemChecks))
-                    .Planetary = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Planetary", DefaultAssetItemChecks))
-                    .Datacores = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Datacores", DefaultAssetItemChecks))
-                    .Decryptors = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Decryptors", DefaultAssetItemChecks))
-                    .RawMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "RawMats", DefaultAssetItemChecks))
-                    .ProcessedMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "ProcessedMats", DefaultAssetItemChecks))
-                    .AdvancedMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AdvancedMats", DefaultAssetItemChecks))
-                    .MatsandCompounds = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "MatsandCompounds", DefaultAssetItemChecks))
-                    .DroneComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "DroneComponents", DefaultAssetItemChecks))
-                    .BoosterMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "BoosterMats", DefaultAssetItemChecks))
-                    .Polymers = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Polymers", DefaultAssetItemChecks))
-                    .Asteroids = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Asteroids", DefaultAssetItemChecks))
-                    .AllManufacturedItems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "AllManufacturedItems", DefaultAssetItemChecks))
-                    .Ships = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Ships", DefaultAssetItemChecks))
-                    .Modules = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Modules", DefaultAssetItemChecks))
-                    .Drones = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Drones", DefaultAssetItemChecks))
-                    .Boosters = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Boosters", DefaultAssetItemChecks))
-                    .Rigs = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Rigs", DefaultAssetItemChecks))
-                    .Charges = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Charges", DefaultAssetItemChecks))
-                    .Subsystems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Subsystems", DefaultAssetItemChecks))
-                    .Structures = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Structures", DefaultAssetItemChecks))
-                    .Tools = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Tools", DefaultAssetItemChecks))
-                    .DataInterfaces = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "DataInterfaces", DefaultAssetItemChecks))
-                    .CapT2Components = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "CapT2Components", DefaultAssetItemChecks))
-                    .CapitalComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "CapitalComponents", DefaultAssetItemChecks))
-                    .Components = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Components", DefaultAssetItemChecks))
-                    .Hybrid = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Hybrid", DefaultAssetItemChecks))
-                    .FuelBlocks = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "FuelBlocks", DefaultAssetItemChecks))
-                    .T1 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "T1", DefaultAssetItemChecks))
-                    .T2 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "T2", DefaultAssetItemChecks))
-                    .T3 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "T3", DefaultAssetItemChecks))
-                    .Faction = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Faction", DefaultAssetItemChecks))
-                    .Pirate = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Pirate", DefaultAssetItemChecks))
-                    .Storyline = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Storyline", DefaultAssetItemChecks))
+                    .ItemFilterText = CStr(GetSettingValue(AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "ItemFilterText", DefaultAssetItemTextFilter))
+                    .AllItems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllItems", DefaultAllItems))
+                    .AllRawMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllRawMats", DefaultAssetItemChecks))
+                    .Minerals = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Minerals", DefaultAssetItemChecks))
+                    .IceProducts = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
+                    .Gas = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Gas", DefaultAssetItemChecks))
+                    .Misc = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Misc", DefaultAssetItemChecks))
+                    .BPCs = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BPCs", DefaultAssetItemChecks))
+                    .AncientRelics = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientRelics", DefaultAssetItemChecks))
+                    .AncientSalvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientSalvage", DefaultAssetItemChecks))
+                    .Salvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
+                    .StationComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StationComponents", DefaultAssetItemChecks))
+                    .Planetary = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
+                    .Datacores = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Datacores", DefaultAssetItemChecks))
+                    .Decryptors = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Decryptors", DefaultAssetItemChecks))
+                    .RawMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMats", DefaultAssetItemChecks))
+                    .ProcessedMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProcessedMats", DefaultAssetItemChecks))
+                    .AdvancedMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedMats", DefaultAssetItemChecks))
+                    .MatsandCompounds = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MatsandCompounds", DefaultAssetItemChecks))
+                    .DroneComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DroneComponents", DefaultAssetItemChecks))
+                    .BoosterMats = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BoosterMats", DefaultAssetItemChecks))
+                    .Polymers = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Polymers", DefaultAssetItemChecks))
+                    .Asteroids = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Asteroids", DefaultAssetItemChecks))
+                    .AllManufacturedItems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllManufacturedItems", DefaultAssetItemChecks))
+                    .Ships = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Ships", DefaultAssetItemChecks))
+                    .Modules = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Modules", DefaultAssetItemChecks))
+                    .Drones = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Drones", DefaultAssetItemChecks))
+                    .Boosters = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Boosters", DefaultAssetItemChecks))
+                    .Rigs = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Rigs", DefaultAssetItemChecks))
+                    .Charges = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Charges", DefaultAssetItemChecks))
+                    .Subsystems = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Subsystems", DefaultAssetItemChecks))
+                    .Structures = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structures", DefaultAssetItemChecks))
+                    .Tools = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Tools", DefaultAssetItemChecks))
+                    .DataInterfaces = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DataInterfaces", DefaultAssetItemChecks))
+                    .CapT2Components = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapT2Components", DefaultAssetItemChecks))
+                    .CapitalComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalComponents", DefaultAssetItemChecks))
+                    .Components = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Components", DefaultAssetItemChecks))
+                    .Hybrid = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Hybrid", DefaultAssetItemChecks))
+                    .FuelBlocks = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FuelBlocks", DefaultAssetItemChecks))
+                    .T1 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T1", DefaultAssetItemChecks))
+                    .T2 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T2", DefaultAssetItemChecks))
+                    .T3 = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T3", DefaultAssetItemChecks))
+                    .Faction = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Faction", DefaultAssetItemChecks))
+                    .Pirate = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Pirate", DefaultAssetItemChecks))
+                    .Storyline = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Storyline", DefaultAssetItemChecks))
 
-                    .Celestials = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Celestials", DefaultAssetItemChecks))
-                    .Deployables = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Deployables", DefaultAssetItemChecks))
-                    .Implants = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, "AssetWindowSettings", "Implants", DefaultAssetItemChecks))
+                    .Celestials = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Celestials", DefaultAssetItemChecks))
+                    .Deployables = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
+                    .Implants = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
 
                 End With
 
@@ -3655,12 +3665,7 @@ Public Class ProgramSettings
             AssetWindowSettingsList(48) = New Setting("Implants", CStr(ItemsSelected.Implants))
             AssetWindowSettingsList(49) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
 
-            Select Case Location
-                Case AssetWindow.ProgramDefault
-                    Call WriteSettingsToFile(AssetWindowFileName, AssetWindowSettingsList, "DefaultAssetWindowSettings")
-                Case AssetWindow.ShoppingList
-                    Call WriteSettingsToFile(AssetWindowFileName, AssetWindowSettingsList, "ShoppingListAssetWindowSettings")
-            End Select
+            Call WriteSettingsToFile(AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving Asset Window Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -3760,7 +3765,7 @@ Public Class ProgramSettings
         Dim TempSettings As PlayerOwnedStationSettings = Nothing
 
         Try
-            If File.Exists(SettingsFolder & POSSettingsFileName) Then
+            If FileExists(POSSettingsFileName) Then
                 'Get the settings
                 With TempSettings
                     .TowerRaceID = CInt(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "TowerRaceID", DefaultTowerRaceID))
@@ -3874,15 +3879,17 @@ Public Class ProgramSettings
                 TeamFileName = Tab & InventionTeamSettingsFileName
         End Select
 
+        TeamFileName = TeamFileName
+
         Try
-            If File.Exists(SettingsFolder & TeamFileName) Then
+            If FileExists(TeamFileName) Then
                 'Get the settings
                 With TempSettings
                     Select Case IndustryTeamType
                         Case TeamType.Manufacturing
                             .TeamID = CInt(GetSettingValue(TeamFileName, SettingTypes.TypeInteger, Tab & ManufacturingTeamSettingsFileName, "TeamID", DefaultTeamID))
                         Case TeamType.ComponentManufacturing
-                            .TeamID = CInt(GetSettingValue(TeamFileName, SettingTypes.TypeInteger, Tab & "ComponentManufacturingTeamSettings", "TeamID", DefaultTeamID))
+                            .TeamID = CInt(GetSettingValue(TeamFileName, SettingTypes.TypeInteger, Tab & ComponentManufacturingTeamSettingsFileName, "TeamID", DefaultTeamID))
                         Case TeamType.Copy
                             .TeamID = CInt(GetSettingValue(TeamFileName, SettingTypes.TypeInteger, Tab & CopyTeamSettingsFileName, "TeamID", DefaultTeamID))
                         Case TeamType.Invention
@@ -3928,7 +3935,7 @@ Public Class ProgramSettings
                 Case TeamType.Manufacturing
                     Call WriteSettingsToFile(SentSettings.TeamTab & ManufacturingTeamSettingsFileName, TeamSettingsList, SentSettings.TeamTab & ManufacturingTeamSettingsFileName)
                 Case TeamType.ComponentManufacturing
-                    Call WriteSettingsToFile(SentSettings.TeamTab & ComponentManufacturingTeamSettingsFileName, TeamSettingsList, SentSettings.TeamTab & "ComponentManufacturingTeamSettings")
+                    Call WriteSettingsToFile(SentSettings.TeamTab & ComponentManufacturingTeamSettingsFileName, TeamSettingsList, SentSettings.TeamTab & ComponentManufacturingTeamSettingsFileName)
                 Case TeamType.Copy
                     Call WriteSettingsToFile(SentSettings.TeamTab & CopyTeamSettingsFileName, TeamSettingsList, SentSettings.TeamTab & CopyTeamSettingsFileName)
                 Case TeamType.Invention
@@ -4056,7 +4063,7 @@ Public Class ProgramSettings
         FacilityFileName = Tab & FacilityFileName
 
         Try
-            If File.Exists(SettingsFolder & FacilityFileName) Then
+            If FileExists(FacilityFileName) Then
                 'Get the settings
                 With TempSettings
                     Select Case ProductionType
@@ -4125,21 +4132,21 @@ Public Class ProgramSettings
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                         Case IndustryType.SuperManufacturing
-                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "SuperManufacturingFacilitySettings", "Facility", DefaultSuperManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "SuperManufacturingRAM_INSTALLATION_TYPE_CONTENTS", "FacilityType", DefaultSuperManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "SuperManufacturingFacilitySettings", "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "SuperManufacturingFacilitySettings", "ProductionType", IndustryType.Manufacturing), IndustryType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "SuperManufacturingFacilitySettings", "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "SuperManufacturingFacilitySettings", "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "SuperManufacturingFacilitySettings", "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "SuperManufacturingFacilitySettings", "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "SuperManufacturingFacilitySettings", "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "SuperManufacturingFacilitySettings", "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "SuperManufacturingFacilitySettings", "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "SuperManufacturingFacilitySettings", "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "SuperManufacturingFacilitySettings", "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "SuperManufacturingFacilitySettings", "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "SuperManufacturingFacilitySettings", "IncludeActivityTime", FacilityDefaultIncludeTime))
+                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "Facility", DefaultSuperManufacturingFacility))
+                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "FacilityType", DefaultSuperManufacturingFacilityType))
+                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
+                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
+                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
+                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
+                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
+                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
+                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
+                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
+                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
+                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
+                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
+                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                         Case IndustryType.BoosterManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "Facility", DefaultBoosterManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "FacilityType", DefaultBoosterManufacturingFacilityType))
@@ -4192,7 +4199,7 @@ Public Class ProgramSettings
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "Facility", DefaultSubsystemManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "FacilityType", DefaultSubsystemManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "SubsystemManufacturing", "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4269,53 +4276,53 @@ Public Class ProgramSettings
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                         Case IndustryType.POSFuelBlockManufacturing
-                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSFuelBlockManufacturingFacilitySettings", "Facility", DefaultPOSFuelBlockManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSFuelBlockManufacturingFacilitySettings", "FacilityType", DefaultPOSFuelBlockManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSFuelBlockManufacturingFacilitySettings", "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSFuelBlockManufacturingFacilitySettings", "ProductionType", IndustryType.POSFuelBlockManufacturing), IndustryType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSFuelBlockManufacturingFacilitySettings", "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSFuelBlockManufacturingFacilitySettings", "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSFuelBlockManufacturingFacilitySettings", "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSFuelBlockManufacturingFacilitySettings", "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSFuelBlockManufacturingFacilitySettings", "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSFuelBlockManufacturingFacilitySettings", "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSFuelBlockManufacturingFacilitySettings", "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSFuelBlockManufacturingFacilitySettings", "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSFuelBlockManufacturingFacilitySettings", "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSFuelBlockManufacturingFacilitySettings", "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSFuelBlockManufacturingFacilitySettings", "IncludeActivityTime", FacilityDefaultIncludeTime))
+                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "Facility", DefaultPOSFuelBlockManufacturingFacility))
+                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "FacilityType", DefaultPOSFuelBlockManufacturingFacilityType))
+                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
+                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ProductionType", IndustryType.POSFuelBlockManufacturing), IndustryType)
+                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
+                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
+                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
+                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSFuelBlockFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
+                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
+                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSFuelBlockFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
+                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
+                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
+                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
+                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
+                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                         Case IndustryType.POSModuleManufacturing
-                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSModuleManufacturingFacilitySettings", "Facility", DefaultPOSModuleManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSModuleManufacturingFacilitySettings", "FacilityType", DefaultPOSModuleManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSModuleManufacturingFacilitySettings", "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSModuleManufacturingFacilitySettings", "ProductionType", IndustryType.POSModuleManufacturing), IndustryType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSModuleManufacturingFacilitySettings", "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSModuleManufacturingFacilitySettings", "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSModuleManufacturingFacilitySettings", "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSModuleManufacturingFacilitySettings", "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSModuleManufacturingFacilitySettings", "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSModuleManufacturingFacilitySettings", "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSModuleManufacturingFacilitySettings", "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSModuleManufacturingFacilitySettings", "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSModuleManufacturingFacilitySettings", "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSModuleManufacturingFacilitySettings", "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSModuleManufacturingFacilitySettings", "IncludeActivityTime", FacilityDefaultIncludeTime))
+                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "Facility", DefaultPOSModuleManufacturingFacility))
+                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "FacilityType", DefaultPOSModuleManufacturingFacilityType))
+                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
+                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ProductionType", IndustryType.POSModuleManufacturing), IndustryType)
+                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
+                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
+                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
+                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSModuleFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
+                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
+                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSModuleFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
+                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
+                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
+                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
+                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
+                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                         Case IndustryType.POSLargeShipManufacturing
-                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSLargeShipManufacturingFacilitySettings", "Facility", DefaultPOSLargeShipManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSLargeShipManufacturingFacilitySettings", "FacilityType", DefaultPOSLargeShipManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSLargeShipManufacturingFacilitySettings", "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & "POSLargeShipManufacturingFacilitySettings", "ProductionType", IndustryType.POSLargeShipManufacturing), IndustryType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSLargeShipManufacturingFacilitySettings", "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSLargeShipManufacturingFacilitySettings", "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSLargeShipManufacturingFacilitySettings", "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSLargeShipManufacturingFacilitySettings", "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSLargeShipManufacturingFacilitySettings", "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & "POSLargeShipManufacturingFacilitySettings", "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & "POSLargeShipManufacturingFacilitySettings", "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & "POSLargeShipManufacturingFacilitySettings", "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSLargeShipManufacturingFacilitySettings", "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSLargeShipManufacturingFacilitySettings", "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & "POSLargeShipManufacturingFacilitySettings", "IncludeActivityTime", FacilityDefaultIncludeTime))
+                            .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "Facility", DefaultPOSLargeShipManufacturingFacility))
+                            .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "FacilityType", DefaultPOSLargeShipManufacturingFacilityType))
+                            .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
+                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ProductionType", IndustryType.POSLargeShipManufacturing), IndustryType)
+                            .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
+                            .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
+                            .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
+                            .SolarSystemID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSLargeShipFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
+                            .SolarSystemName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
+                            .RegionID = CLng(GetSettingValue(FacilityFileName, SettingTypes.TypeLong, Tab & POSLargeShipFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
+                            .RegionName = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
+                            .ActivityCostperSecond = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
+                            .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
+                            .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
+                            .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
                     End Select
                 End With
             Else
@@ -4399,7 +4406,7 @@ Public Class ProgramSettings
                 Case IndustryType.SubsystemManufacturing
                     Call WriteSettingsToFile(Tab & SubsystemManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SubsystemManufacturingFacilitySettingsFileName)
                 Case IndustryType.SuperManufacturing
-                    Call WriteSettingsToFile(Tab & SuperCapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & "SuperManufacturingFacilitySettings")
+                    Call WriteSettingsToFile(Tab & SuperCapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SuperCapitalManufacturingFacilitySettingsFileName)
                 Case IndustryType.T3CruiserManufacturing
                     Call WriteSettingsToFile(Tab & T3CruiserManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & T3CruiserManufacturingFacilitySettingsFileName)
                 Case IndustryType.T3DestroyerManufacturing
@@ -4417,11 +4424,11 @@ Public Class ProgramSettings
                 Case IndustryType.NoPOSManufacturing
                     Call WriteSettingsToFile(Tab & NoPoSFacilitySettingsFileName, FacilitySettingsList, Tab & NoPoSFacilitySettingsFileName)
                 Case IndustryType.POSFuelBlockManufacturing
-                    Call WriteSettingsToFile(Tab & POSFuelBlockFacilitySettingsFileName, FacilitySettingsList, Tab & "POSFuelBlockManufacturingFacilitySettings")
+                    Call WriteSettingsToFile(Tab & POSFuelBlockFacilitySettingsFileName, FacilitySettingsList, Tab & POSFuelBlockFacilitySettingsFileName)
                 Case IndustryType.POSLargeShipManufacturing
-                    Call WriteSettingsToFile(Tab & POSLargeShipFacilitySettingsFileName, FacilitySettingsList, Tab & "POSLargeShipManufacturingFacilitySettings")
+                    Call WriteSettingsToFile(Tab & POSLargeShipFacilitySettingsFileName, FacilitySettingsList, Tab & POSLargeShipFacilitySettingsFileName)
                 Case IndustryType.POSModuleManufacturing
-                    Call WriteSettingsToFile(Tab & POSModuleFacilitySettingsFileName, FacilitySettingsList, Tab & "POSModuleManufacturingFacilitySettings")
+                    Call WriteSettingsToFile(Tab & POSModuleFacilitySettingsFileName, FacilitySettingsList, Tab & POSModuleFacilitySettingsFileName)
             End Select
 
         Catch ex As Exception
@@ -4606,23 +4613,23 @@ Public Class ProgramSettings
     ' Deletes all the facility files for the tab sent
     Public Sub DeleteAllFacilitySettingsFiles(Tab As String)
 
-        File.Delete(SettingsFolder & Tab & ManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(ComponentsManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(CapitalComponentsManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(CapitalManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(SuperCapitalManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(T3CruiserManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(T3DestroyerManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(SubsystemManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(BoosterManufacturingFacilitySettingsFileName & XMLfileType)
-        File.Delete(CopyFacilitySettingsFileName & XMLfileType)
-        File.Delete(InventionFacilitySettingsFileName & XMLfileType)
-        File.Delete(T3InventionFacilitySettingsFileName & XMLfileType)
-        File.Delete(NoPoSFacilitySettingsFileName & XMLfileType)
+        File.Delete(SettingsFolder & Tab & ManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & ComponentsManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & CapitalComponentsManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & CapitalManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & SuperCapitalManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & T3CruiserManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & T3DestroyerManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & SubsystemManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & BoosterManufacturingFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & CopyFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & InventionFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & T3InventionFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & NoPoSFacilitySettingsFileName)
 
-        File.Delete(POSFuelBlockFacilitySettingsFileName & XMLfileType)
-        File.Delete(POSLargeShipFacilitySettingsFileName & XMLfileType)
-        File.Delete(POSModuleFacilitySettingsFileName & XMLfileType)
+        File.Delete(SettingsFolder & Tab & POSFuelBlockFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & POSLargeShipFacilitySettingsFileName)
+        File.Delete(SettingsFolder & Tab & POSModuleFacilitySettingsFileName)
 
     End Sub
 

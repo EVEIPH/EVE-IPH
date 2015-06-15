@@ -105,7 +105,7 @@ Public Class Blueprint
     Private InventionMaterials As Materials
     Private CopyMaterials As Materials ' Some copies require items
     Private InventionChance As Double
-    Private InventionDecryptor As Decryptor
+    Private InventionDecryptor As New Decryptor
     Private Relic As String ' Name of relic
     Private TotalInventedRuns As Integer ' Number of runs all the invention jobs will produce
     Private SingleInventedBPCRuns As Integer ' The runs on one bp invented

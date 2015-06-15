@@ -186,7 +186,7 @@ Public Class EVEBlueprints
 
                         If readerBlueprints.HasRows Then
 
-                            ' Do not overwrite anything saved by the user (owned = -1 for owned, 0 for not owned but favorite/ignore/bptype) 
+                            ' Do not overwrite anything saved by the user (owned = -1 for user owned, 0 for not owned but favorite/ignore/bptype) 
                             If readerBlueprints.GetInt32(4) = 1 Then
                                 MEValue = readerBlueprints.GetInt32(0)
                                 TEValue = readerBlueprints.GetInt32(1)
@@ -225,19 +225,16 @@ Public Class EVEBlueprints
                                 DBCommand = New SQLiteCommand(SQL, DB)
                                 readerCheck = DBCommand.ExecuteReader
                                 If readerCheck.Read() Then
-                                    If readerCheck.GetInt32(0) = BlueprintTechLevel.T2 Then
-                                        Dim TempDecryptorList As New DecryptorList
-                                        Dim FoundDecryptor As Decryptor = TempDecryptorList.GetDecryptor(.materialEfficiency, .timeEfficiency, .runs)
-                                        ' If it finds a decryptor, even no decryptor, then set it to invented, else assume it's a copy from a BPO
-                                        If FoundDecryptor.TypeID <> 0 Or (.materialEfficiency = BaseT2T3ME And .timeEfficiency = BaseT2T3TE) Then
-                                            CurrentBPType = BPType.InventedBPC
-                                        End If
-                                    ElseIf readerCheck.GetInt32(0) = BlueprintTechLevel.T3 Then
-                                        ' T3 bps are always invented BPCs
+                                    Dim TempDecryptorList As New DecryptorList
+                                    Dim FoundDecryptor As Decryptor = TempDecryptorList.GetDecryptor(.materialEfficiency, .timeEfficiency, .runs, readerCheck.GetInt32(0))
+
+                                    ' If it finds a decryptor, even no decryptor, then set it to invented, else assume it's a copy from a BPO
+                                    If FoundDecryptor.TypeID <> 0 Or (.materialEfficiency = BaseT2T3ME And .timeEfficiency = BaseT2T3TE) Then
                                         CurrentBPType = BPType.InventedBPC
                                     End If
+
+                                    readerCheck.Close()
                                 End If
-                                readerCheck.Close()
                                 readerCheck = Nothing
                             End If
 

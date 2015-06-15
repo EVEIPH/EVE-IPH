@@ -45,6 +45,7 @@ Partial Class frmMain
         Me.mnuResetAgents = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetIndustryJobs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetAssets = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuResetIgnoredBPs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetCRESTDates = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetCRESTMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetCRESTIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
@@ -1170,7 +1171,6 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.mnuResetIgnoredBPs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -1423,6 +1423,12 @@ Partial Class frmMain
         Me.mnuResetAssets.Name = "mnuResetAssets"
         Me.mnuResetAssets.Size = New System.Drawing.Size(271, 22)
         Me.mnuResetAssets.Text = "Reset Assets"
+        '
+        'mnuResetIgnoredBPs
+        '
+        Me.mnuResetIgnoredBPs.Name = "mnuResetIgnoredBPs"
+        Me.mnuResetIgnoredBPs.Size = New System.Drawing.Size(271, 22)
+        Me.mnuResetIgnoredBPs.Text = "Reset All Ignored BPs"
         '
         'mnuResetCRESTDates
         '
@@ -13259,12 +13265,6 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
-        '
-        'mnuResetIgnoredBPs
-        '
-        Me.mnuResetIgnoredBPs.Name = "mnuResetIgnoredBPs"
-        Me.mnuResetIgnoredBPs.Size = New System.Drawing.Size(271, 22)
-        Me.mnuResetIgnoredBPs.Text = "Reset All Ignored BPs"
         '
         'frmMain
         '
