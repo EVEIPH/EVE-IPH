@@ -10957,7 +10957,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
-            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
+            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous', 'Unknown Components') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
             ItemChecked = True
         End If
         If chkSalvage.Checked Then
@@ -11502,7 +11502,7 @@ ExitSub:
 
             End If
 
-            If Autoload Then
+            If Autoload Or cmbCalcBaseFacilityType.Text = POSFacility Then
                 ' reload bp Use the original ME and TE values when they change the meta level
                 CalcBaseFacilityLoaded = True
             Else
@@ -19416,13 +19416,16 @@ ExitCalc:
                     ' Remove all rows currently in the list of this bp
                     lstManufacturing.BeginUpdate()
                     Dim ListCount As Integer = lstManufacturing.Items.Count - 1
-                    For i = 0 To ListCount
+                    Dim i As Integer = 0
+                    While i < ListCount
                         If RemovedIDs.Contains(CInt(lstManufacturing.Items(i).SubItems(0).Text)) Then
                             ' Add the indicies to remove
-                            lstManufacturing.Items(ListIDstoRemove(i)).Remove()
-                            ListCount = ListCount - 1
+                            lstManufacturing.Items(i).Remove()
+                            ListCount -= 1
+                            i -= 1 ' make sure we reset since we just removed a line
                         End If
-                    Next
+                        i += 1
+                    End While
 
                     lstManufacturing.EndUpdate()
 

@@ -81,6 +81,7 @@ Partial Class frmMain
         Me.mnuCheckforUpdates = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuSelectionAbout = New System.Windows.Forms.ToolStripMenuItem()
+        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.pnlMain = New System.Windows.Forms.StatusStrip()
         Me.pnlCharacter = New System.Windows.Forms.ToolStripStatusLabel()
         Me.pnlSkills = New System.Windows.Forms.ToolStripStatusLabel()
@@ -1170,7 +1171,6 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -1643,6 +1643,12 @@ Partial Class frmMain
         Me.mnuSelectionAbout.Name = "mnuSelectionAbout"
         Me.mnuSelectionAbout.Size = New System.Drawing.Size(171, 22)
         Me.mnuSelectionAbout.Text = "About IPH"
+        '
+        'CalcBPStripMenuItem
+        '
+        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
+        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(111, 20)
+        Me.CalcBPStripMenuItem.Text = "View Market Data"
         '
         'pnlMain
         '
@@ -9371,6 +9377,7 @@ Partial Class frmMain
         'lstManufacturing
         '
         Me.lstManufacturing.AllowColumnReorder = true
+        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
         Me.lstManufacturing.FullRowSelect = true
         Me.lstManufacturing.GridLines = true
         Me.lstManufacturing.HideSelection = false
@@ -13259,12 +13266,6 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
-        '
-        'CalcBPStripMenuItem
-        '
-        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
-        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(111, 20)
-        Me.CalcBPStripMenuItem.Text = "View Market Data"
         '
         'frmMain
         '
