@@ -1160,7 +1160,6 @@ Partial Class frmMain
         Me.btnPIReset = New System.Windows.Forms.Button()
         Me.cmbCalcManufacturingTeamActivity = New System.Windows.Forms.ComboBox()
         Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
@@ -1171,6 +1170,7 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
+        Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -1293,7 +1293,7 @@ Partial Class frmMain
         '
         'mnuStripMain
         '
-        Me.mnuStripMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuUpdateData, Me.ViewToolStripMenuItem, Me.mnuSettings, Me.mnuTools, Me.mnuAbout})
+        Me.mnuStripMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuUpdateData, Me.ViewToolStripMenuItem, Me.mnuSettings, Me.mnuTools, Me.mnuAbout, Me.CalcBPStripMenuItem})
         Me.mnuStripMain.Location = New System.Drawing.Point(0, 0)
         Me.mnuStripMain.Name = "mnuStripMain"
         Me.mnuStripMain.Size = New System.Drawing.Size(1146, 24)
@@ -8667,9 +8667,9 @@ Partial Class frmMain
         Me.chkCalcIncludeT3Owned.AutoSize = true
         Me.chkCalcIncludeT3Owned.Location = New System.Drawing.Point(8, 44)
         Me.chkCalcIncludeT3Owned.Name = "chkCalcIncludeT3Owned"
-        Me.chkCalcIncludeT3Owned.Size = New System.Drawing.Size(39, 17)
+        Me.chkCalcIncludeT3Owned.Size = New System.Drawing.Size(84, 17)
         Me.chkCalcIncludeT3Owned.TabIndex = 1
-        Me.chkCalcIncludeT3Owned.Text = "T3"
+        Me.chkCalcIncludeT3Owned.Text = "T3 Invented"
         Me.chkCalcIncludeT3Owned.UseVisualStyleBackColor = true
         '
         'chkCalcIncludeT2Owned
@@ -13125,20 +13125,14 @@ Partial Class frmMain
         '
         'ListOptionsMenu
         '
-        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CalcBPStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.IgnoreBlueprintToolStripMenuItem})
         Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(167, 48)
-        '
-        'CalcBPStripMenuItem
-        '
-        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
-        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(166, 22)
-        Me.CalcBPStripMenuItem.Text = "View Market Data"
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(160, 26)
         '
         'IgnoreBlueprintToolStripMenuItem
         '
         Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
-        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(166, 22)
+        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(159, 22)
         Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
         '
         'lstBPComponentMats
@@ -13265,6 +13259,12 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
+        '
+        'CalcBPStripMenuItem
+        '
+        Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
+        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(111, 20)
+        Me.CalcBPStripMenuItem.Text = "View Market Data"
         '
         'frmMain
         '
@@ -14574,7 +14574,6 @@ End Sub
     Friend WithEvents lblMineRefining As System.Windows.Forms.Label
     Friend WithEvents cmbMineRefineryEff As System.Windows.Forms.ComboBox
     Friend WithEvents ListOptionsMenu As System.Windows.Forms.ContextMenuStrip
-    Friend WithEvents CalcBPStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkUpdatePricesCRESTHistory As System.Windows.Forms.CheckBox
     Friend WithEvents txtBPFacilityManualTax As System.Windows.Forms.TextBox
     Friend WithEvents lblBPFacilityManualTax As System.Windows.Forms.Label
@@ -14651,5 +14650,6 @@ End Sub
     Friend WithEvents mnuRestoreDefaultBPFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultCalcFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetIgnoredBPs As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents CalcBPStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 
 End Class
