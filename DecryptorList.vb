@@ -4,15 +4,16 @@ Imports System.Data.SQLite
 ' List of decryptors for use in Manufacturing tab
 Public Class DecryptorList
 
-    Private Decryptors() As Decryptor
+    Private Decryptors As New List(Of Decryptor)
     Private RaceID As Integer
+    Private DecryptortoFind As New Decryptor
 
     ' All decryptors are merged with pheobe
     Public Sub New()
         Dim readerDecryptor As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT typeName, groupID FROM INVENTORY_TYPES WHERE groupID = " & DecryptorGroup
+        SQL = "SELECT typeName, groupID FROM INVENTORY_TYPES WHERE groupID = 1304" ' Only one Decryptor Group with Pheobe
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerDecryptor = DBCommand.ExecuteReader
@@ -55,8 +56,13 @@ Public Class DecryptorList
 
     End Function
 
+    ' Returns the list of decryptors
+    Public Function GetDecryptorList() As List(Of Decryptor)
+        Return Decryptors
+    End Function
+
     ' Function returns the decryptor for the ME/TE/Runs values sent
-    Public Function GetDecryptor(ByVal BPME As Integer, ByVal BPTE As Integer, ByVal BPRuns As Integer, _
+    Public Function GetDecryptor(ByVal BPME As Integer, ByVal BPTE As Integer, ByVal BPRuns As Integer, ByVal TechLevel As Integer, _
                                  Optional ProbabilityModifier As Double = -1) As Decryptor
 
         Dim RunsModifier As Integer
@@ -67,31 +73,45 @@ Public Class DecryptorList
             ' We used the decryptor with max run modifier of 9 (hardcode to get around the decryptor with 9 extra runs for 1 run bpcs, which then makes 10 and is the same as the base for modules)
             RunsModifier = 9
         Else
-            If BPRuns >= 10 Then
-                RunsModifier = BPRuns - 10
-            Else
-                RunsModifier = BPRuns - 1
+            If TechLevel = 2 Then
+                ' Either ships or modules
+                If BPRuns >= 10 Then
+                    RunsModifier = BPRuns - 10
+                Else
+                    RunsModifier = BPRuns - 1
+                End If
+            ElseIf TechLevel = 3 Then
+                If BPRuns >= 3 Then
+                    ' Wrecked
+                    RunsModifier = BPRuns - 3
+                ElseIf BPRuns >= 10 Then
+                    ' Malfunctioning
+                    RunsModifier = BPRuns - 10
+                ElseIf BPRuns >= 20 Then
+                    ' Intact
+                    RunsModifier = BPRuns - 20
+                End If
             End If
         End If
 
-        For i = 0 To Decryptors.Count - 1
-            With Decryptors(i)
-                If .MEMod = MEModifier And .TEMod = TEModifier And .RunMod = RunsModifier And CBool(IIf(ProbabilityModifier <> -1, .ProductionMod = ProbabilityModifier, True)) Then
-                    Return (Decryptors(i))
-                End If
-            End With
-        Next
+            For i = 0 To Decryptors.Count - 1
+                With Decryptors(i)
+                    If .MEMod = MEModifier And .TEMod = TEModifier And .RunMod = RunsModifier And CBool(IIf(ProbabilityModifier <> -1, .ProductionMod = ProbabilityModifier, True)) Then
+                        Return (Decryptors(i))
+                    End If
+                End With
+            Next
 
-        ' If still not found, look for just ME and TE
-        For i = 0 To Decryptors.Count - 1
-            With Decryptors(i)
-                If .MEMod = MEModifier And .TEMod = TEModifier Then
-                    Return (Decryptors(i))
-                End If
-            End With
-        Next
+            ' If still not found, look for just ME and TE
+            For i = 0 To Decryptors.Count - 1
+                With Decryptors(i)
+                    If .MEMod = MEModifier And .TEMod = TEModifier Then
+                        Return (Decryptors(i))
+                    End If
+                End With
+            Next
 
-        Return NoDecryptor
+            Return NoDecryptor
 
     End Function
 
@@ -99,7 +119,7 @@ Public Class DecryptorList
     Private Sub LoadRacialDecryptor(ByVal DecryptorName As String)
         Dim readerDecryptor As SQLiteDataReader
         Dim SQL As String
-        Dim TempDecryptor As Decryptor
+        Dim TempDecryptor As New Decryptor
 
         ' Set the Decryptor first
         SQL = "SELECT INVENTORY_TYPES.typeID, attributeName, valueFloat "
@@ -127,8 +147,16 @@ Public Class DecryptorList
                         TempDecryptor.RunMod = CInt(readerDecryptor.GetDouble(2))
                 End Select
             End While
+
             ' Insert the decryptor into the main list
-            Call InsertDecryptor(TempDecryptor)
+            Dim FoundDecryptor As Decryptor
+            DecryptortoFind = TempDecryptor
+            FoundDecryptor = Decryptors.Find(AddressOf FindDecryptor)
+
+            If FoundDecryptor Is Nothing Then
+                Decryptors.Add(TempDecryptor)
+            End If
+
         End If
 
         readerDecryptor.Close()
@@ -137,52 +165,37 @@ Public Class DecryptorList
 
     End Sub
 
-    ' Inserts a decryptor into the list and auto increments the array
-    Private Sub InsertDecryptor(ByVal SentDecryptor As Decryptor)
-        Dim TempDecryptors() As Decryptor
-        Dim i As Integer
-
-        If IsNothing(Decryptors) Then
-            ReDim Decryptors(0)
-            Decryptors(0) = SentDecryptor
+    ' Predicate for finding an item in the profit list
+    Private Function FindDecryptor(ByVal Mat As Decryptor) As Boolean
+        If Mat.Name = DecryptortoFind.Name And Mat.TypeID = DecryptortoFind.TypeID And Mat.MEMod = DecryptortoFind.MEMod And _
+            Mat.RunMod = DecryptortoFind.RunMod And Mat.ProductionMod = DecryptortoFind.ProductionMod Then
+            Return True
         Else
-            ' Copy old data
-            TempDecryptors = Decryptors
-            ReDim Decryptors(TempDecryptors.Count)
-
-            For i = 0 To TempDecryptors.Count - 1
-                Decryptors(i).Name = TempDecryptors(i).Name
-                Decryptors(i).TypeID = TempDecryptors(i).TypeID
-                Decryptors(i).MEMod = TempDecryptors(i).MEMod
-                Decryptors(i).TEMod = TempDecryptors(i).TEMod
-                Decryptors(i).RunMod = TempDecryptors(i).RunMod
-                Decryptors(i).ProductionMod = TempDecryptors(i).ProductionMod
-            Next
-
-            ' Add the sent
-            Decryptors(i).Name = SentDecryptor.Name
-            Decryptors(i).TypeID = SentDecryptor.TypeID
-            Decryptors(i).MEMod = SentDecryptor.MEMod
-            Decryptors(i).TEMod = SentDecryptor.TEMod
-            Decryptors(i).RunMod = SentDecryptor.RunMod
-            Decryptors(i).ProductionMod = SentDecryptor.ProductionMod
-
+            Return False
         End If
-
-    End Sub
+    End Function
 
 End Class
 
-Public Structure Decryptor
-    Dim Name As String
-    Dim TypeID As Long
-    Dim MEMod As Integer
-    Dim TEMod As Integer
-    Dim RunMod As Integer
-    Dim ProductionMod As Double
-End Structure
+Public Class Decryptor
+    Public Name As String
+    Public TypeID As Long
+    Public MEMod As Integer
+    Public TEMod As Integer
+    Public RunMod As Integer
+    Public ProductionMod As Double
+
+    Public Sub New()
+        Name = "None"
+        TypeID = 0
+        MEMod = 0
+        TEMod = 0
+        RunMod = 0
+        ProductionMod = 1.0
+    End Sub
+End Class
 
 Public Module DecryptorVariables
     ' Set the dummy decryptor in case one not entered or we don't want to send one when one entered
-    Public NoDecryptor As Decryptor
+    Public NoDecryptor As New Decryptor
 End Module

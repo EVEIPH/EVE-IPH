@@ -4,7 +4,7 @@ Imports System.Data.SQLite
 Public Class frmInventionMonitor
 
     Private SelectedT1BPID As Long
-    Private SelectedDecryptor As Decryptor
+    Private SelectedDecryptor As New Decryptor
     Private SelectedBPID As Long
     Private SettingComboSkills As Boolean
     Private FirstFormLoad As Boolean
@@ -271,8 +271,8 @@ Public Class frmInventionMonitor
         Dim Attempts As Integer
         Dim Successes As Integer
         Dim readerDecryptor As SQLiteDataReader
-        Dim SQL As String
-        Dim TempDecryptor As Decryptor
+        'Dim SQL As String
+        'Dim TempDecryptor As Decryptor
 
         If lstInventionItems.SelectedIndices.Count <> 0 Then
             Me.Cursor = Cursors.WaitCursor
@@ -312,25 +312,25 @@ Public Class frmInventionMonitor
                 SelectedDecryptor = NoDecryptor
             End If
 
-            SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE groupID =" & DecryptorGroup
+            'SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE groupID =" & DecryptorGroup
 
-            DBCommand = New SQLiteCommand(SQL, DB)
-            readerDecryptor = DBCommand.ExecuteReader
+            'DBCommand = New SQLiteCommand(SQL, DB)
+            'readerDecryptor = DBCommand.ExecuteReader
 
-            Dim InventionDecryptors As New DecryptorList()
+            'Dim InventionDecryptors As New DecryptorList()
 
-            While readerDecryptor.Read
-                cmbBPDecryptor.Items.Add(readerDecryptor.GetString(0))
+            'While readerDecryptor.Read
+            '    cmbBPDecryptor.Items.Add(readerDecryptor.GetString(0))
 
-                ' Get the decryptor and compare it to the ME of the final BP they selected
-                TempDecryptor = InventionDecryptors.GetDecryptor(readerDecryptor.GetString(0))
+            '    ' Get the decryptor and compare it to the ME of the final BP they selected
+            '    TempDecryptor = InventionDecryptors.GetDecryptor(readerDecryptor.GetString(0))
 
-                If TempDecryptor.MEMod + BaseT2T3ME = CInt(lstInventionItems.SelectedItems(0).SubItems(3).Text) Then
-                    SelectedDecryptor = TempDecryptor
-                End If
-            End While
+            '    If TempDecryptor.MEMod + BaseT2T3ME = CInt(lstInventionItems.SelectedItems(0).SubItems(3).Text) Then
+            '        SelectedDecryptor = TempDecryptor
+            '    End If
+            'End While
 
-            readerDecryptor.Close()
+            'readerDecryptor.Close()
 
             ' Finally set the decryptor used in the combo
             cmbBPDecryptor.Text = SelectedDecryptor.Name
@@ -357,7 +357,7 @@ Public Class frmInventionMonitor
     Private Sub DisplayInventionStats()
         Dim TempBlueprint As Blueprint
         Dim InventionSkills As New EVESkillList
-        Dim SelectedDecryptor As Decryptor
+        Dim SelectedDecryptor As New Decryptor
 
         Dim InventionDecryptors As New DecryptorList()
         SelectedDecryptor = InventionDecryptors.GetDecryptor(cmbBPDecryptor.Text)

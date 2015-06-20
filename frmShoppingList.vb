@@ -1241,7 +1241,7 @@ Public Class frmShoppingList
                         readerBP.Read()
 
                         ' Get the decryptor
-                        Dim TempDecryptor As Decryptor
+                        Dim TempDecryptor As New Decryptor
                         Dim BuildBuy As Boolean
                         Dim FacilityType As String
                         Dim InventionDecryptors As New DecryptorList()

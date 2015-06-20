@@ -177,30 +177,38 @@ Public Class EVEBlueprints
                     With IndyBlueprints(i)
 
                         ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
-                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID FROM OWNED_BLUEPRINTS "
+                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED FROM OWNED_BLUEPRINTS "
                         SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID = " & AccountSearchID & " "
+
                         DBCommand = New SQLiteCommand(SQL, DB)
                         readerBlueprints = DBCommand.ExecuteReader
                         readerBlueprints.Read()
 
                         If readerBlueprints.HasRows Then
 
-                            MEValue = readerBlueprints.GetDouble(0)
-                            TEValue = readerBlueprints.GetDouble(1)
+                            ' Do not overwrite anything saved by the user (owned = -1 for user owned, 0 for not owned but favorite/ignore/bptype) 
+                            If readerBlueprints.GetInt32(4) = 1 Then
+                                MEValue = readerBlueprints.GetInt32(0)
+                                TEValue = readerBlueprints.GetInt32(1)
 
-                            ' If greater ME, or the ME is equal and TE from API is greater, update it if it's the same type of bp
-                            If MEValue < IndyBlueprints(i).materialEfficiency And readerBlueprints.GetInt32(2) = .BPType Then
-                                InsertBP = False
-                                IgnoreBP = False
-                            ElseIf MEValue = IndyBlueprints(i).materialEfficiency And TEValue < IndyBlueprints(i).timeEfficiency And readerBlueprints.GetInt32(2) = .BPType Then
-                                InsertBP = False
-                                IgnoreBP = False
-                            ElseIf readerBlueprints.GetInt32(2) = BPType.Copy And .BPType = BPType.Original Then ' Only update if the new BP is a BPO
-                                InsertBP = False
-                                IgnoreBP = False
+                                ' If greater ME, or the ME is equal and TE from API is greater, update it if it's the same type of bp
+                                If MEValue < IndyBlueprints(i).materialEfficiency And readerBlueprints.GetInt32(2) = .BPType Then
+                                    InsertBP = False
+                                    IgnoreBP = False
+                                ElseIf MEValue = IndyBlueprints(i).materialEfficiency And TEValue < IndyBlueprints(i).timeEfficiency And readerBlueprints.GetInt32(2) = .BPType Then
+                                    InsertBP = False
+                                    IgnoreBP = False
+                                ElseIf readerBlueprints.GetInt32(2) = BPType.Copy And .BPType = BPType.Original Then ' Only update if the new BP is a BPO
+                                    InsertBP = False
+                                    IgnoreBP = False
+                                Else
+                                    ' We don't want to do anything with this bp
+                                    IgnoreBP = True
+                                End If
                             Else
                                 ' We don't want to do anything with this bp
                                 IgnoreBP = True
+                                InsertBP = False
                             End If
                         Else
                             IgnoreBP = False
@@ -217,19 +225,16 @@ Public Class EVEBlueprints
                                 DBCommand = New SQLiteCommand(SQL, DB)
                                 readerCheck = DBCommand.ExecuteReader
                                 If readerCheck.Read() Then
-                                    If readerCheck.GetInt32(0) = BlueprintTechLevel.T2 Then
-                                        Dim TempDecryptorList As New DecryptorList
-                                        Dim FoundDecryptor As Decryptor = TempDecryptorList.GetDecryptor(.materialEfficiency, .timeEfficiency, .runs)
-                                        ' If it finds a decryptor, even no decryptor, then set it to invented, else assume it's a copy from a BPO
-                                        If FoundDecryptor.TypeID <> 0 Or (.materialEfficiency = BaseT2T3ME And .timeEfficiency = BaseT2T3TE) Then
-                                            CurrentBPType = BPType.InventedBPC
-                                        End If
-                                    ElseIf readerCheck.GetInt32(0) = BlueprintTechLevel.T3 Then
-                                        ' T3 bps are always invented BPCs
+                                    Dim TempDecryptorList As New DecryptorList
+                                    Dim FoundDecryptor As Decryptor = TempDecryptorList.GetDecryptor(.materialEfficiency, .timeEfficiency, .runs, readerCheck.GetInt32(0))
+
+                                    ' If it finds a decryptor, even no decryptor, then set it to invented, else assume it's a copy from a BPO
+                                    If FoundDecryptor.TypeID <> 0 Or (.materialEfficiency = BaseT2T3ME And .timeEfficiency = BaseT2T3TE) Then
                                         CurrentBPType = BPType.InventedBPC
                                     End If
+
+                                    readerCheck.Close()
                                 End If
-                                readerCheck.Close()
                                 readerCheck = Nothing
                             End If
 
