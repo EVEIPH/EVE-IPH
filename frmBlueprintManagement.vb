@@ -719,11 +719,11 @@ Public Class frmBlueprintManagement
 
                 ElseIf CInt(readerBP.GetValue(16)) = BPType.Original Then
                     ' BPO's are unlimited runs
-                    BPList.SubItems.Add("Unlimited")
+                    BPList.SubItems.Add(Unlimited)
                 End If
             Else ' Get from API store for T1 BPCs
                 If readerBP.GetInt32(25) = -1 Then
-                    BPList.SubItems.Add("Unlimited")
+                    BPList.SubItems.Add(Unlimited)
                 Else
                     BPList.SubItems.Add(CStr(readerBP.GetInt32(25)))
                 End If
@@ -835,9 +835,9 @@ Public Class frmBlueprintManagement
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE OWNED = 1 "
+                WhereClause = "WHERE OWNED <> 0 "
             Else
-                WhereClause = WhereClause & "AND OWNED = 1 "
+                WhereClause = WhereClause & "AND OWNED <> 0  "
             End If
         ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include personal scanned
@@ -1222,9 +1222,9 @@ Public Class frmBlueprintManagement
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID=" & SelectedCharacter.ID & " AND OWNED = 1 "
+                WhereClause = "WHERE USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
             Else
-                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.ID & " AND OWNED = 1 "
+                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
             End If
 
             ' Set the correct ID
@@ -1254,7 +1254,7 @@ Public Class frmBlueprintManagement
 
         End If
 
-        SQL = SQL & WhereClause & " GROUP BY ITEM_GROUP"
+        SQL = SQL & WhereClause & " AND IGNORE = 0 GROUP BY ITEM_GROUP"
 
         DBCommand = New SQLiteCommand(SQL, DB)
 
@@ -1432,7 +1432,7 @@ Public Class frmBlueprintManagement
             End If
 
             Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), item.SubItems(2).Text, TempME, TempTE, TempBPType, _
-                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), chkMarkasFavorite.Checked, _
+                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), 0, chkMarkasFavorite.Checked, _
                               chkMarkasIgnored.Checked, 0, rbtnRemoveAllSettings.Checked)
 
         Next
@@ -1522,7 +1522,8 @@ Public Class frmBlueprintManagement
 
         ' Output the columns first
         If PrintHeader Then
-            OutputText = "API ID, Location ID, Item ID, Blueprint ID, Blueprint Group, Blueprint Name, Quantity, Flag ID, ME, TE, Runs, BP Type, Owned, Scanned, Favorite, Additional Costs" & Environment.NewLine
+            OutputText = "API ID, Location ID, Item ID, Blueprint ID, Blueprint Group, Blueprint Name, "
+            OutputText = OutputText & "Quantity, Flag ID, ME, TE, Runs, BP Type, Owned, Scanned, Favorite, Additional Costs" & Environment.NewLine
             MyStream.Write(OutputText)
         End If
 
@@ -1540,16 +1541,8 @@ Public Class frmBlueprintManagement
                     OutputText = OutputText & CInt(.GetValue(9)) & "," ' ME
                     OutputText = OutputText & CInt(.GetValue(10)) & "," ' TE
                     OutputText = OutputText & CInt(.GetValue(25)) & "," ' Runs
-                    Select Case CInt(.GetValue(16)) ' BP Type
-                        Case BPType.Original
-                            OutputText = OutputText & "BPO,"
-                        Case BPType.Copy
-                            OutputText = OutputText & "BPC,"
-                        Case Else
-                            OutputText = OutputText & "Unknown,"
-                    End Select
-
-                    If CInt(.GetValue(14)) = 1 Then ' Owned
+                    OutputText = OutputText & GetBPTypeString(.GetInt32(16)) & "," ' BP Type
+                    If Math.Abs(CInt(.GetValue(14))) = 1 Then ' Owned
                         OutputText = OutputText & "True,"
                     Else
                         OutputText = OutputText & "False,"
@@ -1616,7 +1609,8 @@ Public Class frmBlueprintManagement
                         gbBPFilter.Enabled = False
                         gbUpdateOptions.Enabled = False
                         Application.DoEvents()
-                        ' Format is: API ID, Location ID, Item ID, Blueprint ID, Blueprint Group, Blueprint Name, Quantity, Flag ID, ME, TE, Runs, BP Type, Owned, Scanned, Favorite, Additional Costs
+                        ' Format is: API ID, Location ID, Item ID, Blueprint ID, Blueprint Group, Blueprint Name, 
+                        ' Quantity, Flag ID, ME, TE, Runs, BP Type, Owned, Scanned, Favorite, Additional Costs
                         ' Only load BP's that have a user ID set
                         If CLng(Line.Substring(0, InStr(Line, ","))) <> 0 Then
 
@@ -1648,51 +1642,66 @@ Public Class frmBlueprintManagement
                             Line = Line.Substring(InStr(Line, ","))
                             SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Runs
 
+                            Dim TempBPType As BPType
+                            Dim TempOwned As Boolean
+                            Dim TempScanned As Boolean
+
                             ' BP Type 
                             Line = Line.Substring(InStr(Line, ","))
-                            If UCase(Line.Substring(0, InStr(Line, ",") - 1)) = BPC Then
-                                SQL = SQL & CStr(BPType.Copy) & ","
-                            Else
-                                SQL = SQL & CStr(BPType.Original) & ","
-                            End If
-
+                            TempBPType = GetBPType(Line.Substring(0, InStr(Line, ",") - 1))
                             ' Owned
                             Line = Line.Substring(InStr(Line, ","))
-                            If UCase(Line.Substring(0, InStr(Line, ",") - 1)) = "TRUE" Then
-                                SQL = SQL & "1,"
-                            Else
-                                SQL = SQL & "0,"
-                            End If
-
+                            TempOwned = CBool(UCase(Line.Substring(0, InStr(Line, ",") - 1)))
                             ' Scanned
                             Line = Line.Substring(InStr(Line, ","))
-                            If UCase(Line.Substring(0, InStr(Line, ",") - 1)) = "TRUE" Then
-                                If CLng(UserID) = SelectedCharacter.CharacterCorporation.CorporationID Then
-                                    SQL = SQL & "2," ' Corp BP
-                                Else
+                            TempScanned = CBool(UCase(Line.Substring(0, InStr(Line, ",") - 1)))
+
+                            If Not TempOwned Then
+                                ' Set the bp type regardless
+                                TempBPType = BPType.NotOwned
+                            End If
+
+                            ' BP Type SQL
+                            SQL = SQL & CStr(TempBPType) & ","
+                            ' Owned SQL
+                            If TempOwned Then
+                                If TempScanned Then
                                     SQL = SQL & "1,"
+                                Else
+                                    SQL = SQL & "-1,"
                                 End If
                             Else
                                 SQL = SQL & "0,"
                             End If
 
-                            ' Favorite
-                            Line = Line.Substring(InStr(Line, ","))
-                            If UCase(Line) = "TRUE" Then
-                                SQL = SQL & "1,"
-                            Else
-                                SQL = SQL & "0,"
+                                ' Scanned SQL
+                                If TempScanned Then
+                                    If CLng(UserID) = SelectedCharacter.CharacterCorporation.CorporationID Then
+                                        SQL = SQL & "2," ' Corp BP
+                                    Else
+                                        SQL = SQL & "1,"
+                                    End If
+                                Else
+                                    SQL = SQL & "0,"
+                                End If
+
+                                ' Favorite
+                                Line = Line.Substring(InStr(Line, ","))
+                                If UCase(Line) = "TRUE" Then
+                                    SQL = SQL & "1,"
+                                Else
+                                    SQL = SQL & "0,"
+                                End If
+
+                                Line = Line.Substring(InStr(Line, ","))
+                                SQL = SQL & Line ' Additional Costs
+
+                                SQL = SQL & ")"
+
+                                ' Insert the record
+                                Call ExecuteNonQuerySQL(SQL)
+
                             End If
-
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line ' Additional Costs
-
-                            SQL = SQL & ")"
-
-                            ' Insert the record
-                            Call ExecuteNonQuerySQL(SQL)
-
-                        End If
 
                         Line = BPStream.ReadLine ' Read next line
 
@@ -1894,8 +1903,10 @@ Public Class frmBlueprintManagement
             ' Set the bp type to make sure we set the owned flag correctly
             TempBPType = GetBPType(OwnedTypeValue)
 
+            Dim TempRuns As Integer
+
             UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CurrentRow.SubItems(3).Text, MEValue, TEValue, TempBPType, _
-                              CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), SetasFavorite, SetasIgnore)
+                              CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), TempRuns, SetasFavorite, SetasIgnore)
 
             Call PlayNotifySound()
 
@@ -1913,6 +1924,12 @@ Public Class frmBlueprintManagement
             Else
                 CurrentRow.SubItems(5).Text = CStr(MEValue)
                 CurrentRow.SubItems(6).Text = CStr(TEValue)
+            End If
+
+            If TempRuns = -1 Then
+                CurrentRow.SubItems(11).Text = Unlimited
+            Else
+                CurrentRow.SubItems(11).Text = CStr(TempRuns)
             End If
 
             CurrentRow.SubItems(9).Text = FavoriteValue

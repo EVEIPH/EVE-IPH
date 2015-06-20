@@ -38,7 +38,6 @@ Public Class Material
             ItemME = "-"
         End If
 
-
         If SentPrice = 0 Then
             CostPerItem = GetItemCost()
         Else

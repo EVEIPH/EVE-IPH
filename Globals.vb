@@ -213,6 +213,7 @@ Public Module Public_Variables
     Public Const Yes As String = "Yes"
     Public Const No As String = "No"
     Public Const Unknown As String = "Unknown"
+    Public Const Unlimited As String = "Unlimited"
 
     Public NoFacility As New IndustryFacility
 
@@ -1716,28 +1717,41 @@ InvalidDate:
 
     ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint - this is always due to user input, not API
     Public Function UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType, _
-                            ByVal OriginalME As Integer, ByVal OriginalTE As Integer, _
+                            ByVal OriginalME As Integer, ByVal OriginalTE As Integer, ByRef UserRuns As Integer, _
                             Optional Favorite As Boolean = False, Optional Ignore As Boolean = False, Optional AdditionalCosts As Double = 0, _
                             Optional RemoveAll As Boolean = False) As BPType
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
+        Dim rsMaxRuns As SQLiteDataReader
         Dim TempFavorite As String
         Dim TempIgnore As String
         Dim TempOwned As String
         Dim UpdatedBPType As BPType
 
-        If SentBPType = BPType.NotOwned And bpME <> OriginalME Or bpTE <> OriginalTE Then
+        If SentBPType = BPType.NotOwned And (bpME <> OriginalME Or bpTE <> OriginalTE) Then
             ' Can't update the ME/TE and not saved as owned
             UpdatedBPType = BPType.Copy ' save all as copy
         Else
             UpdatedBPType = SentBPType
         End If
 
+        If UpdatedBPType = BPType.Original Then
+            UserRuns = -1
+        Else
+            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID), DB)
+            rsMaxRuns = DBCommand.ExecuteReader
+            If rsMaxRuns.Read() Then
+                UserRuns = rsMaxRuns.GetInt32(0)
+            Else
+                UserRuns = 0
+            End If
+        End If
+
         ' If they are setting to not owned, not updating the ME/TE and not saving favorite or ignore, then remove the bp
         If (UpdatedBPType = BPType.NotOwned And Favorite = False And Ignore = False) Or RemoveAll Then
 
             ' Look up the BP first to see if it is scanned
-            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID=" & BPID & " AND SCANNED <> 0"
+            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID = " & CStr(BPID) & " AND SCANNED <> 0"
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerBP = DBCommand.ExecuteReader
@@ -1790,13 +1804,13 @@ InvalidDate:
                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                 SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
-                SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & ",1," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+                SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call ExecuteNonQuerySQL(SQL)
 
             Else
                 ' Update it 
                 SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
-                SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & " "
+                SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
                 SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
                 Call ExecuteNonQuerySQL(SQL)
             End If

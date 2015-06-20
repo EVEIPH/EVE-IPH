@@ -4964,7 +4964,7 @@ NoBonus:
                         AdditionalCost = 0
                     End If
 
-                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, False, False, AdditionalCost)
+                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, 0, False, False, AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
@@ -6534,6 +6534,9 @@ Tabs:
                 If Not cmbBPFacilityActivities.Items.Contains(ActivityCopying) Then
                     cmbBPFacilityActivities.Items.Add(ActivityCopying)
                 End If
+
+                txtBPME.Enabled = False
+                txtBPTE.Enabled = False
             End If
         End If
 
@@ -6863,15 +6866,17 @@ Tabs:
 
     Public Sub RefreshBP(Optional IgnoreFocus As Boolean = False)
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
-                ' They have a decryptor, so use original
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-            Else
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-            End If
-            txtBPRuns.SelectAll()
-            If Not IgnoreFocus Then
-                txtBPRuns.Focus()
+            If Not IsNothing(SelectedBlueprint) Then
+                If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
+                    ' They have a decryptor, so use original
+                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Else
+                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                End If
+                txtBPRuns.SelectAll()
+                If Not IgnoreFocus Then
+                    txtBPRuns.Focus()
+                End If
             End If
         End If
     End Sub
@@ -7306,7 +7311,7 @@ Tabs:
 
         ' Save the BP
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True  Then
+            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True Then
                 ' T2 BPO 
                 SaveBPType = BPType.Original
             ElseIf SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
@@ -7317,7 +7322,7 @@ Tabs:
             End If
 
             Call UpdateBPinDB(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetBPName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, _
-                              CInt(txtBPME.Text), CInt(txtBPTE.Text), False, False, AdditionalCost)
+                              CInt(txtBPME.Text), CInt(txtBPTE.Text), 0, False, False, AdditionalCost)
 
             Call RefreshBP()
 
@@ -7514,8 +7519,13 @@ Tabs:
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
 
             ' disable the me/te boxes since these are invented
-            txtBPME.Enabled = False
-            txtBPTE.Enabled = False
+            If chkBPIgnoreInvention.Checked Then
+                txtBPME.Enabled = True
+                txtBPTE.Enabled = True
+            Else
+                txtBPME.Enabled = False
+                txtBPTE.Enabled = False
+            End If
         Else ' Check the ignore invention, they own this BPO and don't need to invent it (if T2)
             If TempTech = 2 Then
                 chkBPIgnoreInvention.Checked = True
@@ -17212,6 +17222,7 @@ CheckTechs:
                     Dim TempDecryptors As New DecryptorList
                     Dim OriginalRelicUsed As String = ""
                     Dim CheckOwnedBP As Boolean = False
+                    Dim OriginalBPType As BPType = InsertItem.BlueprintType
                     Dim OriginalDecryptorUsed As Decryptor = TempDecryptors.GetDecryptor(OrigME, OrigTE, InsertItem.SavedBPRuns, CInt(InsertItem.TechLevel.Substring(1)))
                     If InsertItem.TechLevel = "T3" Then
                         OriginalRelicUsed = GetRelicfromInputs(OriginalDecryptorUsed, InsertItem.BPID, InsertItem.SavedBPRuns)
@@ -17220,6 +17231,9 @@ CheckTechs:
                     ' Now add additional records for each decryptor
                     For j = 1 To CalcDecryptorCheckBoxes.Count - 1
                         If CalcDecryptorCheckBoxes(j).Checked Then
+
+                            ' These are all invented BPCs, BPC and BPOs are added separately below
+                            InsertItem.BlueprintType = BPType.InventedBPC
 
                             ' If they are not using for T2 or T3 then only add No Decyrptor and exit for
                             If CalcDecryptorCheckBoxes(j).Text <> None _
@@ -17296,12 +17310,13 @@ CheckTechs:
                     Next
 
                     ' Finally, see if the original blueprint was not invented and then add it separately - BPCs and BPOs (should only be T2)
-                    If InsertItem.BlueprintType = BPType.Copy Or InsertItem.BlueprintType = BPType.Original Then
+                    If OriginalBPType = BPType.Copy Or OriginalBPType = BPType.Original Then
                         ' Get the original me/te
                         InsertItem.BPME = OrigME
                         InsertItem.BPTE = OrigTE
                         InsertItem.Owned = Yes
                         InsertItem.Inputs = Unknown
+                        InsertItem.BlueprintType = OriginalBPType
 
                         ' Insert the item 
                         Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
@@ -17432,10 +17447,7 @@ CheckTechs:
 
                     ' Set the number of BPs
                     With InsertItem
-                        If .TechLevel = "T2" And chkCalcAutoCalcT2NumBPs.Checked = False Then
-                            ' Just use the number of bps 
-                            NumberofBlueprints = CInt(txtCalcNumBPs.Text)
-                        ElseIf .TechLevel = "T3" Or (.TechLevel = "T2" And chkCalcAutoCalcT2NumBPs.Checked = True) Then
+                        If (.TechLevel = "T2" Or .TechLevel = "T3") And chkCalcAutoCalcT2NumBPs.Checked = True And (.BlueprintType = BPType.InventedBPC Or .BlueprintType = BPType.NotOwned) Then
                             ' For T3 or if they have calc checked, we will never have a BPO so determine the number of BPs
                             NumberofBlueprints = GetUsedNumBPs(.BPID, CInt(.TechLevel.Substring(1, 1)), .Runs, .ProductionLines, .NumBPs, .Decryptor.RunMod)
                         Else
@@ -17450,7 +17462,7 @@ CheckTechs:
                                    InsertItem.ComponentTeam, InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
                     ' Set the T2 and T3 inputs if necessary
-                    If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
+                    If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
 
                         ' Strip off the relic if in here for the decryptor
                         If InsertItem.Inputs.Contains("-") Then
@@ -17547,8 +17559,9 @@ CheckTechs:
 
                                 ' Usage
                                 InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
-                                InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
-                                InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
+                                ' Don't build components in this calculation
+                                InsertItem.ComponentManufacturingFacilityUsage = 0
+                                InsertItem.CapComponentManufacturingFacilityUsage = 0
                                 InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
                                 InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
 
@@ -17584,13 +17597,13 @@ CheckTechs:
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
                             Else
                                 InsertItem.CopyCost = 0
@@ -17653,13 +17666,13 @@ CheckTechs:
                                 InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                                If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                     InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                     InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
@@ -17735,13 +17748,13 @@ CheckTechs:
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
                             Else
                                 InsertItem.CopyCost = 0
@@ -18016,7 +18029,7 @@ DisplayResults:
                 BPList.ForeColor = Color.DarkRed
             End If
 
-            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And Not chkCalcIgnoreInvention.Checked Then
+            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And FinalItemList(i).BlueprintType <> BPType.Original And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkOrange
             End If
 
@@ -18161,7 +18174,7 @@ ExitCalc:
 
         ' See if we are looking at User Owned blueprints or All
         If rbtnCalcBPOwned.Checked Then
-            WhereClause = WhereClause & "AND USER_ID = " & SelectedCharacter.ID & " AND OWNED = 1 "
+            WhereClause = WhereClause & "AND USER_ID = " & SelectedCharacter.ID & " AND OWNED <> 0  "
         End If
 
         SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
@@ -18473,6 +18486,7 @@ ExitCalc:
         Dim SQL As String = ""
         Dim T2Query As String = ""
         Dim T3Query As String = ""
+        Dim RelicRuns As String = ""
 
         ' Items
         If chkCalcAmmo.Checked Then
