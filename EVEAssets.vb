@@ -116,9 +116,9 @@ Public Class EVEAssets
                         TempAsset.LocationName = "Unknown Location"
                     End If
 
-                    ' See if it has a flag assigned, if 0 then set it to 156 (my own code for space)
+                    ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
                     If TempAsset.FlagID = 0 Then
-                        TempAsset.FlagID = -156 'negative for base item
+                        TempAsset.FlagID = -1 * SpaceFlagCode 'negative for base item
                     End If
 
                     readerData.Close()
@@ -328,6 +328,7 @@ Public Class EVEAssets
 
             ' See if we have added the location
             If Not LocationList.Contains(TempAsset.LocationID) Then
+                LocationName = LocationName
                 ' Add the location to the list
                 LocationList.Add(TempAsset.LocationID)
 

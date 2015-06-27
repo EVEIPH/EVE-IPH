@@ -2003,16 +2003,6 @@ NoBonus:
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                         ' For T3 stuff, need to make sure we only show facilities that can do T3 invention (Caldari Outposts)
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
-                        '' T3 stuff doesn't have a group ID in stations table
-                        'If ItemGroupID = StrategicCruiserGroupID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(StrategicCruiserGroupID) & " "
-                        'ElseIf ItemGroupID = TacticalDestroyerGroupID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(TacticalDestroyerBlueprintID) & " "
-                        'ElseIf ItemCategoryID = SubsystemCategoryID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(SubsystemBlueprintID) & " "
-                        'Else
-                        '    SQL = SQL & " AND GROUP_ID = 0  AND CATEGORY_ID = " & CStr(BlueprintCategoryID) & " "
-                        'End If
                 End Select
 
                 SQL = SQL & "AND REGION_NAME = '" & FormatDBString(FacilityRegionCombo.Text) & "'"
@@ -7472,9 +7462,9 @@ Tabs:
         Dim OwnedBPRuns As Integer
 
         If HasOwnedBP Then
-            txtBPME.Text = CStr(readerBP.GetDouble(0))
+            txtBPME.Text = CStr(readerBP.GetInt32(0))
             OwnedBPME = txtBPME.Text
-            txtBPTE.Text = CStr(readerBP.GetDouble(1))
+            txtBPTE.Text = CStr(readerBP.GetInt32(1))
             OwnedBPPE = txtBPTE.Text
             OwnedBP = True
             AddlCost = readerBP.GetDouble(2)
@@ -7526,6 +7516,7 @@ Tabs:
                 txtBPME.Enabled = False
                 txtBPTE.Enabled = False
             End If
+
         Else ' Check the ignore invention, they own this BPO and don't need to invent it (if T2)
             If TempTech = 2 Then
                 chkBPIgnoreInvention.Checked = True
@@ -7615,7 +7606,8 @@ Tabs:
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3
         If NewBP Then
-            If TempBPType = BPType.InventedBPC Then
+            Dim TempDName As String = ""
+            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
                 ' Load the decryptor based on ME/TE
                 Dim TempD As New DecryptorList
                 LoadingInventionDecryptors = True
@@ -7624,11 +7616,18 @@ Tabs:
                 T3DecryptorsLoaded = False
                 ' Load up the decryptor based on data entered or BP data from an owned bp
                 SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, TempTech)
-                If TempTech = 2 Then
-                    cmbBPInventionDecryptor.Text = SelectedDecryptor.Name
-                ElseIf TempTech = 3 Then
-                    cmbBPT3Decryptor.Text = SelectedDecryptor.Name
+                If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
+                    TempDName = Unknown
+                Else
+                    TempDName = SelectedDecryptor.Name
                 End If
+
+                If TempTech = 2 Then
+                    cmbBPInventionDecryptor.Text = TempDName
+                ElseIf TempTech = 3 Then
+                    cmbBPT3Decryptor.Text = TempDName
+                End If
+
                 LoadingInventionDecryptors = False
                 LoadingT3Decryptors = False
             Else
@@ -7647,6 +7646,22 @@ Tabs:
                     LoadingRelics = False
                 End If
             End If
+
+            ' Turn off the invention calcs if unknown
+            UpdatingInventionChecks = True
+            If TempDName = Unknown Then
+                chkBPIncludeCopyCosts.Checked = False
+                chkBPIncludeCopyTime.Checked = False
+                chkBPIncludeInventionCosts.Checked = False
+                chkBPIncludeInventionTime.Checked = False
+            Else
+                chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
+                chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
+                chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
+                chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
+            End If
+            UpdatingInventionChecks = False
+
         End If
 
         ' Make sure everything is enabled on first BP load
@@ -7719,11 +7734,11 @@ Tabs:
             txtBPRuns.Text = "1"
         End If
 
-        ' Update the num bps here instead of when they enter data
-        ' this is really just a visual thing since the blueprint will determine the correct number and set it later
-        IgnoreFocus = True
-        Call UpdateBPLinesandBPs()
-        IgnoreFocus = False
+        '' Update the num bps here instead of when they enter data
+        '' this is really just a visual thing since the blueprint will determine the correct number and set it later
+        'IgnoreFocus = True
+        'Call UpdateBPLinesandBPs()
+        'IgnoreFocus = False
 
         ' Check the quantity
         If Not IsNumeric(txtBPRuns.Text) Or Val(txtBPRuns.Text) <= 0 Then
@@ -8290,7 +8305,7 @@ ExitForm:
             ElseIf .rbtnBPCelestialsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Structure' "
+                SQL = SQL & "AND ITEM_CATEGORY = 'Starbase' "
             ElseIf .rbtnBPStationPartsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnBPRigBlueprints.Checked Then
@@ -8693,73 +8708,43 @@ ExitForm:
         Dim MaxProductionRuns As Long
         Dim ReturnValue As Integer
 
-        ' See if the bp is owned and process
-        SQL = "SELECT BP_TYPE, RUNS FROM OWNED_BLUEPRINTS WHERE OWNED <> 0 AND USER_ID = " & SelectedCharacter.ID
-        SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintTypeID
+        ' Set the number of bps
+        If SentTechLevel = 2 Then
+            SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & CStr(BlueprintTypeID)
 
-        DBCommand = New SQLiteCommand(SQL, DB)
-        readerOwned = DBCommand.ExecuteReader
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerOwned = DBCommand.ExecuteReader()
+            readerOwned.Read()
 
-        ' Return the lines used since we'll just run max runs on those lines
-        If readerOwned.Read Then
+            MaxProductionRuns = readerOwned.GetInt32(0)
 
-            If readerOwned.GetInt32(0) = BPType.Original Then
-                If SentRuns < SentNumBps Then
-                    ' Can't run more bps than runs, so reset to the runs - 1 bp per run
-                    SentNumBps = SentRuns
-                End If
+            readerOwned.Close()
+            readerOwned = Nothing
 
-                If SentNumBps < SentLines And SentNumBps <> 0 Then
-                    ReturnValue = SentNumBps
-                Else
-                    ReturnValue = SentLines
-                End If
+        Else ' base T3 runs off of the relic
+            Dim readerBP As SQLiteDataReader
+
+            SQL = "SELECT quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
+            SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerBP = DBCommand.ExecuteReader()
+
+            If readerBP.Read Then
+                MaxProductionRuns = readerBP.GetInt32(0)
             Else
-                ' Set the num bps off of the bpc stored and assume they have an unlimited amount for now
-                ReturnValue = CInt(Math.Ceiling(SentRuns / readerOwned.GetInt32(1)))
+                ' Assume wrecked bp
+                MaxProductionRuns = 3
             End If
 
-        Else
-            ' Set the number of bps
-            If SentTechLevel = 2 Then
-                SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & CStr(BlueprintTypeID)
-
-                DBCommand = New SQLiteCommand(SQL, DB)
-                readerOwned = DBCommand.ExecuteReader()
-                readerOwned.Read()
-
-                MaxProductionRuns = readerOwned.GetInt32(0)
-
-                readerOwned.Close()
-            Else ' base T3 runs off of the relic
-                Dim readerBP As SQLiteDataReader
-
-                SQL = "SELECT quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-                SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
-
-                DBCommand = New SQLiteCommand(SQL, DB)
-                readerBP = DBCommand.ExecuteReader()
-
-                If readerBP.Read Then
-                    MaxProductionRuns = readerBP.GetInt32(0)
-                Else
-                    ' Assume wrecked bp
-                    MaxProductionRuns = 3
-                End If
-
-                readerBP.Close()
-                readerBP = Nothing
-
-            End If
-
-            MaxProductionRuns = MaxProductionRuns + DecryptorMod
-            ' Set the num bps off of the calculated amount
-            ReturnValue = CInt(Math.Ceiling(SentRuns / MaxProductionRuns))
+            readerBP.Close()
+            readerBP = Nothing
 
         End If
 
-        readerOwned.Close()
-        readerOwned = Nothing
+        MaxProductionRuns = MaxProductionRuns + DecryptorMod
+        ' Set the num bps off of the calculated amount
+        ReturnValue = CInt(Math.Ceiling(SentRuns / MaxProductionRuns))
 
         Return ReturnValue
 
@@ -8934,7 +8919,6 @@ ExitForm:
             chkSubsystems.Checked = True
             chkStructures.Checked = True
             chkTools.Checked = True
-            chkDataInterfaces.Checked = True
             chkCapT2Components.Checked = True
             chkCapitalComponents.Checked = True
             chkComponents.Checked = True
@@ -8954,7 +8938,6 @@ ExitForm:
             chkSubsystems.Checked = False
             chkStructures.Checked = False
             chkTools.Checked = False
-            chkDataInterfaces.Checked = False
             chkCapT2Components.Checked = False
             chkCapitalComponents.Checked = False
             chkComponents.Checked = False
@@ -9452,7 +9435,7 @@ ExitForm:
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkDataInterfaces_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDataInterfaces.CheckedChanged
+    Private Sub chkDataInterfaces_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Call UpdatePriceList()
     End Sub
 
@@ -10006,7 +9989,6 @@ ExitForm:
             chkSubsystems.Checked = .Subsystems
             chkStructures.Checked = .Structures
             chkTools.Checked = .Tools
-            chkDataInterfaces.Checked = .DataInterfaces
             chkCapT2Components.Checked = .CapT2Components
             chkCapitalComponents.Checked = .CapitalComponents
             chkComponents.Checked = .Components
@@ -10243,7 +10225,6 @@ ExitForm:
             .Subsystems = chkSubsystems.Checked
             .Structures = chkStructures.Checked
             .Tools = chkTools.Checked
-            .DataInterfaces = chkDataInterfaces.Checked
             .CapT2Components = chkCapT2Components.Checked
             .CapitalComponents = chkCapitalComponents.Checked
             .Components = chkComponents.Checked
@@ -11036,10 +11017,6 @@ ExitSub:
             SQL = SQL & "ITEM_GROUP = 'Tool' OR "
             ItemChecked = True
         End If
-        If chkDataInterfaces.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Data Interfaces' OR "
-            ItemChecked = True
-        End If
         If chkFuelBlocks.Checked Then
             SQL = SQL & "ITEM_GROUP = 'Fuel Block' OR "
             ItemChecked = True
@@ -11158,7 +11135,7 @@ ExitSub:
                     SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR "
                 End If
                 If chkStructures.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Structure' AND " & TechSQL & ") OR "
+                    SQL = SQL & "(ITEM_CATEGORY = 'Starbase' AND " & TechSQL & ") OR "
                 End If
             Else
                 ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -18029,7 +18006,7 @@ DisplayResults:
                 BPList.ForeColor = Color.DarkRed
             End If
 
-            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And FinalItemList(i).BlueprintType <> BPType.Original And Not chkCalcIgnoreInvention.Checked Then
+            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And FinalItemList(i).BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkOrange
             End If
 
@@ -18526,7 +18503,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Deployable' OR "
         End If
         If chkCalcStructures.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Structure' OR "
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Starbase' OR "
         End If
 
         ' Take off last OR
@@ -20294,7 +20271,7 @@ ExitCalc:
             DCAgentRecord.Agent = readerDC.GetString(3)
             DCAgentRecord.AgentStanding = Math.Truncate(AgentStanding * 100) / 100
             DCAgentRecord.AgentLevel = readerDC.GetInt32(4)
-            DCAgentRecord.AgentLocation = readerDC.GetString(9) & " (" & CStr(DCAgentRecord.SystemSecurity) & ")" ' Station name + security
+            DCAgentRecord.AgentLocation = readerDC.GetString(13) & " (" & CStr(DCAgentRecord.SystemSecurity) & ") - " & readerDC.GetString(9)  ' Station name + security + region
 
             ' Need the Core typeID
             SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & readerDC.GetString(7) & "'"

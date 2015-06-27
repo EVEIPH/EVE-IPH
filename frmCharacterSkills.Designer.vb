@@ -252,8 +252,7 @@ Partial Class frmCharacterSkills
         '
         'frmCharacterSkills
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(362, 511)
         Me.Controls.Add(Me.btnClearItemFilter)
         Me.Controls.Add(Me.txtSkillNameFilter)

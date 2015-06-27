@@ -421,6 +421,9 @@ Public Class Blueprint
         ' Save the max runs per invented bpc
         MaxRunsPerBP = SingleInventedBPCRuns
 
+        ' Reset the number of bps needed based on the runs we have
+        NumberofBPs = CInt(Math.Ceiling(UserRuns / MaxRunsPerBP))
+
         Return InventedBPs
 
     End Function

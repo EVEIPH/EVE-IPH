@@ -625,8 +625,7 @@ Partial Class frmShoppingList
         '
         'frmShoppingList
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(964, 682)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.lblTotalItemsBrokersFees)

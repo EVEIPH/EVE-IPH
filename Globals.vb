@@ -8,7 +8,7 @@ Imports System.Xml
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const DataDumpVersion As String = "Mosaic_1.2_112318"
+    Public Const DataDumpVersion As String = "Carnyx_1.0_113321"
     Public Const VersionNumber As String = "3.1.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -81,29 +81,6 @@ Public Module Public_Variables
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID AND OBP.USER_ID = @USERBP_USERID, " _
                                             & "INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID) AS X "
 
-    '' This will include copies too
-    'Public Const ALL_USER_BLUEPRINTS As String = "(SELECT ALL_BLUEPRINTS.BLUEPRINT_ID AS BP_ID, ALL_BLUEPRINTS.BLUEPRINT_GROUP AS BLUEPRINT_GROUP, ALL_BLUEPRINTS.BLUEPRINT_NAME AS BLUEPRINT_NAME, " _
-    '                                        & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, ITEM_CATEGORY, ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
-    '                                        & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME," _
-    '                                        & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE," _
-    '                                        & "CASE WHEN USER_ID IS NOT NULL THEN USER_ID ELSE 0 END AS USER_ID, ITEM_TYPE," _
-    '                                        & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
-    '                                        & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
-    '                                        & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-    '                                        & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
-    '                                        & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
-    '                                        & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
-    '                                        & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
-    '                                        & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
-    '                                        & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
-    '                                        & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-    '                                        & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
-    '                                        & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
-    '                                        & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
-    '                                        & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
-    '                                        & "ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID AND OBP.USER_ID = @ALLUSERBP_USERID, " _
-    '                                        & "INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID ) AS X "
-
     ' Shopping List
     Public TotalShoppingList As New ShoppingList
 
@@ -125,6 +102,8 @@ Public Module Public_Variables
     Public Const IndustryNoCompletedDate As DateTime = #1/1/2001#
 
     Public Const DataCoreRedeemCost As Double = 10000.0
+
+    Public Const SpaceFlagCode As Integer = 500
 
     ' Column processing
     Public Const NumManufacturingTabColumns As Integer = 68

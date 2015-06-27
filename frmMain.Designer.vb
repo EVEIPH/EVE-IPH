@@ -822,7 +822,6 @@ Partial Class frmMain
         Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.tabUpdatePrices = New System.Windows.Forms.TabPage()
         Me.chkUpdatePricesCRESTHistory = New System.Windows.Forms.CheckBox()
-        Me.chkUpdatePricesNoPrice = New System.Windows.Forms.CheckBox()
         Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
         Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
         Me.chkSystems2 = New System.Windows.Forms.CheckBox()
@@ -848,8 +847,8 @@ Partial Class frmMain
         Me.chkPriceManufacturedPrices = New System.Windows.Forms.CheckBox()
         Me.gbPriceTools = New System.Windows.Forms.GroupBox()
         Me.chkImplants = New System.Windows.Forms.CheckBox()
+        Me.chkUpdatePricesNoPrice = New System.Windows.Forms.CheckBox()
         Me.chkFuelBlocks = New System.Windows.Forms.CheckBox()
-        Me.chkDataInterfaces = New System.Windows.Forms.CheckBox()
         Me.chkTools = New System.Windows.Forms.CheckBox()
         Me.gbComponents = New System.Windows.Forms.GroupBox()
         Me.chkHybrid = New System.Windows.Forms.CheckBox()
@@ -9405,7 +9404,6 @@ Partial Class frmMain
         'tabUpdatePrices
         '
         Me.tabUpdatePrices.Controls.Add(Me.chkUpdatePricesCRESTHistory)
-        Me.tabUpdatePrices.Controls.Add(Me.chkUpdatePricesNoPrice)
         Me.tabUpdatePrices.Controls.Add(Me.gbTradeHubSystems)
         Me.tabUpdatePrices.Controls.Add(Me.lstPricesView)
         Me.tabUpdatePrices.Controls.Add(Me.txtPriceItemFilter)
@@ -9439,16 +9437,6 @@ Partial Class frmMain
         Me.chkUpdatePricesCRESTHistory.Text = "Update Price History"
         Me.chkUpdatePricesCRESTHistory.UseVisualStyleBackColor = true
         Me.chkUpdatePricesCRESTHistory.Visible = false
-        '
-        'chkUpdatePricesNoPrice
-        '
-        Me.chkUpdatePricesNoPrice.AutoSize = true
-        Me.chkUpdatePricesNoPrice.Location = New System.Drawing.Point(448, 583)
-        Me.chkUpdatePricesNoPrice.Name = "chkUpdatePricesNoPrice"
-        Me.chkUpdatePricesNoPrice.Size = New System.Drawing.Size(108, 17)
-        Me.chkUpdatePricesNoPrice.TabIndex = 6
-        Me.chkUpdatePricesNoPrice.Text = "Items w/No Price"
-        Me.chkUpdatePricesNoPrice.UseVisualStyleBackColor = true
         '
         'gbTradeHubSystems
         '
@@ -9687,8 +9675,8 @@ Partial Class frmMain
         'gbPriceTools
         '
         Me.gbPriceTools.Controls.Add(Me.chkImplants)
+        Me.gbPriceTools.Controls.Add(Me.chkUpdatePricesNoPrice)
         Me.gbPriceTools.Controls.Add(Me.chkFuelBlocks)
-        Me.gbPriceTools.Controls.Add(Me.chkDataInterfaces)
         Me.gbPriceTools.Controls.Add(Me.chkTools)
         Me.gbPriceTools.Location = New System.Drawing.Point(293, 145)
         Me.gbPriceTools.Name = "gbPriceTools"
@@ -9700,32 +9688,32 @@ Partial Class frmMain
         'chkImplants
         '
         Me.chkImplants.AutoSize = true
-        Me.chkImplants.Location = New System.Drawing.Point(6, 66)
+        Me.chkImplants.Location = New System.Drawing.Point(6, 49)
         Me.chkImplants.Name = "chkImplants"
         Me.chkImplants.Size = New System.Drawing.Size(65, 17)
         Me.chkImplants.TabIndex = 4
         Me.chkImplants.Text = "Implants"
         Me.chkImplants.UseVisualStyleBackColor = true
         '
+        'chkUpdatePricesNoPrice
+        '
+        Me.chkUpdatePricesNoPrice.AutoSize = true
+        Me.chkUpdatePricesNoPrice.Location = New System.Drawing.Point(6, 66)
+        Me.chkUpdatePricesNoPrice.Name = "chkUpdatePricesNoPrice"
+        Me.chkUpdatePricesNoPrice.Size = New System.Drawing.Size(108, 17)
+        Me.chkUpdatePricesNoPrice.TabIndex = 6
+        Me.chkUpdatePricesNoPrice.Text = "Items w/No Price"
+        Me.chkUpdatePricesNoPrice.UseVisualStyleBackColor = true
+        '
         'chkFuelBlocks
         '
         Me.chkFuelBlocks.AutoSize = true
-        Me.chkFuelBlocks.Location = New System.Drawing.Point(6, 49)
+        Me.chkFuelBlocks.Location = New System.Drawing.Point(6, 32)
         Me.chkFuelBlocks.Name = "chkFuelBlocks"
         Me.chkFuelBlocks.Size = New System.Drawing.Size(81, 17)
         Me.chkFuelBlocks.TabIndex = 3
         Me.chkFuelBlocks.Text = "Fuel Blocks"
         Me.chkFuelBlocks.UseVisualStyleBackColor = true
-        '
-        'chkDataInterfaces
-        '
-        Me.chkDataInterfaces.AutoSize = true
-        Me.chkDataInterfaces.Location = New System.Drawing.Point(6, 32)
-        Me.chkDataInterfaces.Name = "chkDataInterfaces"
-        Me.chkDataInterfaces.Size = New System.Drawing.Size(99, 17)
-        Me.chkDataInterfaces.TabIndex = 2
-        Me.chkDataInterfaces.Text = "Data Interfaces"
-        Me.chkDataInterfaces.UseVisualStyleBackColor = true
         '
         'chkTools
         '
@@ -12002,7 +11990,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualTax
         '
-        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(185, 108)
+        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(181, 108)
         Me.txtBPFacilityManualTax.MaxLength = 5
         Me.txtBPFacilityManualTax.Name = "txtBPFacilityManualTax"
         Me.txtBPFacilityManualTax.Size = New System.Drawing.Size(35, 20)
@@ -12014,7 +12002,7 @@ Partial Class frmMain
         'lblBPFacilityManualTax
         '
         Me.lblBPFacilityManualTax.AutoSize = true
-        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(159, 111)
+        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(152, 111)
         Me.lblBPFacilityManualTax.Name = "lblBPFacilityManualTax"
         Me.lblBPFacilityManualTax.Size = New System.Drawing.Size(28, 13)
         Me.lblBPFacilityManualTax.TabIndex = 18
@@ -12226,12 +12214,12 @@ Partial Class frmMain
         Me.tabT3Calcs.Name = "tabT3Calcs"
         Me.tabT3Calcs.Size = New System.Drawing.Size(261, 139)
         Me.tabT3Calcs.TabIndex = 2
-        Me.tabT3Calcs.Text = "Inv."
-        Me.tabT3Calcs.UseVisualStyleBackColor = true
+        Me.tabT3Calcs.Text = "Inv"
+        Me.tabT3Calcs.UseVisualStyleBackColor = True
         '
         'lblBPT3Decryptor
         '
-        Me.lblBPT3Decryptor.AutoSize = true
+        Me.lblBPT3Decryptor.AutoSize = True
         Me.lblBPT3Decryptor.Location = New System.Drawing.Point(69, 94)
         Me.lblBPT3Decryptor.Name = "lblBPT3Decryptor"
         Me.lblBPT3Decryptor.Size = New System.Drawing.Size(89, 13)
@@ -12240,7 +12228,7 @@ Partial Class frmMain
         '
         'cmbBPT3Decryptor
         '
-        Me.cmbBPT3Decryptor.FormattingEnabled = true
+        Me.cmbBPT3Decryptor.FormattingEnabled = True
         Me.cmbBPT3Decryptor.ItemHeight = 13
         Me.cmbBPT3Decryptor.Location = New System.Drawing.Point(71, 108)
         Me.cmbBPT3Decryptor.Name = "cmbBPT3Decryptor"
@@ -12258,7 +12246,7 @@ Partial Class frmMain
         '
         'lblBPRelic
         '
-        Me.lblBPRelic.AutoSize = true
+        Me.lblBPRelic.AutoSize = True
         Me.lblBPRelic.Location = New System.Drawing.Point(38, 22)
         Me.lblBPRelic.Name = "lblBPRelic"
         Me.lblBPRelic.Size = New System.Drawing.Size(67, 13)
@@ -12275,7 +12263,7 @@ Partial Class frmMain
         '
         'lblBPRelicLines
         '
-        Me.lblBPRelicLines.AutoSize = true
+        Me.lblBPRelicLines.AutoSize = True
         Me.lblBPRelicLines.Location = New System.Drawing.Point(2, 22)
         Me.lblBPRelicLines.Name = "lblBPRelicLines"
         Me.lblBPRelicLines.Size = New System.Drawing.Size(35, 13)
@@ -12293,7 +12281,7 @@ Partial Class frmMain
         '
         'cmbBPRelic
         '
-        Me.cmbBPRelic.FormattingEnabled = true
+        Me.cmbBPRelic.FormattingEnabled = True
         Me.cmbBPRelic.ItemHeight = 13
         Me.cmbBPRelic.Items.AddRange(New Object() {"Wrecked", "Malfunctioning", "Intact"})
         Me.cmbBPRelic.Location = New System.Drawing.Point(41, 36)
@@ -12321,7 +12309,7 @@ Partial Class frmMain
         '
         'lblBPT3InventionChance1
         '
-        Me.lblBPT3InventionChance1.AutoSize = true
+        Me.lblBPT3InventionChance1.AutoSize = True
         Me.lblBPT3InventionChance1.Location = New System.Drawing.Point(2, 60)
         Me.lblBPT3InventionChance1.Name = "lblBPT3InventionChance1"
         Me.lblBPT3InventionChance1.Size = New System.Drawing.Size(47, 13)
@@ -12339,34 +12327,34 @@ Partial Class frmMain
         '
         'chkBPIncludeT3Time
         '
-        Me.chkBPIncludeT3Time.AutoSize = true
+        Me.chkBPIncludeT3Time.AutoSize = True
         Me.chkBPIncludeT3Time.Location = New System.Drawing.Point(179, 59)
         Me.chkBPIncludeT3Time.Name = "chkBPIncludeT3Time"
         Me.chkBPIncludeT3Time.Size = New System.Drawing.Size(99, 17)
         Me.chkBPIncludeT3Time.TabIndex = 49
         Me.chkBPIncludeT3Time.Text = "Invention Time:"
-        Me.chkBPIncludeT3Time.UseVisualStyleBackColor = true
+        Me.chkBPIncludeT3Time.UseVisualStyleBackColor = True
         '
         'chkBPIncludeT3Costs
         '
-        Me.chkBPIncludeT3Costs.AutoSize = true
+        Me.chkBPIncludeT3Costs.AutoSize = True
         Me.chkBPIncludeT3Costs.Location = New System.Drawing.Point(71, 59)
         Me.chkBPIncludeT3Costs.Name = "chkBPIncludeT3Costs"
         Me.chkBPIncludeT3Costs.Size = New System.Drawing.Size(102, 17)
         Me.chkBPIncludeT3Costs.TabIndex = 47
         Me.chkBPIncludeT3Costs.Text = "Invention Costs:"
-        Me.chkBPIncludeT3Costs.UseVisualStyleBackColor = true
+        Me.chkBPIncludeT3Costs.UseVisualStyleBackColor = True
         '
         'tabBPOptions
         '
         Me.tabBPOptions.Controls.Add(Me.gbBPIgnoreinCalcs)
-        Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
+        Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.tabBPOptions.Location = New System.Drawing.Point(4, 4)
         Me.tabBPOptions.Name = "tabBPOptions"
         Me.tabBPOptions.Size = New System.Drawing.Size(261, 139)
         Me.tabBPOptions.TabIndex = 3
         Me.tabBPOptions.Text = "Options"
-        Me.tabBPOptions.UseVisualStyleBackColor = true
+        Me.tabBPOptions.UseVisualStyleBackColor = True
         '
         'gbBPIgnoreinCalcs
         '
@@ -12377,38 +12365,38 @@ Partial Class frmMain
         Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
         Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(125, 76)
         Me.gbBPIgnoreinCalcs.TabIndex = 20
-        Me.gbBPIgnoreinCalcs.TabStop = false
+        Me.gbBPIgnoreinCalcs.TabStop = False
         Me.gbBPIgnoreinCalcs.Text = "Ignore in Calculations:"
         '
         'chkBPIgnoreMinerals
         '
-        Me.chkBPIgnoreMinerals.AutoSize = true
+        Me.chkBPIgnoreMinerals.AutoSize = True
         Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(9, 35)
         Me.chkBPIgnoreMinerals.Name = "chkBPIgnoreMinerals"
         Me.chkBPIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
         Me.chkBPIgnoreMinerals.TabIndex = 1
         Me.chkBPIgnoreMinerals.Text = "Minerals"
-        Me.chkBPIgnoreMinerals.UseVisualStyleBackColor = true
+        Me.chkBPIgnoreMinerals.UseVisualStyleBackColor = True
         '
         'chkBPIgnoreT1Item
         '
-        Me.chkBPIgnoreT1Item.AutoSize = true
+        Me.chkBPIgnoreT1Item.AutoSize = True
         Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(9, 52)
         Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
         Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
         Me.chkBPIgnoreT1Item.TabIndex = 2
         Me.chkBPIgnoreT1Item.Text = "T1 Item"
-        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = true
+        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = True
         '
         'chkBPIgnoreInvention
         '
-        Me.chkBPIgnoreInvention.AutoSize = true
+        Me.chkBPIgnoreInvention.AutoSize = True
         Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(9, 18)
         Me.chkBPIgnoreInvention.Name = "chkBPIgnoreInvention"
         Me.chkBPIgnoreInvention.Size = New System.Drawing.Size(70, 17)
         Me.chkBPIgnoreInvention.TabIndex = 0
         Me.chkBPIgnoreInvention.Text = "Invention"
-        Me.chkBPIgnoreInvention.UseVisualStyleBackColor = true
+        Me.chkBPIgnoreInvention.UseVisualStyleBackColor = True
         '
         'tabInventionCalcs
         '
@@ -12428,15 +12416,15 @@ Partial Class frmMain
         Me.tabInventionCalcs.Controls.Add(Me.chkBPIncludeCopyTime)
         Me.tabInventionCalcs.Controls.Add(Me.chkBPIncludeCopyCosts)
         Me.tabInventionCalcs.Controls.Add(Me.chkBPIncludeInventionCosts)
-        Me.tabInventionCalcs.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
+        Me.tabInventionCalcs.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.tabInventionCalcs.Location = New System.Drawing.Point(4, 4)
         Me.tabInventionCalcs.Margin = New System.Windows.Forms.Padding(0)
         Me.tabInventionCalcs.Name = "tabInventionCalcs"
         Me.tabInventionCalcs.Padding = New System.Windows.Forms.Padding(3)
         Me.tabInventionCalcs.Size = New System.Drawing.Size(261, 139)
         Me.tabInventionCalcs.TabIndex = 0
-        Me.tabInventionCalcs.Text = "Inv."
-        Me.tabInventionCalcs.UseVisualStyleBackColor = true
+        Me.tabInventionCalcs.Text = "Inv"
+        Me.tabInventionCalcs.UseVisualStyleBackColor = True
         '
         'lblBPCopyTime
         '
@@ -12449,7 +12437,7 @@ Partial Class frmMain
         '
         'lblBPT2InventStatus
         '
-        Me.lblBPT2InventStatus.AutoSize = true
+        Me.lblBPT2InventStatus.AutoSize = True
         Me.lblBPT2InventStatus.ForeColor = System.Drawing.Color.Black
         Me.lblBPT2InventStatus.Location = New System.Drawing.Point(1, 4)
         Me.lblBPT2InventStatus.Name = "lblBPT2InventStatus"
@@ -12476,7 +12464,7 @@ Partial Class frmMain
         '
         'lblBPInventionLines
         '
-        Me.lblBPInventionLines.AutoSize = true
+        Me.lblBPInventionLines.AutoSize = True
         Me.lblBPInventionLines.Location = New System.Drawing.Point(3, 22)
         Me.lblBPInventionLines.Name = "lblBPInventionLines"
         Me.lblBPInventionLines.Size = New System.Drawing.Size(35, 13)
@@ -12485,7 +12473,7 @@ Partial Class frmMain
         '
         'lblInventionChance1
         '
-        Me.lblInventionChance1.AutoSize = true
+        Me.lblInventionChance1.AutoSize = True
         Me.lblInventionChance1.Location = New System.Drawing.Point(2, 60)
         Me.lblInventionChance1.Name = "lblInventionChance1"
         Me.lblInventionChance1.Size = New System.Drawing.Size(47, 13)
@@ -12494,7 +12482,7 @@ Partial Class frmMain
         '
         'lblBPDecryptor
         '
-        Me.lblBPDecryptor.AutoSize = true
+        Me.lblBPDecryptor.AutoSize = True
         Me.lblBPDecryptor.Location = New System.Drawing.Point(38, 22)
         Me.lblBPDecryptor.Name = "lblBPDecryptor"
         Me.lblBPDecryptor.Size = New System.Drawing.Size(89, 13)
@@ -12530,7 +12518,7 @@ Partial Class frmMain
         '
         'cmbBPInventionDecryptor
         '
-        Me.cmbBPInventionDecryptor.FormattingEnabled = true
+        Me.cmbBPInventionDecryptor.FormattingEnabled = True
         Me.cmbBPInventionDecryptor.ItemHeight = 13
         Me.cmbBPInventionDecryptor.Location = New System.Drawing.Point(41, 36)
         Me.cmbBPInventionDecryptor.Name = "cmbBPInventionDecryptor"
@@ -12548,43 +12536,43 @@ Partial Class frmMain
         '
         'chkBPIncludeInventionTime
         '
-        Me.chkBPIncludeInventionTime.AutoSize = true
+        Me.chkBPIncludeInventionTime.AutoSize = True
         Me.chkBPIncludeInventionTime.Location = New System.Drawing.Point(179, 59)
         Me.chkBPIncludeInventionTime.Name = "chkBPIncludeInventionTime"
         Me.chkBPIncludeInventionTime.Size = New System.Drawing.Size(99, 17)
         Me.chkBPIncludeInventionTime.TabIndex = 31
         Me.chkBPIncludeInventionTime.Text = "Invention Time:"
-        Me.chkBPIncludeInventionTime.UseVisualStyleBackColor = true
+        Me.chkBPIncludeInventionTime.UseVisualStyleBackColor = True
         '
         'chkBPIncludeCopyTime
         '
-        Me.chkBPIncludeCopyTime.AutoSize = true
+        Me.chkBPIncludeCopyTime.AutoSize = True
         Me.chkBPIncludeCopyTime.Location = New System.Drawing.Point(179, 95)
         Me.chkBPIncludeCopyTime.Name = "chkBPIncludeCopyTime"
         Me.chkBPIncludeCopyTime.Size = New System.Drawing.Size(79, 17)
         Me.chkBPIncludeCopyTime.TabIndex = 35
         Me.chkBPIncludeCopyTime.Text = "Copy Time:"
-        Me.chkBPIncludeCopyTime.UseVisualStyleBackColor = true
+        Me.chkBPIncludeCopyTime.UseVisualStyleBackColor = True
         '
         'chkBPIncludeCopyCosts
         '
-        Me.chkBPIncludeCopyCosts.AutoSize = true
+        Me.chkBPIncludeCopyCosts.AutoSize = True
         Me.chkBPIncludeCopyCosts.Location = New System.Drawing.Point(71, 95)
         Me.chkBPIncludeCopyCosts.Name = "chkBPIncludeCopyCosts"
         Me.chkBPIncludeCopyCosts.Size = New System.Drawing.Size(82, 17)
         Me.chkBPIncludeCopyCosts.TabIndex = 33
         Me.chkBPIncludeCopyCosts.Text = "Copy Costs:"
-        Me.chkBPIncludeCopyCosts.UseVisualStyleBackColor = true
+        Me.chkBPIncludeCopyCosts.UseVisualStyleBackColor = True
         '
         'chkBPIncludeInventionCosts
         '
-        Me.chkBPIncludeInventionCosts.AutoSize = true
+        Me.chkBPIncludeInventionCosts.AutoSize = True
         Me.chkBPIncludeInventionCosts.Location = New System.Drawing.Point(71, 59)
         Me.chkBPIncludeInventionCosts.Name = "chkBPIncludeInventionCosts"
         Me.chkBPIncludeInventionCosts.Size = New System.Drawing.Size(102, 17)
         Me.chkBPIncludeInventionCosts.TabIndex = 29
         Me.chkBPIncludeInventionCosts.Text = "Invention Costs:"
-        Me.chkBPIncludeInventionCosts.UseVisualStyleBackColor = true
+        Me.chkBPIncludeInventionCosts.UseVisualStyleBackColor = True
         '
         'btnBPSaveSettings
         '
@@ -12593,7 +12581,7 @@ Partial Class frmMain
         Me.btnBPSaveSettings.Size = New System.Drawing.Size(82, 34)
         Me.btnBPSaveSettings.TabIndex = 14
         Me.btnBPSaveSettings.Text = "Save Settings"
-        Me.btnBPSaveSettings.UseVisualStyleBackColor = true
+        Me.btnBPSaveSettings.UseVisualStyleBackColor = True
         '
         'txtBPLines
         '
@@ -12611,7 +12599,7 @@ Partial Class frmMain
         Me.pictBP.Name = "pictBP"
         Me.pictBP.Size = New System.Drawing.Size(68, 69)
         Me.pictBP.TabIndex = 0
-        Me.pictBP.TabStop = false
+        Me.pictBP.TabStop = False
         '
         'txtBPNumBPs
         '
@@ -12627,11 +12615,11 @@ Partial Class frmMain
         Me.btnBPRefreshBP.Size = New System.Drawing.Size(130, 30)
         Me.btnBPRefreshBP.TabIndex = 13
         Me.btnBPRefreshBP.Text = "Refresh"
-        Me.btnBPRefreshBP.UseVisualStyleBackColor = true
+        Me.btnBPRefreshBP.UseVisualStyleBackColor = True
         '
         'lblBPLines
         '
-        Me.lblBPLines.AutoSize = true
+        Me.lblBPLines.AutoSize = True
         Me.lblBPLines.Location = New System.Drawing.Point(4, 109)
         Me.lblBPLines.Name = "lblBPLines"
         Me.lblBPLines.Size = New System.Drawing.Size(35, 13)
@@ -12650,7 +12638,7 @@ Partial Class frmMain
         '
         'lblBPRuns
         '
-        Me.lblBPRuns.AutoSize = true
+        Me.lblBPRuns.AutoSize = True
         Me.lblBPRuns.Location = New System.Drawing.Point(74, 11)
         Me.lblBPRuns.Name = "lblBPRuns"
         Me.lblBPRuns.Size = New System.Drawing.Size(62, 13)
@@ -12664,19 +12652,19 @@ Partial Class frmMain
         Me.gbBPTeam.Controls.Add(Me.lblBPDefaultTeam)
         Me.gbBPTeam.Controls.Add(Me.btnBPSaveTeam)
         Me.gbBPTeam.Controls.Add(Me.cmbBPTeamActivities)
-        Me.gbBPTeam.Enabled = false
+        Me.gbBPTeam.Enabled = False
         Me.gbBPTeam.Location = New System.Drawing.Point(140, 7)
         Me.gbBPTeam.Name = "gbBPTeam"
         Me.gbBPTeam.Size = New System.Drawing.Size(310, 65)
         Me.gbBPTeam.TabIndex = 15
-        Me.gbBPTeam.TabStop = false
+        Me.gbBPTeam.TabStop = False
         Me.gbBPTeam.Text = "Team Bonus:"
         '
         'txtBPTeamBonus
         '
         Me.txtBPTeamBonus.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.txtBPTeamBonus.Location = New System.Drawing.Point(102, 10)
-        Me.txtBPTeamBonus.Multiline = true
+        Me.txtBPTeamBonus.Multiline = True
         Me.txtBPTeamBonus.Name = "txtBPTeamBonus"
         Me.txtBPTeamBonus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.txtBPTeamBonus.Size = New System.Drawing.Size(149, 28)
@@ -12702,17 +12690,17 @@ Partial Class frmMain
         '
         'btnBPSaveTeam
         '
-        Me.btnBPSaveTeam.Enabled = false
+        Me.btnBPSaveTeam.Enabled = False
         Me.btnBPSaveTeam.Location = New System.Drawing.Point(252, 41)
         Me.btnBPSaveTeam.Name = "btnBPSaveTeam"
         Me.btnBPSaveTeam.Size = New System.Drawing.Size(56, 22)
         Me.btnBPSaveTeam.TabIndex = 4
         Me.btnBPSaveTeam.Text = "Save"
-        Me.btnBPSaveTeam.UseVisualStyleBackColor = true
+        Me.btnBPSaveTeam.UseVisualStyleBackColor = True
         '
         'cmbBPTeamActivities
         '
-        Me.cmbBPTeamActivities.FormattingEnabled = true
+        Me.cmbBPTeamActivities.FormattingEnabled = True
         Me.cmbBPTeamActivities.Location = New System.Drawing.Point(4, 14)
         Me.cmbBPTeamActivities.Name = "cmbBPTeamActivities"
         Me.cmbBPTeamActivities.Size = New System.Drawing.Size(92, 21)
@@ -12721,13 +12709,13 @@ Partial Class frmMain
         '
         'chkBPBuildBuy
         '
-        Me.chkBPBuildBuy.AutoSize = true
+        Me.chkBPBuildBuy.AutoSize = True
         Me.chkBPBuildBuy.Location = New System.Drawing.Point(12, 86)
         Me.chkBPBuildBuy.Name = "chkBPBuildBuy"
         Me.chkBPBuildBuy.Size = New System.Drawing.Size(119, 17)
         Me.chkBPBuildBuy.TabIndex = 6
         Me.chkBPBuildBuy.Text = "Calculate Build/Buy"
-        Me.chkBPBuildBuy.UseVisualStyleBackColor = true
+        Me.chkBPBuildBuy.UseVisualStyleBackColor = True
         '
         'txtBPRuns
         '
@@ -12757,7 +12745,7 @@ Partial Class frmMain
         '
         'lblBPME
         '
-        Me.lblBPME.AutoSize = true
+        Me.lblBPME.AutoSize = True
         Me.lblBPME.Location = New System.Drawing.Point(77, 46)
         Me.lblBPME.Name = "lblBPME"
         Me.lblBPME.Size = New System.Drawing.Size(26, 13)
@@ -12776,7 +12764,7 @@ Partial Class frmMain
         '
         'lblBPPE
         '
-        Me.lblBPPE.AutoSize = true
+        Me.lblBPPE.AutoSize = True
         Me.lblBPPE.Location = New System.Drawing.Point(109, 46)
         Me.lblBPPE.Name = "lblBPPE"
         Me.lblBPPE.Size = New System.Drawing.Size(24, 13)
@@ -12785,7 +12773,7 @@ Partial Class frmMain
         '
         'lblBPNumBPs
         '
-        Me.lblBPNumBPs.AutoSize = true
+        Me.lblBPNumBPs.AutoSize = True
         Me.lblBPNumBPs.Location = New System.Drawing.Point(75, 109)
         Me.lblBPNumBPs.Name = "lblBPNumBPs"
         Me.lblBPNumBPs.Size = New System.Drawing.Size(29, 13)
@@ -12803,41 +12791,41 @@ Partial Class frmMain
         Me.gbBPShopandCopy.Name = "gbBPShopandCopy"
         Me.gbBPShopandCopy.Size = New System.Drawing.Size(293, 58)
         Me.gbBPShopandCopy.TabIndex = 3
-        Me.gbBPShopandCopy.TabStop = false
+        Me.gbBPShopandCopy.TabStop = False
         '
         'rbtnBPCopyInvREMats
         '
-        Me.rbtnBPCopyInvREMats.AutoSize = true
+        Me.rbtnBPCopyInvREMats.AutoSize = True
         Me.rbtnBPCopyInvREMats.Location = New System.Drawing.Point(190, 38)
         Me.rbtnBPCopyInvREMats.Name = "rbtnBPCopyInvREMats"
         Me.rbtnBPCopyInvREMats.Size = New System.Drawing.Size(89, 17)
         Me.rbtnBPCopyInvREMats.TabIndex = 4
-        Me.rbtnBPCopyInvREMats.TabStop = true
+        Me.rbtnBPCopyInvREMats.TabStop = True
         Me.rbtnBPCopyInvREMats.Text = "Invention/RE"
-        Me.rbtnBPCopyInvREMats.UseVisualStyleBackColor = true
+        Me.rbtnBPCopyInvREMats.UseVisualStyleBackColor = True
         '
         'rbtnBPComponentCopy
         '
-        Me.rbtnBPComponentCopy.AutoSize = true
-        Me.rbtnBPComponentCopy.Checked = true
+        Me.rbtnBPComponentCopy.AutoSize = True
+        Me.rbtnBPComponentCopy.Checked = True
         Me.rbtnBPComponentCopy.Location = New System.Drawing.Point(190, 8)
         Me.rbtnBPComponentCopy.Name = "rbtnBPComponentCopy"
         Me.rbtnBPComponentCopy.Size = New System.Drawing.Size(84, 17)
         Me.rbtnBPComponentCopy.TabIndex = 2
-        Me.rbtnBPComponentCopy.TabStop = true
+        Me.rbtnBPComponentCopy.TabStop = True
         Me.rbtnBPComponentCopy.Text = "Components"
-        Me.rbtnBPComponentCopy.UseVisualStyleBackColor = true
+        Me.rbtnBPComponentCopy.UseVisualStyleBackColor = True
         '
         'rbtnBPRawmatCopy
         '
-        Me.rbtnBPRawmatCopy.AutoSize = true
+        Me.rbtnBPRawmatCopy.AutoSize = True
         Me.rbtnBPRawmatCopy.Location = New System.Drawing.Point(190, 23)
         Me.rbtnBPRawmatCopy.Name = "rbtnBPRawmatCopy"
         Me.rbtnBPRawmatCopy.Size = New System.Drawing.Size(92, 17)
         Me.rbtnBPRawmatCopy.TabIndex = 3
-        Me.rbtnBPRawmatCopy.TabStop = true
+        Me.rbtnBPRawmatCopy.TabStop = True
         Me.rbtnBPRawmatCopy.Text = "Raw Materials"
-        Me.rbtnBPRawmatCopy.UseVisualStyleBackColor = true
+        Me.rbtnBPRawmatCopy.UseVisualStyleBackColor = True
         '
         'btnBPCopyMatstoClip
         '
@@ -12846,7 +12834,7 @@ Partial Class frmMain
         Me.btnBPCopyMatstoClip.Size = New System.Drawing.Size(86, 39)
         Me.btnBPCopyMatstoClip.TabIndex = 1
         Me.btnBPCopyMatstoClip.Text = "Copy to Clipboard"
-        Me.btnBPCopyMatstoClip.UseVisualStyleBackColor = true
+        Me.btnBPCopyMatstoClip.UseVisualStyleBackColor = True
         '
         'btnBPAddBPMatstoShoppingList
         '
@@ -12855,7 +12843,7 @@ Partial Class frmMain
         Me.btnBPAddBPMatstoShoppingList.Size = New System.Drawing.Size(86, 39)
         Me.btnBPAddBPMatstoShoppingList.TabIndex = 0
         Me.btnBPAddBPMatstoShoppingList.Text = "Add to Shopping List"
-        Me.btnBPAddBPMatstoShoppingList.UseVisualStyleBackColor = true
+        Me.btnBPAddBPMatstoShoppingList.UseVisualStyleBackColor = True
         '
         'lblBPCanMakeBPAll
         '
@@ -12879,7 +12867,7 @@ Partial Class frmMain
         '
         'lblBPRawMatCost1
         '
-        Me.lblBPRawMatCost1.AutoSize = true
+        Me.lblBPRawMatCost1.AutoSize = True
         Me.lblBPRawMatCost1.Location = New System.Drawing.Point(928, 593)
         Me.lblBPRawMatCost1.Name = "lblBPRawMatCost1"
         Me.lblBPRawMatCost1.Size = New System.Drawing.Size(77, 13)
@@ -12889,7 +12877,7 @@ Partial Class frmMain
         '
         'lblBPCanMakeBP
         '
-        Me.lblBPCanMakeBP.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
+        Me.lblBPCanMakeBP.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lblBPCanMakeBP.ForeColor = System.Drawing.Color.Red
         Me.lblBPCanMakeBP.Location = New System.Drawing.Point(8, 591)
         Me.lblBPCanMakeBP.Name = "lblBPCanMakeBP"
@@ -12928,7 +12916,7 @@ Partial Class frmMain
         '
         'lblBPComponentMatCost1
         '
-        Me.lblBPComponentMatCost1.AutoSize = true
+        Me.lblBPComponentMatCost1.AutoSize = True
         Me.lblBPComponentMatCost1.Location = New System.Drawing.Point(338, 593)
         Me.lblBPComponentMatCost1.Name = "lblBPComponentMatCost1"
         Me.lblBPComponentMatCost1.Size = New System.Drawing.Size(109, 13)
@@ -12948,70 +12936,70 @@ Partial Class frmMain
         Me.gbBPBlueprintTech.Name = "gbBPBlueprintTech"
         Me.gbBPBlueprintTech.Size = New System.Drawing.Size(84, 126)
         Me.gbBPBlueprintTech.TabIndex = 5
-        Me.gbBPBlueprintTech.TabStop = false
+        Me.gbBPBlueprintTech.TabStop = False
         Me.gbBPBlueprintTech.Text = "Tech"
         '
         'chkBPPirateFaction
         '
-        Me.chkBPPirateFaction.AutoSize = true
+        Me.chkBPPirateFaction.AutoSize = True
         Me.chkBPPirateFaction.Location = New System.Drawing.Point(8, 105)
         Me.chkBPPirateFaction.Name = "chkBPPirateFaction"
         Me.chkBPPirateFaction.Size = New System.Drawing.Size(53, 17)
         Me.chkBPPirateFaction.TabIndex = 5
         Me.chkBPPirateFaction.Text = "Pirate"
         Me.chkBPPirateFaction.TextAlign = System.Drawing.ContentAlignment.TopLeft
-        Me.chkBPPirateFaction.UseVisualStyleBackColor = true
+        Me.chkBPPirateFaction.UseVisualStyleBackColor = True
         '
         'chkBPStoryline
         '
-        Me.chkBPStoryline.AutoSize = true
+        Me.chkBPStoryline.AutoSize = True
         Me.chkBPStoryline.Location = New System.Drawing.Point(8, 69)
         Me.chkBPStoryline.Name = "chkBPStoryline"
         Me.chkBPStoryline.Size = New System.Drawing.Size(66, 17)
         Me.chkBPStoryline.TabIndex = 3
         Me.chkBPStoryline.Text = "Storyline"
-        Me.chkBPStoryline.UseVisualStyleBackColor = true
+        Me.chkBPStoryline.UseVisualStyleBackColor = True
         '
         'chkBPNavyFaction
         '
-        Me.chkBPNavyFaction.AutoSize = true
+        Me.chkBPNavyFaction.AutoSize = True
         Me.chkBPNavyFaction.Location = New System.Drawing.Point(8, 87)
         Me.chkBPNavyFaction.Name = "chkBPNavyFaction"
         Me.chkBPNavyFaction.Size = New System.Drawing.Size(51, 17)
         Me.chkBPNavyFaction.TabIndex = 4
         Me.chkBPNavyFaction.Text = "Navy"
         Me.chkBPNavyFaction.TextAlign = System.Drawing.ContentAlignment.TopLeft
-        Me.chkBPNavyFaction.UseVisualStyleBackColor = true
+        Me.chkBPNavyFaction.UseVisualStyleBackColor = True
         '
         'chkBPT3
         '
-        Me.chkBPT3.AutoSize = true
+        Me.chkBPT3.AutoSize = True
         Me.chkBPT3.Location = New System.Drawing.Point(8, 51)
         Me.chkBPT3.Name = "chkBPT3"
         Me.chkBPT3.Size = New System.Drawing.Size(60, 17)
         Me.chkBPT3.TabIndex = 2
         Me.chkBPT3.Text = "Tech 3"
-        Me.chkBPT3.UseVisualStyleBackColor = true
+        Me.chkBPT3.UseVisualStyleBackColor = True
         '
         'chkBPT2
         '
-        Me.chkBPT2.AutoSize = true
+        Me.chkBPT2.AutoSize = True
         Me.chkBPT2.Location = New System.Drawing.Point(8, 33)
         Me.chkBPT2.Name = "chkBPT2"
         Me.chkBPT2.Size = New System.Drawing.Size(60, 17)
         Me.chkBPT2.TabIndex = 1
         Me.chkBPT2.Text = "Tech 2"
-        Me.chkBPT2.UseVisualStyleBackColor = true
+        Me.chkBPT2.UseVisualStyleBackColor = True
         '
         'chkBPT1
         '
-        Me.chkBPT1.AutoSize = true
+        Me.chkBPT1.AutoSize = True
         Me.chkBPT1.Location = New System.Drawing.Point(8, 15)
         Me.chkBPT1.Name = "chkBPT1"
         Me.chkBPT1.Size = New System.Drawing.Size(60, 17)
         Me.chkBPT1.TabIndex = 0
         Me.chkBPT1.Text = "Tech 1"
-        Me.chkBPT1.UseVisualStyleBackColor = true
+        Me.chkBPT1.UseVisualStyleBackColor = True
         '
         'cmbBPBlueprintSelection
         '
@@ -13032,7 +13020,7 @@ Partial Class frmMain
         Me.tabMain.Controls.Add(Me.tabReactions)
         Me.tabMain.Controls.Add(Me.tabMining)
         Me.tabMain.Controls.Add(Me.tabPI)
-        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
         Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabMain.Location = New System.Drawing.Point(1, 26)
         Me.tabMain.Name = "tabMain"
@@ -13057,20 +13045,20 @@ Partial Class frmMain
         Me.tabPI.Size = New System.Drawing.Size(1137, 615)
         Me.tabPI.TabIndex = 6
         Me.tabPI.Text = "Planetary Interaction"
-        Me.tabPI.UseVisualStyleBackColor = true
+        Me.tabPI.UseVisualStyleBackColor = True
         '
         'MyListView6
         '
-        Me.MyListView6.FullRowSelect = true
-        Me.MyListView6.GridLines = true
-        Me.MyListView6.HideSelection = false
+        Me.MyListView6.FullRowSelect = True
+        Me.MyListView6.GridLines = True
+        Me.MyListView6.HideSelection = False
         Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = false
+        Me.MyListView6.MultiSelect = False
         Me.MyListView6.Name = "MyListView6"
         Me.MyListView6.Size = New System.Drawing.Size(398, 311)
         Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = false
-        Me.MyListView6.UseCompatibleStateImageBehavior = false
+        Me.MyListView6.TabStop = False
+        Me.MyListView6.UseCompatibleStateImageBehavior = False
         Me.MyListView6.View = System.Windows.Forms.View.Details
         '
         'btnPISaveSettings
@@ -13080,7 +13068,7 @@ Partial Class frmMain
         Me.btnPISaveSettings.Size = New System.Drawing.Size(92, 23)
         Me.btnPISaveSettings.TabIndex = 74
         Me.btnPISaveSettings.Text = "Save Settings"
-        Me.btnPISaveSettings.UseVisualStyleBackColor = true
+        Me.btnPISaveSettings.UseVisualStyleBackColor = True
         '
         'gbPIPlanets
         '
@@ -13096,88 +13084,88 @@ Partial Class frmMain
         Me.gbPIPlanets.Name = "gbPIPlanets"
         Me.gbPIPlanets.Size = New System.Drawing.Size(299, 67)
         Me.gbPIPlanets.TabIndex = 41
-        Me.gbPIPlanets.TabStop = false
+        Me.gbPIPlanets.TabStop = False
         Me.gbPIPlanets.Text = "Planets"
         '
         'chkPILava
         '
-        Me.chkPILava.AutoSize = true
+        Me.chkPILava.AutoSize = True
         Me.chkPILava.Location = New System.Drawing.Point(216, 19)
         Me.chkPILava.Name = "chkPILava"
         Me.chkPILava.Size = New System.Drawing.Size(50, 17)
         Me.chkPILava.TabIndex = 25
         Me.chkPILava.Text = "Lava"
-        Me.chkPILava.UseVisualStyleBackColor = true
+        Me.chkPILava.UseVisualStyleBackColor = True
         '
         'chkPIPlasma
         '
-        Me.chkPIPlasma.AutoSize = true
+        Me.chkPIPlasma.AutoSize = True
         Me.chkPIPlasma.Location = New System.Drawing.Point(83, 42)
         Me.chkPIPlasma.Name = "chkPIPlasma"
         Me.chkPIPlasma.Size = New System.Drawing.Size(60, 17)
         Me.chkPIPlasma.TabIndex = 27
         Me.chkPIPlasma.Text = "Plasma"
-        Me.chkPIPlasma.UseVisualStyleBackColor = true
+        Me.chkPIPlasma.UseVisualStyleBackColor = True
         '
         'chkPIIce
         '
-        Me.chkPIIce.AutoSize = true
+        Me.chkPIIce.AutoSize = True
         Me.chkPIIce.Location = New System.Drawing.Point(153, 19)
         Me.chkPIIce.Name = "chkPIIce"
         Me.chkPIIce.Size = New System.Drawing.Size(41, 17)
         Me.chkPIIce.TabIndex = 23
         Me.chkPIIce.Text = "Ice"
-        Me.chkPIIce.UseVisualStyleBackColor = true
+        Me.chkPIIce.UseVisualStyleBackColor = True
         '
         'chkPIGas
         '
-        Me.chkPIGas.AutoSize = true
+        Me.chkPIGas.AutoSize = True
         Me.chkPIGas.Location = New System.Drawing.Point(83, 19)
         Me.chkPIGas.Name = "chkPIGas"
         Me.chkPIGas.Size = New System.Drawing.Size(45, 17)
         Me.chkPIGas.TabIndex = 24
         Me.chkPIGas.Text = "Gas"
-        Me.chkPIGas.UseVisualStyleBackColor = true
+        Me.chkPIGas.UseVisualStyleBackColor = True
         '
         'chkPIOcean
         '
-        Me.chkPIOcean.AutoSize = true
+        Me.chkPIOcean.AutoSize = True
         Me.chkPIOcean.Location = New System.Drawing.Point(15, 42)
         Me.chkPIOcean.Name = "chkPIOcean"
         Me.chkPIOcean.Size = New System.Drawing.Size(58, 17)
         Me.chkPIOcean.TabIndex = 26
         Me.chkPIOcean.Text = "Ocean"
-        Me.chkPIOcean.UseVisualStyleBackColor = true
+        Me.chkPIOcean.UseVisualStyleBackColor = True
         '
         'chkPIBarren
         '
-        Me.chkPIBarren.AutoSize = true
+        Me.chkPIBarren.AutoSize = True
         Me.chkPIBarren.Location = New System.Drawing.Point(15, 19)
         Me.chkPIBarren.Name = "chkPIBarren"
         Me.chkPIBarren.Size = New System.Drawing.Size(57, 17)
         Me.chkPIBarren.TabIndex = 22
         Me.chkPIBarren.Text = "Barren"
-        Me.chkPIBarren.UseVisualStyleBackColor = true
+        Me.chkPIBarren.UseVisualStyleBackColor = True
         '
         'chkPIStorm
         '
-        Me.chkPIStorm.AutoSize = true
+        Me.chkPIStorm.AutoSize = True
         Me.chkPIStorm.Location = New System.Drawing.Point(153, 42)
         Me.chkPIStorm.Name = "chkPIStorm"
         Me.chkPIStorm.Size = New System.Drawing.Size(53, 17)
         Me.chkPIStorm.TabIndex = 28
         Me.chkPIStorm.Text = "Storm"
-        Me.chkPIStorm.UseVisualStyleBackColor = true
+        Me.chkPIStorm.UseVisualStyleBackColor = True
         '
         'chkPITemperate
         '
-        Me.chkPITemperate.AutoSize = true
+        Me.chkPITemperate.AutoSize = True
         Me.chkPITemperate.Location = New System.Drawing.Point(216, 42)
         Me.chkPITemperate.Name = "chkPITemperate"
         Me.chkPITemperate.Size = New System.Drawing.Size(77, 17)
         Me.chkPITemperate.TabIndex = 29
         Me.chkPITemperate.Text = "Temperate"
-        Me.chkPITemperate.UseVisualStyleBackColor = true
+        Me.chkPITemperate.UseVisualStyleBackColor = True
         '
         'btnPIReset
         '
@@ -13186,81 +13174,81 @@ Partial Class frmMain
         Me.btnPIReset.Size = New System.Drawing.Size(92, 25)
         Me.btnPIReset.TabIndex = 73
         Me.btnPIReset.Text = "Reset"
-        Me.btnPIReset.UseVisualStyleBackColor = true
+        Me.btnPIReset.UseVisualStyleBackColor = True
         '
         'MyListView5
         '
-        Me.MyListView5.FullRowSelect = true
-        Me.MyListView5.GridLines = true
-        Me.MyListView5.HideSelection = false
+        Me.MyListView5.FullRowSelect = True
+        Me.MyListView5.GridLines = True
+        Me.MyListView5.HideSelection = False
         Me.MyListView5.Location = New System.Drawing.Point(9, 82)
-        Me.MyListView5.MultiSelect = false
+        Me.MyListView5.MultiSelect = False
         Me.MyListView5.Name = "MyListView5"
         Me.MyListView5.Size = New System.Drawing.Size(398, 206)
         Me.MyListView5.TabIndex = 40
-        Me.MyListView5.TabStop = false
-        Me.MyListView5.UseCompatibleStateImageBehavior = false
+        Me.MyListView5.TabStop = False
+        Me.MyListView5.UseCompatibleStateImageBehavior = False
         Me.MyListView5.View = System.Windows.Forms.View.Details
         '
         'MyListView4
         '
-        Me.MyListView4.FullRowSelect = true
-        Me.MyListView4.GridLines = true
-        Me.MyListView4.HideSelection = false
+        Me.MyListView4.FullRowSelect = True
+        Me.MyListView4.GridLines = True
+        Me.MyListView4.HideSelection = False
         Me.MyListView4.Location = New System.Drawing.Point(855, 214)
-        Me.MyListView4.MultiSelect = false
+        Me.MyListView4.MultiSelect = False
         Me.MyListView4.Name = "MyListView4"
         Me.MyListView4.Size = New System.Drawing.Size(279, 391)
         Me.MyListView4.TabIndex = 39
-        Me.MyListView4.TabStop = false
-        Me.MyListView4.UseCompatibleStateImageBehavior = false
+        Me.MyListView4.TabStop = False
+        Me.MyListView4.UseCompatibleStateImageBehavior = False
         Me.MyListView4.View = System.Windows.Forms.View.Details
         '
         'MyListView3
         '
-        Me.MyListView3.FullRowSelect = true
-        Me.MyListView3.GridLines = true
-        Me.MyListView3.HideSelection = false
+        Me.MyListView3.FullRowSelect = True
+        Me.MyListView3.GridLines = True
+        Me.MyListView3.HideSelection = False
         Me.MyListView3.Location = New System.Drawing.Point(413, 214)
-        Me.MyListView3.MultiSelect = false
+        Me.MyListView3.MultiSelect = False
         Me.MyListView3.Name = "MyListView3"
         Me.MyListView3.Size = New System.Drawing.Size(279, 391)
         Me.MyListView3.TabIndex = 38
-        Me.MyListView3.TabStop = false
-        Me.MyListView3.UseCompatibleStateImageBehavior = false
+        Me.MyListView3.TabStop = False
+        Me.MyListView3.UseCompatibleStateImageBehavior = False
         Me.MyListView3.View = System.Windows.Forms.View.Details
         '
         'MyListView2
         '
-        Me.MyListView2.FullRowSelect = true
-        Me.MyListView2.GridLines = true
-        Me.MyListView2.HideSelection = false
+        Me.MyListView2.FullRowSelect = True
+        Me.MyListView2.GridLines = True
+        Me.MyListView2.HideSelection = False
         Me.MyListView2.Location = New System.Drawing.Point(855, 13)
-        Me.MyListView2.MultiSelect = false
+        Me.MyListView2.MultiSelect = False
         Me.MyListView2.Name = "MyListView2"
         Me.MyListView2.Size = New System.Drawing.Size(279, 195)
         Me.MyListView2.TabIndex = 37
-        Me.MyListView2.TabStop = false
-        Me.MyListView2.UseCompatibleStateImageBehavior = false
+        Me.MyListView2.TabStop = False
+        Me.MyListView2.UseCompatibleStateImageBehavior = False
         Me.MyListView2.View = System.Windows.Forms.View.Details
         '
         'MyListView1
         '
-        Me.MyListView1.FullRowSelect = true
-        Me.MyListView1.GridLines = true
-        Me.MyListView1.HideSelection = false
+        Me.MyListView1.FullRowSelect = True
+        Me.MyListView1.GridLines = True
+        Me.MyListView1.HideSelection = False
         Me.MyListView1.Location = New System.Drawing.Point(413, 13)
-        Me.MyListView1.MultiSelect = false
+        Me.MyListView1.MultiSelect = False
         Me.MyListView1.Name = "MyListView1"
         Me.MyListView1.Size = New System.Drawing.Size(279, 195)
         Me.MyListView1.TabIndex = 36
-        Me.MyListView1.TabStop = false
-        Me.MyListView1.UseCompatibleStateImageBehavior = false
+        Me.MyListView1.TabStop = False
+        Me.MyListView1.UseCompatibleStateImageBehavior = False
         Me.MyListView1.View = System.Windows.Forms.View.Details
         '
         'cmbCalcManufacturingTeamActivity
         '
-        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = true
+        Me.cmbCalcManufacturingTeamActivity.FormattingEnabled = True
         Me.cmbCalcManufacturingTeamActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
         Me.cmbCalcManufacturingTeamActivity.Location = New System.Drawing.Point(3, 9)
         Me.cmbCalcManufacturingTeamActivity.Name = "cmbCalcManufacturingTeamActivity"
@@ -13270,8 +13258,7 @@ Partial Class frmMain
         '
         'frmMain
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6!, 13!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.AutoScroll = true
         Me.AutoSize = true
         Me.ClientSize = New System.Drawing.Size(1146, 692)
@@ -14021,7 +14008,6 @@ End Sub
     Friend WithEvents chkPriceManufacturedPrices As System.Windows.Forms.CheckBox
     Friend WithEvents gbPriceTools As System.Windows.Forms.GroupBox
     Friend WithEvents chkFuelBlocks As System.Windows.Forms.CheckBox
-    Friend WithEvents chkDataInterfaces As System.Windows.Forms.CheckBox
     Friend WithEvents chkTools As System.Windows.Forms.CheckBox
     Friend WithEvents gbComponents As System.Windows.Forms.GroupBox
     Friend WithEvents chkHybrid As System.Windows.Forms.CheckBox

@@ -1061,8 +1061,7 @@ Partial Class frmAssetsViewer
         '
         'frmAssetsViewer
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(641, 672)
         Me.Controls.Add(Me.chkToggle)
         Me.Controls.Add(Me.btnCheckToggle)

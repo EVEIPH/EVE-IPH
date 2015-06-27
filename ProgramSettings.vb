@@ -1425,7 +1425,6 @@ Public Class ProgramSettings
                     .Subsystems = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Subsystems", DefaultPriceChecks))
                     .Structures = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Structures", DefaultPriceChecks))
                     .Tools = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Tools", DefaultPriceChecks))
-                    .DataInterfaces = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "DataInterfaces", DefaultPriceChecks))
                     .CapT2Components = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapT2Components", DefaultPriceChecks))
                     .CapitalComponents = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalComponents", DefaultPriceChecks))
                     .Components = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Components", DefaultPriceChecks))
@@ -1488,7 +1487,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(50) As Setting
+        Dim UpdatePricesSettingsList(49) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1519,18 +1518,17 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(25) = New Setting("Subsystems", CStr(PriceSettings.Subsystems))
             UpdatePricesSettingsList(26) = New Setting("Structures", CStr(PriceSettings.Structures))
             UpdatePricesSettingsList(27) = New Setting("Tools", CStr(PriceSettings.Tools))
-            UpdatePricesSettingsList(28) = New Setting("DataInterfaces", CStr(PriceSettings.DataInterfaces))
-            UpdatePricesSettingsList(29) = New Setting("CapT2Components", CStr(PriceSettings.CapT2Components))
-            UpdatePricesSettingsList(30) = New Setting("CapitalComponents", CStr(PriceSettings.CapitalComponents))
-            UpdatePricesSettingsList(31) = New Setting("Components", CStr(PriceSettings.Components))
-            UpdatePricesSettingsList(32) = New Setting("Hybrid", CStr(PriceSettings.Hybrid))
-            UpdatePricesSettingsList(33) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
-            UpdatePricesSettingsList(34) = New Setting("T1", CStr(PriceSettings.T1))
-            UpdatePricesSettingsList(35) = New Setting("T2", CStr(PriceSettings.T2))
-            UpdatePricesSettingsList(36) = New Setting("T3", CStr(PriceSettings.T3))
-            UpdatePricesSettingsList(37) = New Setting("Faction", CStr(PriceSettings.Faction))
-            UpdatePricesSettingsList(38) = New Setting("Pirate", CStr(PriceSettings.Pirate))
-            UpdatePricesSettingsList(39) = New Setting("Storyline", CStr(PriceSettings.Storyline))
+            UpdatePricesSettingsList(28) = New Setting("CapT2Components", CStr(PriceSettings.CapT2Components))
+            UpdatePricesSettingsList(29) = New Setting("CapitalComponents", CStr(PriceSettings.CapitalComponents))
+            UpdatePricesSettingsList(30) = New Setting("Components", CStr(PriceSettings.Components))
+            UpdatePricesSettingsList(31) = New Setting("Hybrid", CStr(PriceSettings.Hybrid))
+            UpdatePricesSettingsList(32) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
+            UpdatePricesSettingsList(33) = New Setting("T1", CStr(PriceSettings.T1))
+            UpdatePricesSettingsList(34) = New Setting("T2", CStr(PriceSettings.T2))
+            UpdatePricesSettingsList(35) = New Setting("T3", CStr(PriceSettings.T3))
+            UpdatePricesSettingsList(36) = New Setting("Faction", CStr(PriceSettings.Faction))
+            UpdatePricesSettingsList(37) = New Setting("Pirate", CStr(PriceSettings.Pirate))
+            UpdatePricesSettingsList(38) = New Setting("Storyline", CStr(PriceSettings.Storyline))
             Dim RegionList As String = ""
             If Not IsNothing(PriceSettings.SelectedRegions) Then
                 For i = 0 To PriceSettings.SelectedRegions.Count - 1
@@ -1543,20 +1541,20 @@ Public Class ProgramSettings
             Else
                 RegionList = "0"
             End If
-            UpdatePricesSettingsList(40) = New Setting("SelectedRegions", RegionList)
-            UpdatePricesSettingsList(41) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
-            UpdatePricesSettingsList(42) = New Setting("PriceImportType", CStr(PriceSettings.PriceImportType))
-            UpdatePricesSettingsList(43) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
-            UpdatePricesSettingsList(44) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
+            UpdatePricesSettingsList(39) = New Setting("SelectedRegions", RegionList)
+            UpdatePricesSettingsList(40) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
+            UpdatePricesSettingsList(41) = New Setting("PriceImportType", CStr(PriceSettings.PriceImportType))
+            UpdatePricesSettingsList(42) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
+            UpdatePricesSettingsList(43) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
 
-            UpdatePricesSettingsList(45) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
-            UpdatePricesSettingsList(46) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(44) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
+            UpdatePricesSettingsList(45) = New Setting("Misc", CStr(PriceSettings.Misc))
 
-            UpdatePricesSettingsList(47) = New Setting("Deployables", CStr(PriceSettings.Deployables))
-            UpdatePricesSettingsList(48) = New Setting("Celestials", CStr(PriceSettings.Celestials))
-            UpdatePricesSettingsList(49) = New Setting("Implants", CStr(PriceSettings.Implants))
+            UpdatePricesSettingsList(46) = New Setting("Deployables", CStr(PriceSettings.Deployables))
+            UpdatePricesSettingsList(47) = New Setting("Celestials", CStr(PriceSettings.Celestials))
+            UpdatePricesSettingsList(48) = New Setting("Implants", CStr(PriceSettings.Implants))
 
-            UpdatePricesSettingsList(50) = New Setting("UpdatePriceHistory", CStr(PriceSettings.UpdatePriceHistory))
+            UpdatePricesSettingsList(49) = New Setting("UpdatePriceHistory", CStr(PriceSettings.UpdatePriceHistory))
 
             Call WriteSettingsToFile(UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1605,7 +1603,6 @@ Public Class ProgramSettings
             .Subsystems = DefaultPriceChecks
             .Structures = DefaultPriceChecks
             .Tools = DefaultPriceChecks
-            .DataInterfaces = DefaultPriceChecks
             .CapT2Components = DefaultPriceChecks
             .CapitalComponents = DefaultPriceChecks
             .Components = DefaultPriceChecks
@@ -4770,7 +4767,6 @@ Public Structure UpdatePriceTabSettings
     Dim StationComponents As Boolean
 
     Dim Tools As Boolean
-    Dim DataInterfaces As Boolean
     Dim FuelBlocks As Boolean
     Dim Implants As Boolean
 

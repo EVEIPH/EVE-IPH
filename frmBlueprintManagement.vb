@@ -829,7 +829,7 @@ Public Class frmBlueprintManagement
         ElseIf rbtnDeployableBlueprints.Checked Then
             WhereClause = "WHERE ITEM_CATEGORY = 'Deployable' "
         ElseIf rbtnStructureBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Structure' "
+            WhereClause = "WHERE ITEM_CATEGORY = 'Starbase' "
         End If
 
         If rbtnOwned.Checked Then
@@ -1076,7 +1076,7 @@ Public Class frmBlueprintManagement
             WhereClause = WhereClause & "ITEM_CATEGORY = 'Deployable' OR "
         End If
         If rbtnStructureBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Structure' OR "
+            WhereClause = WhereClause & "ITEM_CATEGORY = 'Starbase' OR "
         End If
 
         ' Item Type Definitions - These are set by me based on existing data
@@ -1941,6 +1941,15 @@ Public Class frmBlueprintManagement
 
             ' Mark as owned and change color
             Call SetOwnedFlagandColors(CurrentRow, CBool(UpdatedBPType))
+
+            If UpdatedBPType = BPType.NotOwned Then ' 14 = Owned
+                CurrentRow.SubItems(7).Text = No
+                CurrentRow.ForeColor = Color.Black
+                CurrentRow.BackColor = Color.White
+            Else
+                CurrentRow.SubItems(7).Text = Yes
+                CurrentRow.ForeColor = Color.Blue
+            End If
 
             If SentKey = Keys.Enter Then
                 ' Just refresh and select the current row

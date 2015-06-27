@@ -452,8 +452,7 @@ Partial Class frmInventionMonitor
         '
         'frmInventionMonitor
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(643, 457)
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.gbInventionMonitor)

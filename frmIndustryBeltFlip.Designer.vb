@@ -2150,8 +2150,7 @@ Partial Class frmIndustryBeltFlip
         '
         'frmIndustryBeltFlip
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6!, 13!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(519, 587)
         Me.Controls.Add(Me.tabIndustryBelts)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle

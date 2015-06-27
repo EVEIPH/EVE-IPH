@@ -163,7 +163,7 @@ Public Class IndustryFacility
                 SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
                 SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                 SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ASSEMBLY_ARRAYS.ACTIVITY_NAME AS AN, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                 SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
                 SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                 SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
@@ -198,10 +198,9 @@ Public Class IndustryFacility
                     MaterialMultiplier = rsLoader.GetDouble(7)
                     TimeMultiplier = rsLoader.GetDouble(8)
                     ActivityID = rsLoader.GetInt32(9)
-                    Activity = rsLoader.GetString(10)
                     ActivityCostPerSecond = .ActivityCostperSecond
                     IsDefault = FacilityDefault
-                    FacilityTypeID = rsLoader.GetInt64(11)
+                    FacilityTypeID = rsLoader.GetInt64(10)
 
                     IncludeActivityCost = .IncludeActivityCost
                     IncludeActivityTime = .IncludeActivityTime
@@ -227,7 +226,7 @@ Public Class IndustryFacility
                     SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
                     SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                     SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ASSEMBLY_ARRAYS.ACTIVITY_NAME AS AN, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
                     SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                     SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
@@ -249,14 +248,14 @@ Public Class IndustryFacility
                     Else
                         SQL = SQL & "TIME_MULTIPLIER, "
                     End If
-                    SQL = SQL & "ACTIVITY_ID AS AID, ACTIVITY_NAME AS AN, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM STATION_FACILITIES "
                     SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Outpost) & " "
                 Case StationFacility
                     SQL = "SELECT FACILITY_NAME, REGION_NAME, REGION_ID, "
                     SQL = SQL & "SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, COST_INDEX, "
                     SQL = SQL & "MATERIAL_MULTIPLIER, TIME_MULTIPLIER, "
-                    SQL = SQL & "ACTIVITY_ID AS AID, ACTIVITY_NAME AS AN, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM STATION_FACILITIES "
                     SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Station) & " "
             End Select
@@ -299,7 +298,7 @@ Public Class IndustryFacility
             End If
 
             SQL = SQL & "GROUP BY FACILITY_NAME, REGION_NAME, REGION_ID, SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, "
-            SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, AN, FACILITY_TYPE_ID"
+            SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, FACILITY_TYPE_ID"
 
         End With
 
@@ -326,10 +325,9 @@ Public Class IndustryFacility
                 TaxRate = rsLoader.GetDouble(5)
             End If
             ActivityID = rsLoader.GetInt32(9)
-            Activity = rsLoader.GetString(10)
             ActivityCostPerSecond = SearchFacilitySettings.ActivityCostperSecond
             IsDefault = FacilityDefault
-            FacilityTypeID = rsLoader.GetInt64(11)
+            FacilityTypeID = rsLoader.GetInt64(10)
 
             IncludeActivityCost = SearchFacilitySettings.IncludeActivityCost
             IncludeActivityTime = SearchFacilitySettings.IncludeActivityTime

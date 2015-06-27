@@ -735,7 +735,7 @@ Public Class frmAssetsViewer
                     End If
 
                     If chkStructures.Checked Then
-                        SQL = SQL & "(ITEM_CATEGORY = 'Structure' AND " & TechSQL & ") OR "
+                        SQL = SQL & "(ITEM_CATEGORY = 'Starbase' AND " & TechSQL & ") OR "
                     End If
                 Else
                     ' No tech level chosen, so just continue with other options and skip these that require a tech selection

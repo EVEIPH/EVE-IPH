@@ -32,46 +32,41 @@ Partial Class frmSetCharacterDefault
         '
         Me.chkListDefaultChar.CheckOnClick = True
         Me.chkListDefaultChar.FormattingEnabled = True
-        Me.chkListDefaultChar.Location = New System.Drawing.Point(28, 21)
-        Me.chkListDefaultChar.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.chkListDefaultChar.Location = New System.Drawing.Point(22, 17)
         Me.chkListDefaultChar.Name = "chkListDefaultChar"
-        Me.chkListDefaultChar.Size = New System.Drawing.Size(332, 242)
+        Me.chkListDefaultChar.Size = New System.Drawing.Size(266, 184)
         Me.chkListDefaultChar.TabIndex = 0
         Me.chkListDefaultChar.ThreeDCheckBoxes = True
         '
         'btnSelectDefault
         '
-        Me.btnSelectDefault.Location = New System.Drawing.Point(53, 281)
-        Me.btnSelectDefault.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.btnSelectDefault.Location = New System.Drawing.Point(42, 225)
         Me.btnSelectDefault.Name = "btnSelectDefault"
-        Me.btnSelectDefault.Size = New System.Drawing.Size(124, 32)
+        Me.btnSelectDefault.Size = New System.Drawing.Size(99, 26)
         Me.btnSelectDefault.TabIndex = 4
         Me.btnSelectDefault.Text = "Select"
         Me.btnSelectDefault.UseVisualStyleBackColor = True
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(213, 281)
-        Me.btnCancel.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.btnCancel.Location = New System.Drawing.Point(170, 225)
         Me.btnCancel.Name = "btnCancel"
-        Me.btnCancel.Size = New System.Drawing.Size(124, 32)
+        Me.btnCancel.Size = New System.Drawing.Size(99, 26)
         Me.btnCancel.TabIndex = 5
         Me.btnCancel.Text = "Cancel"
         Me.btnCancel.UseVisualStyleBackColor = True
         '
         'frmSetCharacterDefault
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(389, 327)
+        Me.ClientSize = New System.Drawing.Size(311, 262)
         Me.ControlBox = False
         Me.Controls.Add(Me.btnCancel)
         Me.Controls.Add(Me.btnSelectDefault)
         Me.Controls.Add(Me.chkListDefaultChar)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
-        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
         Me.Name = "frmSetCharacterDefault"

@@ -42,8 +42,8 @@ Partial Class frmPatchNotes
         '
         'frmPatchNotes
         '
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(Me.txtPatchNotes)
         Me.Controls.Add(Me.OKButton)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle

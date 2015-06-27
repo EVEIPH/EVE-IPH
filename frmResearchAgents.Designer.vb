@@ -80,8 +80,7 @@ Partial Class frmResearchAgents
         '
         'frmResearchAgents
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(944, 183)
         Me.Controls.Add(Me.lblTotalDCValue)
         Me.Controls.Add(Me.lblBPMarketCost1)
