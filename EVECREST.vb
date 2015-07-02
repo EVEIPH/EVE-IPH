@@ -7,8 +7,8 @@ Imports System.Net
 
 ' Class for all CREST function calls, which will update tables in the DB if past cache time
 Public Class EVECREST
-    'Private Const CRESTRootServerURL = "http://public-crest-sisi.testeveonline.com"
-    Private Const CRESTRootServerURL = "http://public-crest.eveonline.com"
+    'Private Const CRESTRootServerURL = "https://public-crest-sisi.testeveonline.com"
+    Private Const CRESTRootServerURL = "https://public-crest.eveonline.com"
 
     ' URL for each file
     Private Const CRESTIndustryTeamSpecialties = "/industry/specialities/"
@@ -548,7 +548,7 @@ Public Class EVECREST
 
     ' For Industry Teams
     Private Class IndustryTeamsSpecialization
-        '"specialization": {"href": "http://public-crest-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
+        '"specialization": {"href": "https://public-crest-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Integer
         <JsonProperty("id_str")> Public id_str As String
@@ -779,7 +779,7 @@ Public Class EVECREST
 
     ' For Industry Team Auctions
     Private Class IndustryTeamAuctionCharacter
-        ' "character": {"isNPC": false, "id": 94733327, "href": "http://public-crest-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
+        ' "character": {"isNPC": false, "id": 94733327, "href": "https://public-crest-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
         <JsonProperty("isNPC")> Public isNPC As Boolean
         <JsonProperty("id")> Public CharacterID As Long
         <JsonProperty("href")> Public href As String
@@ -1477,7 +1477,7 @@ Public Class EVECREST
 
     ' For Market Prices
     Private Class MarketPriceType
-        '"type": {"id_str": "32772", "href": "http://public-crest-sisi.testeveonline.com/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
+        '"type": {"id_str": "32772", "href": "https://public-crest-sisi.testeveonline.com/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1488,7 +1488,7 @@ Public Class EVECREST
 
     ' For CREST Solar Systems
     Private Class SolarSystem
-        '{"id_str": "30001743", "href": "http://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
+        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1497,7 +1497,7 @@ Public Class EVECREST
 
     ' For CREST Regions
     Private Class Region
-        '{"id_str": "30001743", "href": "http://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
+        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1506,7 +1506,7 @@ Public Class EVECREST
 
     ' For all CREST where key is just a web link
     Private Class hrefKey
-        '"capsuleer": {"href": "http://public-crest-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
+        '"capsuleer": {"href": "https://public-crest-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
         <JsonProperty("href")> Public href As String
     End Class
 
