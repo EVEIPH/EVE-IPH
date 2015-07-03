@@ -64,7 +64,7 @@ Partial Class frmSettings
         Me.cmbRefiningEfficiency = New System.Windows.Forms.ComboBox()
         Me.gbShoppingList = New System.Windows.Forms.GroupBox()
         Me.chkIncludeShopListInventMats = New System.Windows.Forms.CheckBox()
-        Me.chkIncludeShopListT3InventionMats = New System.Windows.Forms.CheckBox()
+        Me.chkIncludeShopListCopyMats = New System.Windows.Forms.CheckBox()
         Me.gbEVECentral = New System.Windows.Forms.GroupBox()
         Me.txtEVECentralInterval = New System.Windows.Forms.TextBox()
         Me.chkEVECentralInterval = New System.Windows.Forms.CheckBox()
@@ -462,7 +462,7 @@ Partial Class frmSettings
         'gbShoppingList
         '
         Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListInventMats)
-        Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListT3InventionMats)
+        Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListCopyMats)
         Me.gbShoppingList.Location = New System.Drawing.Point(246, 83)
         Me.gbShoppingList.Name = "gbShoppingList"
         Me.gbShoppingList.Size = New System.Drawing.Size(160, 63)
@@ -480,15 +480,15 @@ Partial Class frmSettings
         Me.chkIncludeShopListInventMats.Text = "Include Invention Mats"
         Me.chkIncludeShopListInventMats.UseVisualStyleBackColor = True
         '
-        'chkIncludeShopListT3InventionMats
+        'chkIncludeShopListCopyMats
         '
-        Me.chkIncludeShopListT3InventionMats.AutoSize = True
-        Me.chkIncludeShopListT3InventionMats.Location = New System.Drawing.Point(9, 40)
-        Me.chkIncludeShopListT3InventionMats.Name = "chkIncludeShopListT3InventionMats"
-        Me.chkIncludeShopListT3InventionMats.Size = New System.Drawing.Size(150, 17)
-        Me.chkIncludeShopListT3InventionMats.TabIndex = 1
-        Me.chkIncludeShopListT3InventionMats.Text = "Include T3 Invention Mats"
-        Me.chkIncludeShopListT3InventionMats.UseVisualStyleBackColor = True
+        Me.chkIncludeShopListCopyMats.AutoSize = True
+        Me.chkIncludeShopListCopyMats.Location = New System.Drawing.Point(9, 40)
+        Me.chkIncludeShopListCopyMats.Name = "chkIncludeShopListCopyMats"
+        Me.chkIncludeShopListCopyMats.Size = New System.Drawing.Size(114, 17)
+        Me.chkIncludeShopListCopyMats.TabIndex = 1
+        Me.chkIncludeShopListCopyMats.Text = "Include Copy Mats"
+        Me.chkIncludeShopListCopyMats.UseVisualStyleBackColor = True
         '
         'gbEVECentral
         '
@@ -541,7 +541,7 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 149)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 99)
         Me.gbStartupOptions.Name = "gbStartupOptions"
         Me.gbStartupOptions.Size = New System.Drawing.Size(237, 155)
         Me.gbStartupOptions.TabIndex = 39
@@ -584,7 +584,7 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(5, 99)
+        Me.gbExportOptions.Location = New System.Drawing.Point(5, 260)
         Me.gbExportOptions.Name = "gbExportOptions"
         Me.gbExportOptions.Size = New System.Drawing.Size(237, 44)
         Me.gbExportOptions.TabIndex = 38
@@ -704,7 +704,7 @@ Partial Class frmSettings
     Friend WithEvents cmbRefiningEfficiency As System.Windows.Forms.ComboBox
     Friend WithEvents chkRefineStationTax As System.Windows.Forms.CheckBox
     Friend WithEvents gbShoppingList As System.Windows.Forms.GroupBox
-    Friend WithEvents chkIncludeShopListT3InventionMats As System.Windows.Forms.CheckBox
+    Friend WithEvents chkIncludeShopListCopyMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkIncludeShopListInventMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkSuggestBuildwhenBPnotOwned As System.Windows.Forms.CheckBox
     Friend WithEvents gbEVECentral As System.Windows.Forms.GroupBox

@@ -91,7 +91,7 @@ Public Class Blueprint
     ' Saving all the materials for each built component
     Private BuiltComponentList As BuiltItemList
 
-    ' Saves all the raw materials on the bp that are not components
+    ' Saves all the raw materials on the bp that are not built
     Private BPRawMats As Materials
 
     ' Skills required to make it
@@ -131,7 +131,7 @@ Public Class Blueprint
 
     Private AdvManufacturingSkillLevelBonus As Double ' The total TE reduction from skills required to invent and build this item (T2/T3)
 
-    Private InventionT3BPCTypeID As Long ' BP used to invent the BP we are building
+    Private InventionBPCTypeID As Long ' BP used to invent the BP we are building
 
     ' Price Variables
     Private ItemMarketCost As Double ' Market cost of item 
@@ -356,7 +356,7 @@ Public Class Blueprint
         InventionFacility = NoFacility
 
         ' Invention variable inputs - The BPC or Relic first
-        InventionT3BPCTypeID = 0
+        InventionBPCTypeID = 0
 
         ' Set the Decryptor data
         InventionDecryptor = NoDecryptor
@@ -390,7 +390,7 @@ Public Class Blueprint
         InventionFacility = BPInventionFacility
 
         ' Invention variable inputs - The BPC or Relic first
-        InventionT3BPCTypeID = InventionItemTypeID
+        InventionBPCTypeID = InventionItemTypeID
 
         ' Set the Decryptor data
         InventionDecryptor = BPDecryptor
@@ -607,17 +607,21 @@ Public Class Blueprint
                 Dim rsCheck As SQLiteDataReader
                 Dim CategoryName As String = ""
                 Dim GroupID As Integer = 0
+                Dim MarketPrice As Double = 0
 
                 With BuiltComponentList.GetBuiltItemList(i)
                     Application.DoEvents()
 
-                    SQL = "SELECT ITEM_GROUP_ID, ITEM_CATEGORY FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & .ItemTypeID
+                    SQL = "SELECT ALL_BLUEPRINTS.ITEM_GROUP_ID, ALL_BLUEPRINTS.ITEM_CATEGORY, ITEM_PRICES.PRICE "
+                    SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES.ITEM_ID "
+                    SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
                     DBCommand = New SQLiteCommand(Sql, DB)
                     rsCheck = DBCommand.ExecuteReader
 
                     If rsCheck.Read() Then
                         GroupID = rsCheck.GetInt32(0)
                         CategoryName = rsCheck.GetString(1)
+                        MarketPrice = rsCheck.GetDouble(2)
                     End If
 
                     ' Build the T1 component
@@ -641,12 +645,22 @@ Public Class Blueprint
                     ' Now add all the raw materials from this bp
                     Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetBPRawMaterials.GetMaterialList)
 
-                    ' Reset the component's material list
+                    ' Reset the component's material list for shopping list functionality
                     BuiltComponentList.GetBuiltItemList(i).BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
+
+                    Dim ItemPrice As Double = 0
+
+                    If BuildBuy And MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost Then
+                        ' Market cost is greater than build cost, so set the mat cost to the build cost
+                        ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
+                    Else
+                        ItemPrice = MarketPrice
+                    End If
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume, _
-                                                ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity, CStr(.BuildME), True)
+                                                ItemPrice, CStr(.BuildME), True)
+
                     ComponentMaterials.InsertMaterial(TempMat)
 
                 End With
@@ -732,7 +746,7 @@ Public Class Blueprint
                 ' Set the current material
                 CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "")
 
-                ' Save the base costs
+                ' Save the base costs - before applying ME
                 BaseJobCost += CurrentMaterial.GetQuantity * readerBP.GetDouble(8)
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
@@ -1191,13 +1205,13 @@ Public Class Blueprint
         Dim ComponentUsage As Double = 0
 
         If SetTaxes Then
-            BPTaxes = Taxes
+            BPTaxes = GetTaxes(ItemMarketCost)
         Else
             BPTaxes = 0
         End If
 
         If SetBrokerFees Then
-            BPBrokerFees = BrokerFees
+            BPBrokerFees = GetBrokerFee(ItemMarketCost)
         Else
             BPBrokerFees = 0
         End If
@@ -1480,6 +1494,18 @@ Public Class Blueprint
 
     End Function
 
+    ' Returns the BPC used as a string
+    Public Function GetInventionBPC() As String
+
+        For i = 0 To InventionMaterials.GetMaterialList.Count - 1
+            If InventionMaterials.GetMaterialList(i).GetMaterialTypeID = InventionBPCTypeID Then
+                Return InventionMaterials.GetMaterialList(i).GetMaterialName
+            End If
+        Next
+
+        Return ""
+    End Function
+
     ' Returns a string that states what type of T1 BPC the sent T2 BPID is for invention purposes. Also returns the Max Runs and name of the BPC
     Public Function GetT1BPCType(ByVal BPID As Long, ByRef MaxBPCRuns As Integer, ByRef BPName As String) As String
         Dim SQL As String
@@ -1526,7 +1552,7 @@ Public Class Blueprint
         ' First select the datacores needed
         SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
         SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionT3BPCTypeID & " AND PRODUCT_ID = " & BlueprintID & " "
+        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & BlueprintID & " "
         SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY <> 'Skill'"
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -1574,13 +1600,13 @@ Public Class Blueprint
         ' If this is T3, get the relic and add it to the list of invention materials
         If TechLevel = BlueprintTechLevel.T3 Then
             ' Look up the cost for the material
-            SQL = "SELECT PRICE, ITEM_NAME FROM ITEM_PRICES WHERE ITEM_ID =" & InventionT3BPCTypeID
+            SQL = "SELECT PRICE, ITEM_NAME FROM ITEM_PRICES WHERE ITEM_ID =" & InventionBPCTypeID
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerCost = DBCommand.ExecuteReader
 
             If readerCost.Read Then
-                InventionMat = New Material(InventionT3BPCTypeID, readerCost.GetString(1), "Ancient Relics", 1, 100, readerCost.GetDouble(0), "")
+                InventionMat = New Material(InventionBPCTypeID, readerCost.GetString(1), "Ancient Relics", 1, 100, readerCost.GetDouble(0), "")
                 SingleInventionMats.InsertMaterial(InventionMat)
             End If
 
@@ -1599,7 +1625,7 @@ Public Class Blueprint
         Else
             ' Base it off of the relic type - need to look it up based on the TypeID
             SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-            SQL = SQL & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionT3BPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
+            SQL = SQL & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionBPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerBP = DBCommand.ExecuteReader()
@@ -1643,7 +1669,7 @@ Public Class Blueprint
             ' Get the copy materials and update
             SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
             SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
-            SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionT3BPCTypeID & " AND PRODUCT_ID = " & InventionT3BPCTypeID & " "
+            SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & InventionBPCTypeID & " "
             SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY <> 'Skill'"
 
             DBCommand = New SQLiteCommand(SQL, DB)
@@ -1705,7 +1731,7 @@ Public Class Blueprint
 
             If TechLevel = BlueprintTechLevel.T2 Then
                 ' Add the BPC's for T2
-                InventionMaterials.InsertMaterial(New Material(InventionT3BPCTypeID, BPCName & " (" & CStr(1) & " Runs)", BPCGroup, NumInventionJobs, 0, 0, ""))
+                InventionMaterials.InsertMaterial(New Material(InventionBPCTypeID, BPCName & " (" & CStr(1) & " Runs)", BPCGroup, NumInventionJobs, 0, 0, ""))
             End If
 
             TotalInventionCost = InventionMaterials.GetTotalMaterialsCost
@@ -1721,7 +1747,7 @@ Public Class Blueprint
 
         If IncludeCopyUsage And TechLevel <> BlueprintTechLevel.T3 Then
             ' Set the copy cost based on the number of copies we'll need for these runs
-            CopyUsage = GetCopyUsage(NumInventionJobs) / TotalInventedRuns * UserRuns
+            CopyUsage = GetCopyUsage(NumInventionJobs) / TotalInventedRuns
             'InventionMaterials.InsertMaterial(New Material(0, "Copy Usage", "Usage", 1, 0, CopyUsage, ""))
         Else
             CopyUsage = 0 ' No copies for T3
@@ -1732,8 +1758,8 @@ Public Class Blueprint
     Private Sub SetInventionUsage()
 
         If IncludeInventionUsage Then
-            ' Set the usage for these invention runs onlyl
-            InventionUsage = GetInventionUsage(NumInventionJobs) / TotalInventedRuns * UserRuns
+            ' Set the usage for these invention runs only
+            InventionUsage = GetInventionUsage(NumInventionJobs) / TotalInventedRuns
             ' Add the usage
             'InventionMaterials.InsertMaterial(New Material(0, "Invention Usage", "Usage", 1, 0, InventionUsage, ""))
         Else
@@ -1756,7 +1782,7 @@ Public Class Blueprint
         Dim DatacoreSkillLevels(1) As Integer
 
         ' Get the base invention chance from the activities for the T1 BPO
-        SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionT3BPCTypeID
+        SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
         SQL = SQL & " AND activityID = 8 AND productTypeID = " & BlueprintID
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -1822,7 +1848,7 @@ Public Class Blueprint
             TempTime = 3600
         Else
             ' Look it up
-            SQL = "SELECT BASE_INVENTION_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionT3BPCTypeID
+            SQL = "SELECT BASE_INVENTION_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionBPCTypeID
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerLookup = DBCommand.ExecuteReader
@@ -1854,7 +1880,7 @@ Public Class Blueprint
         Dim TempTime As Decimal
 
         ' Look up the blueprint name from the sent blueprint ID 
-        SQL = "SELECT BASE_COPY_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionT3BPCTypeID
+        SQL = "SELECT BASE_COPY_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionBPCTypeID
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerLookup = DBCommand.ExecuteReader
@@ -1880,7 +1906,7 @@ Public Class Blueprint
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
         SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionT3BPCTypeID & " "
+        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
         SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY = 'Skill'"
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -1905,7 +1931,7 @@ Public Class Blueprint
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
         SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionT3BPCTypeID & " "
+        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
         SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY = 'Skill'"
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -1929,7 +1955,7 @@ Public Class Blueprint
 #Region "Invention Gets"
 
     ' Returns the copy time for a T1 copy used to make a T2
-    Public Function GetBPCopyTime() As Double
+    Public Function GetCopyTime() As Double
         Return CopyTime
     End Function
 
@@ -1944,7 +1970,7 @@ Public Class Blueprint
     End Function
 
     ' Returns the list of materials used to make a copy for this BP
-    Public Function GetBPCopyMaterials() As Materials
+    Public Function GetCopyMaterials() As Materials
         Return CopyMaterials
     End Function
 

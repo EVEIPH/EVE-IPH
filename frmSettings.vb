@@ -350,7 +350,7 @@ Public Class frmSettings
 
             ' ShoppingList
             chkIncludeShopListInventMats.Checked = .ShopListIncludeInventMats
-            chkIncludeShopListT3InventionMats.Checked = .ShopListIncludeREMats
+            chkIncludeShopListCopyMats.Checked = .ShopListIncludeCopyMats
 
             If .RefiningEfficiency <> Defaults.DefaultRefiningEfficency Then
                 cmbRefiningEfficiency.Text = FormatPercent(.RefiningEfficiency, 0)
@@ -485,7 +485,7 @@ Public Class frmSettings
             TempSettings.SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
             TempSettings.ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
-            TempSettings.ShopListIncludeREMats = chkIncludeShopListT3InventionMats.Checked
+            TempSettings.ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
             Dim RefineTax As Double = CDbl(cmbRefineTax.Text.Replace("%", ""))
 

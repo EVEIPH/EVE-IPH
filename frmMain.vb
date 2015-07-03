@@ -381,6 +381,7 @@ Public Class frmMain
         Call SetProgress("Initializing...")
 
         ' This call is required by the designer.
+        Me.AutoScaleMode = Windows.Forms.AutoScaleMode.Dpi
         InitializeComponent()
 
         Application.DoEvents()
@@ -3696,7 +3697,7 @@ NoBonus:
                 Else
                     f1.MatType = f1.MatType & " Runs"
                 End If
-                f1.MaterialList = SelectedBlueprint.GetBPCopyMaterials
+                f1.MaterialList = SelectedBlueprint.GetCopyMaterials
                 f1.TotalInventedRuns = SelectedBlueprint.GetInventionJobs
                 f1.ListType = "Copying"
             End If
@@ -4341,7 +4342,7 @@ NoBonus:
 
     Private Sub mnuUserSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuUserSettings.Click
         Dim f1 = New frmSettings
-        ' Open the Shopping List
+        ' Open the settings form
         f1.ShowDialog()
 
         ' Reinit any tabs that have settings changes
@@ -4995,7 +4996,9 @@ NoBonus:
 
             ' If we updated a price, then update the program everywhere to be consistent
             If PriceUpdated Then
+                IgnoreFocus = True
                 Call UpdateProgramPrices()
+                IgnoreFocus = False
             End If
 
             ' Play sound to indicate update complete
@@ -8037,10 +8040,13 @@ Tabs:
                 lblBPDecryptorStats.Text = "ME: " & CStr(SelectedDecryptor.MEMod) & ", TE: " & CStr(SelectedDecryptor.TEMod) & vbCrLf & "BP Runs: " & CStr(SelectedBlueprint.GetSingleInventedBPCRuns)
 
                 ' Show the copy time if they want it
-                lblBPCopyTime.Text = FormatIPHTime(SelectedBlueprint.GetBPCopyTime)
+                lblBPCopyTime.Text = FormatIPHTime(SelectedBlueprint.GetCopyTime)
 
                 ' Show the invention time if they want it
                 lblBPInventionTime.Text = FormatIPHTime(SelectedBlueprint.GetBPInventionTime)
+
+                ' Set the tool tip for copy costs to the invention chance label
+                ttMain.SetToolTip(lblBPInventionChance, SelectedBlueprint.GetInventionBPC)
 
                 ' Finally check the invention materials and make sure that if any have 0.00 for price,
                 ' we update the invention label and add a tooltip for what has a price of 0
@@ -8707,6 +8713,10 @@ ExitForm:
         Dim SQL As String
         Dim MaxProductionRuns As Long
         Dim ReturnValue As Integer
+
+        If SentTechLevel = 1 Then
+            Return SentNumBps
+        End If
 
         ' Set the number of bps
         If SentTechLevel = 2 Then
@@ -17510,7 +17520,7 @@ CheckTechs:
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime) ' Total production time for components only is always the bp production time
-                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
+                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
@@ -17562,7 +17572,7 @@ CheckTechs:
 
                             InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                             InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
-                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
+                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
@@ -17631,7 +17641,7 @@ CheckTechs:
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
-                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
+                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
@@ -17713,7 +17723,7 @@ CheckTechs:
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
                             End If
 
-                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
+                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
@@ -18010,7 +18020,7 @@ DisplayResults:
                 BPList.ForeColor = Color.DarkOrange
             End If
 
-            If Not FinalItemList(i).CanRE And FinalItemList(i).TechLevel = "T3" And Not chkCalcIgnoreInvention.Checked Then
+            If Not FinalItemList(i).CanRE And FinalItemList(i).TechLevel = "T3" And FinalItemList(i).BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkGreen
             End If
 
@@ -20274,7 +20284,17 @@ ExitCalc:
             DCAgentRecord.AgentLocation = readerDC.GetString(13) & " (" & CStr(DCAgentRecord.SystemSecurity) & ") - " & readerDC.GetString(9)  ' Station name + security + region
 
             ' Need the Core typeID
-            SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & readerDC.GetString(7) & "'"
+            Dim TempCoreName As String = ""
+
+            If readerDC.GetString(7).Contains("Amarr Starship") Then
+                TempCoreName = "Amarrian Starship Engineering"
+            ElseIf readerDC.GetString(7).Contains("Gallente Starship") Then
+                TempCoreName = "Gallentean Starship Engineering"
+            Else
+                TempCoreName = readerDC.GetString(7)
+            End If
+
+            SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & TempCoreName & "'"
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerDC2 = DBCommand.ExecuteReader()

@@ -120,7 +120,7 @@ Public Class ProgramSettings
 
     ' For shopping list
     Public DefaultShopListIncludeInventMats As Boolean = True
-    Public DefaultShopListIncludeREMats As Boolean = True
+    Public DefaultShopListIncludeCopyMats As Boolean = True
 
     ' If the user has no implants
     Public DefaultImplantValues As Double = 0
@@ -1003,7 +1003,7 @@ Public Class ProgramSettings
                     .RefiningEfficiency = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
                     .RefiningTax = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ShopListIncludeInventMats = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
-                    .ShopListIncludeREMats = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeREMats", DefaultShopListIncludeREMats))
+                    .ShopListIncludeCopyMats = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
                     .EVECentralRefreshInterval = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVECentralRefreshInterval", DefaultEVECentralRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
@@ -1073,7 +1073,7 @@ Public Class ProgramSettings
         TempSettings.SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
         TempSettings.ShopListIncludeInventMats = DefaultShopListIncludeInventMats
-        TempSettings.ShopListIncludeREMats = DefaultShopListIncludeREMats
+        TempSettings.ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
         TempSettings.EVECentralRefreshInterval = DefaultEVECentralRefreshInterval
 
@@ -1104,7 +1104,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(13) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
             ApplicationSettingsList(14) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
             ApplicationSettingsList(15) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
-            ApplicationSettingsList(16) = New Setting("ShopListIncludeREMats", CStr(SentSettings.ShopListIncludeREMats))
+            ApplicationSettingsList(16) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
             ApplicationSettingsList(17) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
             ApplicationSettingsList(18) = New Setting("EVECentralRefreshInterval", CStr(SentSettings.EVECentralRefreshInterval))
             ApplicationSettingsList(19) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
@@ -4677,7 +4677,7 @@ Public Structure ApplicationSettings
 
     ' For shopping list
     Dim ShopListIncludeInventMats As Boolean
-    Dim ShopListIncludeREMats As Boolean
+    Dim ShopListIncludeCopyMats As Boolean
 
     ' The interval for allowing refresh of prices from EVE Central - no less than 1 hour
     Dim EVECentralRefreshInterval As Integer
