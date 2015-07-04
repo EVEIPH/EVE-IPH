@@ -136,11 +136,11 @@ Class RefiningReprocessing
 
         ' Apply taxes and brokers fees to this total if set
         If IncludeTax Then
-            TempMaterials.AdjustTaxedPrice(GetTaxes(TempMaterials.GetTotalMaterialsCost))
+            TempMaterials.AdjustTaxedPrice(GetSalesTax(TempMaterials.GetTotalMaterialsCost))
         End If
 
         If IncludeFees Then
-            TempMaterials.AdjustTaxedPrice(GetBrokerFee(TempMaterials.GetTotalMaterialsCost))
+            TempMaterials.AdjustTaxedPrice(GetSalesBrokerFee(TempMaterials.GetTotalMaterialsCost))
         End If
 
         Return TempMaterials
@@ -205,11 +205,11 @@ Class RefiningReprocessing
         End While
 
         If IncludeTax Then
-            RefinedMats.AdjustTaxedPrice(GetTaxes(RefinedMats.GetTotalMaterialsCost))
+            RefinedMats.AdjustTaxedPrice(GetSalesTax(RefinedMats.GetTotalMaterialsCost))
         End If
 
         If IncludeFees Then
-            RefinedMats.AdjustTaxedPrice(GetBrokerFee(RefinedMats.GetTotalMaterialsCost))
+            RefinedMats.AdjustTaxedPrice(GetSalesBrokerFee(RefinedMats.GetTotalMaterialsCost))
         End If
 
         ' Reference

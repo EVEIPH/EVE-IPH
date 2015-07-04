@@ -397,14 +397,14 @@ Public Module Public_Variables
 #Region "Taxes/Fees"
 
     ' Returns the tax on an item price only
-    Public Function GetTaxes(ByVal ItemMarketCost As Double) As Double
+    Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 10% - Starting level with Accounting 0 is 1.5% tax 
         Return (1.5 - (Accounting * 0.1 * 1.5)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
-    Public Function GetBrokerFee(ByVal ItemMarketCost As Double) As Double
+    Public Function GetSalesBrokerFee(ByVal ItemMarketCost As Double) As Double
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
 
         Dim TempFee As Double
@@ -961,8 +961,8 @@ Public Module Public_Variables
     End Function
 
     ' Imports sent blueprint to shopping list
-    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, RawMatsCopy As Boolean, _
-                                 ComponentCopy As Boolean, _
+    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
+                                 CopyComponents As Boolean, _
                                  FacilityMEModifier As Double, _
                                  BuiltInPOS As Boolean, _
                                  IgnoreInvention As Boolean, _
@@ -974,22 +974,15 @@ Public Module Public_Variables
         Dim ShoppingItem As New ShoppingListItem
         Dim ShoppingBuildList As New BuiltItemList
         Dim ShoppingBuyList As New Materials
-        Dim InventionCopyUsage As Double = 0
 
         With ShoppingItem
-            If RawMatsCopy Or BuildBuy = True Then ' Either just raw or build buy selected
+            If CopyRawMats Or BuildBuy = True Then ' Either just raw or build buy selected
                 ' Add the item and the materials for the item
                 If Not IsNothing(SentBlueprint.GetRawMaterials) Then
                     .TypeID = SentBlueprint.GetItemID
-                    .Name = SentBlueprint.GetBPItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetBPItemData.GetQuantity
-
-                    .ItemMarketCost = SentBlueprint.GetItemMarketPrice
-                    .ItemBuildTime = SentBlueprint.GetTotalProductionTime
+                    .Name = SentBlueprint.GetItemData.GetMaterialName
+                    .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
-                    .TotalMarketCost = SentBlueprint.GetItemMarketPrice
-                    .TotalBuildTime = SentBlueprint.GetTotalProductionTime
-
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
 
@@ -1009,24 +1002,25 @@ Public Module Public_Variables
 
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
-                        ShoppingBuildList = CType(SentBlueprint.GetBPComponentsList.Clone, BuiltItemList)
+                        ShoppingBuildList = CType(SentBlueprint.GetComponentsList.Clone, BuiltItemList)
                     End If
+
+                    ' Total up all usage
+                    .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetComponentFacilityUsage + SentBlueprint.GetCapComponentFacilityUsage _
+                        + SentBlueprint.GetInventionUsage + SentBlueprint.GetCopyUsage
+
+                    ' Get the build time
+                    .TotalBuildTime = SentBlueprint.GetTotalProductionTime
 
                 End If
 
-            ElseIf ComponentCopy Then
+            ElseIf CopyComponents Then
                 ' Add the component items and mats to the list and that's it. They are building the end item, nothing else
                 If Not IsNothing(SentBlueprint.GetComponentMaterials) Then
                     .TypeID = SentBlueprint.GetItemID
-                    .Name = SentBlueprint.GetBPItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetBPItemData.GetQuantity
-
-                    .ItemMarketCost = SentBlueprint.GetItemMarketPrice
-                    .ItemBuildTime = SentBlueprint.GetProductionTime
+                    .Name = SentBlueprint.GetItemData.GetMaterialName
+                    .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
-                    .TotalMarketCost = SentBlueprint.GetItemMarketPrice
-                    .TotalBuildTime = SentBlueprint.GetProductionTime
-
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
 
@@ -1044,8 +1038,17 @@ Public Module Public_Variables
                         ShoppingBuildList = Nothing
                     End If
 
+                    ' Total up all usage but not component usage
+                    .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetInventionUsage + SentBlueprint.GetCopyUsage
+
+                    ' Get the build time
+                    .TotalBuildTime = SentBlueprint.GetProductionTime
+
                 End If
             End If
+
+            ' The total mat cost before invention materials added
+            .TotalMaterialCost = ShoppingBuyList.GetTotalMaterialsCost + SentBlueprint.GetInventionCost + SentBlueprint.GetCopyCost
 
             If SentBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SentBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
                 If UserApplicationSettings.ShopListIncludeInventMats = True Then
@@ -1058,16 +1061,19 @@ Public Module Public_Variables
                     ' Remove the data interface though, we will assume they don't want to buy this but this will get listed in the copy output (sent above)
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Data Interface"))
 
-                    If Not IsNothing(ShoppingBuyList.SearchListbyName("Invention Usage")) Then
-                        InventionCopyUsage = InventionCopyUsage + ShoppingBuyList.SearchListbyName("Invention Usage").GetCostPerItem
-                    End If
-
-                    If Not IsNothing(ShoppingBuyList.SearchListbyName("Copy Usage")) Then
-                        InventionCopyUsage = InventionCopyUsage + ShoppingBuyList.SearchListbyName("Copy Usage").GetCostPerItem
-                    End If
-
                     ' Remove the usage as well
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Invention Usage"))
+
+                End If
+
+                If UserApplicationSettings.ShopListIncludeCopyMats = True Then
+                    ' Save the list of copy materials
+                    .CopyMaterials = CType(SentBlueprint.GetCopyMaterials.Clone, Materials)
+
+                    ' Now insert these into main buy list
+                    ShoppingBuyList.InsertMaterialList(.CopyMaterials.GetMaterialList)
+
+                    ' Remove Usage
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Copy Usage"))
                 End If
 
@@ -1080,16 +1086,7 @@ Public Module Public_Variables
                 .Decryptor = SentBlueprint.GetDecryptor.Name
                 .Relic = SentBlueprint.GetRelic
 
-                ' Add the cost
-                .InventionCost = SentBlueprint.GetBPInventionCost
-                .InventionUsage = SentBlueprint.GetBPInventionUsage
-
             End If
-
-            ' Taxes and usage
-            .ItemTaxes = SentBlueprint.GetBPTaxes
-            .ItemBrokerFees = SentBlueprint.GetBPBrokerFees
-            .ItemUsage = SentBlueprint.GetManufacturingFacilityUsage + InventionCopyUsage
 
             ' Volume of the item(s)
             .BuildVolume = SentBlueprint.GetTotalItemVolume
@@ -1101,6 +1098,9 @@ Public Module Public_Variables
             ShoppingItem.BPMaterialList = CType(SentBlueprint.GetComponentMaterials.Clone, Materials)
 
         End With
+
+        ' Add the market cost
+        ShoppingItem.TotalItemMarketCost = SentBlueprint.GetItemMarketPrice
 
         ' Add the final item and mark as items in list
         TotalShoppingList.InsertShoppingItem(ShoppingItem, ShoppingBuildList, ShoppingBuyList)

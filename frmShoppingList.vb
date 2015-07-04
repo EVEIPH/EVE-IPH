@@ -378,7 +378,7 @@ Public Class frmShoppingList
                             SellPrice = MinSellUnitPrice * RawItems.GetMaterialList(i).GetQuantity
                             ' Now look at max buy
                             TotalPrice = MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity
-                            BuyOrderPrice = TotalPrice + GetBrokerFee(TotalPrice)
+                            BuyOrderPrice = TotalPrice + GetSalesBrokerFee(TotalPrice)
 
                             If BuyOrderPrice < SellPrice Then
                                 ' They should do an order
@@ -570,7 +570,7 @@ Public Class frmShoppingList
                 Case 2
                     ProcessList = CType(TotalShoppingList.GetFullInventionList.Clone, Materials)
                 Case 3
-                    ProcessList = CType(TotalShoppingList.GetFullREList.Clone, Materials)
+                    ProcessList = CType(TotalShoppingList.GetFullCopyList.Clone, Materials)
             End Select
 
             If Not IsNothing(ProcessList) Then

@@ -381,7 +381,6 @@ Public Class frmMain
         Call SetProgress("Initializing...")
 
         ' This call is required by the designer.
-        Me.AutoScaleMode = Windows.Forms.AutoScaleMode.Dpi
         InitializeComponent()
 
         Application.DoEvents()
@@ -1103,7 +1102,7 @@ NoBonus:
             LoadTeambyCombo = True
         End If
 
-        Call DisplayTeamBonus(GetBPTeamGroupIDList(), SelectedTeam, TeamBonusLabel, TeamDefaultLabel, TeamSaveButton, Tab)
+        Call DisplayTeamBonus(GetTeamGroupIDList(), SelectedTeam, TeamBonusLabel, TeamDefaultLabel, TeamSaveButton, Tab)
 
         BPTeamComboLoaded = False
 
@@ -3645,14 +3644,14 @@ NoBonus:
             If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
                 ' Invention Facility
                 RawCostSplit.UsageName = "Invention Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetBPInventionUsage
+                RawCostSplit.UsageValue = SelectedBlueprint.GetInventionUsage
                 f1.UsageSplits.Add(RawCostSplit)
             End If
 
             If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
                 ' Copy Facility
                 RawCostSplit.UsageName = "Copy Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetBPCopyUsage
+                RawCostSplit.UsageValue = SelectedBlueprint.GetCopyUsage
                 f1.UsageSplits.Add(RawCostSplit)
             End If
 
@@ -3775,12 +3774,12 @@ NoBonus:
 
             ' Taxes
             RawCostSplit.SplitName = "Taxes"
-            RawCostSplit.SplitValue = SelectedBlueprint.GetBPTaxes
+            RawCostSplit.SplitValue = SelectedBlueprint.GetSalesTaxes
             f1.CostSplits.Add(RawCostSplit)
 
             ' Broker fees
             RawCostSplit.SplitName = "Broker Fees"
-            RawCostSplit.SplitValue = SelectedBlueprint.GetBPBrokerFees
+            RawCostSplit.SplitValue = SelectedBlueprint.GetSalesBrokerFees
             f1.CostSplits.Add(RawCostSplit)
 
             ' Additional Costs the user added
@@ -3793,20 +3792,20 @@ NoBonus:
             If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
                 ' Total Invention Costs
                 RawCostSplit.SplitName = "Invention Costs"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPInventionCost
+                RawCostSplit.SplitValue = SelectedBlueprint.GetInventionCost
                 f1.CostSplits.Add(RawCostSplit)
 
                 RawCostSplit.SplitName = "Invention Usage"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPInventionUsage
+                RawCostSplit.SplitValue = SelectedBlueprint.GetInventionUsage
                 f1.CostSplits.Add(RawCostSplit)
 
                 ' Total Copy Costs
                 RawCostSplit.SplitName = "Copy Costs"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPCopyCost
+                RawCostSplit.SplitValue = SelectedBlueprint.GetCopyCost
                 f1.CostSplits.Add(RawCostSplit)
 
                 RawCostSplit.SplitName = "Copy Usage"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPCopyUsage
+                RawCostSplit.SplitValue = SelectedBlueprint.GetCopyUsage
                 f1.CostSplits.Add(RawCostSplit)
 
             End If
@@ -4630,7 +4629,7 @@ NoBonus:
             SelectedBPCopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
                 ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
             End If
         End If
@@ -4641,7 +4640,7 @@ NoBonus:
             ' Include copy costs
             SelectedBPCopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4651,7 +4650,7 @@ NoBonus:
             ' Include invention time
             SelectedBPInventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4662,7 +4661,7 @@ NoBonus:
             SelectedBPInventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
             ' Use the original ME and TE values when they change the meta level
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4672,7 +4671,7 @@ NoBonus:
             ' Set the time for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4682,7 +4681,7 @@ NoBonus:
             ' Set the usage for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -5515,7 +5514,7 @@ Tabs:
 
                 If Autoload Then
                     ' reload bp Use the original ME and TE values when they change the meta level
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                     FullyLoadedBPFacility = True
                 Else
                     Call HideFacilityBonusBoxes(lblBPFacilityBonus, lblBPFacilityTaxRate, lblBPFacilityManualME, lblBPFacilityManualTE, _
@@ -5576,7 +5575,7 @@ Tabs:
 
             If Not IsNothing(SelectedBlueprint) Then
                 ' Load the bp again - Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -5844,7 +5843,7 @@ Tabs:
     Private Sub cmbBPTeamActivity_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeamActivities.SelectedIndexChanged
         If PreviousTeamActivity <> cmbBPTeamActivities.Text And Not FirstLoad Then
             BPTeamComboLoaded = False ' Always load combo on changing of the activity
-            Call LoadTeamCombo(True, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeamCombo(True, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             ' Load the default team for this activity
             Call LoadDefaultTeam(True, cmbBPTeamActivities.Text, False, cmbBPTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
             PreviousTeamActivity = cmbBPTeamActivities.Text
@@ -5859,7 +5858,7 @@ Tabs:
         ComboMenuDown = True
 
         If Not BPTeamComboLoaded Then ' TODO don't reload if not needed
-            Call LoadTeamCombo(False, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeamCombo(False, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             If cmbBPTeam.Items.Contains(cmbBPTeam.Text) Then
                 Dim TempTeam As New IndustryTeam
                 Select Case cmbBPTeamActivities.Text
@@ -5870,7 +5869,7 @@ Tabs:
                     Case ActivityCopying
                         TempTeam = SelectedBPCopyTeam
                 End Select
-                Call DisplayTeamBonus(GetBPTeamGroupIDList(), TempTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveBP, BPTab)
+                Call DisplayTeamBonus(GetTeamGroupIDList(), TempTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveBP, BPTab)
             End If
             BPTeamComboLoaded = True
         End If
@@ -5898,7 +5897,7 @@ Tabs:
 
         ' If they select enter, then load the team if the text is in the combo
         If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
         End If
     End Sub
 
@@ -5913,19 +5912,19 @@ Tabs:
 
     Private Sub cmbBPTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeam.SelectedIndexChanged
         If Not IsNothing(SelectedBlueprint) And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             If Not FirstLoad Then
                 ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
             End If
         End If
     End Sub
 
     Private Sub cmbBPTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPTeam.SelectionChangeCommitted
         If Not MouseWheelSelection And Not ComboBoxArrowKeys And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             ' Use the original ME and TE values when they change the meta level
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
         End If
     End Sub
 
@@ -6065,7 +6064,7 @@ Tabs:
 
             ' Refresh
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
 
         End If
@@ -6297,7 +6296,7 @@ Tabs:
                         chkBPFacilityIncludeUsage, BPTab, cmbBPFacilityType.Text, cmbBPFacilityorArray, _
                         lblBPFacilityDefault, btnBPFacilitySave)
 
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -6322,7 +6321,7 @@ Tabs:
 
     Private Sub txtBPNumBPs_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPNumBPs.DoubleClick
         If Not IsNothing(SelectedBlueprint) Then
-            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
+            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
                                                   CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
         End If
     End Sub
@@ -6373,7 +6372,7 @@ Tabs:
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
         End If
 
@@ -6410,7 +6409,7 @@ Tabs:
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
         End If
     End Sub
@@ -6418,7 +6417,7 @@ Tabs:
     Private Sub cmbBPRelic_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPRelic.DropDown
 
         If Not RelicsLoaded Then
-            Call LoadRelicTypes(SelectedBlueprint.GetBPTypeID)
+            Call LoadRelicTypes(SelectedBlueprint.GetTypeID)
         End If
 
     End Sub
@@ -6427,7 +6426,7 @@ Tabs:
 
         If Not LoadingRelics Then
             ' Use the original values when selecting a new relic
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
         End If
 
     End Sub
@@ -6862,9 +6861,9 @@ Tabs:
             If Not IsNothing(SelectedBlueprint) Then
                 If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
                     ' They have a decryptor, so use original
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 Else
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 End If
                 txtBPRuns.SelectAll()
                 If Not IgnoreFocus Then
@@ -6888,9 +6887,9 @@ Tabs:
                 EnterKeyPressed = True
                 If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
                     ' They have a decryptor, so use original
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 Else
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 End If
                 txtBPRuns.SelectAll()
                 IgnoreFocus = True
@@ -7314,7 +7313,7 @@ Tabs:
                 SaveBPType = BPType.Copy
             End If
 
-            Call UpdateBPinDB(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetBPName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, _
+            Call UpdateBPinDB(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, _
                               CInt(txtBPME.Text), CInt(txtBPTE.Text), 0, False, False, AdditionalCost)
 
             Call RefreshBP()
@@ -8028,10 +8027,10 @@ Tabs:
                 End If
 
                 ' Invention cost to get enough success for the runs entered
-                lblBPInventionCost.Text = FormatNumber(SelectedBlueprint.GetBPInventionCost(), 2)
+                lblBPInventionCost.Text = FormatNumber(SelectedBlueprint.GetInventionCost(), 2)
 
                 ' Add copy costs for enough succesful runs
-                lblBPCopyCosts.Text = FormatNumber(SelectedBlueprint.GetBPCopyCost, 2)
+                lblBPCopyCosts.Text = FormatNumber(SelectedBlueprint.GetCopyCost, 2)
 
                 ' Invention Chance
                 lblBPInventionChance.Text = FormatPercent(SelectedBlueprint.GetInventionChance(), 2)
@@ -8043,7 +8042,7 @@ Tabs:
                 lblBPCopyTime.Text = FormatIPHTime(SelectedBlueprint.GetCopyTime)
 
                 ' Show the invention time if they want it
-                lblBPInventionTime.Text = FormatIPHTime(SelectedBlueprint.GetBPInventionTime)
+                lblBPInventionTime.Text = FormatIPHTime(SelectedBlueprint.GetInventionTime)
 
                 ' Set the tool tip for copy costs to the invention chance label
                 ttMain.SetToolTip(lblBPInventionChance, SelectedBlueprint.GetInventionBPC)
@@ -8095,8 +8094,8 @@ Tabs:
 
             If chkBPIgnoreInvention.Checked = False Then
                 ' RE Cost and time
-                lblBPRECost.Text = FormatNumber(SelectedBlueprint.GetBPInventionCost(), 2)
-                lblBPRETime.Text = FormatIPHTime(SelectedBlueprint.GetBPInventionTime())
+                lblBPRECost.Text = FormatNumber(SelectedBlueprint.GetInventionCost(), 2)
+                lblBPRETime.Text = FormatIPHTime(SelectedBlueprint.GetInventionTime())
 
                 ' Update the decryptor stats box ME: -4, TE: -3, Runs: +9
                 lblBPT3Stats.Text = "ME: " & CStr(SelectedDecryptor.MEMod) & ", TE: " & CStr(SelectedDecryptor.TEMod) & "," & vbCrLf & "BP Runs: " & CStr(SelectedBlueprint.GetSingleInventedBPCRuns)
@@ -8496,7 +8495,7 @@ ExitForm:
     End Sub
 
     ' Returns a list of group ID's for the selected BP for use in teams
-    Private Function GetBPTeamGroupIDList() As List(Of Long)
+    Private Function GetTeamGroupIDList() As List(Of Long)
         Dim TempList As New List(Of Long)
         Dim rsLookup As SQLiteDataReader
         Dim SQL As String
@@ -8566,8 +8565,8 @@ ExitForm:
         lblBPComponentMatCost.Text = FormatNumber(SelectedBlueprint.GetComponentMaterials.GetTotalMaterialsCost, 2)
 
         ' Taxes/Fees
-        lblBPTaxes.Text = FormatNumber(SelectedBlueprint.GetBPTaxes / DivideUnits, 2)
-        lblBPBrokerFees.Text = FormatNumber(SelectedBlueprint.GetBPBrokerFees / DivideUnits, 2)
+        lblBPTaxes.Text = FormatNumber(SelectedBlueprint.GetSalesTaxes / DivideUnits, 2)
+        lblBPBrokerFees.Text = FormatNumber(SelectedBlueprint.GetSalesBrokerFees / DivideUnits, 2)
 
         ' Show the usage cost for the activity selected
         If chkBPFacilityIncludeUsage.Checked Then
@@ -8576,10 +8575,10 @@ ExitForm:
                     lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetManufacturingFacility, True))
                 Case ActivityInvention
-                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetBPInventionUsage() / DivideUnits, 2)
+                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetInventionUsage() / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetInventionFacility, False))
                 Case ActivityCopying
-                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetBPCopyUsage() / DivideUnits, 2)
+                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetCopyUsage() / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetCopyFacility, False))
                 Case ActivityComponentManufacturing
                     lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits, 2)
@@ -8699,7 +8698,7 @@ ExitForm:
 
         If Not IsNothing(SelectedBlueprint) Then
             If Trim(txtBPRuns.Text) <> "" Then
-                txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
+                txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
                                                       CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
             End If
         End If
@@ -17513,15 +17512,15 @@ CheckTechs:
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalComponentCost
-                                InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                                InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                                InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                                InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime) ' Total production time for components only is always the bp production time
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
-                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17533,13 +17532,13 @@ CheckTechs:
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
                                 If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                                    InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                    InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
                                 If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                                    InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                    InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
                                 End If
@@ -17549,8 +17548,8 @@ CheckTechs:
                                 ' Don't build components in this calculation
                                 InsertItem.ComponentManufacturingFacilityUsage = 0
                                 InsertItem.CapComponentManufacturingFacilityUsage = 0
-                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                                 ' Insert Components Item
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17565,15 +17564,15 @@ CheckTechs:
                             InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                             InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
                             InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
-                            InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                            InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                            InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                            InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                             InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                             InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
-                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17585,13 +17584,13 @@ CheckTechs:
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
                             If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
-                                InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
                             If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
-                                InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
                             End If
@@ -17600,8 +17599,8 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                             ' Insert Raw Mats item
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17635,14 +17634,14 @@ CheckTechs:
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                                 InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
 
-                                InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                                InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                                InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                                InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
-                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17654,13 +17653,13 @@ CheckTechs:
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
                                 If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
-                                    InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                    InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
                                 If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
-                                    InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                    InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
                                 End If
@@ -17669,8 +17668,8 @@ CheckTechs:
                                 InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                                 InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                                 InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                                 ' Insert Build/Buy item
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17710,8 +17709,8 @@ CheckTechs:
 
                             InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
-                            InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                            InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                            InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                            InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
@@ -17724,7 +17723,7 @@ CheckTechs:
                             End If
 
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
-                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17736,13 +17735,13 @@ CheckTechs:
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
                             If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
-                                InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
                             If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
-                                InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
                             End If
@@ -17751,8 +17750,8 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                             ' Insert the chosen item
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17920,7 +17919,7 @@ DisplayResults:
                     Case ProgramSettings.InventionChanceColumnName
                         BPList.SubItems.Add(FormatPercent(FinalItemList(i).InventionChance, 2))
                     Case ProgramSettings.BPTypeColumnName
-                        BPList.SubItems.Add(GetBPTypeSTring(FinalItemList(i).BlueprintType))
+                        BPList.SubItems.Add(GetBPTypeString(FinalItemList(i).BlueprintType))
                     Case ProgramSettings.RaceColumnName
                         BPList.SubItems.Add(FinalItemList(i).Race)
                     Case ProgramSettings.VolumeperItemColumnName
@@ -21082,12 +21081,12 @@ Leave:
 
             ' Finally set the taxes and fees
             If SetTaxes Then
-                CurrentReaction.Taxes = GetTaxes(CurrentReaction.ProfitPerHour)
+                CurrentReaction.Taxes = GetSalesTax(CurrentReaction.ProfitPerHour)
                 CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Taxes
             End If
 
             If SetFees Then
-                CurrentReaction.Fees = GetTaxes(CurrentReaction.ProfitPerHour)
+                CurrentReaction.Fees = GetSalesTax(CurrentReaction.ProfitPerHour)
                 CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Fees
             End If
 

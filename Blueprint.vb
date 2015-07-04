@@ -39,9 +39,9 @@ Public Class Blueprint
     '   •	Sell - When you Sell to a buy order (simple sell), you only pay taxes. (This will be Max buy)
     '       o 	Tax, No Broker Fee
     Private Taxes As Double ' See Above - Sell Order or Sell
-    Private BPTaxes As Double ' Public updatable number for display updates, for easy updates when clicked
+    Private DisplayTaxes As Double ' Public updatable number for display updates, for easy updates when clicked
     Private BrokerFees As Double ' See above - Sell Order or Buy Order
-    Private BPBrokerFees As Double ' Public updatable number for display updates, for easy updates when clicked
+    Private DisplayBrokerFees As Double ' Public updatable number for display updates, for easy updates when clicked
 
     ' New cost variables
     Private BaseJobCost As Double ' Total per material used * average price
@@ -551,7 +551,7 @@ Public Class Blueprint
                         End If
 
                         ' Add all new components to the blueprint list to rebuild later
-                        For Each BI In .GetBPComponentsList.GetBuiltItemList
+                        For Each BI In .GetComponentsList.GetBuiltItemList
                             Call BuiltComponentList.AddBuiltItem(BI)
                         Next
 
@@ -565,8 +565,8 @@ Public Class Blueprint
                             BPProductionTime = .GetProductionTime
                         End If
 
-                        Taxes += .GetBPTaxes
-                        BrokerFees += .GetBPBrokerFees
+                        Taxes += .GetSalesTaxes
+                        BrokerFees += .GetSalesBrokerFees
 
                         ' New cost variables
                         BaseJobCost += .GetBaseJobCost
@@ -957,8 +957,8 @@ Public Class Blueprint
         Call SetProductionTime()
 
         ' Set taxes and fees on this item only (materials set in shopping list)
-        Taxes = GetTaxes(ItemMarketCost)
-        BrokerFees = GetBrokerFee(ItemMarketCost)
+        Taxes = GetSalesTax(ItemMarketCost)
+        BrokerFees = GetSalesBrokerFee(ItemMarketCost)
 
         ' Set the costs for making this item
         Call SetManufacturingCostsAndFees()
@@ -1205,18 +1205,18 @@ Public Class Blueprint
         Dim ComponentUsage As Double = 0
 
         If SetTaxes Then
-            BPTaxes = GetTaxes(ItemMarketCost)
+            DisplayTaxes = GetSalesTax(ItemMarketCost)
         Else
-            BPTaxes = 0
+            DisplayTaxes = 0
         End If
 
         If SetBrokerFees Then
-            BPBrokerFees = GetBrokerFee(ItemMarketCost)
+            DisplayBrokerFees = GetSalesBrokerFee(ItemMarketCost)
         Else
-            BPBrokerFees = 0
+            DisplayBrokerFees = 0
         End If
 
-        TaxesFees = BPTaxes + BPBrokerFees
+        TaxesFees = DisplayTaxes + DisplayBrokerFees
 
         If ComponentManufacturingFacility.IncludeActivityUsage Then
             ComponentUsage += ComponentFacilityUsage
@@ -1707,9 +1707,7 @@ Public Class Blueprint
 
         ' Set invention time
         If IncludeInventionTime Then
-            InventionTime = GetInventionTime() * Math.Ceiling(NumInventionSessions / NumberofLaboratoryLines)
-        Else
-            InventionTime = 0
+            Call SetInventionTime(NumInventionSessions)
         End If
 
         ' Finally set the total invention cost for just inventing
@@ -1836,8 +1834,8 @@ Public Class Blueprint
         Return BaseJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
     End Function
 
-    ' Gets the invention time for the sent BP and returns it in seconds
-    Private Function GetInventionTime() As Double
+    ' Sets the invention time for the sent BP 
+    Private Sub SetInventionTime(NumInventionSessions As Integer)
         Dim SQL As String
         Dim readerLookup As SQLiteDataReader
         Dim TempTime As Double
@@ -1863,9 +1861,10 @@ Public Class Blueprint
             readerLookup.Close()
         End If
 
-        Return TempTime
+        ' Finally, set the time
+        InventionTime = TempTime * Math.Ceiling(NumInventionSessions / NumberofLaboratoryLines)
 
-    End Function
+    End Sub
 
     ' Sets and returns the copy cost for the number of copies sent
     Private Function GetCopyUsage(NumberofCopies As Integer) As Double
@@ -1960,12 +1959,12 @@ Public Class Blueprint
     End Function
 
     ' Returns the total usage cost to make the copy
-    Public Function GetBPCopyUsage() As Double
+    Public Function GetCopyUsage() As Double
         Return CopyUsage
     End Function
 
     ' Returns the total cost of materials for the copy
-    Public Function GetBPCopyCost() As Double
+    Public Function GetCopyCost() As Double
         Return CopyCost
     End Function
 
@@ -1975,17 +1974,17 @@ Public Class Blueprint
     End Function
 
     ' Returns the invention time in friendly format it took to make a T2/T3 BPC 
-    Public Function GetBPInventionTime() As Double
+    Public Function GetInventionTime() As Double
         Return InventionTime
     End Function
 
     ' Gets the invention usage fees for installing this invention job for this BP
-    Public Function GetBPInventionUsage() As Double
+    Public Function GetInventionUsage() As Double
         Return InventionUsage
     End Function
 
     ' Gets the total Invention Cost of this Blueprint if it can be invented
-    Public Function GetBPInventionCost() As Double
+    Public Function GetInventionCost() As Double
         Return InventionCost
     End Function
 
@@ -2129,13 +2128,13 @@ Public Class Blueprint
     End Function
 
     ' Returns the sum of taxes for setting up a sell order for this BP item
-    Public Function GetBPTaxes() As Double
-        Return BPTaxes
+    Public Function GetSalesTaxes() As Double
+        Return DisplayTaxes
     End Function
 
     ' Returns the total broker fees for 
-    Public Function GetBPBrokerFees() As Double
-        Return BPBrokerFees
+    Public Function GetSalesBrokerFees() As Double
+        Return DisplayBrokerFees
     End Function
 
     ' Returns the total units this blueprint muliplied by runs, will create
@@ -2224,7 +2223,7 @@ Public Class Blueprint
     End Function
 
     ' Returns the group of blueprint
-    Public Function GetBPGroup() As String
+    Public Function GetGroup() As String
         Return BlueprintGroup
     End Function
 
@@ -2273,12 +2272,12 @@ Public Class Blueprint
     End Function
 
     ' Returns the component lists used to build this item, with materials
-    Public Function GetBPComponentsList() As BuiltItemList
+    Public Function GetComponentsList() As BuiltItemList
         Return BuiltComponentList
     End Function
 
     ' Returns information on the item that this BP makes, For now, name, runs and the type id
-    Public Function GetBPItemData() As Material
+    Public Function GetItemData() As Material
         Dim TempMat As Material
 
         ' Volume doesn't matter
@@ -2288,12 +2287,12 @@ Public Class Blueprint
     End Function
 
     ' Returns the TypeID of the BP
-    Public Function GetBPTypeID() As Long
+    Public Function GetTypeID() As Long
         Return BlueprintID
     End Function
 
     ' Returns the blueprint name
-    Public Function GetBPName() As String
+    Public Function GetName() As String
         Return BlueprintName
     End Function
 
