@@ -17,7 +17,7 @@
 
         ' visible screen and make it as small as possible
         topmostForm.Size = New System.Drawing.Size(1, 1)
-        topmostForm.StartPosition = FormStartPosition.CenterScreen
+        topmostForm.StartPosition = FormStartPosition.Manual
         If Not IsNothing(ProgramIcon) Then
             topmostForm.Icon = ProgramIcon
         End If

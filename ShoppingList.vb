@@ -433,6 +433,10 @@ Public Class ShoppingList
                 ' Increment items
                 .Quantity = .Quantity + SentItem.Quantity
                 .BuildVolume = .BuildVolume + SentItem.BuildVolume
+                .TotalUsage = .TotalUsage + SentItem.TotalUsage
+                .TotalMaterialCost = .TotalMaterialCost + SentItem.TotalMaterialCost
+                .TotalItemMarketCost = .TotalItemMarketCost + SentItem.TotalItemMarketCost
+                .TotalBuildTime = .TotalBuildTime + SentItem.TotalBuildTime
 
                 ' Increment BP Mat List
                 If Not IsNothing(SentItem.BPMaterialList) Then

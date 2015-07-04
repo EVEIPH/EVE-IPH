@@ -7736,12 +7736,6 @@ Tabs:
             txtBPRuns.Text = "1"
         End If
 
-        '' Update the num bps here instead of when they enter data
-        '' this is really just a visual thing since the blueprint will determine the correct number and set it later
-        'IgnoreFocus = True
-        'Call UpdateBPLinesandBPs()
-        'IgnoreFocus = False
-
         ' Check the quantity
         If Not IsNumeric(txtBPRuns.Text) Or Val(txtBPRuns.Text) <= 0 Then
             MsgBox("You must enter a valid number of runs", vbExclamation, Application.ProductName)

@@ -25,6 +25,7 @@ Partial Class frmError
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmError))
         Me.btnOK = New System.Windows.Forms.Button()
         Me.txtError = New System.Windows.Forms.TextBox()
+        Me.Button1 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'btnOK
@@ -33,7 +34,7 @@ Partial Class frmError
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(84, 24)
         Me.btnOK.TabIndex = 0
-        Me.btnOK.Text = "OK"
+        Me.btnOK.Text = "Close"
         Me.btnOK.UseVisualStyleBackColor = True
         '
         'txtError
@@ -45,10 +46,21 @@ Partial Class frmError
         Me.txtError.Size = New System.Drawing.Size(505, 255)
         Me.txtError.TabIndex = 1
         '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(273, 266)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(84, 24)
+        Me.Button1.TabIndex = 2
+        Me.Button1.Text = "Send Report"
+        Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.Visible = False
+        '
         'frmError
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(529, 302)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.txtError)
         Me.Controls.Add(Me.btnOK)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -63,4 +75,5 @@ Partial Class frmError
     End Sub
     Friend WithEvents btnOK As System.Windows.Forms.Button
     Friend WithEvents txtError As System.Windows.Forms.TextBox
+    Friend WithEvents Button1 As System.Windows.Forms.Button
 End Class

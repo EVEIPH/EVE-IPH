@@ -58,7 +58,7 @@ Partial Class frmLoadCharacterAPI
         '
         Me.btnNext.Location = New System.Drawing.Point(176, 124)
         Me.btnNext.Name = "btnNext"
-        Me.btnNext.Size = New System.Drawing.Size(87, 21)
+        Me.btnNext.Size = New System.Drawing.Size(87, 29)
         Me.btnNext.TabIndex = 4
         Me.btnNext.Text = "Next >"
         Me.btnNext.UseVisualStyleBackColor = True
