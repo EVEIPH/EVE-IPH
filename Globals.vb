@@ -36,9 +36,9 @@ Public Module Public_Variables
     Public UserWorkingFolder As String = "" ' Where the DB and updater and anything that changes files will be
     Public UserImagePath As String = "" ' Where the images are kept
 
-    Public Const XMLUpdateServerURL = "http://sourceforge.net/projects/eveiph/files/Latest%20Files/LatestVersionIPH.xml/download"
-    Public Const XMLUpdateTestServerURL = "http://sourceforge.net/projects/eveiph/files/Testing/LatestVersionIPH%20Test.xml/download"
-    Public Const PatchNotesURL = "http://sourceforge.net/projects/eveiph/files/README.txt/download"
+    Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
+    Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
+    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
