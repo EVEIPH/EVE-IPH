@@ -7,8 +7,8 @@ Imports System.Net
 
 ' Class for all CREST function calls, which will update tables in the DB if past cache time
 Public Class EVECREST
-    'Private Const CRESTRootServerURL = "http://public-crest-sisi.testeveonline.com"
-    Private Const CRESTRootServerURL = "http://public-crest.eveonline.com"
+    'Private Const CRESTRootServerURL = "https://public-crest-sisi.testeveonline.com"
+    Private Const CRESTRootServerURL = "https://public-crest.eveonline.com"
 
     ' URL for each file
     Private Const CRESTIndustryTeamSpecialties = "/industry/specialities/"
@@ -548,7 +548,7 @@ Public Class EVECREST
 
     ' For Industry Teams
     Private Class IndustryTeamsSpecialization
-        '"specialization": {"href": "http://public-crest-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
+        '"specialization": {"href": "https://public-crest-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Integer
         <JsonProperty("id_str")> Public id_str As String
@@ -779,7 +779,7 @@ Public Class EVECREST
 
     ' For Industry Team Auctions
     Private Class IndustryTeamAuctionCharacter
-        ' "character": {"isNPC": false, "id": 94733327, "href": "http://public-crest-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
+        ' "character": {"isNPC": false, "id": 94733327, "href": "https://public-crest-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
         <JsonProperty("isNPC")> Public isNPC As Boolean
         <JsonProperty("id")> Public CharacterID As Long
         <JsonProperty("href")> Public href As String
@@ -1070,11 +1070,11 @@ Public Class EVECREST
         SQL = "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, RAM_ACTIVITIES.activityName AS ACTIVITY_NAME, FACILITY_TAX,"
+        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
         SQL = SQL & "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.materialMultiplier AS MATERIAL_MULTIPLIER, "
         SQL = SQL & "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.timeMultiplier AS TIME_MULTIPLIER, "
         SQL = SQL & "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.costMultiplier AS COST_MULTIPLIER, "
-        SQL = SQL & "INVENTORY_GROUPS.groupID AS GROUP_ID, INVENTORY_GROUPS.groupName AS GROUP_NAME, 0 AS CATEGORY_ID, NULL AS CATEGORY_NAME, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX, 0 AS OUTPOST "
+        SQL = SQL & "INVENTORY_GROUPS.groupID AS GROUP_ID, 0 AS CATEGORY_ID, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX, 0 AS OUTPOST "
         SQL = SQL & "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_ASSEMBLY_LINE_STATIONS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
         SQL = SQL & "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP, INVENTORY_GROUPS "
         SQL = SQL & "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
@@ -1092,11 +1092,11 @@ Public Class EVECREST
         SQL = SQL & "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, RAM_ACTIVITIES.activityName AS ACTIVITY_NAME, FACILITY_TAX,"
+        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
         SQL = SQL & "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.materialMultiplier AS MATERIAL_MULTIPLIER, "
         SQL = SQL & "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.timeMultiplier AS TIME_MULTIPLIER, "
         SQL = SQL & "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.costMultiplier AS COST_MULTIPLIER, "
-        SQL = SQL & "0 AS GROUP_ID, NULL AS GROUP_NAME, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, INVENTORY_CATEGORIES.categoryName AS CATEGORY_NAME, COST_INDEX, 0 AS OUTPOST "
+        SQL = SQL & "0 AS GROUP_ID, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, COST_INDEX, 0 AS OUTPOST "
         SQL = SQL & "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_ASSEMBLY_LINE_STATIONS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
         SQL = SQL & "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY, INVENTORY_CATEGORIES "
         SQL = SQL & "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
@@ -1114,11 +1114,11 @@ Public Class EVECREST
         SQL = SQL & "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, RAM_ACTIVITIES.activityName AS ACTIVITY_NAME, FACILITY_TAX,"
+        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
         SQL = SQL & "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.materialMultiplier AS MATERIAL_MULTIPLIER, "
         SQL = SQL & "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.timeMultiplier AS TIME_MULTIPLIER, "
         SQL = SQL & "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.costMultiplier AS COST_MULTIPLIER, "
-        SQL = SQL & "INVENTORY_GROUPS.groupID AS GROUP_ID, INVENTORY_GROUPS.groupName AS GROUP_NAME, 0 AS CATEGORY_ID, NULL AS CATEGORY_NAME, COST_INDEX, 1 AS OUTPOST "
+        SQL = SQL & "INVENTORY_GROUPS.groupID AS GROUP_ID, 0 AS CATEGORY_ID, COST_INDEX, 1 AS OUTPOST "
         SQL = SQL & "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_INSTALLATION_TYPE_CONTENTS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
         SQL = SQL & "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP, INVENTORY_GROUPS "
         SQL = SQL & "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
@@ -1137,11 +1137,11 @@ Public Class EVECREST
         SQL = SQL & "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
         SQL = SQL & "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, RAM_ACTIVITIES.activityName AS ACTIVITY_NAME, FACILITY_TAX,"
+        SQL = SQL & "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
         SQL = SQL & "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.materialMultiplier AS MATERIAL_MULTIPLIER, "
         SQL = SQL & "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.timeMultiplier AS TIME_MULTIPLIER, "
         SQL = SQL & "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.costMultiplier AS COST_MULTIPLIER, "
-        SQL = SQL & "0 AS GROUP_ID, NULL AS GROUP_NAME, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, INVENTORY_CATEGORIES.categoryName AS CATEGORY_NAME, COST_INDEX, 1 AS OUTPOST "
+        SQL = SQL & "0 AS GROUP_ID, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, COST_INDEX, 1 AS OUTPOST "
         SQL = SQL & "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_INSTALLATION_TYPE_CONTENTS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
         SQL = SQL & "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY, INVENTORY_CATEGORIES "
         SQL = SQL & "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
@@ -1172,26 +1172,14 @@ Public Class EVECREST
             SQL = SQL & CStr(rsFacility.GetInt64(7)) & ", " ' Facility Type ID
             SQL = SQL & "'" & FormatDBString(rsFacility.GetString(8)) & "', " ' Facility Type
             SQL = SQL & CStr(rsFacility.GetInt64(9)) & ", " ' Activity ID
-            SQL = SQL & "'" & FormatDBString(rsFacility.GetString(10)) & "', " ' Activity Name
-            SQL = SQL & CStr(rsFacility.GetDouble(11)) & ", " ' Facility Tax
-            SQL = SQL & CStr(rsFacility.GetDouble(12)) & ", " ' Material Multiplier
-            SQL = SQL & CStr(rsFacility.GetDouble(13)) & ", " ' Time Multiplier
-            SQL = SQL & CStr(rsFacility.GetDouble(14)) & ", " ' Cost Multiplier
-            SQL = SQL & CStr(rsFacility.GetInt64(15)) & ", " ' Group ID
-            If Not IsDBNull(rsFacility.GetValue(16)) Then
-                SQL = SQL & "'" & FormatDBString(rsFacility.GetString(16)) & "', "  ' Group Name
-            Else
-                SQL = SQL & "NULL, " ' Group Name
-            End If
-            SQL = SQL & CStr(rsFacility.GetInt64(17)) & ", " ' Category ID
-            If Not IsDBNull(rsFacility.GetValue(18)) Then
-                SQL = SQL & "'" & FormatDBString(rsFacility.GetString(18)) & "', "  ' Category Name
-            Else
-                SQL = SQL & "NULL, " ' Category ID
-            End If
-
-            SQL = SQL & CStr(rsFacility.GetDouble(19)) & ", " ' Cost Index
-            SQL = SQL & CStr(rsFacility.GetInt32(20)) & ")" ' Outpost
+            SQL = SQL & CStr(rsFacility.GetDouble(10)) & ", " ' Facility Tax
+            SQL = SQL & CStr(rsFacility.GetDouble(11)) & ", " ' Material Multiplier
+            SQL = SQL & CStr(rsFacility.GetDouble(12)) & ", " ' Time Multiplier
+            SQL = SQL & CStr(rsFacility.GetDouble(13)) & ", " ' Cost Multiplier
+            SQL = SQL & CStr(rsFacility.GetInt64(14)) & ", " ' Group ID
+            SQL = SQL & CStr(rsFacility.GetInt64(15)) & ", " ' Category ID
+            SQL = SQL & CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
+            SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost
 
             Call ExecuteNonQuerySQL(SQL)
             Application.DoEvents()
@@ -1489,7 +1477,7 @@ Public Class EVECREST
 
     ' For Market Prices
     Private Class MarketPriceType
-        '"type": {"id_str": "32772", "href": "http://public-crest-sisi.testeveonline.com/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
+        '"type": {"id_str": "32772", "href": "https://public-crest-sisi.testeveonline.com/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1500,7 +1488,7 @@ Public Class EVECREST
 
     ' For CREST Solar Systems
     Private Class SolarSystem
-        '{"id_str": "30001743", "href": "http://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
+        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1509,7 +1497,7 @@ Public Class EVECREST
 
     ' For CREST Regions
     Private Class Region
-        '{"id_str": "30001743", "href": "http://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
+        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1518,7 +1506,7 @@ Public Class EVECREST
 
     ' For all CREST where key is just a web link
     Private Class hrefKey
-        '"capsuleer": {"href": "http://public-crest-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
+        '"capsuleer": {"href": "https://public-crest-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
         <JsonProperty("href")> Public href As String
     End Class
 
@@ -1557,7 +1545,7 @@ Public Class EVECREST
             ' Set the cache date by ref - if we are looking at market history, use special processing until we get this figured out
             If URL.Contains("/market/") And URL.Contains("/history/") Then
                 Dim Tempdate As DateTime
-                ' TO DO Fix processing to use the seconds from headers if it's from midnight
+                ' TODO Fix processing to use the seconds from headers if it's from midnight
                 Tempdate = DateValue(response.Headers.Get("Date"))
                 ' Strip off time here from GMT date and add one day so it gets set to midnight tomorrow GMT
                 CacheDate = DateAdd(DateInterval.Day, 1, CDate(Tempdate.ToShortDateString))

@@ -213,8 +213,7 @@ Partial Class frmManageAccounts
         '
         'frmManageAccounts
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(974, 289)
         Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.lblDefaultChar)

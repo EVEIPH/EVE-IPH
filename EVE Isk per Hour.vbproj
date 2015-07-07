@@ -209,7 +209,6 @@
     <Compile Include="EVEAPI.vb" />
     <Compile Include="EVECentralAPI.vb" />
     <Compile Include="EVEMarketDataAPI.vb" />
-    <Compile Include="EVEMarketeerAPI.vb" />
     <Compile Include="frmAbout.Designer.vb">
       <DependentUpon>frmAbout.vb</DependentUpon>
     </Compile>

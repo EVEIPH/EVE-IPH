@@ -8,7 +8,7 @@ Imports System.Xml
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const DataDumpVersion As String = "Mosaic_1.2_112318"
+    Public Const DataDumpVersion As String = "Carnyx_1.0_113321"
     Public Const VersionNumber As String = "3.1.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -36,9 +36,9 @@ Public Module Public_Variables
     Public UserWorkingFolder As String = "" ' Where the DB and updater and anything that changes files will be
     Public UserImagePath As String = "" ' Where the images are kept
 
-    Public Const XMLUpdateServerURL = "http://sourceforge.net/projects/eveiph/files/Latest%20Files/LatestVersionIPH.xml/download"
-    Public Const XMLUpdateTestServerURL = "http://sourceforge.net/projects/eveiph/files/Testing/LatestVersionIPH%20Test.xml/download"
-    Public Const PatchNotesURL = "http://sourceforge.net/projects/eveiph/files/README.txt/download"
+    Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
+    Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
+    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
@@ -67,41 +67,19 @@ Public Module Public_Variables
                                             & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
                                             & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ALL_BLUEPRINTS.TECH_LEVEL IN (2,3) THEN -2 ELSE -1 END END AS BP_TYPE, " _
+                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS " _
+                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
-                                            & "(SELECT * FROM OWNED_BLUEPRINTS WHERE OWNED = 1 OR (OWNED = 0 AND BP_TYPE <> -2)) AS OBP " _
-                                            & "ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID AND OBP.USER_ID =  @USERBP_USERID, " _
+                                            & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
+                                            & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID AND OBP.USER_ID = @USERBP_USERID, " _
                                             & "INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID) AS X "
-
-    ' This will include copies too
-    Public Const ALL_USER_BLUEPRINTS As String = "(SELECT ALL_BLUEPRINTS.BLUEPRINT_ID AS BP_ID, ALL_BLUEPRINTS.BLUEPRINT_GROUP AS BLUEPRINT_GROUP, ALL_BLUEPRINTS.BLUEPRINT_NAME AS BLUEPRINT_NAME, " _
-                                            & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, ITEM_CATEGORY, ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
-                                            & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME," _
-                                            & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE," _
-                                            & "CASE WHEN USER_ID IS NOT NULL THEN USER_ID ELSE 0 END AS USER_ID, ITEM_TYPE," _
-                                            & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
-                                            & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
-                                            & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE " _
-                                            & "CASE WHEN ALL_BLUEPRINTS.TECH_LEVEL IN (2,3) THEN -2 ELSE -1 END END AS BP_TYPE, " _
-                                            & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
-                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
-                                            & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
-                                            & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
-                                            & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
-                                            & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS " _
-                                            & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
-                                            & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP ON ALL_BLUEPRINTS.BLUEPRINT_ID=OBP.BLUEPRINT_ID " _
-                                            & "AND OBP.USER_ID = @ALLUSERBP_USERID, INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID ) AS X "
 
     ' Shopping List
     Public TotalShoppingList As New ShoppingList
@@ -125,6 +103,8 @@ Public Module Public_Variables
 
     Public Const DataCoreRedeemCost As Double = 10000.0
 
+    Public Const SpaceFlagCode As Integer = 500
+
     ' Column processing
     Public Const NumManufacturingTabColumns As Integer = 68
     Public Const NumIndustryJobColumns As Integer = 20
@@ -140,8 +120,8 @@ Public Module Public_Variables
     Public Const MineralGroupID As Integer = 18
 
     ' T2 BPC base ME/TE
-    Public Const BaseT2T3ME As Double = 2
-    Public Const BaseT2T3TE As Double = 4
+    Public Const BaseT2T3ME As Integer = 2
+    Public Const BaseT2T3TE As Integer = 4
 
     ' For team and industry tab loading
     Public Const BPTab As String = "BP"
@@ -195,9 +175,6 @@ Public Module Public_Variables
     Public Const CapitalComponentGroupID As Integer = 873
     Public Const AdvCapitalComponentGroupID As Integer = 913
 
-    ' Only one Decryptor Group with Pheobe
-    Public Const DecryptorGroup As Long = 1304
-
     ' Categories (has multiple groups)
     Public Const StationEggGroupID As Integer = 307 ' This is for loading No POS build items
     Public Const SovStructureCategoryID As Integer = 40
@@ -207,13 +184,21 @@ Public Module Public_Variables
     Public Const StationFacility As String = "Station"
     Public Const OutpostFacility As String = "Outpost"
 
+    Public Const BPO As String = "BPO"
+    Public Const BPC As String = "BPC"
+    Public Const InventedBPC As String = "Invented BPC"
+    Public Const UnownedBP As String = "Unowned"
+
+    Public Const Yes As String = "Yes"
+    Public Const No As String = "No"
+    Public Const Unknown As String = "Unknown"
+    Public Const Unlimited As String = "Unlimited"
+
     Public NoFacility As New IndustryFacility
 
     Public Const None As String = "None" ' For decryptors, facilities and teams
 
     Public APIAdded As Boolean ' To flag if a new api was added, then we can use to reload apis if needed in other areas (eg industry jobs)
-
-    Public RareandShipSkinBPs As New List(Of Long)
 
     Public MiningUpgradesCollection As New List(Of String)
 
@@ -255,6 +240,15 @@ Public Module Public_Variables
         Corporation = 1
     End Enum
 
+    ' BP Types: -1 is original, -2 is copy from API, others are built for IPH
+    Public Enum BPType
+        NotOwned = 0
+        ' These are assumed owned, since they are marked or loaded from API
+        Original = -1
+        Copy = -2
+        InventedBPC = -3
+    End Enum
+
     ' Types of Asset windows
     Public Enum AssetWindow
         ProgramDefault = 0
@@ -280,12 +274,6 @@ Public Module Public_Variables
         T1 = 1
         T2 = 2
         T3 = 3
-    End Enum
-
-    ' BP Types: -1 is original, -2 is copy
-    Public Enum BPType
-        Original = -1
-        Copy = -2
     End Enum
 
     Public Enum BeltType
@@ -409,14 +397,14 @@ Public Module Public_Variables
 #Region "Taxes/Fees"
 
     ' Returns the tax on an item price only
-    Public Function GetTaxes(ByVal ItemMarketCost As Double) As Double
+    Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 10% - Starting level with Accounting 0 is 1.5% tax 
         Return (1.5 - (Accounting * 0.1 * 1.5)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
-    Public Function GetBrokerFee(ByVal ItemMarketCost As Double) As Double
+    Public Function GetSalesBrokerFee(ByVal ItemMarketCost As Double) As Double
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
 
         Dim TempFee As Double
@@ -753,23 +741,69 @@ Public Module Public_Variables
     End Function
 
 #End Region
-    ' Get the rare ship id's and ship skins to weed out in the bps
-    Public Sub SetRareandShipSkinBPs()
-        Dim rsBP As SQLiteDataReader
-        Dim SQL As String
 
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_CATEGORY_ID = 6 "
-        SQL = SQL & "AND (MARKET_GROUP NOT IN ('Amarr','Caldari','Gallente','Minmatar','Navy Faction','Pirate Faction','Exhumers','Expedition Frigates','Faction Carrier','Mining Barges','ORE') "
-        SQL = SQL & "OR ITEM_NAME LIKE '%Edition%')"
+    Public Function GetBPType(BPTypeValue As Object) As BPType
 
-        DBCommand = New SQLiteCommand(SQL, DB)
-        rsBP = DBCommand.ExecuteReader
+        If IsNothing(BPTypeValue) Then
+            Return BPType.NotOwned
+        End If
 
-        While rsBP.Read
-            RareandShipSkinBPs.Add(rsBP.GetInt64(0))
-        End While
+        If IsDBNull(BPTypeValue) Then
+            Return BPType.NotOwned
+        End If
 
-    End Sub
+        If BPTypeValue.GetType.Name = "String" Then
+            Select Case CStr(BPTypeValue)
+                Case BPO
+                    Return BPType.Original
+                Case BPC
+                    Return BPType.Copy
+                Case InventedBPC
+                    Return BPType.InventedBPC
+                Case UnownedBP
+                    Return BPType.NotOwned
+            End Select
+        Else
+            Select Case CInt(BPTypeValue)
+                Case BPType.Original
+                    Return BPType.Original
+                Case BPType.Copy
+                    Return BPType.Copy
+                Case BPType.InventedBPC
+                    Return BPType.InventedBPC
+                Case BPType.NotOwned
+                    Return BPType.NotOwned
+            End Select
+        End If
+
+        Return BPType.NotOwned
+
+    End Function
+
+    Public Function GetBPTypeString(BPTypeValue As Object) As String
+
+        If IsNothing(BPTypeValue) Then
+            Return UnownedBP
+        End If
+
+        If IsDBNull(BPTypeValue) Then
+            Return UnownedBP
+        End If
+
+        Select Case CInt(BPTypeValue)
+            Case BPType.Original
+                Return BPO
+            Case BPType.Copy
+                Return BPC
+            Case BPType.InventedBPC
+                Return InventedBPC
+            Case BPType.NotOwned
+                Return UnownedBP
+        End Select
+
+        Return UnownedBP
+
+    End Function
 
     ' Function takes a recordset reference and processes it to return the cache date from the query
     ' Assumes the first field is the cache date
@@ -927,8 +961,8 @@ Public Module Public_Variables
     End Function
 
     ' Imports sent blueprint to shopping list
-    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, RawMatsCopy As Boolean, _
-                                 ComponentCopy As Boolean, _
+    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
+                                 CopyComponents As Boolean, _
                                  FacilityMEModifier As Double, _
                                  BuiltInPOS As Boolean, _
                                  IgnoreInvention As Boolean, _
@@ -940,22 +974,15 @@ Public Module Public_Variables
         Dim ShoppingItem As New ShoppingListItem
         Dim ShoppingBuildList As New BuiltItemList
         Dim ShoppingBuyList As New Materials
-        Dim InventionCopyUsage As Double = 0
 
         With ShoppingItem
-            If RawMatsCopy Or BuildBuy = True Then ' Either just raw or build buy selected
+            If CopyRawMats Or BuildBuy = True Then ' Either just raw or build buy selected
                 ' Add the item and the materials for the item
                 If Not IsNothing(SentBlueprint.GetRawMaterials) Then
                     .TypeID = SentBlueprint.GetItemID
-                    .Name = SentBlueprint.GetBPItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetBPItemData.GetQuantity
-
-                    .ItemMarketCost = SentBlueprint.GetItemMarketPrice
-                    .ItemBuildTime = SentBlueprint.GetTotalProductionTime
+                    .Name = SentBlueprint.GetItemData.GetMaterialName
+                    .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
-                    .TotalMarketCost = SentBlueprint.GetItemMarketPrice
-                    .TotalBuildTime = SentBlueprint.GetTotalProductionTime
-
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
 
@@ -975,24 +1002,25 @@ Public Module Public_Variables
 
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
-                        ShoppingBuildList = CType(SentBlueprint.GetBPComponentsList.Clone, BuiltItemList)
+                        ShoppingBuildList = CType(SentBlueprint.GetComponentsList.Clone, BuiltItemList)
                     End If
+
+                    ' Total up all usage
+                    .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetComponentFacilityUsage + SentBlueprint.GetCapComponentFacilityUsage _
+                        + SentBlueprint.GetInventionUsage + SentBlueprint.GetCopyUsage
+
+                    ' Get the build time
+                    .TotalBuildTime = SentBlueprint.GetTotalProductionTime
 
                 End If
 
-            ElseIf ComponentCopy Then
+            ElseIf CopyComponents Then
                 ' Add the component items and mats to the list and that's it. They are building the end item, nothing else
                 If Not IsNothing(SentBlueprint.GetComponentMaterials) Then
                     .TypeID = SentBlueprint.GetItemID
-                    .Name = SentBlueprint.GetBPItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetBPItemData.GetQuantity
-
-                    .ItemMarketCost = SentBlueprint.GetItemMarketPrice
-                    .ItemBuildTime = SentBlueprint.GetProductionTime
+                    .Name = SentBlueprint.GetItemData.GetMaterialName
+                    .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
-                    .TotalMarketCost = SentBlueprint.GetItemMarketPrice
-                    .TotalBuildTime = SentBlueprint.GetProductionTime
-
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
 
@@ -1010,8 +1038,17 @@ Public Module Public_Variables
                         ShoppingBuildList = Nothing
                     End If
 
+                    ' Total up all usage but not component usage
+                    .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetInventionUsage + SentBlueprint.GetCopyUsage
+
+                    ' Get the build time
+                    .TotalBuildTime = SentBlueprint.GetProductionTime
+
                 End If
             End If
+
+            ' The total mat cost before invention materials added
+            .TotalMaterialCost = ShoppingBuyList.GetTotalMaterialsCost + SentBlueprint.GetInventionCost + SentBlueprint.GetCopyCost
 
             If SentBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SentBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
                 If UserApplicationSettings.ShopListIncludeInventMats = True Then
@@ -1024,16 +1061,19 @@ Public Module Public_Variables
                     ' Remove the data interface though, we will assume they don't want to buy this but this will get listed in the copy output (sent above)
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Data Interface"))
 
-                    If Not IsNothing(ShoppingBuyList.SearchListbyName("Invention Usage")) Then
-                        InventionCopyUsage = InventionCopyUsage + ShoppingBuyList.SearchListbyName("Invention Usage").GetCostPerItem
-                    End If
-
-                    If Not IsNothing(ShoppingBuyList.SearchListbyName("Copy Usage")) Then
-                        InventionCopyUsage = InventionCopyUsage + ShoppingBuyList.SearchListbyName("Copy Usage").GetCostPerItem
-                    End If
-
                     ' Remove the usage as well
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Invention Usage"))
+
+                End If
+
+                If UserApplicationSettings.ShopListIncludeCopyMats = True Then
+                    ' Save the list of copy materials
+                    .CopyMaterials = CType(SentBlueprint.GetCopyMaterials.Clone, Materials)
+
+                    ' Now insert these into main buy list
+                    ShoppingBuyList.InsertMaterialList(.CopyMaterials.GetMaterialList)
+
+                    ' Remove Usage
                     ShoppingBuyList.RemoveMaterial(SentBlueprint.GetInventionMaterials.SearchListbyName("Copy Usage"))
                 End If
 
@@ -1046,16 +1086,7 @@ Public Module Public_Variables
                 .Decryptor = SentBlueprint.GetDecryptor.Name
                 .Relic = SentBlueprint.GetRelic
 
-                ' Add the cost
-                .InventionCost = SentBlueprint.GetBPInventionCost
-                .InventionUsage = SentBlueprint.GetBPInventionUsage
-
             End If
-
-            ' Taxes and usage
-            .ItemTaxes = SentBlueprint.GetBPTaxes
-            .ItemBrokerFees = SentBlueprint.GetBPBrokerFees
-            .ItemUsage = SentBlueprint.GetManufacturingFacilityUsage + InventionCopyUsage
 
             ' Volume of the item(s)
             .BuildVolume = SentBlueprint.GetTotalItemVolume
@@ -1067,6 +1098,9 @@ Public Module Public_Variables
             ShoppingItem.BPMaterialList = CType(SentBlueprint.GetComponentMaterials.Clone, Materials)
 
         End With
+
+        ' Add the market cost
+        ShoppingItem.TotalItemMarketCost = SentBlueprint.GetItemMarketPrice
 
         ' Add the final item and mark as items in list
         TotalShoppingList.InsertShoppingItem(ShoppingItem, ShoppingBuildList, ShoppingBuyList)
@@ -1093,54 +1127,6 @@ Public Module Public_Variables
         End If
 
         Return False
-
-    End Function
-
-    ' Gets the query for S/M/L/XL queries
-    Public Function GetSMLXLQuery(Size As ItemSize) As String
-
-        Dim SizesClause = ""
-
-        Select Case Size
-            Case ItemSize.Small
-                ' Drones are light, missiles are rockets and light
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% S' OR ITEM_NAME Like '%Small%' OR (ITEM_NAME Like '%Micro%' AND ITEM_GROUP <> 'Propulsion Module' AND ITEM_NAME NOT LIKE 'Microwave%') OR ITEM_NAME Like '%Defender%' OR ITEM_NAME IN ('Cap Booster 25 Item','Cap Booster 50 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 5 ) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '1MN%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (561,564,567,570,574,577,1671,1672, 1037)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND (ITEM_NAME Like '%Rocket%' OR ITEM_NAME Like '%Light Missile%') AND ITEM_GROUP NOT IN ('Propulsion Module', 'Rig Launcher')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND volume < 10000)) OR "
-            Case ItemSize.Medium
-                ' Drones are medium, missiles are heavys and hams
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% M' OR ITEM_NAME Like '%Medium%' OR ITEM_NAME IN ('Cap Booster 75 Item','Cap Booster 100 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 10) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '10MN%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (562,565,568,572,575,578,1673,1674)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND ITEM_NAME Like '%Heavy%' AND ITEM_NAME Not Like '%Jolt%')  "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND ((volume >= 10000 AND volume < 50000) OR ITEM_GROUP_ID = 963))) OR "
-            Case ItemSize.Large
-                ' Drones are Heavy, missiles are cruise/torp, towers are regular towers (Caldari Control Tower)
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% L' OR (ITEM_NAME Like '%Large%' AND ITEM_NAME NOT Like '%X-Large%') OR ITEM_NAME IN ('Cap Booster 150 Item','Cap Booster 200 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 25) "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Propulsion Module' AND ITEM_NAME Like '100MN%') "
-                SizesClause = SizesClause & "OR (ITEM_NAME Like ('%Control Tower')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND ITEM_NAME Like '%Heavy%' AND marketGroupID NOT IN (563,566,569,573,576,579,1675,1676)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (563,566,569,573,576,579,1675,1676)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND (ITEM_NAME Like '%Cruise%' OR ITEM_NAME Like '%Torpedo%')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND (volume >= 50000 AND volume < 500000))) OR "
-            Case ItemSize.ExtraLarge
-                ' Drones are fighters, missiles are citadel
-                SizesClause = SizesClause & "((ITEM_NAME LIKE '% XL' OR ITEM_NAME Like '%Capital%' OR ITEM_NAME Like '%Huge%' OR ITEM_NAME Like '%X-Large%' OR ITEM_NAME Like '%Giant%' OR ITEM_NAME IN ('Cap Booster 400 Item','Cap Booster 800 Item')) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Drone' AND volume = 5000) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Module' AND marketGroupID IN (771,772,773,774,775,776)) "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY IN ('Charge','Module') AND ITEM_NAME Like '%Citadel%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Celestial' AND ITEM_NAME Like 'Station%') "
-                SizesClause = SizesClause & "OR (ITEM_GROUP = 'Super Weapon') "
-                SizesClause = SizesClause & "OR (ITEM_GROUP LIKE 'Bomb%') "
-                SizesClause = SizesClause & "OR (ITEM_CATEGORY = 'Ship' AND volume >= 500000)) OR "
-        End Select
-
-        Return SizesClause
 
     End Function
 
@@ -1706,46 +1692,119 @@ InvalidDate:
 
     End Sub
 
-    ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint
-    Public Sub UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, _
-                            ByVal BPType As BPType, Optional Favorite As Boolean = False, Optional AdditionalCosts As Double = 0)
+    ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint - this is always due to user input, not API
+    Public Function UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType, _
+                            ByVal OriginalME As Integer, ByVal OriginalTE As Integer, ByRef UserRuns As Integer, _
+                            Optional Favorite As Boolean = False, Optional Ignore As Boolean = False, Optional AdditionalCosts As Double = 0, _
+                            Optional RemoveAll As Boolean = False) As BPType
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
-        Dim TempFavorite As Integer
+        Dim rsMaxRuns As SQLiteDataReader
+        Dim TempFavorite As String
+        Dim TempIgnore As String
+        Dim TempOwned As String
+        Dim UpdatedBPType As BPType
 
-        ' If not sent, it's not a favorite
-        If Not Favorite Then
-            TempFavorite = 0
+        If SentBPType = BPType.NotOwned And (bpME <> OriginalME Or bpTE <> OriginalTE) Then
+            ' Can't update the ME/TE and not saved as owned
+            UpdatedBPType = BPType.Copy ' save all as copy
         Else
-            TempFavorite = 1
+            UpdatedBPType = SentBPType
         End If
 
-        ' See if the BP is in the DB
-        SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID=" & BPID & " AND USER_ID = " & SelectedCharacter.ID & " AND BP_TYPE = " & BPType
+        If UpdatedBPType = BPType.Original Then
+            UserRuns = -1
+        Else
+            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID), DB)
+            rsMaxRuns = DBCommand.ExecuteReader
+            If rsMaxRuns.Read() Then
+                UserRuns = rsMaxRuns.GetInt32(0)
+            Else
+                UserRuns = 0
+            End If
+        End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
-        readerBP = DBCommand.ExecuteReader
+        ' If they are setting to not owned, not updating the ME/TE and not saving favorite or ignore, then remove the bp
+        If (UpdatedBPType = BPType.NotOwned And Favorite = False And Ignore = False) Or RemoveAll Then
 
-        If Not readerBP.HasRows Then
-            ' No record, So add it and mark as owned - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
-            SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, ME, TE, "
-            SQL = SQL & "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-            SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
-            SQL = SQL & bpME & "," & bpTE & ",1," & BPType & ",1,0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+            ' Look up the BP first to see if it is scanned
+            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID = " & CStr(BPID) & " AND SCANNED <> 0"
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerBP = DBCommand.ExecuteReader
+
+            ' If Found then update then just reset the owned flag - might be scanned
+            If readerBP.HasRows Then
+                ' Update it
+                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID
+                Call ExecuteNonQuerySQL(SQL)
+            Else
+                ' Just delete the record since it's not scanned
+                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID=" & BPID
+                Call ExecuteNonQuerySQL(SQL)
+            End If
+
+            ' Update the bp ignore flag (note for all accounts on this pc)
+            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call ExecuteNonQuerySQL(SQL)
 
         Else
-            ' Update it 
-            SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & bpME & ", TE = " & bpTE & ", OWNED = 1, FAVORITE = " & TempFavorite & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " "
-            SQL = SQL & "WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID & " AND BP_TYPE = " & BPType
+
+            ' Set the flags
+            If Not Favorite Then
+                TempFavorite = "0"
+            Else
+                TempFavorite = "1"
+            End If
+
+            If Not Ignore Then
+                TempIgnore = "0"
+            Else
+                TempIgnore = "1"
+            End If
+
+            ' Set the owned flag, only mark this BP as owned if it's not the unowned type
+            If UpdatedBPType = BPType.NotOwned Then
+                TempOwned = "0" ' User updated, not owned
+            Else
+                TempOwned = "-1" ' User updated, user owned (not API)
+            End If
+
+            ' See if the BP is in the DB
+            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerBP = DBCommand.ExecuteReader
+
+            If Not readerBP.HasRows Then
+                ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
+                SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
+                SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
+                SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+                Call ExecuteNonQuerySQL(SQL)
+
+            Else
+                ' Update it 
+                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
+                SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
+                SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
+                Call ExecuteNonQuerySQL(SQL)
+            End If
+
+            ' Update the bp ignore flag (note for all accounts on this pc)
+            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call ExecuteNonQuerySQL(SQL)
+
         End If
 
         readerBP.Close()
         readerBP = Nothing
         DBCommand = Nothing
 
-    End Sub
+        Return UpdatedBPType
+
+    End Function
 
     ' Downloads the sent file from server and saves it to the root directory as the sent file name
     Public Function DownloadFileFromServer(ByVal DownloadURL As String, ByVal FileName As String) As String
@@ -1786,6 +1845,33 @@ InvalidDate:
         writeStream.Close()
 
         Return FileName
+
+    End Function
+
+    ' Looks up the relic based on the decryptor used and the runs sent on the bp the relic created
+    Public Function GetRelicfromInputs(ByVal DecryptorUsed As Decryptor, BPID As Long, BPRuns As Integer) As String
+
+        Dim BaseRuns As Integer = BPRuns - DecryptorUsed.RunMod ' Adjust runs for look up
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+        Dim ReturnString As String
+
+        SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
+        SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
+
+        DBCommand = New SQLiteCommand(SQL, DB)
+        readerBP = DBCommand.ExecuteReader()
+
+        If readerBP.Read Then
+            ReturnString = readerBP.GetString(0)
+        Else
+            ReturnString = ""
+        End If
+
+        readerBP.Close()
+        readerBP = Nothing
+
+        Return ReturnString
 
     End Function
 

@@ -26,8 +26,7 @@ Partial Class frmCRESTMarketViewer
         '
         'frmCRESTMarketViewer
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(743, 466)
         Me.Name = "frmCRESTMarketViewer"
         Me.Text = "frmCRESTMarketViewer"

@@ -170,7 +170,7 @@ Partial Class frmPOSSettings
         Me.cmbPOSTower.Name = "cmbPOSTower"
         Me.cmbPOSTower.Size = New System.Drawing.Size(187, 21)
         Me.cmbPOSTower.TabIndex = 133
-        Me.cmbPOSTower.Text = None
+        Me.cmbPOSTower.Text = "None"
         '
         'lblPOSTower
         '
@@ -1294,8 +1294,7 @@ Partial Class frmPOSSettings
         '
         'frmPOSSettings
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(610, 492)
         Me.Controls.Add(Me.gbPOSCosts)
         Me.Controls.Add(Me.gbPOSTowerTypes)

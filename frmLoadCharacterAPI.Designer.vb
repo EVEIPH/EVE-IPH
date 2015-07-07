@@ -48,7 +48,7 @@ Partial Class frmLoadCharacterAPI
         '
         Me.btnImportAPI.Location = New System.Drawing.Point(176, 124)
         Me.btnImportAPI.Name = "btnImportAPI"
-        Me.btnImportAPI.Size = New System.Drawing.Size(87, 21)
+        Me.btnImportAPI.Size = New System.Drawing.Size(87, 29)
         Me.btnImportAPI.TabIndex = 0
         Me.btnImportAPI.Text = "Import"
         Me.btnImportAPI.UseVisualStyleBackColor = True
@@ -58,7 +58,7 @@ Partial Class frmLoadCharacterAPI
         '
         Me.btnNext.Location = New System.Drawing.Point(176, 124)
         Me.btnNext.Name = "btnNext"
-        Me.btnNext.Size = New System.Drawing.Size(87, 21)
+        Me.btnNext.Size = New System.Drawing.Size(87, 29)
         Me.btnNext.TabIndex = 4
         Me.btnNext.Text = "Next >"
         Me.btnNext.UseVisualStyleBackColor = True
@@ -67,7 +67,7 @@ Partial Class frmLoadCharacterAPI
         '
         Me.btnCancel.Location = New System.Drawing.Point(285, 124)
         Me.btnCancel.Name = "btnCancel"
-        Me.btnCancel.Size = New System.Drawing.Size(87, 21)
+        Me.btnCancel.Size = New System.Drawing.Size(87, 29)
         Me.btnCancel.TabIndex = 5
         Me.btnCancel.Text = "Cancel"
         Me.btnCancel.UseVisualStyleBackColor = True
@@ -187,7 +187,7 @@ Partial Class frmLoadCharacterAPI
         Me.btnPrevious.Enabled = False
         Me.btnPrevious.Location = New System.Drawing.Point(67, 124)
         Me.btnPrevious.Name = "btnPrevious"
-        Me.btnPrevious.Size = New System.Drawing.Size(87, 21)
+        Me.btnPrevious.Size = New System.Drawing.Size(87, 29)
         Me.btnPrevious.TabIndex = 6
         Me.btnPrevious.Text = "< Previous"
         Me.btnPrevious.UseVisualStyleBackColor = True
@@ -213,8 +213,7 @@ Partial Class frmLoadCharacterAPI
         '
         'frmLoadCharacterAPI
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(538, 192)
         Me.ControlBox = False

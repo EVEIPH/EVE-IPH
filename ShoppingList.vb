@@ -7,77 +7,25 @@ Public Class ShoppingList
     Private TotalBuyList As Materials ' Buy mats
     Private TotalBuildList As BuiltItemList ' Build mats (components)
     Private TotalInventionMats As Materials ' All Invention/RE materials used
-
-    ' Array of all the items sent with their base build & sell prices and time to build
-    Private ItemProfitIPHList As List(Of ItemProfitIPH)
+    Private TotalCopyMats As Materials ' All the copy materials needed to make copies to invent
 
     ' Use onhandlist of materials so we can keep track of user entries (of calculations they make based on mats on hand) 
     Public OnHandMatList As New Materials
     Public OnHandComponentList As New Materials
 
-    Private AdditionalCosts As Double
-
     ' Price data
-    Private MaterialsBrokerFee As Double
-    Private ItemsTax As Double
-    Private ItemsBrokerFee As Double
-    Private TotalUsage As Double
-    Private TotalCost As Double
-    Private TotalItemsCost As Double
+    Private AdditionalCosts As Double ' For any additional costs added on the shopping list form
+    Private MaterialsBrokerFee As Double ' For the total broker fee for buying the materials in the list
+    Private TotalListUsage As Double ' Total of all usage values for the items in the list
+    Private TotalTaxes As Double ' Total taxes for all market items in the list
+    Private TotalBrokerFees As Double ' Total fees for all market items in the list
+    Private TotalListMarketPrice As Double ' Total market price of everything in the list
+    Private TotalListMaterialCost As Double ' Total material costs of everything in the list
+    Private TotalListCost As Double ' Total cost of everything in the list mats (with invention/copy costs) + usage + taxes + fees
+    Private TotalListBuildTime As Double ' Total time to build the items in the list in seconds
 
     Protected ItemToFind As ShoppingListItem
     Protected ProfitItemtoFind As String
-
-    Private Class ItemProfitIPH
-
-        Implements ICloneable
-
-        ' Use Time to build and Total Sale Price with Total Cost to find IPH and Profit later
-        Public TotalTimetoBuild As Double ' In seconds
-        Public TotalItemsSellPrice As Double ' Total of expected sell market price for the items
-
-        ' Item info
-        Public SavedItemName As String
-        Public SavedItemQuantity As Long
-        Public SavedTechLevel As Integer
-
-        ' Other Costs
-        Public Usage As Double
-        Public InventionUsage As Double
-        Public InventionRunsCost As Double ' Cost to invent/RE the quantity given
-
-        Public ItemtoFind As String
-
-        Public Sub New()
-            TotalTimetoBuild = 0
-            TotalItemsSellPrice = 0
-            SavedItemName = ""
-            SavedItemQuantity = 0
-            SavedTechLevel = 0
-            Usage = 0
-            InventionUsage = 0
-            InventionRunsCost = 0
-        End Sub
-
-        Public Function Clone() As Object Implements System.ICloneable.Clone
-            Dim CopyOfMe = New ItemProfitIPH
-
-            With Me
-                CopyOfMe.TotalTimetoBuild = Me.TotalTimetoBuild
-                CopyOfMe.TotalItemsSellPrice = Me.TotalItemsSellPrice
-                CopyOfMe.SavedItemName = Me.SavedItemName
-                CopyOfMe.SavedItemQuantity = Me.SavedItemQuantity
-                CopyOfMe.SavedTechLevel = Me.SavedTechLevel
-                CopyOfMe.Usage = Me.Usage
-                CopyOfMe.InventionUsage = Me.InventionUsage
-                CopyOfMe.InventionRunsCost = Me.InventionRunsCost
-            End With
-
-            Return CopyOfMe
-
-        End Function
-
-    End Class
 
     Public Sub New()
 
@@ -93,19 +41,18 @@ Public Class ShoppingList
         TotalBuyList = New Materials
 
         TotalInventionMats = New Materials
+        TotalCopyMats = New Materials
 
         AdditionalCosts = 0
-        ItemsTax = 0
-        ItemsBrokerFee = 0
         MaterialsBrokerFee = 0
-        TotalUsage = 0
-
-        TotalCost = 0
-        TotalItemsCost = 0
+        TotalListUsage = 0
+        TotalTaxes = 0
+        TotalBrokerFees = 0
+        TotalListMarketPrice = 0
+        TotalListMaterialCost = 0
+        TotalListCost = 0
 
         ItemToFind = Nothing
-
-        ItemProfitIPHList = New List(Of ItemProfitIPH)
 
         ' Reset onhand mats lists
         OnHandMatList = New Materials
@@ -145,7 +92,7 @@ Public Class ShoppingList
                             ' Find the built item in the build list for this item - only need name and ME to look up
                             TempBuiltItem.ItemTypeID = .GetMaterialList(i).GetMaterialTypeID
                             TempBuiltItem.ItemName = .GetMaterialList(i).GetMaterialName
-                            TempBuiltItem.BuildME = CLng(.GetMaterialList(i).GetItemME)
+                            TempBuiltItem.BuildME = CInt(.GetMaterialList(i).GetItemME)
 
                             Call TotalBuildList.SetItemToFind(TempBuiltItem)
                             FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
@@ -219,36 +166,44 @@ Public Class ShoppingList
                 End If
             End If
 
-            ' Remove the item if zero or update
-            If UpdateItemQuantity = 0 Then
-                ' Find the item and remove it from the list
-                Dim ProfitItem As New ItemProfitIPH
-                ProfitItemtoFind = SentItem.Name
-                ProfitItem = ItemProfitIPHList.Find(AddressOf FindItemProfitRecord)
-                If ProfitItem IsNot Nothing Then
-                    ItemProfitIPHList.Remove(ProfitItem)
-                End If
-            Else
-                ' Update the build times and total sell prices for this item
-                For i = 0 To ItemProfitIPHList.Count - 1
-                    With ItemProfitIPHList(i)
-                        If .SavedItemName = FoundItem.Name Then
-                            ' Normalize the price and time, then multiply by the new update quantity
-                            Dim Denominator As Double = .SavedItemQuantity
-                            .TotalItemsSellPrice = .TotalItemsSellPrice / Denominator * UpdateItemQuantity
-                            .TotalTimetoBuild = .TotalTimetoBuild / Denominator * UpdateItemQuantity
-                            .Usage = .Usage / Denominator * UpdateItemQuantity
-                            .SavedItemQuantity = UpdateItemQuantity
-                        End If
+            ' Update buy list with copy materials
+            If Not IsNothing(FoundItem.CopyMaterials) Then
+                If Not IsNothing(FoundItem.CopyMaterials.GetMaterialList) Then
+                    With FoundItem.CopyMaterials ' Update all base materials for this item first
+                        For i = 0 To .GetMaterialList.Count - 1
+                            ' Make sure the material exists (might have been deleted already in the main list) before updating
+                            If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
+                                UpdatedQuantity = GetUpdatedQuantity("Buy", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
+
+                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
+                                ' Update this material in the item's invention list for copy/paste function
+                                If UpdatedQuantity <= 0 Then
+                                    Call TotalCopyMats.RemoveMaterial(.GetMaterialList(i))
+                                Else
+                                    ' Need to copy, remove, update, then add to update the volumes and prices of the material lists
+                                    Dim TempMat As Material
+                                    TempMat = CType(TotalCopyMats.SearchListbyName(.GetMaterialList(i).GetMaterialName).Clone, Material)
+                                    TempMat.SetQuantity(UpdatedQuantity)
+                                    Call TotalCopyMats.RemoveMaterial(.GetMaterialList(i))
+                                    Call TotalCopyMats.InsertMaterial(TempMat)
+                                End If
+                            End If
+                        Next
                     End With
-                Next
+                End If
             End If
 
             ' Need to increment or decrement the new item quantity and volume, the rest of the mats and components will be updated above
             If UpdateItemQuantity = 0 Then
                 Call TotalItemList.Remove(FoundItem)
             Else
+                ' This is simplistic but the easiest way to get an approximate value for a change in the shopping list - won't be exact!
                 FoundItem.BuildVolume = FoundItem.BuildVolume / FoundItem.Quantity * UpdateItemQuantity
+                FoundItem.TotalMaterialCost = FoundItem.TotalMaterialCost / FoundItem.Quantity * UpdateItemQuantity
+                FoundItem.TotalUsage = FoundItem.TotalUsage / FoundItem.Quantity * UpdateItemQuantity
+                FoundItem.TotalItemMarketCost = FoundItem.TotalItemMarketCost / FoundItem.Quantity * UpdateItemQuantity
+                FoundItem.TotalBuildTime = FoundItem.TotalBuildTime / FoundItem.Quantity * UpdateItemQuantity
+                ' Finally update the quantity
                 FoundItem.Quantity = UpdateItemQuantity
             End If
         End If
@@ -464,7 +419,6 @@ Public Class ShoppingList
         Dim TempMats As New Materials
         Dim TempItems As New BuiltItemList
         Dim SearchBuiltItems As New BuiltItemList
-        Dim TempProfitIPH As New ItemProfitIPH
 
         ' Look for the item
         ItemToFind = SentItem
@@ -479,6 +433,10 @@ Public Class ShoppingList
                 ' Increment items
                 .Quantity = .Quantity + SentItem.Quantity
                 .BuildVolume = .BuildVolume + SentItem.BuildVolume
+                .TotalUsage = .TotalUsage + SentItem.TotalUsage
+                .TotalMaterialCost = .TotalMaterialCost + SentItem.TotalMaterialCost
+                .TotalItemMarketCost = .TotalItemMarketCost + SentItem.TotalItemMarketCost
+                .TotalBuildTime = .TotalBuildTime + SentItem.TotalBuildTime
 
                 ' Increment BP Mat List
                 If Not IsNothing(SentItem.BPMaterialList) Then
@@ -519,22 +477,15 @@ Public Class ShoppingList
             End If
         End If
 
-        ' Invention/RE Materials
+        ' Invention Materials
         If Not IsNothing(SentItem.InventionMaterials) Then
             TotalInventionMats.InsertMaterialList(SentItem.InventionMaterials.GetMaterialList)
         End If
 
-        ' Add this item to the saved list of with all the base price data
-        TempProfitIPH.TotalTimetoBuild = SentItem.TotalBuildTime
-        TempProfitIPH.TotalItemsSellPrice = SentItem.TotalMarketCost
-        TempProfitIPH.SavedItemName = SentItem.Name
-        TempProfitIPH.SavedItemQuantity = SentItem.Quantity
-        TempProfitIPH.SavedTechLevel = SentItem.TechLevel
-        TempProfitIPH.Usage = SentItem.ItemUsage
-        TempProfitIPH.InventionRunsCost = SentItem.InventionCost
-        TempProfitIPH.InventionUsage = SentItem.InventionUsage
-
-        Call ItemProfitIPHList.Add(TempProfitIPH)
+        ' Copy Materials
+        If Not IsNothing(SentItem.CopyMaterials) Then
+            TotalCopyMats.InsertMaterialList(SentItem.CopyMaterials.GetMaterialList)
+        End If
 
         ItemToFind = Nothing
 
@@ -544,7 +495,8 @@ Public Class ShoppingList
     Public Sub UpdateListPrices()
         Dim TempBuyList As New Materials ' Buy mats
         Dim TempBuildList As New BuiltItemList ' Build mats (components)
-        Dim TempInventionMats As New Materials ' All Invention/RE materials used
+        Dim TempInventionMats As New Materials ' All Invention materials used
+        Dim TempCopyMats As New Materials ' All the copy materials used
         Dim TempBPMatList As New Materials ' For the Total Item List
 
         Dim TransferMaterial As Material
@@ -583,7 +535,7 @@ Public Class ShoppingList
         ' Reset List
         TotalBuyList = TempBuyList
 
-        ' Invention/RE List
+        ' Invention List
         If Not IsNothing(TotalInventionMats.GetMaterialList) Then
             For i = 0 To TotalInventionMats.GetMaterialList.Count - 1
                 With TotalInventionMats.GetMaterialList(i)
@@ -598,6 +550,22 @@ Public Class ShoppingList
 
         ' Reset List
         TotalInventionMats = TempInventionMats
+
+        ' Copy List
+        If Not IsNothing(TotalCopyMats.GetMaterialList) Then
+            For i = 0 To TotalCopyMats.GetMaterialList.Count - 1
+                With TotalCopyMats.GetMaterialList(i)
+                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetBuildItem, .GetItemType)
+                End With
+
+                ' Add the material with new price to list
+                Call TempCopyMats.InsertMaterial(TransferMaterial)
+
+            Next
+        End If
+
+        ' Reset List
+        TotalCopyMats = TempCopyMats
 
         ' Build Item List
         If TotalBuildList.GetBuiltItemList.Count <> 0 Then
@@ -660,17 +628,6 @@ Public Class ShoppingList
             ' Update the total though as if the materials were in the full list for price purposes
             FullBuyList.AddTotalValue(InventionMatList.GetTotalMaterialsCost)
             FullBuyList.AddTotalVolume(InventionMatList.GetTotalVolume)
-        End If
-
-        ' Add the RE mats to buy
-        REMatList = GetFullREList()
-        If Not IsNothing(REMatList.GetMaterialList) Then
-            IncludeREMats = True
-            ' Remove the RE materials from the buy list so we can separate them in the output
-            Call FullBuyList.RemoveMaterialList(REMatList.GetMaterialList)
-            ' Update the total though as if the materials were in the full list for price purposes
-            FullBuyList.AddTotalValue(REMatList.GetTotalMaterialsCost)
-            FullBuyList.AddTotalVolume(REMatList.GetTotalVolume)
         End If
 
         ' Sort the Item List by order sent (this is based on how they sorted in the grid)
@@ -865,28 +822,29 @@ Public Class ShoppingList
 
     ' Returns the list of Invention items and quantity
     Public Function GetFullInventionList() As Materials
-        Dim TotalInventionMats As New Materials
+        Dim TempInventionMats As New Materials
 
         For i = 0 To TotalItemList.Count - 1
-            If TotalItemList(i).TechLevel = 2 And Not IsNothing(TotalItemList(i).InventionMaterials) Then
-                TotalInventionMats.InsertMaterialList(TotalItemList(i).InventionMaterials.GetMaterialList)
+            If TotalItemList(i).TechLevel <> 1 And Not IsNothing(TotalItemList(i).InventionMaterials) Then
+                TempInventionMats.InsertMaterialList(TotalItemList(i).InventionMaterials.GetMaterialList)
             End If
         Next
 
-        Return TotalInventionMats
+        Return TempInventionMats
 
     End Function
 
-    ' Returns the list of RE items and quantity
-    Public Function GetFullREList() As Materials
-        Dim TotalREMats As New Materials
+    ' Returns the list of Invention items and quantity
+    Public Function GetFullCopyList() As Materials
+        Dim TempCopyMats As New Materials
 
         For i = 0 To TotalItemList.Count - 1
-            If TotalItemList(i).TechLevel = 3 And Not IsNothing(TotalItemList(i).InventionMaterials) Then
-                TotalREMats.InsertMaterialList(TotalItemList(i).InventionMaterials.GetMaterialList)
+            If TotalItemList(i).TechLevel = 2 And Not IsNothing(TotalItemList(i).CopyMaterials) Then
+                TempCopyMats.InsertMaterialList(TotalItemList(i).CopyMaterials.GetMaterialList)
             End If
         Next
-        Return TotalREMats
+
+        Return TempCopyMats
 
     End Function
 
@@ -918,39 +876,48 @@ Public Class ShoppingList
     End Sub
 
     ' Sets all the price data for the shopping list after updates
-    Public Sub SetPriceData(IncludeMaterialBrokerFees As Boolean, IncludeItemsTaxes As Boolean, IncludeItemsBrokerFees As Boolean, IncludeUsage As Boolean, ItemBuyTypeList As List(Of ItemBuyType))
+    Public Sub SetPriceData(IncludeMaterialBrokerFees As Boolean, IncludeItemsTaxes As Boolean, IncludeItemsBrokerFees As Boolean, _
+                            IncludeUsage As Boolean, ItemBuyTypeList As List(Of ItemBuyType))
+
+        ' First, Total up all the material costs, build time and market prices from the items we have and then add to total costs
+        TotalListMaterialCost = 0 ' Reset
+        TotalListBuildTime = 0
+        TotalListMarketPrice = 0
+        For i = 0 To TotalShoppingList.TotalItemList.Count - 1
+            TotalListMaterialCost += TotalShoppingList.TotalItemList(i).TotalMaterialCost
+            TotalListBuildTime += TotalShoppingList.TotalItemList(i).TotalBuildTime
+            TotalListMarketPrice += TotalShoppingList.TotalItemList(i).TotalItemMarketCost
+        Next
 
         ' The only fee that applies when shopping is either a buy order or directly buying - Broker fees are all that apply during a buy order
+        MaterialsBrokerFee = 0 ' Reset
         If IncludeMaterialBrokerFees Then
             MaterialsBrokerFee = CalculateBrokersFees(ItemBuyTypeList)
-        Else
-            MaterialsBrokerFee = 0
         End If
 
-        ' Usage for all the jobs
+        ' Total usage
+        TotalListUsage = 0 ' Reset
         If IncludeUsage Then
-            TotalUsage = GetTotalItemsUsageCosts()
-        Else
-            TotalUsage = 0
+            ' Read through all the items in the list and sum up each usage value
+            For i = 0 To TotalShoppingList.TotalItemList.Count - 1
+                TotalListUsage += TotalShoppingList.TotalItemList(i).TotalUsage
+            Next
         End If
 
-        ' Now apply taxes or broker fees for the items
-        TotalItemsCost = GetTotalItemsSellPrice()
-
+        ' Taxes
+        TotalTaxes = 0 ' Reset
         If IncludeItemsTaxes Then
-            ItemsTax = GetTaxes(TotalItemsCost)
-        Else
-            ItemsTax = 0
+            TotalTaxes += GetSalesTax(TotalListMarketPrice)
         End If
 
+        ' Broker Fees
+        TotalBrokerFees = 0 ' Reset
         If IncludeItemsBrokerFees Then
-            ItemsBrokerFee = GetBrokerFee(TotalItemsCost)
-        Else
-            ItemsBrokerFee = 0
+            TotalBrokerFees += GetSalesBrokerFee(TotalListMarketPrice)
         End If
 
-        ' Set the total cost of materials plus any invention or RE
-        TotalCost = TotalBuyList.GetTotalMaterialsCost + GetTotalInventionCost() + GetTotalRECost() + AdditionalCosts + MaterialsBrokerFee + TotalUsage + ItemsTax + ItemsBrokerFee
+        ' Set the total cost of materials plus usage (invention and copy mats are included in the list or not)
+        TotalListCost = TotalListMaterialCost + MaterialsBrokerFee + TotalListUsage + TotalTaxes + TotalBrokerFees + AdditionalCosts
 
     End Sub
 
@@ -965,7 +932,7 @@ Public Class ShoppingList
                     If TotalBuyList.GetMaterialList(i).GetMaterialName = ItemList(j).ItemName Then
                         If ItemList(j).BuyType = "Buy Order" Then
                             ' Apply broker fee
-                            TotalBrokersFee += GetBrokerFee(TotalBuyList.GetMaterialList(i).GetTotalCost)
+                            TotalBrokersFee += GetSalesBrokerFee(TotalBuyList.GetMaterialList(i).GetTotalCost)
                         End If
                     End If
                 Next
@@ -978,34 +945,22 @@ Public Class ShoppingList
 
     ' Returns the total profit of the items made with raw mats in the list
     Public Function GetTotalProfit() As Double
-        Return TotalItemsCost - TotalCost
+        Return TotalListMarketPrice - TotalListCost
     End Function
 
-    ' Returns the average IPH for the items in this list
+    ' Returns the total IPH (approx) for the items in the list
     Public Function GetTotalIPH() As Double
-        Dim TotalSeconds As Double
-
-        For i = 0 To ItemProfitIPHList.Count - 1
-            TotalSeconds = TotalSeconds + ItemProfitIPHList(i).TotalTimetoBuild
-        Next
-
-        ' Don't divide by zero
-        If TotalSeconds > 0 Then
-            Return GetTotalProfit() / TotalSeconds * 3600 ' Build everything
-        Else
-            Return 0
-        End If
-
+        Return GetTotalProfit() / TotalListBuildTime * 3600 ' Isk per second then multiply it by seconds per hour for IPH
     End Function
 
     ' Returns the total tax for the items in the list
     Public Function GetItemsTax() As Double
-        Return ItemsTax
+        Return TotalTaxes
     End Function
 
     ' Returns the total broker fees for the items in the lsit
     Public Function GetItemsBrokersFee() As Double
-        Return ItemsBrokerFee
+        Return TotalBrokerFees
     End Function
 
     ' Returns the total fees to set up sell orders for the total value of buy materials
@@ -1013,9 +968,9 @@ Public Class ShoppingList
         Return MaterialsBrokerFee
     End Function
 
-    ' Returns the total cost of the materials to buy plus any additional costs
+    ' Returns the total cost of the list
     Public Function GetTotalCost() As Double
-        Return TotalBuyList.GetTotalMaterialsCost + AdditionalCosts
+        Return TotalListCost
     End Function
 
     ' Returns the total volume of the buy items
@@ -1037,100 +992,12 @@ Public Class ShoppingList
 
     ' Returns the total usage of the shopping list items
     Public Function GetTotalUsage() As Double
-        Return TotalUsage
-    End Function
-
-    ' Returns the total market price for all stuff added
-    Private Function GetTotalItemsSellPrice() As Double
-        Dim Total As Double
-
-        For i = 0 To ItemProfitIPHList.Count - 1
-            Total = Total + ItemProfitIPHList(i).TotalItemsSellPrice
-        Next
-
-        Return Total
-
-    End Function
-
-    ' Returns the total cost of Invention for the shopping list
-    Private Function GetTotalInventionCost() As Double
-        Dim MaterialCosts As Double = 0
-        Dim UsageCosts As Double = 0
-        Dim TotalCost As Double = 0
-
-        ' Total up the material costs
-        For i = 0 To TotalItemList.Count - 1
-            If Not IsNothing(TotalItemList(i).InventionMaterials) And TotalItemList(i).TechLevel = 2 Then
-                MaterialCosts += TotalItemList(i).InventionMaterials.GetTotalMaterialsCost
-                ' Find out how many invention runs we are going to do
-                TotalCost += (TotalItemList(i).InventionJobs * TotalItemList(i).InventionUsage)
-            End If
-        Next
-
-        ' If no mats sent then use the invention costs sent, which includes all costs for runs
-        If MaterialCosts = 0 Then
-            For i = 0 To ItemProfitIPHList.Count - 1
-                If ItemProfitIPHList(i).SavedTechLevel = 2 Then
-                    TotalCost += ItemProfitIPHList(i).InventionRunsCost
-                End If
-            Next
-        End If
-
-        Return TotalCost
-
-    End Function
-
-    ' Returns the total cost of RE for the shopping list
-    Private Function GetTotalRECost() As Double
-        Dim MaterialCosts As Double = 0
-        Dim UsageCosts As Double = 0
-        Dim TotalCost As Double = 0
-
-        ' Total up the material costs
-        For i = 0 To TotalItemList.Count - 1
-            If Not IsNothing(TotalItemList(i).InventionMaterials) And TotalItemList(i).TechLevel = 3 Then
-                MaterialCosts += TotalItemList(i).InventionMaterials.GetTotalMaterialsCost
-                ' Find out how many invention runs we are going to do
-                TotalCost += (TotalItemList(i).InventionJobs * TotalItemList(i).InventionUsage)
-            End If
-        Next
-
-        ' If no mats sent then use the invention costs sent, which includes all costs for runs
-        If MaterialCosts = 0 Then
-            For i = 0 To ItemProfitIPHList.Count - 1
-                If ItemProfitIPHList(i).SavedTechLevel = 3 Then
-                    TotalCost += ItemProfitIPHList(i).InventionRunsCost
-                End If
-            Next
-        End If
-
-        Return TotalCost
-    End Function
-
-    ' Returns the total usage fees for all stuff added
-    Private Function GetTotalItemsUsageCosts() As Double
-        Dim Total As Double
-
-        For i = 0 To ItemProfitIPHList.Count - 1
-            Total = Total + ItemProfitIPHList(i).Usage
-        Next
-
-        Return Total
-
+        Return TotalListUsage
     End Function
 
     ' Predicate for finding the item in full list
     Public Function FindItem(ByVal Item As ShoppingListItem) As Boolean
         If ShopListItemsEqual(Item, ItemToFind) Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
-    ' Predicate for finding an item in the profit list
-    Private Function FindItemProfitRecord(ByVal Item As ItemProfitIPH) As Boolean
-        If Item.SavedItemName = ProfitItemtoFind Then
             Return True
         Else
             Return False
@@ -1196,37 +1063,18 @@ Public Class ShoppingList
     Public Function Clone() As Object Implements ICloneable.Clone
         Dim CopyOfMe = New ShoppingList
         Dim BuyList As New Materials
-        Dim NewItemProfitItemList As New List(Of ItemProfitIPH)
-        Dim NewItemProfitItem As New ItemProfitIPH
 
         With Me
             CopyOfMe.TotalItemList = .TotalItemList
             CopyOfMe.TotalBuyList = CType(.TotalBuyList.Clone, Materials)
             CopyOfMe.TotalBuildList = CType(.TotalBuildList.Clone, BuiltItemList)
             CopyOfMe.TotalInventionMats = CType(.TotalInventionMats, Materials)
-
-            'For i = 0 To .ItemProfitIPHList.Count - 1
-            '    Call NewItemProfitItemList.Add(CType(.ItemProfitIPHList(i).Clone, ItemProfitIPH))
-            'Next
-            'CopyOfMe.ItemProfitIPHList = NewItemProfitItemList
-
-            CopyOfMe.ItemProfitIPHList = .ItemProfitIPHList
-
+            CopyOfMe.TotalCopyMats = CType(.TotalCopyMats, Materials)
             CopyOfMe.OnHandMatList = CType(.OnHandMatList.Clone, Materials)
             CopyOfMe.OnHandComponentList = CType(.OnHandComponentList.Clone, Materials)
             CopyOfMe.AdditionalCosts = .AdditionalCosts
             CopyOfMe.MaterialsBrokerFee = .MaterialsBrokerFee
-            CopyOfMe.ItemsBrokerFee = .ItemsBrokerFee
-            CopyOfMe.ItemsTax = .ItemsTax
-            CopyOfMe.TotalUsage = .TotalUsage
-            CopyOfMe.TotalCost = .TotalCost
-            CopyOfMe.TotalItemsCost = .TotalItemsCost
         End With
-
-
-        ' Master Lists of materials to display. These are single lists that are updated when deleting quantity or full items
-        'Private TotalItemList As List(Of ShoppingListItem) ' This is the total list of items
-        'Private ItemProfitIPHList As List(Of ItemProfitIPH)
 
         Return CopyOfMe
 
@@ -1252,21 +1100,12 @@ Public Class ShoppingListItem
     Public Relic As String ' Relic used for T3
 
     Public InventionMaterials As New Materials ' The List of Invention materials needed to build the T2 item
+    Public CopyMaterials As New Materials ' List of materials used to make the copies to invent
     Public AvgInvRunsforSuccess As Double ' How many Invention/RE runs we need for success - used to calculate correct changes in list for mats
     Public InventionJobs As Long ' How many jobs did we do
     Public InventedRuns As Long ' How many Invented or RE'd runs are produced
-    Public InventionCost As Double ' Cost of materials to Invent or RE the the quantity of items sent
-    Public InventionUsage As Double ' Cost of installing and using the industry line for a single RE or Invention job
 
     Public BPMaterialList As New Materials ' This is the list of items on the Blueprint so we have a record of what they are building - it is not updated
-
-    Public TotalMarketCost As Double ' Total Market price of items in once built
-    Public TotalBuildTime As Double ' Total build time of items listed in seconds
-    Public ItemTaxes As Double ' Taxes for the materials added to the list
-    Public ItemBrokerFees As Double ' Broker fees for orders set up on this item
-    Public ItemUsage As Double ' How much usage to build the item
-    Public ItemMarketCost As Double
-    Public ItemBuildTime As Double
 
     ' For ME values to update with add/subtract in shopping list, item is either cap component, component, or anything else we are building
     Public FacilityMEModifier As Double
@@ -1276,6 +1115,12 @@ Public Class ShoppingListItem
     Public IgnoredInvention As Boolean
     Public IgnoredMinerals As Boolean
     Public IgnoredT1BaseItem As Boolean
+
+    ' Saved price variables for this item - can be updated when quantity updated
+    Public TotalMaterialCost As Double ' This is the cost of all the materials to build the item (does not include usage, item taxes or item fees) and invention and copy costs
+    Public TotalUsage As Double ' Includes Manufacturing, Components, Invention, and Copying usage
+    Public TotalItemMarketCost As Double ' This is the market cost of the items in the list
+    Public TotalBuildTime As Double ' Total time to build the items for the given type of building
 
     Public Sub New()
 
@@ -1290,21 +1135,13 @@ Public Class ShoppingListItem
         Decryptor = ""
         Relic = ""
 
-        InventionMaterials = Nothing
+        InventionMaterials = New Materials
+        CopyMaterials = New Materials
         AvgInvRunsforSuccess = 0
         InventedRuns = 0
-        InventionCost = 0
-        InventionUsage = 0
         InventionJobs = 0
 
         BPMaterialList = Nothing
-
-        TotalMarketCost = 0
-        TotalBuildTime = 0
-        ItemTaxes = 0
-        ItemUsage = 0
-        ItemMarketCost = 0
-        ItemBuildTime = 0
 
         FacilityMEModifier = 1
         BuiltInPOS = False
@@ -1473,8 +1310,8 @@ Public Class BuiltItem
     Public ItemName As String
     Public ItemQuantity As Long
     Public ItemVolume As Double
-    Public BuildME As Double
-    Public BuildTE As Double
+    Public BuildME As Integer
+    Public BuildTE As Integer
     Public BuildMaterials As Materials
     ' These two fields are for shopping list update functions
     Public FacilityMEModifier As Double

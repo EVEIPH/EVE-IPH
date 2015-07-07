@@ -378,7 +378,7 @@ Public Class frmShoppingList
                             SellPrice = MinSellUnitPrice * RawItems.GetMaterialList(i).GetQuantity
                             ' Now look at max buy
                             TotalPrice = MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity
-                            BuyOrderPrice = TotalPrice + GetBrokerFee(TotalPrice)
+                            BuyOrderPrice = TotalPrice + GetSalesBrokerFee(TotalPrice)
 
                             If BuyOrderPrice < SellPrice Then
                                 ' They should do an order
@@ -570,7 +570,7 @@ Public Class frmShoppingList
                 Case 2
                     ProcessList = CType(TotalShoppingList.GetFullInventionList.Clone, Materials)
                 Case 3
-                    ProcessList = CType(TotalShoppingList.GetFullREList.Clone, Materials)
+                    ProcessList = CType(TotalShoppingList.GetFullCopyList.Clone, Materials)
             End Select
 
             If Not IsNothing(ProcessList) Then
@@ -1241,7 +1241,7 @@ Public Class frmShoppingList
                         readerBP.Read()
 
                         ' Get the decryptor
-                        Dim TempDecryptor As Decryptor
+                        Dim TempDecryptor As New Decryptor
                         Dim BuildBuy As Boolean
                         Dim FacilityType As String
                         Dim InventionDecryptors As New DecryptorList()
@@ -1577,7 +1577,7 @@ Public Class frmShoppingList
         Call frmMain.LoadBPfromDoubleClick(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
                                            chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
-                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "1") ' Any buildable component here is one 1 bp
+                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "0", "1") ' Any buildable component here is one 1 bp
     End Sub
 
     Private Sub lstItems_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstItems.ColumnClick
@@ -1629,7 +1629,7 @@ Public Class frmShoppingList
         Call frmMain.LoadBPfromDoubleClick(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
                                            chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
-                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, _
+                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, "0", _
                                            lstItems.SelectedItems(0).SubItems(4).Text)
     End Sub
 
@@ -1811,7 +1811,7 @@ Public Class frmShoppingList
                 TempBuiltItem.ItemTypeID = CLng(lstBuild.SelectedItems(i).SubItems(0).Text)
                 TempBuiltItem.ItemName = lstBuild.SelectedItems(i).SubItems(1).Text
                 TempBuiltItem.ItemQuantity = CLng(lstBuild.SelectedItems(i).SubItems(2).Text)
-                TempBuiltItem.BuildME = CLng(lstBuild.SelectedItems(i).SubItems(3).Text)
+                TempBuiltItem.BuildME = CInt(lstBuild.SelectedItems(i).SubItems(3).Text)
 
                 ' Remove it from shopping list, sending the grid quantity
                 TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltItem, 0)
@@ -2074,7 +2074,7 @@ Public Class frmShoppingList
                     TempBuiltItem.ItemTypeID = CLng(CurrentRow.SubItems(0).Text)
                     TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
                     TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
-                    TempBuiltItem.BuildME = CLng(CurrentRow.SubItems(3).Text)
+                    TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
 
                     ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue

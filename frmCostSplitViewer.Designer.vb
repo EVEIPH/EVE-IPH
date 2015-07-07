@@ -112,8 +112,7 @@ Partial Class frmCostSplitViewer
         '
         'frmCostSplitViewer
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(323, 328)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.lstCosts)

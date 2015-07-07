@@ -911,10 +911,11 @@ Public Class EVEAPI
                     TempBlueprint.materialEfficiency = CInt(.GetNamedItem("materialEfficiency").Value)
                     TempBlueprint.runs = CInt(.GetNamedItem("runs").Value)
                     ' We determine the type of bp from quantity
-                    If TempBlueprint.quantity = -1 Or TempBlueprint.quantity > 0 Then
-                        ' BPO
+                    If TempBlueprint.quantity = BPType.Original Or TempBlueprint.quantity > 0 Then
+                        ' BPO or stack of BPOs
                         TempBlueprint.BPType = BPType.Original
-                    ElseIf TempBlueprint.quantity = -2 Then
+                    ElseIf TempBlueprint.quantity = BPType.Copy Then
+                        ' BPC
                         TempBlueprint.BPType = BPType.Copy
                     Else
                         ' Not sure what this is

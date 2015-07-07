@@ -31,7 +31,6 @@ Partial Class frmSettings
         Me.chkDisableSound = New System.Windows.Forms.CheckBox()
         Me.chkDisableSVR = New System.Windows.Forms.CheckBox()
         Me.chkShowToolTips = New System.Windows.Forms.CheckBox()
-        Me.chkIgnoreRareandSkinBPs = New System.Windows.Forms.CheckBox()
         Me.chkRefreshBPsonStartup = New System.Windows.Forms.CheckBox()
         Me.chkRefreshAssetsonStartup = New System.Windows.Forms.CheckBox()
         Me.chkBeanCounterManufacturing = New System.Windows.Forms.CheckBox()
@@ -64,8 +63,8 @@ Partial Class frmSettings
         Me.lblDefaultRefiningEfficiency = New System.Windows.Forms.Label()
         Me.cmbRefiningEfficiency = New System.Windows.Forms.ComboBox()
         Me.gbShoppingList = New System.Windows.Forms.GroupBox()
-        Me.chkIncludeShopListT3InventionMats = New System.Windows.Forms.CheckBox()
         Me.chkIncludeShopListInventMats = New System.Windows.Forms.CheckBox()
+        Me.chkIncludeShopListCopyMats = New System.Windows.Forms.CheckBox()
         Me.gbEVECentral = New System.Windows.Forms.GroupBox()
         Me.txtEVECentralInterval = New System.Windows.Forms.TextBox()
         Me.chkEVECentralInterval = New System.Windows.Forms.CheckBox()
@@ -123,10 +122,9 @@ Partial Class frmSettings
         Me.gbGeneral.Controls.Add(Me.chkDisableSound)
         Me.gbGeneral.Controls.Add(Me.chkDisableSVR)
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
-        Me.gbGeneral.Controls.Add(Me.chkIgnoreRareandSkinBPs)
         Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
         Me.gbGeneral.Name = "gbGeneral"
-        Me.gbGeneral.Size = New System.Drawing.Size(237, 104)
+        Me.gbGeneral.Size = New System.Drawing.Size(237, 81)
         Me.gbGeneral.TabIndex = 4
         Me.gbGeneral.TabStop = False
         Me.gbGeneral.Text = "General:"
@@ -161,20 +159,10 @@ Partial Class frmSettings
         Me.chkShowToolTips.Text = "Show Tool Tips"
         Me.chkShowToolTips.UseVisualStyleBackColor = True
         '
-        'chkIgnoreRareandSkinBPs
-        '
-        Me.chkIgnoreRareandSkinBPs.AutoSize = True
-        Me.chkIgnoreRareandSkinBPs.Location = New System.Drawing.Point(17, 71)
-        Me.chkIgnoreRareandSkinBPs.Name = "chkIgnoreRareandSkinBPs"
-        Me.chkIgnoreRareandSkinBPs.Size = New System.Drawing.Size(173, 17)
-        Me.chkIgnoreRareandSkinBPs.TabIndex = 26
-        Me.chkIgnoreRareandSkinBPs.Text = "Ignore Rare and Ship Skin BPs"
-        Me.chkIgnoreRareandSkinBPs.UseVisualStyleBackColor = True
-        '
         'chkRefreshBPsonStartup
         '
         Me.chkRefreshBPsonStartup.AutoSize = True
-        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 54)
+        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 63)
         Me.chkRefreshBPsonStartup.Name = "chkRefreshBPsonStartup"
         Me.chkRefreshBPsonStartup.Size = New System.Drawing.Size(85, 17)
         Me.chkRefreshBPsonStartup.TabIndex = 26
@@ -184,7 +172,7 @@ Partial Class frmSettings
         'chkRefreshAssetsonStartup
         '
         Me.chkRefreshAssetsonStartup.AutoSize = True
-        Me.chkRefreshAssetsonStartup.Location = New System.Drawing.Point(17, 37)
+        Me.chkRefreshAssetsonStartup.Location = New System.Drawing.Point(17, 41)
         Me.chkRefreshAssetsonStartup.Name = "chkRefreshAssetsonStartup"
         Me.chkRefreshAssetsonStartup.Size = New System.Drawing.Size(97, 17)
         Me.chkRefreshAssetsonStartup.TabIndex = 23
@@ -474,23 +462,13 @@ Partial Class frmSettings
         'gbShoppingList
         '
         Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListInventMats)
-        Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListT3InventionMats)
+        Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListCopyMats)
         Me.gbShoppingList.Location = New System.Drawing.Point(246, 83)
         Me.gbShoppingList.Name = "gbShoppingList"
         Me.gbShoppingList.Size = New System.Drawing.Size(160, 63)
         Me.gbShoppingList.TabIndex = 37
         Me.gbShoppingList.TabStop = False
         Me.gbShoppingList.Text = "Shopping List:"
-        '
-        'chkIncludeShopListT3InventionMats
-        '
-        Me.chkIncludeShopListT3InventionMats.AutoSize = True
-        Me.chkIncludeShopListT3InventionMats.Location = New System.Drawing.Point(9, 40)
-        Me.chkIncludeShopListT3InventionMats.Name = "chkIncludeShopListT3InventionMats"
-        Me.chkIncludeShopListT3InventionMats.Size = New System.Drawing.Size(150, 17)
-        Me.chkIncludeShopListT3InventionMats.TabIndex = 1
-        Me.chkIncludeShopListT3InventionMats.Text = "Include T3 Invention Mats"
-        Me.chkIncludeShopListT3InventionMats.UseVisualStyleBackColor = True
         '
         'chkIncludeShopListInventMats
         '
@@ -501,6 +479,16 @@ Partial Class frmSettings
         Me.chkIncludeShopListInventMats.TabIndex = 0
         Me.chkIncludeShopListInventMats.Text = "Include Invention Mats"
         Me.chkIncludeShopListInventMats.UseVisualStyleBackColor = True
+        '
+        'chkIncludeShopListCopyMats
+        '
+        Me.chkIncludeShopListCopyMats.AutoSize = True
+        Me.chkIncludeShopListCopyMats.Location = New System.Drawing.Point(9, 40)
+        Me.chkIncludeShopListCopyMats.Name = "chkIncludeShopListCopyMats"
+        Me.chkIncludeShopListCopyMats.Size = New System.Drawing.Size(114, 17)
+        Me.chkIncludeShopListCopyMats.TabIndex = 1
+        Me.chkIncludeShopListCopyMats.Text = "Include Copy Mats"
+        Me.chkIncludeShopListCopyMats.UseVisualStyleBackColor = True
         '
         'gbEVECentral
         '
@@ -553,9 +541,9 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 174)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 99)
         Me.gbStartupOptions.Name = "gbStartupOptions"
-        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 130)
+        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 155)
         Me.gbStartupOptions.TabIndex = 39
         Me.gbStartupOptions.TabStop = False
         Me.gbStartupOptions.Text = "Startup Options"
@@ -563,7 +551,7 @@ Partial Class frmSettings
         'chkRefreshFacilityDataonStartup
         '
         Me.chkRefreshFacilityDataonStartup.AutoSize = True
-        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 105)
+        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 130)
         Me.chkRefreshFacilityDataonStartup.Name = "chkRefreshFacilityDataonStartup"
         Me.chkRefreshFacilityDataonStartup.Size = New System.Drawing.Size(163, 17)
         Me.chkRefreshFacilityDataonStartup.TabIndex = 29
@@ -573,7 +561,7 @@ Partial Class frmSettings
         'chkRefreshMarketDataonStartup
         '
         Me.chkRefreshMarketDataonStartup.AutoSize = True
-        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 88)
+        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 108)
         Me.chkRefreshMarketDataonStartup.Name = "chkRefreshMarketDataonStartup"
         Me.chkRefreshMarketDataonStartup.Size = New System.Drawing.Size(164, 17)
         Me.chkRefreshMarketDataonStartup.TabIndex = 28
@@ -584,7 +572,7 @@ Partial Class frmSettings
         '
         Me.chkRefreshTeamDataonStartup.AutoSize = True
         Me.chkRefreshTeamDataonStartup.Enabled = False
-        Me.chkRefreshTeamDataonStartup.Location = New System.Drawing.Point(17, 71)
+        Me.chkRefreshTeamDataonStartup.Location = New System.Drawing.Point(17, 86)
         Me.chkRefreshTeamDataonStartup.Name = "chkRefreshTeamDataonStartup"
         Me.chkRefreshTeamDataonStartup.Size = New System.Drawing.Size(158, 17)
         Me.chkRefreshTeamDataonStartup.TabIndex = 27
@@ -596,7 +584,7 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(5, 123)
+        Me.gbExportOptions.Location = New System.Drawing.Point(5, 260)
         Me.gbExportOptions.Name = "gbExportOptions"
         Me.gbExportOptions.Size = New System.Drawing.Size(237, 44)
         Me.gbExportOptions.TabIndex = 38
@@ -638,8 +626,7 @@ Partial Class frmSettings
         '
         'frmSettings
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(665, 357)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
@@ -717,7 +704,7 @@ Partial Class frmSettings
     Friend WithEvents cmbRefiningEfficiency As System.Windows.Forms.ComboBox
     Friend WithEvents chkRefineStationTax As System.Windows.Forms.CheckBox
     Friend WithEvents gbShoppingList As System.Windows.Forms.GroupBox
-    Friend WithEvents chkIncludeShopListT3InventionMats As System.Windows.Forms.CheckBox
+    Friend WithEvents chkIncludeShopListCopyMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkIncludeShopListInventMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkSuggestBuildwhenBPnotOwned As System.Windows.Forms.CheckBox
     Friend WithEvents gbEVECentral As System.Windows.Forms.GroupBox
@@ -732,7 +719,6 @@ Partial Class frmSettings
     Friend WithEvents chkRefreshTeamDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshFacilityDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshMarketDataonStartup As System.Windows.Forms.CheckBox
-    Friend WithEvents chkIgnoreRareandSkinBPs As System.Windows.Forms.CheckBox
     Friend WithEvents gbExportOptions As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnExportDefault As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportSSV As System.Windows.Forms.RadioButton

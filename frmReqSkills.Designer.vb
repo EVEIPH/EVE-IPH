@@ -45,8 +45,7 @@ Partial Class frmReqSkills
         '
         'frmReqSkills
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(278, 292)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.SkillTree)

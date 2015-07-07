@@ -55,12 +55,67 @@ Public Class IndustryFacility
         Dim rsLoader As SQLiteDataReader
         Dim Defaults As New ProgramSettings
 
+        ' First, figure out the type of facility if the type is set to None (bandaid bug fix for now - don't know why saving these pos facilities saves type as "None")
         ' Only look up factory if we have an id
-        If SearchFacilitySettings.Facility = "" Then
-            ' Set it to Jita
-            SearchFacilitySettings.Facility = DefaultBPManufacturingFacility.FacilityName
+        If SearchFacilitySettings.FacilityType = None And SearchFacilitySettings.Facility <> "" And SearchFacilitySettings.Facility <> None Then
+            ' Try to look up the facility name first and if you find it, then set the type, else send it on
+            SQL = "SELECT * FROM (SELECT DISTINCT ARRAY_NAME AS FACILITY_NAME, 'POS' AS FACILITY_TYPE FROM ASSEMBLY_ARRAYS UNION "
+            SQL = SQL & "SELECT DISTINCT FACILITY_NAME, CASE WHEN OUTPOST = 0 THEN 'STATION' ELSE 'OUTPOST' END AS FACILITY_TYPE FROM STATION_FACILITIES) AS X "
+            SQL = SQL & "WHERE FACILITY_NAME = '" & SearchFacilitySettings.Facility & "'"
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            rsLoader = DBCommand.ExecuteReader
+
+            If rsLoader.Read() Then
+                SearchFacilitySettings.FacilityType = rsLoader.GetString(1)
+            End If
+
+            rsLoader.Close()
+
+        End If
+
+        If SearchFacilitySettings.Facility = "" Or SearchFacilitySettings.FacilityType = None Then
+
+            ' Set it to default for the production type, use BP settings
+            Select Case SearchFacilitySettings.ProductionType
+                Case IndustryType.BoosterManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPBoosterManufacturingFacility)
+                Case IndustryType.CapitalComponentManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCapitalComponentManufacturingFacility)
+                Case IndustryType.CapitalManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCapitalManufacturingFacility)
+                Case IndustryType.ComponentManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPComponentManufacturingFacility)
+                Case IndustryType.Copying
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPCopyFacility)
+                Case IndustryType.Invention
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPInventionFacility)
+                Case IndustryType.Manufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPManufacturingFacility)
+                Case IndustryType.NoPOSManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPNoPOSFacility)
+                Case IndustryType.POSFuelBlockManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSFuelBlockFacility)
+                Case IndustryType.POSLargeShipManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSLargeShipFacility)
+                Case IndustryType.POSModuleManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPPOSModuleFacility)
+                Case IndustryType.SubsystemManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPSubsystemManufacturingFacility)
+                Case IndustryType.SuperManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPSuperManufacturingFacility)
+                Case IndustryType.T3CruiserManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3CruiserManufacturingFacility)
+                Case IndustryType.T3DestroyerManufacturing
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3DestroyerManufacturingFacility)
+                Case IndustryType.T3Invention
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPT3InventionFacility)
+                Case Else
+                    SearchFacilitySettings = GetFacilitySettingsfromFacility(DefaultBPManufacturingFacility)
+            End Select
+
         ElseIf SearchFacilitySettings.Facility = None Then
-            ' If none, then set the facility and exit
+            ' If none, then set the facility based on entry and exit (could be none for invention and copy)
             With SearchFacilitySettings
                 FacilityID = 0 ' not used
                 FacilityName = .Facility
@@ -100,14 +155,15 @@ Public Class IndustryFacility
 
         ' When loading a POS Facility with multi-use or Component array, which allows 'All' then do special processing
         With SearchFacilitySettings
-            If .FacilityType = POSFacility And (.Facility = "All" Or .Facility = "Component" Or .Facility = "Large" Or .Facility = "Equipment") Then
+            If .FacilityType = POSFacility And (.Facility = "All" Or .Facility = "Component" Or .Facility = "Large" _
+                                                Or .Facility = "Equipment") Then
                 ' Set the name to what was sent, save the sent info, and exit. This will only happen with the manufacturing tab section
                 SQL = "SELECT '" & .Facility & "' AS FACILITY_NAME, "
                 ' Need to load location from the settings since the location is specific to the user
                 SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
                 SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                 SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ASSEMBLY_ARRAYS.ACTIVITY_NAME AS AN, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                 SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
                 SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                 SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
@@ -142,10 +198,9 @@ Public Class IndustryFacility
                     MaterialMultiplier = rsLoader.GetDouble(7)
                     TimeMultiplier = rsLoader.GetDouble(8)
                     ActivityID = rsLoader.GetInt32(9)
-                    Activity = rsLoader.GetString(10)
                     ActivityCostPerSecond = .ActivityCostperSecond
                     IsDefault = FacilityDefault
-                    FacilityTypeID = rsLoader.GetInt64(11)
+                    FacilityTypeID = rsLoader.GetInt64(10)
 
                     IncludeActivityCost = .IncludeActivityCost
                     IncludeActivityTime = .IncludeActivityTime
@@ -171,7 +226,7 @@ Public Class IndustryFacility
                     SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
                     SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                     SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ASSEMBLY_ARRAYS.ACTIVITY_NAME AS AN, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
                     SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                     SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
@@ -193,14 +248,14 @@ Public Class IndustryFacility
                     Else
                         SQL = SQL & "TIME_MULTIPLIER, "
                     End If
-                    SQL = SQL & "ACTIVITY_ID AS AID, ACTIVITY_NAME AS AN, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM STATION_FACILITIES "
                     SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Outpost) & " "
                 Case StationFacility
                     SQL = "SELECT FACILITY_NAME, REGION_NAME, REGION_ID, "
                     SQL = SQL & "SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, COST_INDEX, "
                     SQL = SQL & "MATERIAL_MULTIPLIER, TIME_MULTIPLIER, "
-                    SQL = SQL & "ACTIVITY_ID AS AID, ACTIVITY_NAME AS AN, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
+                    SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
                     SQL = SQL & "FROM STATION_FACILITIES "
                     SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Station) & " "
             End Select
@@ -243,7 +298,7 @@ Public Class IndustryFacility
             End If
 
             SQL = SQL & "GROUP BY FACILITY_NAME, REGION_NAME, REGION_ID, SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, "
-            SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, AN, FACILITY_TYPE_ID"
+            SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, FACILITY_TYPE_ID"
 
         End With
 
@@ -270,10 +325,9 @@ Public Class IndustryFacility
                 TaxRate = rsLoader.GetDouble(5)
             End If
             ActivityID = rsLoader.GetInt32(9)
-            Activity = rsLoader.GetString(10)
             ActivityCostPerSecond = SearchFacilitySettings.ActivityCostperSecond
             IsDefault = FacilityDefault
-            FacilityTypeID = rsLoader.GetInt64(11)
+            FacilityTypeID = rsLoader.GetInt64(10)
 
             IncludeActivityCost = SearchFacilitySettings.IncludeActivityCost
             IncludeActivityTime = SearchFacilitySettings.IncludeActivityTime
@@ -346,6 +400,39 @@ Public Class IndustryFacility
         Call AllSettings.FacilitySaveSettings(SaveSettings, ProductionType, Tab)
 
     End Sub
+
+    ' Loads the facility settings from a current facility
+    Public Sub LoadFacilitySettingsfromFacility(SentFacility As IndustryFacility, DefaultFlag As Boolean)
+
+        Call LoadFacility(GetFacilitySettingsfromFacility(SentFacility), DefaultFlag)
+
+    End Sub
+
+    Private Function GetFacilitySettingsfromFacility(SentFacility As IndustryFacility) As FacilitySettings
+        Dim TempSettings As New FacilitySettings
+
+        With TempSettings
+            .Facility = SentFacility.FacilityName
+            .FacilityType = SentFacility.FacilityType
+            .ActivityID = SentFacility.ActivityID
+            .ProductionType = SentFacility.ProductionType
+            .MaterialMultiplier = SentFacility.MaterialMultiplier
+            .TimeMultiplier = SentFacility.TimeMultiplier
+
+            .SolarSystemID = SentFacility.SolarSystemID
+            .SolarSystemName = SentFacility.SolarSystemName
+            .RegionID = SentFacility.RegionID
+            .RegionName = SentFacility.RegionName
+            .ActivityCostperSecond = SentFacility.ActivityCostPerSecond
+
+            .IncludeActivityCost = SentFacility.IncludeActivityCost
+            .IncludeActivityTime = SentFacility.IncludeActivityTime
+            .IncludeActivityUsage = SentFacility.IncludeActivityUsage
+        End With
+
+        Return TempSettings
+
+    End Function
 
     ' Compares the sent facility to the current one and returns a boolean on equivlancy
     Public Function IsEqual(CompareFacility As IndustryFacility, Optional CompareCostCheck As Boolean = False, Optional CompareTimeCheck As Boolean = False) As Boolean

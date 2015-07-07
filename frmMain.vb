@@ -74,7 +74,7 @@ Public Class frmMain
     Private RelicsLoaded As Boolean
 
     ' Decryptors
-    Private SelectedDecryptor As Decryptor
+    Private SelectedDecryptor As New Decryptor
 
     ' Invention
     Private UpdatingInventionChecks As Boolean
@@ -95,6 +95,7 @@ Public Class frmMain
 
     ' BP stats
     Private OwnedBP As Boolean
+
     ' For T2 BPOs mainly so we can load the stored ME/TE if it changes
     Private OwnedBPME As String
     Private OwnedBPPE As String
@@ -145,7 +146,8 @@ Public Class frmMain
 
     ' Final list of items for manufacturing (keep form level so we can refresh it if needed)
     Private FinalManufacturingItemList As List(Of ManufacturingItem)
-    Private ManufacturingItemToFind As Long ' for Predicate
+    Private ManufacturingRecordIDToFind As Long ' for Predicate
+    Private ManufacturingNameToFind As String ' for Predicate
 
     ' For maximum production and laboratory lines
     Private MaximumProductionLines As Integer
@@ -306,7 +308,7 @@ Public Class frmMain
 
     Private DefaultSettings As New ProgramSettings ' For default constants
 
-    Private RecordIDIterator As Long ' For setting a unique record id in the manufacturing tab
+    Private RecordIDIterator As Integer ' For setting a unique record id in the manufacturing tab
 
     Private SelectedBPTabIndex As Integer ' So we don't move around the different facility/invention/re tabs on the user
 
@@ -573,11 +575,6 @@ Public Class frmMain
             Me.ttMain.IsBalloon = True
         End If
 
-        ' Temp addition
-        If UserApplicationSettings.IgnoreRareandShipSkinBPs Then
-            Call SetRareandShipSkinBPs()
-        End If
-
         ' Nothing in shopping List
         pnlShoppingList.Text = "No Items in Shopping List"
 
@@ -648,8 +645,8 @@ Public Class frmMain
             ttMain.SetToolTip(chkBPMedium, "'Medium' or 'M' in Name or 10m3 (Medium) Drones")
             ttMain.SetToolTip(chkBPLarge, "'Large' or 'L' in Name or 25m3 (Heavy) Drones")
             ttMain.SetToolTip(chkBPXL, "'Capital' or 'XL' in Name or 5000m3 (Fighters) Drones")
-            ttMain.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and End Runs per BPC")
-            ttMain.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and End Runs per BPC")
+            ttMain.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
+            ttMain.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
             ttMain.SetToolTip(chkUpdatePricesCRESTHistory, "Updates the price history of each selected item and region for the last year." & vbCrLf & "Note: This may take a long time to complete, especially with more than one region checked.")
         End If
 
@@ -836,13 +833,6 @@ Public Class frmMain
         '****************************************
         '**** All Tabs **************************
         '****************************************
-
-        NoDecryptor.Name = None
-        NoDecryptor.MEMod = 0
-        NoDecryptor.TEMod = 0
-        NoDecryptor.ProductionMod = 1.0
-        NoDecryptor.RunMod = 0
-        NoDecryptor.TypeID = 0
 
         ' All set, we are done loading
         FirstLoad = False
@@ -1112,7 +1102,7 @@ NoBonus:
             LoadTeambyCombo = True
         End If
 
-        Call DisplayTeamBonus(GetBPTeamGroupIDList(), SelectedTeam, TeamBonusLabel, TeamDefaultLabel, TeamSaveButton, Tab)
+        Call DisplayTeamBonus(GetTeamGroupIDList(), SelectedTeam, TeamBonusLabel, TeamDefaultLabel, TeamSaveButton, Tab)
 
         BPTeamComboLoaded = False
 
@@ -1170,7 +1160,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_GROUP_SPECIALTIES.GROUP_ID IN " & GroupIDList & " "
         End If
         SQL = SQL & "AND TEAM_ACTIVITY_ID = " & CStr(Activity) & " "
-        If Tab = BPTab And UserApplicationSettings.IgnoreRareandShipSkinBPs And cmbBPFacilitySystem.Text <> "" Then
+        If Tab = BPTab And cmbBPFacilitySystem.Text <> "" Then
             ' Link the query of teams to only that system
             SQL = SQL & "AND INDUSTRY_TEAMS.SOLAR_SYSTEM_NAME = '" & cmbBPFacilitySystem.Text & "' "
         End If
@@ -1183,7 +1173,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_GROUP_SPECIALTIES.GROUP_ID IN " & GroupIDList & " "
         End If
         SQL = SQL & "AND TEAM_ACTIVITY_ID = " & CStr(Activity) & " "
-        If Tab = BPTab And UserApplicationSettings.IgnoreRareandShipSkinBPs And cmbBPFacilitySystem.Text <> "" Then
+        If Tab = BPTab And cmbBPFacilitySystem.Text <> "" Then
             ' Link the query of teams to only that system
             SQL = SQL & "AND INDUSTRY_TEAMS_AUCTIONS.SOLAR_SYSTEM_NAME = '" & cmbBPFacilitySystem.Text & "' "
         End If
@@ -2013,16 +2003,6 @@ NoBonus:
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                         ' For T3 stuff, need to make sure we only show facilities that can do T3 invention (Caldari Outposts)
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
-                        '' T3 stuff doesn't have a group ID in stations table
-                        'If ItemGroupID = StrategicCruiserGroupID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(StrategicCruiserGroupID) & " "
-                        'ElseIf ItemGroupID = TacticalDestroyerGroupID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(TacticalDestroyerBlueprintID) & " "
-                        'ElseIf ItemCategoryID = SubsystemCategoryID Then
-                        '    SQL = SQL & " AND GROUP_ID = " & CStr(SubsystemBlueprintID) & " "
-                        'Else
-                        '    SQL = SQL & " AND GROUP_ID = 0  AND CATEGORY_ID = " & CStr(BlueprintCategoryID) & " "
-                        'End If
                 End Select
 
                 SQL = SQL & "AND REGION_NAME = '" & FormatDBString(FacilityRegionCombo.Text) & "'"
@@ -3127,7 +3107,7 @@ NoBonus:
             ElseIf UpdateType = "TE" Then
                 SelectedFacility.TimeMultiplier = TempValue
             Else
-                SelectedFacility.TaxRate = CDbl(Temp)
+                SelectedFacility.TaxRate = CDbl(TempValue)
             End If
 
         End If
@@ -3160,42 +3140,42 @@ NoBonus:
 
         If Not LoadDefault Then
             ' Need to set the settings for each based on the current selected facility then load it from that
-            Call SelectedBPManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPManufacturingFacility), LoadDefault)
-            Call SelectedBPCapitalManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCapitalManufacturingFacility), LoadDefault)
-            Call SelectedBPSuperManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPSuperManufacturingFacility), LoadDefault)
-            Call SelectedBPT3CruiserManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3CruiserManufacturingFacility), LoadDefault)
-            Call SelectedBPT3DestroyerManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3DestroyerManufacturingFacility), LoadDefault)
-            Call SelectedBPBoosterManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPBoosterManufacturingFacility), LoadDefault)
-            Call SelectedBPSubsystemManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPSubsystemManufacturingFacility), LoadDefault)
-            Call SelectedBPComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPComponentManufacturingFacility), LoadDefault)
-            Call SelectedBPCapitalComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCapitalComponentManufacturingFacility), LoadDefault)
-            Call SelectedBPCopyFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPCopyFacility), LoadDefault)
-            Call SelectedBPInventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPInventionFacility), LoadDefault)
-            Call SelectedBPT3InventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPT3InventionFacility), LoadDefault)
-            Call SelectedBPNoPOSFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPNoPOSFacility), LoadDefault)
+            Call SelectedBPManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPManufacturingFacility, LoadDefault)
+            Call SelectedBPCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalManufacturingFacility, LoadDefault)
+            Call SelectedBPSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSuperManufacturingFacility, LoadDefault)
+            Call SelectedBPT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3CruiserManufacturingFacility, LoadDefault)
+            Call SelectedBPT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3DestroyerManufacturingFacility, LoadDefault)
+            Call SelectedBPBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPBoosterManufacturingFacility, LoadDefault)
+            Call SelectedBPSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSubsystemManufacturingFacility, LoadDefault)
+            Call SelectedBPComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPComponentManufacturingFacility, LoadDefault)
+            Call SelectedBPCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalComponentManufacturingFacility, LoadDefault)
+            Call SelectedBPCopyFacility.LoadFacilitySettingsfromFacility(SelectedBPCopyFacility, LoadDefault)
+            Call SelectedBPInventionFacility.LoadFacilitySettingsfromFacility(SelectedBPInventionFacility, LoadDefault)
+            Call SelectedBPT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedBPT3InventionFacility, LoadDefault)
+            Call SelectedBPNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedBPNoPOSFacility, LoadDefault)
 
             ' Load these as special cases
-            Call SelectedBPPOSFuelBlockFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSFuelBlockFacility), LoadDefault)
-            Call SelectedBPPOSLargeShipFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSLargeShipFacility), LoadDefault)
-            Call SelectedBPPOSModuleFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedBPPOSModuleFacility), LoadDefault)
+            Call SelectedBPPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSFuelBlockFacility, LoadDefault)
+            Call SelectedBPPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSLargeShipFacility, LoadDefault)
+            Call SelectedBPPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSModuleFacility, LoadDefault)
 
             ' Load up the Manufacturing Tab facilities
-            Call SelectedCalcBaseManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcBaseManufacturingFacility), LoadDefault)
-            Call SelectedCalcCapitalManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCapitalManufacturingFacility), LoadDefault)
-            Call SelectedCalcSuperManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcSuperManufacturingFacility), LoadDefault)
-            Call SelectedCalcT3CruiserManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3CruiserManufacturingFacility), LoadDefault)
-            Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3DestroyerManufacturingFacility), LoadDefault)
-            Call SelectedCalcBoosterManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcBoosterManufacturingFacility), LoadDefault)
-            Call SelectedCalcSubsystemManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcSubsystemManufacturingFacility), LoadDefault)
-            Call SelectedCalcComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcComponentManufacturingFacility), LoadDefault)
-            Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCapitalComponentManufacturingFacility), LoadDefault)
-            Call SelectedCalcCopyFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcCopyFacility), LoadDefault)
-            Call SelectedCalcInventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcInventionFacility), LoadDefault)
-            Call SelectedCalcT3InventionFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcT3InventionFacility), LoadDefault)
-            Call SelectedCalcNoPOSFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcNoPOSFacility), LoadDefault)
-            Call SelectedCalcPOSFuelBlockFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSFuelBlockFacility), LoadDefault)
-            Call SelectedCalcPOSLargeShipFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSLargeShipFacility), LoadDefault)
-            Call SelectedCalcPOSModuleFacility.LoadFacility(LoadFacilitySettingsfromFacility(SelectedCalcPOSModuleFacility), LoadDefault)
+            Call SelectedCalcBaseManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBaseManufacturingFacility, LoadDefault)
+            Call SelectedCalcCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalManufacturingFacility, LoadDefault)
+            Call SelectedCalcSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSuperManufacturingFacility, LoadDefault)
+            Call SelectedCalcT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3CruiserManufacturingFacility, LoadDefault)
+            Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3DestroyerManufacturingFacility, LoadDefault)
+            Call SelectedCalcBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBoosterManufacturingFacility, LoadDefault)
+            Call SelectedCalcSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSubsystemManufacturingFacility, LoadDefault)
+            Call SelectedCalcComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcComponentManufacturingFacility, LoadDefault)
+            Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalComponentManufacturingFacility, LoadDefault)
+            Call SelectedCalcCopyFacility.LoadFacilitySettingsfromFacility(SelectedCalcCopyFacility, LoadDefault)
+            Call SelectedCalcInventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcInventionFacility, LoadDefault)
+            Call SelectedCalcT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3InventionFacility, LoadDefault)
+            Call SelectedCalcNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedCalcNoPOSFacility, LoadDefault)
+            Call SelectedCalcPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSFuelBlockFacility, LoadDefault)
+            Call SelectedCalcPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSLargeShipFacility, LoadDefault)
+            Call SelectedCalcPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSModuleFacility, LoadDefault)
 
         Else
             Call SelectedBPManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Manufacturing, BPTab), LoadDefault)
@@ -3323,33 +3303,6 @@ NoBonus:
 
     End Sub
 
-    ' Loads the facility settings from a current facility
-    Private Function LoadFacilitySettingsfromFacility(SentFacility As IndustryFacility) As FacilitySettings
-        Dim TempSettings As New FacilitySettings
-
-        With TempSettings
-            .Facility = SentFacility.FacilityName
-            .FacilityType = SentFacility.FacilityType
-            .ActivityID = SentFacility.ActivityID
-            .ProductionType = SentFacility.ProductionType
-            .MaterialMultiplier = SentFacility.MaterialMultiplier
-            .TimeMultiplier = SentFacility.TimeMultiplier
-
-            .SolarSystemID = SentFacility.SolarSystemID
-            .SolarSystemName = SentFacility.SolarSystemName
-            .RegionID = SentFacility.RegionID
-            .RegionName = SentFacility.RegionName
-            .ActivityCostperSecond = SentFacility.ActivityCostPerSecond
-
-            .IncludeActivityCost = SentFacility.IncludeActivityCost
-            .IncludeActivityTime = SentFacility.IncludeActivityTime
-            .IncludeActivityUsage = SentFacility.IncludeActivityUsage
-        End With
-
-        Return TempSettings
-
-    End Function
-
     ' Loads the team settings from a current team
     Private Function LoadTeamSettingsfromTeam(SentTeam As IndustryTeam, SentTab As String) As TeamSettings
         Dim TempSettings As New TeamSettings
@@ -3454,14 +3407,23 @@ NoBonus:
                                      BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, _
                                      InventionFacility As IndustryFacility, CopyFacility As IndustryFacility, _
                                      IncludeTaxes As Boolean, IncludeFees As Boolean, _
-                                     IncludeUsage As Boolean, MEValue As String, SentRuns As String, NumBPs As String)
+                                     IncludeUsage As Boolean, MEValue As String, SentRuns As String, SentLines As String, NumBPs As String)
         Dim BPTech As Integer
-        Dim BPDecryptor As Decryptor = NoDecryptor
+        Dim BPDecryptor As New Decryptor
         Dim DecryptorName As String = None
 
         Dim readerBP As SQLiteDataReader
         Dim readerRelic As SQLiteDataReader
         Dim SQL As String
+
+        Dim TempLines As Integer
+
+        ' If sent from shopping list, they won't have the lines
+        If SentLines = "0" Then
+            TempLines = CInt(txtBPLines.Text)
+        Else
+            TempLines = CInt(SentLines)
+        End If
 
         SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
 
@@ -3493,7 +3455,7 @@ NoBonus:
                 End If
             End If
 
-            BPDecryptor = SelectDecryptor(DecryptorName, BPTech)
+            BPDecryptor = SelectDecryptor(DecryptorName)
 
             If BPTech = 3 Then
                 LoadingT3Decryptors = True
@@ -3526,7 +3488,7 @@ NoBonus:
 
             ' Need to calculate the number of bps based on the bp
             If chkCalcAutoCalcT2NumBPs.Checked Then
-                txtBPNumBPs.Text = CStr(GetUsedNumBPs(BPID, BPTech, CInt(SentRuns), BPDecryptor.RunMod))
+                txtBPNumBPs.Text = CStr(GetUsedNumBPs(BPID, BPTech, CInt(SentRuns), TempLines, CInt(NumBPs), BPDecryptor.RunMod))
             End If
         Else
             ' T1
@@ -3682,14 +3644,14 @@ NoBonus:
             If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
                 ' Invention Facility
                 RawCostSplit.UsageName = "Invention Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetBPInventionUsage
+                RawCostSplit.UsageValue = SelectedBlueprint.GetInventionUsage
                 f1.UsageSplits.Add(RawCostSplit)
             End If
 
             If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
                 ' Copy Facility
                 RawCostSplit.UsageName = "Copy Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetBPCopyUsage
+                RawCostSplit.UsageValue = SelectedBlueprint.GetCopyUsage
                 f1.UsageSplits.Add(RawCostSplit)
             End If
 
@@ -3734,7 +3696,7 @@ NoBonus:
                 Else
                     f1.MatType = f1.MatType & " Runs"
                 End If
-                f1.MaterialList = SelectedBlueprint.GetBPCopyMaterials
+                f1.MaterialList = SelectedBlueprint.GetCopyMaterials
                 f1.TotalInventedRuns = SelectedBlueprint.GetInventionJobs
                 f1.ListType = "Copying"
             End If
@@ -3793,7 +3755,7 @@ NoBonus:
             RawCostSplit.SplitValue = SelectedBlueprint.GetManufacturingFacilityUsage
             f1.CostSplits.Add(RawCostSplit)
 
-            If SelectedBlueprint.HasComponents Then
+            If (SelectedBlueprint.HasComponents And chkBPBuildBuy.Checked = True) Or MaterialType = "Raw" Then
                 ' Component Facility Usage
                 RawCostSplit.SplitName = "Component Facility Usage"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage
@@ -3812,12 +3774,12 @@ NoBonus:
 
             ' Taxes
             RawCostSplit.SplitName = "Taxes"
-            RawCostSplit.SplitValue = SelectedBlueprint.GetBPTaxes
+            RawCostSplit.SplitValue = SelectedBlueprint.GetSalesTaxes
             f1.CostSplits.Add(RawCostSplit)
 
             ' Broker fees
             RawCostSplit.SplitName = "Broker Fees"
-            RawCostSplit.SplitValue = SelectedBlueprint.GetBPBrokerFees
+            RawCostSplit.SplitValue = SelectedBlueprint.GetSalesBrokerFees
             f1.CostSplits.Add(RawCostSplit)
 
             ' Additional Costs the user added
@@ -3830,20 +3792,20 @@ NoBonus:
             If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
                 ' Total Invention Costs
                 RawCostSplit.SplitName = "Invention Costs"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPInventionCost
+                RawCostSplit.SplitValue = SelectedBlueprint.GetInventionCost
                 f1.CostSplits.Add(RawCostSplit)
 
                 RawCostSplit.SplitName = "Invention Usage"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPInventionUsage
+                RawCostSplit.SplitValue = SelectedBlueprint.GetInventionUsage
                 f1.CostSplits.Add(RawCostSplit)
 
                 ' Total Copy Costs
                 RawCostSplit.SplitName = "Copy Costs"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPCopyCost
+                RawCostSplit.SplitValue = SelectedBlueprint.GetCopyCost
                 f1.CostSplits.Add(RawCostSplit)
 
                 RawCostSplit.SplitName = "Copy Usage"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetBPCopyUsage
+                RawCostSplit.SplitValue = SelectedBlueprint.GetCopyUsage
                 f1.CostSplits.Add(RawCostSplit)
 
             End If
@@ -4104,6 +4066,26 @@ NoBonus:
 
     End Sub
 
+    Private Sub mnuResetIgnoredBPs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIgnoredBPs.Click
+        Dim Response As MsgBoxResult
+        Dim SQL As String
+
+        Response = MsgBox("This will reset all blueprints to non-ignored" & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0"
+            ExecuteNonQuerySQL(SQL)
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Ignored Blueprints reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
     Private Sub mnuResetAssets_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAssets.Click
         Dim Response As MsgBoxResult
         Dim SQL As String
@@ -4284,7 +4266,7 @@ NoBonus:
         Call ShowShoppingList()
     End Sub
 
-    Private Sub ManageBlueprintsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuManageBlueprintsToolStripMenuItem.Click
+    Private Sub mnuManageBlueprintsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuManageBlueprintsToolStripMenuItem.Click
         Dim f1 = New frmBlueprintManagement
         f1.ShowDialog()
         Call ResetRefresh()
@@ -4359,7 +4341,7 @@ NoBonus:
 
     Private Sub mnuUserSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuUserSettings.Click
         Dim f1 = New frmSettings
-        ' Open the Shopping List
+        ' Open the settings form
         f1.ShowDialog()
 
         ' Reinit any tabs that have settings changes
@@ -4468,6 +4450,100 @@ NoBonus:
 
     End Sub
 
+    Private Sub mnuRestoreDefaultBPFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultBPFacilities.Click
+
+        ' BP 
+        Call SelectedBPManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Manufacturing), True)
+        DefaultBPManufacturingFacility = CType(SelectedBPManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCapitalManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalManufacturing), True)
+        DefaultBPCapitalManufacturingFacility = CType(SelectedBPCapitalManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPSuperManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SuperManufacturing), True)
+        DefaultBPSuperManufacturingFacility = CType(SelectedBPSuperManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPT3CruiserManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3CruiserManufacturing), True)
+        DefaultBPT3CruiserManufacturingFacility = CType(SelectedBPT3CruiserManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPT3DestroyerManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3DestroyerManufacturing), True)
+        DefaultBPT3DestroyerManufacturingFacility = CType(SelectedBPT3DestroyerManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPBoosterManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.BoosterManufacturing), True)
+        DefaultBPBoosterManufacturingFacility = CType(SelectedBPBoosterManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPSubsystemManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SubsystemManufacturing), True)
+        DefaultBPSubsystemManufacturingFacility = CType(SelectedBPSubsystemManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.ComponentManufacturing), True)
+        DefaultBPComponentManufacturingFacility = CType(SelectedBPComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCapitalComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalComponentManufacturing), True)
+        DefaultBPCapitalComponentManufacturingFacility = CType(SelectedBPCapitalComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedBPCopyFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Copying), True)
+        DefaultBPCopyFacility = CType(SelectedBPCopyFacility.Clone, IndustryFacility)
+        Call SelectedBPInventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Invention), True)
+        DefaultBPInventionFacility = CType(SelectedBPInventionFacility.Clone, IndustryFacility)
+        Call SelectedBPT3InventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3Invention), True)
+        DefaultBPT3InventionFacility = CType(SelectedBPT3InventionFacility.Clone, IndustryFacility)
+        Call SelectedBPNoPOSFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.NoPOSManufacturing), True)
+        DefaultBPNoPOSFacility = CType(SelectedBPNoPOSFacility.Clone, IndustryFacility)
+
+        ' Load these as special cases
+        Call SelectedBPPOSFuelBlockFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSFuelBlockManufacturing), True)
+        DefaultBPPOSFuelBlockFacility = CType(SelectedBPPOSFuelBlockFacility.Clone, IndustryFacility)
+        Call SelectedBPPOSLargeShipFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSLargeShipManufacturing), True)
+        DefaultBPPOSLargeShipFacility = CType(SelectedBPPOSLargeShipFacility.Clone, IndustryFacility)
+        Call SelectedBPPOSModuleFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSModuleManufacturing), True)
+        DefaultBPPOSModuleFacility = CType(SelectedBPPOSModuleFacility.Clone, IndustryFacility)
+
+        ' Load all
+        Call InitBPTab()
+
+        ' Instead of saving, just load these locally and the next time they restart it will do the same until saved
+        Call AllSettings.DeleteAllFacilitySettingsFiles(BPTab)
+
+        MsgBox("BP Tab Default Facilities Restored", vbInformation, Application.ProductName)
+
+    End Sub
+
+    Private Sub mnuRestoreDefaultCalcFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultCalcFacilities.Click
+
+        ' Load up the Manufacturing Tab facilities
+        Call SelectedCalcBaseManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Manufacturing), True)
+        DefaultCalcBaseManufacturingFacility = CType(SelectedCalcBaseManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCapitalManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalManufacturing), True)
+        DefaultCalcCapitalManufacturingFacility = CType(SelectedCalcCapitalManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcSuperManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SuperManufacturing), True)
+        DefaultCalcSuperManufacturingFacility = CType(SelectedCalcSuperManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3CruiserManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3CruiserManufacturing), True)
+        DefaultCalcT3CruiserManufacturingFacility = CType(SelectedCalcT3CruiserManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3DestroyerManufacturing), True)
+        DefaultCalcT3DestroyerManufacturingFacility = CType(SelectedCalcT3DestroyerManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcBoosterManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.BoosterManufacturing), True)
+        DefaultCalcBoosterManufacturingFacility = CType(SelectedCalcBoosterManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcSubsystemManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.SubsystemManufacturing), True)
+        DefaultCalcSubsystemManufacturingFacility = CType(SelectedCalcSubsystemManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.ComponentManufacturing), True)
+        DefaultCalcComponentManufacturingFacility = CType(SelectedCalcComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.CapitalComponentManufacturing), True)
+        DefaultCalcCapitalComponentManufacturingFacility = CType(SelectedCalcCapitalComponentManufacturingFacility.Clone, IndustryFacility)
+        Call SelectedCalcCopyFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Copying), True)
+        DefaultCalcCopyFacility = CType(SelectedCalcCopyFacility.Clone, IndustryFacility)
+        Call SelectedCalcInventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.Invention), True)
+        DefaultCalcInventionFacility = CType(SelectedCalcInventionFacility.Clone, IndustryFacility)
+        Call SelectedCalcT3InventionFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.T3Invention), True)
+        DefaultCalcT3InventionFacility = CType(SelectedCalcT3InventionFacility.Clone, IndustryFacility)
+        Call SelectedCalcNoPOSFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.NoPOSManufacturing), True)
+        DefaultCalcNoPOSFacility = CType(SelectedCalcNoPOSFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSFuelBlockFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSFuelBlockManufacturing), True)
+        DefaultCalcPOSFuelBlockFacility = CType(SelectedCalcPOSFuelBlockFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSLargeShipFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSLargeShipManufacturing), True)
+        DefaultCalcPOSLargeShipFacility = CType(SelectedCalcPOSLargeShipFacility.Clone, IndustryFacility)
+        Call SelectedCalcPOSModuleFacility.LoadFacility(AllSettings.SetFacilityDefaultSettings(IndustryType.POSModuleManufacturing), True)
+        DefaultCalcPOSModuleFacility = CType(SelectedCalcPOSModuleFacility.Clone, IndustryFacility)
+
+        ' Load all
+        Call InitManufacturingTab()
+
+        ' Instead of saving, just load these locally and the next time they restart it will do the same until saved
+        Call AllSettings.DeleteAllFacilitySettingsFiles(BPTab)
+
+        MsgBox("Manufacturing Tab Default Facilities Restored", vbInformation, Application.ProductName)
+
+    End Sub
+
     Private Sub mnuRestoreDefaultUpdatePrices_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultUpdatePrices.Click
         Call AllSettings.SetDefaultUpdatePriceSettings()
         ' Save them
@@ -4553,7 +4629,7 @@ NoBonus:
             SelectedBPCopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
                 ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
             End If
         End If
@@ -4564,7 +4640,7 @@ NoBonus:
             ' Include copy costs
             SelectedBPCopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4574,7 +4650,7 @@ NoBonus:
             ' Include invention time
             SelectedBPInventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4585,7 +4661,7 @@ NoBonus:
             SelectedBPInventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
             ' Use the original ME and TE values when they change the meta level
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4595,7 +4671,7 @@ NoBonus:
             ' Set the time for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4605,7 +4681,7 @@ NoBonus:
             ' Set the usage for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -4858,8 +4934,27 @@ NoBonus:
                     readerBP = DBCommand.ExecuteReader
                     readerBP.Read()
 
-                    ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value. BP type is BPO (-1)
-                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, BPType.Original)
+                    ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value, but set the type depending on the bp loaded
+                    Dim TempBPType As BPType
+                    Dim AdditionalCost As Double
+
+                    If (SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True) _
+                        Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T1 Then
+                        ' T2 BPO or T1 BPO
+                        TempBPType = BPType.Original
+                    Else
+                        ' Remaining T2 and T3 must be invited
+                        TempBPType = BPType.InventedBPC
+                    End If
+
+                    ' Check additional costs for saving with this bp
+                    If IsNumeric(txtBPAddlCosts.Text) Then
+                        AdditionalCost = CDbl(txtBPAddlCosts.Text)
+                    Else
+                        AdditionalCost = 0
+                    End If
+
+                    Call UpdateBPinDB(readerBP.GetInt64(0), readerBP.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, 0, False, False, AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
@@ -4900,7 +4995,9 @@ NoBonus:
 
             ' If we updated a price, then update the program everywhere to be consistent
             If PriceUpdated Then
+                IgnoreFocus = True
                 Call UpdateProgramPrices()
+                IgnoreFocus = False
             End If
 
             ' Play sound to indicate update complete
@@ -5194,7 +5291,7 @@ Tabs:
                                        SelectedBPManufacturingTeam, SelectedBPComponentManufacturingTeam, SelectedBPCopyTeam, _
                                        BuildFacility, SelectedBPComponentManufacturingFacility, SelectedBPInventionFacility, SelectedBPCopyFacility,
                                        chkBPTaxes.Checked, chkBPBrokerFees.Checked, chkBPFacilityIncludeUsage.Checked, _
-                                       lstBPComponentMats.SelectedItems(0).SubItems(2).Text, lstBPComponentMats.SelectedItems(0).SubItems(1).Text, "1") ' Use 1 bp for now
+                                       lstBPComponentMats.SelectedItems(0).SubItems(2).Text, lstBPComponentMats.SelectedItems(0).SubItems(1).Text, txtBPLines.Text, "1") ' Use 1 bp for now
         End If
 
     End Sub
@@ -5417,7 +5514,7 @@ Tabs:
 
                 If Autoload Then
                     ' reload bp Use the original ME and TE values when they change the meta level
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                     FullyLoadedBPFacility = True
                 Else
                     Call HideFacilityBonusBoxes(lblBPFacilityBonus, lblBPFacilityTaxRate, lblBPFacilityManualME, lblBPFacilityManualTE, _
@@ -5478,7 +5575,7 @@ Tabs:
 
             If Not IsNothing(SelectedBlueprint) Then
                 ' Load the bp again - Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -5646,7 +5743,7 @@ Tabs:
         ' Update only the outpost values for the activity type 
         SQL = "UPDATE STATION_FACILITIES SET MATERIAL_MULTIPLIER = " & CStr(SentFacility.MaterialMultiplier)
         SQL = SQL & ", TIME_MULTIPLIER = " & CStr(SentFacility.TimeMultiplier)
-        SQL = SQL & ", FACILITY_TAX = " & CStr(SentFacility.TaxRate)
+        SQL = SQL & ", FACILITY_TAX = " & CStr(SentFacility.TaxRate) ' Change to a percent (double)
         SQL = SQL & ", OUTPOST = " & CStr(StationType.Outpost) & " "
         SQL = SQL & "WHERE FACILITY_NAME = '" & FormatDBString(SentFacility.FacilityName) & "' "
         SQL = SQL & "AND ACTIVITY_ID = " & CStr(Activity)
@@ -5746,7 +5843,7 @@ Tabs:
     Private Sub cmbBPTeamActivity_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeamActivities.SelectedIndexChanged
         If PreviousTeamActivity <> cmbBPTeamActivities.Text And Not FirstLoad Then
             BPTeamComboLoaded = False ' Always load combo on changing of the activity
-            Call LoadTeamCombo(True, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeamCombo(True, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             ' Load the default team for this activity
             Call LoadDefaultTeam(True, cmbBPTeamActivities.Text, False, cmbBPTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
             PreviousTeamActivity = cmbBPTeamActivities.Text
@@ -5760,8 +5857,8 @@ Tabs:
         cmbBPTeam.AutoCompleteSource = AutoCompleteSource.None
         ComboMenuDown = True
 
-        If Not BPTeamComboLoaded Then ' TO DO don't reload if not needed
-            Call LoadTeamCombo(False, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+        If Not BPTeamComboLoaded Then ' TODO don't reload if not needed
+            Call LoadTeamCombo(False, cmbBPTeam, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             If cmbBPTeam.Items.Contains(cmbBPTeam.Text) Then
                 Dim TempTeam As New IndustryTeam
                 Select Case cmbBPTeamActivities.Text
@@ -5772,7 +5869,7 @@ Tabs:
                     Case ActivityCopying
                         TempTeam = SelectedBPCopyTeam
                 End Select
-                Call DisplayTeamBonus(GetBPTeamGroupIDList(), TempTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveBP, BPTab)
+                Call DisplayTeamBonus(GetTeamGroupIDList(), TempTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveBP, BPTab)
             End If
             BPTeamComboLoaded = True
         End If
@@ -5800,7 +5897,7 @@ Tabs:
 
         ' If they select enter, then load the team if the text is in the combo
         If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
         End If
     End Sub
 
@@ -5815,19 +5912,19 @@ Tabs:
 
     Private Sub cmbBPTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeam.SelectedIndexChanged
         If Not IsNothing(SelectedBlueprint) And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             If Not FirstLoad Then
                 ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
             End If
         End If
     End Sub
 
     Private Sub cmbBPTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPTeam.SelectionChangeCommitted
         If Not MouseWheelSelection And Not ComboBoxArrowKeys And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetBPTeamGroupIDList)
+            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList)
             ' Use the original ME and TE values when they change the meta level
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
         End If
     End Sub
 
@@ -5967,7 +6064,7 @@ Tabs:
 
             ' Refresh
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
 
         End If
@@ -6017,30 +6114,52 @@ Tabs:
 
     Private Sub ResetInventionBoxes()
         ' Reset Decrytpor
-        ResetDecryptorCombos()
+        ResetDecryptorCombos(0)
 
         lblBPInventionCost.Text = "0.00"
         lblBPRECost.Text = "0.00"
         lblBPInventionChance.Text = "0%"
-        lblBPDecryptorStats.Text = "ME: 0, TE: 0, End Runs: 0"
+        lblBPDecryptorStats.Text = "ME: 0, TE: 0," & vbCrLf & "BP Runs: 0"
 
     End Sub
 
-    Private Sub ResetDecryptorCombos()
+    Private Sub ResetDecryptorCombos(InventionTech As Integer)
         LoadingInventionDecryptors = True
         LoadingT3Decryptors = True
         InventionDecryptorsLoaded = False
         T3DecryptorsLoaded = False
+
+        Dim TempDecryptors As New DecryptorList
+
         ' Auto load the decryptor if they want
-        If UserApplicationSettings.SaveBPRelicsDecryptors And UserBPTabSettings.DecryptorType <> "" Then
-            cmbBPInventionDecryptor.Text = UserBPTabSettings.DecryptorType
+        If InventionTech = 2 Then
+            If UserApplicationSettings.SaveBPRelicsDecryptors And UserBPTabSettings.T2DecryptorType <> "" Then
+                cmbBPInventionDecryptor.Text = UserBPTabSettings.T2DecryptorType
+                SelectedDecryptor = TempDecryptors.GetDecryptor(cmbBPInventionDecryptor.Text)
+            Else
+                cmbBPInventionDecryptor.Text = None
+                SelectedDecryptor = NoDecryptor ' Reset the selected decryptor too
+            End If
+        ElseIf InventionTech = 3 Then
+            ' Load for T3
+            If UserApplicationSettings.SaveBPRelicsDecryptors And UserBPTabSettings.T3DecryptorType <> "" Then
+                cmbBPT3Decryptor.Text = UserBPTabSettings.T3DecryptorType
+                SelectedDecryptor = TempDecryptors.GetDecryptor(cmbBPT3Decryptor.Text)
+            Else
+                cmbBPT3Decryptor.Text = None
+                SelectedDecryptor = NoDecryptor ' Reset the selected decryptor too
+            End If
+
+            ' Reset both
         Else
             cmbBPInventionDecryptor.Text = None
+            cmbBPT3Decryptor.Text = None
+            SelectedDecryptor = NoDecryptor ' Reset the selected decryptor too
         End If
-        cmbBPT3Decryptor.Text = None
-        SelectedDecryptor = NoDecryptor ' Reset the selected decryptor too
+
         LoadingInventionDecryptors = False
         LoadingT3Decryptors = False
+
     End Sub
 
     Private Sub ResetfromTechSizeCheck()
@@ -6087,7 +6206,10 @@ Tabs:
     End Sub
 
     Private Sub txtBPRuns_LostFocus(sender As Object, e As System.EventArgs) Handles txtBPRuns.LostFocus
-        Call UpdateBPLinesandBPs()
+        If Not IgnoreFocus Then
+            Call UpdateBPLinesandBPs()
+            IgnoreFocus = True
+        End If
     End Sub
 
     Private Sub txtBPAddlCosts_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPAddlCosts.KeyDown
@@ -6174,7 +6296,7 @@ Tabs:
                         chkBPFacilityIncludeUsage, BPTab, cmbBPFacilityType.Text, cmbBPFacilityorArray, _
                         lblBPFacilityDefault, btnBPFacilitySave)
 
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
     End Sub
@@ -6199,7 +6321,8 @@ Tabs:
 
     Private Sub txtBPNumBPs_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPNumBPs.DoubleClick
         If Not IsNothing(SelectedBlueprint) Then
-            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), SelectedDecryptor.RunMod))
+            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
+                                                  CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
         End If
     End Sub
 
@@ -6219,8 +6342,6 @@ Tabs:
     End Sub
 
     Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
-        Dim readerDecryptor As SQLiteDataReader
-        Dim SQL As String
 
         If Not InventionDecryptorsLoaded Then
             ' Clear anything that was there
@@ -6229,20 +6350,13 @@ Tabs:
             ' Add NONE
             cmbBPInventionDecryptor.Items.Add(None)
 
-            SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE groupID =" & DecryptorGroup
+            Dim Decryptors As New DecryptorList
 
-            DBCommand = New SQLiteCommand(SQL, DB)
-            readerDecryptor = DBCommand.ExecuteReader
-
-            While readerDecryptor.Read
-                cmbBPInventionDecryptor.Items.Add(readerDecryptor.GetString(0))
-            End While
+            For i = 0 To Decryptors.GetDecryptorList.Count - 1
+                cmbBPInventionDecryptor.Items.Add(Decryptors.GetDecryptorList(i).Name)
+            Next
 
             InventionDecryptorsLoaded = True
-            readerDecryptor.Close()
-
-            readerDecryptor = Nothing
-            DBCommand = Nothing
 
         End If
     End Sub
@@ -6251,22 +6365,20 @@ Tabs:
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingInventionDecryptors Then
-            Call SelectDecryptor(cmbBPInventionDecryptor.Text, SelectedBlueprint.GetTechLevel)
+            Call SelectDecryptor(cmbBPInventionDecryptor.Text)
 
             ' Reload the number of bps you need etc
             ' If the runs changed, update the lines data based on decryptor, need to update it first before running
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
         End If
 
     End Sub
 
     Private Sub cmbBPT3Decryptor_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPT3Decryptor.DropDown
-        Dim readerDecryptor As SQLiteDataReader
-        Dim SQL As String
 
         If Not T3DecryptorsLoaded Then
             ' Clear anything that was there
@@ -6275,20 +6387,13 @@ Tabs:
             ' Add NONE
             cmbBPT3Decryptor.Items.Add(None)
 
-            SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE groupID =" & DecryptorGroup
+            Dim Decryptors As New DecryptorList
 
-            DBCommand = New SQLiteCommand(SQL, DB)
-            readerDecryptor = DBCommand.ExecuteReader
-
-            While readerDecryptor.Read
-                cmbBPT3Decryptor.Items.Add(readerDecryptor.GetString(0))
-            End While
+            For i = 0 To Decryptors.GetDecryptorList.Count - 1
+                cmbBPT3Decryptor.Items.Add(Decryptors.GetDecryptorList(i).Name)
+            Next
 
             T3DecryptorsLoaded = True
-            readerDecryptor.Close()
-
-            readerDecryptor = Nothing
-            DBCommand = Nothing
 
         End If
     End Sub
@@ -6297,14 +6402,14 @@ Tabs:
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingT3Decryptors Then
-            Call SelectDecryptor(cmbBPT3Decryptor.Text, SelectedBlueprint.GetTechLevel)
+            Call SelectDecryptor(cmbBPT3Decryptor.Text)
 
             ' Reload the number of bps you need etc
             ' If the runs changed, update the lines data based on decryptor, need to update it first before running
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
         End If
     End Sub
@@ -6312,7 +6417,7 @@ Tabs:
     Private Sub cmbBPRelic_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPRelic.DropDown
 
         If Not RelicsLoaded Then
-            Call LoadRelicTypes(SelectedBlueprint.GetBPTypeID)
+            Call LoadRelicTypes(SelectedBlueprint.GetTypeID)
         End If
 
     End Sub
@@ -6321,9 +6426,27 @@ Tabs:
 
         If Not LoadingRelics Then
             ' Use the original values when selecting a new relic
-            Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
         End If
 
+    End Sub
+
+    Private Sub SetInventionEnabled(InventionType As String, Enable As Boolean)
+        If InventionType = "T2" Then
+            chkBPIncludeCopyCosts.Enabled = Enable
+            chkBPIncludeCopyTime.Enabled = Enable
+            chkBPIncludeInventionCosts.Enabled = Enable
+            chkBPIncludeInventionTime.Enabled = Enable
+
+            txtBPInventionLines.Enabled = Enable
+            cmbBPInventionDecryptor.Enabled = Enable
+        Else
+            chkBPIncludeT3Costs.Enabled = Enable
+            chkBPIncludeT3Time.Enabled = Enable
+            txtBPRelicLines.Enabled = Enable
+            cmbBPT3Decryptor.Enabled = Enable
+            cmbBPRelic.Enabled = Enable
+        End If
     End Sub
 
     Private Sub chkBPIgnoreInvention_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreInvention.CheckedChanged
@@ -6331,22 +6454,11 @@ Tabs:
 
         If chkBPIgnoreInvention.Checked Then
             If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                ' Enable all first
-                chkBPIncludeCopyCosts.Enabled = False
-                chkBPIncludeCopyTime.Enabled = False
-                chkBPIncludeInventionCosts.Enabled = False
-                chkBPIncludeInventionTime.Enabled = False
+                ' Disable all first
+                Call SetInventionEnabled("T2", False)
 
-                txtBPInventionLines.Enabled = False
-                cmbBPInventionDecryptor.Enabled = False
-
-                ' Uncheck the invention/copy checks for calcs
-                chkBPIncludeCopyCosts.Checked = False
-                chkBPIncludeCopyTime.Checked = False
-                chkBPIncludeInventionCosts.Checked = False
-                chkBPIncludeInventionTime.Checked = False
                 If cmbBPFacilityActivities.Text = ActivityInvention Then
-                    ' Save the current facility value since we are changing it
+                    ' Save the current facility value since we are changing the usage value
                     Dim TempUsage As Boolean = SelectedBPInventionFacility.IncludeActivityUsage
                     Dim TempDefault As Boolean = SelectedBPInventionFacility.IsDefault
                     chkBPFacilityIncludeUsage.Checked = False
@@ -6355,19 +6467,12 @@ Tabs:
                 End If
 
             ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                ' Enable all first
-                chkBPIncludeT3Costs.Enabled = False
-                chkBPIncludeT3Time.Enabled = False
-                txtBPRelicLines.Enabled = False
-                cmbBPT3Decryptor.Enabled = False
-                cmbBPRelic.Enabled = False
+                ' Disable all first
+                Call SetInventionEnabled("T3", False)
 
-                ' Uncheck the invention checks for calcs
-                chkBPIncludeT3Costs.Checked = False
-                chkBPIncludeT3Time.Checked = False
                 ' If the facility is visible, then uncheck
                 If cmbBPFacilityActivities.Text = ActivityInvention Then
-                    ' Save the current facility value since we are changing it
+                    ' Save the current facility value since we are changing the usage value
                     Dim TempUsage As Boolean = SelectedBPInventionFacility.IncludeActivityUsage
                     Dim TempDefault As Boolean = SelectedBPInventionFacility.IsDefault
                     chkBPFacilityIncludeUsage.Checked = False
@@ -6382,35 +6487,16 @@ Tabs:
         Else ' Set it on the user settings
             If tabBPInventionEquip.Contains(tabInventionCalcs) Then
                 ' Enable all first
-                chkBPIncludeCopyCosts.Enabled = True
-                chkBPIncludeCopyTime.Enabled = True
-                chkBPIncludeInventionCosts.Enabled = True
-                chkBPIncludeInventionTime.Enabled = True
+                Call SetInventionEnabled("T2", True)
 
-                txtBPInventionLines.Enabled = True
-                cmbBPInventionDecryptor.Enabled = True
-
-                ' Uncheck the invention/copy checks for calcs
-                chkBPIncludeCopyCosts.Checked = SelectedBPCopyFacility.IncludeActivityCost
-                chkBPIncludeCopyTime.Checked = SelectedBPCopyFacility.IncludeActivityTime
-                chkBPIncludeInventionCosts.Checked = SelectedBPInventionFacility.IncludeActivityCost
-                chkBPIncludeInventionTime.Checked = SelectedBPInventionFacility.IncludeActivityTime
                 If cmbBPFacilityActivities.Text = ActivityInvention Then
                     chkBPFacilityIncludeUsage.Checked = SelectedBPInventionFacility.IncludeActivityUsage
                 End If
 
             ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
                 ' Enable all first
-                chkBPIncludeT3Costs.Enabled = True
-                chkBPIncludeT3Time.Enabled = True
+                Call SetInventionEnabled("T3", True)
 
-                txtBPRelicLines.Enabled = True
-                cmbBPT3Decryptor.Enabled = True
-                cmbBPRelic.Enabled = True
-
-                ' Uncheck the invention checks for calcs
-                chkBPIncludeT3Costs.Checked = SelectedBPT3InventionFacility.IncludeActivityCost
-                chkBPIncludeT3Time.Checked = SelectedBPT3InventionFacility.IncludeActivityTime
                 ' If the facility is visible, then uncheck
                 If cmbBPFacilityActivities.Text = ActivityInvention Then
                     chkBPFacilityIncludeUsage.Checked = SelectedBPT3InventionFacility.IncludeActivityUsage
@@ -6429,6 +6515,9 @@ Tabs:
                 ' Remove the invention and copy activity
                 cmbBPFacilityActivities.Items.Remove(ActivityInvention)
                 cmbBPFacilityActivities.Items.Remove(ActivityCopying)
+                ' Enable updates to these boxes
+                txtBPME.Enabled = True
+                txtBPTE.Enabled = True
             Else
                 ' Add the invention and copy activity
                 If Not cmbBPFacilityActivities.Items.Contains(ActivityInvention) Then
@@ -6437,6 +6526,9 @@ Tabs:
                 If Not cmbBPFacilityActivities.Items.Contains(ActivityCopying) Then
                     cmbBPFacilityActivities.Items.Add(ActivityCopying)
                 End If
+
+                txtBPME.Enabled = False
+                txtBPTE.Enabled = False
             End If
         End If
 
@@ -6567,6 +6659,10 @@ Tabs:
     End Sub
 
     Private Sub rbBPOwned_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPOwnedBlueprints.CheckedChanged
+        Call ResetBlueprintCombo(True, True, True, True, True, True)
+    End Sub
+
+    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
@@ -6762,15 +6858,17 @@ Tabs:
 
     Public Sub RefreshBP(Optional IgnoreFocus As Boolean = False)
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
-                ' They have a decryptor, so use original
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-            Else
-                Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-            End If
-            txtBPRuns.SelectAll()
-            If Not IgnoreFocus Then
-                txtBPRuns.Focus()
+            If Not IsNothing(SelectedBlueprint) Then
+                If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
+                    ' They have a decryptor, so use original
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Else
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                End If
+                txtBPRuns.SelectAll()
+                If Not IgnoreFocus Then
+                    txtBPRuns.Focus()
+                End If
             End If
         End If
     End Sub
@@ -6789,12 +6887,14 @@ Tabs:
                 EnterKeyPressed = True
                 If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
                     ' They have a decryptor, so use original
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 Else
-                    Call UpdateBPGrids(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
                 End If
                 txtBPRuns.SelectAll()
+                IgnoreFocus = True
                 txtBPRuns.Focus()
+                IgnoreFocus = False
             End If
         End If
     End Sub
@@ -6905,6 +7005,8 @@ Tabs:
         chkBPNavyFaction.Checked = UserBPTabSettings.TechFactionCheck
         chkBPStoryline.Checked = UserBPTabSettings.TechStorylineCheck
         chkBPPirateFaction.Checked = UserBPTabSettings.TechPirateCheck
+
+        chkBPIncludeIgnoredBPs.Checked = UserBPTabSettings.IncludeIgnoredBPs
 
         chkBPSmall.Checked = UserBPTabSettings.SmallCheck
         chkBPMedium.Checked = UserBPTabSettings.MediumCheck
@@ -7117,6 +7219,8 @@ Tabs:
         TempSettings.TechFactionCheck = chkBPNavyFaction.Checked
         TempSettings.TechPirateCheck = chkBPPirateFaction.Checked
 
+        TempSettings.IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+
         TempSettings.SmallCheck = chkBPSmall.Checked
         TempSettings.MediumCheck = chkBPMedium.Checked
         TempSettings.LargeCheck = chkBPLarge.Checked
@@ -7158,12 +7262,16 @@ Tabs:
         If UserApplicationSettings.SaveBPRelicsDecryptors Then
             ' See if the T2 window is open and has a decryptor then save, only will be open if they have a t2 bp loaded
             If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                TempSettings.DecryptorType = cmbBPInventionDecryptor.Text
+                TempSettings.T2DecryptorType = cmbBPInventionDecryptor.Text
+                TempSettings.RelicType = UserBPTabSettings.RelicType
+                TempSettings.T3DecryptorType = UserBPTabSettings.T3DecryptorType ' Save the old one
             End If
 
             ' See if the T3 window is open and has a decryptor then save, only will be open if they have a t3 bp loaded
             If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                TempSettings.T2DecryptorType = UserBPTabSettings.T2DecryptorType ' Save the old one
                 TempSettings.RelicType = cmbBPRelic.Text
+                TempSettings.T3DecryptorType = cmbBPT3Decryptor.Text
             End If
         End If
 
@@ -7184,6 +7292,7 @@ Tabs:
     ' Saves the BP data
     Private Sub btnBPSaveBP_Click(sender As System.Object, e As System.EventArgs) Handles btnBPSaveBP.Click
         Dim AdditionalCost As Double
+        Dim SaveBPType As BPType
 
         ' Check additional costs for saving with this bp
         If IsNumeric(txtBPAddlCosts.Text) Then
@@ -7194,13 +7303,18 @@ Tabs:
 
         ' Save the BP
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            Call UpdateBPinDB(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetBPName, CInt(txtBPME.Text), CInt(txtBPTE.Text), BPType.Original, False, AdditionalCost)
-
-            If SelectedBlueprint.GetTechLevel = 2 Then
-                ' They marked it as owned and it's a T2 BPO, so ignore invention/RE costs
-                FirstLoad = True
-                FirstLoad = False
+            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True Then
+                ' T2 BPO 
+                SaveBPType = BPType.Original
+            ElseIf SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                ' Save T2/T3 an invented BPC, since if they aren't ignoring invention they have to use a decryptor or invention to get it
+                SaveBPType = BPType.InventedBPC
+            Else ' Everything else is a copy
+                SaveBPType = BPType.Copy
             End If
+
+            Call UpdateBPinDB(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType, _
+                              CInt(txtBPME.Text), CInt(txtBPTE.Text), 0, False, False, AdditionalCost)
 
             Call RefreshBP()
 
@@ -7263,8 +7377,8 @@ Tabs:
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID "
         SQL = SQL & "FROM ALL_BLUEPRINTS "
-        SQL = SQL & "LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-        SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID = " & SelectedCharacter.ID & " "
+        'SQL = SQL & "LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+        'SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID = " & SelectedCharacter.ID & " "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
 
         If SelectedBPText <> "" Then
@@ -7300,12 +7414,19 @@ Tabs:
             txtBPLines.Text = CStr(UserBPTabSettings.ProductionLines)
             txtBPInventionLines.Text = CStr(UserBPTabSettings.LaboratoryLines)
             txtBPRelicLines.Text = CStr(UserBPTabSettings.T3Lines)
+
+            Call ResetDecryptorCombos(TempTech)
+
         Else
             ' Set up for Reloading the decryptor combo on T2/T3
             ' Allow reloading of Decryptors
             InventionDecryptorsLoaded = False
             T3DecryptorsLoaded = False
-            cmbBPInventionDecryptor.Text = SelectedDecryptor.Name
+            If TempTech = 2 Then
+                cmbBPInventionDecryptor.Text = SelectedDecryptor.Name
+            Else
+                cmbBPT3Decryptor.Text = SelectedDecryptor.Name
+            End If
             ' Allow loading decryptors on drop down
             LoadingInventionDecryptors = False
             LoadingT3Decryptors = False
@@ -7314,9 +7435,9 @@ Tabs:
         End If
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
-        SQL = "SELECT ME, TE, ADDITIONAL_COSTS "
+        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
         SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
-        SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 "
+        SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerBP = DBCommand.ExecuteReader()
@@ -7328,7 +7449,7 @@ Tabs:
         Else
             ' Try again with corp
             readerBP.Close()
-            SQL = "SELECT ME, TE, ADDITIONAL_COSTS "
+            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED = 2 AND OWNED <> 0 "
 
@@ -7340,21 +7461,25 @@ Tabs:
             End If
         End If
 
+        Dim OwnedBPRuns As Integer
+
         If HasOwnedBP Then
-            txtBPME.Text = CStr(readerBP.GetValue(0))
+            txtBPME.Text = CStr(readerBP.GetInt32(0))
             OwnedBPME = txtBPME.Text
-            txtBPTE.Text = CStr(readerBP.GetValue(1))
+            txtBPTE.Text = CStr(readerBP.GetInt32(1))
             OwnedBPPE = txtBPTE.Text
             OwnedBP = True
             AddlCost = readerBP.GetDouble(2)
+            OwnedBPRuns = readerBP.GetInt32(3)
         Else
             OwnedBP = False
             AddlCost = 0
-            If TempTech <> 2 And TempTech <> 3 Then ' All T1
+            OwnedBPRuns = 1
+
+            If TempTech = 1 Then ' All T1
                 If Not SentFromManufacturingTab Then
                     txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
-
                 ElseIf SentFromShoppingList Then
                     ' Will be set already or use default
                     If Trim(txtBPME.Text) = "" Then
@@ -7365,14 +7490,48 @@ Tabs:
                     txtBPME.Text = txtCalcTempME.Text
                     txtBPTE.Text = txtCalcTempTE.Text
                 End If
-                chkBPIgnoreInvention.Enabled = False ' can't invent t1
-            ElseIf TempTech = 2 Or TempTech = 3 Then ' Default T2/T3 BPCs are going to be copies (unless the user has a BPO, which will be set above)
+            Else ' Default T2/T3 BPCs are going to be copies
                 If NewBP Then
-                    txtBPME.Text = CStr(BaseT2T3ME)
-                    txtBPTE.Text = CStr(BaseT2T3TE)
+                    txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
+                    txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
                 End If
-                chkBPIgnoreInvention.Enabled = True
             End If
+        End If
+
+        Dim TempBPType As BPType
+
+        If OwnedBP Then
+            TempBPType = GetBPType(readerBP.GetInt32(4))
+        Else
+            TempBPType = BPType.NotOwned
+        End If
+
+        If TempTech <> 1 And TempBPType <> BPType.Original Then
+            Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
+            chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+
+            ' disable the me/te boxes since these are invented
+            If chkBPIgnoreInvention.Checked Then
+                txtBPME.Enabled = True
+                txtBPTE.Enabled = True
+            Else
+                txtBPME.Enabled = False
+                txtBPTE.Enabled = False
+            End If
+
+        Else ' Check the ignore invention, they own this BPO and don't need to invent it (if T2)
+            If TempTech = 2 Then
+                chkBPIgnoreInvention.Checked = True
+            End If
+            ' enable the me/te boxes
+            txtBPME.Enabled = True
+            txtBPTE.Enabled = True
+        End If
+
+        If TempTech <> 2 Then
+            chkBPIgnoreInvention.Enabled = False ' can't invent t1, and T3 are always invented - so don't allow toggle
+        Else
+            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
         End If
 
         BPTeamComboLoaded = True  ' Dont' trigger a reload  yet
@@ -7437,20 +7596,74 @@ Tabs:
         ' Load the facility based on what was selected, if not in the list then load manufacturing - basically don't change the facility unless we have to
         If SelectedIndyType <> PreviousIndustryType Or cmbBPFacilityType.Text = POSFacility Then  ' always load with POS so we can load the correct array
             Call LoadFacility(SelectedIndyType, False, True, _
-                          cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray, _
-                          lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
-                          lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, _
-                          btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
-                          chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities, _
-                          TempTech, ItemGroupID, ItemCategoryID, False, False) ' Don't load activites again
+                            cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray, _
+                            lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
+                            lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, _
+                            btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
+                            chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities, _
+                            TempTech, ItemGroupID, ItemCategoryID, False, False) ' Don't load activites again
         End If
 
         cmbBPBlueprintSelection.Focus()
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3
         If NewBP Then
-            Call ResetDecryptorCombos()
-            Call LoadRelicTypes(BPTypeID)
+            Dim TempDName As String = ""
+            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
+                ' Load the decryptor based on ME/TE
+                Dim TempD As New DecryptorList
+                LoadingInventionDecryptors = True
+                LoadingT3Decryptors = True
+                InventionDecryptorsLoaded = False
+                T3DecryptorsLoaded = False
+                ' Load up the decryptor based on data entered or BP data from an owned bp
+                SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, TempTech)
+                If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
+                    TempDName = Unknown
+                Else
+                    TempDName = SelectedDecryptor.Name
+                End If
+
+                If TempTech = 2 Then
+                    cmbBPInventionDecryptor.Text = TempDName
+                ElseIf TempTech = 3 Then
+                    cmbBPT3Decryptor.Text = TempDName
+                End If
+
+                LoadingInventionDecryptors = False
+                LoadingT3Decryptors = False
+            Else
+                Call ResetDecryptorCombos(TempTech)
+            End If
+
+            If TempTech = 3 Then
+                ' Load up the relic based on the bp data
+                Call LoadRelicTypes(BPTypeID)
+                Dim Tempstring As String
+                Tempstring = GetRelicfromInputs(SelectedDecryptor, BPTypeID, OwnedBPRuns)
+                If Tempstring <> "" Then
+                    LoadingRelics = True
+                    ' if found, set it else
+                    cmbBPRelic.Text = Tempstring
+                    LoadingRelics = False
+                End If
+            End If
+
+            ' Turn off the invention calcs if unknown
+            UpdatingInventionChecks = True
+            If TempDName = Unknown Then
+                chkBPIncludeCopyCosts.Checked = False
+                chkBPIncludeCopyTime.Checked = False
+                chkBPIncludeInventionCosts.Checked = False
+                chkBPIncludeInventionTime.Checked = False
+            Else
+                chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
+                chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
+                chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
+                chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
+            End If
+            UpdatingInventionChecks = False
+
         End If
 
         ' Make sure everything is enabled on first BP load
@@ -7522,10 +7735,6 @@ Tabs:
         If Trim(txtBPRuns.Text) = "" Then
             txtBPRuns.Text = "1"
         End If
-
-        ' Update the num bps here instead of when they enter data
-        ' this is really just a visual thing since the blueprint will determine the correct number and set it later
-        Call UpdateBPLinesandBPs()
 
         ' Check the quantity
         If Not IsNumeric(txtBPRuns.Text) Or Val(txtBPRuns.Text) <= 0 Then
@@ -7633,7 +7842,9 @@ Tabs:
         lblBPCanMakeBPAll.Visible = False
         txtListEdit.Visible = False
         Me.Cursor = Cursors.WaitCursor
+        IgnoreFocus = True
         Application.DoEvents()
+        IgnoreFocus = False
 
         BPME = CInt(txtBPME.Text)
         BPTE = CInt(txtBPTE.Text)
@@ -7701,7 +7912,7 @@ Tabs:
             lstBPComponentMats.Items.Clear()
             lstBPComponentMats.BeginUpdate()
             For i = 0 To BPComponentMats.Count - 1
-                complstViewRow = lstBPComponentMats.Items.Add(BPComponentMats(i).GetMaterialName) ' Check TO DO - Add check box?
+                complstViewRow = lstBPComponentMats.Items.Add(BPComponentMats(i).GetMaterialName) ' Check TODO - Add check box?
                 'The remaining columns are subitems  
                 'complstViewRow.SubItems.Add(BPComponentMats(i).GetMaterialName)
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetQuantity, 0))
@@ -7800,12 +8011,7 @@ Tabs:
 
         ' Show and update labels for T2 if selected
         If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-            If OwnedBP And NewBPSelection Then
-                ' T2 BPO owner
-                FirstLoad = True
-                Call ResetInventionBoxes()
-                FirstLoad = False
-            Else
+            If chkBPIgnoreInvention.Checked = False Then
                 If SelectedBlueprint.UserCanInventRE Then
                     lblBPT2InventStatus.Text = "Invention Calculations:"
                     lblBPT2InventStatus.ForeColor = Color.Black
@@ -7815,10 +8021,10 @@ Tabs:
                 End If
 
                 ' Invention cost to get enough success for the runs entered
-                lblBPInventionCost.Text = FormatNumber(SelectedBlueprint.GetBPInventionCost(), 2)
+                lblBPInventionCost.Text = FormatNumber(SelectedBlueprint.GetInventionCost(), 2)
 
                 ' Add copy costs for enough succesful runs
-                lblBPCopyCosts.Text = FormatNumber(SelectedBlueprint.GetBPCopyCost, 2)
+                lblBPCopyCosts.Text = FormatNumber(SelectedBlueprint.GetCopyCost, 2)
 
                 ' Invention Chance
                 lblBPInventionChance.Text = FormatPercent(SelectedBlueprint.GetInventionChance(), 2)
@@ -7827,10 +8033,13 @@ Tabs:
                 lblBPDecryptorStats.Text = "ME: " & CStr(SelectedDecryptor.MEMod) & ", TE: " & CStr(SelectedDecryptor.TEMod) & vbCrLf & "BP Runs: " & CStr(SelectedBlueprint.GetSingleInventedBPCRuns)
 
                 ' Show the copy time if they want it
-                lblBPCopyTime.Text = FormatIPHTime(SelectedBlueprint.GetBPCopyTime)
+                lblBPCopyTime.Text = FormatIPHTime(SelectedBlueprint.GetCopyTime)
 
                 ' Show the invention time if they want it
-                lblBPInventionTime.Text = FormatIPHTime(SelectedBlueprint.GetBPInventionTime)
+                lblBPInventionTime.Text = FormatIPHTime(SelectedBlueprint.GetInventionTime)
+
+                ' Set the tool tip for copy costs to the invention chance label
+                ttMain.SetToolTip(lblBPInventionChance, SelectedBlueprint.GetInventionBPC)
 
                 ' Finally check the invention materials and make sure that if any have 0.00 for price,
                 ' we update the invention label and add a tooltip for what has a price of 0
@@ -7854,8 +8063,12 @@ Tabs:
                     lblBPT2InventStatus.ForeColor = Color.Black
                     ttMain.SetToolTip(lblBPT2InventStatus, "")
                 End If
-
+            Else
+                FirstLoad = True
+                Call ResetInventionBoxes()
+                FirstLoad = False
             End If
+
 
             ' Show the invention tabs
             tabBPInventionEquip.TabPages.Remove(tabT3Calcs)
@@ -7873,47 +8086,53 @@ Tabs:
                 tabBPInventionEquip.TabPages.Add(tabT3Calcs)
             End If
 
-            ' RE Cost and time
-            lblBPRECost.Text = FormatNumber(SelectedBlueprint.GetBPInventionCost(), 2)
-            lblBPRETime.Text = FormatIPHTime(SelectedBlueprint.GetBPInventionTime())
+            If chkBPIgnoreInvention.Checked = False Then
+                ' RE Cost and time
+                lblBPRECost.Text = FormatNumber(SelectedBlueprint.GetInventionCost(), 2)
+                lblBPRETime.Text = FormatIPHTime(SelectedBlueprint.GetInventionTime())
 
-            ' Update the decryptor stats box ME: -4, TE: -3, Runs: +9
-            lblBPT3Stats.Text = "ME: " & CStr(SelectedDecryptor.MEMod) & ", TE: " & CStr(SelectedDecryptor.TEMod) & ", End Runs: " & CStr(SelectedBlueprint.GetSingleInventedBPCRuns)
+                ' Update the decryptor stats box ME: -4, TE: -3, Runs: +9
+                lblBPT3Stats.Text = "ME: " & CStr(SelectedDecryptor.MEMod) & ", TE: " & CStr(SelectedDecryptor.TEMod) & "," & vbCrLf & "BP Runs: " & CStr(SelectedBlueprint.GetSingleInventedBPCRuns)
 
-            If SelectedBlueprint.UserCanInventRE Then
-                lblT3InventStatus.Text = "T3 Invention Calculations:"
-                lblT3InventStatus.ForeColor = Color.Black
+                If SelectedBlueprint.UserCanInventRE Then
+                    lblT3InventStatus.Text = "T3 Invention Calculations:"
+                    lblT3InventStatus.ForeColor = Color.Black
+                Else
+                    lblT3InventStatus.Text = "Cannot Invent - Typical Cost Shown"
+                    lblT3InventStatus.ForeColor = Color.Red
+                End If
+
+                lblBPT3InventionChance.Text = FormatPercent(SelectedBlueprint.GetInventionChance(), 2)
+
+                ' Enable option for adding mats to shopping list
+                rbtnBPCopyInvREMats.Enabled = True
+
+                ' Finally check the RE materials and make sure that if any have 0.00 for price,
+                ' we update the RE label and add a tooltip for what has a price of 0
+                If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
+                    With SelectedBlueprint.GetInventionMaterials
+                        For i = 0 To .GetMaterialList.Count - 1
+                            If .GetMaterialList(i).GetTotalCost = 0 Then
+                                ZeroCostToolTipText = ZeroCostToolTipText & .GetMaterialList(i).GetMaterialName & ", "
+                            End If
+                        Next
+                    End With
+                End If
+
+                If ZeroCostToolTipText <> "" Then
+                    ' We have a few zero priced items
+                    ZeroCostToolTipText = ZeroCostToolTipText.Substring(0, Len(ZeroCostToolTipText) - 2)
+                    ZeroCostToolTipText = "T3 Invention Costs may be inaccurate; the following items have 0.00 for price: " & ZeroCostToolTipText
+                    lblT3InventStatus.ForeColor = Color.Red
+                    ttMain.SetToolTip(lblT3InventStatus, ZeroCostToolTipText)
+                Else
+                    lblBPT2InventStatus.ForeColor = Color.Black
+                    ttMain.SetToolTip(lblT3InventStatus, "")
+                End If
             Else
-                lblT3InventStatus.Text = "Cannot Invent - Typical Cost Shown"
-                lblT3InventStatus.ForeColor = Color.Red
-            End If
-
-            lblBPT3InventionChance.Text = FormatPercent(SelectedBlueprint.GetInventionChance(), 2)
-
-            ' Enable option for adding mats to shopping list
-            rbtnBPCopyInvREMats.Enabled = True
-
-            ' Finally check the RE materials and make sure that if any have 0.00 for price,
-            ' we update the RE label and add a tooltip for what has a price of 0
-            If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
-                With SelectedBlueprint.GetInventionMaterials
-                    For i = 0 To .GetMaterialList.Count - 1
-                        If .GetMaterialList(i).GetTotalCost = 0 Then
-                            ZeroCostToolTipText = ZeroCostToolTipText & .GetMaterialList(i).GetMaterialName & ", "
-                        End If
-                    Next
-                End With
-            End If
-
-            If ZeroCostToolTipText <> "" Then
-                ' We have a few zero priced items
-                ZeroCostToolTipText = ZeroCostToolTipText.Substring(0, Len(ZeroCostToolTipText) - 2)
-                ZeroCostToolTipText = "T3 Invention Costs may be inaccurate; the following items have 0.00 for price: " & ZeroCostToolTipText
-                lblT3InventStatus.ForeColor = Color.Red
-                ttMain.SetToolTip(lblT3InventStatus, ZeroCostToolTipText)
-            Else
-                lblBPT2InventStatus.ForeColor = Color.Black
-                ttMain.SetToolTip(lblT3InventStatus, "")
+                FirstLoad = True
+                Call ResetInventionBoxes()
+                FirstLoad = False
             End If
 
         Else ' T1
@@ -8036,7 +8255,7 @@ ExitForm:
     End Sub
 
     ' Selects and sets the decryptor
-    Private Function SelectDecryptor(ByVal DecryptorText As String, Tech As Integer) As Decryptor
+    Private Function SelectDecryptor(ByVal DecryptorText As String) As Decryptor
 
         If DecryptorText = None Or DecryptorText = "" Then
             SelectedDecryptor = NoDecryptor
@@ -8046,13 +8265,8 @@ ExitForm:
         End If
 
         ' Set the ME/TE text here
-        If Tech = BlueprintTechLevel.T1 Then
-            txtBPME.Text = CStr(SelectedDecryptor.MEMod)
-            txtBPTE.Text = CStr(SelectedDecryptor.TEMod)
-        Else ' T2 and T3
-            txtBPME.Text = CStr(SelectedDecryptor.MEMod + BaseT2T3ME)
-            txtBPTE.Text = CStr(SelectedDecryptor.TEMod + BaseT2T3TE)
-        End If
+        txtBPME.Text = CStr(SelectedDecryptor.MEMod + BaseT2T3ME)
+        txtBPTE.Text = CStr(SelectedDecryptor.TEMod + BaseT2T3TE)
 
         Return SelectedDecryptor
 
@@ -8090,7 +8304,7 @@ ExitForm:
             ElseIf .rbtnBPCelestialsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Structure' "
+                SQL = SQL & "AND ITEM_CATEGORY = 'Starbase' "
             ElseIf .rbtnBPStationPartsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnBPRigBlueprints.Checked Then
@@ -8168,35 +8382,30 @@ ExitForm:
 
         ' Finally add the sizes
         If chkBPSmall.Checked Then ' Light
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Small)
+            SizesClause = SizesClause & "'S',"
         End If
 
         If chkBPMedium.Checked Then ' Medium
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Medium)
+            SizesClause = SizesClause & "'M',"
         End If
 
         If chkBPLarge.Checked Then ' Heavy
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Large)
+            SizesClause = SizesClause & "'L',"
         End If
 
         If chkBPXL.Checked Then ' Fighters
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.ExtraLarge)
+            SizesClause = SizesClause & "'XL',"
         End If
 
         If SizesClause <> "" Then
-            SizesClause = " AND " & "( " & SizesClause.Substring(0, Len(SizesClause) - 4) & ") "
+            SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
         End If
 
         SQL = SQL & SizesClause
 
-        ' Temp for ignoring all the special edition stuff
-        If RareandShipSkinBPs.Count > 0 Then
-            SQL = SQL & " AND ALL_BLUEPRINTS.BLUEPRINT_ID NOT IN ("
-            For i = 0 To RareandShipSkinBPs.Count - 1
-                SQL = SQL & CStr(RareandShipSkinBPs(i)) & ","
-            Next
-            SQL = SQL.Substring(0, Len(SQL) - 1)
-            SQL = SQL & ")"
+        ' Ignore flag
+        If chkBPIncludeIgnoredBPs.Checked = False Then
+            SQL = SQL & "AND IGNORE = 0 "
         End If
 
         SQL = SQL & " ORDER BY X"
@@ -8280,7 +8489,7 @@ ExitForm:
     End Sub
 
     ' Returns a list of group ID's for the selected BP for use in teams
-    Private Function GetBPTeamGroupIDList() As List(Of Long)
+    Private Function GetTeamGroupIDList() As List(Of Long)
         Dim TempList As New List(Of Long)
         Dim rsLookup As SQLiteDataReader
         Dim SQL As String
@@ -8350,8 +8559,8 @@ ExitForm:
         lblBPComponentMatCost.Text = FormatNumber(SelectedBlueprint.GetComponentMaterials.GetTotalMaterialsCost, 2)
 
         ' Taxes/Fees
-        lblBPTaxes.Text = FormatNumber(SelectedBlueprint.GetBPTaxes / DivideUnits, 2)
-        lblBPBrokerFees.Text = FormatNumber(SelectedBlueprint.GetBPBrokerFees / DivideUnits, 2)
+        lblBPTaxes.Text = FormatNumber(SelectedBlueprint.GetSalesTaxes / DivideUnits, 2)
+        lblBPBrokerFees.Text = FormatNumber(SelectedBlueprint.GetSalesBrokerFees / DivideUnits, 2)
 
         ' Show the usage cost for the activity selected
         If chkBPFacilityIncludeUsage.Checked Then
@@ -8360,10 +8569,10 @@ ExitForm:
                     lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetManufacturingFacility, True))
                 Case ActivityInvention
-                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetBPInventionUsage() / DivideUnits, 2)
+                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetInventionUsage() / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetInventionFacility, False))
                 Case ActivityCopying
-                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetBPCopyUsage() / DivideUnits, 2)
+                    lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetCopyUsage() / DivideUnits, 2)
                     ttMain.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetCopyFacility, False))
                 Case ActivityComponentManufacturing
                     lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits, 2)
@@ -8483,75 +8692,64 @@ ExitForm:
 
         If Not IsNothing(SelectedBlueprint) Then
             If Trim(txtBPRuns.Text) <> "" Then
-                txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetBPTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), SelectedDecryptor.RunMod))
+                txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text), _
+                                                      CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
             End If
         End If
 
     End Sub
 
     ' Returns the number of BPs to use for item type and runs sent
-    Private Function GetUsedNumBPs(ByVal BlueprintTypeID As Long, ByVal SentTechLevel As Integer, ByVal SentRuns As Integer, ByVal DecryptorMod As Integer) As Integer
+    Private Function GetUsedNumBPs(ByVal BlueprintTypeID As Long, ByVal SentTechLevel As Integer, _
+                                   ByVal SentRuns As Integer, ByVal SentLines As Integer, ByVal SentNumBps As Integer, ByVal DecryptorMod As Integer) As Integer
         Dim readerOwned As SQLiteDataReader
         Dim SQL As String
         Dim MaxProductionRuns As Long
+        Dim ReturnValue As Integer
 
-        If SentTechLevel = 2 Or SentTechLevel = 3 Then ' (T2 or T3 items have BP's that can be created)
-            ' See if it's a T2 BPO, if so then don't update the lines, etc
-            If SentTechLevel = 2 Then
-                SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE OWNED = 1 AND USER_ID = " & SelectedCharacter.ID
-                SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintTypeID
+        If SentTechLevel = 1 Then
+            Return SentNumBps
+        End If
 
-                DBCommand = New SQLiteCommand(SQL, DB)
-                readerOwned = DBCommand.ExecuteReader
+        ' Set the number of bps
+        If SentTechLevel = 2 Then
+            SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & CStr(BlueprintTypeID)
 
-                If readerOwned.Read Then
-                    Return SentRuns
-                End If
-                readerOwned.Close()
-            End If
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerOwned = DBCommand.ExecuteReader()
+            readerOwned.Read()
 
-            ' Set the number of bps
-            If SentTechLevel = 2 Then
-                SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & CStr(BlueprintTypeID)
+            MaxProductionRuns = readerOwned.GetInt32(0)
 
-                DBCommand = New SQLiteCommand(SQL, DB)
-                readerOwned = DBCommand.ExecuteReader()
-                readerOwned.Read()
+            readerOwned.Close()
+            readerOwned = Nothing
 
-                MaxProductionRuns = readerOwned.GetInt32(0)
+        Else ' base T3 runs off of the relic
+            Dim readerBP As SQLiteDataReader
 
-                readerOwned.Close()
-            Else ' base T3 runs off of the relic
-                ' Base it off of the relic type - need to look it up based on the TypeID
-                ' TO DO - use industry products to get the quantity for the runs on t3 - make new function
-                If cmbBPRelic.Text.Contains(IntactRelic) Then
-                    MaxProductionRuns = 20
-                ElseIf cmbBPRelic.Text.Contains(MalfunctioningRelic) Then
-                    MaxProductionRuns = 10
-                ElseIf cmbBPRelic.Text.Contains(WreckedRelic) Then
-                    MaxProductionRuns = 3
-                Else
-                    MaxProductionRuns = 3
-                End If
-            End If
+            SQL = "SELECT quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
+            SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
 
-            MaxProductionRuns = MaxProductionRuns + DecryptorMod
-            ' Set the num bps off of the calculated amount
-            Return CInt(Math.Ceiling(SentRuns / MaxProductionRuns))
-        Else
-            Dim NumBPs As Integer = CInt(txtBPNumBPs.Text)
-            Dim BPRuns As Integer = CInt(txtBPRuns.Text)
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerBP = DBCommand.ExecuteReader()
 
-            ' Process based on what they entered, if it's larger than runs, then reset to match runs
-            If NumBPs > BPRuns Then
-                Return BPRuns
-            ElseIf NumBPs > 1 Then
-                Return (NumBPs)
+            If readerBP.Read Then
+                MaxProductionRuns = readerBP.GetInt32(0)
             Else
-                Return 1 ' Assume just one bp for T1 if sent
+                ' Assume wrecked bp
+                MaxProductionRuns = 3
             End If
+
+            readerBP.Close()
+            readerBP = Nothing
 
         End If
+
+        MaxProductionRuns = MaxProductionRuns + DecryptorMod
+        ' Set the num bps off of the calculated amount
+        ReturnValue = CInt(Math.Ceiling(SentRuns / MaxProductionRuns))
+
+        Return ReturnValue
 
     End Function
 
@@ -8587,14 +8785,14 @@ ExitForm:
 
     End Sub
 
-    ' Loads the previous blueprint - stops at index 0 (won't load) - TO DO
+    ' Loads the previous blueprint - stops at index 0 (won't load) - TODO
     Private Sub LoadPreviousBlueprint()
         If CurrentBPHistoryIndex <> 0 Then
 
         End If
     End Sub
 
-    ' Loads the next blueprint if they used previous (won't load if no bps in list or index = 1) - TO DO
+    ' Loads the next blueprint if they used previous (won't load if no bps in list or index = 1) - TODO
     Private Sub LoadNextBlueprint()
         If BPHistory.Count > 0 And CurrentBPHistoryIndex - 1 < BPHistory.Count Then
 
@@ -8606,7 +8804,7 @@ ExitForm:
         ' Set the usage tool tip data
         Dim TTString As String
 
-        ' TO DO - need to update if they add Teams back in
+        ' TODO - need to update if they add Teams back in
         TTString = "Total cost of doing the selected activity at this facility using:" & vbCrLf
         TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseJobCost, 2) & " " & vbCrLf
         TTString = TTString & "System Index = " & FormatPercent(SentFacility.CostIndex, 2) & " " & vbCrLf
@@ -8724,7 +8922,6 @@ ExitForm:
             chkSubsystems.Checked = True
             chkStructures.Checked = True
             chkTools.Checked = True
-            chkDataInterfaces.Checked = True
             chkCapT2Components.Checked = True
             chkCapitalComponents.Checked = True
             chkComponents.Checked = True
@@ -8744,7 +8941,6 @@ ExitForm:
             chkSubsystems.Checked = False
             chkStructures.Checked = False
             chkTools.Checked = False
-            chkDataInterfaces.Checked = False
             chkCapT2Components.Checked = False
             chkCapitalComponents.Checked = False
             chkComponents.Checked = False
@@ -9242,7 +9438,7 @@ ExitForm:
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkDataInterfaces_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDataInterfaces.CheckedChanged
+    Private Sub chkDataInterfaces_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Call UpdatePriceList()
     End Sub
 
@@ -9796,7 +9992,6 @@ ExitForm:
             chkSubsystems.Checked = .Subsystems
             chkStructures.Checked = .Structures
             chkTools.Checked = .Tools
-            chkDataInterfaces.Checked = .DataInterfaces
             chkCapT2Components.Checked = .CapT2Components
             chkCapitalComponents.Checked = .CapitalComponents
             chkComponents.Checked = .Components
@@ -10033,7 +10228,6 @@ ExitForm:
             .Subsystems = chkSubsystems.Checked
             .Structures = chkStructures.Checked
             .Tools = chkTools.Checked
-            .DataInterfaces = chkDataInterfaces.Checked
             .CapT2Components = chkCapT2Components.Checked
             .CapitalComponents = chkCapitalComponents.Checked
             .Components = chkComponents.Checked
@@ -10757,7 +10951,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
-            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
+            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous', 'Unknown Components') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
             ItemChecked = True
         End If
         If chkSalvage.Checked Then
@@ -10824,10 +11018,6 @@ ExitSub:
         End If
         If chkTools.Checked Then
             SQL = SQL & "ITEM_GROUP = 'Tool' OR "
-            ItemChecked = True
-        End If
-        If chkDataInterfaces.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Data Interfaces' OR "
             ItemChecked = True
         End If
         If chkFuelBlocks.Checked Then
@@ -10948,7 +11138,7 @@ ExitSub:
                     SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR "
                 End If
                 If chkStructures.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Structure' AND " & TechSQL & ") OR "
+                    SQL = SQL & "(ITEM_CATEGORY = 'Starbase' AND " & TechSQL & ") OR "
                 End If
             Else
                 ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -11302,7 +11492,7 @@ ExitSub:
 
             End If
 
-            If Autoload Then
+            If Autoload Or cmbCalcBaseFacilityType.Text = POSFacility Then
                 ' reload bp Use the original ME and TE values when they change the meta level
                 CalcBaseFacilityLoaded = True
             Else
@@ -16426,8 +16616,6 @@ CheckTechs:
         Dim BPRecordCount As Integer = 0
         Dim TotalItemCount As Integer = 0
         Dim TempItemType As Integer = 0
-        Dim TempOwned As Integer = 0
-        Dim TempBPType As Integer = 0
 
         Dim Response As MsgBoxResult
 
@@ -16443,7 +16631,7 @@ CheckTechs:
         Dim ArrayName As String = ""
         Dim MultiUsePOSArrays As List(Of IndustryFacility)
 
-        Dim DecryptorUsed As Decryptor
+        Dim DecryptorUsed As New Decryptor
 
         ' T2/T3 variables
         Dim RelicName As String = ""
@@ -16462,6 +16650,8 @@ CheckTechs:
 
         ' Number of blueprints used
         Dim NumberofBlueprints As Integer
+
+        Dim OriginalBPOwnedFlag As Boolean
 
         ' If they entered an ME/TE value make sure it's ok
         If Not CorrectMETE(txtCalcTempME.Text, txtCalcTempTE.Text, txtCalcTempME, txtCalcTempTE) Then
@@ -16767,7 +16957,6 @@ CheckTechs:
 
             ' Get data
             DBCommand = New SQLiteCommand(SQL, DB)
-            DBCommand.Parameters.AddWithValue("@ALLUSERBP_USERID", CStr(SelectedCharacter.ID))
             DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
             readerBPs = DBCommand.ExecuteReader
 
@@ -16797,10 +16986,8 @@ CheckTechs:
                 ' 0-BP_ID, 1-BLUEPRINT_GROUP, 2-BLUEPRINT_NAME, 3-ITEM_GROUP_ID, 4-ITEM_GROUP, 5-ITEM_CATEGORY_ID, 
                 ' 6-ITEM_CATEGORY, 7-ITEM_ID, 8-ITEM_NAME, 9-ME, 10-TE, 11-USERID, 12-ITEM_TYPE, 13-RACE_ID, 14-OWNED, 15-SCANNED 
                 ' 16-BP_TYPE, 17-UNIQUE_BP_ITEM_ID, 18-FAVORITE, 19-VOLUME, 20-MARKET_GROUP_ID, 21-ADDITIONAL_COSTS, 
-                ' 22-LOCATION_ID, 23-QUANTITY, 24-FLAG_ID, 25-RUNS
+                ' 22-LOCATION_ID, 23-QUANTITY, 24-FLAG_ID, 25-RUNS, 26-IGNORE, 27-TECH_LEVEL
                 InsertItem = New ManufacturingItem
-                RecordIDIterator += 1
-                InsertItem.RecordID = RecordIDIterator
 
                 ' Reset
                 MultiUsePOSArrays = New List(Of IndustryFacility)
@@ -16839,21 +17026,20 @@ CheckTechs:
                         InsertItem.TechLevel = ""
                 End Select
 
-                TempOwned = If(readerBPs.IsDBNull(14), 0, CInt(readerBPs.GetValue(14)))
-
-                If TempOwned = 0 Then
-                    InsertItem.Owned = "No"
+                ' Owned flag
+                If readerBPs.GetInt32(14) = 0 Then
+                    InsertItem.Owned = No
+                    OriginalBPOwnedFlag = False
                 Else
-                    InsertItem.Owned = "Yes"
+                    InsertItem.Owned = Yes
+                    OriginalBPOwnedFlag = True
                 End If
 
-                TempBPType = If(readerBPs.IsDBNull(14), -2, CInt(readerBPs.GetValue(16))) ' Default to bpc
+                ' BP Type
+                InsertItem.BlueprintType = GetBPType(readerBPs.GetInt32(16))
 
-                If TempBPType = BPType.Copy Then
-                    InsertItem.BlueprintType = BPType.Copy
-                Else
-                    InsertItem.BlueprintType = BPType.Original
-                End If
+                ' Save the runs for checking decryptors and relics later
+                InsertItem.SavedBPRuns = readerBPs.GetInt32(25)
 
                 ' ME value, either what the entered or in the table
                 Select Case TempItemType
@@ -16861,14 +17047,14 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPME = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             InsertItem.BPME = BaseT2T3ME
                         Else
                             ' Use what they entered
                             InsertItem.BPME = CInt(readerBPs.GetValue(9))
                         End If
                     Case Else
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPME = CInt(txtCalcTempME.Text)
                         Else
@@ -16883,14 +17069,14 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPTE = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             InsertItem.BPTE = BaseT2T3TE
                         Else
                             ' Use what they entered
                             InsertItem.BPTE = CInt(readerBPs.GetValue(10))
                         End If
                     Case Else
-                        If InsertItem.Owned = "No" Then
+                        If InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPTE = CInt(txtCalcTempTE.Text)
                         Else
@@ -17011,49 +17197,44 @@ CheckTechs:
                 ' If T3, first choose a decryptor, then Relic, then select compare types (raw and components)
                 ' Insert each different combination
                 If InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3" Then
+
+                    ' For determining the owned blueprints
+                    Dim TempDecryptors As New DecryptorList
+                    Dim OriginalRelicUsed As String = ""
+                    Dim CheckOwnedBP As Boolean = False
+                    Dim OriginalBPType As BPType = InsertItem.BlueprintType
+                    Dim OriginalDecryptorUsed As Decryptor = TempDecryptors.GetDecryptor(OrigME, OrigTE, InsertItem.SavedBPRuns, CInt(InsertItem.TechLevel.Substring(1)))
+                    If InsertItem.TechLevel = "T3" Then
+                        OriginalRelicUsed = GetRelicfromInputs(OriginalDecryptorUsed, InsertItem.BPID, InsertItem.SavedBPRuns)
+                    End If
+
                     ' Now add additional records for each decryptor
                     For j = 1 To CalcDecryptorCheckBoxes.Count - 1
                         If CalcDecryptorCheckBoxes(j).Checked Then
+
+                            ' These are all invented BPCs, BPC and BPOs are added separately below
+                            InsertItem.BlueprintType = BPType.InventedBPC
+
                             ' If they are not using for T2 or T3 then only add No Decyrptor and exit for
                             If CalcDecryptorCheckBoxes(j).Text <> None _
                                 And ((InsertItem.TechLevel = "T2" And chkCalcDecryptorforT2.Enabled And chkCalcDecryptorforT2.Checked) _
-                                Or (InsertItem.TechLevel = "T3" And chkCalcDecryptorforT3.Enabled And chkCalcDecryptorforT3.Checked)) _
-                                And (InsertItem.Owned = "No" Or (InsertItem.Owned = "Yes" And InsertItem.BlueprintType = BPType.Copy)) Then ' Only add decryptors to T2 or T3
+                                Or (InsertItem.TechLevel = "T3" And chkCalcDecryptorforT3.Enabled And chkCalcDecryptorforT3.Checked)) Then
 
                                 ' Select a decryptor
                                 DecryptorUsed = InventionDecryptors.GetDecryptor(CDbl(CalcDecryptorCheckBoxes(j).Text.Substring(0, 3)))
 
-                                ' Add decryptor and no meta
+                                ' Add decryptor
                                 InsertItem.Decryptor = DecryptorUsed
                                 InsertItem.Inputs = DecryptorUsed.Name
+                                InsertItem.BPME = BaseT2T3ME + InsertItem.Decryptor.MEMod
+                                InsertItem.BPTE = BaseT2T3TE + InsertItem.Decryptor.TEMod
 
-                                ' If the ME and TE are set to the base, then update them with this decryptor
-                                If OrigME = BaseT2T3ME And (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") Then
-                                    InsertItem.BPME = OrigME + InsertItem.Decryptor.MEMod
-                                End If
-
-                                If OrigTE = BaseT2T3TE And (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") Then
-                                    InsertItem.BPTE = OrigTE + InsertItem.Decryptor.TEMod
-                                End If
                             Else
-                                ' Add no decryptor, this is just the base item
+                                ' Add no decryptor, this is a copy or bpo
                                 InsertItem.Decryptor = NoDecryptor
                                 InsertItem.Inputs = NoDecryptor.Name
-
-                                If InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3" Then
-                                    If OrigME <> BaseT2T3ME Then
-                                        InsertItem.BPME = OrigME
-                                    Else
-                                        InsertItem.BPME = BaseT2T3ME
-                                    End If
-
-                                    If OrigTE <> BaseT2T3TE Then
-                                        InsertItem.BPTE = OrigTE
-                                    Else
-                                        InsertItem.BPTE = BaseT2T3TE
-                                    End If
-                                End If
-
+                                InsertItem.BPME = BaseT2T3ME
+                                InsertItem.BPTE = BaseT2T3TE
                             End If
 
                             ' Teams and facilities
@@ -17068,52 +17249,58 @@ CheckTechs:
                             End If
 
                             InsertItem.InventionTeam = NoTeam ' Disable until CCP implements
+
                             Dim BaseInputs As String = InsertItem.Inputs
 
+                            ' Relics
                             If InsertItem.TechLevel = "T3" Then
-                                ' For T3 need to insert a relic for each one selected
-                                If chkCalcRERelic1.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic1.Text
-                                    ' Add to the inputs
-                                    InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
-                                    ' Insert the items based with decryptor data
-                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
-                                                            chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
-                                End If
-
-                                If chkCalcRERelic2.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic2.Text
-                                    InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
-                                    ' Insert the items based with decryptor data
-                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
-                                                            chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
-                                End If
-
-                                If chkCalcRERelic3.Checked Then
-                                    InsertItem.Relic = chkCalcRERelic3.Text
-                                    InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
-                                    ' Insert the items based with decryptor data
-                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
-                                                            chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
-                                End If
-
+                                ' Loop through each relic check box and process for each decryptor
+                                For k = 1 To CalcRelicCheckboxes.Count - 1
+                                    If CalcRelicCheckboxes(k).Checked Then
+                                        InsertItem.Relic = CalcRelicCheckboxes(k).Text
+                                        ' Add to the inputs
+                                        InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
+                                        ' Set the owned flag before inserting
+                                        CheckOwnedBP = SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
+                                        If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT3Owned.Checked And chkCalcIncludeT3Owned.Enabled And UserInventedBPs.Contains(InsertItem.BPID)) Or _
+                                            (rbtnCalcBPOwned.Checked And CheckOwnedBP) Then
+                                            ' Insert the item 
+                                            Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                                        End If
+                                    End If
+                                Next
                             Else
                                 ' No relic for T2
                                 InsertItem.Relic = ""
-
-                                ' Insert the item 
-                                Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
-                                                        chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, chkCalcIncludeNoTeamCopy.Checked)
+                                ' Set the owned flag before inserting
+                                CheckOwnedBP = SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
+                                If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT2Owned.Checked And chkCalcIncludeT2Owned.Enabled And UserInventedBPs.Contains(InsertItem.BPID)) Or _
+                                    (rbtnCalcBPOwned.Checked And CheckOwnedBP) Then
+                                    ' Insert the item 
+                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                                End If
                             End If
 
-                        End If
-
-                        ' If they don't want to include decryptors, then exit loop after adding none
-                        If (InsertItem.TechLevel = "T2" And (chkCalcDecryptorforT2.Enabled = False Or chkCalcDecryptorforT2.Checked = False)) _
-                                Or (InsertItem.TechLevel = "T3" And (chkCalcDecryptorforT3.Enabled = False Or chkCalcDecryptorforT3.Checked = False)) Then
-                            Exit For
+                            ' If they don't want to include decryptors, then exit loop after adding none
+                            If (InsertItem.TechLevel = "T2" And (chkCalcDecryptorforT2.Enabled = False Or chkCalcDecryptorforT2.Checked = False)) _
+                                    Or (InsertItem.TechLevel = "T3" And (chkCalcDecryptorforT3.Enabled = False Or chkCalcDecryptorforT3.Checked = False)) Then
+                                Exit For
+                            End If
                         End If
                     Next
+
+                    ' Finally, see if the original blueprint was not invented and then add it separately - BPCs and BPOs (should only be T2)
+                    If OriginalBPType = BPType.Copy Or OriginalBPType = BPType.Original Then
+                        ' Get the original me/te
+                        InsertItem.BPME = OrigME
+                        InsertItem.BPTE = OrigTE
+                        InsertItem.Owned = Yes
+                        InsertItem.Inputs = Unknown
+                        InsertItem.BlueprintType = OriginalBPType
+
+                        ' Insert the item 
+                        Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
+                    End If
 
                 Else ' All T1 and others
                     InsertItem.Inputs = None
@@ -17126,13 +17313,11 @@ CheckTechs:
                     InsertItem.InventionTeam = NoTeam
 
                     ' Insert the items based on compare types
-                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, _
-                                            chkCalcIncludeNoTeamManufacturing.Checked, chkCalcIncludeNoTeamComponents.Checked, _
-                                            chkCalcIncludeNoTeamCopy.Checked)
+                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
                 End If
 
-                i += 1
-                pnlProgressBar.Value = i
+                    i += 1
+                    pnlProgressBar.Value = i
 
             End While
 
@@ -17242,12 +17427,9 @@ CheckTechs:
 
                     ' Set the number of BPs
                     With InsertItem
-                        If .TechLevel = "T2" And chkCalcAutoCalcT2NumBPs.Checked = False Then
-                            ' Just use the number of bps 
-                            NumberofBlueprints = CInt(txtCalcNumBPs.Text)
-                        ElseIf .TechLevel = "T3" Or (.TechLevel = "T2" And chkCalcAutoCalcT2NumBPs.Checked = True) Then
+                        If (.TechLevel = "T2" Or .TechLevel = "T3") And chkCalcAutoCalcT2NumBPs.Checked = True And (.BlueprintType = BPType.InventedBPC Or .BlueprintType = BPType.NotOwned) Then
                             ' For T3 or if they have calc checked, we will never have a BPO so determine the number of BPs
-                            NumberofBlueprints = GetUsedNumBPs(.BPID, CInt(.TechLevel.Substring(1, 1)), .Runs, .Decryptor.RunMod)
+                            NumberofBlueprints = GetUsedNumBPs(.BPID, CInt(.TechLevel.Substring(1, 1)), .Runs, .ProductionLines, .NumBPs, .Decryptor.RunMod)
                         Else
                             NumberofBlueprints = CInt(txtCalcNumBPs.Text)
                         End If
@@ -17260,7 +17442,7 @@ CheckTechs:
                                    InsertItem.ComponentTeam, InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
                     ' Set the T2 and T3 inputs if necessary
-                    If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
+                    If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
 
                         ' Strip off the relic if in here for the decryptor
                         If InsertItem.Inputs.Contains("-") Then
@@ -17324,15 +17506,15 @@ CheckTechs:
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalComponentCost
-                                InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                                InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                                InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                                InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime) ' Total production time for components only is always the bp production time
-                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
-                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
+                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17344,23 +17526,24 @@ CheckTechs:
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
                                 If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                                    InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                    InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
                                 If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                                    InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                    InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
                                 End If
 
                                 ' Usage
                                 InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
-                                InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
-                                InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                                ' Don't build components in this calculation
+                                InsertItem.ComponentManufacturingFacilityUsage = 0
+                                InsertItem.CapComponentManufacturingFacilityUsage = 0
+                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                                 ' Insert Components Item
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17375,15 +17558,15 @@ CheckTechs:
                             InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                             InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
                             InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
-                            InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                            InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                            InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                            InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                             InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                             InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
-                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
-                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
+                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17394,14 +17577,14 @@ CheckTechs:
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                                InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                                InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                                InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                                InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
                             End If
@@ -17410,8 +17593,8 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                             ' Insert Raw Mats item
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17445,14 +17628,14 @@ CheckTechs:
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                                 InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
 
-                                InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                                InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                                InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                                InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
                                 InsertItem.BPProductionTime = FormatIPHTime(ManufacturingBlueprint.GetProductionTime)
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
-                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
-                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                                InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
+                                InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                                 InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17463,14 +17646,14 @@ CheckTechs:
                                 InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                                    InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                                If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                                    InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                                    InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                                    InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
                                 End If
@@ -17479,8 +17662,8 @@ CheckTechs:
                                 InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                                 InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                                 InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                                InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                                InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                                 ' Insert Build/Buy item
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17520,8 +17703,8 @@ CheckTechs:
 
                             InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
-                            InsertItem.Taxes = ManufacturingBlueprint.GetBPTaxes
-                            InsertItem.BrokerFees = ManufacturingBlueprint.GetBPBrokerFees
+                            InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
+                            InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
 
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
 
@@ -17533,8 +17716,8 @@ CheckTechs:
                                 InsertItem.TotalProductionTime = FormatIPHTime(ManufacturingBlueprint.GetTotalProductionTime)
                             End If
 
-                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetBPCopyTime)
-                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetBPInventionTime)
+                            InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime)
+                            InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime)
 
                             InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
@@ -17545,14 +17728,14 @@ CheckTechs:
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                                InsertItem.InventionCost = ManufacturingBlueprint.GetBPInventionCost
+                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                                InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                                InsertItem.CopyCost = ManufacturingBlueprint.GetBPCopyCost
+                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                                InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
                             End If
@@ -17561,8 +17744,8 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetBPCopyUsage
-                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetBPInventionUsage
+                            InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
+                            InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
                             ' Insert the chosen item
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList)
@@ -17730,11 +17913,7 @@ DisplayResults:
                     Case ProgramSettings.InventionChanceColumnName
                         BPList.SubItems.Add(FormatPercent(FinalItemList(i).InventionChance, 2))
                     Case ProgramSettings.BPTypeColumnName
-                        If FinalItemList(i).BlueprintType = BPType.Copy Then
-                            BPList.SubItems.Add("Copy")
-                        Else
-                            BPList.SubItems.Add("BPO")
-                        End If
+                        BPList.SubItems.Add(GetBPTypeString(FinalItemList(i).BlueprintType))
                     Case ProgramSettings.RaceColumnName
                         BPList.SubItems.Add(FinalItemList(i).Race)
                     Case ProgramSettings.VolumeperItemColumnName
@@ -17814,7 +17993,7 @@ DisplayResults:
             Next
 
             ' Color owned BP's
-            If FinalItemList(i).Owned = "Yes" Then
+            If FinalItemList(i).Owned = Yes Then
                 BPList.BackColor = Color.BlanchedAlmond
             ElseIf UserInventedBPs.Contains(FinalItemList(i).BPID) Then
                 ' It's an invented BP that we own the T1 BP for
@@ -17830,11 +18009,11 @@ DisplayResults:
                 BPList.ForeColor = Color.DarkRed
             End If
 
-            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And Not chkCalcIgnoreInvention.Checked Then
+            If Not FinalItemList(i).CanInvent And FinalItemList(i).TechLevel = "T2" And FinalItemList(i).BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkOrange
             End If
 
-            If Not FinalItemList(i).CanRE And FinalItemList(i).TechLevel = "T3" And Not chkCalcIgnoreInvention.Checked Then
+            If Not FinalItemList(i).CanRE And FinalItemList(i).TechLevel = "T3" And FinalItemList(i).BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkGreen
             End If
 
@@ -17937,6 +18116,23 @@ ExitCalc:
 
     End Function
 
+    ' Sets the owned flag for an insert item
+    Private Function SetItemOwnedFlag(ByRef SentItem As ManufacturingItem, ByVal SentOrigDecryptor As Decryptor, ByVal SentOrigRelic As String, _
+                                 ByVal SentOrigME As Integer, ByVal SentOrigTE As Integer, ByVal SentOriginalBPOwnedFlag As Boolean) As Boolean
+        ' We know the original decryptor and relic used for this bp so see if they match what we just 
+        ' used and set the owned flag and it's invented, which all these are - also make sure the me/te are same
+        ' as base if no decryptor used
+        If SentItem.Decryptor.Name = SentOrigDecryptor.Name And SentOrigRelic.Contains(SentItem.Relic) _
+            And SentOriginalBPOwnedFlag = True And SentItem.BlueprintType = BPType.InventedBPC _
+            And Not (SentOrigDecryptor.Name = NoDecryptor.Name And SentOrigME <> BaseT2T3ME And SentOrigTE <> BaseT2T3TE) Then
+            SentItem.Owned = Yes
+            Return True
+        Else
+            SentItem.Owned = No
+            Return False
+        End If
+    End Function
+
     ' Loads the cmbBPTypeFilter object with types based on the radio button selected - Ie, Drones will load Drone types (Small, Medium, Heavy...etc)
     Private Sub LoadCalcBPTypes()
         Dim SQL As String
@@ -17958,13 +18154,12 @@ ExitCalc:
 
         ' See if we are looking at User Owned blueprints or All
         If rbtnCalcBPOwned.Checked Then
-            WhereClause = WhereClause & "AND USER_ID = " & SelectedCharacter.ID & " AND OWNED = 1 "
+            WhereClause = WhereClause & "AND USER_ID = " & SelectedCharacter.ID & " AND OWNED <> 0  "
         End If
 
         SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
 
         DBCommand = New SQLiteCommand(SQL, DB)
-        DBCommand.Parameters.AddWithValue("@ALLUSERBP_USERID", CStr(SelectedCharacter.ID))
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
         readerTypes = DBCommand.ExecuteReader
 
@@ -18000,6 +18195,8 @@ ExitCalc:
             For i = 0 To FacilityList.Count - 1
                 ' Set data
                 TempItem = CType(BaseItem.Clone, ManufacturingItem)
+                RecordIDIterator += 1
+                TempItem.RecordID = RecordIDIterator
                 TempItem.ManufacturingFacility = CType(FacilityList(i).Clone(), IndustryFacility)
                 TempItem.CalcType = CalcType
                 ' Add it
@@ -18011,6 +18208,8 @@ ExitCalc:
             Next
         Else
             TempItem = CType(BaseItem.Clone, ManufacturingItem)
+            RecordIDIterator += 1
+            TempItem.RecordID = RecordIDIterator
             TempItem.CalcType = CalcType
 
             ManufacturingItemList.Add(TempItem)
@@ -18029,18 +18228,24 @@ ExitCalc:
         ' If we want to add No Team, make sure the current team isn't no team and then add it as well
         If AddManufacturingNoTeam And BaseItem.ManufacturingTeam.TeamName <> NoTeam.TeamName Then
             TempItem = CType(BaseItem.Clone, ManufacturingItem)
+            RecordIDIterator += 1
+            TempItem.RecordID = RecordIDIterator
             TempItem.ManufacturingTeam = NoTeam
             ManufacturingItemList.Add(TempItem)
         End If
 
         If AddComponentsNoTeam And BaseItem.ComponentTeam.TeamName <> NoTeam.TeamName Then
             TempItem = CType(BaseItem.Clone, ManufacturingItem)
+            RecordIDIterator += 1
+            TempItem.RecordID = RecordIDIterator
             TempItem.ComponentTeam = NoTeam
             ManufacturingItemList.Add(TempItem)
         End If
 
         If AddCopyingNoTeam And BaseItem.CopyTeam.TeamName <> NoTeam.TeamName Then
             TempItem = CType(BaseItem.Clone, ManufacturingItem)
+            RecordIDIterator += 1
+            TempItem.RecordID = RecordIDIterator
             TempItem.CopyTeam = NoTeam
             ManufacturingItemList.Add(TempItem)
         End If
@@ -18238,12 +18443,7 @@ ExitCalc:
         ' Get the record count first
         SQLTemp = "SELECT COUNT(*) FROM " & USER_BLUEPRINTS & WhereClause
 
-        If rbtnCalcBPFavorites.Checked Then
-            WhereClause = WhereClause & " AND FAVORITE = 1 "
-        End If
-
         Dim CMDCount As New SQLiteCommand(SQLTemp, DB)
-        CMDCount.Parameters.AddWithValue("@ALLUSERBP_USERID", CStr(SelectedCharacter.ID))
         CMDCount.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
         RecordCount = CInt(CMDCount.ExecuteScalar())
 
@@ -18266,6 +18466,7 @@ ExitCalc:
         Dim SQL As String = ""
         Dim T2Query As String = ""
         Dim T3Query As String = ""
+        Dim RelicRuns As String = ""
 
         ' Items
         If chkCalcAmmo.Checked Then
@@ -18305,7 +18506,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Deployable' OR "
         End If
         If chkCalcStructures.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Structure' OR "
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Starbase' OR "
         End If
 
         ' Take off last OR
@@ -18332,36 +18533,41 @@ ExitCalc:
 
         If chkCalcT2.Enabled Then
             If chkCalcT2.Checked Then
-                ' Select all the T2 bps that we can invent from our owned bps and save them
-                SQL = "SELECT productTypeID FROM INDUSTRY_ACTIVITY_PRODUCTS "
-                SQL = SQL & "WHERE activityID = 8 AND blueprintTypeID IN "
-                SQL = SQL & "(SELECT BP_ID FROM " & USER_BLUEPRINTS & " WHERE X.USER_ID = " & SelectedCharacter.ID & " AND X.OWNED = 1 "
-                SQL = SQL & "AND X.ITEM_TYPE = 1) GROUP BY productTypeID"
-
-                DBCommand = New SQLiteCommand(SQL, DB)
-                DBCommand.Parameters.AddWithValue("@ALLUSERBP_USERID", CStr(SelectedCharacter.ID))
-                DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
-                readerT1s = DBCommand.ExecuteReader()
-
-                If readerT1s.HasRows Then
-                    While readerT1s.Read
-                        ' Build list for where clause
-                        T2Query = T2Query & CStr(readerT1s.GetValue(0)) & ","
-                        ' Save the T2 BPID for later lookup to display
-                        InventedBPs.Add(CLng(readerT1s.GetValue(0)))
-                    End While
-                End If
-
                 ' If we have T2 blueprints and they selected to only have T2 they have T1 blueprints for to invent
                 ' then build this list and add a special SQL item type entry for T2's
-                If rbtnCalcBPOwned.Checked = True And gbCalcIncludeOwned.Enabled And chkCalcIncludeT2Owned.Checked And T2Query <> "" Then
-                    ' Set the list of T2 BPC's we want and allow for User ID 0 (not owned but invented) or the User ID (OWNED)
-                    T2Query = " OR (X.ITEM_TYPE = 2 AND X.BP_ID IN (" & T2Query.Substring(0, T2Query.Length - 1) & ") "
-                    T2Query = T2Query & "AND X.USER_ID IN (" & SelectedCharacter.ID & ",0))"
+                If (rbtnCalcBPOwned.Checked Or rbtnCalcBPFavorites.Checked) And gbCalcIncludeOwned.Enabled And chkCalcIncludeT2Owned.Checked Then
+                    ' Select all the T2 bps that we can invent from our owned bps and save them
+                    SQL = "SELECT productTypeID FROM INDUSTRY_ACTIVITY_PRODUCTS "
+                    SQL = SQL & "WHERE activityID = 8 AND blueprintTypeID IN "
+                    SQL = SQL & "(SELECT BP_ID FROM " & USER_BLUEPRINTS
+                    If rbtnCalcBPFavorites.Checked Then
+                        SQL = SQL & " WHERE X.FAVORITE = 1 "
+                    ElseIf rbtnCalcBPOwned.Checked Then
+                        SQL = SQL & " WHERE X.OWNED <> 0 "
+                    End If
+                    SQL = SQL & "AND X.ITEM_TYPE = 1) GROUP BY productTypeID"
+
+                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
+                    readerT1s = DBCommand.ExecuteReader()
+
+                    If readerT1s.HasRows Then
+                        While readerT1s.Read
+                            ' Build list for where clause
+                            T2Query = T2Query & CStr(readerT1s.GetValue(0)) & ","
+                            ' Save the T2 BPID for later lookup to display
+                            InventedBPs.Add(CLng(readerT1s.GetValue(0)))
+                        End While
+                    End If
 
                     readerT1s.Close()
                     readerT1s = Nothing
                     DBCommand = Nothing
+
+                    ' Set the list of T2 BPC's we want and allow for User ID 0 (not owned but invented) or the User ID (OWNED)
+                    If InventedBPs.Count <> 0 Then
+                        T2Query = " OR (X.ITEM_TYPE = 2 AND X.BP_ID IN (" & T2Query.Substring(0, T2Query.Length - 1) & ")) "
+                    End If
                 Else
                     T2Query = ""
                 End If
@@ -18374,8 +18580,7 @@ ExitCalc:
         If chkCalcT3.Enabled Then
             If chkCalcT3.Checked Then
                 If rbtnCalcBPOwned.Checked = True And gbCalcIncludeOwned.Enabled And chkCalcIncludeT3Owned.Checked Then
-                    ' Even though there are no T3 BPO's we want and allow for User ID 0 (not owned but invented) or the User ID (OWNED)
-                    T3Query = " OR (X.ITEM_TYPE = 14 AND X.USER_ID IN (" & SelectedCharacter.ID & ",0)) "
+                    T3Query = " OR (X.ITEM_TYPE = 14) "
                 Else
                     T3Query = ""
                 End If
@@ -18411,9 +18616,9 @@ ExitCalc:
             Return ""
         End If
 
-        ' See if we are looking at User Owned blueprints or item types and add this
+        ' See if we are looking at User Owned blueprints or item types and add this - only want owned item types
         If rbtnCalcBPOwned.Checked Then
-            ItemTypeNumbers = ItemTypeNumbers & " AND USER_ID=" & SelectedCharacter.ID & " AND OWNED = 1 "
+            ItemTypeNumbers = ItemTypeNumbers & " AND OWNED <> 0 "
         End If
 
         ' Determine what race we are looking at
@@ -18457,29 +18662,36 @@ ExitCalc:
 
         SizesClause = ""
 
-        ' Add the sizes
+        ' Finally add the sizes
         If chkCalcSmall.Checked Then ' Light
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Small)
+            SizesClause = SizesClause & "'S',"
         End If
 
         If chkCalcMedium.Checked Then ' Medium
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Medium)
+            SizesClause = SizesClause & "'M',"
         End If
 
         If chkCalcLarge.Checked Then ' Heavy
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.Large)
+            SizesClause = SizesClause & "'L',"
         End If
 
         If chkCalcXL.Checked Then ' Fighters
-            SizesClause = SizesClause & GetSMLXLQuery(ItemSize.ExtraLarge)
+            SizesClause = SizesClause & "'XL',"
         End If
 
         If SizesClause <> "" Then
-            SizesClause = " AND " & "(" & SizesClause.Substring(0, Len(SizesClause) - 4) & ")"
+            SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
+        End If
+
+        ' Flag for favorites 
+        If rbtnCalcBPFavorites.Checked Then
+            WhereClause = "WHERE FAVORITE = 1 AND "
+        Else
+            WhereClause = "WHERE "
         End If
 
         ' Add all the items to the where clause
-        WhereClause = "WHERE " & "((" & ItemTypes & ") AND (" & ItemTypeNumbers & "AND " & RaceClause & T2Query & T3Query & ")" & SizesClause & ComboType & ") "
+        WhereClause = WhereClause & RaceClause & " AND (" & ItemTypes & ") AND (((" & ItemTypeNumbers & ") " & T2Query & T3Query & "))" & SizesClause & ComboType & " "
 
         ' Finally add on text if they added it
         If Trim(txtCalcItemFilter.Text) <> "" Then
@@ -18496,15 +18708,8 @@ ExitCalc:
 
         End If
 
-        ' Temp for ignoring all the special edition stuff
-        If RareandShipSkinBPs.Count > 0 Then
-            WhereClause = WhereClause & " AND X.BP_ID NOT IN ("
-            For i = 0 To RareandShipSkinBPs.Count - 1
-                WhereClause = WhereClause & CStr(RareandShipSkinBPs(i)) & ","
-            Next
-            WhereClause = WhereClause.Substring(0, Len(WhereClause) - 1)
-            WhereClause = WhereClause & ")"
-        End If
+        ' Only bps not ignored - no option for this yet
+        WhereClause = WhereClause & " AND IGNORE = 0 "
 
         Return WhereClause
 
@@ -18539,7 +18744,7 @@ ExitCalc:
         Dim FoundItem As New ManufacturingItem
 
         ' Find the item clicked in the list of items then just send those values over
-        ManufacturingItemToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
+        ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
         FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
 
         If FoundItem IsNot Nothing Then
@@ -18549,7 +18754,7 @@ ExitCalc:
                                            .ManufacturingTeam, .ComponentTeam, .CopyTeam, _
                                            .ManufacturingFacility, .ComponentManufacturingFacility, .InventionFacility, .CopyFacility, _
                                            chkCalcTaxes.Checked, chkCalcFees.Checked, _
-                                           chkCalcBaseFacilityIncludeUsage.Checked, CStr(.BPME), txtCalcRuns.Text, txtCalcNumBPs.Text)
+                                           chkCalcBaseFacilityIncludeUsage.Checked, CStr(.BPME), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcNumBPs.Text)
             End With
         End If
 
@@ -18772,9 +18977,202 @@ ExitCalc:
         End If
     End Function
 
+<<<<<<< HEAD
+=======
+    ' The manufacturing item to load the grid
+    Public Class ManufacturingItem
+        Implements ICloneable
+
+        Public RecordID As Integer ' Unique record id
+
+        Public BPID As Long
+        Public ItemGroup As String
+        Public ItemGroupID As Integer
+        Public ItemCategory As String
+        Public ItemCategoryID As Integer
+        Public ItemTypeID As Long
+        Public ItemName As String
+        Public TechLevel As String
+        Public Owned As String
+        Public BPME As Integer
+        Public BPTE As Integer
+        Public Inputs As String
+        Public Profit As Double
+        Public ProfitPercent As Double
+        Public IPH As Double
+        Public TotalCost As Double
+        Public CalcType As String ' Type of calculation to get the profit - either Components, Raw Mats or Build/Buy
+        Public BlueprintType As BPType
+
+        Public Runs As Integer
+        Public SingleInventedBPCRunsperBPC As Integer
+        Public ProductionLines As Integer
+        Public LaboratoryLines As Integer
+
+        ' Inputs
+        Public Decryptor As New Decryptor
+        Public Relic As String
+        Public SavedBPRuns As Integer ' The number of runs on the bp that they have, helpful for determing decryptor and relics
+
+        ' Can do variables
+        Public CanBuildBP As Boolean
+        Public CanInvent As Boolean
+        Public CanRE As Boolean
+
+        Public SVR As Object ' Sales volume ratio, set to an object because this can be Nothing
+        Public SVRxIPH As Object ' could be nothing
+
+        Public ManufacturingFacility As IndustryFacility
+        Public ManufacturingFacilityUsage As Double
+        Public ComponentManufacturingFacility As IndustryFacility
+        Public ComponentManufacturingFacilityUsage As Double
+        Public CapComponentManufacturingFacility As IndustryFacility
+        Public CapComponentManufacturingFacilityUsage As Double
+
+        Public CopyCost As Double
+        Public CopyFacilityUsage As Double
+        Public CopyFacility As IndustryFacility
+
+        Public InventionCost As Double
+        Public InventionFacilityUsage As Double
+        Public InventionFacility As IndustryFacility
+
+        Public BPProductionTime As String
+        Public TotalProductionTime As String
+        Public CopyTime As String
+        Public InventionTime As String
+
+        Public ItemMarketPrice As Double
+
+        Public BrokerFees As Double
+        Public Taxes As Double
+
+        Public BaseJobCost As Double
+        Public NumBPs As Integer
+        Public InventionChance As Double
+        Public Race As String
+        Public VolumeperItem As Double
+        Public TotalVolume As Double
+
+        Public JobFee As Double
+        Public TeamFee As Double
+
+        Public ManufacturingTeam As IndustryTeam
+        Public ComponentTeam As IndustryTeam
+        Public InventionTeam As IndustryTeam
+        Public CopyTeam As IndustryTeam
+
+        Public ManufacturingTeamUsage As Double
+        Public ComponentTeamUsage As Double
+        Public CopyTeamUsage As Double
+        Public InventionTeamUsage As Double
+
+        Public Function Clone() As Object Implements System.ICloneable.Clone
+            Dim CopyofMe As New ManufacturingItem
+
+            CopyofMe.RecordID = RecordID
+            CopyofMe.BPID = BPID
+            CopyofMe.ItemGroup = ItemGroup
+            CopyofMe.ItemGroupID = ItemGroupID
+            CopyofMe.ItemCategory = ItemCategory
+            CopyofMe.ItemCategoryID = ItemCategoryID
+            CopyofMe.ItemTypeID = ItemTypeID
+            CopyofMe.ItemName = ItemName
+            CopyofMe.TechLevel = TechLevel
+            CopyofMe.Owned = Owned
+            CopyofMe.BPME = BPME
+            CopyofMe.BPTE = BPTE
+            CopyofMe.Inputs = Inputs
+            CopyofMe.Profit = Profit
+            CopyofMe.ProfitPercent = ProfitPercent
+            CopyofMe.IPH = IPH
+            CopyofMe.TotalCost = TotalCost
+            CopyofMe.CalcType = CalcType
+            CopyofMe.BlueprintType = BlueprintType
+
+            CopyofMe.Runs = Runs
+            CopyofMe.SingleInventedBPCRunsperBPC = SingleInventedBPCRunsperBPC
+            CopyofMe.ProductionLines = ProductionLines
+            CopyofMe.LaboratoryLines = LaboratoryLines
+
+            CopyofMe.CopyTime = CopyTime
+            CopyofMe.InventionTime = InventionTime
+
+            CopyofMe.Inputs = Inputs
+            CopyofMe.Decryptor = Decryptor
+            CopyofMe.Relic = Relic
+            CopyofMe.SavedBPRuns = SavedBPRuns
+
+            CopyofMe.CanBuildBP = CanBuildBP
+            CopyofMe.CanInvent = CanInvent
+            CopyofMe.CanRE = CanRE
+
+            CopyofMe.SVR = SVR
+            CopyofMe.SVRxIPH = SVRxIPH
+            CopyofMe.CopyCost = CopyCost
+            CopyofMe.InventionCost = InventionCost
+            CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
+
+            CopyofMe.ManufacturingTeam = ManufacturingTeam
+            CopyofMe.ComponentTeam = ComponentTeam
+            CopyofMe.InventionTeam = InventionTeam
+            CopyofMe.CopyTeam = CopyTeam
+
+            CopyofMe.ManufacturingFacility = ManufacturingFacility
+            CopyofMe.ComponentManufacturingFacility = ComponentManufacturingFacility
+            CopyofMe.CapComponentManufacturingFacility = CapComponentManufacturingFacility
+            CopyofMe.InventionFacility = InventionFacility
+            CopyofMe.CopyFacility = CopyFacility
+
+            CopyofMe.BPProductionTime = BPProductionTime
+            CopyofMe.TotalProductionTime = TotalProductionTime
+
+            CopyofMe.ItemMarketPrice = ItemMarketPrice
+
+            CopyofMe.BrokerFees = BrokerFees
+            CopyofMe.Taxes = Taxes
+
+            CopyofMe.BaseJobCost = BaseJobCost
+
+            CopyofMe.NumBPs = NumBPs
+            CopyofMe.InventionChance = InventionChance
+            CopyofMe.BlueprintType = BlueprintType
+            CopyofMe.Race = Race
+            CopyofMe.VolumeperItem = VolumeperItem
+            CopyofMe.TotalVolume = TotalVolume
+
+            CopyofMe.JobFee = JobFee
+            CopyofMe.TeamFee = TeamFee
+
+            CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
+            CopyofMe.ComponentManufacturingFacilityUsage = ComponentManufacturingFacilityUsage
+            CopyofMe.CopyFacilityUsage = CopyFacilityUsage
+            CopyofMe.InventionFacilityUsage = InventionFacilityUsage
+
+            CopyofMe.ManufacturingTeamUsage = ManufacturingTeamUsage
+            CopyofMe.ComponentTeamUsage = ComponentTeamUsage
+            CopyofMe.CopyTeamUsage = CopyTeamUsage
+            CopyofMe.InventionTeamUsage = InventionTeamUsage
+
+            Return CopyofMe
+
+        End Function
+
+    End Class
+
+>>>>>>> upstream/master
     ' Predicate for finding an item in a list EVE Market Data of items
     Private Function FindManufacturingItem(ByVal Item As ManufacturingItem) As Boolean
-        If Item.RecordID = ManufacturingItemToFind Then
+        If Item.RecordID = ManufacturingRecordIDToFind Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    ' Predicate for finding an item in a list EVE Market Data of items
+    Private Function FindManufacturingItembyName(ByVal Item As ManufacturingItem) As Boolean
+        If Item.ItemName = ManufacturingNameToFind Then
             Return True
         Else
             Return False
@@ -18847,8 +19245,8 @@ ExitCalc:
 
 #Region "List Options Menu"
 
-    ' Gets the line selected, grabs the TypeID and then looks up the CREST Market data for updates, then displays the market history form
-    Private Sub OpenMarketDataToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles OpenMarketDataToolStripMenuItem.Click
+    ' Gets the line selected, grabs the TypeID and then looks up the CREST Market data for updates, then displays the market history form - add back TODO
+    Private Sub OpenMarketDataToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles CalcBPStripMenuItem.Click
 
         Dim FoundItem As New ManufacturingItem
         Dim SQL As String
@@ -18856,33 +19254,88 @@ ExitCalc:
         Dim RegionID As Long
 
         ' Find the item clicked in the list of items by looking up the row number stored in the hidden column
-        ManufacturingItemToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
-        FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+        If lstManufacturing.Items.Count > 0 And lstManufacturing.SelectedItems.Count > 0 Then
+            ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
+            FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
 
-        If FoundItem IsNot Nothing Then
-            Dim TempCrest As New EVECREST
+            If FoundItem IsNot Nothing Then
+                Dim TempCrest As New EVECREST
 
-            ' Get the region ID
-            Sql = "SELECT regionID FROM REGIONS WHERE regionName ='" & cmbCalcSVRRegion.Text & "'"
-            DBCommand = New SQLiteCommand(Sql, DB)
-            readerRegion = DBCommand.ExecuteReader
+                ' Get the region ID
+                SQL = "SELECT regionID FROM REGIONS WHERE regionName ='" & cmbCalcSVRRegion.Text & "'"
+                DBCommand = New SQLiteCommand(SQL, DB)
+                readerRegion = DBCommand.ExecuteReader
 
-            If readerRegion.Read Then
-                RegionID = readerRegion.GetInt64(0)
-            Else
-                RegionID = TheForgeTypeID ' The Forge as default
+                If readerRegion.Read Then
+                    RegionID = readerRegion.GetInt64(0)
+                Else
+                    RegionID = TheForgeTypeID ' The Forge as default
+                End If
+
+                readerRegion.Close()
+                DBCommand = Nothing
+
+                If TempCrest.UpdateMarketHistory(FoundItem.ItemTypeID, RegionID) Then
+                    ' Now open the window for that item after updated
+                End If
+
+                TempCrest = Nothing
             End If
-
-            readerRegion.Close()
-            DBCommand = Nothing
-
-            If TempCrest.UpdateMarketHistory(FoundItem.ItemTypeID, RegionID) Then
-                ' Now open the window for that item after updated
-            End If
-
-            TempCrest = Nothing
         End If
 
+    End Sub
+
+    Private Sub IgnoreBlueprintToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles IgnoreBlueprintToolStripMenuItem.Click
+        If lstManufacturing.Items.Count > 0 Then
+            Dim FoundItem As New ManufacturingItem
+            Dim SQL As String
+
+            ' Find the item clicked in the list of items then just send those values over
+            ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
+            FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+
+            If FoundItem IsNot Nothing Then
+                Dim RemovedIDs As New List(Of Integer)
+                Dim ListIDstoRemove As New List(Of Integer)
+
+                ' We found it, so set the bp to ignore
+                With FoundItem
+                    SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
+                    Call ExecuteNonQuerySQL(SQL)
+
+                    ' Remove the item from the list in all it's forms plus from the manufacturing list
+                    ' Get all the items with the name to remove
+                    ManufacturingNameToFind = FoundItem.ItemName
+                    FoundItem = Nothing
+
+                    Do
+                        FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItembyName)
+                        If FoundItem IsNot Nothing Then
+                            ' Remove it
+                            FinalManufacturingItemList.Remove(FoundItem)
+                            RemovedIDs.Add(FoundItem.RecordID)
+                        End If
+                    Loop Until FoundItem Is Nothing
+
+                    ' Remove all rows currently in the list of this bp
+                    lstManufacturing.BeginUpdate()
+                    Dim ListCount As Integer = lstManufacturing.Items.Count - 1
+                    Dim i As Integer = 0
+                    While i < ListCount
+                        If RemovedIDs.Contains(CInt(lstManufacturing.Items(i).SubItems(0).Text)) Then
+                            ' Add the indicies to remove
+                            lstManufacturing.Items(i).Remove()
+                            ListCount -= 1
+                            i -= 1 ' make sure we reset since we just removed a line
+                        End If
+                        i += 1
+                    End While
+
+                    lstManufacturing.EndUpdate()
+
+                End With
+            End If
+        End If
     End Sub
 
 #End Region
@@ -19731,10 +20184,20 @@ ExitCalc:
             DCAgentRecord.Agent = readerDC.GetString(3)
             DCAgentRecord.AgentStanding = Math.Truncate(AgentStanding * 100) / 100
             DCAgentRecord.AgentLevel = readerDC.GetInt32(4)
-            DCAgentRecord.AgentLocation = readerDC.GetString(9) & " (" & CStr(DCAgentRecord.SystemSecurity) & ")" ' Station name + security
+            DCAgentRecord.AgentLocation = readerDC.GetString(13) & " (" & CStr(DCAgentRecord.SystemSecurity) & ") - " & readerDC.GetString(9)  ' Station name + security + region
 
             ' Need the Core typeID
-            SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & readerDC.GetString(7) & "'"
+            Dim TempCoreName As String = ""
+
+            If readerDC.GetString(7).Contains("Amarr Starship") Then
+                TempCoreName = "Amarrian Starship Engineering"
+            ElseIf readerDC.GetString(7).Contains("Gallente Starship") Then
+                TempCoreName = "Gallentean Starship Engineering"
+            Else
+                TempCoreName = readerDC.GetString(7)
+            End If
+
+            SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & TempCoreName & "'"
 
             DBCommand = New SQLiteCommand(SQL, DB)
             readerDC2 = DBCommand.ExecuteReader()
@@ -20522,12 +20985,12 @@ Leave:
 
             ' Finally set the taxes and fees
             If SetTaxes Then
-                CurrentReaction.Taxes = GetTaxes(CurrentReaction.ProfitPerHour)
+                CurrentReaction.Taxes = GetSalesTax(CurrentReaction.ProfitPerHour)
                 CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Taxes
             End If
 
             If SetFees Then
-                CurrentReaction.Fees = GetTaxes(CurrentReaction.ProfitPerHour)
+                CurrentReaction.Fees = GetSalesTax(CurrentReaction.ProfitPerHour)
                 CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Fees
             End If
 

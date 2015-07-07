@@ -86,8 +86,7 @@ Partial Class frmSelectIndustryJobColumns
         '
         'frmSelectIndustryJobColumns
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.ClientSize = New System.Drawing.Size(287, 423)
         Me.Controls.Add(Me.btnDefaults)
         Me.Controls.Add(Me.chkLstBoxColumns)

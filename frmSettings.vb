@@ -348,11 +348,9 @@ Public Class frmSettings
 
             chkDisableSVR.Checked = .DisableSVR
 
-            chkIgnoreRareandSkinBPs.Checked = .IgnoreRareandShipSkinBPs
-
             ' ShoppingList
             chkIncludeShopListInventMats.Checked = .ShopListIncludeInventMats
-            chkIncludeShopListT3InventionMats.Checked = .ShopListIncludeREMats
+            chkIncludeShopListCopyMats.Checked = .ShopListIncludeCopyMats
 
             If .RefiningEfficiency <> Defaults.DefaultRefiningEfficency Then
                 cmbRefiningEfficiency.Text = FormatPercent(.RefiningEfficiency, 0)
@@ -485,10 +483,9 @@ Public Class frmSettings
             TempSettings.DisableSVR = chkDisableSVR.Checked
             TempSettings.SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
             TempSettings.SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
-            TempSettings.IgnoreRareandShipSkinBPs = chkIgnoreRareandSkinBPs.Checked
 
             TempSettings.ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
-            TempSettings.ShopListIncludeREMats = chkIncludeShopListT3InventionMats.Checked
+            TempSettings.ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
             Dim RefineTax As Double = CDbl(cmbRefineTax.Text.Replace("%", ""))
 
@@ -499,12 +496,6 @@ Public Class frmSettings
             End If
 
             TempSettings.EVECentralRefreshInterval = CInt(txtEVECentralInterval.Text)
-
-            RareandShipSkinBPs = New List(Of Long)
-
-            If chkIgnoreRareandSkinBPs.Checked = True Then
-                Call SetRareandShipSkinBPs()
-            End If
 
             ' Save the data in the XML file
             Call Settings.SaveApplicationSettings(TempSettings)
@@ -669,7 +660,7 @@ InvalidData:
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkLinkBPTabTeamstoSystem_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkIgnoreRareandSkinBPs.CheckedChanged
+    Private Sub chkLinkBPTabTeamstoSystem_CheckedChanged(sender As System.Object, e As System.EventArgs)
         btnSave.Text = "Save"
     End Sub
 
