@@ -18977,6 +18977,8 @@ ExitCalc:
         End If
     End Function
 
+<<<<<<< HEAD
+=======
     ' The manufacturing item to load the grid
     Public Class ManufacturingItem
         Implements ICloneable
@@ -19158,6 +19160,7 @@ ExitCalc:
 
     End Class
 
+>>>>>>> upstream/master
     ' Predicate for finding an item in a list EVE Market Data of items
     Private Function FindManufacturingItem(ByVal Item As ManufacturingItem) As Boolean
         If Item.RecordID = ManufacturingRecordIDToFind Then
@@ -19175,99 +19178,6 @@ ExitCalc:
             Return False
         End If
     End Function
-
-    ' For sorting a ManufacturingList by IPH
-    Public Class CalcIPHComparer
-
-        Implements System.Collections.Generic.IComparer(Of ManufacturingItem)
-
-        Public Function Compare(ByVal p1 As ManufacturingItem, ByVal p2 As ManufacturingItem) As Integer Implements IComparer(Of ManufacturingItem).Compare
-            ' swap p2 and p1 to do decending sort
-            Return p2.IPH.CompareTo(p1.IPH)
-        End Function
-
-    End Class
-
-    ' For sorting a ManufacturingList by IPH
-    Public Class CalcProfitComparer
-
-        Implements System.Collections.Generic.IComparer(Of ManufacturingItem)
-
-        Public Function Compare(ByVal p1 As ManufacturingItem, ByVal p2 As ManufacturingItem) As Integer Implements IComparer(Of ManufacturingItem).Compare
-            ' swap p2 and p1 to do decending sort
-            Return p2.Profit.CompareTo(p1.Profit)
-        End Function
-
-    End Class
-
-    ' For sorting a ManufacturingList by Profit Percent
-    Public Class CalcProfitPComparer
-
-        Implements System.Collections.Generic.IComparer(Of ManufacturingItem)
-
-        Public Function Compare(ByVal p1 As ManufacturingItem, ByVal p2 As ManufacturingItem) As Integer Implements IComparer(Of ManufacturingItem).Compare
-            ' swap p2 and p1 to do decending sort
-            Return p2.ProfitPercent.CompareTo(p1.ProfitPercent)
-        End Function
-
-    End Class
-
-    ' For sorting a ManufacturingList by SVR
-    Public Class CalcSVRComparer
-
-        Implements System.Collections.Generic.IComparer(Of ManufacturingItem)
-
-        Public Function Compare(ByVal p1 As ManufacturingItem, ByVal p2 As ManufacturingItem) As Integer Implements IComparer(Of ManufacturingItem).Compare
-            Dim SVR1 As Double
-            Dim SVR2 As Double
-
-            ' swap p2 and p1 to do decending sort
-            If IsNothing(p1.SVR) Then
-                SVR1 = 0
-            Else
-                SVR1 = CDbl(p1.SVR)
-            End If
-
-            If IsNothing(p2.SVR) Then
-                SVR2 = 0
-            Else
-                SVR2 = CDbl(p2.SVR)
-            End If
-
-            ' swap p2 and p1 to do decending sort
-            Return SVR2.CompareTo(SVR1)
-
-        End Function
-
-    End Class
-
-    ' For sorting a ManufacturingList by SVR * IPH
-    Public Class CalcSVRIPHComparer
-
-        Implements System.Collections.Generic.IComparer(Of ManufacturingItem)
-
-        Public Function Compare(ByVal p1 As ManufacturingItem, ByVal p2 As ManufacturingItem) As Integer Implements IComparer(Of ManufacturingItem).Compare
-            Dim SVRIPH1 As Double
-            Dim SVRIPH2 As Double
-
-            ' swap p2 and p1 to do decending sort
-            If IsNothing(p1.SVRxIPH) Then
-                SVRIPH1 = 0
-            Else
-                SVRIPH1 = CDbl(p1.SVRxIPH)
-            End If
-
-            If IsNothing(p1.SVR) Then
-                SVRIPH2 = 0
-            Else
-                SVRIPH2 = CDbl(p2.SVRxIPH)
-            End If
-
-            Return SVRIPH2.CompareTo(SVRIPH1)
-
-        End Function
-
-    End Class
 
     ' Gets the industry type for T3 ships
     Private Function GetT3ShipIndustryType(T3DestroyerCheck As Boolean) As IndustryType
