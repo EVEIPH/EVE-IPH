@@ -199,6 +199,8 @@ Public Class frmSettings
 
     Public Sub New()
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 
@@ -221,7 +223,6 @@ Public Class frmSettings
 
     Private Sub frmSettings_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
         ' Load the settings for the program from DB
-        frmMain.ReloadSettings = False
         Call LoadFormSettings()
     End Sub
 
@@ -503,22 +504,20 @@ Public Class frmSettings
             ' Save the data to the local variable
             UserApplicationSettings = TempSettings
 
+            ' Reinit any tabs that have settings changes before displaying dialog
+            Call frmMain.ResetTabs()
+            Call frmMain.ResetRefresh()
+
             MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
             btnSave.Text = "OK"
-            GoTo ExitProc
+            Me.Cursor = Cursors.Default
         Else
             ' Just exit
             Me.Hide()
         End If
 
         btnSave.Focus()
-
-        Exit Sub
-
-ExitProc:
-        Me.Cursor = Cursors.Default
-        frmMain.ReloadSettings = True
 
     End Sub
 

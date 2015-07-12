@@ -156,6 +156,12 @@
     <Compile Include="frmCRESTMarketViewer.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmReqSkills.Designer.vb">
+      <DependentUpon>frmReqSkills.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmReqSkills.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmUsageViewer.Designer.vb">
       <DependentUpon>frmUsageViewer.vb</DependentUpon>
     </Compile>
@@ -311,12 +317,6 @@
     <Compile Include="frmPOSSettings.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmReqSkills.Designer.vb">
-      <DependentUpon>frmReqSkills.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmReqSkills.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmResearchAgents.Designer.vb">
       <DependentUpon>frmResearchAgents.vb</DependentUpon>
     </Compile>
@@ -400,6 +400,9 @@
   <ItemGroup>
     <EmbeddedResource Include="frmCRESTMarketViewer.resx">
       <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmReqSkills.resx">
+      <DependentUpon>frmReqSkills.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmUsageViewer.resx">
       <DependentUpon>frmUsageViewer.vb</DependentUpon>
@@ -498,10 +501,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmPOSSettings.resx">
       <DependentUpon>frmPOSSettings.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmReqSkills.resx">
-      <DependentUpon>frmReqSkills.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmResearchAgents.resx">

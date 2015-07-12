@@ -8,7 +8,7 @@ Imports System.Xml
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const DataDumpVersion As String = "Carnyx_1.0_113321"
+    Public Const DataDumpVersion As String = "Aegis_1.0_114220"
     Public Const VersionNumber As String = "3.1.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -233,6 +233,8 @@ Public Module Public_Variables
     Public Const DefaultTextDataExport As String = "Default"
     Public Const CSVDataExport As String = "CSV"
     Public Const SSVDataExport As String = "SSV"
+
+    Public AutoScaleSetting As AutoScaleMode ' For setting the type of auto scaleling based on their settings
 
     ' For scanning assets
     Public Enum ScanType
@@ -968,7 +970,6 @@ Public Module Public_Variables
                                  IgnoreInvention As Boolean, _
                                  IgnoreMinerals As Boolean, _
                                  IgnoreT1ITem As Boolean, _
-                                 Optional IgnoreRefresh As Boolean = False, _
                                  Optional CopyInventionMatsOnly As Boolean = False)
         Dim TempMats As New Materials
         Dim ShoppingItem As New ShoppingListItem
@@ -999,6 +1000,7 @@ Public Module Public_Variables
                     End If
 
                     .NumBPs = SentBlueprint.GetUsedNumBPs
+                    .RunsPerBP = SentBlueprint.GetSingleInventedBPCRuns
 
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
@@ -1046,9 +1048,6 @@ Public Module Public_Variables
 
                 End If
             End If
-
-            ' The total mat cost before invention materials added
-            .TotalMaterialCost = ShoppingBuyList.GetTotalMaterialsCost + SentBlueprint.GetInventionCost + SentBlueprint.GetCopyCost
 
             If SentBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SentBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
                 If UserApplicationSettings.ShopListIncludeInventMats = True Then
@@ -1104,11 +1103,6 @@ Public Module Public_Variables
 
         ' Add the final item and mark as items in list
         TotalShoppingList.InsertShoppingItem(ShoppingItem, ShoppingBuildList, ShoppingBuyList)
-
-        ' Refresh the data if it's open
-        If frmShop.Visible And Not IgnoreRefresh Then
-            Call frmShop.RefreshLists()
-        End If
 
     End Sub
 

@@ -88,6 +88,7 @@ Partial Class frmSelectManufacturingTabColumns
         'frmSelectManufacturingTabColumns
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(297, 572)
         Me.Controls.Add(Me.btnDefaults)
         Me.Controls.Add(Me.chkLstBoxColumns)

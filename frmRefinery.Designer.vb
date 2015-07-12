@@ -1887,6 +1887,7 @@ Partial Class frmRefinery
         'frmRefinery
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1005, 629)
         Me.Controls.Add(Me.btnRefine)
         Me.Controls.Add(Me.btnClose)

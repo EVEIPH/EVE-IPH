@@ -1,5 +1,7 @@
 ﻿Public NotInheritable Class frmAbout
 
+
+
     Private Sub frmAbout_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         ' Set the title of the form.
         Dim ApplicationTitle As String
@@ -23,4 +25,14 @@
         Me.Close()
     End Sub
 
+    Public Sub New()
+
+        Me.AutoScaleMode = AutoScaleSetting
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+
+    End Sub
 End Class

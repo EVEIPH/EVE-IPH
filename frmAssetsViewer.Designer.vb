@@ -1062,6 +1062,7 @@ Partial Class frmAssetsViewer
         'frmAssetsViewer
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(641, 672)
         Me.Controls.Add(Me.chkToggle)
         Me.Controls.Add(Me.btnCheckToggle)

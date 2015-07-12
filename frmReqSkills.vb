@@ -5,6 +5,8 @@ Public Class frmReqSkills
 
     Public Sub New(ByVal AllBPSkills As SkillType)
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 

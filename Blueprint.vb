@@ -22,8 +22,6 @@ Public Class Blueprint
     Private BlueprintRace As Integer
     Private ItemVolume As Double ' Volume of produced item (1 item only)
 
-    Private NumberofBlueprints As Integer
-
     ' If we compare the components for building or buying
     Private BuildBuy As Boolean
     Private HasBuildableComponents As Boolean = False
@@ -67,7 +65,7 @@ Public Class Blueprint
     Private iME As Integer ' ME of Blueprint
     Private iTE As Integer ' TE of Blueprint
     Private UserRuns As Long ' Number of runs for blueprint the user selects
-    Private NumberofBPs As Integer ' Number of blueprints that the user is running
+    Private NumberofBlueprints As Integer ' Number of blueprints that the user is running
     Private NumberofProductionLines As Integer ' Number of production lines the user is using
     Private NumberofLaboratoryLines As Integer ' Number of laboratory lines the user is using
     Private ComponentProductionTimes As New List(Of Double) ' A list of production times for components in this BP
@@ -145,7 +143,7 @@ Public Class Blueprint
     Private TotalIPHComponent As Double
 
     ' Save all the settings here, which has all the standings, fees, etc in it
-    Private UserSettings As ApplicationSettings
+    Private BPUserSettings As ApplicationSettings
 
     ' What team they are using for this job
     Private ManufacturingTeam As IndustryTeam
@@ -209,7 +207,7 @@ Public Class Blueprint
         readerBP.Close()
 
         ' Settings
-        UserSettings = UserSettings
+        BPUserSettings = UserSettings
 
         RawMaterials = New Materials
         ComponentMaterials = New Materials
@@ -258,7 +256,7 @@ Public Class Blueprint
             NumberofProductionLines = NumProductionLines
         End If
 
-        NumberofBPs = NumBlueprints
+        NumberofBlueprints = NumBlueprints
 
         AdditionalCosts = UserAddlCosts
 
@@ -422,7 +420,7 @@ Public Class Blueprint
         MaxRunsPerBP = SingleInventedBPCRuns
 
         ' Reset the number of bps needed based on the runs we have
-        NumberofBPs = CInt(Math.Ceiling(UserRuns / MaxRunsPerBP))
+        NumberofBlueprints = CInt(Math.Ceiling(UserRuns / MaxRunsPerBP))
 
         Return InventedBPs
 
@@ -433,7 +431,7 @@ Public Class Blueprint
                           ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
-        If NumberofBPs = 1 Then
+        If NumberofBlueprints = 1 Then
             'Just run the normal function and it will set everything
             Call BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
         Else ' Multi bps
@@ -448,17 +446,17 @@ Public Class Blueprint
             Dim BatchList As New List(Of Integer)
             Dim Batches As Integer
 
-            If UserRuns < NumberofBPs Then
+            If UserRuns < NumberofBlueprints Then
                 ' Can't run more bps than runs, so reset to the runs - 1 bp per run
-                NumberofBPs = CInt(UserRuns)
+                NumberofBlueprints = CInt(UserRuns)
             End If
 
             ' For bps with unlimited runs, assume that the most efficient is to run max runs on each line in one batch, 
             ' so reset if bps are greater than lines
             If MaxRunsPerBP = 0 Then
-                If NumberofBPs > NumberofProductionLines Then
+                If NumberofBlueprints > NumberofProductionLines Then
                     ' We can't run more bps than the lines entered, so reset this
-                    NumberofBPs = NumberofProductionLines
+                    NumberofBlueprints = NumberofProductionLines
                 End If
                 Batches = 1
             Else
@@ -467,8 +465,8 @@ Public Class Blueprint
             End If
 
             ' set the minimum per bp, shouldn't go over the runs per bp since the user sends in the total numbps they need
-            RunsPerLine = CInt(Math.Floor(UserRuns / NumberofBPs))
-            ExtraRuns = CInt(UserRuns - (RunsPerLine * NumberofBPs))
+            RunsPerLine = CInt(Math.Floor(UserRuns / NumberofBlueprints))
+            ExtraRuns = CInt(UserRuns - (RunsPerLine * NumberofBlueprints))
 
             ' To track how many runs we have used in the batch setup
             Dim RunTracker As Long = 0
@@ -517,7 +515,7 @@ Public Class Blueprint
                 For j = 0 To ProductionChain(i).Count - 1
                     Application.DoEvents()
 
-                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, UserSettings, BuildBuy, _
+                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
                                                        CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingTeam, ManufacturingFacility, ComponentManufacturingTeam, _
                                                        ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
@@ -636,14 +634,14 @@ Public Class Blueprint
                     End If
 
                     ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1, _
-                                                   NumberofProductionLines, BPCharacter, UserSettings, False, _
+                                                   NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
                                                    0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam, _
                                                    ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
                     ' Now add all the raw materials from this bp
-                    Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetBPRawMaterials.GetMaterialList)
+                    Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
 
                     ' Reset the component's material list for shopping list functionality
                     BuiltComponentList.GetBuiltItemList(i).BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
@@ -787,7 +785,7 @@ Public Class Blueprint
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), CLng(CurrentMaterial.GetQuantity), TempME, TempTE, _
-                              1, 1, BPCharacter, UserSettings, BuildBuy, _
+                              1, 1, BPCharacter, BPUserSettings, BuildBuy, _
                               0, ComponentManufacturingTeam, TempComponentFacility, _
                               ComponentManufacturingTeam, ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
@@ -797,8 +795,8 @@ Public Class Blueprint
                     ' Determine if the component should be bought, or we should build it and add to the correct list
                     If BuildBuy Then
                         ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                        If CurrentMaterial.GetTotalCost = 0 Or (CurrentMaterial.GetTotalCost > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
-                                                                And ((UserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not UserSettings.SuggestBuildBPNotOwned))) Then
+                        If CurrentMaterial.GetTotalCost = 0 Or (CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost _
+                                                                And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
                             '*** BUILD ***
                             ' We want to build this item
                             CurrentMaterial.SetBuildItem(True)
@@ -1179,10 +1177,10 @@ Public Class Blueprint
         BPProductionTime = BaseProductionTime * SetBPTimeModifier() * AdvManufacturingSkillLevelBonus
 
         ' Figure out how many jobs per batch we need to run, find the smallest of the two
-        If NumberofBPs > NumberofProductionLines Then
+        If NumberofBlueprints > NumberofProductionLines Then
             JobsPerBatch = NumberofProductionLines
-        ElseIf NumberofBPs <= NumberofProductionLines Then
-            JobsPerBatch = NumberofBPs
+        ElseIf NumberofBlueprints <= NumberofProductionLines Then
+            JobsPerBatch = NumberofBlueprints
         End If
 
         ' Batches more than runs aren't used, so just normalize to runs
@@ -1373,8 +1371,8 @@ Public Class Blueprint
                 RefME = BaseT2T3ME
                 RefTE = BaseT2T3TE
             Else
-                RefME = UserSettings.DefaultBPME
-                RefTE = UserSettings.DefaultBPTE
+                RefME = BPUserSettings.DefaultBPME
+                RefTE = BPUserSettings.DefaultBPTE
             End If
             OwnedBP = False
         End If
@@ -1619,7 +1617,7 @@ Public Class Blueprint
         ' Get and set the invention chance
         InventionChance = SetInventionChance(UseTypical)
 
-        ' Use the max runs for the T2 item and this should be the invented runs for one bpc - TODO check industry_products for this value as quantity (check bp management logic for code sample)
+        ' Use the max runs for the T2 item and this should be the invented runs for one bpc
         If TechLevel = BlueprintTechLevel.T2 Then
             SingleInventedBPCRuns = MaxProductionLimit + InventionDecryptor.RunMod
         Else
@@ -1886,7 +1884,7 @@ Public Class Blueprint
 
         ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * facility copyslotmod * (1-implant) * (1-Team value)
         If readerLookup.Read Then ' 3402 is science skill - just use the number of runs we need to make
-            TempTime = CDec((readerLookup.GetInt64(0)) * UserCopyRuns * (1 - (0.05 * BPCharacter.Skills.GetSkillLevel(3402))) * CopyFacility.TimeMultiplier * (1 - UserSettings.CopyImplantValue) * GetTeamBonus(CopyTeam, "TE"))
+            TempTime = CDec((readerLookup.GetInt64(0)) * UserCopyRuns * (1 - (0.05 * BPCharacter.Skills.GetSkillLevel(3402))) * CopyFacility.TimeMultiplier * (1 - BPUserSettings.CopyImplantValue) * GetTeamBonus(CopyTeam, "TE"))
         Else
             TempTime = 0
         End If
@@ -2298,7 +2296,7 @@ Public Class Blueprint
 
     ' Returns the number of blueprints used
     Public Function GetUsedNumBPs() As Integer
-        Return NumberofBPs
+        Return NumberofBlueprints
     End Function
 
     ' Gets the market price of the produced item from this blueprint

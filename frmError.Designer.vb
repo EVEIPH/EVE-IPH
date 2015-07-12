@@ -59,6 +59,7 @@ Partial Class frmError
         'frmError
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(529, 302)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.txtError)

@@ -135,9 +135,6 @@ Public Class frmMain
     ' The Reaction list for Reactions tab
     Private GlobalReactionList As New List(Of Reaction)
 
-    ' If we reload settings or not
-    Public ReloadSettings As Boolean
-
     ' If we refresh the manufacturing data or recalcuate
     Private RefreshCalcData As Boolean
 
@@ -360,7 +357,6 @@ Public Class frmMain
         Dim CREST As New EVECREST
 
         FirstLoad = True
-        ReloadSettings = True
         ErrorTracker = ""
 
         ' Set developer flag
@@ -380,10 +376,23 @@ Public Class frmMain
 
         Call SetProgress("Initializing...")
 
+        Dim userdpi As Integer
+        Dim Tempform As New Form
+        Using gfx As Graphics = Tempform.CreateGraphics()
+            userdpi = CInt(gfx.DpiX)
+        End Using
+
+        If userdpi = 96 Then
+            AutoScaleSetting = Windows.Forms.AutoScaleMode.Dpi
+        Else
+            AutoScaleSetting = Windows.Forms.AutoScaleMode.Dpi
+        End If
+
+        Me.AutoScaleMode = AutoScaleSetting
+        Application.DoEvents()
+
         ' This call is required by the designer.
         InitializeComponent()
-
-        Application.DoEvents()
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
@@ -4344,13 +4353,7 @@ NoBonus:
         ' Open the settings form
         f1.ShowDialog()
 
-        ' Reinit any tabs that have settings changes
-        If ReloadSettings Then
-            Call ResetTabs()
-            Call ResetRefresh()
-        Else ' Reset
-            ReloadSettings = True
-        End If
+
 
     End Sub
 
@@ -4404,7 +4407,7 @@ NoBonus:
         End If
     End Sub
 
-    Private Sub ResetTabs()
+    Public Sub ResetTabs()
         ' Init all forms
         Me.Cursor = Cursors.WaitCursor
         Call InitBPTab()
@@ -8767,7 +8770,7 @@ ExitForm:
         Call AddToShoppingList(SelectedBlueprint, chkBPBuildBuy.Checked, rbtnBPRawmatCopy.Checked, rbtnBPComponentCopy.Checked, _
                                BlueprintBuildFacility.MaterialMultiplier, POSFlag, _
                                chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked, _
-                               False, rbtnBPCopyInvREMats.Checked)
+                               rbtnBPCopyInvREMats.Checked)
 
         If TotalShoppingList.GetNumShoppingItems > 0 Then
             ' Add the final item and mark as items in list
@@ -17262,7 +17265,7 @@ CheckTechs:
                                         InsertItem.Inputs = BaseInputs & " - " & InsertItem.Relic
                                         ' Set the owned flag before inserting
                                         CheckOwnedBP = SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
-                                        If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT3Owned.Checked And chkCalcIncludeT3Owned.Enabled And UserInventedBPs.Contains(InsertItem.BPID)) Or _
+                                        If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT3Owned.Checked) Or _
                                             (rbtnCalcBPOwned.Checked And CheckOwnedBP) Then
                                             ' Insert the item 
                                             Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
@@ -17274,7 +17277,7 @@ CheckTechs:
                                 InsertItem.Relic = ""
                                 ' Set the owned flag before inserting
                                 CheckOwnedBP = SetItemOwnedFlag(InsertItem, OriginalDecryptorUsed, OriginalRelicUsed, OrigME, OrigTE, OriginalBPOwnedFlag)
-                                If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT2Owned.Checked And chkCalcIncludeT2Owned.Enabled And UserInventedBPs.Contains(InsertItem.BPID)) Or _
+                                If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT2Owned.Checked And UserInventedBPs.Contains(InsertItem.BPID)) Or _
                                     (rbtnCalcBPOwned.Checked And CheckOwnedBP) Then
                                     ' Insert the item 
                                     Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
@@ -17992,6 +17995,10 @@ DisplayResults:
                 End Select
             Next
 
+            If FinalItemList(i).ItemName = "Ark" Then
+                Application.DoEvents()
+            End If
+
             ' Color owned BP's
             If FinalItemList(i).Owned = Yes Then
                 BPList.BackColor = Color.BlanchedAlmond
@@ -18535,37 +18542,36 @@ ExitCalc:
             If chkCalcT2.Checked Then
                 ' If we have T2 blueprints and they selected to only have T2 they have T1 blueprints for to invent
                 ' then build this list and add a special SQL item type entry for T2's
-                If (rbtnCalcBPOwned.Checked Or rbtnCalcBPFavorites.Checked) And gbCalcIncludeOwned.Enabled And chkCalcIncludeT2Owned.Checked Then
+                If rbtnCalcAllBPs.Checked Or chkCalcIncludeT2Owned.Checked Then
+                    InventedBPs = New List(Of Long)
                     ' Select all the T2 bps that we can invent from our owned bps and save them
                     SQL = "SELECT productTypeID FROM INDUSTRY_ACTIVITY_PRODUCTS "
                     SQL = SQL & "WHERE activityID = 8 AND blueprintTypeID IN "
-                    SQL = SQL & "(SELECT BP_ID FROM " & USER_BLUEPRINTS
+                    SQL = SQL & "(SELECT BP_ID FROM " & USER_BLUEPRINTS & " WHERE "
                     If rbtnCalcBPFavorites.Checked Then
-                        SQL = SQL & " WHERE X.FAVORITE = 1 "
-                    ElseIf rbtnCalcBPOwned.Checked Then
-                        SQL = SQL & " WHERE X.OWNED <> 0 "
+                        SQL = SQL & " X.FAVORITE = 1 AND "
+                    Else
+                        SQL = SQL & " X.OWNED <> 0 AND "
                     End If
-                    SQL = SQL & "AND X.ITEM_TYPE = 1) GROUP BY productTypeID"
+                    SQL = SQL & "X.ITEM_TYPE = 1) GROUP BY productTypeID"
 
                     DBCommand = New SQLiteCommand(SQL, DB)
                     DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
                     readerT1s = DBCommand.ExecuteReader()
 
-                    If readerT1s.HasRows Then
-                        While readerT1s.Read
-                            ' Build list for where clause
-                            T2Query = T2Query & CStr(readerT1s.GetValue(0)) & ","
-                            ' Save the T2 BPID for later lookup to display
-                            InventedBPs.Add(CLng(readerT1s.GetValue(0)))
-                        End While
-                    End If
+                    While readerT1s.Read
+                        ' Build list for where clause
+                        T2Query = T2Query & CStr(readerT1s.GetValue(0)) & ","
+                        ' Save the T2 BPID for later lookup to display
+                        InventedBPs.Add(CLng(readerT1s.GetValue(0)))
+                    End While
 
                     readerT1s.Close()
                     readerT1s = Nothing
                     DBCommand = Nothing
 
                     ' Set the list of T2 BPC's we want and allow for User ID 0 (not owned but invented) or the User ID (OWNED)
-                    If InventedBPs.Count <> 0 Then
+                    If InventedBPs.Count <> 0 And T2Query <> "" Then
                         T2Query = " OR (X.ITEM_TYPE = 2 AND X.BP_ID IN (" & T2Query.Substring(0, T2Query.Length - 1) & ")) "
                     End If
                 Else
@@ -18579,7 +18585,7 @@ ExitCalc:
 
         If chkCalcT3.Enabled Then
             If chkCalcT3.Checked Then
-                If rbtnCalcBPOwned.Checked = True And gbCalcIncludeOwned.Enabled And chkCalcIncludeT3Owned.Checked Then
+                If rbtnCalcAllBPs.Checked Or chkCalcIncludeT3Owned.Checked Then
                     T3Query = " OR (X.ITEM_TYPE = 14) "
                 Else
                     T3Query = ""

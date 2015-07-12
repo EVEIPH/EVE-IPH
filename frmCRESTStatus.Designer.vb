@@ -46,6 +46,7 @@ Partial Class frmCRESTStatus
         'frmCRESTStatus
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(274, 66)
         Me.ControlBox = False
         Me.Controls.Add(Me.pgCREST)

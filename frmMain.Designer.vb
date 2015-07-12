@@ -60,8 +60,8 @@ Partial Class frmMain
         Me.mnuCurrentResearchAgents = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCurrentIndustryJobs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSettings = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuSelectDefaultChar = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUserSettings = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuSelectDefaultChar = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRestoreDefaultTabSettings = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRestoreDefaultBP = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRestoreDefaultUpdatePrices = New System.Windows.Forms.ToolStripMenuItem()
@@ -1169,125 +1169,125 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.mnuStripMain.SuspendLayout()
-        Me.pnlMain.SuspendLayout()
-        Me.tabMining.SuspendLayout()
-        Me.gbMineNumberMiners.SuspendLayout()
-        Me.gbMineOreProcessingType.SuspendLayout()
-        Me.gbMineTaxBroker.SuspendLayout()
-        Me.gbMineStripStats.SuspendLayout()
-        Me.gbMineMiningDroneM3.SuspendLayout()
-        Me.gbMineJumpCosts.SuspendLayout()
-        Me.gbMineHauling.SuspendLayout()
-        Me.gbMineBooster.SuspendLayout()
-        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbMineRefining.SuspendLayout()
-        Me.gbMineStationYield.SuspendLayout()
-        Me.gbMineBaseRefineSkills.SuspendLayout()
-        Me.gbMineShipSetup.SuspendLayout()
-        Me.gbMineSelectShip.SuspendLayout()
-        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbMineShipEquipment.SuspendLayout()
-        Me.gbMiningRigs.SuspendLayout()
-        Me.gbMineCrystals.SuspendLayout()
-        Me.gbMineSkills.SuspendLayout()
-        Me.gbMineMain.SuspendLayout()
-        Me.gbMineIncludeOres.SuspendLayout()
-        Me.gbMineOreLocSov.SuspendLayout()
-        Me.gbMineWHSpace.SuspendLayout()
-        Me.tabReactions.SuspendLayout()
-        Me.gbReactionsTaxesFees.SuspendLayout()
-        Me.gbReactionsSelectedMats.SuspendLayout()
-        Me.gbReactions.SuspendLayout()
-        Me.gbReactionsHybrid.SuspendLayout()
-        Me.gbReactionsBiochem.SuspendLayout()
-        Me.gbReactionsOptions.SuspendLayout()
-        Me.gbReactionsMoonMats.SuspendLayout()
-        Me.tabDatacores.SuspendLayout()
-        Me.gbDCOptions.SuspendLayout()
-        Me.gbDCAgentLocSov.SuspendLayout()
-        Me.gbDCTotalIPH.SuspendLayout()
-        Me.gbDCPrices.SuspendLayout()
-        Me.gbDCAgentTypes.SuspendLayout()
-        Me.gbDCBaseSkills.SuspendLayout()
-        Me.gbDCDatacores.SuspendLayout()
-        Me.gbDCCodes.SuspendLayout()
-        Me.gbDCCorpMinmatar.SuspendLayout()
-        Me.gbDCCorpAmarr.SuspendLayout()
-        Me.gbDCCorpsCaldari.SuspendLayout()
-        Me.gbDCCorpsGallente.SuspendLayout()
-        Me.tabManufacturing.SuspendLayout()
-        Me.gbCalcBPSelectOptions.SuspendLayout()
-        Me.gbCalcIgnoreinCalcs.SuspendLayout()
-        Me.gbCalcIncludeNoTeam.SuspendLayout()
-        Me.gbIncludeItems.SuspendLayout()
-        Me.gbSize.SuspendLayout()
-        Me.gbCalcProdLines.SuspendLayout()
-        Me.gbCalcCompareType.SuspendLayout()
-        Me.gbCalcTextColors.SuspendLayout()
-        Me.gbCalcInvention.SuspendLayout()
-        Me.gbBPRace.SuspendLayout()
-        Me.tabCalcFacilities.SuspendLayout()
-        Me.tabCalcFacilityBase.SuspendLayout()
-        Me.tabCalcFacilityComponents.SuspendLayout()
-        Me.tabCalcFacilityCopy.SuspendLayout()
-        Me.tabCalcFacilityT2Invention.SuspendLayout()
-        Me.tabCalcFacilityT3Invention.SuspendLayout()
-        Me.tabCalcFacilitySupers.SuspendLayout()
-        Me.tabCalcFacilityCapitals.SuspendLayout()
-        Me.tabCalcFacilityT3Ships.SuspendLayout()
-        Me.tabCalcFacilitySubsystems.SuspendLayout()
-        Me.tabCalcFacilityBoosters.SuspendLayout()
-        Me.tabCalcFacilityNoPOS.SuspendLayout()
-        Me.gbCalcFilter.SuspendLayout()
-        Me.gbCalcBPTech.SuspendLayout()
-        Me.gbCalcType.SuspendLayout()
-        Me.gbCalcIncludeOwned.SuspendLayout()
-        Me.gbCalcAvgPrice.SuspendLayout()
-        Me.gbIncludeTaxesFees.SuspendLayout()
-        Me.gbCalcTextFilter.SuspendLayout()
-        Me.gbCalcBPType.SuspendLayout()
-        Me.gbCalcBPSelect.SuspendLayout()
-        Me.gbCalcRelics.SuspendLayout()
-        Me.tabCalcTeams.SuspendLayout()
-        Me.tabCalcTeamManufacturing.SuspendLayout()
-        Me.tabCalcTeamComponents.SuspendLayout()
-        Me.tabCalcTeamInvention.SuspendLayout()
-        Me.tabCalcTeamCopy.SuspendLayout()
-        Me.gbTempMEPE.SuspendLayout()
-        Me.ListOptionsMenu.SuspendLayout()
-        Me.tabUpdatePrices.SuspendLayout()
-        Me.gbTradeHubSystems.SuspendLayout()
-        Me.gbSplitPrices.SuspendLayout()
-        Me.gbManufacturedItems.SuspendLayout()
-        Me.gbPriceTools.SuspendLayout()
-        Me.gbComponents.SuspendLayout()
-        Me.gbItems.SuspendLayout()
-        Me.gbPricesTech.SuspendLayout()
-        Me.gbPrice.SuspendLayout()
-        Me.gbRawMaterials.SuspendLayout()
-        Me.gbRegions.SuspendLayout()
-        Me.tabBlueprints.SuspendLayout()
-        Me.gbFilters.SuspendLayout()
-        Me.gbBPBlueprintType.SuspendLayout()
-        Me.gbBPInventionStats.SuspendLayout()
-        Me.gbBPMEPEImage.SuspendLayout()
-        Me.tabBPInventionEquip.SuspendLayout()
-        Me.tabFacility.SuspendLayout()
-        Me.tabT3Calcs.SuspendLayout()
-        Me.tabBPOptions.SuspendLayout()
-        Me.gbBPIgnoreinCalcs.SuspendLayout()
-        Me.tabInventionCalcs.SuspendLayout()
-        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbBPTeam.SuspendLayout()
-        Me.gbBPShopandCopy.SuspendLayout()
-        Me.gbBPBlueprintTech.SuspendLayout()
-        Me.tabMain.SuspendLayout()
-        Me.tabPI.SuspendLayout()
-        Me.gbPIPlanets.SuspendLayout()
-        Me.SuspendLayout()
+        Me.mnuStripMain.SuspendLayout
+        Me.pnlMain.SuspendLayout
+        Me.tabMining.SuspendLayout
+        Me.gbMineNumberMiners.SuspendLayout
+        Me.gbMineOreProcessingType.SuspendLayout
+        Me.gbMineTaxBroker.SuspendLayout
+        Me.gbMineStripStats.SuspendLayout
+        Me.gbMineMiningDroneM3.SuspendLayout
+        Me.gbMineJumpCosts.SuspendLayout
+        Me.gbMineHauling.SuspendLayout
+        Me.gbMineBooster.SuspendLayout
+        CType(Me.pictMineLaserOptmize,System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineRangeLink,System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineFleetBoostShip,System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbMineRefining.SuspendLayout
+        Me.gbMineStationYield.SuspendLayout
+        Me.gbMineBaseRefineSkills.SuspendLayout
+        Me.gbMineShipSetup.SuspendLayout
+        Me.gbMineSelectShip.SuspendLayout
+        CType(Me.pictMineSelectedShip,System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbMineShipEquipment.SuspendLayout
+        Me.gbMiningRigs.SuspendLayout
+        Me.gbMineCrystals.SuspendLayout
+        Me.gbMineSkills.SuspendLayout
+        Me.gbMineMain.SuspendLayout
+        Me.gbMineIncludeOres.SuspendLayout
+        Me.gbMineOreLocSov.SuspendLayout
+        Me.gbMineWHSpace.SuspendLayout
+        Me.tabReactions.SuspendLayout
+        Me.gbReactionsTaxesFees.SuspendLayout
+        Me.gbReactionsSelectedMats.SuspendLayout
+        Me.gbReactions.SuspendLayout
+        Me.gbReactionsHybrid.SuspendLayout
+        Me.gbReactionsBiochem.SuspendLayout
+        Me.gbReactionsOptions.SuspendLayout
+        Me.gbReactionsMoonMats.SuspendLayout
+        Me.tabDatacores.SuspendLayout
+        Me.gbDCOptions.SuspendLayout
+        Me.gbDCAgentLocSov.SuspendLayout
+        Me.gbDCTotalIPH.SuspendLayout
+        Me.gbDCPrices.SuspendLayout
+        Me.gbDCAgentTypes.SuspendLayout
+        Me.gbDCBaseSkills.SuspendLayout
+        Me.gbDCDatacores.SuspendLayout
+        Me.gbDCCodes.SuspendLayout
+        Me.gbDCCorpMinmatar.SuspendLayout
+        Me.gbDCCorpAmarr.SuspendLayout
+        Me.gbDCCorpsCaldari.SuspendLayout
+        Me.gbDCCorpsGallente.SuspendLayout
+        Me.tabManufacturing.SuspendLayout
+        Me.gbCalcBPSelectOptions.SuspendLayout
+        Me.gbCalcIgnoreinCalcs.SuspendLayout
+        Me.gbCalcIncludeNoTeam.SuspendLayout
+        Me.gbIncludeItems.SuspendLayout
+        Me.gbSize.SuspendLayout
+        Me.gbCalcProdLines.SuspendLayout
+        Me.gbCalcCompareType.SuspendLayout
+        Me.gbCalcTextColors.SuspendLayout
+        Me.gbCalcInvention.SuspendLayout
+        Me.gbBPRace.SuspendLayout
+        Me.tabCalcFacilities.SuspendLayout
+        Me.tabCalcFacilityBase.SuspendLayout
+        Me.tabCalcFacilityComponents.SuspendLayout
+        Me.tabCalcFacilityCopy.SuspendLayout
+        Me.tabCalcFacilityT2Invention.SuspendLayout
+        Me.tabCalcFacilityT3Invention.SuspendLayout
+        Me.tabCalcFacilitySupers.SuspendLayout
+        Me.tabCalcFacilityCapitals.SuspendLayout
+        Me.tabCalcFacilityT3Ships.SuspendLayout
+        Me.tabCalcFacilitySubsystems.SuspendLayout
+        Me.tabCalcFacilityBoosters.SuspendLayout
+        Me.tabCalcFacilityNoPOS.SuspendLayout
+        Me.gbCalcFilter.SuspendLayout
+        Me.gbCalcBPTech.SuspendLayout
+        Me.gbCalcType.SuspendLayout
+        Me.gbCalcIncludeOwned.SuspendLayout
+        Me.gbCalcAvgPrice.SuspendLayout
+        Me.gbIncludeTaxesFees.SuspendLayout
+        Me.gbCalcTextFilter.SuspendLayout
+        Me.gbCalcBPType.SuspendLayout
+        Me.gbCalcBPSelect.SuspendLayout
+        Me.gbCalcRelics.SuspendLayout
+        Me.tabCalcTeams.SuspendLayout
+        Me.tabCalcTeamManufacturing.SuspendLayout
+        Me.tabCalcTeamComponents.SuspendLayout
+        Me.tabCalcTeamInvention.SuspendLayout
+        Me.tabCalcTeamCopy.SuspendLayout
+        Me.gbTempMEPE.SuspendLayout
+        Me.ListOptionsMenu.SuspendLayout
+        Me.tabUpdatePrices.SuspendLayout
+        Me.gbTradeHubSystems.SuspendLayout
+        Me.gbSplitPrices.SuspendLayout
+        Me.gbManufacturedItems.SuspendLayout
+        Me.gbPriceTools.SuspendLayout
+        Me.gbComponents.SuspendLayout
+        Me.gbItems.SuspendLayout
+        Me.gbPricesTech.SuspendLayout
+        Me.gbPrice.SuspendLayout
+        Me.gbRawMaterials.SuspendLayout
+        Me.gbRegions.SuspendLayout
+        Me.tabBlueprints.SuspendLayout
+        Me.gbFilters.SuspendLayout
+        Me.gbBPBlueprintType.SuspendLayout
+        Me.gbBPInventionStats.SuspendLayout
+        Me.gbBPMEPEImage.SuspendLayout
+        Me.tabBPInventionEquip.SuspendLayout
+        Me.tabFacility.SuspendLayout
+        Me.tabT3Calcs.SuspendLayout
+        Me.tabBPOptions.SuspendLayout
+        Me.gbBPIgnoreinCalcs.SuspendLayout
+        Me.tabInventionCalcs.SuspendLayout
+        CType(Me.pictBP,System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbBPTeam.SuspendLayout
+        Me.gbBPShopandCopy.SuspendLayout
+        Me.gbBPBlueprintTech.SuspendLayout
+        Me.tabMain.SuspendLayout
+        Me.tabPI.SuspendLayout
+        Me.gbPIPlanets.SuspendLayout
+        Me.SuspendLayout
         '
         'mnuStripMain
         '
@@ -1346,7 +1346,7 @@ Partial Class frmMain
         Me.SetPOSDataToolStripMenuItem.Name = "SetPOSDataToolStripMenuItem"
         Me.SetPOSDataToolStripMenuItem.Size = New System.Drawing.Size(173, 22)
         Me.SetPOSDataToolStripMenuItem.Text = "POS Data"
-        Me.SetPOSDataToolStripMenuItem.Visible = False
+        Me.SetPOSDataToolStripMenuItem.Visible = false
         '
         'mnuManageBlueprintsToolStripMenuItem
         '
@@ -1363,7 +1363,7 @@ Partial Class frmMain
         '
         'mnuUpdateCRESTTeams
         '
-        Me.mnuUpdateCRESTTeams.Enabled = False
+        Me.mnuUpdateCRESTTeams.Enabled = false
         Me.mnuUpdateCRESTTeams.Name = "mnuUpdateCRESTTeams"
         Me.mnuUpdateCRESTTeams.Size = New System.Drawing.Size(236, 22)
         Me.mnuUpdateCRESTTeams.Text = "Update Teams"
@@ -1512,17 +1512,17 @@ Partial Class frmMain
         Me.mnuSettings.Size = New System.Drawing.Size(61, 20)
         Me.mnuSettings.Text = "Settings"
         '
-        'mnuSelectDefaultChar
-        '
-        Me.mnuSelectDefaultChar.Name = "mnuSelectDefaultChar"
-        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(307, 22)
-        Me.mnuSelectDefaultChar.Text = "Select Default Character"
-        '
         'mnuUserSettings
         '
         Me.mnuUserSettings.Name = "mnuUserSettings"
         Me.mnuUserSettings.Size = New System.Drawing.Size(307, 22)
         Me.mnuUserSettings.Text = "Select Application Settings"
+        '
+        'mnuSelectDefaultChar
+        '
+        Me.mnuSelectDefaultChar.Name = "mnuSelectDefaultChar"
+        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(307, 22)
+        Me.mnuSelectDefaultChar.Text = "Select Default Character"
         '
         'mnuRestoreDefaultTabSettings
         '
@@ -6401,9 +6401,9 @@ Partial Class frmMain
         Me.tabCalcFacilityComponents.Controls.Add(Me.lblCalcComponentFacilityManualME)
         Me.tabCalcFacilityComponents.Controls.Add(Me.lblCalcComponentFacilityBonus)
         Me.tabCalcFacilityComponents.Controls.Add(Me.chkCalcCapComponentsFacility)
-        Me.tabCalcFacilityComponents.Location = New System.Drawing.Point(4, 24)
+        Me.tabCalcFacilityComponents.Location = New System.Drawing.Point(4, 44)
         Me.tabCalcFacilityComponents.Name = "tabCalcFacilityComponents"
-        Me.tabCalcFacilityComponents.Size = New System.Drawing.Size(302, 133)
+        Me.tabCalcFacilityComponents.Size = New System.Drawing.Size(302, 113)
         Me.tabCalcFacilityComponents.TabIndex = 10
         Me.tabCalcFacilityComponents.Text = "Components"
         Me.tabCalcFacilityComponents.UseVisualStyleBackColor = true
@@ -6613,9 +6613,9 @@ Partial Class frmMain
         Me.tabCalcFacilityCopy.Controls.Add(Me.cmbCalcCopyFacilityType)
         Me.tabCalcFacilityCopy.Controls.Add(Me.lblCalcCopyFacilityManualME)
         Me.tabCalcFacilityCopy.Controls.Add(Me.lblCalcCopyFacilityBonus)
-        Me.tabCalcFacilityCopy.Location = New System.Drawing.Point(4, 24)
+        Me.tabCalcFacilityCopy.Location = New System.Drawing.Point(4, 44)
         Me.tabCalcFacilityCopy.Name = "tabCalcFacilityCopy"
-        Me.tabCalcFacilityCopy.Size = New System.Drawing.Size(302, 133)
+        Me.tabCalcFacilityCopy.Size = New System.Drawing.Size(302, 113)
         Me.tabCalcFacilityCopy.TabIndex = 3
         Me.tabCalcFacilityCopy.Text = "Copy"
         Me.tabCalcFacilityCopy.UseVisualStyleBackColor = true
@@ -6844,9 +6844,9 @@ Partial Class frmMain
         Me.tabCalcFacilityT2Invention.Controls.Add(Me.cmbCalcInventionFacilityType)
         Me.tabCalcFacilityT2Invention.Controls.Add(Me.lblCalcInventionFacilityManualME)
         Me.tabCalcFacilityT2Invention.Controls.Add(Me.lblCalcInventionFacilityBonus)
-        Me.tabCalcFacilityT2Invention.Location = New System.Drawing.Point(4, 24)
+        Me.tabCalcFacilityT2Invention.Location = New System.Drawing.Point(4, 44)
         Me.tabCalcFacilityT2Invention.Name = "tabCalcFacilityT2Invention"
-        Me.tabCalcFacilityT2Invention.Size = New System.Drawing.Size(302, 133)
+        Me.tabCalcFacilityT2Invention.Size = New System.Drawing.Size(302, 113)
         Me.tabCalcFacilityT2Invention.TabIndex = 2
         Me.tabCalcFacilityT2Invention.Text = "T2 Inv"
         Me.tabCalcFacilityT2Invention.UseVisualStyleBackColor = true
@@ -7075,9 +7075,9 @@ Partial Class frmMain
         Me.tabCalcFacilityT3Invention.Controls.Add(Me.cmbCalcT3InventionFacilityType)
         Me.tabCalcFacilityT3Invention.Controls.Add(Me.lblCalcT3InventionFacilityManualME)
         Me.tabCalcFacilityT3Invention.Controls.Add(Me.lblCalcT3InventionFacilityBonus)
-        Me.tabCalcFacilityT3Invention.Location = New System.Drawing.Point(4, 24)
+        Me.tabCalcFacilityT3Invention.Location = New System.Drawing.Point(4, 44)
         Me.tabCalcFacilityT3Invention.Name = "tabCalcFacilityT3Invention"
-        Me.tabCalcFacilityT3Invention.Size = New System.Drawing.Size(302, 133)
+        Me.tabCalcFacilityT3Invention.Size = New System.Drawing.Size(302, 113)
         Me.tabCalcFacilityT3Invention.TabIndex = 11
         Me.tabCalcFacilityT3Invention.Text = "T3 Inv"
         Me.tabCalcFacilityT3Invention.UseVisualStyleBackColor = true
@@ -7303,9 +7303,9 @@ Partial Class frmMain
         Me.tabCalcFacilitySupers.Controls.Add(Me.cmbCalcSuperFacilityType)
         Me.tabCalcFacilitySupers.Controls.Add(Me.lblCalcSuperFacilityManualME)
         Me.tabCalcFacilitySupers.Controls.Add(Me.lblCalcSuperFacilityBonus)
-        Me.tabCalcFacilitySupers.Location = New System.Drawing.Point(4, 24)
+        Me.tabCalcFacilitySupers.Location = New System.Drawing.Point(4, 44)
         Me.tabCalcFacilitySupers.Name = "tabCalcFacilitySupers"
-        Me.tabCalcFacilitySupers.Size = New System.Drawing.Size(302, 133)
+        Me.tabCalcFacilitySupers.Size = New System.Drawing.Size(302, 113)
         Me.tabCalcFacilitySupers.TabIndex = 6
         Me.tabCalcFacilitySupers.Text = "Supers"
         Me.tabCalcFacilitySupers.UseVisualStyleBackColor = true
@@ -12163,7 +12163,7 @@ Partial Class frmMain
         Me.tabT3Calcs.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
         Me.tabT3Calcs.Location = New System.Drawing.Point(4, 4)
         Me.tabT3Calcs.Name = "tabT3Calcs"
-        Me.tabT3Calcs.Size = New System.Drawing.Size(281, 139)
+        Me.tabT3Calcs.Size = New System.Drawing.Size(261, 139)
         Me.tabT3Calcs.TabIndex = 2
         Me.tabT3Calcs.Text = "Inv"
         Me.tabT3Calcs.UseVisualStyleBackColor = true
@@ -12302,7 +12302,7 @@ Partial Class frmMain
         Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
         Me.tabBPOptions.Location = New System.Drawing.Point(4, 4)
         Me.tabBPOptions.Name = "tabBPOptions"
-        Me.tabBPOptions.Size = New System.Drawing.Size(281, 139)
+        Me.tabBPOptions.Size = New System.Drawing.Size(261, 139)
         Me.tabBPOptions.TabIndex = 3
         Me.tabBPOptions.Text = "Options"
         Me.tabBPOptions.UseVisualStyleBackColor = true

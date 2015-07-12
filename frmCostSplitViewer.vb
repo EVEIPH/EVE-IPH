@@ -6,6 +6,8 @@ Public Class frmCostSplitViewer
 
     Public Sub New()
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 

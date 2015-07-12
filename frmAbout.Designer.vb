@@ -161,6 +161,7 @@ Partial Class frmAbout
         'frmAbout
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.CancelButton = Me.OKButton
         Me.ClientSize = New System.Drawing.Size(414, 321)
         Me.Controls.Add(Me.TableLayoutPanel)

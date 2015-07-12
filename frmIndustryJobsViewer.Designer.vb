@@ -231,6 +231,7 @@ Partial Class frmIndustryJobsViewer
         'frmIndustryJobsViewer
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 665)
         Me.Controls.Add(Me.gbInventionJobs)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle

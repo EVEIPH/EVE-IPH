@@ -5,6 +5,8 @@
 
     Public Sub New(WindowType As CopyPasteWindowType)
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 

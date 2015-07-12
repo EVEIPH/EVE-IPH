@@ -729,8 +729,6 @@ Public Class ProgramSettings
     Private DefaultFees As Boolean = True
     Private DefaultCalcBuyBuyOrder As Boolean = True
     Private DefaultUsage As Boolean = True
-    Private DefaultTotalItemTax As Boolean = True
-    Private DefaultTotalItemBrokerFees As Boolean = True
 
     ' Assets - Item Checks
     Private DefaultAssetItemChecks As Boolean = True
@@ -1146,8 +1144,6 @@ Public Class ProgramSettings
                     .Fees = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Fees", DefaultFees))
                     .CalcBuyBuyOrder = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "CalcBuyBuyOrder", DefaultCalcBuyBuyOrder))
                     .Usage = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Usage", DefaultUsage))
-                    .TotalItemTax = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "TotalItemTax", DefaultTotalItemTax))
-                    .TotalItemBrokerFees = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "TotalItemBrokerFees", DefaultTotalItemBrokerFees))
                 End With
 
             Else
@@ -1179,8 +1175,6 @@ Public Class ProgramSettings
         TempSettings.Fees = DefaultFees
         TempSettings.CalcBuyBuyOrder = DefaultCalcBuyBuyOrder
         TempSettings.Usage = DefaultUsage
-        TempSettings.TotalItemTax = DefaultTotalItemTax
-        TempSettings.TotalItemBrokerFees = DefaultTotalItemBrokerFees
 
         ShoppingListTabSettings = TempSettings
 
@@ -1190,7 +1184,7 @@ Public Class ProgramSettings
 
     ' Saves the Shopping List Settings to XML
     Public Sub SaveShoppingListSettings(SentSettings As ShoppingListSettings)
-        Dim ShoppingListSettingsList(7) As Setting
+        Dim ShoppingListSettingsList(5) As Setting
 
         Try
             ShoppingListSettingsList(0) = New Setting("DataExportFormat", CStr(SentSettings.DataExportFormat))
@@ -1199,8 +1193,6 @@ Public Class ProgramSettings
             ShoppingListSettingsList(3) = New Setting("Fees", CStr(SentSettings.Fees))
             ShoppingListSettingsList(4) = New Setting("CalcBuyBuyOrder", CStr(SentSettings.CalcBuyBuyOrder))
             ShoppingListSettingsList(5) = New Setting("Usage", CStr(SentSettings.Usage))
-            ShoppingListSettingsList(6) = New Setting("TotalItemTax", CStr(SentSettings.TotalItemTax))
-            ShoppingListSettingsList(7) = New Setting("TotalItemBrokerFees", CStr(SentSettings.TotalItemBrokerFees))
 
             Call WriteSettingsToFile(ShoppingListSettingsFileName, ShoppingListSettingsList, ShoppingListSettingsFileName)
 
@@ -5387,8 +5379,6 @@ Public Structure ShoppingListSettings
     Dim Fees As Boolean
     Dim CalcBuyBuyOrder As Boolean
     Dim Usage As Boolean
-    Dim TotalItemTax As Boolean
-    Dim TotalItemBrokerFees As Boolean
 End Structure
 
 ' For all types of facilities

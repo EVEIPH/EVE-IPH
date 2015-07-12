@@ -17,6 +17,9 @@ Public Class frmIndustryBeltFlip
     Private FirstLoad As Boolean
 
     Public Sub New()
+
+        Me.AutoScaleMode = AutoScaleSetting
+
         FirstLoad = True
         ' This call is required by the designer.
         InitializeComponent()

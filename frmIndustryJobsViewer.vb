@@ -32,6 +32,8 @@ Public Class frmIndustryJobsViewer
 
     Public Sub New()
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 
@@ -409,7 +411,7 @@ Public Class frmIndustryJobsViewer
         Dim rsJobs As SQLiteDataReader
 
         ' Update the API data first
-        Call UpdateCharacterAPIs()
+        Call UpdateCharacterIndustryJobsAPI()
 
         SQL = "SELECT CHARACTER_NAME, CORPORATION_NAME, INDUSTRY_JOBS_CACHED_UNTIL, CHARACTER_ID, "
         SQL = SQL & "KEY_ID, API_KEY, ACCESS_MASK, API_TYPE, "
@@ -477,8 +479,8 @@ Public Class frmIndustryJobsViewer
 
     End Sub
 
-    ' Updates the API for the characters in the list
-    Private Sub UpdateCharacterAPIs()
+    ' Updates only the industry jobs for the characters in the list
+    Private Sub UpdateCharacterIndustryJobsAPI()
         Dim f1 As New frmCRESTStatus
         Dim SQL As String
         Dim rsChars As SQLiteDataReader
@@ -492,10 +494,61 @@ Public Class frmIndustryJobsViewer
         DBCommand = New SQLiteCommand(SQL, DB)
         rsChars = DBCommand.ExecuteReader
 
-        ' Refresh each of them and show an updater window
+        ' Refresh each of the character industry data
         While rsChars.Read()
             Dim TempCharacter As New Character
-            TempCharacter.LoadDefaultCharacter(False, False, False, rsChars.GetInt64(0), APIAdded)
+            Dim readerCharacter As SQLiteDataReader
+            Dim CombinedKeyData As New APIKeyData
+            Dim BitString As String
+            Dim BitLen As Integer
+            Dim APIAccess As Boolean
+            Dim RefreshDate As Date
+            Dim TempJobs As EVEIndustryJobs
+
+            SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
+            SQL = SQL & "FROM API "
+            SQL = SQL & "WHERE CHARACTER_ID = " & CStr(rsChars.GetInt64(0)) & " "
+            SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerCharacter = DBCommand.ExecuteReader
+
+            If readerCharacter.Read Then
+                If readerCharacter.GetString(3) <> "" Then
+                    RefreshDate = CDate(readerCharacter.GetString(3))
+                Else
+                    RefreshDate = NoDate
+                End If
+
+                ' See if we want to refresh the data from API
+                If RefreshDate < DateTime.UtcNow Then
+                    ' Access mask is a bitmask 
+                    BitString = GetBits(readerCharacter.GetInt64(4))
+                    BitLen = Len(BitString)
+
+                    If BitLen >= AccessMaskBitLocs.IndustryJobs Then
+                        APIAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
+                    Else
+                        APIAccess = False
+                    End If
+
+                    ' Set the key data
+                    CombinedKeyData.KeyID = readerCharacter.GetInt64(0)
+                    CombinedKeyData.APIKey = readerCharacter.GetString(1)
+                    CombinedKeyData.ID = readerCharacter.GetInt64(2)
+
+                    ' Update the character's industry jobs
+                    CombinedKeyData.Access = APIAccess
+                    TempJobs = New EVEIndustryJobs(CombinedKeyData, 0)
+                    ' This will update all the jobs data
+                    Call TempJobs.LoadIndustryJobs(ScanType.Personal, True)
+
+                End If
+
+                readerCharacter.Close()
+
+            End If
+
             Application.DoEvents()
         End While
 

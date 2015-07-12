@@ -69,10 +69,8 @@ Partial Class frmShoppingList
         Me.btnCopyPasteAssets = New System.Windows.Forms.Button()
         Me.btnShowAssets = New System.Windows.Forms.Button()
         Me.gbUpdateList = New System.Windows.Forms.GroupBox()
-        Me.lblTotalItemsTax = New System.Windows.Forms.Label()
-        Me.chkTotalItemTax = New System.Windows.Forms.CheckBox()
-        Me.chkTotalItemFees = New System.Windows.Forms.CheckBox()
-        Me.lblTotalItemsBrokersFees = New System.Windows.Forms.Label()
+        Me.lblTotalInventionCost = New System.Windows.Forms.Label()
+        Me.lblTotalCopyCost = New System.Windows.Forms.Label()
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
@@ -80,6 +78,8 @@ Partial Class frmShoppingList
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
+        Me.lblTIC = New System.Windows.Forms.Label()
+        Me.lblTCC = New System.Windows.Forms.Label()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -496,49 +496,23 @@ Partial Class frmShoppingList
         Me.gbUpdateList.TabStop = False
         Me.gbUpdateList.Text = "Update List Options:"
         '
-        'lblTotalItemsTax
+        'lblTotalInventionCost
         '
-        Me.lblTotalItemsTax.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.lblTotalItemsTax.Location = New System.Drawing.Point(795, 562)
-        Me.lblTotalItemsTax.Name = "lblTotalItemsTax"
-        Me.lblTotalItemsTax.Size = New System.Drawing.Size(163, 16)
-        Me.lblTotalItemsTax.TabIndex = 25
-        Me.lblTotalItemsTax.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalInventionCost.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.lblTotalInventionCost.Location = New System.Drawing.Point(795, 562)
+        Me.lblTotalInventionCost.Name = "lblTotalInventionCost"
+        Me.lblTotalInventionCost.Size = New System.Drawing.Size(163, 16)
+        Me.lblTotalInventionCost.TabIndex = 25
+        Me.lblTotalInventionCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'chkTotalItemTax
+        'lblTotalCopyCost
         '
-        Me.chkTotalItemTax.AutoSize = True
-        Me.chkTotalItemTax.Checked = True
-        Me.chkTotalItemTax.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkTotalItemTax.Location = New System.Drawing.Point(700, 563)
-        Me.chkTotalItemTax.Name = "chkTotalItemTax"
-        Me.chkTotalItemTax.Size = New System.Drawing.Size(97, 17)
-        Me.chkTotalItemTax.TabIndex = 24
-        Me.chkTotalItemTax.Text = "Total Item Tax:"
-        Me.chkTotalItemTax.TextAlign = System.Drawing.ContentAlignment.MiddleRight
-        Me.chkTotalItemTax.UseVisualStyleBackColor = True
-        '
-        'chkTotalItemFees
-        '
-        Me.chkTotalItemFees.AutoSize = True
-        Me.chkTotalItemFees.Checked = True
-        Me.chkTotalItemFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkTotalItemFees.Location = New System.Drawing.Point(661, 581)
-        Me.chkTotalItemFees.Name = "chkTotalItemFees"
-        Me.chkTotalItemFees.Size = New System.Drawing.Size(136, 17)
-        Me.chkTotalItemFees.TabIndex = 26
-        Me.chkTotalItemFees.Text = "Total Item Broker Fees:"
-        Me.chkTotalItemFees.TextAlign = System.Drawing.ContentAlignment.MiddleRight
-        Me.chkTotalItemFees.UseVisualStyleBackColor = True
-        '
-        'lblTotalItemsBrokersFees
-        '
-        Me.lblTotalItemsBrokersFees.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.lblTotalItemsBrokersFees.Location = New System.Drawing.Point(795, 581)
-        Me.lblTotalItemsBrokersFees.Name = "lblTotalItemsBrokersFees"
-        Me.lblTotalItemsBrokersFees.Size = New System.Drawing.Size(163, 16)
-        Me.lblTotalItemsBrokersFees.TabIndex = 27
-        Me.lblTotalItemsBrokersFees.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalCopyCost.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.lblTotalCopyCost.Location = New System.Drawing.Point(795, 581)
+        Me.lblTotalCopyCost.Name = "lblTotalCopyCost"
+        Me.lblTotalCopyCost.Size = New System.Drawing.Size(163, 16)
+        Me.lblTotalCopyCost.TabIndex = 27
+        Me.lblTotalCopyCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'lstBuy
         '
@@ -623,13 +597,36 @@ Partial Class frmShoppingList
         Me.rbtnExportDefault.Text = "Default"
         Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
+        'lblTIC
+        '
+        Me.lblTIC.AutoSize = True
+        Me.lblTIC.Location = New System.Drawing.Point(689, 564)
+        Me.lblTIC.Name = "lblTIC"
+        Me.lblTIC.Size = New System.Drawing.Size(105, 13)
+        Me.lblTIC.TabIndex = 75
+        Me.lblTIC.Text = "Total Invention Cost:"
+        Me.lblTIC.TextAlign = System.Drawing.ContentAlignment.TopRight
+        '
+        'lblTCC
+        '
+        Me.lblTCC.AutoSize = True
+        Me.lblTCC.Location = New System.Drawing.Point(709, 583)
+        Me.lblTCC.Name = "lblTCC"
+        Me.lblTCC.Size = New System.Drawing.Size(85, 13)
+        Me.lblTCC.TabIndex = 76
+        Me.lblTCC.Text = "Total Copy Cost:"
+        Me.lblTCC.TextAlign = System.Drawing.ContentAlignment.TopRight
+        '
         'frmShoppingList
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(964, 682)
+        Me.Controls.Add(Me.lblTCC)
+        Me.Controls.Add(Me.lblTIC)
         Me.Controls.Add(Me.gbExportOptions)
-        Me.Controls.Add(Me.lblTotalItemsBrokersFees)
-        Me.Controls.Add(Me.lblTotalItemsTax)
+        Me.Controls.Add(Me.lblTotalCopyCost)
+        Me.Controls.Add(Me.lblTotalInventionCost)
         Me.Controls.Add(Me.gbUpdateList)
         Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.btnCompressOres)
@@ -657,8 +654,6 @@ Partial Class frmShoppingList
         Me.Controls.Add(Me.btnLoadListFromFile)
         Me.Controls.Add(Me.btnSaveListToFile)
         Me.Controls.Add(Me.lstBuild)
-        Me.Controls.Add(Me.chkTotalItemTax)
-        Me.Controls.Add(Me.chkTotalItemFees)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
@@ -726,12 +721,12 @@ Partial Class frmShoppingList
     Friend WithEvents btnCopyPasteAssets As System.Windows.Forms.Button
     Friend WithEvents chkBuyorBuyOrder As System.Windows.Forms.CheckBox
     Friend WithEvents gbUpdateList As System.Windows.Forms.GroupBox
-    Friend WithEvents lblTotalItemsTax As System.Windows.Forms.Label
-    Friend WithEvents chkTotalItemTax As System.Windows.Forms.CheckBox
-    Friend WithEvents chkTotalItemFees As System.Windows.Forms.CheckBox
-    Friend WithEvents lblTotalItemsBrokersFees As System.Windows.Forms.Label
+    Friend WithEvents lblTotalInventionCost As System.Windows.Forms.Label
+    Friend WithEvents lblTotalCopyCost As System.Windows.Forms.Label
     Friend WithEvents gbExportOptions As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnExportSSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportCSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportDefault As System.Windows.Forms.RadioButton
+    Friend WithEvents lblTIC As System.Windows.Forms.Label
+    Friend WithEvents lblTCC As System.Windows.Forms.Label
 End Class

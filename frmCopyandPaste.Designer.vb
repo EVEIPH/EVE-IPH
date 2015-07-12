@@ -59,10 +59,12 @@ Partial Class frmCopyandPaste
         'frmCopyandPaste
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(427, 420)
         Me.Controls.Add(Me.btnExit)
         Me.Controls.Add(Me.txtPaste)
         Me.Controls.Add(Me.btnImport)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False

@@ -95,6 +95,8 @@ Public Class frmAssetsViewer
 
     Public Sub New(ByVal AssetType As AssetWindow)
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 

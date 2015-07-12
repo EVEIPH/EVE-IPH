@@ -96,6 +96,8 @@ Public Class frmShoppingList
 
     Public Sub New()
 
+        Me.AutoScaleMode = AutoScaleSetting
+
         ' This call is required by the designer.
         InitializeComponent()
 
@@ -144,8 +146,8 @@ Public Class frmShoppingList
             ttMain.SetToolTip(rbtnExportDefault, "Exports data in basic space or dashes to separate data for easy readability")
             ttMain.SetToolTip(btnUpdateListwithAssets, "Update the Shopping List based on materials you have in your selected asset location(s).")
             ttMain.SetToolTip(btnShowAssets, "Open the Asset Viewer to set the default location(s) for materials to use for updating the Shopping List.")
-            ttMain.SetToolTip(chkTotalItemFees, "Total amount of brokers fees to set up sell orders for all items in the items list.")
-            ttMain.SetToolTip(chkTotalItemTax, "Total amount of taxes to set up sell orders for all items in the items list.")
+            ttMain.SetToolTip(lblTIC, "Total of all invention materials in the buy list.")
+            ttMain.SetToolTip(lblTCC, "Total of all the copy materials in the buy list.")
         End If
 
         IgnoreFocusChange = False
@@ -182,8 +184,6 @@ Public Class frmShoppingList
         ElseIf rbtnExportDefault.Text = UserShoppingListSettings.DataExportFormat Then
             rbtnExportDefault.Checked = True
         End If
-        chkTotalItemFees.Checked = UserShoppingListSettings.TotalItemBrokerFees
-        chkTotalItemTax.Checked = UserShoppingListSettings.TotalItemTax
         chkUpdateAssetsWhenUsed.Checked = UserShoppingListSettings.UpdateAssetsWhenUsed
 
         ' Only enable the clear button when something in the list
@@ -240,8 +240,8 @@ Public Class frmShoppingList
         lblTotalCost.Text = "0.00 ISK"
         lblTotalVolume.Text = "0.00 m3"
         lblTotalBuiltVolume.Text = "0.00 m3"
-        lblTotalItemsBrokersFees.Text = "0.00 ISK"
-        lblTotalItemsTax.Text = "0.00 ISK"
+        lblTotalCopyCost.Text = "0.00 ISK"
+        lblTotalInventionCost.Text = "0.00 ISK"
 
         lblUsage.Text = "0.00"
         lblFees.Text = "0.00"
@@ -475,7 +475,7 @@ Public Class frmShoppingList
                 Call TotalShoppingList.SetAdditionalCosts(CDbl(txtAddlCosts.Text))
             End If
 
-            Call TotalShoppingList.SetPriceData(chkFees.Checked, chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, ItemBuyTypeList)
+            Call TotalShoppingList.SetPriceData(chkFees.Checked, chkUsage.Checked, ItemBuyTypeList)
 
             lblTotalCost.Text = FormatNumber(TotalShoppingList.GetTotalCost, 2) & " ISK"
             lblTotalVolume.Text = FormatNumber(TotalShoppingList.GetTotalVolume, 2) & " m3"
@@ -485,8 +485,8 @@ Public Class frmShoppingList
 
             lblTotalBuiltVolume.Text = FormatNumber(TotalShoppingList.GetBuiltItemVolume, 2) & " m3"
 
-            lblTotalItemsTax.Text = FormatNumber(TotalShoppingList.GetItemsTax, 2) & " ISK"
-            lblTotalItemsBrokersFees.Text = FormatNumber(TotalShoppingList.GetItemsBrokersFee, 2) & " ISK"
+            lblTotalInventionCost.Text = FormatNumber(TotalShoppingList.GetTotalInventionCosts, 2) & " ISK"
+            lblTotalCopyCost.Text = FormatNumber(TotalShoppingList.GetTotalCopyCosts, 2) & " ISK"
 
             lblFees.Text = FormatNumber(TotalShoppingList.GetTotalMaterialsBrokersFees)
             lblUsage.Text = FormatNumber(TotalShoppingList.GetTotalUsage)
@@ -837,8 +837,6 @@ Public Class frmShoppingList
             TempList.DataExportFormat = rbtnExportSSV.Text
         End If
         TempList.UpdateAssetsWhenUsed = chkUpdateAssetsWhenUsed.Checked
-        TempList.TotalItemBrokerFees = chkTotalItemFees.Checked
-        TempList.TotalItemTax = chkTotalItemFees.Checked
         TempList.Usage = chkUsage.Checked
         TempList.Fees = chkFees.Checked
         TempList.CalcBuyBuyOrder = chkBuyorBuyOrder.Checked
@@ -1284,7 +1282,7 @@ Public Class frmShoppingList
                         ' Add to shopping list but use BP tab settings
                         Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, frmMain.rbtnBPComponentCopy.Checked, _
                                                TempBuildFacility.MaterialMultiplier, ItemList(i).BuiltInPOS, ItemList(i).IgnoredInvention, _
-                                               ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem, True)
+                                               ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 
                     Next
 
@@ -1576,7 +1574,7 @@ Public Class frmShoppingList
 
         Call frmMain.LoadBPfromDoubleClick(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, chkUsage.Checked, _
                                            lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "0", "1") ' Any buildable component here is one 1 bp
     End Sub
 
@@ -1628,7 +1626,7 @@ Public Class frmShoppingList
         ' Get the decryptor or relic used from the item
         Call frmMain.LoadBPfromDoubleClick(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           chkTotalItemTax.Checked, chkTotalItemFees.Checked, chkUsage.Checked, _
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, chkUsage.Checked, _
                                            lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, "0", _
                                            lstItems.SelectedItems(0).SubItems(4).Text)
     End Sub
@@ -1660,14 +1658,14 @@ Public Class frmShoppingList
     End Sub
 
     ' Add or take away tax from the total items from total and refresh prices
-    Private Sub chkTotalItemTax_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkTotalItemTax.CheckedChanged
+    Private Sub chkTotalItemTax_CheckedChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadFormStats()
         End If
     End Sub
 
     ' Add or take away brokers fees from the total items from total and refresh prices
-    Private Sub chkTotalItemFees_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkTotalItemFees.CheckedChanged
+    Private Sub chkTotalItemFees_CheckedChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadFormStats()
         End If
@@ -2105,6 +2103,7 @@ Public Class frmShoppingList
                     ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
                     ShopListItem.BuildType = CurrentRow.SubItems(5).Text
                     ShopListItem.Decryptor = CurrentRow.SubItems(6).Text
+                    ShopListItem.RunsPerBP = CInt(Math.Ceiling(ShopListItem.Quantity / ShopListItem.NumBPs))
 
                     ' Update the full shopping list
                     Call TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, QuantityValue)

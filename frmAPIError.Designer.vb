@@ -69,6 +69,7 @@ Partial Class frmAPIError
         'frmAPIError
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(421, 170)
         Me.Controls.Add(Me.lblLinkInstruction)
         Me.Controls.Add(Me.llMain)
