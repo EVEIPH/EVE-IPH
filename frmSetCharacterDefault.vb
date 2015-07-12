@@ -6,8 +6,6 @@ Public Class frmSetCharacterDefault
 
     Public Sub New()
 
-        Me.AutoScaleMode = AutoScaleSetting
-
         Dim readerCharacters As SQLiteDataReader
 
         Dim SQL As String

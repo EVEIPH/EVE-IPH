@@ -1294,7 +1294,7 @@ Partial Class frmPOSSettings
         '
         'frmPOSSettings
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(610, 492)
         Me.Controls.Add(Me.gbPOSCosts)

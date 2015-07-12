@@ -156,7 +156,7 @@ Partial Class frmCharacterStandings
         '
         'frmCharacterStandings
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(378, 435)
         Me.Controls.Add(Me.gbSort)

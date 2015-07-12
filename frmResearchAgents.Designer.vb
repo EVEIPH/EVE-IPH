@@ -80,7 +80,7 @@ Partial Class frmResearchAgents
         '
         'frmResearchAgents
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(944, 183)
         Me.Controls.Add(Me.lblTotalDCValue)

@@ -160,7 +160,7 @@ Partial Class frmAbout
         '
         'frmAbout
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.CancelButton = Me.OKButton
         Me.ClientSize = New System.Drawing.Size(414, 321)

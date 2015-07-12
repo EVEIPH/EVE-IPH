@@ -58,7 +58,7 @@ Partial Class frmCopyandPaste
         '
         'frmCopyandPaste
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(427, 420)
         Me.Controls.Add(Me.btnExit)

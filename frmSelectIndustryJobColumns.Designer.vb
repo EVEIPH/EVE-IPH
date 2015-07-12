@@ -86,7 +86,7 @@ Partial Class frmSelectIndustryJobColumns
         '
         'frmSelectIndustryJobColumns
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(287, 423)
         Me.Controls.Add(Me.btnDefaults)

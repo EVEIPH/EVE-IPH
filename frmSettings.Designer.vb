@@ -626,7 +626,7 @@ Partial Class frmSettings
         '
         'frmSettings
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(665, 357)
         Me.Controls.Add(Me.gbExportOptions)

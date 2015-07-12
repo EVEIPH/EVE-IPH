@@ -234,8 +234,6 @@ Public Module Public_Variables
     Public Const CSVDataExport As String = "CSV"
     Public Const SSVDataExport As String = "SSV"
 
-    Public AutoScaleSetting As AutoScaleMode ' For setting the type of auto scaleling based on their settings
-
     ' For scanning assets
     Public Enum ScanType
         Personal = 0

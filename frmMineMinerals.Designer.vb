@@ -77,7 +77,7 @@ Partial Class frmMineMinerals
         '
         'frmMineMinerals
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(632, 377)
         Me.Controls.Add(Me.btnExit)

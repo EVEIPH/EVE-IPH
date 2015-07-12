@@ -42,7 +42,7 @@ Partial Class frmPatchNotes
         '
         'frmPatchNotes
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         resources.ApplyResources(Me, "$this")
         Me.Controls.Add(Me.txtPatchNotes)
         Me.Controls.Add(Me.OKButton)

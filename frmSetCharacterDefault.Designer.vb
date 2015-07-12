@@ -58,7 +58,7 @@ Partial Class frmSetCharacterDefault
         '
         'frmSetCharacterDefault
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(311, 262)
         Me.ControlBox = False

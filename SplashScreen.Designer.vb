@@ -39,7 +39,6 @@ Partial Class SplashScreen
         '
         'MainLayoutPanel
         '
-        Me.MainLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
         Me.MainLayoutPanel.BackgroundImage = CType(resources.GetObject("MainLayoutPanel.BackgroundImage"), System.Drawing.Image)
         Me.MainLayoutPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None
         Me.MainLayoutPanel.ColumnCount = 2
@@ -110,16 +109,18 @@ Partial Class SplashScreen
         '
         'lblUpdate
         '
-        Me.lblUpdate.Location = New System.Drawing.Point(2, 143)
+        Me.lblUpdate.Location = New System.Drawing.Point(2, 138)
         Me.lblUpdate.Name = "lblUpdate"
-        Me.lblUpdate.Size = New System.Drawing.Size(289, 14)
+        Me.lblUpdate.Size = New System.Drawing.Size(289, 27)
         Me.lblUpdate.TabIndex = 1
         Me.lblUpdate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'SplashScreen
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
-        Me.ClientSize = New System.Drawing.Size(293, 172)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
+        Me.AutoSize = True
+        Me.ClientSize = New System.Drawing.Size(293, 174)
         Me.ControlBox = False
         Me.Controls.Add(Me.lblUpdate)
         Me.Controls.Add(Me.MainLayoutPanel)

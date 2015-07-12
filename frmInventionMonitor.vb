@@ -13,8 +13,6 @@ Public Class frmInventionMonitor
 
         FirstFormLoad = True
 
-        Me.AutoScaleMode = AutoScaleSetting
-
         ' This call is required by the designer.
         InitializeComponent()
 

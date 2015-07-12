@@ -1054,7 +1054,7 @@ Partial Class frmBlueprintManagement
         '
         'frmBlueprintManagement
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1115, 614)
         Me.Controls.Add(Me.gbBPFilter)

@@ -376,19 +376,6 @@ Public Class frmMain
 
         Call SetProgress("Initializing...")
 
-        Dim userdpi As Integer
-        Dim Tempform As New Form
-        Using gfx As Graphics = Tempform.CreateGraphics()
-            userdpi = CInt(gfx.DpiX)
-        End Using
-
-        If userdpi = 96 Then
-            AutoScaleSetting = Windows.Forms.AutoScaleMode.Dpi
-        Else
-            AutoScaleSetting = Windows.Forms.AutoScaleMode.Dpi
-        End If
-
-        Me.AutoScaleMode = AutoScaleSetting
         Application.DoEvents()
 
         ' This call is required by the designer.
@@ -491,9 +478,11 @@ Public Class frmMain
             Me.Text = Me.Text & " - Developer"
             mnuRefinery.Visible = True
             chkUpdatePricesCRESTHistory.Visible = True
+            CalcBPStripMenuItem.Visible = True
         Else
             ' Hide all the development stuff
             mnuRefinery.Visible = False
+            CalcBPStripMenuItem.Visible = False
             tabMain.TabPages.Remove(tabPI)
             chkUpdatePricesCRESTHistory.Visible = False
         End If
@@ -24634,4 +24623,7 @@ Leave:
 
 #End Region
 
+    Private Sub AutoScaleModeSettingToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles AutoScaleModeSettingToolStripMenuItem.Click
+        MsgBox("ScaleMode: " & Me.AutoScaleMode.ToString & vbCrLf & "Autosize: " & Me.AutoSize.ToString & vbCrLf & "AutoSizeMode: " & Me.AutoSizeMode.ToString)
+    End Sub
 End Class

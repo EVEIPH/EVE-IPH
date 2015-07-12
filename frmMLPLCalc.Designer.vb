@@ -27,7 +27,7 @@ Partial Class frmMLPLCalc
         '
         'frmMLPLCalc
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(844, 577)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle

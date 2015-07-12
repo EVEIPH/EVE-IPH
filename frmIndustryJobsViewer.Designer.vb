@@ -230,7 +230,7 @@ Partial Class frmIndustryJobsViewer
         '
         'frmIndustryJobsViewer
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 665)
         Me.Controls.Add(Me.gbInventionJobs)

@@ -285,8 +285,6 @@ Public Class frmPOSSettings
 
         LoadingTab = True
 
-        Me.AutoScaleMode = AutoScaleSetting
-
         ' This call is required by the designer.
         InitializeComponent()
 

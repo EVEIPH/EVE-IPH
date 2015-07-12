@@ -213,7 +213,7 @@ Partial Class frmLoadCharacterAPI
         '
         'frmLoadCharacterAPI
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(538, 192)
         Me.ControlBox = False

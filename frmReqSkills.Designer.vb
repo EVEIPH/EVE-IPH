@@ -45,7 +45,7 @@ Partial Class frmReqSkills
         '
         'frmReqSkills
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(278, 292)
         Me.Controls.Add(Me.btnOK)

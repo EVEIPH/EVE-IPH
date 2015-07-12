@@ -5,7 +5,7 @@ Public Class frmUsageViewer
 
     Public Sub New()
 
-        Me.AutoScaleMode = AutoScaleSetting
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
 
         ' This call is required by the designer.
         InitializeComponent()
