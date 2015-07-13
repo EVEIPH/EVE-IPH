@@ -248,7 +248,7 @@ Partial Class frmIndustryBeltFlip
         Me.lstOresLevel1.Location = New System.Drawing.Point(6, 30)
         Me.lstOresLevel1.MultiSelect = False
         Me.lstOresLevel1.Name = "lstOresLevel1"
-        Me.lstOresLevel1.Size = New System.Drawing.Size(235, 512)
+        Me.lstOresLevel1.Size = New System.Drawing.Size(235, 322)
         Me.lstOresLevel1.TabIndex = 6
         Me.lstOresLevel1.UseCompatibleStateImageBehavior = False
         Me.lstOresLevel1.View = System.Windows.Forms.View.Details
@@ -1443,7 +1443,7 @@ Partial Class frmIndustryBeltFlip
         Me.lstOresLevel2.Location = New System.Drawing.Point(6, 30)
         Me.lstOresLevel2.MultiSelect = False
         Me.lstOresLevel2.Name = "lstOresLevel2"
-        Me.lstOresLevel2.Size = New System.Drawing.Size(235, 512)
+        Me.lstOresLevel2.Size = New System.Drawing.Size(235, 322)
         Me.lstOresLevel2.TabIndex = 63
         Me.lstOresLevel2.UseCompatibleStateImageBehavior = False
         Me.lstOresLevel2.View = System.Windows.Forms.View.Details
@@ -1640,7 +1640,7 @@ Partial Class frmIndustryBeltFlip
         Me.lstOresLevel3.Location = New System.Drawing.Point(6, 30)
         Me.lstOresLevel3.MultiSelect = False
         Me.lstOresLevel3.Name = "lstOresLevel3"
-        Me.lstOresLevel3.Size = New System.Drawing.Size(235, 512)
+        Me.lstOresLevel3.Size = New System.Drawing.Size(235, 322)
         Me.lstOresLevel3.TabIndex = 62
         Me.lstOresLevel3.UseCompatibleStateImageBehavior = False
         Me.lstOresLevel3.View = System.Windows.Forms.View.Details
@@ -1858,7 +1858,7 @@ Partial Class frmIndustryBeltFlip
         Me.lstOresLevel4.Location = New System.Drawing.Point(6, 30)
         Me.lstOresLevel4.MultiSelect = False
         Me.lstOresLevel4.Name = "lstOresLevel4"
-        Me.lstOresLevel4.Size = New System.Drawing.Size(235, 512)
+        Me.lstOresLevel4.Size = New System.Drawing.Size(235, 322)
         Me.lstOresLevel4.TabIndex = 67
         Me.lstOresLevel4.UseCompatibleStateImageBehavior = False
         Me.lstOresLevel4.View = System.Windows.Forms.View.Details
@@ -2076,7 +2076,7 @@ Partial Class frmIndustryBeltFlip
         Me.lstOresLevel5.Location = New System.Drawing.Point(6, 30)
         Me.lstOresLevel5.MultiSelect = False
         Me.lstOresLevel5.Name = "lstOresLevel5"
-        Me.lstOresLevel5.Size = New System.Drawing.Size(235, 512)
+        Me.lstOresLevel5.Size = New System.Drawing.Size(235, 322)
         Me.lstOresLevel5.TabIndex = 72
         Me.lstOresLevel5.UseCompatibleStateImageBehavior = False
         Me.lstOresLevel5.View = System.Windows.Forms.View.Details
@@ -2150,6 +2150,7 @@ Partial Class frmIndustryBeltFlip
         '
         'frmIndustryBeltFlip
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(519, 587)

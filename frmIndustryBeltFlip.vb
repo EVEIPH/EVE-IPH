@@ -228,6 +228,9 @@ Public Class frmIndustryBeltFlip
         ' Save the data to the local variable
         UserIndustryFlipBeltSettings = TempSettings
 
+        ' Refresh tables
+        Call LoadAllTables()
+
         MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
     End Sub
@@ -292,7 +295,7 @@ Public Class frmIndustryBeltFlip
         End If
 
         SQL = "SELECT ORE, AMOUNT, NUMBER_ASTEROIDS FROM INDUSTRY_UPGRADE_BELTS "
-        SQL = SQL & "WHERE(BELT_NAME = "
+        SQL = SQL & "WHERE ( BELT_NAME = "
 
         Select Case Belt
             Case BeltType.Small
@@ -322,7 +325,18 @@ Public Class frmIndustryBeltFlip
                 lstOresLevel5.ListViewItemSorter = Ore5ColumnSorter
         End Select
 
-        SQL = SQL & ")"
+        SQL = SQL & ") "
+
+        ' Temp fix until next DB update (7/12/2015) - Only choose the ores that are in the belts now
+        SQL = SQL & "AND (ORE LIKE '%Arkonor%' OR ORE LIKE '%Bistot%' OR ORE LIKE '%Crokite%' OR ORE LIKE '%Ochre%' OR ORE LIKE '%Gneiss%' OR ORE LIKE '%Spodumain%' OR ORE LIKE '%Mercoxit%') "
+
+        '    Arkonor: 29900
+        '    Bistot: 57000
+        '    Crokite: 124000
+        '    Dark Ochre: 60000
+        '    Gneiss: 313500
+        '    Spodumain: 368100
+        '    Mercoxit: 3500
 
         If rbtn0percent.Checked Then
             SQL = SQL & "AND TRUESEC_BONUS = 0 "
@@ -645,18 +659,39 @@ Public Class frmIndustryBeltFlip
                 If readerBelts.Read Then
                     ' Refine each ore in the ore list, store refined minerals
                     RefinedMaterials = RefiningStation.RefineOre(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"), _
-                                    CType(item.SubItems(3).Text, Double), chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, OutputNumber, "Ore")
-
-                    ' Save the total cost separate so we take into account taxes and fees
-                    TotalCost = TotalCost + RefinedMaterials.GetTotalMaterialsCost
+                                    CType(item.SubItems(3).Text, Double), chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, OutputNumber)
 
                     ' Store the refined materials
                     TotalRefinedMinerals.InsertMaterialList(RefinedMaterials.GetMaterialList)
+
+                    If chkCompressOre.Checked = False Then
+                        ' Save the total cost separate so we take into account taxes and fees
+                        TotalCost = TotalCost + RefinedMaterials.GetTotalMaterialsCost
+                    Else
+                        Dim readerOre As SQLiteDataReader
+                        Dim OreUnitPrice As Double
+                        Dim TotalCompressedUnits As Integer
+
+                        ' First, get the unit price and volume for the compressed ore
+                        SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & OreName & "'"
+                        DBCommand = New SQLiteCommand(SQL, DB)
+                        readerOre = DBCommand.ExecuteReader
+
+                        If readerOre.Read() Then
+                            OreUnitPrice = readerOre.GetDouble(0)
+                            TotalCompressedUnits = CInt(Math.Floor(CInt(item.SubItems(3).Text) / 100))
+                            ' Calc total cost, assume all mined and then compressed
+                            TotalCost = TotalCost + (OreUnitPrice * TotalCompressedUnits)
+                        End If
+
+                        readerOre.Close()
+
+                    End If
+
                     ' Reset the value of the refined materials
                     TotalRefinedMinerals.ResetTotalValue(TotalCost)
 
                 End If
-
                 readerBelts.Close()
                 DBCommand = Nothing
 
@@ -755,6 +790,8 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "FROM ORES WHERE BELT_TYPE = 'Ore' "
                 If Compress Then
                     SQL = SQL & "AND ORE_NAME ='Compressed " & OreName & "'"
+                Else
+                    SQL = SQL & "AND ORE_NAME = '" & OreName & "'"
                 End If
                 DBCommand = New SQLiteCommand(SQL, DB)
                 readerBelts = DBCommand.ExecuteReader

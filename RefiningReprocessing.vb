@@ -148,7 +148,7 @@ Class RefiningReprocessing
     End Function
 
     Public Function RefineOre(ByVal OreID As Long, ByVal OreProcessingSkill As Integer, ByVal TotalOre As Double, _
-                              ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByRef TotalYield As Double, ByVal OreType As String) As Materials
+                              ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByRef TotalYield As Double) As Materials
         Dim TempYeild As Double
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 

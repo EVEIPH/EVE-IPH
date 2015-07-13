@@ -23756,7 +23756,7 @@ Leave:
             If chkMineRefinedOre.Checked And Not GasMining Then
                 ' Refine total Ore we mined for an hour and save the total isk/hour
                 RefinedMaterials = RefiningStation.RefineOre(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsPerHour, _
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield, cmbMineOreType.Text)
+                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield)
 
                 TempOre.RefineYield = RefineryYield
 
@@ -23768,7 +23768,7 @@ Leave:
 
                 ' Calculate the unit price by refining one batch
                 RefinedMaterials = RefiningStation.RefineOre(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsToRefine, _
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield, cmbMineOreType.Text)
+                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield)
                 TempOre.OreUnitPrice = RefinedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                 TempOre.RefineType = "Refined"
                 OreList.Add(TempOre)
