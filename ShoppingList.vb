@@ -1061,9 +1061,9 @@ Public Class ShoppingList
         If Item1.Relic <> Item2.Relic Then
             Return False
         End If
-        If Item1.NumBPs <> Item2.NumBPs Then
-            Return False
-        End If
+        'If Item1.NumBPs <> Item2.NumBPs Then
+        '    Return False
+        'End If
 
         Return True
 

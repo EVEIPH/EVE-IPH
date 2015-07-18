@@ -3326,6 +3326,7 @@ NoBonus:
         SQL = SQL & "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
         SQL = SQL & "AND INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID "
         SQL = SQL & "AND INVENTORY_CATEGORIES.categoryID NOT IN (SELECT CATEGORY_ID FROM ASSEMBLY_ARRAYS) "
+        SQL = SQL & "AND INVENTORY_GROUPS.groupID NOT IN (SELECT GROUP_ID FROM ASSEMBLY_ARRAYS) "
         SQL = SQL & "AND INVENTORY_TYPES.typeID IN (SELECT ITEM_ID FROM ALL_BLUEPRINTS) "
 
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -24623,7 +24624,4 @@ Leave:
 
 #End Region
 
-    Private Sub AutoScaleModeSettingToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles AutoScaleModeSettingToolStripMenuItem.Click
-        MsgBox("ScaleMode: " & Me.AutoScaleMode.ToString & vbCrLf & "Autosize: " & Me.AutoSize.ToString & vbCrLf & "AutoSizeMode: " & Me.AutoSizeMode.ToString)
-    End Sub
 End Class
