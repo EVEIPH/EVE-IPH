@@ -984,6 +984,12 @@ Public Module Public_Variables
                     .ItemME = SentBlueprint.GetME
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
+                    .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+
+                    ' See if we need to add the system on to the end of the build location for POS
+                    If BuiltInPOS Then
+                        .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    End If
 
                     ' Ignore flags
                     .IgnoredInvention = IgnoreInvention
@@ -1023,6 +1029,12 @@ Public Module Public_Variables
                     .ItemME = SentBlueprint.GetME
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
+                    .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+
+                    ' See if we need to add the system on to the end of the build location for POS
+                    If BuiltInPOS Then
+                        .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    End If
 
                     ' Ignore flags
                     .IgnoredInvention = IgnoreInvention
@@ -1030,6 +1042,7 @@ Public Module Public_Variables
                     .IgnoredT1BaseItem = IgnoreT1ITem
 
                     .NumBPs = SentBlueprint.GetUsedNumBPs
+                    .RunsPerBP = SentBlueprint.GetSingleInventedBPCRuns
 
                     .BuildType = "Components"
 
@@ -1218,6 +1231,24 @@ Public Module Public_Variables
         Return FinalTime
 
     End Function
+
+    ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
+    Public Sub IncrementToolStripProgressBar(ByRef PG As ToolStripProgressBar)
+        If PG.Value <= PG.Maximum - 1 Then
+            PG.Value = PG.Value + 1
+            PG.Value = PG.Value - 1
+            PG.Value = PG.Value + 1
+        End If
+    End Sub
+
+    ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
+    Public Sub IncrementProgressBar(ByRef PG As ProgressBar)
+        If PG.Value <= PG.Maximum - 1 Then
+            PG.Value = PG.Value + 1
+            PG.Value = PG.Value - 1
+            PG.Value = PG.Value + 1
+        End If
+    End Sub
 
     ' Checks the error sent for EVE API data and shows forms etc based on error
     Public Function NoAPIError(ByVal ErrorText As String, ByVal KeyType As String) As Boolean

@@ -239,6 +239,7 @@ Public Class Materials
         Dim DataInterfaceVolume As Double
         Dim RelicDecryptorText As String = ""
         Dim NumBps As String = ""
+        Dim Location As String = ""
         Dim Separator As String = ""
 
         Dim BuildMaterialFieldsCSV = "ME, NumBPs, Decryptor/Relic, "
@@ -294,7 +295,7 @@ Public Class Materials
 
                 If MaterialList(i).GetMaterialGroup.Contains("|") Then
                     ' We have a material from the shopping list, with three values in the material group
-                    '.BuildType & "|" & .DecryptorRelic & "|" & .NumBPs
+                    '.BuildType & "|" & .DecryptorRelic & "|" & .NumBPs & "|" & .Location
                     ' Parse the fields
                     Dim ItemColumns As String() = MaterialList(i).GetMaterialGroup.Split(New [Char]() {"|"c})
 
@@ -305,6 +306,7 @@ Public Class Materials
                     End If
 
                     NumBps = ItemColumns(2)
+                    Location = ItemColumns(4)
                 Else
                     RelicDecryptorText = None
                     NumBps = "-"
@@ -333,13 +335,17 @@ Public Class Materials
                         OutputString = OutputString & RelicDecryptorText & Separator
                     End If
 
-                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost) & vbCrLf
+                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost)
+
+                    If Location <> "" Then
+                        OutputString = OutputString & Separator & Location & vbCrLf
+                    End If
 
                 Else
                     OutputString = OutputString & MatName
 
                     If IncludeME Or IncludeDecryptorRelic Then
-                        OutputString = OutputString & " (" ' Adding something so start the paren
+                        OutputString = OutputString & " (" ' Adding something so start the parens
 
                         If OutputME <> "-" Then
                             OutputString = OutputString & "ME: " & OutputME
@@ -360,10 +366,14 @@ Public Class Materials
                     End If
 
                     If Not MatName.Contains("Data Interface") Then
-                        OutputString = OutputString & " - " & FormatNumber(MaterialList(i).GetQuantity, 0) & vbCrLf
-                    Else
-                        OutputString = OutputString & vbCrLf
+                        OutputString = OutputString & " - " & FormatNumber(MaterialList(i).GetQuantity, 0)
                     End If
+
+                    If Location <> "" Then
+                        OutputString = OutputString & ", Location: " & Location
+                    End If
+
+                    OutputString = OutputString & vbCrLf
 
                 End If
 SkipFormat:
