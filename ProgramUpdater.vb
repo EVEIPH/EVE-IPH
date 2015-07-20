@@ -1,6 +1,4 @@
-﻿
-Imports System.Net
-Imports System.IO
+﻿Imports System.IO
 Imports System.Xml
 
 ' Class for checking for updates and storing data for comparision
