@@ -719,6 +719,19 @@ Public Class frmMain
             ttMain.SetToolTip(txtCalcLabLines, "Enter the number of Laboratory Lines you have to invent per day for calculations. Double-Click to enter max runs for this character.")
 
             ttMain.SetToolTip(txtCalcSVRThreshold, "No results with an SVR lower than the number entered will be returned.")
+
+            ttMain.SetToolTip(lblCalcBaseFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcComponentFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcInventionFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcT3InventionFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcCopyFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcSuperFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcCapitalFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcT3FacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcSubsystemFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcBoosterFacilityDefault, "Double-Click to load default facility")
+            ttMain.SetToolTip(lblCalcNoPOSFacilityDefault, "Double-Click to load default facility")
+
         End If
         FirstLoadCalcBPTypes = True
         FirstManufacturingGridLoad = True
@@ -1827,7 +1840,7 @@ NoBonus:
         FacilityTypeCombo.Enabled = True
 
         ' Make sure default is not shown yet
-        FacilityDefaultLabel.Visible = False
+        'FacilityDefaultLabel.Visible = False
         FacilitySaveButton.Enabled = False
 
         LoadingFacilityTypes = False
@@ -1928,7 +1941,7 @@ NoBonus:
             FacilityCombo.Text = "Select Facility / Array"
             FacilityCombo.Enabled = False
             ' Make sure default is not checked yet
-            FacilityDefaultLabel.Visible = False
+            FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
             FacilityUsageCheck.Enabled = False
             Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel, _
@@ -2047,7 +2060,7 @@ NoBonus:
             End If
             FacilityCombo.Enabled = False
             ' Make sure default is not checked yet
-            FacilityDefaultLabel.Visible = False
+            FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
             FacilityUsageCheck.Enabled = False
             Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel, _
@@ -2217,12 +2230,12 @@ NoBonus:
 
                 ' Make sure default is turned off since we still have to load the array
                 FacilitySaveButton.Enabled = False
-                FacilityDefaultLabel.Visible = False
+                FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
                 FacilityUsageCheck.Enabled = False ' Don't enable the usage either
             Else
                 ' Since this is a different system but facility is loaded, enable save
                 FacilitySaveButton.Enabled = True
-                FacilityDefaultLabel.Visible = False
+                FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
                 FacilityUsageCheck.Enabled = True
             End If
 
@@ -2235,7 +2248,7 @@ NoBonus:
 
         If NewFacility Then
             ' Make sure default is not checked yet
-            FacilityDefaultLabel.Visible = False
+            FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
             Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel, _
                                         FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
@@ -2420,13 +2433,10 @@ NoBonus:
             Select Case Activity
                 Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
                     .ActivityID = IndustryActivities.Manufacturing
-                    .Activity = ActivityManufacturing ' For all three, same flag
                 Case ActivityCopying
                     .ActivityID = IndustryActivities.Copying
-                    .Activity = ActivityCopying
                 Case ActivityInvention
                     .ActivityID = IndustryActivities.Invention
-                    .Activity = ActivityInvention
             End Select
 
             .ActivityCostPerSecond = 0
@@ -2874,10 +2884,12 @@ NoBonus:
             'And PreviousFacility.SolarSystemName = SelectedFacility.SolarSystemName _
             'And PreviousFacility.RegionName = SelectedFacility.RegionName _
             'And PreviousFacility.IncludeActivityUsage = SelectedFacility.IncludeActivityUsage) Then
-            FacilityDefaultLabel.Visible = True
+            FacilityDefaultLabel.ForeColor = SystemColors.Highlight
+            Call ResetToolTipforDefaultFacilityLabel(FacilityDefaultLabel, False)
             FacilitySaveButton.Enabled = False ' don't enable since it's already the default, it's pointless to save it
         Else
-            FacilityDefaultLabel.Visible = False
+            FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
+            Call ResetToolTipforDefaultFacilityLabel(FacilityDefaultLabel, True)
             FacilitySaveButton.Enabled = True
         End If
 
@@ -3067,6 +3079,15 @@ NoBonus:
         Call SetFacilityandDefault(SelectedFacility, ProductionType, Tab, FacilityType, FacilityArrayCombo, _
                                    FacilityDefaultLabel, FacilitySaveButton, CompareCost, CompareTime)
 
+    End Sub
+
+    ' Sets the tool tip text for default facility labels if they can double click to reload
+    Private Sub ResetToolTipforDefaultFacilityLabel(ByRef FacilityDefaultLabel As Label, ByVal ShowTip As Boolean)
+        If ShowTip And UserApplicationSettings.ShowToolTips Then
+            ttMain.SetToolTip(FacilityDefaultLabel, "Double-Click to reload default facility")
+        Else
+            ttMain.SetToolTip(FacilityDefaultLabel, "")
+        End If
     End Sub
 
 #End Region
@@ -3573,6 +3594,9 @@ NoBonus:
                 Case Else
                     SelectedBPManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
             End Select
+
+            ' Make sure to set they type of facility we are using
+            cmbBPFacilityType.Text = BuildFacility.FacilityType
 
             ' Set the teams
             SelectedBPManufacturingTeam = CType(BuildTeam.Clone, IndustryTeam)
@@ -5299,6 +5323,13 @@ Tabs:
         txtListEdit.Hide()
     End Sub
 
+    Private Sub lstPricesView_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstPricesView.ColumnWidthChanging
+        If e.ColumnIndex = 0 Or e.ColumnIndex >= 4 Then
+            e.Cancel = True
+            e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
+        End If
+    End Sub
+
     ' Detects Scroll event and hides boxes
     Private Sub lstPricesView_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstPricesView.ProcMsg
         txtListEdit.Hide()
@@ -5718,6 +5749,36 @@ Tabs:
 
         MsgBox("Default " & cmbBPFacilityActivities.Text & " Facility Saved", vbInformation, Application.ProductName)
 
+    End Sub
+
+    Private Sub lblBPFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblBPFacilityDefault.Click
+        ' Load the default facility for the selected activity if it's not already the default
+        If lblBPFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            LoadingFacilityActivities = True ' Don't trigger a combo load yet
+            chkBPFacilityIncludeUsage.Checked = DefaultBPManufacturingFacility.IncludeActivityUsage ' Make sure this is set before loading
+
+            Dim SetActivity As IndustryType
+
+            Select Case cmbBPFacilityActivities.Text
+                Case ActivityManufacturing
+                    SetActivity = IndustryType.Manufacturing
+                Case ActivityCapComponentManufacturing
+                    SetActivity = IndustryType.CapitalComponentManufacturing
+                Case ActivityComponentManufacturing
+                    SetActivity = IndustryType.ComponentManufacturing
+                Case ActivityCopying
+                    SetActivity = IndustryType.Copying
+                Case ActivityInvention
+                    SetActivity = IndustryType.Invention
+            End Select
+
+            Call LoadFacility(SetActivity, True, False, _
+                              cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray, _
+                              lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
+                              lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, btnBPFacilitySave, lblBPFacilityTaxRate, _
+                              BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False)
+            LoadingFacilityActivities = False
+        End If
     End Sub
 
     ' For outposts, save the ME/TE/Tax data since this is specific to the user's input
@@ -7370,8 +7431,6 @@ Tabs:
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID "
         SQL = SQL & "FROM ALL_BLUEPRINTS "
-        'SQL = SQL & "LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-        'SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID = " & SelectedCharacter.ID & " "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
 
         If SelectedBPText <> "" Then
@@ -7558,7 +7617,7 @@ Tabs:
 
         BPTeamComboLoaded = False
 
-        ' Load the facility types
+        ' Load the facility activity types for this setup
         Call LoadFacilityActivities(TempTech, True, cmbBPFacilityActivities, ItemGroupID, ItemCategoryID)
 
         ' Make sure the selection is in the list of options, set to manufacturing if not
@@ -10486,8 +10545,6 @@ ExitForm:
             Dim MaxRequestsperSecond As Integer = CRESTHistory.GetRatePerSecond
 
             For i = 0 To Pairs.Count - 1
-                pnlProgressBar.Value = i
-                Application.DoEvents()
 
                 ' Add limiting if needed here - only wait if we go over the per request limit and only for the time left
                 PricesUpdated = CRESTHistory.UpdateMarketHistory(Pairs(i).ItemID, Pairs(i).RegionID, False)
@@ -10516,6 +10573,10 @@ ExitForm:
                         CRESTHistory.RecordsInserted = 0
                     End If
                 End If
+
+                ' For each record, update the progress bar
+                Call IncrementToolStripProgressBar(pnlProgressBar)
+                Application.DoEvents()
             Next
 
             ' Finish updating the DB
@@ -10712,7 +10773,7 @@ ExitSub:
             End If
 
             ' For each record, update the progress bar
-            pnlProgressBar.Value = pnlProgressBar.Value + 1
+            Call IncrementToolStripProgressBar(pnlProgressBar)
 
             Application.DoEvents()
         Next
@@ -10766,7 +10827,7 @@ ExitSub:
 
         ' Loop through the list of items to get full query of just those that need to be updated
         For i = 0 To CacheItems.Count - 1
-            pnlProgressBar.Value = i
+
             ' Reset Insert
             InsertRecord = False
 
@@ -10817,6 +10878,9 @@ ExitSub:
                 QueryEVECentral = True
 
             End If
+
+            ' For each record, update the progress bar
+            Call IncrementToolStripProgressBar(pnlProgressBar)
 
             Application.DoEvents()
         Next
@@ -10877,8 +10941,9 @@ ExitSub:
 
                 Call ExecuteNonQuerySQL(SQL)
 
-                ' Update the Progress bar
-                pnlProgressBar.Value = pnlProgressBar.Value + 1
+                ' For each record, update the progress bar
+                Call IncrementToolStripProgressBar(pnlProgressBar)
+
                 Application.DoEvents()
             Next
 
@@ -11334,6 +11399,72 @@ ExitSub:
 
 #Region "Manufacturing Object Functions"
 
+    Private Sub lblCalcBaseFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcBaseFacilityDefault.Click
+        If lblCalcBaseFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcBaseFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcComponentFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcComponentFacilityDefault.Click
+        If lblCalcComponentFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcComponentFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcCopyFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcCopyFacilityDefault.Click
+        If lblCalcCopyFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcCopyFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcInventionFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcInventionFacilityDefault.Click
+        If lblCalcInventionFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcT2InventionFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcT3InventionFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcT3InventionFacilityDefault.Click
+        If lblCalcT3InventionFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcT3InventionFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcSuperFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcSuperFacilityDefault.Click
+        If lblCalcSuperFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcSuperFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcCapitalFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcCapitalFacilityDefault.Click
+        If lblCalcCapitalFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcCapFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcT3FacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcT3FacilityDefault.Click
+        If lblCalcT3FacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcT3Facility()
+        End If
+    End Sub
+
+    Private Sub lblCalcSubsystemFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcSubsystemFacilityDefault.Click
+        If lblCalcSubsystemFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcSubsystemFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcBoosterFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcBoosterFacilityDefault.Click
+        If lblCalcBoosterFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcBoosterFacility()
+        End If
+    End Sub
+
+    Private Sub lblCalcNoPOSFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblCalcNoPOSFacilityDefault.Click
+        If lblCalcNoPOSFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
+            Call LoadDefaultCalcNoPOSFacility()
+        End If
+    End Sub
+
     ' CalcBaseFacility functions
     Private Sub cmbCalcBaseFacilityType_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcBaseFacilityType.DropDown
         PreviousCalcBaseFacilityType = cmbCalcBaseFacilityType.Text
@@ -11473,12 +11604,14 @@ ExitSub:
                         And chkCalcBaseFacilityIncludeUsage.Checked = .IncludeActivityUsage Then
                         ' Is the default, set it
                         btnCalcBaseFacilitySave.Enabled = False
-                        lblCalcBaseFacilityDefault.Visible = True
+                        lblCalcBaseFacilityDefault.ForeColor = SystemColors.Highlight
+                        Call ResetToolTipforDefaultFacilityLabel(lblCalcBaseFacilityDefault, False)
                         SelectedCalcBaseManufacturingFacility.IsDefault = True
                     Else
                         ' Allow saving of default
                         btnCalcBaseFacilitySave.Enabled = True
-                        lblCalcBaseFacilityDefault.Visible = False
+                        lblCalcBaseFacilityDefault.ForeColor = SystemColors.ButtonShadow
+                        Call ResetToolTipforDefaultFacilityLabel(lblCalcBaseFacilityDefault, True)
                         SelectedCalcBaseManufacturingFacility.IsDefault = False
                     End If
                 End With
@@ -11595,7 +11728,9 @@ ExitSub:
             DefaultCalcPOSModuleFacility = CType(SelectedCalcPOSModuleFacility.Clone, IndustryFacility)
         End If
 
-        lblCalcBaseFacilityDefault.Visible = True
+        lblCalcBaseFacilityDefault.ForeColor = SystemColors.Highlight
+        Call ResetToolTipforDefaultFacilityLabel(lblCalcBaseFacilityDefault, False)
+
         ' They just saved it
         btnCalcBaseFacilitySave.Enabled = False
 
@@ -16185,188 +16320,17 @@ CheckTechs:
             CalcCopyTeamComboLoaded = False
 
             ' Load the Default facilities for the tab
-            LoadingFacilityActivities = True ' Don't trigger a combo load yet
-            CalcBaseFacilityLoaded = False
-            chkCalcBaseFacilityIncludeUsage.Checked = DefaultCalcBaseManufacturingFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.Manufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcBaseFacilityType, cmbCalcBaseFacilityRegion, cmbCalcBaseFacilitySystem, cmbCalcBaseFacilityorArray, _
-                              lblCalcBaseFacilityBonus, lblCalcBaseFacilityDefault, _
-                              lblCalcBaseFacilityManualME, txtCalcBaseFacilityManualME, _
-                              lblCalcBaseFacilityManualTE, txtCalcBaseFacilityManualTE, _
-                              lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax, _
-                              btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, _
-                              CalcTab, chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcBaseFacilityLoaded, Nothing, 1, 0, 0, False)
-            If cmbCalcBaseFacilityType.Text = POSFacility Then
-                ' Show the POS modules for multi-use
-                SetPOSMultiUseArraysVisibility(True)
-                Call HideFacilityBonusBoxes(lblCalcBaseFacilityBonus, lblCalcBaseFacilityTaxRate, _
-                                            lblCalcBaseFacilityManualME, lblCalcBaseFacilityManualTE, _
-                                            txtCalcBaseFacilityManualME, txtCalcBaseFacilityManualTE, _
-                                            lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax)
-                ' Set the default values - need to truncate the names though
-                cmbCalcPOSFuelBlocks.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSFuelBlockFacility.FacilityName)
-                cmbCalcPOSLargeShips.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSLargeShipFacility.FacilityName)
-                cmbCalcPOSModules.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSModuleFacility.FacilityName)
-            Else
-                SetPOSMultiUseArraysVisibility(False)
-            End If
-
-            LoadingFacilityActivities = False
-
-            ' Based on the settings, load either the cap stuff or the base component stuff
-            LoadingFacilityActivities = True
-            Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, False)
-            If .CheckCapitalComponentsFacility Then
-                chkCalcComponentFacilityIncludeUsage.Checked = DefaultCalcCapitalComponentManufacturingFacility.IncludeActivityUsage
-            Else
-                chkCalcComponentFacilityIncludeUsage.Checked = DefaultCalcComponentManufacturingFacility.IncludeActivityUsage
-            End If
-            Call LoadFacility(GetComponentsIndustryType(.CheckCapitalComponentsFacility), True, False, _
-                              ActivityComponentManufacturing, cmbCalcComponentFacilityType, cmbCalcComponentFacilityRegion, cmbCalcComponentFacilitySystem, cmbCalcComponentFacilityorArray, _
-                              lblCalcComponentFacilityBonus, lblCalcComponentFacilityDefault, _
-                              lblCalcComponentFacilityManualME, txtCalcComponentFacilityManualME, _
-                              lblCalcComponentFacilityManualTE, txtCalcComponentFacilityManualTE, _
-                              lblCalcComponentFacilityManualTax, txtCalcComponentFacilityManualTax, _
-                              btnCalcComponentFacilitySave, lblCalcComponentFacilityTaxRate, _
-                              CalcTab, chkCalcComponentFacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcComponentFacilityLoaded, _
-                              Nothing, 1, GetComponentsGroupID(.CheckCapitalComponentsFacility), -1, False)
-            Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded)
-            ' Need to set the other facility as loaded to ensure it doesn't get reloaded on tab, if any changes are made it will reload
-            Call SetComponentFacilityLoaded(Not chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcInventionFacilityLoaded = False
-            chkCalcInventionFacilityIncludeUsage.Checked = DefaultCalcInventionFacility.IncludeActivityUsage
-            chkCalcInventionFacilityIncludeCost.Checked = DefaultCalcInventionFacility.IncludeActivityCost
-            chkCalcInventionFacilityIncludeTime.Checked = DefaultCalcInventionFacility.IncludeActivityTime
-            Call LoadFacility(IndustryType.Invention, True, False, _
-                              ActivityInvention, cmbCalcInventionFacilityType, cmbCalcInventionFacilityRegion, cmbCalcInventionFacilitySystem, cmbCalcInventionFacilityorArray, _
-                              lblCalcInventionFacilityBonus, lblCalcInventionFacilityDefault, _
-                              lblCalcInventionFacilityManualME, txtCalcInventionFacilityManualME, _
-                              lblCalcInventionFacilityManualTE, txtCalcInventionFacilityManualTE, _
-                              lblCalcInventionFacilityManualTax, txtCalcInventionFacilityManualTax, _
-                              btnCalcInventionFacilitySave, lblCalcInventionFacilityTaxRate, _
-                              CalcTab, chkCalcInventionFacilityIncludeUsage, lblCalcInventionInclude, chkCalcInventionFacilityIncludeCost, chkCalcInventionFacilityIncludeTime, CalcInventionFacilityLoaded, Nothing, 1, 0, 0, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcT3InventionFacilityLoaded = False
-            chkCalcT3InventionFacilityIncludeUsage.Checked = DefaultCalcT3InventionFacility.IncludeActivityUsage
-            chkCalcT3InventionFacilityIncludeCost.Checked = DefaultCalcT3InventionFacility.IncludeActivityCost
-            chkCalcT3InventionFacilityIncludeTime.Checked = DefaultCalcT3InventionFacility.IncludeActivityTime
-            Call LoadFacility(IndustryType.T3Invention, True, False, _
-                              ActivityInvention, cmbCalcT3InventionFacilityType, cmbCalcT3InventionFacilityRegion, cmbCalcT3InventionFacilitySystem, cmbCalcT3InventionFacilityorArray, _
-                              lblCalcT3InventionFacilityBonus, lblCalcT3InventionFacilityDefault, _
-                              lblCalcT3InventionFacilityManualME, txtCalcT3InventionFacilityManualME, _
-                              lblCalcT3InventionFacilityManualTE, txtCalcT3InventionFacilityManualTE, _
-                              lblCalcT3InventionFacilityManualTax, txtCalcT3InventionFacilityManualTax, _
-                              btnCalcT3InventionFacilitySave, lblCalcT3InventionFacilityTaxRate, _
-                              CalcTab, chkCalcT3InventionFacilityIncludeUsage, lblCalcT3InventionInclude, chkCalcT3InventionFacilityIncludeCost, chkCalcT3InventionFacilityIncludeTime, CalcT3InventionFacilityLoaded, Nothing, 1, StrategicCruiserGroupID, -1, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcCopyFacilityLoaded = False
-            chkCalcCopyFacilityIncludeUsage.Checked = DefaultCalcCopyFacility.IncludeActivityUsage
-            chkCalcCopyFacilityIncludeCost.Checked = DefaultCalcCopyFacility.IncludeActivityCost
-            chkCalcCopyFacilityIncludeTime.Checked = DefaultCalcCopyFacility.IncludeActivityTime
-            Call LoadFacility(IndustryType.Copying, True, False, _
-                              ActivityCopying, cmbCalcCopyFacilityType, cmbCalcCopyFacilityRegion, cmbCalcCopyFacilitySystem, cmbCalcCopyFacilityorArray, _
-                              lblCalcCopyFacilityBonus, lblCalcCopyFacilityDefault, _
-                              lblCalcCopyFacilityManualME, txtCalcCopyFacilityManualME, _
-                              lblCalcCopyFacilityManualTE, txtCalcCopyFacilityManualTE, _
-                              lblCalcCopyFacilityManualTax, txtCalcCopyFacilityManualTax, _
-                              btnCalcCopyFacilitySave, lblCalcCopyFacilityTaxRate, _
-                              CalcTab, chkCalcCopyFacilityIncludeUsage, lblCalcCopyInclude, chkCalcCopyFacilityIncludeCost, chkCalcCopyFacilityIncludeTime, CalcCopyFacilityLoaded, Nothing, 1, 0, 0, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcNoPOSFacilityLoaded = False
-            chkCalcNoPOSFacilityIncludeUsage.Checked = DefaultCalcNoPOSFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.NoPOSManufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcNoPOSFacilityType, cmbCalcNoPOSFacilityRegion, cmbCalcNoPOSFacilitySystem, cmbCalcNoPOSFacilityorArray, _
-                              lblCalcNoPOSFacilityBonus, lblCalcNoPOSFacilityDefault, _
-                              lblCalcNoPOSFacilityManualME, txtCalcNoPOSFacilityManualME, _
-                              lblCalcNoPOSFacilityManualTE, txtCalcNoPOSFacilityManualTE, _
-                              lblCalcNoPOSFacilityManualTax, txtCalcNoPOSFacilityManualTax, _
-                              btnCalcNoPOSFacilitySave, lblCalcNoPOSFacilityTaxRate, _
-                              CalcTab, chkCalcNoPOSFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcNoPOSFacilityLoaded, Nothing, 1, -1, SovStructureCategoryID, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcSuperFacilityLoaded = False
-            chkCalcSuperFacilityIncludeUsage.Checked = DefaultCalcSuperManufacturingFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.SuperManufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcSuperFacilityType, cmbCalcSuperFacilityRegion, cmbCalcSuperFacilitySystem, cmbCalcSuperFacilityorArray, _
-                              lblCalcSuperFacilityBonus, lblCalcSuperFacilityDefault, _
-                              lblCalcSuperFacilityManualME, txtCalcSuperFacilityManualME, _
-                              lblCalcSuperFacilityManualTE, txtCalcSuperFacilityManualTE, _
-                              lblCalcSuperFacilityManualTax, txtCalcSuperFacilityManualTax, _
-                              btnCalcSuperFacilitySave, lblCalcSuperFacilityTaxRate, _
-                              CalcTab, chkCalcSuperFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcSuperFacilityLoaded, Nothing, 1, SupercarrierGroupID, -1, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcCapitalFacilityLoaded = False
-            chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcCapitalManufacturingFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.CapitalManufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcCapitalFacilityType, cmbCalcCapitalFacilityRegion, cmbCalcCapitalFacilitySystem, cmbCalcCapitalFacilityorArray, _
-                              lblCalcCapitalFacilityBonus, lblCalcCapitalFacilityDefault, _
-                              lblCalcCapitalFacilityManualME, txtCalcCapitalFacilityManualME, _
-                              lblCalcCapitalFacilityManualTE, txtCalcCapitalFacilityManualTE, _
-                              lblCalcCapitalFacilityManualTax, txtCalcCapitalFacilityManualTax, _
-                              btnCalcCapitalFacilitySave, lblCalcCapitalFacilityTaxRate, _
-                              CalcTab, chkCalcCapitalFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcCapitalFacilityLoaded, Nothing, 1, DreadnoughtGroupID, -1, False)
-
-            LoadingFacilityActivities = False
-
-            ' Based on the settings, load either the T3 Cruiser or Destroyer facility
-            LoadingFacilityActivities = True
-            Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, False)
-            If .CheckT3DestroyerFacility Then
-                chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3DestroyerManufacturingFacility.IncludeActivityUsage
-            Else
-                chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3CruiserManufacturingFacility.IncludeActivityUsage
-            End If
-            Call LoadFacility(GetT3ShipIndustryType(.CheckT3DestroyerFacility), True, False, _
-                              ActivityManufacturing, cmbCalcT3FacilityType, cmbCalcT3FacilityRegion, cmbCalcT3FacilitySystem, cmbCalcT3FacilityorArray, _
-                              lblCalcT3FacilityBonus, lblCalcT3FacilityDefault, _
-                              lblCalcT3FacilityManualME, txtCalcT3FacilityManualME, _
-                              lblCalcT3FacilityManualTE, txtCalcT3FacilityManualTE, _
-                              lblCalcT3FacilityManualTax, txtCalcT3FacilityManualTax, _
-                              btnCalcT3FacilitySave, lblCalcT3FacilityTaxRate, _
-                              CalcTab, chkCalcT3FacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcT3FacilityLoaded, Nothing, _
-                              1, GetT3ShipGroupID(.CheckT3DestroyerFacility), -1, False)
-            Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
-            ' Need to set the other facility as loaded to ensure it doesn't get reloaded on tab, if any changes are made it will reload
-            Call SetComponentFacilityLoaded(Not chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcSubsystemFacilityLoaded = False
-            chkCalcSubsystemFacilityIncludeUsage.Checked = DefaultCalcSubsystemManufacturingFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.SubsystemManufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcSubsystemFacilityType, cmbCalcSubsystemFacilityRegion, cmbCalcSubsystemFacilitySystem, cmbCalcSubsystemFacilityorArray, _
-                              lblCalcSubsystemFacilityBonus, lblCalcSubsystemFacilityDefault, _
-                              lblCalcSubsystemFacilityManualME, txtCalcSubsystemFacilityManualME, _
-                              lblCalcSubsystemFacilityManualTE, txtCalcSubsystemFacilityManualTE, _
-                              lblCalcSubsystemFacilityManualTax, txtCalcSubsystemFacilityManualTax, _
-                              btnCalcSubsystemFacilitySave, lblCalcSubsystemFacilityTaxRate, _
-                              CalcTab, chkCalcSubsystemFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcSubsystemFacilityLoaded, Nothing, 1, -1, SubsystemCategoryID, False)
-            LoadingFacilityActivities = False
-
-            LoadingFacilityActivities = True
-            CalcBoosterFacilityLoaded = False
-            chkCalcBoosterFacilityIncludeUsage.Checked = DefaultCalcBoosterManufacturingFacility.IncludeActivityUsage
-            Call LoadFacility(IndustryType.BoosterManufacturing, True, False, _
-                              ActivityManufacturing, cmbCalcBoosterFacilityType, cmbCalcBoosterFacilityRegion, cmbCalcBoosterFacilitySystem, cmbCalcBoosterFacilityorArray, _
-                              lblCalcBoosterFacilityBonus, lblCalcBoosterFacilityDefault, _
-                              lblCalcBoosterFacilityManualME, txtCalcBoosterFacilityManualME, _
-                              lblCalcBoosterFacilityManualTE, txtCalcBoosterFacilityManualTE, _
-                              lblCalcBoosterFacilityManualTax, txtCalcBoosterFacilityManualTax, _
-                              btnCalcBoosterFacilitySave, lblCalcBoosterFacilityTaxRate, _
-                              CalcTab, chkCalcBoosterFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcBoosterFacilityLoaded, Nothing, 1, BoosterGroupID, -1, False)
-            LoadingFacilityActivities = False
+            Call LoadDefaultCalcBaseFacility()
+            Call LoadDefaultCalcComponentFacility()
+            Call LoadDefaultCalcT2InventionFacility()
+            Call LoadDefaultCalcT3InventionFacility()
+            Call LoadDefaultCalcCopyFacility()
+            Call LoadDefaultCalcNoPOSFacility()
+            Call LoadDefaultCalcSuperFacility()
+            Call LoadDefaultCalcCapFacility()
+            Call LoadDefaultCalcT3Facility()
+            Call LoadDefaultCalcSubsystemFacility()
+            Call LoadDefaultCalcBoosterFacility()
 
             ' Other defaults
             txtCalcTempME.Text = CStr(UserApplicationSettings.DefaultBPME)
@@ -16396,6 +16360,213 @@ CheckTechs:
         Call ResetRefresh()
         Call EnableDisableT2T3Options()
 
+    End Sub
+
+    ' Loads the default base facility
+    Private Sub LoadDefaultCalcBaseFacility()
+        LoadingFacilityActivities = True ' Don't trigger a combo load yet
+        CalcBaseFacilityLoaded = False
+        chkCalcBaseFacilityIncludeUsage.Checked = DefaultCalcBaseManufacturingFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.Manufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcBaseFacilityType, cmbCalcBaseFacilityRegion, cmbCalcBaseFacilitySystem, cmbCalcBaseFacilityorArray, _
+                          lblCalcBaseFacilityBonus, lblCalcBaseFacilityDefault, _
+                          lblCalcBaseFacilityManualME, txtCalcBaseFacilityManualME, _
+                          lblCalcBaseFacilityManualTE, txtCalcBaseFacilityManualTE, _
+                          lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax, _
+                          btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, _
+                          CalcTab, chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcBaseFacilityLoaded, Nothing, 1, 0, 0, False)
+        If cmbCalcBaseFacilityType.Text = POSFacility Then
+            ' Show the POS modules for multi-use
+            SetPOSMultiUseArraysVisibility(True)
+            Call HideFacilityBonusBoxes(lblCalcBaseFacilityBonus, lblCalcBaseFacilityTaxRate, _
+                                        lblCalcBaseFacilityManualME, lblCalcBaseFacilityManualTE, _
+                                        txtCalcBaseFacilityManualME, txtCalcBaseFacilityManualTE, _
+                                        lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax)
+            ' Set the default values - need to truncate the names though
+            cmbCalcPOSFuelBlocks.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSFuelBlockFacility.FacilityName)
+            cmbCalcPOSLargeShips.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSLargeShipFacility.FacilityName)
+            cmbCalcPOSModules.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSModuleFacility.FacilityName)
+        Else
+            SetPOSMultiUseArraysVisibility(False)
+        End If
+
+        LoadingFacilityActivities = False
+    End Sub
+
+    ' Loads the default calc component facility
+    Private Sub LoadDefaultCalcComponentFacility()
+        ' Based on the settings, load either the cap stuff or the base component stuff
+        LoadingFacilityActivities = True
+        Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, False)
+        If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
+            chkCalcComponentFacilityIncludeUsage.Checked = DefaultCalcCapitalComponentManufacturingFacility.IncludeActivityUsage
+        Else
+            chkCalcComponentFacilityIncludeUsage.Checked = DefaultCalcComponentManufacturingFacility.IncludeActivityUsage
+        End If
+        Call LoadFacility(GetComponentsIndustryType(UserManufacturingTabSettings.CheckCapitalComponentsFacility), True, False, _
+                          ActivityComponentManufacturing, cmbCalcComponentFacilityType, cmbCalcComponentFacilityRegion, cmbCalcComponentFacilitySystem, cmbCalcComponentFacilityorArray, _
+                          lblCalcComponentFacilityBonus, lblCalcComponentFacilityDefault, _
+                          lblCalcComponentFacilityManualME, txtCalcComponentFacilityManualME, _
+                          lblCalcComponentFacilityManualTE, txtCalcComponentFacilityManualTE, _
+                          lblCalcComponentFacilityManualTax, txtCalcComponentFacilityManualTax, _
+                          btnCalcComponentFacilitySave, lblCalcComponentFacilityTaxRate, _
+                          CalcTab, chkCalcComponentFacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcComponentFacilityLoaded, _
+                          Nothing, 1, GetComponentsGroupID(UserManufacturingTabSettings.CheckCapitalComponentsFacility), -1, False)
+        Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded)
+        ' Need to set the other facility as loaded to ensure it doesn't get reloaded on tab, if any changes are made it will reload
+        Call SetComponentFacilityLoaded(Not chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcT2InventionFacility()
+        LoadingFacilityActivities = True
+        CalcInventionFacilityLoaded = False
+        chkCalcInventionFacilityIncludeUsage.Checked = DefaultCalcInventionFacility.IncludeActivityUsage
+        chkCalcInventionFacilityIncludeCost.Checked = DefaultCalcInventionFacility.IncludeActivityCost
+        chkCalcInventionFacilityIncludeTime.Checked = DefaultCalcInventionFacility.IncludeActivityTime
+        Call LoadFacility(IndustryType.Invention, True, False, _
+                          ActivityInvention, cmbCalcInventionFacilityType, cmbCalcInventionFacilityRegion, cmbCalcInventionFacilitySystem, cmbCalcInventionFacilityorArray, _
+                          lblCalcInventionFacilityBonus, lblCalcInventionFacilityDefault, _
+                          lblCalcInventionFacilityManualME, txtCalcInventionFacilityManualME, _
+                          lblCalcInventionFacilityManualTE, txtCalcInventionFacilityManualTE, _
+                          lblCalcInventionFacilityManualTax, txtCalcInventionFacilityManualTax, _
+                          btnCalcInventionFacilitySave, lblCalcInventionFacilityTaxRate, _
+                          CalcTab, chkCalcInventionFacilityIncludeUsage, lblCalcInventionInclude, chkCalcInventionFacilityIncludeCost, chkCalcInventionFacilityIncludeTime, CalcInventionFacilityLoaded, Nothing, 1, 0, 0, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcT3InventionFacility()
+        LoadingFacilityActivities = True
+        CalcT3InventionFacilityLoaded = False
+        chkCalcT3InventionFacilityIncludeUsage.Checked = DefaultCalcT3InventionFacility.IncludeActivityUsage
+        chkCalcT3InventionFacilityIncludeCost.Checked = DefaultCalcT3InventionFacility.IncludeActivityCost
+        chkCalcT3InventionFacilityIncludeTime.Checked = DefaultCalcT3InventionFacility.IncludeActivityTime
+        Call LoadFacility(IndustryType.T3Invention, True, False, _
+                          ActivityInvention, cmbCalcT3InventionFacilityType, cmbCalcT3InventionFacilityRegion, cmbCalcT3InventionFacilitySystem, cmbCalcT3InventionFacilityorArray, _
+                          lblCalcT3InventionFacilityBonus, lblCalcT3InventionFacilityDefault, _
+                          lblCalcT3InventionFacilityManualME, txtCalcT3InventionFacilityManualME, _
+                          lblCalcT3InventionFacilityManualTE, txtCalcT3InventionFacilityManualTE, _
+                          lblCalcT3InventionFacilityManualTax, txtCalcT3InventionFacilityManualTax, _
+                          btnCalcT3InventionFacilitySave, lblCalcT3InventionFacilityTaxRate, _
+                          CalcTab, chkCalcT3InventionFacilityIncludeUsage, lblCalcT3InventionInclude, chkCalcT3InventionFacilityIncludeCost, chkCalcT3InventionFacilityIncludeTime, CalcT3InventionFacilityLoaded, Nothing, 1, StrategicCruiserGroupID, -1, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcCopyFacility()
+        LoadingFacilityActivities = True
+        CalcCopyFacilityLoaded = False
+        chkCalcCopyFacilityIncludeUsage.Checked = DefaultCalcCopyFacility.IncludeActivityUsage
+        chkCalcCopyFacilityIncludeCost.Checked = DefaultCalcCopyFacility.IncludeActivityCost
+        chkCalcCopyFacilityIncludeTime.Checked = DefaultCalcCopyFacility.IncludeActivityTime
+        Call LoadFacility(IndustryType.Copying, True, False, _
+                          ActivityCopying, cmbCalcCopyFacilityType, cmbCalcCopyFacilityRegion, cmbCalcCopyFacilitySystem, cmbCalcCopyFacilityorArray, _
+                          lblCalcCopyFacilityBonus, lblCalcCopyFacilityDefault, _
+                          lblCalcCopyFacilityManualME, txtCalcCopyFacilityManualME, _
+                          lblCalcCopyFacilityManualTE, txtCalcCopyFacilityManualTE, _
+                          lblCalcCopyFacilityManualTax, txtCalcCopyFacilityManualTax, _
+                          btnCalcCopyFacilitySave, lblCalcCopyFacilityTaxRate, _
+                          CalcTab, chkCalcCopyFacilityIncludeUsage, lblCalcCopyInclude, chkCalcCopyFacilityIncludeCost, chkCalcCopyFacilityIncludeTime, CalcCopyFacilityLoaded, Nothing, 1, 0, 0, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcNoPOSFacility()
+        LoadingFacilityActivities = True
+        CalcNoPOSFacilityLoaded = False
+        chkCalcNoPOSFacilityIncludeUsage.Checked = DefaultCalcNoPOSFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.NoPOSManufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcNoPOSFacilityType, cmbCalcNoPOSFacilityRegion, cmbCalcNoPOSFacilitySystem, cmbCalcNoPOSFacilityorArray, _
+                          lblCalcNoPOSFacilityBonus, lblCalcNoPOSFacilityDefault, _
+                          lblCalcNoPOSFacilityManualME, txtCalcNoPOSFacilityManualME, _
+                          lblCalcNoPOSFacilityManualTE, txtCalcNoPOSFacilityManualTE, _
+                          lblCalcNoPOSFacilityManualTax, txtCalcNoPOSFacilityManualTax, _
+                          btnCalcNoPOSFacilitySave, lblCalcNoPOSFacilityTaxRate, _
+                          CalcTab, chkCalcNoPOSFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcNoPOSFacilityLoaded, Nothing, 1, -1, SovStructureCategoryID, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcSuperFacility()
+        LoadingFacilityActivities = True
+        CalcSuperFacilityLoaded = False
+        chkCalcSuperFacilityIncludeUsage.Checked = DefaultCalcSuperManufacturingFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.SuperManufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcSuperFacilityType, cmbCalcSuperFacilityRegion, cmbCalcSuperFacilitySystem, cmbCalcSuperFacilityorArray, _
+                          lblCalcSuperFacilityBonus, lblCalcSuperFacilityDefault, _
+                          lblCalcSuperFacilityManualME, txtCalcSuperFacilityManualME, _
+                          lblCalcSuperFacilityManualTE, txtCalcSuperFacilityManualTE, _
+                          lblCalcSuperFacilityManualTax, txtCalcSuperFacilityManualTax, _
+                          btnCalcSuperFacilitySave, lblCalcSuperFacilityTaxRate, _
+                          CalcTab, chkCalcSuperFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcSuperFacilityLoaded, Nothing, 1, SupercarrierGroupID, -1, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcCapFacility()
+        LoadingFacilityActivities = True
+        CalcCapitalFacilityLoaded = False
+        chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcCapitalManufacturingFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.CapitalManufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcCapitalFacilityType, cmbCalcCapitalFacilityRegion, cmbCalcCapitalFacilitySystem, cmbCalcCapitalFacilityorArray, _
+                          lblCalcCapitalFacilityBonus, lblCalcCapitalFacilityDefault, _
+                          lblCalcCapitalFacilityManualME, txtCalcCapitalFacilityManualME, _
+                          lblCalcCapitalFacilityManualTE, txtCalcCapitalFacilityManualTE, _
+                          lblCalcCapitalFacilityManualTax, txtCalcCapitalFacilityManualTax, _
+                          btnCalcCapitalFacilitySave, lblCalcCapitalFacilityTaxRate, _
+                          CalcTab, chkCalcCapitalFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcCapitalFacilityLoaded, Nothing, 1, DreadnoughtGroupID, -1, False)
+
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcT3Facility()
+        ' Based on the settings, load either the T3 Cruiser or Destroyer facility
+        LoadingFacilityActivities = True
+        Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, False)
+        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
+            chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3DestroyerManufacturingFacility.IncludeActivityUsage
+        Else
+            chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3CruiserManufacturingFacility.IncludeActivityUsage
+        End If
+        Call LoadFacility(GetT3ShipIndustryType(UserManufacturingTabSettings.CheckT3DestroyerFacility), True, False, _
+                          ActivityManufacturing, cmbCalcT3FacilityType, cmbCalcT3FacilityRegion, cmbCalcT3FacilitySystem, cmbCalcT3FacilityorArray, _
+                          lblCalcT3FacilityBonus, lblCalcT3FacilityDefault, _
+                          lblCalcT3FacilityManualME, txtCalcT3FacilityManualME, _
+                          lblCalcT3FacilityManualTE, txtCalcT3FacilityManualTE, _
+                          lblCalcT3FacilityManualTax, txtCalcT3FacilityManualTax, _
+                          btnCalcT3FacilitySave, lblCalcT3FacilityTaxRate, _
+                          CalcTab, chkCalcT3FacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcT3FacilityLoaded, Nothing, _
+                          1, GetT3ShipGroupID(UserManufacturingTabSettings.CheckT3DestroyerFacility), -1, False)
+        Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
+        ' Need to set the other facility as loaded to ensure it doesn't get reloaded on tab, if any changes are made it will reload
+        Call SetComponentFacilityLoaded(Not chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcSubsystemFacility()
+        LoadingFacilityActivities = True
+        CalcSubsystemFacilityLoaded = False
+        chkCalcSubsystemFacilityIncludeUsage.Checked = DefaultCalcSubsystemManufacturingFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.SubsystemManufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcSubsystemFacilityType, cmbCalcSubsystemFacilityRegion, cmbCalcSubsystemFacilitySystem, cmbCalcSubsystemFacilityorArray, _
+                          lblCalcSubsystemFacilityBonus, lblCalcSubsystemFacilityDefault, _
+                          lblCalcSubsystemFacilityManualME, txtCalcSubsystemFacilityManualME, _
+                          lblCalcSubsystemFacilityManualTE, txtCalcSubsystemFacilityManualTE, _
+                          lblCalcSubsystemFacilityManualTax, txtCalcSubsystemFacilityManualTax, _
+                          btnCalcSubsystemFacilitySave, lblCalcSubsystemFacilityTaxRate, _
+                          CalcTab, chkCalcSubsystemFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcSubsystemFacilityLoaded, Nothing, 1, -1, SubsystemCategoryID, False)
+        LoadingFacilityActivities = False
+    End Sub
+
+    Private Sub LoadDefaultCalcBoosterFacility()
+        LoadingFacilityActivities = True
+        CalcBoosterFacilityLoaded = False
+        chkCalcBoosterFacilityIncludeUsage.Checked = DefaultCalcBoosterManufacturingFacility.IncludeActivityUsage
+        Call LoadFacility(IndustryType.BoosterManufacturing, True, False, _
+                          ActivityManufacturing, cmbCalcBoosterFacilityType, cmbCalcBoosterFacilityRegion, cmbCalcBoosterFacilitySystem, cmbCalcBoosterFacilityorArray, _
+                          lblCalcBoosterFacilityBonus, lblCalcBoosterFacilityDefault, _
+                          lblCalcBoosterFacilityManualME, txtCalcBoosterFacilityManualME, _
+                          lblCalcBoosterFacilityManualTE, txtCalcBoosterFacilityManualTE, _
+                          lblCalcBoosterFacilityManualTax, txtCalcBoosterFacilityManualTax, _
+                          btnCalcBoosterFacilitySave, lblCalcBoosterFacilityTaxRate, _
+                          CalcTab, chkCalcBoosterFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcBoosterFacilityLoaded, Nothing, 1, BoosterGroupID, -1, False)
+        LoadingFacilityActivities = False
     End Sub
 
     ' Saves all the settings on the screen
@@ -17309,12 +17480,12 @@ CheckTechs:
                     Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False)
                 End If
 
-                    i += 1
-                    pnlProgressBar.Value = i
+                ' For each record, update the progress bar
+                Call IncrementToolStripProgressBar(pnlProgressBar)
 
             End While
 
-            pnlProgressBar.Value = i
+
             Application.DoEvents()
 
             readerBPs.Close()
@@ -17747,7 +17918,8 @@ CheckTechs:
 
                     End If
 
-                    pnlProgressBar.Value = pnlProgressBar.Value + 1
+                    ' For each record, update the progress bar
+                    Call IncrementToolStripProgressBar(pnlProgressBar)
 
                 Next
 
@@ -18014,7 +18186,9 @@ DisplayResults:
                 BPList.ForeColor = Color.DarkGreen
             End If
 
-            pnlProgressBar.Value = pnlProgressBar.Value + 1
+            ' For each record, update the progress bar
+            Call IncrementToolStripProgressBar(pnlProgressBar)
+
         Next
 
         lstManufacturing.EndUpdate()
@@ -18309,15 +18483,15 @@ ExitCalc:
                         MyStream.Write(OutputText & Environment.NewLine)
 
                         For Each ListItem In Items
-                            Application.DoEvents()
-                            pnlProgressBar.Value = NumItems
                             OutputText = ""
                             For j = 0 To ExportColumns.Count - 1
                                 ' Format each column value and save
                                 OutputText = OutputText & GetOutputText(ExportColumns(j), ListItem.SubItems(j + 1).Text, Separator, UserApplicationSettings.DataExportFormat)
                             Next
 
-                            NumItems = NumItems + 1
+                            ' For each record, update the progress bar
+                            Call IncrementToolStripProgressBar(pnlProgressBar)
+                            Application.DoEvents()
 
                             MyStream.Write(OutputText & Environment.NewLine)
                         Next
@@ -18735,6 +18909,13 @@ ExitCalc:
 
     End Sub
 
+    Private Sub lstManufacturing_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstManufacturing.ColumnWidthChanging
+        If e.ColumnIndex = 0 Then
+            e.Cancel = True
+            e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
+        End If
+    End Sub
+
     ' On double click of the item, it will open up the bp window with the item 
     Private Sub lstManufacturing_DoubleClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles lstManufacturing.DoubleClick
         Dim FoundItem As New ManufacturingItem
@@ -18742,6 +18923,8 @@ ExitCalc:
         ' Find the item clicked in the list of items then just send those values over
         ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
         FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+
+        ' Set the build facility we are sending to the proper facility type for this item. 
 
         If FoundItem IsNot Nothing Then
             ' We found it, so load the current bp
@@ -20013,7 +20196,6 @@ ExitCalc:
         Dim j As Integer ' for highlighting top number of agents the user can use
         Dim UniqueAgentList() As String
         Dim TotalIPH As Double = 0 ' For storing the total IPH for the top agents used
-        Dim ListCount As Integer
         Dim SQL As String
         Dim NegotationSkill As Integer = CInt(cmbDCNegotiation.Text)
         Dim ConnectionsSkill As Integer = CInt(cmbDCConnections.Text)
@@ -20171,7 +20353,6 @@ ExitCalc:
             GoTo Leave
         End If
 
-        ListCount = 0
         pnlProgressBar.Value = 0
         pnlProgressBar.Visible = True
         pnlProgressBar.Maximum = readerRecordCount
@@ -20307,8 +20488,9 @@ ExitCalc:
             ' Add the record
             DCAgentList.Add(DCAgentRecord)
 
-            ListCount = ListCount + 1
-            pnlProgressBar.Value = pnlProgressBar.Value + 1
+            ' For each record, update the progress bar
+            Call IncrementToolStripProgressBar(pnlProgressBar)
+
         End While
 
         readerDC.Close()
@@ -20548,7 +20730,8 @@ ExitCalc:
 
             End If
 
-            pnlProgressBar.Value = pnlProgressBar.Value + 1
+            ' For each record, update the progress bar
+            Call IncrementToolStripProgressBar(pnlProgressBar)
 
         Next
 
@@ -21492,6 +21675,13 @@ Leave:
 #Region "Mining"
 
 #Region "Mining Object Functions"
+
+    Private Sub lstMineGrid_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstMineGrid.ColumnWidthChanging
+        If e.ColumnIndex = 0 Then
+            e.Cancel = True
+            e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
+        End If
+    End Sub
 
     Private Sub lstMineGrid_MouseClick(sender As System.Object, e As System.Windows.Forms.MouseEventArgs) Handles lstMineGrid.MouseClick
         Call ListClicked(lstMineGrid, sender, e)

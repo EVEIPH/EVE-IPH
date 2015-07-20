@@ -197,9 +197,11 @@ Public Class ShoppingList
                 FoundItem.TotalItemMarketCost = FoundItem.TotalItemMarketCost / FoundItem.Quantity * UpdateItemQuantity
                 FoundItem.TotalBuildTime = FoundItem.TotalBuildTime / FoundItem.Quantity * UpdateItemQuantity
                 ' Update the invention jobs if they update this later
-                FoundItem.InventionJobs = CInt(Math.Ceiling(FoundItem.AvgInvRunsforSuccess * Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP)))
-                ' How many bps do we need to make?
-                FoundItem.NumBPs = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP))
+                If FoundItem.RunsPerBP <> 0 Then
+                    FoundItem.InventionJobs = CInt(Math.Ceiling(FoundItem.AvgInvRunsforSuccess * Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP)))
+                    ' How many bps do we need to make?
+                    FoundItem.NumBPs = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP))
+                End If
                 ' Finally update the quantity
                 FoundItem.Quantity = UpdateItemQuantity
             End If
@@ -688,7 +690,7 @@ Public Class ShoppingList
             Dim ItemColumns As String() = ItemNamesSortOrder(i).Split(New [Char]() {"|"c})
 
             ' For each item, find it in the current buy list and replace
-            ' Item sort order Name, Quantity, ME, Num BPs, Build Type, Decryptor/Relic
+            ' Item sort order Name, Quantity, ME, Num BPs, Build Type, Decryptor/Relic, Location
             For j = 0 To FullItemList.GetMaterialList.Count - 1
                 With FullItemList.GetMaterialList(j) ' GroupName stores the build type Decryptor/Relic in item type
                     ' Split out the Build Type, Decryptor, NumBps, and Relic
@@ -705,7 +707,7 @@ Public Class ShoppingList
 
                     If ItemName = .GetMaterialName And CLng(ItemColumns(1)) = .GetQuantity And ItemColumns(2) = .GetItemME _
                      And ItemColumns(4) = GroupNameItems(0) And ItemColumns(5) = GroupNameItems(1) _
-                     And ItemColumns(3) = GroupNameItems(2) And RelicName = GroupNameItems(3) Then
+                     And ItemColumns(3) = GroupNameItems(2) And RelicName = GroupNameItems(3) And ItemColumns(6) = GroupNameItems(4) Then
                         ' Found it, so insert into temp list
                         TempMatList.InsertMaterial(FullItemList.GetMaterialList(j))
                         Exit For
@@ -907,7 +909,7 @@ Public Class ShoppingList
         For i = 0 To TotalItemList.Count - 1
             With TotalItemList(i)
                 ' Item sort order is Build Type, Decryptor, NumBps, and Relic for the group name
-                TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic), .Quantity, .BuildVolume, 0, CStr(.ItemME))
+                TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" & .BuildLocation, .Quantity, .BuildVolume, 0, CStr(.ItemME))
             End With
             ReturnMaterials.InsertMaterial(TempMat)
         Next
@@ -1150,6 +1152,9 @@ Public Class ShoppingListItem
 
     ' For ME values to update with add/subtract in shopping list, item is either cap component, component, or anything else we are building
     Public FacilityMEModifier As Double
+
+    Public BuildLocation As String ' This is the name of the station or Array (with system name) where we build the items
+
     ' Flag to tell if the item is built in a POS or not
     Public BuiltInPOS As Boolean
     ' Ignore Variables
@@ -1186,6 +1191,7 @@ Public Class ShoppingListItem
         BPMaterialList = Nothing
 
         FacilityMEModifier = 1
+        BuildLocation = ""
         BuiltInPOS = False
         IgnoredInvention = False
         IgnoredMinerals = False
