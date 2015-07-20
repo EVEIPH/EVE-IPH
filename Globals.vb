@@ -1429,12 +1429,12 @@ InvalidDate:
         Dim Response As DialogResult
         ' Program Updater
         Dim Updater As New ProgramUpdater
-        Dim UpdateCode As Integer
+        Dim UpdateCode As UpdateCheckResult
 
         ' 1 = Update Available, 0 No Update Available, -1 an error occured and msg box already shown
         UpdateCode = Updater.IsProgramUpdatable
 
-        If UpdateCode = 1 Then
+        If UpdateCode = UpdateCheckResult.UpdateAvailable Then
 
             Response = TopMostMessageBox.Show("Update Available - Do you want to update now?", Application.ProductName, MessageBoxButtons.YesNo, ProgramIcon)
 
@@ -1442,7 +1442,7 @@ InvalidDate:
                 ' Run the updater
                 Call Updater.RunUpdate()
             End If
-        ElseIf ShowFinalMessage And UpdateCode = 0 Then
+        ElseIf ShowFinalMessage And UpdateCode = UpdateCheckResult.UpToDate Then
             MsgBox("No updates available.", vbInformation, Application.ProductName)
         End If
 
