@@ -50,17 +50,17 @@ Public Class frmShoppingList
     Private BuyListHeaderCSV As String = "Material,Quantity,Cost Per Item,Min Sell,Max Buy,Buy Type,Total m3,Isk/m3,TotalCost"
     Private BuildListHeaderCSV As String = "Build Item,Quantity,ME"
     Private ItemsListHeaderCSV As String = "Item,Quantity,ME,NumBps,Build Type,Decryptor,Relic"
-    Private ItemsListHeaderCSVAdd As String = ",POS Build,IgnoredInvention,IgnoredMinerals,IgnoredT1BaseItem,Location"
+    Private ItemsListHeaderCSVAdd As String = ",POS Build,IgnoredInvention,IgnoredMinerals,IgnoredT1BaseItem"
 
     Private BuyListHeaderTXT As String = "Material|Quantity|Cost Per Item|Min Sell|Max Buy|Buy Type|Total m3|Isk/m3|TotalCost"
     Private BuildListHeaderTXT As String = "Build Item|Quantity|ME"
     Private ItemsListHeaderTXT As String = "Item|Quantity|ME|NumBps|Build Type|Decryptor|Relic"
-    Private ItemsListHeaderTXTAdd As String = "|POS Build|IgnoredInvention|IgnoredMinerals|IgnoredT1BaseItem|Location"
+    Private ItemsListHeaderTXTAdd As String = "|POS Build|IgnoredInvention|IgnoredMinerals|IgnoredT1BaseItem"
 
     Private BuyListHeaderSSV As String = "Material;Quantity;Cost Per Item;Min Sell;Max Buy;Buy Type;Total m3;Isk/m3;TotalCost"
     Private BuildListHeaderSSV As String = "Build Item;Quantity;ME"
     Private ItemsListHeaderSSV As String = "Item;Quantity;ME;NumBps;Build Type;Decryptor;Relic"
-    Private ItemsListHeaderSSVAdd As String = ";POS Build;IgnoredInvention;IgnoredMinerals;IgnoredT1BaseItem;Location"
+    Private ItemsListHeaderSSVAdd As String = ";POS Build;IgnoredInvention;IgnoredMinerals;IgnoredT1BaseItem"
 
     Private FirstFormLoad As Boolean
 
@@ -88,7 +88,6 @@ Public Class frmShoppingList
         Dim BuildType As String
         Dim Decryptor As String
         Dim Relic As String
-        Dim BuildLocation As String
         Dim BuiltInPOS As Boolean
         Dim IgnoredInvention As Boolean
         Dim IgnoredMinerals As Boolean
@@ -102,9 +101,9 @@ Public Class frmShoppingList
 
         ' Add any initialization after the InitializeComponent() call.
 
-        ' Item Buy List - width = 1081 (21 width for verticle scroll bar)
+        ' Item Buy List - width = 855 (21 width for verticle scroll bar)
         lstBuy.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
-        lstBuy.Columns.Add("Material", 245, HorizontalAlignment.Left)
+        lstBuy.Columns.Add("Material", 205, HorizontalAlignment.Left)
         lstBuy.Columns.Add("Quantity", 94, HorizontalAlignment.Right) ' Min 94
         lstBuy.Columns.Add("Cost per Item", 90, HorizontalAlignment.Right) ' Min 90
         lstBuy.Columns.Add("Min Sell", 90, HorizontalAlignment.Right) ' Min 90
@@ -112,7 +111,6 @@ Public Class frmShoppingList
         lstBuy.Columns.Add("Buy Type", 66, HorizontalAlignment.Right) ' Min 66
         lstBuy.Columns.Add("Total m3", 100, HorizontalAlignment.Right) ' Min 100
         lstBuy.Columns.Add("Isk/m3", 83, HorizontalAlignment.Right) ' Min 85
-        lstBuy.Columns.Add("Fees", 90, HorizontalAlignment.Right)
         lstBuy.Columns.Add("Total Cost", 112, HorizontalAlignment.Right) ' Min 129
 
         ' Built Item List for items we are building - width = 371 (21 for verticle scroll bar)
@@ -121,7 +119,7 @@ Public Class frmShoppingList
         lstBuild.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
         lstBuild.Columns.Add("ME", 30, HorizontalAlignment.Right)
 
-        ' Item List - What we are building - width = 711 (21 for verticle scroll bar)
+        ' Item List - What we are building - width = 579 (21 for verticle scroll bar)
         lstItems.Columns.Add("TypeID", 0, HorizontalAlignment.Center) ' always left allignment this column for some reason, so add a dummy, store bpID here though
         lstItems.Columns.Add("Item", 225, HorizontalAlignment.Left) ' 
         lstItems.Columns.Add("Quantity", 67, HorizontalAlignment.Right) ' 51 min text
@@ -129,7 +127,6 @@ Public Class frmShoppingList
         lstItems.Columns.Add("Num BPs", 60, HorizontalAlignment.Left) ' 60 min text
         lstItems.Columns.Add("Build Type", 71, HorizontalAlignment.Left) ' 71 min text
         lstItems.Columns.Add("Decryptor", 105, HorizontalAlignment.Left) '105 min text
-        lstItems.Columns.Add("Location", 132, HorizontalAlignment.Left) '132 min text
         lstItems.Columns.Add("BuildInPOS", 0, HorizontalAlignment.Left) 'Hidden flag for pos building
         lstItems.Columns.Add("IgnoredInvention", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredMinerals", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
@@ -269,7 +266,6 @@ Public Class frmShoppingList
         Dim BuyOrderText As String
         Dim SellPrice As Double
         Dim BuyOrderPrice As Double
-        Dim BuyOrderFees As Double
         Dim TotalPrice As Double
         Dim PriceType As String
         Dim StoredPrice As Double
@@ -322,69 +318,65 @@ Public Class frmShoppingList
                     ' - If Fees is checked and CalcBuyType then calculate for buy order or buy market
                     ' - If Fees is not checked, then CalcBuyType will be disabled, and the user wants to buy all from market
                     ' - If Fees is checked, and CalcBuyType is not, then you want to buy all from a buy order
-
-                    ' Look up the price of buying directly off the market (min sell - no tax, no broker fee) and compare it to the price
-                    ' of max buy (buy order) plus the brokers fees to set up that order (no tax). Then show the value in the grid of what they should do
-                    ' First find out what price and type we have stored
-                    SQL = "SELECT PRICE, PRICE_TYPE FROM ITEM_PRICES WHERE ITEM_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerItemPrices = DBCommand.ExecuteReader
-                    readerItemPrices.Read()
-
-                    If readerItemPrices.HasRows Then
-                        ' Figure out what they have stored so we know what type of price we need to get
-                        StoredPrice = CDbl(readerItemPrices.GetValue(0))
-                        PriceType = readerItemPrices.GetString(1)
-                    Else
-                        PriceType = None
-                    End If
-
-                    readerItemPrices.Close()
-
-                    ' Load the Min Sell and Max Buy prices from cache
-                    SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
-                    SQL = SQL & " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerItemPrices = DBCommand.ExecuteReader
-                    readerItemPrices.Read()
-
-                    ' Get the buy and sell prices
-                    If readerItemPrices.HasRows Then
-                        MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
-                        MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
-                    Else
-                        ' Something went wrong, so re-mark as none
-                        PriceType = None
-                    End If
-
-                    readerItemPrices.Close()
-
-                    ' Four cases - None or error, set to zero. If they had a user entered price, assume min sell. Otherwise, use stored values
-                    If PriceType = None Then
-                        ' Price isn't set yet or an error. Either way they are zero 
-                        MinSellUnitPrice = 0
-                        MaxBuyUnitPrice = 0
-
-                    ElseIf PriceType = "User" Or PriceType.Contains("sell") Then
-                        ' The updated a price, so no matter what they intended - I'm assuming they meant minSell (50/50 chance)
-                        ' or they stored some sell price, so set that and compare to the stored maxbuy price
-                        MinSellUnitPrice = StoredPrice
-                    ElseIf PriceType.Contains("buy") Or PriceType.Contains("all") Then
-                        ' They stored a buy price...so set that and we'll compare it to the stored minsell price - also use average here too
-                        MaxBuyUnitPrice = StoredPrice
-                    End If
-
                     If chkBuyorBuyOrder.Checked And chkBuyorBuyOrder.Enabled = True And chkFees.Checked Then
+                        ' Look up the price of buying directly off the market (min sell - no tax, no broker fee) and compare it to the price
+                        ' of max buy (buy order) plus the brokers fees to set up that order (no tax). Then show the value in the grid of what they should do
+                        ' First find out what price and type we have stored
+                        SQL = "SELECT PRICE, PRICE_TYPE FROM ITEM_PRICES WHERE ITEM_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                        DBCommand = New SQLiteCommand(SQL, DB)
+                        readerItemPrices = DBCommand.ExecuteReader
+                        readerItemPrices.Read()
+
+                        If readerItemPrices.HasRows Then
+                            ' Figure out what they have stored so we know what type of price we need to get
+                            StoredPrice = CDbl(readerItemPrices.GetValue(0))
+                            PriceType = readerItemPrices.GetString(1)
+                        Else
+                            PriceType = NONE
+                        End If
+
+                        readerItemPrices.Close()
+
+                        ' Load the Min Sell and Max Buy prices from cache
+                        SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                        SQL = SQL & " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
+                        DBCommand = New SQLiteCommand(SQL, DB)
+                        readerItemPrices = DBCommand.ExecuteReader
+                        readerItemPrices.Read()
+
+                        ' Get the buy and sell prices
+                        If readerItemPrices.HasRows Then
+                            MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
+                            MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
+                        Else
+                            ' Something went wrong, so re-mark as none
+                            PriceType = NONE
+                        End If
+
+                        readerItemPrices.Close()
+
+                        ' Four cases - None or error, set to zero. If they had a user entered price, assume min sell. Otherwise, use stored values
+                        If PriceType = NONE Then
+                            ' Price isn't set yet or an error. Either way they are zero 
+                            MinSellUnitPrice = 0
+                            MaxBuyUnitPrice = 0
+
+                        ElseIf PriceType = "User" Or PriceType.Contains("sell") Then
+                            ' The updated a price, so no matter what they intended - I'm assuming they meant minSell (50/50 chance)
+                            ' or they stored some sell price, so set that and compare to the stored maxbuy price
+                            MinSellUnitPrice = StoredPrice
+                        ElseIf PriceType.Contains("buy") Or PriceType.Contains("all") Then
+                            ' They stored a buy price...so set that and we'll compare it to the stored minsell price - also use average here too
+                            MaxBuyUnitPrice = StoredPrice
+                        End If
+
                         ' Now that we have the prices, compare the two
                         If MinSellUnitPrice <> 0 And MaxBuyUnitPrice <> 0 Then
-
-                            ' Now look at max buy
-                            TotalPrice = MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity
-                            BuyOrderFees = GetSalesBrokerFee(TotalPrice)
-                            BuyOrderPrice = TotalPrice + BuyOrderFees
-
                             ' Use min sell
                             SellPrice = MinSellUnitPrice * RawItems.GetMaterialList(i).GetQuantity
+                            ' Now look at max buy
+                            TotalPrice = MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity
+                            BuyOrderPrice = TotalPrice + GetSalesBrokerFee(TotalPrice)
 
                             If BuyOrderPrice < SellPrice Then
                                 ' They should do an order
@@ -392,12 +384,9 @@ Public Class frmShoppingList
                             Else
                                 ' Buy from the Market
                                 BuyOrderText = BuyMarket
-                                ' No fees straight off market
-                                BuyOrderFees = 0
                             End If
                         Else
                             BuyOrderText = Unknown
-                            BuyOrderFees = 0
                         End If
                     ElseIf chkFees.Checked = False Then
                         ' User wants to buy all from market, don't apply broker fees
@@ -405,11 +394,6 @@ Public Class frmShoppingList
                     ElseIf chkFees.Checked = True And chkBuyorBuyOrder.Checked = False Then
                         ' They want a buy order for all items
                         BuyOrderText = BuyOrder
-                        If MaxBuyUnitPrice <> 0 Then
-                            BuyOrderFees = GetSalesBrokerFee(MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity)
-                        Else
-                            BuyOrderFees = 0
-                        End If
                     End If
 
                     ' Add the minsell/maxbuy for reference
@@ -432,9 +416,7 @@ Public Class frmShoppingList
                     Else
                         RawmatList.SubItems.Add("0.00") ' Isk per m3
                     End If
-
-                    RawmatList.SubItems.Add(FormatNumber(BuyOrderFees, 2)) ' Fees for buy orders
-                    RawmatList.SubItems.Add(FormatNumber(RawItems.GetMaterialList(i).GetTotalCost + BuyOrderFees, 2)) ' Total Cost
+                    RawmatList.SubItems.Add(FormatNumber(RawItems.GetMaterialList(i).GetTotalCost, 2)) ' Total Cost
                 Next
 
             End If
@@ -472,22 +454,12 @@ Public Class frmShoppingList
                 lstItem.SubItems.Add(CStr(ItemList(i).NumBPs))
                 lstItem.SubItems.Add(ItemList(i).BuildType)
                 lstItem.SubItems.Add(ItemList(i).Decryptor)
-                lstItem.SubItems.Add(ItemList(i).BuildLocation)
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).BuiltInPOS)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredInvention)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredMinerals)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredT1BaseItem)))
             End With
         Next
-
-        ' Add the number of item(s) to the label on the shopping list
-        Dim ItemCount As Integer = ItemList.Count
-
-        If ItemList.Count <> 1 Then
-            lblTotalItemsInList.Text = FormatNumber(ItemCount, 0) & vbCrLf & "Items in list"
-        Else
-            lblTotalItemsInList.Text = "1" & vbCrLf & "Item in list"
-        End If
 
         lstItems.EndUpdate()
 
@@ -1049,11 +1021,10 @@ Public Class frmShoppingList
                             OutputText = OutputText & ListItem.SubItems(5).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(6).Text & Separator
                             OutputText = OutputText & TempRelic & Separator
+                            OutputText = OutputText & ListItem.SubItems(7).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(8).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(9).Text & Separator
-                            OutputText = OutputText & ListItem.SubItems(10).Text & Separator
-                            OutputText = OutputText & ListItem.SubItems(11).Text & Separator
-                            OutputText = OutputText & ListItem.SubItems(7).Text & Separator ' Add location on the end
+                            OutputText = OutputText & ListItem.SubItems(10).Text
                             MyStream.Write(OutputText & Environment.NewLine)
                         Next
 
@@ -1239,13 +1210,11 @@ Public Class frmShoppingList
                                             TempBPItem.IgnoredInvention = CBool(Record(8))
                                             TempBPItem.IgnoredMinerals = CBool(Record(9))
                                             TempBPItem.IgnoredT1BaseItem = CBool(Record(10))
-                                            TempBPItem.BuildLocation = Record(11)
                                         Else
                                             TempBPItem.BuiltInPOS = False
                                             TempBPItem.IgnoredInvention = False
                                             TempBPItem.IgnoredMinerals = False
                                             TempBPItem.IgnoredT1BaseItem = False
-                                            TempBPItem.BuildLocation = ""
                                         End If
 
                                         Call ItemList.Add(TempBPItem)
@@ -1430,9 +1399,9 @@ Public Class frmShoppingList
         Next
 
         i = 0
-        ' List Item sort order Name, Quantity, ME, Num BPs, Build Type, Decryptor, Location
+        ' List Item sort order Name, Quantity, ME, Num BPs, Build Type, Decryptor
         For Each item As ListViewItem In lstItems.Items
-            ItemList(i) = item.SubItems(1).Text & "|" & item.SubItems(2).Text & "|" & item.SubItems(3).Text & "|" & item.SubItems(4).Text & "|" & item.SubItems(5).Text & "|" & item.SubItems(6).Text & "|" & item.SubItems(7).Text
+            ItemList(i) = item.SubItems(1).Text & "|" & item.SubItems(2).Text & "|" & item.SubItems(3).Text & "|" & item.SubItems(4).Text & "|" & item.SubItems(5).Text & "|" & item.SubItems(6).Text
             i += 1
         Next
 
@@ -1590,14 +1559,6 @@ Public Class frmShoppingList
         lstBuild.Sort()
     End Sub
 
-    ' Don't allow the first column to show with resize
-    Private Sub lstBuild_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstBuild.ColumnWidthChanging
-        If e.ColumnIndex = 0 Then
-            e.Cancel = True
-            e.NewWidth = lstItems.Columns(e.ColumnIndex).Width
-        End If
-    End Sub
-
     ' Double Click build and load the blueprint for the component they clicked
     Private Sub lstBuild_DoubleClick(sender As Object, e As System.EventArgs) Handles lstBuild.DoubleClick
         Dim rsBPLookup As SQLiteDataReader
@@ -1621,16 +1582,6 @@ Public Class frmShoppingList
 
         ' Perform the sort with these new sort options.
         lstItems.Sort()
-    End Sub
-
-    ' Turn off resizing for the last 4 columns
-    Private Sub lstItems_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstItems.ColumnWidthChanging
-
-        If e.ColumnIndex >= 8 Or e.ColumnIndex = 0 Then
-            e.Cancel = True
-            e.NewWidth = lstItems.Columns(e.ColumnIndex).Width
-        End If
-
     End Sub
 
     ' Double Click build and load the blueprint for the item they clicked
@@ -1689,14 +1640,6 @@ Public Class frmShoppingList
     Private Sub lstBuild_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles lstBuild.KeyDown
         If e.KeyCode = Keys.Delete Then
             Call DeleteBuilds()
-        End If
-    End Sub
-
-    ' Don't allow resizing of the first oclumn (hidden)
-    Private Sub lstBuy_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstBuy.ColumnWidthChanging
-        If e.ColumnIndex = 0 Then
-            e.Cancel = True
-            e.NewWidth = lstItems.Columns(e.ColumnIndex).Width
         End If
     End Sub
 

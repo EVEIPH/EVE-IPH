@@ -1670,8 +1670,9 @@ Partial Class frmMain
         '
         Me.pnlSkills.AutoSize = false
         Me.pnlSkills.Name = "pnlSkills"
-        Me.pnlSkills.Size = New System.Drawing.Size(153, 17)
+        Me.pnlSkills.Size = New System.Drawing.Size(90, 17)
         Me.pnlSkills.Text = "Skills Overidden"
+        Me.pnlSkills.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'pnlShoppingList
         '
@@ -1691,7 +1692,7 @@ Partial Class frmMain
         '
         Me.pnlProgressBar.AutoSize = false
         Me.pnlProgressBar.Name = "pnlProgressBar"
-        Me.pnlProgressBar.Size = New System.Drawing.Size(300, 16)
+        Me.pnlProgressBar.Size = New System.Drawing.Size(363, 16)
         Me.pnlProgressBar.Step = 1
         Me.pnlProgressBar.Visible = false
         '
@@ -13256,10 +13257,10 @@ Partial Class frmMain
         '
         'frmMain
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96!, 96!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.AutoScroll = true
-        Me.AutoSize = true
+        Me.AutoScroll = True
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1146, 692)
         Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.tabMain)

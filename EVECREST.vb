@@ -262,8 +262,7 @@ Public Class EVECREST
                             Call ExecuteNonQuerySQL(SQL)
                         End If
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
 
                     Next
@@ -433,8 +432,7 @@ Public Class EVECREST
 
                         Next
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
                     Next
 
@@ -663,8 +661,7 @@ Public Class EVECREST
                             Next
                         End With
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
                     Next
 
@@ -916,8 +913,7 @@ Public Class EVECREST
 
                         End With
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
                     Next
 
@@ -1328,8 +1324,7 @@ Public Class EVECREST
                             End With
                         Next
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
                     Next
 
@@ -1442,8 +1437,7 @@ Public Class EVECREST
                             Call ExecuteNonQuerySQL(SQL)
                         End With
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempPB.Value = i
                         Application.DoEvents()
 
                     Next

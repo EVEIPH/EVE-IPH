@@ -9,7 +9,8 @@ Public Class IndustryFacility
     Public FacilityType As String ' POS, Station, Outpost
     Public FacilityTypeID As Long ' type ID for facility - type of outpost, etc
     Public ProductionType As IndustryType ' What we are doing at this facility
-    Public ActivityID As Integer ' Activity code of the facility
+    Public Activity As String ' Activity type of the facility
+    Public ActivityID As Integer
     Public RegionName As String ' Region of this facility
     Public RegionID As Long
     Public SolarSystemName As String ' System where this is located
@@ -30,6 +31,7 @@ Public Class IndustryFacility
         FacilityName = None
         FacilityType = None
         ProductionType = IndustryType.None
+        Activity = None
         ActivityID = 0
         RegionName = None
         RegionID = 0
@@ -121,14 +123,19 @@ Public Class IndustryFacility
                 ProductionType = .ProductionType
                 Select Case ProductionType
                     Case IndustryType.CapitalComponentManufacturing
+                        Activity = ActivityCapComponentManufacturing
                         ActivityID = 1
                     Case IndustryType.ComponentManufacturing
+                        Activity = ActivityComponentManufacturing
                         ActivityID = 1
                     Case IndustryType.Copying
+                        Activity = ActivityCopying
                         ActivityID = 7
                     Case IndustryType.Invention
+                        Activity = ActivityInvention
                         ActivityID = 8
                     Case Else
+                        Activity = ActivityManufacturing
                         ActivityID = 1
                 End Select
                 RegionName = .RegionName
@@ -343,6 +350,14 @@ Public Class IndustryFacility
             MaterialMultiplier = SearchFacilitySettings.MaterialMultiplier
             TimeMultiplier = SearchFacilitySettings.TimeMultiplier
             ActivityID = SearchFacilitySettings.ActivityID
+            Select Case ActivityID
+                Case 7
+                    Activity = ActivityCopying
+                Case 8
+                    Activity = ActivityInvention
+                Case Else
+                    Activity = ActivityManufacturing
+            End Select
             ActivityCostPerSecond = SearchFacilitySettings.ActivityCostperSecond
             IsDefault = FacilityDefault
             FacilityTypeID = 0
@@ -427,6 +442,8 @@ Public Class IndustryFacility
                 Return False
             ElseIf .ProductionType <> ProductionType Then
                 Return False
+            ElseIf .Activity <> Activity Then
+                Return False
             ElseIf .ActivityID <> ActivityID Then
                 Return False
             ElseIf .FacilityName <> FacilityName And Not (.FacilityType = POSFacility And ProductionType = IndustryType.Manufacturing) Then
@@ -466,6 +483,7 @@ Public Class IndustryFacility
         CopyOfMe.FacilityType = FacilityType
         CopyOfMe.FacilityTypeID = FacilityTypeID
         CopyOfMe.ProductionType = ProductionType
+        CopyOfMe.Activity = Activity
         CopyOfMe.ActivityID = ActivityID
         CopyOfMe.RegionName = RegionName
         CopyOfMe.RegionID = RegionID

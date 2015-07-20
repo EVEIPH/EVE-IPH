@@ -562,9 +562,9 @@ Public Class frmBlueprintManagement
 
         txtBPSearch.Text = ""
 
-        ' Start out not checking this incase people accidently hit it
-        chkEnableMETE.Checked = False
-        Call EnableMETE(False)
+        ' Start out not enabling this incase people accidently hit it
+        chkEnableMETE.Checked = True
+        Call EnableMETE(True)
 
         FirstLoad = False
 
@@ -1414,23 +1414,11 @@ Public Class frmBlueprintManagement
         For Each item In checkedItems
 
             ' Select the BP type of using update selected and marking owned
-            If rbtnMarkasOwned.Checked And item.SubItems(7).Text <> Yes Then
-                ' Save all BPs as copies if they aren't already owned - they can update if they want to, all items can have bpcs and it doesn't affect processing so this is easier
+            If rbtnMarkasOwned.Checked Then
+                ' Save all BPs as copies - they can update if they want to, all items can have bpcs and it doesn't affect processing so this is easier
                 TempBPType = BPType.Copy
             ElseIf rbtnMarkasUnowned.Checked Then
                 TempBPType = BPType.NotOwned
-            Else
-                ' Set it to what they had in the grid
-                Select Case item.SubItems(8).Text
-                    Case BPO
-                        TempBPType = BPType.Original
-                    Case BPC
-                        TempBPType = BPType.Copy
-                    Case InventedBPC
-                        TempBPType = BPType.InventedBPC
-                    Case Unknown
-                        TempBPType = BPType.NotOwned
-                End Select
             End If
 
             ' Need to add selected blueprints to the character blueprints table, and set the ME and TE's as given or as stored
