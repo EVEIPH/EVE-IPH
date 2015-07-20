@@ -108,8 +108,6 @@ Public Class ProgramUpdater
         ' Perserve the old XML file until we finish the updater - if only the updater needs to be updated, 
         ' then it will copy over the new xml file when it closes
 
-ShellFile:
-
         ' Get the directory path of this program to send to updater
         Dim ProcInfo As New ProcessStartInfo
 
@@ -173,7 +171,6 @@ DownloadError:
 
         Catch ex As Exception
             ' File didn't download, so either try again later or some other error that is unhandled
-            MsgBox("Unable to run update at this time. Please try again later.", vbInformation, Application.ProductName)
             Return UpdateCheckResult.UpdateError
         End Try
     End Function
