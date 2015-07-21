@@ -1460,22 +1460,27 @@ InvalidDate:
         Dim Response As DialogResult
         ' Program Updater
         Dim Updater As New ProgramUpdater
-        Dim UpdateCode As Integer
+        Dim UpdateCode As UpdateCheckResult
 
         ' 1 = Update Available, 0 No Update Available, -1 an error occured and msg box already shown
         UpdateCode = Updater.IsProgramUpdatable
 
-        If UpdateCode = 1 Then
+        Select Case Updater.IsProgramUpdatable
+            Case UpdateCheckResult.UpdateAvailable
 
-            Response = TopMostMessageBox.Show("Update Available - Do you want to update now?", Application.ProductName, MessageBoxButtons.YesNo, ProgramIcon)
+                Response = TopMostMessageBox.Show("Update Available - Do you want to update now?", Application.ProductName, MessageBoxButtons.YesNo, ProgramIcon)
 
-            If Response = DialogResult.Yes Then
-                ' Run the updater
-                Call Updater.RunUpdate()
-            End If
-        ElseIf ShowFinalMessage And UpdateCode = 0 Then
-            MsgBox("No updates available.", vbInformation, Application.ProductName)
-        End If
+                If Response = DialogResult.Yes Then
+                    ' Run the updater
+                    Call Updater.RunUpdate()
+                End If
+            Case UpdateCheckResult.UpToDate
+                If ShowFinalMessage Then
+                    MsgBox("No updates available.", vbInformation, Application.ProductName)
+                End If
+            Case UpdateCheckResult.UpdateError
+                MsgBox("Unable to run update at this time. Please try again later.", vbInformation, Application.ProductName)
+        End Select
 
         ' Clean up files used to check
         Call Updater.CleanUpFiles()

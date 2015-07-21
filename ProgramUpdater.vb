@@ -1,7 +1,11 @@
-﻿
-Imports System.Net
-Imports System.IO
+﻿Imports System.IO
 Imports System.Xml
+
+Public Enum UpdateCheckResult
+    UpdateError = -1
+    UpToDate = 0
+    UpdateAvailable = 1
+End Enum
 
 ' Class for checking for updates and storing data for comparision
 Public Class ProgramUpdater
@@ -104,8 +108,6 @@ Public Class ProgramUpdater
         ' Perserve the old XML file until we finish the updater - if only the updater needs to be updated, 
         ' then it will copy over the new xml file when it closes
 
-ShellFile:
-
         ' Get the directory path of this program to send to updater
         Dim ProcInfo As New ProcessStartInfo
 
@@ -137,41 +139,40 @@ DownloadError:
     End Sub
 
     ' Function just takes the download date of the current XML file and compares to one on server. If date is newer, then runs update
-    Public Function IsProgramUpdatable() As Integer
+    Public Function IsProgramUpdatable() As UpdateCheckResult
         Dim LocalMD5 As String = ""
         Dim ServerMD5 As String = ""
         Dim XMLFile As String = ""
 
-        On Error GoTo ErrHandle
+        Try
 
-        If TestingVersion Then
-            XMLFile = XMLLatestVersionTest
-        Else
-            XMLFile = XMLLatestVersionFileName
-        End If
+            If TestingVersion Then
+                XMLFile = XMLLatestVersionTest
+            Else
+                XMLFile = XMLLatestVersionFileName
+            End If
 
-        ' Get the hash of the local XML
-        LocalMD5 = MD5CalcFile(UserWorkingFolder & XMLFile)
+            ' Get the hash of the local XML
+            LocalMD5 = MD5CalcFile(UserWorkingFolder & XMLFile)
 
-        If ServerXMLLastUpdatePath <> "" Then
-            ' Get the hash of the server XML
-            ServerMD5 = MD5CalcFile(UpdaterFilePath & XMLFile)
-        Else
-            GoTo ErrHandle
-        End If
+            If ServerXMLLastUpdatePath <> "" Then
+                ' Get the hash of the server XML
+                ServerMD5 = MD5CalcFile(UpdaterFilePath & XMLFile)
+            Else
+                Return UpdateCheckResult.UpdateError
+            End If
 
-        ' If the hashes are not equal, then we want to run the update
-        If LocalMD5 <> ServerMD5 Then
-            Return 1
-        Else ' No update needed
-            Return 0
-        End If
+            ' If the hashes are not equal, then we want to run the update
+            If LocalMD5 <> ServerMD5 Then
+                Return UpdateCheckResult.UpdateAvailable
+            Else ' No update needed
+                Return UpdateCheckResult.UpToDate
+            End If
 
-ErrHandle:
-        ' File didn't download, so either try again later or some other error that is unhandled
-        MsgBox("Unable to run update at this time. Please try again later.", vbInformation, Application.ProductName)
-        Return -1
-
+        Catch ex As Exception
+            ' File didn't download, so either try again later or some other error that is unhandled
+            Return UpdateCheckResult.UpdateError
+        End Try
     End Function
 
 End Class
