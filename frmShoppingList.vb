@@ -845,6 +845,7 @@ Public Class frmShoppingList
             Call PlayNotifySound()
             frmMain.pnlShoppingList.Text = "No Items in Shopping List"
             frmMain.pnlShoppingList.ForeColor = Color.Black
+            lblTotalItemsInList.Text = "0" & vbCrLf & "Items in list"
         End If
 
     End Sub

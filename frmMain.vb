@@ -479,6 +479,7 @@ Public Class frmMain
             mnuRefinery.Visible = True
             chkUpdatePricesCRESTHistory.Visible = True
             CalcBPStripMenuItem.Visible = True
+            mnuInventionSuccessMonitor.Visible = True
         Else
             ' Hide all the development stuff
             mnuRefinery.Visible = False

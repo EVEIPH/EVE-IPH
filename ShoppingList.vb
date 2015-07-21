@@ -1066,6 +1066,9 @@ Public Class ShoppingList
         'If Item1.NumBPs <> Item2.NumBPs Then
         '    Return False
         'End If
+        If Item1.BuildLocation <> Item2.BuildLocation Then
+            Return False
+        End If
 
         Return True
 
@@ -1167,7 +1170,6 @@ Public Class ShoppingListItem
     Public TotalUsage As Double ' Includes Manufacturing, Components, Invention, and Copying usage
     Public TotalItemMarketCost As Double ' This is the market cost of the items in the list
     Public TotalBuildTime As Double ' Total time to build the items for the given type of building
-
 
     Public Sub New()
 

@@ -335,7 +335,7 @@ Public Class Materials
                         OutputString = OutputString & RelicDecryptorText & Separator
                     End If
 
-                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost)
+                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost) & vbCrLf
 
                     If Location <> "" Then
                         OutputString = OutputString & Separator & Location & vbCrLf
@@ -370,7 +370,7 @@ Public Class Materials
                     End If
 
                     If Location <> "" Then
-                        OutputString = OutputString & ", Location: " & Location
+                        OutputString = OutputString & ", Location: " & Location & vbCrLf
                     End If
 
                     OutputString = OutputString & vbCrLf
