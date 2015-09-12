@@ -261,20 +261,20 @@ Public Class frmIndustryBeltFlip
         Call DisplayBeltMinerals(BeltType.Small)
 
         ' Moderate
-        Call LoadBeltTable(BeltType.Moderate)
-        Call DisplayBeltMinerals(BeltType.Moderate)
+        Call LoadBeltTable(BeltType.Medium)
+        Call DisplayBeltMinerals(BeltType.Medium)
 
         ' Large
         Call LoadBeltTable(BeltType.Large)
         Call DisplayBeltMinerals(BeltType.Large)
 
         ' Extra Large
-        Call LoadBeltTable(BeltType.ExtraLarge)
-        Call DisplayBeltMinerals(BeltType.ExtraLarge)
+        Call LoadBeltTable(BeltType.Enormous)
+        Call DisplayBeltMinerals(BeltType.Enormous)
 
         ' Giant
-        Call LoadBeltTable(BeltType.Giant)
-        Call DisplayBeltMinerals(BeltType.Giant)
+        Call LoadBeltTable(BeltType.Colossal)
+        Call DisplayBeltMinerals(BeltType.Colossal)
 
         FirstLoad = False
         Me.Cursor = Cursors.Default
@@ -303,8 +303,8 @@ Public Class frmIndustryBeltFlip
                 CurrentList = lstOresLevel1
                 Ore1ColumnSorter = New ListViewColumnSorter()
                 lstOresLevel1.ListViewItemSorter = Ore1ColumnSorter
-            Case BeltType.Moderate
-                SQL = SQL & "'Moderate' "
+            Case BeltType.Medium
+                SQL = SQL & "'Medium' "
                 CurrentList = lstOresLevel2
                 Ore2ColumnSorter = New ListViewColumnSorter()
                 lstOresLevel2.ListViewItemSorter = Ore2ColumnSorter
@@ -313,12 +313,12 @@ Public Class frmIndustryBeltFlip
                 CurrentList = lstOresLevel3
                 Ore3ColumnSorter = New ListViewColumnSorter()
                 lstOresLevel3.ListViewItemSorter = Ore3ColumnSorter
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 SQL = SQL & "'Enormous' "
                 CurrentList = lstOresLevel4
                 Ore4ColumnSorter = New ListViewColumnSorter()
                 lstOresLevel4.ListViewItemSorter = Ore4ColumnSorter
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 SQL = SQL & "'Colossal' "
                 CurrentList = lstOresLevel5
                 Ore5ColumnSorter = New ListViewColumnSorter()
@@ -327,18 +327,8 @@ Public Class frmIndustryBeltFlip
 
         SQL = SQL & ") "
 
-        ' Temp fix until next DB update (7/12/2015) - Only choose the ores that are in the belts now
-        SQL = SQL & "AND (ORE LIKE '%Arkonor%' OR ORE LIKE '%Bistot%' OR ORE LIKE '%Crokite%' OR ORE LIKE '%Ochre%' OR ORE LIKE '%Gneiss%' OR ORE LIKE '%Spodumain%' OR ORE LIKE '%Mercoxit%') "
-
-        '    Arkonor: 29900
-        '    Bistot: 57000
-        '    Crokite: 124000
-        '    Dark Ochre: 60000
-        '    Gneiss: 313500
-        '    Spodumain: 368100
-        '    Mercoxit: 3500
-
-        If rbtn0percent.Checked Then
+        ' Select ore type based on truesec bonus
+        If rbtn0percent.Checked Or Belt = BeltType.Small Or Belt = BeltType.Medium Then ' Small and Medium belts are always base ores
             SQL = SQL & "AND TRUESEC_BONUS = 0 "
         ElseIf rbtn5percent.Checked Then
             SQL = SQL & "AND TRUESEC_BONUS = 5 "
@@ -377,13 +367,13 @@ Public Class frmIndustryBeltFlip
         Select Case Belt
             Case BeltType.Small
                 Settings = UserIndustryFlipBeltOreCheckSettings1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 Settings = UserIndustryFlipBeltOreCheckSettings2
             Case BeltType.Large
                 Settings = UserIndustryFlipBeltOreCheckSettings3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 Settings = UserIndustryFlipBeltOreCheckSettings4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 Settings = UserIndustryFlipBeltOreCheckSettings5
         End Select
 
@@ -574,8 +564,8 @@ Public Class frmIndustryBeltFlip
                 IPHSum = lblTotalIPH1Sum
                 TotalVolumeSum = lblTotalBeltVolume1Sum
 
-            Case BeltType.Moderate
-                SQL = SQL & "'Moderate' "
+            Case BeltType.Medium
+                SQL = SQL & "'Medium' "
                 CurrentOreList = lstOresLevel2
                 CurrentMineralList = lstMineralsLevel2
                 Mineral2ColumnSorter = New ListViewColumnSorter()
@@ -608,7 +598,7 @@ Public Class frmIndustryBeltFlip
                 IPHSum = lblTotalIPH3Sum
                 TotalVolumeSum = lblTotalBeltVolume3Sum
 
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 SQL = SQL & "'Extra Large' "
                 CurrentOreList = lstOresLevel4
                 CurrentMineralList = lstMineralsLevel4
@@ -625,7 +615,7 @@ Public Class frmIndustryBeltFlip
                 IPHSum = lblTotalIPH4Sum
                 TotalVolumeSum = lblTotalBeltVolume4Sum
 
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 SQL = SQL & "'Giant' "
                 CurrentOreList = lstOresLevel5
                 CurrentMineralList = lstMineralsLevel5
@@ -766,13 +756,13 @@ Public Class frmIndustryBeltFlip
         Select Case Belt
             Case BeltType.Small
                 CurrentOreList = lstOresLevel1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 CurrentOreList = lstOresLevel2
             Case BeltType.Large
                 CurrentOreList = lstOresLevel3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 CurrentOreList = lstOresLevel4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 CurrentOreList = lstOresLevel5
         End Select
 
@@ -836,13 +826,13 @@ Public Class frmIndustryBeltFlip
         Select Case Belt
             Case BeltType.Small
                 OreList = lstOresLevel1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 OreList = lstOresLevel2
             Case BeltType.Large
                 OreList = lstOresLevel3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 OreList = lstOresLevel4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 OreList = lstOresLevel5
         End Select
 
@@ -960,13 +950,13 @@ Public Class frmIndustryBeltFlip
         Select Case Belt
             Case BeltType.Small
                 UserIndustryFlipBeltOreCheckSettings1 = TempSettings
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 UserIndustryFlipBeltOreCheckSettings2 = TempSettings
             Case BeltType.Large
                 UserIndustryFlipBeltOreCheckSettings3 = TempSettings
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 UserIndustryFlipBeltOreCheckSettings4 = TempSettings
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 UserIndustryFlipBeltOreCheckSettings5 = TempSettings
         End Select
 
@@ -1118,7 +1108,7 @@ Public Class frmIndustryBeltFlip
     End Sub
 
     Private Sub btnSaveSettingsMedium_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveSettingsMedium.Click
-        Call SaveSelectedOres(BeltType.Moderate)
+        Call SaveSelectedOres(BeltType.Medium)
     End Sub
 
     Private Sub btnSaveSettingsLarge_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveSettingsLarge.Click
@@ -1126,11 +1116,11 @@ Public Class frmIndustryBeltFlip
     End Sub
 
     Private Sub btnSaveSettingsXLLarge_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveSettingsXLLarge.Click
-        Call SaveSelectedOres(BeltType.ExtraLarge)
+        Call SaveSelectedOres(BeltType.Enormous)
     End Sub
 
     Private Sub btnSaveSettingsGiant_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveSettingsGiant.Click
-        Call SaveSelectedOres(BeltType.Giant)
+        Call SaveSelectedOres(BeltType.Colossal)
     End Sub
 
     Private Sub btnClose_Click(sender As System.Object, e As System.EventArgs) Handles btnClose.Click
@@ -1181,7 +1171,7 @@ Public Class frmIndustryBeltFlip
         Dim s As ListView = CType(sender, ListView)
 
         If Not FirstLoad And CType(s.ContainsFocus, Boolean) Then
-            Call DisplayBeltMinerals(BeltType.Moderate)
+            Call DisplayBeltMinerals(BeltType.Medium)
         End If
     End Sub
 
@@ -1229,7 +1219,7 @@ Public Class frmIndustryBeltFlip
         Dim s As ListView = CType(sender, ListView)
 
         If Not FirstLoad And CType(s.ContainsFocus, Boolean) Then
-            Call DisplayBeltMinerals(BeltType.ExtraLarge)
+            Call DisplayBeltMinerals(BeltType.Enormous)
         End If
     End Sub
 
@@ -1253,7 +1243,7 @@ Public Class frmIndustryBeltFlip
         Dim s As ListView = CType(sender, ListView)
 
         If Not FirstLoad And CType(s.ContainsFocus, Boolean) Then
-            Call DisplayBeltMinerals(BeltType.Giant)
+            Call DisplayBeltMinerals(BeltType.Colossal)
         End If
     End Sub
 

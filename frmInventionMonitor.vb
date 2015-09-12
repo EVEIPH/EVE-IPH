@@ -19,7 +19,6 @@ Public Class frmInventionMonitor
         ' Add any initialization after the InitializeComponent() call.
         lstInventionItems.Columns.Add("BPTypeID", 0, HorizontalAlignment.Left) ' Hidden
         lstInventionItems.Columns.Add("Invented Blueprint", 216, HorizontalAlignment.Left)
-        lstInventionItems.Columns.Add("Runs", 50, HorizontalAlignment.Center)
         lstInventionItems.Columns.Add("ME", 30, HorizontalAlignment.Center)
         lstInventionItems.Columns.Add("TE", 30, HorizontalAlignment.Center)
         lstInventionItems.Columns.Add("System", 100, HorizontalAlignment.Left)
@@ -27,7 +26,6 @@ Public Class frmInventionMonitor
         lstInventionItems.Columns.Add("Failures", 0, HorizontalAlignment.Right) ' Hidden
         lstInventionItems.Columns.Add("Successes", 0, HorizontalAlignment.Right) ' Hidden
         lstInventionItems.Columns.Add("Total Attempts", 0, HorizontalAlignment.Right) ' Hidden
-        lstInventionItems.Columns.Add("BPC Runs", 0, HorizontalAlignment.Left) ' Hidden
 
         pictInvention.Image = Nothing
         pictInvention.BackgroundImage = Nothing

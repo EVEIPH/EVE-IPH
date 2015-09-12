@@ -477,7 +477,7 @@ Public Class Character
         SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
         SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
         SQL = SQL & "FROM SKILLS LEFT OUTER JOIN "
-        SQL = SQL & "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & SelectedCharacter.ID & ") AS CHAR_SKILLS "
+        SQL = SQL & "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & ID & ") AS CHAR_SKILLS "
         SQL = SQL & "ON (SKILLS.SKILL_TYPE_ID = CHAR_SKILLS.SKILL_TYPE_ID) "
         If SkillNameFilter <> "" Then
             SQL = SQL & " WHERE SKILLS.SKILL_TYPE_ID IN (SELECT SKILL_TYPE_ID FROM SKILLS WHERE SKILL_NAME LIKE '%" & FormatDBString(SkillNameFilter) & "%') "
@@ -540,7 +540,7 @@ Public Class Character
         Next
 
         ' Strip comma
-        SkillList = Left(SkillList, Len(SkillList) - 1)
+        SkillList = SkillList.Substring(0, Len(SkillList) - 1)
 
         ' Delete the temp skills but not any that are overridden
         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & ID

@@ -893,6 +893,7 @@ Partial Class frmMain
         Me.rbtnMaxSell = New System.Windows.Forms.RadioButton()
         Me.rbtnMinSell = New System.Windows.Forms.RadioButton()
         Me.gbRawMaterials = New System.Windows.Forms.GroupBox()
+        Me.chkBPCs = New System.Windows.Forms.CheckBox()
         Me.chkMisc = New System.Windows.Forms.CheckBox()
         Me.chkAsteroids = New System.Windows.Forms.CheckBox()
         Me.chkPriceRawMaterialPrices = New System.Windows.Forms.CheckBox()
@@ -1516,20 +1517,20 @@ Partial Class frmMain
         'mnuUserSettings
         '
         Me.mnuUserSettings.Name = "mnuUserSettings"
-        Me.mnuUserSettings.Size = New System.Drawing.Size(307, 22)
+        Me.mnuUserSettings.Size = New System.Drawing.Size(306, 22)
         Me.mnuUserSettings.Text = "Select Application Settings"
         '
         'mnuSelectDefaultChar
         '
         Me.mnuSelectDefaultChar.Name = "mnuSelectDefaultChar"
-        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(307, 22)
+        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(306, 22)
         Me.mnuSelectDefaultChar.Text = "Select Default Character"
         '
         'mnuRestoreDefaultTabSettings
         '
         Me.mnuRestoreDefaultTabSettings.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuRestoreDefaultBP, Me.mnuRestoreDefaultUpdatePrices, Me.mnuRestoreDefaultManufacturing, Me.mnuRestoreDefaultDatacores, Me.mnuRestoreDefaultReactions, Me.mnuRestoreDefaultMining})
         Me.mnuRestoreDefaultTabSettings.Name = "mnuRestoreDefaultTabSettings"
-        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(307, 22)
+        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(306, 22)
         Me.mnuRestoreDefaultTabSettings.Text = "Restore Default Tab Settings"
         '
         'mnuRestoreDefaultBP
@@ -1571,20 +1572,20 @@ Partial Class frmMain
         'mnuRestoreDefaultBPFacilities
         '
         Me.mnuRestoreDefaultBPFacilities.Name = "mnuRestoreDefaultBPFacilities"
-        Me.mnuRestoreDefaultBPFacilities.Size = New System.Drawing.Size(307, 22)
+        Me.mnuRestoreDefaultBPFacilities.Size = New System.Drawing.Size(306, 22)
         Me.mnuRestoreDefaultBPFacilities.Text = "Restore Default Blueprint Tab Facilities"
         '
         'mnuRestoreDefaultCalcFacilities
         '
         Me.mnuRestoreDefaultCalcFacilities.Name = "mnuRestoreDefaultCalcFacilities"
-        Me.mnuRestoreDefaultCalcFacilities.Size = New System.Drawing.Size(307, 22)
+        Me.mnuRestoreDefaultCalcFacilities.Size = New System.Drawing.Size(306, 22)
         Me.mnuRestoreDefaultCalcFacilities.Text = "Restore Default Manufacturing Tab Facilities"
         '
         'mnuTools
         '
         Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuInventionSuccessMonitor, Me.mnuIndustryUpgradeBelts, Me.mnuRefinery})
         Me.mnuTools.Name = "mnuTools"
-        Me.mnuTools.Size = New System.Drawing.Size(48, 20)
+        Me.mnuTools.Size = New System.Drawing.Size(47, 20)
         Me.mnuTools.Text = "Tools"
         '
         'mnuInventionSuccessMonitor
@@ -1784,12 +1785,12 @@ Partial Class frmMain
         Me.gbMineOreProcessingType.Size = New System.Drawing.Size(125, 73)
         Me.gbMineOreProcessingType.TabIndex = 118
         Me.gbMineOreProcessingType.TabStop = false
-        Me.gbMineOreProcessingType.Text = "Ore Processing Types"
+        Me.gbMineOreProcessingType.Text = "Processing Types"
         '
         'chkMineUnrefinedOre
         '
         Me.chkMineUnrefinedOre.AutoSize = true
-        Me.chkMineUnrefinedOre.BackColor = System.Drawing.Color.White
+        Me.chkMineUnrefinedOre.BackColor = System.Drawing.Color.Transparent
         Me.chkMineUnrefinedOre.Location = New System.Drawing.Point(13, 35)
         Me.chkMineUnrefinedOre.Name = "chkMineUnrefinedOre"
         Me.chkMineUnrefinedOre.Size = New System.Drawing.Size(92, 17)
@@ -1800,7 +1801,7 @@ Partial Class frmMain
         'chkMineRefinedOre
         '
         Me.chkMineRefinedOre.AutoSize = true
-        Me.chkMineRefinedOre.BackColor = System.Drawing.Color.White
+        Me.chkMineRefinedOre.BackColor = System.Drawing.Color.Transparent
         Me.chkMineRefinedOre.Location = New System.Drawing.Point(13, 18)
         Me.chkMineRefinedOre.Name = "chkMineRefinedOre"
         Me.chkMineRefinedOre.Size = New System.Drawing.Size(83, 17)
@@ -1811,7 +1812,7 @@ Partial Class frmMain
         'chkMineCompressedOre
         '
         Me.chkMineCompressedOre.AutoSize = true
-        Me.chkMineCompressedOre.BackColor = System.Drawing.Color.White
+        Me.chkMineCompressedOre.BackColor = System.Drawing.Color.Transparent
         Me.chkMineCompressedOre.Location = New System.Drawing.Point(13, 52)
         Me.chkMineCompressedOre.Name = "chkMineCompressedOre"
         Me.chkMineCompressedOre.Size = New System.Drawing.Size(104, 17)
@@ -1943,7 +1944,7 @@ Partial Class frmMain
         'chkMineUseFleetBooster
         '
         Me.chkMineUseFleetBooster.AutoSize = true
-        Me.chkMineUseFleetBooster.BackColor = System.Drawing.Color.White
+        Me.chkMineUseFleetBooster.BackColor = System.Drawing.Color.Transparent
         Me.chkMineUseFleetBooster.Location = New System.Drawing.Point(14, 155)
         Me.chkMineUseFleetBooster.Name = "chkMineUseFleetBooster"
         Me.chkMineUseFleetBooster.Size = New System.Drawing.Size(113, 17)
@@ -10188,6 +10189,7 @@ Partial Class frmMain
         '
         'gbRawMaterials
         '
+        Me.gbRawMaterials.Controls.Add(Me.chkBPCs)
         Me.gbRawMaterials.Controls.Add(Me.chkMisc)
         Me.gbRawMaterials.Controls.Add(Me.chkAsteroids)
         Me.gbRawMaterials.Controls.Add(Me.chkPriceRawMaterialPrices)
@@ -10213,10 +10215,20 @@ Partial Class frmMain
         Me.gbRawMaterials.TabIndex = 1
         Me.gbRawMaterials.TabStop = false
         '
+        'chkBPCs
+        '
+        Me.chkBPCs.AutoSize = true
+        Me.chkBPCs.Location = New System.Drawing.Point(133, 91)
+        Me.chkBPCs.Name = "chkBPCs"
+        Me.chkBPCs.Size = New System.Drawing.Size(102, 17)
+        Me.chkBPCs.TabIndex = 19
+        Me.chkBPCs.Text = "Blueprint Copies"
+        Me.chkBPCs.UseVisualStyleBackColor = true
+        '
         'chkMisc
         '
         Me.chkMisc.AutoSize = true
-        Me.chkMisc.Location = New System.Drawing.Point(133, 108)
+        Me.chkMisc.Location = New System.Drawing.Point(186, 108)
         Me.chkMisc.Name = "chkMisc"
         Me.chkMisc.Size = New System.Drawing.Size(51, 17)
         Me.chkMisc.TabIndex = 12
@@ -10317,7 +10329,7 @@ Partial Class frmMain
         'chkGas
         '
         Me.chkGas.AutoSize = true
-        Me.chkGas.Location = New System.Drawing.Point(133, 91)
+        Me.chkGas.Location = New System.Drawing.Point(133, 108)
         Me.chkGas.Name = "chkGas"
         Me.chkGas.Size = New System.Drawing.Size(45, 17)
         Me.chkGas.TabIndex = 11
@@ -14638,5 +14650,6 @@ End Sub
     Friend WithEvents mnuResetIgnoredBPs As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents CalcBPStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents AutoScaleModeSettingToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents chkBPCs As System.Windows.Forms.CheckBox
 
 End Class

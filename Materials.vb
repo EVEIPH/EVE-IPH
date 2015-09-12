@@ -256,7 +256,7 @@ Public Class Materials
                 If IncludeDecryptorRelic Then
                     OutputString = OutputString & "Decryptor/Relic, "
                 End If
-                OutputString = OutputString & "Cost Per Item, Total Cost" & vbCrLf
+                OutputString = OutputString & "Cost Per Item, Total Cost, Location" & vbCrLf
 
             ElseIf ExportTextFormat = SSVDataExport Then
                 Separator = "; "
@@ -267,7 +267,7 @@ Public Class Materials
                 If IncludeDecryptorRelic Then
                     OutputString = OutputString & "Decryptor/Relic; "
                 End If
-                OutputString = OutputString & "Cost Per Item; Total Cost" & vbCrLf
+                OutputString = OutputString & "Cost Per Item; Total Cost; Location" & vbCrLf
             Else ' Default
                 OutputString = "Material - Quantity" & vbCrLf
             End If
@@ -335,11 +335,13 @@ Public Class Materials
                         OutputString = OutputString & RelicDecryptorText & Separator
                     End If
 
-                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost) & vbCrLf
+                    OutputString = OutputString & CStr(MaterialList(i).GetCostPerItem) & Separator & CStr(MaterialList(i).GetTotalCost)
 
                     If Location <> "" Then
-                        OutputString = OutputString & Separator & Location & vbCrLf
+                        OutputString = OutputString & Separator & Location
                     End If
+
+                    OutputString = OutputString & vbCrLf
 
                 Else
                     OutputString = OutputString & MatName
@@ -370,7 +372,7 @@ Public Class Materials
                     End If
 
                     If Location <> "" Then
-                        OutputString = OutputString & ", Location: " & Location & vbCrLf
+                        OutputString = OutputString & vbCrLf & "Location: " & Location
                     End If
 
                     OutputString = OutputString & vbCrLf
@@ -392,6 +394,11 @@ SkipFormat:
                     OutputString = OutputString & vbCrLf & "Total Volume of Materials: " & FormatNumber(TotalMaterialsVolume - DataInterfaceVolume, 2) & " m3"
                     OutputString = OutputString & vbCrLf & "Total Cost of Materials: " & FormatNumber(TotalMaterialsCost - DataInterfaceCost, 2) & " ISK"
                 End If
+            End If
+
+            ' Finally, if the export type is ssv, replace periods with commas
+            If ExportTextFormat = SSVDataExport Then
+                OutputString = ConvertUStoEUDecimal(OutputString)
             End If
 
             GetClipboardList = OutputString

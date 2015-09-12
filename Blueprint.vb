@@ -158,6 +158,9 @@ Public Class Blueprint
     Private CopyFacility As IndustryFacility
     Private InventionFacility As IndustryFacility
 
+    ' This is to save the entire chain of blueprints on each line we have used and runs for each one
+    Private ProductionChain As List(Of List(Of Integer))
+
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
                    ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character, _
@@ -362,6 +365,8 @@ Public Class Blueprint
         ' Implement passing in the runs per copy later based on user API, right now though this is unlimited
         MaxRunsPerBP = 0
 
+        ProductionChain = New List(Of List(Of Integer))
+
     End Sub
 
     Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor, _
@@ -442,7 +447,6 @@ Public Class Blueprint
             Dim ExtraRuns As Integer
             Dim AdjRunsperBP As Integer
 
-            Dim ProductionChain As New List(Of List(Of Integer))
             Dim BatchList As New List(Of Integer)
             Dim Batches As Integer
 
@@ -726,7 +730,7 @@ Public Class Blueprint
         ' Select all materials to buid this BP
         SQL = "SELECT BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_CATEGORY, ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, groupID, MATERIAL_GROUP "
         SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID, INVENTORY_TYPES "
-        SQL = SQL & "WHERE ALL_BLUEPRINT_MATERIALS.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID"
+        SQL = SQL & "WHERE ALL_BLUEPRINT_MATERIALS.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID "
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerBP = DBCommand.ExecuteReader
@@ -744,8 +748,8 @@ Public Class Blueprint
                 ' Set the current material
                 CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "")
 
-                ' Save the base costs - before applying ME
-                BaseJobCost += CurrentMaterial.GetQuantity * readerBP.GetDouble(8)
+                ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
+                BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(8)), 0, readerBP.GetDouble(8))
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
@@ -1478,7 +1482,8 @@ Public Class Blueprint
         '11451  Nuclear Physics
         '11441  Plasma Physics
         '11455  Quantum Physics
-        '11449  Rocket Science
+        '11449  Rocket Science
+
         ' Read through all the skills and if the ID is in the list, then sum up the levels
         For i = 0 To BuildSkills.NumSkills - 1
             Select Case BuildSkills.GetSkillList(i).TypeID
@@ -1502,33 +1507,6 @@ Public Class Blueprint
         Next
 
         Return ""
-    End Function
-
-    ' Returns a string that states what type of T1 BPC the sent T2 BPID is for invention purposes. Also returns the Max Runs and name of the BPC
-    Public Function GetT1BPCType(ByVal BPID As Long, ByRef MaxBPCRuns As Integer, ByRef BPName As String) As String
-        Dim SQL As String
-        Dim readerBP As SQLiteDataReader
-        Dim T1MatGroupName As String
-        Dim T1MatCategoryName As String
-
-        SQL = "SELECT ITEM_CATEGORY, ITEM_GROUP, MAX_PRODUCTION_LIMIT, BLUEPRINT_NAME FROM ALL_BLUEPRINTS "
-        SQL = SQL & "WHERE BLUEPRINT_ID IN (SELECT blueprintTypeID FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & BPID & " AND activityID = 8)"
-        DBCommand = New SQLiteCommand(SQL, DB)
-        readerBP = DBCommand.ExecuteReader
-
-        If readerBP.Read() Then
-            T1MatCategoryName = readerBP.GetString(0)
-            T1MatGroupName = readerBP.GetString(1)
-            MaxBPCRuns = readerBP.GetInt32(2)
-            BPName = readerBP.GetString(3)
-
-            Return T1MatGroupName
-        Else
-            MaxBPCRuns = 0
-            BPName = ""
-            Return ""
-        End If
-
     End Function
 
 #Region "Invention/RE Functions"
@@ -1558,12 +1536,10 @@ Public Class Blueprint
 
         ' Get all the Datacores
         While readerBP.Read
-            If readerBP.GetString(6) = "Datacores" Then
-                ' Add this to the invention materials - add price for data cores, 0 cost for interfaces
-                InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
-                                           readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "")
-                SingleInventionMats.InsertMaterial(InventionMat)
-            End If
+            ' Add this to the invention materials - add price for data cores
+            InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
+                                       readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "")
+            SingleInventionMats.InsertMaterial(InventionMat)
         End While
 
         readerBP.Close()
@@ -1719,16 +1695,6 @@ Public Class Blueprint
             For i = 0 To SingleInventionMats.GetMaterialList.Count - 1
                 InventionMaterials.InsertMaterial(SingleInventionMats.GetMaterialList(i))
             Next
-
-            ' Add the type of T1 BPC we will need to the invention materials
-            Dim BPCName As String = ""
-            Dim MaxRuns As Integer = 0
-            Dim BPCGroup = GetT1BPCType(BlueprintID, MaxRuns, BPCName) ' Returned by reference
-
-            If TechLevel = BlueprintTechLevel.T2 Then
-                ' Add the BPC's for T2
-                InventionMaterials.InsertMaterial(New Material(InventionBPCTypeID, BPCName & " (" & CStr(1) & " Runs)", BPCGroup, NumInventionJobs, 0, 0, ""))
-            End If
 
             TotalInventionCost = InventionMaterials.GetTotalMaterialsCost
 

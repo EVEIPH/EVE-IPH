@@ -794,7 +794,7 @@ Partial Class frmAssetsViewer
         'chkBPCs
         '
         Me.chkBPCs.AutoSize = True
-        Me.chkBPCs.Location = New System.Drawing.Point(133, 214)
+        Me.chkBPCs.Location = New System.Drawing.Point(132, 86)
         Me.chkBPCs.Name = "chkBPCs"
         Me.chkBPCs.Size = New System.Drawing.Size(102, 17)
         Me.chkBPCs.TabIndex = 21
@@ -804,7 +804,7 @@ Partial Class frmAssetsViewer
         'chkMisc
         '
         Me.chkMisc.AutoSize = True
-        Me.chkMisc.Location = New System.Drawing.Point(133, 103)
+        Me.chkMisc.Location = New System.Drawing.Point(186, 103)
         Me.chkMisc.Name = "chkMisc"
         Me.chkMisc.Size = New System.Drawing.Size(51, 17)
         Me.chkMisc.TabIndex = 20
@@ -905,7 +905,7 @@ Partial Class frmAssetsViewer
         'chkGas
         '
         Me.chkGas.AutoSize = True
-        Me.chkGas.Location = New System.Drawing.Point(133, 86)
+        Me.chkGas.Location = New System.Drawing.Point(133, 103)
         Me.chkGas.Name = "chkGas"
         Me.chkGas.Size = New System.Drawing.Size(45, 17)
         Me.chkGas.TabIndex = 9
@@ -1061,6 +1061,7 @@ Partial Class frmAssetsViewer
         '
         'frmAssetsViewer
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(641, 672)
