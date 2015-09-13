@@ -229,6 +229,7 @@ Public Class ProgramSettings
     Public DefaultBPIgnoreMinerals As Boolean = False
     Public DefaultBPIgnoreT1Item As Boolean = False
     Public DefaultBPIncludeIgnoredBPs As Boolean = False
+    Public DefaultBPShoppingListExportType As String = "Components"
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = False
@@ -1250,6 +1251,7 @@ Public Class ProgramSettings
                     .IgnoreMinerals = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreMinerals", DefaultBPIgnoreMinerals))
                     .IgnoreT1Item = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreT1Item", DefaultBPIgnoreT1Item))
                     .IncludeIgnoredBPs = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeIgnoredBPs", DefaultBPIgnoreT1Item))
+                    .ExporttoShoppingListType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "ExporttoShoppingListType", DefaultBPShoppingListExportType))
                 End With
 
             Else
@@ -1272,7 +1274,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(30) As Setting
+        Dim BPSettingsList(31) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1309,6 +1311,7 @@ Public Class ProgramSettings
 
             BPSettingsList(29) = New Setting("IncludeIgnoredBPs", CStr(SentSettings.IncludeIgnoredBPs))
             BPSettingsList(30) = New Setting("T3DecryptorType", CStr(SentSettings.T3DecryptorType))
+            BPSettingsList(31) = New Setting("ExporttoShoppingListType", CStr(SentSettings.ExporttoShoppingListType))
 
             Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -1363,6 +1366,8 @@ Public Class ProgramSettings
 
         LocalSettings.IncludeIgnoredBPs = DefaultBPIncludeIgnoredBPs
 
+        LocalSettings.ExporttoShoppingListType = DefaultBPShoppingListExportType
+
         ' Save locally
         BPSettings = LocalSettings
 
@@ -1387,6 +1392,7 @@ Public Class ProgramSettings
                     .Minerals = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Minerals", DefaultPriceChecks))
                     .IceProducts = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "IceProducts", DefaultPriceChecks))
                     .Gas = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Gas", DefaultPriceChecks))
+                    .BPCs = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
                     .Misc = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
                     .AncientRelics = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientRelics", DefaultPriceChecks))
                     .AncientSalvage = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientSalvage", DefaultPriceChecks))
@@ -1479,7 +1485,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(49) As Setting
+        Dim UpdatePricesSettingsList(50) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1546,7 +1552,9 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(47) = New Setting("Celestials", CStr(PriceSettings.Celestials))
             UpdatePricesSettingsList(48) = New Setting("Implants", CStr(PriceSettings.Implants))
 
-            UpdatePricesSettingsList(49) = New Setting("UpdatePriceHistory", CStr(PriceSettings.UpdatePriceHistory))
+            UpdatePricesSettingsList(49) = New Setting("BPCs", CStr(PriceSettings.BPCs))
+
+            UpdatePricesSettingsList(50) = New Setting("UpdatePriceHistory", CStr(PriceSettings.UpdatePriceHistory))
 
             Call WriteSettingsToFile(UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1569,6 +1577,7 @@ Public Class ProgramSettings
             .Minerals = DefaultPriceChecks
             .IceProducts = DefaultPriceChecks
             .Gas = DefaultPriceChecks
+            .BPCs = DefaultPriceChecks
             .Misc = DefaultPriceChecks
             .AncientRelics = DefaultPriceChecks
             .AncientSalvage = DefaultPriceChecks
@@ -3231,13 +3240,13 @@ Public Class ProgramSettings
         Select Case Belt
             Case BeltType.Small
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
         End Select
 
@@ -3310,13 +3319,13 @@ Public Class ProgramSettings
         Select Case Belt
             Case BeltType.Small
                 IndustryBeltOreChecksSettings1 = TempSettings
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 IndustryBeltOreChecksSettings2 = TempSettings
             Case BeltType.Large
                 IndustryBeltOreChecksSettings3 = TempSettings
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 IndustryBeltOreChecksSettings4 = TempSettings
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 IndustryBeltOreChecksSettings5 = TempSettings
         End Select
 
@@ -3384,13 +3393,13 @@ Public Class ProgramSettings
         Select Case Belt
             Case BeltType.Small
                 IndustryBeltOreChecksSettings1 = LocalSettings
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 IndustryBeltOreChecksSettings2 = LocalSettings
             Case BeltType.Large
                 IndustryBeltOreChecksSettings3 = LocalSettings
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 IndustryBeltOreChecksSettings4 = LocalSettings
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 IndustryBeltOreChecksSettings5 = LocalSettings
         End Select
 
@@ -3405,13 +3414,13 @@ Public Class ProgramSettings
         Select Case Belt
             Case BeltType.Small
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
         End Select
 
@@ -3478,13 +3487,13 @@ Public Class ProgramSettings
         Select Case Belt
             Case BeltType.Small
                 Return IndustryBeltOreChecksSettings1
-            Case BeltType.Moderate
+            Case BeltType.Medium
                 Return IndustryBeltOreChecksSettings2
             Case BeltType.Large
                 Return IndustryBeltOreChecksSettings3
-            Case BeltType.ExtraLarge
+            Case BeltType.Enormous
                 Return IndustryBeltOreChecksSettings4
-            Case BeltType.Giant
+            Case BeltType.Colossal
                 Return IndustryBeltOreChecksSettings5
         End Select
     End Function
@@ -4718,6 +4727,8 @@ Public Structure BPTabSettings
     Dim IgnoreMinerals As Boolean
     Dim IgnoreT1Item As Boolean
 
+    Dim ExporttoShoppingListType As String
+
 End Structure
 
 ' For Update Price Settings
@@ -4726,6 +4737,7 @@ Public Structure UpdatePriceTabSettings
     Dim Minerals As Boolean
     Dim IceProducts As Boolean
     Dim Gas As Boolean
+    Dim BPCs As Boolean
     Dim Misc As Boolean
     Dim AncientRelics As Boolean
     Dim AncientSalvage As Boolean

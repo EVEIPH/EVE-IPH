@@ -536,6 +536,10 @@ Public Class frmAssetsViewer
                 SQL = SQL & "ITEM_GROUP = 'Harvestable Cloud' OR "
                 ItemChecked = True
             End If
+            If chkBPCs.Checked Then
+                SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
+                ItemChecked = True
+            End If
             If chkMisc.Checked Then
                 SQL = SQL & "(" & "ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous') AND ITEM_NAME NOT IN ('Oxygen','Water')) OR "
                 ItemChecked = True

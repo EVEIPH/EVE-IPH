@@ -1,9 +1,11 @@
 ﻿
+Imports System.Data.SQLite
+
 Public Class ShoppingList
     Implements ICloneable
 
     ' Master Lists of materials to display. These are single lists that are updated when deleting quantity or full items
-    Private TotalItemList As List(Of ShoppingListItem) ' This is the total list of items
+    Private TotalItemList As List(Of ShoppingListItem) ' This is the total list of items, with orginal values - not updated
     Private TotalBuyList As Materials ' Buy mats
     Private TotalBuildList As BuiltItemList ' Build mats (components)
     Private TotalInventionMats As Materials ' All Invention/RE materials used
@@ -111,6 +113,7 @@ Public Class ShoppingList
                                 End With
 
                                 UpdatedQuantity = GetUpdatedQuantity("Build", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
+
                                 ' Need to update to the quantity sent in the Build List
                                 Call UpdateShoppingBuiltItemQuantity(TempBuiltItem, UpdatedQuantity)
                             End If
@@ -124,7 +127,8 @@ Public Class ShoppingList
                         End If
 
                         ' Update the quantity of the material in the total list too, but needs to be for each individual material
-                        Call .GetMaterialList(i).SetQuantity(CLng(.GetMaterialList(i).GetQuantity / FoundItem.Quantity) * UpdateItemQuantity)
+                        Dim x As Long = GetNewMatQuantity(FoundItem, IndustryActivities.Manufacturing, .GetMaterialList(i), UpdateItemQuantity)
+                        Call .GetMaterialList(i).SetQuantity(x)
 
                     Next
                 End With
@@ -134,6 +138,7 @@ Public Class ShoppingList
             If Not IsNothing(FoundItem.InventionMaterials) Then
                 If Not IsNothing(FoundItem.InventionMaterials.GetMaterialList) Then
                     With FoundItem.InventionMaterials ' Update all base materials for this item first
+                        Dim TempInventionMaterials As New Materials
                         For i = 0 To .GetMaterialList.Count - 1
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
@@ -142,18 +147,18 @@ Public Class ShoppingList
 
                                 Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
                                 ' Update this material in the item's invention list for copy/paste function
-                                If UpdatedQuantity <= 0 Then
-                                    Call TotalInventionMats.RemoveMaterial(.GetMaterialList(i))
-                                Else
+                                If UpdatedQuantity > 0 Then
                                     ' Need to copy, remove, update, then add to update the volumes and prices of the material lists
                                     Dim TempMat As Material
                                     TempMat = CType(TotalInventionMats.SearchListbyName(.GetMaterialList(i).GetMaterialName).Clone, Material)
-                                    TempMat.SetQuantity(UpdatedQuantity)
-                                    Call TotalInventionMats.RemoveMaterial(.GetMaterialList(i))
-                                    Call TotalInventionMats.InsertMaterial(TempMat)
+                                    Call TempInventionMaterials.InsertMaterial(TempMat)
                                 End If
                             End If
                         Next
+
+                        ' Reset the Invention Materials for this item
+                        FoundItem.InventionMaterials = TempInventionMaterials
+
                     End With
                 End If
             End If
@@ -162,6 +167,7 @@ Public Class ShoppingList
             If Not IsNothing(FoundItem.CopyMaterials) Then
                 If Not IsNothing(FoundItem.CopyMaterials.GetMaterialList) Then
                     With FoundItem.CopyMaterials ' Update all base materials for this item first
+                        Dim TempCopyMaterials As New Materials
                         For i = 0 To .GetMaterialList.Count - 1
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
@@ -176,12 +182,14 @@ Public Class ShoppingList
                                     ' Need to copy, remove, update, then add to update the volumes and prices of the material lists
                                     Dim TempMat As Material
                                     TempMat = CType(TotalCopyMats.SearchListbyName(.GetMaterialList(i).GetMaterialName).Clone, Material)
-                                    TempMat.SetQuantity(UpdatedQuantity)
-                                    Call TotalCopyMats.RemoveMaterial(.GetMaterialList(i))
-                                    Call TotalCopyMats.InsertMaterial(TempMat)
+                                    Call TempCopyMaterials.InsertMaterial(TempMat)
                                 End If
                             End If
                         Next
+
+                        ' Reset the Invention Materials for this item
+                        FoundItem.CopyMaterials = TempCopyMaterials
+
                     End With
                 End If
             End If
@@ -197,10 +205,10 @@ Public Class ShoppingList
                 FoundItem.TotalItemMarketCost = FoundItem.TotalItemMarketCost / FoundItem.Quantity * UpdateItemQuantity
                 FoundItem.TotalBuildTime = FoundItem.TotalBuildTime / FoundItem.Quantity * UpdateItemQuantity
                 ' Update the invention jobs if they update this later
-                If FoundItem.RunsPerBP <> 0 Then
-                    FoundItem.InventionJobs = CInt(Math.Ceiling(FoundItem.AvgInvRunsforSuccess * Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP)))
+                If FoundItem.InventionJobs <> 0 Then
+                    FoundItem.InventionJobs = CInt(Math.Ceiling(FoundItem.AvgInvRunsforSuccess * Math.Ceiling(UpdateItemQuantity / FoundItem.InventedRunsPerBP)))
                     ' How many bps do we need to make?
-                    FoundItem.NumBPs = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.RunsPerBP))
+                    FoundItem.NumBPs = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.InventedRunsPerBP))
                 End If
                 ' Finally update the quantity
                 FoundItem.Quantity = UpdateItemQuantity
@@ -238,15 +246,17 @@ Public Class ShoppingList
 
                         ' Set the values we need for get updated quantity
                         ShoppingItem.Name = FoundItem.ItemName
+                        ShoppingItem.TypeID = FoundItem.ItemTypeID
                         ShoppingItem.FacilityMEModifier = FoundItem.FacilityMEModifier
+                        ShoppingItem.BuildLocation = ""
                         ShoppingItem.ItemME = FoundItem.BuildME
                         ShoppingItem.Quantity = FoundItem.ItemQuantity
 
                         ' Blank these out for now if we use them later
-                        ShoppingItem.InventionJobs = 1
-                        ShoppingItem.NumBPs = 1
-                        ShoppingItem.InventedRuns = 1
-                        ShoppingItem.AvgInvRunsforSuccess = 1
+                        ShoppingItem.InventionJobs = 0
+                        ShoppingItem.InventedRunsPerBP = 0
+                        ShoppingItem.AvgInvRunsforSuccess = 0
+                        ShoppingItem.NumBPs = 1 ' Built items (components) are always one bp for now
 
                         ' Get the new quantity for each material to build this item
                         UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, .GetMaterialList(i), RefMatQuantity)
@@ -363,71 +373,103 @@ Public Class ShoppingList
                                         ByVal NewItemQuantity As Long, _
                                         ByVal UpdateItemMaterial As Material, _
                                         Optional ByRef RefMatQuantity As Long = 0) As Long
-        Dim UpdatedQuantity As Long
+        Dim UpdatedQuantity As Long = 0
         Dim OnHandMats As Long
         Dim ListMatQuantity As Long
-        Dim SingleRunQuantity As Long
         Dim NumInventionJobs As Integer
-        Dim MatsperItem As Integer
+        Dim CurrentMatQuantity As Long = 0
+        Dim NewMatQuantity As Long = 0
 
         ' Set up the ME bonus and then calculate the new material quantity
-        Dim MEBonus As Double
+        Dim MEBonus As Double = 0
+        Dim SingleRunQuantity As Long = 0
+        Dim rsMatQuantity As SQLiteDataReader
+        Dim SQL As String
 
+        If NewItemQuantity = 0 Then
+            Return 0
+        End If
+
+        ' Look up the cost for the material
         If ProcessingType = "Invention" Or ProcessingType = "Copying" Then
-            MEBonus = 1 ' No ME bonus for these
+            SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & CurrentItem.BlueprintTypeID & " AND MATERIAL_ID = " & UpdateItemMaterial.GetMaterialTypeID
+            SQL = SQL & " AND ACTIVITY = 8"
         Else
-            MEBonus = (1 - (CurrentItem.ItemME / 100)) * CurrentItem.FacilityMEModifier
+            SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & CurrentItem.TypeID & " AND MATERIAL_ID = " & UpdateItemMaterial.GetMaterialTypeID
+            SQL = SQL & " AND ACTIVITY = 1"
         End If
 
-        ' Figure out what the original material amount was by working backwards
-        ' if the mat quantity is less than user runs, then the quantity is user runs
-        If UpdateItemMaterial.GetQuantity <= CurrentItem.Quantity Then
-            SingleRunQuantity = 1
-        Else
-            ' mat quantity / (orig item quantity * me bonus) - round but use floor to reverse the celiling
-            SingleRunQuantity = CLng(Math.Floor(Math.Round(UpdateItemMaterial.GetQuantity / (CurrentItem.Quantity * MEBonus), 2)))
-        End If
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsMatQuantity = DBCommand.ExecuteReader
+        rsMatQuantity.Read()
 
-        ' Recalculate the new quantity - Assume that every component is only built with 1 bp
-        Dim NewMatQuantity As Long = CLng(Math.Max(NewItemQuantity, Math.Ceiling(Math.Round(NewItemQuantity * SingleRunQuantity * MEBonus, 2))))
+        SingleRunQuantity = rsMatQuantity.GetInt64(0)
 
-        ' Set the mat quantity for reference
-        RefMatQuantity = NewMatQuantity
-
+        ' Calc out final mat quantity
         If ProcessingType = "Invention" Or ProcessingType = "Copying" Then
 
             ListMatQuantity = TotalBuyList.SearchListbyName(UpdateItemMaterial.GetMaterialName).GetQuantity
 
-            ' For copies, we just use the new mat quantity for calcs
-            If ProcessingType = "Copying" Then
-                NewMatQuantity = NewItemQuantity
-            End If
-
             ' For invention materials, find out how many mats we need by calcuating the new value from the item runs and invention jobs per item
             If NewItemQuantity <= 0 Then
                 ' Easy case, just remove the update material quantity (add the negative)
-                UpdatedQuantity = ListMatQuantity + NewMatQuantity
+                NewMatQuantity = ListMatQuantity + NewItemQuantity
             Else
                 ' Here, we need to figure out how many items per run to remove (3 inv mats per job, and remove 2 items, then remove 6 invention mats)
-                NumInventionJobs = CInt(Math.Ceiling(CurrentItem.AvgInvRunsforSuccess * Math.Ceiling(NewMatQuantity / CurrentItem.RunsPerBP)))
-                MatsperItem = CInt(UpdateItemMaterial.GetQuantity / CurrentItem.InventionJobs)
+                NumInventionJobs = CInt(Math.Ceiling(CurrentItem.AvgInvRunsforSuccess * Math.Ceiling(NewItemQuantity / CurrentItem.InventedRunsPerBP)))
 
                 ' Update quantity based on invention calculations
-                UpdatedQuantity = NumInventionJobs * MatsperItem
-                ' Update the current material quantity and invention jobs
-                UpdateItemMaterial.SetQuantity(UpdatedQuantity)
+                NewMatQuantity = NumInventionJobs * SingleRunQuantity
+                RefMatQuantity = NewMatQuantity
             End If
 
         ElseIf ProcessingType = "Buy" Or ProcessingType = "Build" Then
-            ' Get the quantity from the correct list
+
+            MEBonus = (1 - (CurrentItem.ItemME / 100)) * CurrentItem.FacilityMEModifier
+
+            ' Figure out how many bps we need now and apply the ME bonus for each bp and sum up
+            Dim NewNumBPs As Integer
+            Dim NewRunsperBP As Integer
+
+            If CurrentItem.InventionJobs <> 0 Then
+                If CurrentItem.NumBPs = 1 Then
+                    NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / CurrentItem.InventedRunsPerBP))
+                Else
+                    NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / (CurrentItem.Quantity / CurrentItem.NumBPs)))
+                End If
+
+                NewRunsperBP = CInt(Math.Ceiling(NewItemQuantity / NewNumBPs))
+            Else
+                ' This isn't invented so just use the number of blueprints
+                NewNumBPs = CurrentItem.NumBPs
+
+                NewRunsperBP = CInt(Math.Ceiling(NewItemQuantity / NewNumBPs))
+
+                ' Make sure we aren't building more bps than the quantity
+                If NewNumBPs > NewItemQuantity Then
+                    NewNumBPs = CInt(NewItemQuantity)
+                End If
+
+            End If
+
+            ' For each bp, apply the me bonus and add up
+            For i = 1 To NewNumBPs
+                ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
+                NewMatQuantity += CLng(Math.Max(NewRunsperBP, Math.Ceiling(Math.Round(NewRunsperBP * SingleRunQuantity * MEBonus, 2))))
+            Next
+
+            ' Set the mat quantity for reference
+            RefMatQuantity = NewMatQuantity
+
+            ' Get the quantity from the correct list so we have the right total materials of all items using this material
             If ProcessingType = "Buy" Then
                 ListMatQuantity = TotalBuyList.SearchListbyName(UpdateItemMaterial.GetMaterialName).GetQuantity
             ElseIf ProcessingType = "Build" Then
                 ListMatQuantity = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem).ItemQuantity
             End If
 
-            ' Take away what we had in the list last time and add the new quantity to the list
-            UpdatedQuantity = (ListMatQuantity - UpdateItemMaterial.GetQuantity) + NewMatQuantity
+            ' Set the current mat quantity for calc below
+            CurrentMatQuantity = UpdateItemMaterial.GetQuantity
 
         End If
 
@@ -441,8 +483,13 @@ Public Class ShoppingList
         End If
 
         If OnHandMats <> 0 Then
-            UpdatedQuantity = UpdatedQuantity - OnHandMats
+            UpdatedQuantity = NewMatQuantity - OnHandMats
+        Else
+            UpdatedQuantity = NewMatQuantity
         End If
+
+        ' Decrease the mats in the shopping list from what we had, then add what we now need
+        UpdatedQuantity = (ListMatQuantity - UpdateItemMaterial.GetQuantity) + UpdatedQuantity
 
         ' If the update caused it go below zero, reset
         If UpdatedQuantity < 0 Then
@@ -450,6 +497,72 @@ Public Class ShoppingList
         End If
 
         Return UpdatedQuantity
+
+    End Function
+
+    Private Function GetNewMatQuantity(ByVal ItemData As ShoppingListItem, ByVal Activity As IndustryActivities, _
+                                       ByVal UpdateMaterial As Material, ByVal NewQuantity As Long) As Long
+        ' Set up the ME bonus and then calculate the new material quantity
+        Dim MEBonus As Double = 0
+        Dim SingleRunQuantity As Long = 0
+        Dim rsMatQuantity As SQLiteDataReader
+        Dim SQL As String
+
+        If NewQuantity = 0 Then
+            Return 0
+        End If
+
+        ' Look up the cost for the material
+        If Activity = IndustryActivities.Invention Or Activity = IndustryActivities.Copying Then
+            SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & ItemData.BlueprintTypeID & " AND MATERIAL_ID = " & UpdateMaterial.GetMaterialTypeID
+            SQL = SQL & " AND ACTIVITY = 8"
+        Else
+            SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & ItemData.TypeID & " AND MATERIAL_ID = " & UpdateMaterial.GetMaterialTypeID
+            SQL = SQL & " AND ACTIVITY = 1"
+        End If
+
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsMatQuantity = DBCommand.ExecuteReader
+        rsMatQuantity.Read()
+
+        SingleRunQuantity = rsMatQuantity.GetInt64(0)
+
+        MEBonus = (1 - (ItemData.ItemME / 100)) * ItemData.FacilityMEModifier
+
+        ' Figure out how many bps we need now and apply the ME bonus for each bp and sum up
+        Dim NewNumBPs As Integer
+        Dim NewRunsperBP As Integer
+
+        If ItemData.InventionJobs <> 0 Then
+            If ItemData.NumBPs = 1 Then
+                NewNumBPs = CInt(Math.Ceiling(NewQuantity / ItemData.InventedRunsPerBP))
+            Else
+                NewNumBPs = CInt(Math.Ceiling(NewQuantity / (ItemData.Quantity / ItemData.NumBPs)))
+            End If
+
+            NewRunsperBP = CInt(Math.Ceiling(NewQuantity / NewNumBPs))
+        Else
+            ' This isn't invented so just use the number of blueprints
+            NewNumBPs = ItemData.NumBPs
+
+            NewRunsperBP = CInt(Math.Ceiling(NewQuantity / NewNumBPs))
+
+            ' Make sure we aren't building more bps than the quantity
+            If NewNumBPs > NewQuantity Then
+                NewNumBPs = CInt(NewQuantity)
+            End If
+
+        End If
+
+        Dim NewMatQuantity As Long = 0
+
+        ' For each bp, apply the me bonus and add up
+        For i = 1 To NewNumBPs
+            ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
+            NewMatQuantity += CLng(Math.Max(NewRunsperBP, Math.Ceiling(Math.Round(NewRunsperBP * SingleRunQuantity * MEBonus, 2))))
+        Next
+
+        Return NewMatQuantity
 
     End Function
 
@@ -1132,6 +1245,7 @@ Public Class ShoppingList
 End Class
 
 Public Class ShoppingListItem
+    Public BlueprintTypeID As Long ' BP Type ID
     Public TypeID As Long ' TypeID for the item 
     Public Quantity As Long ' Number of items we are shopping for
     Public Name As String ' Item we want to shop for * Key Value
@@ -1147,9 +1261,9 @@ Public Class ShoppingListItem
     Public CopyMaterials As New Materials ' List of materials used to make the copies to invent
     Public AvgInvRunsforSuccess As Double ' How many Invention/RE runs we need for success - used to calculate correct changes in list for mats
     Public InventionJobs As Long ' How many jobs did we do
-    Public InventedRuns As Long ' How many Invented or RE'd runs are produced
+    Public InventedRunsPerBP As Integer ' Number of runs for each bp in NumBPs (helps with determining invention changes later)
+
     Public NumBPs As Integer ' Number of BPs used to build item
-    Public RunsPerBP As Integer ' Number of runs for each bp in NumBPs (helps with determining invention changes later)
 
     Public BPMaterialList As New Materials ' This is the list of items on the Blueprint so we have a record of what they are building - it is not updated
 
@@ -1173,6 +1287,7 @@ Public Class ShoppingListItem
 
     Public Sub New()
 
+        BlueprintTypeID = 0
         TypeID = 0
         Quantity = 0
         Name = ""
@@ -1187,8 +1302,10 @@ Public Class ShoppingListItem
         InventionMaterials = New Materials
         CopyMaterials = New Materials
         AvgInvRunsforSuccess = 0
-        InventedRuns = 0
+        InventedRunsPerBP = 0
         InventionJobs = 0
+
+        NumBPs = 0
 
         BPMaterialList = Nothing
 

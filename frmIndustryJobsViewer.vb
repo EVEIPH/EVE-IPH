@@ -20,8 +20,10 @@ Public Class frmIndustryJobsViewer
         Dim API As APIKeyData
         Dim Name As String
         Dim Corporation As String
-        Dim ProductionLines As Integer
-        Dim Jobs As Integer
+        Dim IndustryLines As Integer
+        Dim ResearchLines As Integer
+        Dim IndustryJobs As Integer
+        Dim ResearchJobs As Integer
         Dim TimetoRefresh As DateTime
     End Structure
 
@@ -50,9 +52,10 @@ Public Class frmIndustryJobsViewer
 
         ' Width 510, 21 for scrollbar, 25 for check (464)
         lstCharacters.Columns.Add("", -2, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Character Name", 150, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Character Corporation", 250, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Jobs", 64, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Name", 100, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Corporation", 206, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Industry Jobs", 75, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Research Jobs", 83, HorizontalAlignment.Left)
         lstCharacters.Columns.Add("CharID", 0, HorizontalAlignment.Left) ' Hidden
 
         FirstLoad = False
@@ -341,7 +344,6 @@ Public Class frmIndustryJobsViewer
     ' Refreshes the user grid with all users in the DB
     Private Sub RefreshCharacterList()
         Dim lstCharacterRow As ListViewItem
-        'Dim TempTime As Long
 
         Application.UseWaitCursor = True
         'Me.Cursor = Cursors.WaitCursor
@@ -364,20 +366,10 @@ Public Class frmIndustryJobsViewer
                 lstCharacterRow = lstCharacters.Items.Add("") ' Check
                 lstCharacterRow.SubItems.Add(.Name) ' Name
                 lstCharacterRow.SubItems.Add(.Corporation)
-                'TempTime = DateDiff(DateInterval.Second, Date.UtcNow, .TimetoRefresh)
-
-                'If TempTime <= 0 Then
-                '    lstCharacterRow.SubItems.Add("Now")
-                'Else
-                '    lstCharacterRow.SubItems.Add(FormatTimeToComplete(TempTime))
-                'End If
 
                 ' Add the jobs as part of lines i.e 4/10 = 4 jobs of 10 lines
-                If .ProductionLines > 0 Then
-                    lstCharacterRow.SubItems.Add(CStr(.Jobs) & "/" & CStr(.ProductionLines))
-                Else
-                    lstCharacterRow.SubItems.Add(CStr(.Jobs))
-                End If
+                lstCharacterRow.SubItems.Add(CStr(.IndustryJobs) & "/" & CStr(.IndustryLines))
+                lstCharacterRow.SubItems.Add(CStr(.ResearchJobs) & "/" & CStr(.ResearchLines))
 
                 ' Add the hidden character ID
                 Dim CharacterID As String = CStr(.API.ID)
@@ -413,11 +405,15 @@ Public Class frmIndustryJobsViewer
 
         SQL = "SELECT CHARACTER_NAME, CORPORATION_NAME, INDUSTRY_JOBS_CACHED_UNTIL, CHARACTER_ID, "
         SQL = SQL & "KEY_ID, API_KEY, ACCESS_MASK, API_TYPE, "
+        SQL = SQL & "CASE WHEN RESEARCH_JOBS IS NULL THEN 0 ELSE RESEARCH_JOBS END AS RESEARCH_JOBS, "
+        SQL = SQL & "CASE WHEN RESEARCH_LINES IS NULL THEN 1 ELSE RESEARCH_LINES END AS RESEARCH_LINES, "
         SQL = SQL & "CASE WHEN JOB_COUNT IS NULL THEN 0 ELSE JOB_COUNT END AS JOB_COUNT, "
-        SQL = SQL & "CASE WHEN PRODUCTION_LINES IS NULL THEN 0 ELSE PRODUCTION_LINES END AS PRODUCTION_LINES "
+        SQL = SQL & "CASE WHEN INDUSTRY_LINES IS NULL THEN 1 ELSE INDUSTRY_LINES END AS INDUSTRY_LINES "
         SQL = SQL & "FROM API "
-        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS <> 101 GROUP BY installerID)  AS X ON X.installerID = CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS PRODUCTION_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS Y ON Y.CHAR_ID = API.CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS RESEARCH_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3406,24624) GROUP BY CHARACTER_ID) AS I ON I.CHAR_ID = API.CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS <> 101 AND activityID <> 1 GROUP BY installerID) AS J ON J.installerID = CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS INDUSTRY_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS K ON K.CHAR_ID = API.CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS <> 101 AND activityID = 1 GROUP BY installerID) AS L ON L.installerID = CHARACTER_ID "
         SQL = SQL & "WHERE API_TYPE <> 'Corporation' "
 
         ' Get all the characters and store them regardless so we only need to do one look up
@@ -457,14 +453,11 @@ Public Class frmIndustryJobsViewer
                 TempCharacter.TimetoRefresh = CDate(rsJobs.GetString(2))
             End If
 
-            ' Runs and lines
-            TempCharacter.Jobs = rsJobs.GetInt32(8)
-            If rsJobs.GetInt64(9) = 0 Then
-                ' You always have 1 line to produce
-                TempCharacter.ProductionLines = 1
-            Else
-                TempCharacter.ProductionLines = rsJobs.GetInt32(9)
-            End If
+            ' Industry Runs and lines
+            TempCharacter.ResearchJobs = rsJobs.GetInt32(8)
+            TempCharacter.ResearchLines = rsJobs.GetInt32(9)
+            TempCharacter.IndustryJobs = rsJobs.GetInt32(10)
+            TempCharacter.IndustryLines = rsJobs.GetInt32(11)
 
             ' Add this to the list
             If Not LoadedCharacters.Contains(TempCharacter) Then
@@ -479,82 +472,61 @@ Public Class frmIndustryJobsViewer
 
     ' Updates only the industry jobs for the characters in the list
     Private Sub UpdateCharacterIndustryJobsAPI()
+        ' Refresh each of the checked characters' industry data
+        Dim TempCharacter As New Character
+        Dim readerCharacter As SQLiteDataReader
+        Dim CombinedKeyData As New APIKeyData
+        Dim BitString As String
+        Dim BitLen As Integer
+        Dim APIAccess As Boolean
+        Dim TempJobs As EVEIndustryJobs
         Dim f1 As New frmCRESTStatus
         Dim SQL As String
-        Dim rsChars As SQLiteDataReader
 
         f1.lblCRESTStatus.Text = "Updating Character API data..."
         f1.Show()
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        SQL = "SELECT CHARACTER_ID FROM API WHERE API_TYPE <> 'Corporation' "
+        SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
+        SQL = SQL & "FROM API "
+        SQL = SQL & "WHERE CHARACTER_ID IN (" & GetCharIDs() & ") "
+        SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
+
         DBCommand = New SQLiteCommand(SQL, DB)
-        rsChars = DBCommand.ExecuteReader
+        readerCharacter = DBCommand.ExecuteReader
 
-        ' Refresh each of the character industry data
-        While rsChars.Read()
-            Dim TempCharacter As New Character
-            Dim readerCharacter As SQLiteDataReader
-            Dim CombinedKeyData As New APIKeyData
-            Dim BitString As String
-            Dim BitLen As Integer
-            Dim APIAccess As Boolean
-            Dim RefreshDate As Date
-            Dim TempJobs As EVEIndustryJobs
+        While readerCharacter.Read
+            ' Access mask is a bitmask 
+            BitString = GetBits(readerCharacter.GetInt64(4))
+            BitLen = Len(BitString)
 
-            SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
-            SQL = SQL & "FROM API "
-            SQL = SQL & "WHERE CHARACTER_ID = " & CStr(rsChars.GetInt64(0)) & " "
-            SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
-
-            DBCommand = New SQLiteCommand(SQL, DB)
-            readerCharacter = DBCommand.ExecuteReader
-
-            If readerCharacter.Read Then
-                If readerCharacter.GetString(3) <> "" Then
-                    RefreshDate = CDate(readerCharacter.GetString(3))
-                Else
-                    RefreshDate = NoDate
-                End If
-
-                ' See if we want to refresh the data from API
-                If RefreshDate < DateTime.UtcNow Then
-                    ' Access mask is a bitmask 
-                    BitString = GetBits(readerCharacter.GetInt64(4))
-                    BitLen = Len(BitString)
-
-                    If BitLen >= AccessMaskBitLocs.IndustryJobs Then
-                        APIAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
-                    Else
-                        APIAccess = False
-                    End If
-
-                    ' Set the key data
-                    CombinedKeyData.KeyID = readerCharacter.GetInt64(0)
-                    CombinedKeyData.APIKey = readerCharacter.GetString(1)
-                    CombinedKeyData.ID = readerCharacter.GetInt64(2)
-
-                    ' Update the character's industry jobs
-                    CombinedKeyData.Access = APIAccess
-                    TempJobs = New EVEIndustryJobs(CombinedKeyData, 0)
-                    ' This will update all the jobs data
-                    Call TempJobs.LoadIndustryJobs(ScanType.Personal, True)
-
-                End If
-
-                readerCharacter.Close()
-
+            If BitLen >= AccessMaskBitLocs.IndustryJobs Then
+                APIAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
+            Else
+                APIAccess = False
             End If
 
+            ' Set the key data
+            CombinedKeyData.KeyID = readerCharacter.GetInt64(0)
+            CombinedKeyData.APIKey = readerCharacter.GetString(1)
+            CombinedKeyData.ID = readerCharacter.GetInt64(2)
+
+            ' Update the character's industry jobs
+            CombinedKeyData.Access = APIAccess
+            TempJobs = New EVEIndustryJobs(CombinedKeyData, 0)
+            ' This will update all the jobs data
+            Call TempJobs.LoadIndustryJobs(ScanType.Personal, True)
+
             Application.DoEvents()
+
+            ' Update the skills now
+            Call UpdateCharacterSkills(CombinedKeyData, BitString, True)
+
         End While
 
         ' Reset this now that we used it until we add more apis
         APIAdded = False
-
-        rsChars.Close()
-        rsChars = Nothing
         DBCommand = Nothing
 
         f1.Dispose()
@@ -562,6 +534,97 @@ Public Class frmIndustryJobsViewer
         Me.Select()
         Application.UseWaitCursor = False
         Application.DoEvents()
+
+    End Sub
+
+    ' Gets the Character Skills from API for this character and inserts them into the Database for later queries
+    Private Sub UpdateCharacterSkills(CombinedKeyData As APIKeyData, BitString As String, UpdateAPIData As Boolean)
+        Dim readerCharacter As SQLiteDataReader
+        Dim SQL As String
+        Dim API As New EVEAPI
+        Dim i As Integer
+        Dim TempSkills As New EVESkillList
+        Dim SingleSkill As New EVESkillList
+        Dim SkillList As String = ""
+        Dim BitLen As Integer
+        Dim APIAccess As Boolean
+
+        ' See if we are doing an API update 
+        If Not UpdateAPIData Then
+            Exit Sub
+        End If
+
+        If CombinedKeyData.ID = 0 Then
+            ' Don't run update for dummy
+            Exit Sub
+        End If
+
+        ' Access mask is a bitmask 
+        BitLen = Len(BitString)
+
+        If BitLen >= AccessMaskBitLocs.IndustryJobs Then
+            APIAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
+        Else
+            APIAccess = False
+        End If
+
+        CombinedKeyData.Access = APIAccess
+
+        ' Get skill data from API
+        TempSkills = API.GetCharacterSkills(CombinedKeyData)
+
+        If Not NoAPIError(API.GetErrorText, "Character") Then
+            ' Errored, exit
+            Exit Sub
+        End If
+
+        ' Clean out any skills not in the temp skills, make this first. This will ignore any skills the person may have over-ridden and added
+        For i = 0 To TempSkills.GetSkillList.Count - 1
+            SkillList = SkillList & TempSkills.GetSkillList(i).TypeID & ","
+        Next
+
+        ' Strip comma
+        SkillList = SkillList.Substring(0, Len(SkillList) - 1)
+
+        ' Delete the temp skills but not any that are overridden
+        SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & CombinedKeyData.ID
+        SQL = SQL & " AND OVERRIDE_SKILL <> -1"
+
+        DBCommand = New SQLiteCommand(SQL, DB)
+        readerCharacter = DBCommand.ExecuteReader
+
+        Call BeginSQLiteTransaction()
+
+        ' Insert skill data
+        For i = 0 To TempSkills.GetSkillList.Count - 1
+
+            ' Check for skill and update if there
+            SQL = "SELECT 'X' FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & " AND CHARACTER_ID =" & CombinedKeyData.ID
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            readerCharacter = DBCommand.ExecuteReader
+
+            If Not readerCharacter.HasRows Then
+                ' Insert skill data
+                SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
+                SQL = SQL & " VALUES (" & CombinedKeyData.ID & "," & TempSkills.GetSkillList(i).TypeID & ",'" & TempSkills.GetSkillList(i).Name & "',"
+                SQL = SQL & TempSkills.GetSkillList(i).SkillPoints & "," & TempSkills.GetSkillList(i).Level & ",0,0)"
+            Else
+                ' Update skill data
+                SQL = "UPDATE CHARACTER_SKILLS SET "
+                SQL = SQL & "SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempSkills.GetSkillList(i).Name & "',"
+                SQL = SQL & "SKILL_POINTS = " & TempSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempSkills.GetSkillList(i).Level & " "
+                SQL = SQL & "WHERE CHARACTER_ID = " & CombinedKeyData.ID & " AND SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID
+            End If
+
+            readerCharacter.Close()
+            readerCharacter = Nothing
+
+            Call ExecuteNonQuerySQL(SQL)
+
+        Next
+
+        Call CommitSQLiteTransaction()
 
     End Sub
 
@@ -921,6 +984,7 @@ Public Class frmIndustryJobsViewer
 
         ' Just refresh the char list and it will update the API
         Call RefreshCharacterList()
+        Call RefreshGrid()
 
         MsgBox("Industry Jobs updated.", vbInformation, Application.ProductName)
 
@@ -1083,7 +1147,7 @@ Public Class frmIndustryJobsViewer
         Dim CharIDs As String = ""
 
         For i = 0 To lstCharacters.CheckedItems.Count - 1
-            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(4).Text) & ","
+            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(5).Text) & ","
         Next
 
         ' Strip the last comma

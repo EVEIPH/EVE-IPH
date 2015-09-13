@@ -163,6 +163,11 @@ Public Module Public_Variables
     Public Const TacticalDestroyerGroupID As Integer = 1305
     Public Const SubsystemCategoryID As Integer = 32
 
+    ' For looking up pos stuff in facilities
+    Public Const FuelBlockGroupID As Integer = 1136
+    Public Const BattleshipGroupID As Integer = 27
+    Public Const ModuleCategoryID As Integer = 7
+
     Public Const ShipCategoryID As Integer = 6 ' for loading invention and copying 
 
     ' T3 Bps for facility updates
@@ -278,10 +283,10 @@ Public Module Public_Variables
 
     Public Enum BeltType
         Small = 1
-        Moderate = 2
+        Medium = 2
         Large = 3
-        ExtraLarge = 4
-        Giant = 5
+        Enormous = 4
+        Colossal = 5
     End Enum
 
     Public Enum ItemSize
@@ -978,6 +983,7 @@ Public Module Public_Variables
             If CopyRawMats Or BuildBuy = True Then ' Either just raw or build buy selected
                 ' Add the item and the materials for the item
                 If Not IsNothing(SentBlueprint.GetRawMaterials) Then
+                    .BlueprintTypeID = SentBlueprint.GetTypeID
                     .TypeID = SentBlueprint.GetItemID
                     .Name = SentBlueprint.GetItemData.GetMaterialName
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
@@ -991,20 +997,12 @@ Public Module Public_Variables
                         .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
-                    ' Ignore flags
-                    .IgnoredInvention = IgnoreInvention
-                    .IgnoredMinerals = IgnoreMinerals
-                    .IgnoredT1BaseItem = IgnoreT1ITem
-
                     If BuildBuy Then
                         .BuildType = "Build/Buy"
                     Else
                         ' Just insert the materials in components since we are building all
                         .BuildType = "Raw Mats"
                     End If
-
-                    .NumBPs = SentBlueprint.GetUsedNumBPs
-                    .RunsPerBP = SentBlueprint.GetSingleInventedBPCRuns
 
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
@@ -1018,11 +1016,15 @@ Public Module Public_Variables
                     ' Get the build time
                     .TotalBuildTime = SentBlueprint.GetTotalProductionTime
 
+                    ' All blueprint build types we want to save the base materials to build the bp
+                    ShoppingItem.BPMaterialList = CType(SentBlueprint.GetComponentMaterials.Clone, Materials)
+
                 End If
 
             ElseIf CopyComponents Then
                 ' Add the component items and mats to the list and that's it. They are building the end item, nothing else
                 If Not IsNothing(SentBlueprint.GetComponentMaterials) Then
+                    .BlueprintTypeID = SentBlueprint.GetTypeID
                     .TypeID = SentBlueprint.GetItemID
                     .Name = SentBlueprint.GetItemData.GetMaterialName
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
@@ -1036,14 +1038,6 @@ Public Module Public_Variables
                         .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
-                    ' Ignore flags
-                    .IgnoredInvention = IgnoreInvention
-                    .IgnoredMinerals = IgnoreMinerals
-                    .IgnoredT1BaseItem = IgnoreT1ITem
-
-                    .NumBPs = SentBlueprint.GetUsedNumBPs
-                    .RunsPerBP = SentBlueprint.GetSingleInventedBPCRuns
-
                     .BuildType = "Components"
 
                     If Not CopyInventionMatsOnly Then
@@ -1056,6 +1050,14 @@ Public Module Public_Variables
 
                     ' Get the build time
                     .TotalBuildTime = SentBlueprint.GetProductionTime
+
+                    ' Make sure all items in the buy list are not set to build
+                    For i = 0 To ShoppingBuyList.GetMaterialList.Count - 1
+                        ShoppingBuyList.GetMaterialList(i).SetBuildItem(False)
+                    Next
+
+                    ' All blueprint build types we want to save the base materials to build it, here we want just what's in the buy list since we aren't building
+                    ShoppingItem.BPMaterialList = CType(ShoppingBuyList.Clone, Materials)
 
                 End If
             End If
@@ -1089,7 +1091,7 @@ Public Module Public_Variables
 
                 ' How many runs do we need to invent this?
                 .AvgInvRunsforSuccess = 1 / SentBlueprint.GetInventionChance
-                .InventedRuns = SentBlueprint.GetSingleInventedBPCRuns
+                .InventedRunsPerBP = SentBlueprint.GetSingleInventedBPCRuns
                 .InventionJobs = SentBlueprint.GetInventionJobs
 
                 ' Decryptor if used
@@ -1101,11 +1103,16 @@ Public Module Public_Variables
             ' Volume of the item(s)
             .BuildVolume = SentBlueprint.GetTotalItemVolume
 
+            ' Ignore flags
+            .IgnoredInvention = IgnoreInvention
+            .IgnoredMinerals = IgnoreMinerals
+            .IgnoredT1BaseItem = IgnoreT1ITem
+
+            ' Number of bps used
+            .NumBPs = SentBlueprint.GetUsedNumBPs
+
             ' Finally set techlevel
             .TechLevel = SentBlueprint.GetTechLevel
-
-            ' All blueprint build types we want to save the base materials to build the bp
-            ShoppingItem.BPMaterialList = CType(SentBlueprint.GetComponentMaterials.Clone, Materials)
 
         End With
 
@@ -1501,6 +1508,10 @@ InvalidDate:
 
         ' Now change the pipes to commas
         TempString = TempString.Replace("|", ",")
+
+        ' Last update, re-set the names for R.A.M.s and R.Dbs back
+        TempString = TempString.Replace("R,A,M,", "R.A.M.")
+        TempString = TempString.Replace("R,Db", "R.Db")
 
         Return TempString
 

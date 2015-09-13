@@ -513,10 +513,10 @@ Public Class frmMain
 
         UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
         UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
-        UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Moderate)
+        UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Medium)
         UserIndustryFlipBeltOreCheckSettings3 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Large)
-        UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.ExtraLarge)
-        UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Giant)
+        UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
+        UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
 
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ProgramDefault)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
@@ -1622,7 +1622,7 @@ NoBonus:
         ' Systems combo
         LoadingFacilitySystems = True
         FacilitySystemCombo.Enabled = True
-        FacilitySystemCombo.Text = SelectedFacility.SolarSystemName
+        FacilitySystemCombo.Text = SelectedFacility.SolarSystemName ' & " (" & FormatNumber(SelectedFacility.CostIndex, 3) & ")"
         LoadingFacilitySystems = False
 
         ' Facility/Array combo
@@ -1991,7 +1991,7 @@ NoBonus:
 
             Case OutpostFacility, StationFacility
 
-                SQL = "SELECT DISTINCT SOLAR_SYSTEM_NAME FROM STATION_FACILITIES WHERE OUTPOST "
+                SQL = "SELECT DISTINCT SOLAR_SYSTEM_NAME, COST_INDEX FROM STATION_FACILITIES WHERE OUTPOST "
 
                 ' Set flag for outpost just to delineate
                 If FacilityTypeCombo.Text = StationFacility Then
@@ -2021,7 +2021,7 @@ NoBonus:
 
             Case POSFacility
                 ' For a POS, load all systems, if wormhole 'region' selected, then load jspace systems
-                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME FROM SOLAR_SYSTEMS, REGIONS "
+                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, COST_INDEX FROM SOLAR_SYSTEMS, REGIONS, INDUSTRY_SYSTEMS_COST_INDICIES "
                 SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                 If FacilityRegionCombo.Text = "Wormhole Space" Then
                     SQL = SQL & "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
@@ -2037,15 +2037,29 @@ NoBonus:
                     SQL = SQL & " AND security < .45 "
                 End If
 
+                ' Link the activity and index
+                SQL = SQL & " AND solarSystemID = SOLAR_SYSTEM_ID "
+
+                Select Case FacilityActivity
+                    Case ActivityManufacturing
+                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                    Case ActivityComponentManufacturing
+                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                    Case ActivityCopying
+                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                    Case ActivityInvention
+                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                End Select
+
         End Select
 
-        SQL = SQL & " GROUP BY SOLAR_SYSTEM_NAME"
+        SQL = SQL & " GROUP BY SOLAR_SYSTEM_NAME, COST_INDEX"
 
         DBCommand = New SQLiteCommand(SQL, DB)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
-            FacilitySystemCombo.Items.Add(rsLoader.GetString(0))
+            FacilitySystemCombo.Items.Add(rsLoader.GetString(0) & " (" & FormatNumber(rsLoader.GetDouble(1), 3) & ")")
         End While
 
         ' Enable the system combo
@@ -2136,7 +2150,8 @@ NoBonus:
                 End Select
 
                 SQL = SQL & "AND REGION_NAME = '" & FormatDBString(FacilityRegionCombo.Text) & "' "
-                SQL = SQL & "AND SOLAR_SYSTEM_NAME = '" & FormatDBString(FacilitySystemCombo.Text) & "' "
+                Dim SystemName As String = FacilitySystemCombo.Text.Substring(0, InStr(FacilitySystemCombo.Text, "(") - 2)
+                SQL = SQL & "AND SOLAR_SYSTEM_NAME = '" & FormatDBString(SystemName) & "' "
 
             Case POSFacility
 
@@ -2465,8 +2480,9 @@ NoBonus:
             End If
 
             If FacilityType <> None Then
-                ' Quick look up for the solarsystemid and region id
-                SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(.SolarSystemName) & "'"
+                ' Quick look up for the solarsystemid and region id, Strip off the system index first
+                Dim SystemName As String = .SolarSystemName.Substring(0, InStr(.SolarSystemName, "(") - 2)
+                SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
 
                 DBCommand = New SQLiteCommand(SQL, DB)
                 rsLoader = DBCommand.ExecuteReader
@@ -5418,7 +5434,7 @@ Tabs:
                 ' Allow this to be saved as a default though
                 btnBPFacilitySave.Enabled = True
                 ' changed so not the default
-                lblBPFacilityDefault.Visible = False
+                lblBPFacilityDefault.ForeColor = SystemColors.ButtonShadow
                 ' Save the facility locally
                 ' For a pos, need to display the results and reload the bp
                 Dim Defaults As New ProgramSettings
@@ -5744,7 +5760,7 @@ Tabs:
                 End If
         End Select
 
-        lblBPFacilityDefault.Visible = True
+        lblBPFacilityDefault.ForeColor = SystemColors.Highlight
         ' They just saved it
         btnBPFacilitySave.Enabled = False
 
@@ -5752,7 +5768,7 @@ Tabs:
 
     End Sub
 
-    Private Sub lblBPFacilityDefault_Click(sender As System.Object, e As System.EventArgs) Handles lblBPFacilityDefault.Click
+    Private Sub lblBPFacilityDefault_DoubleClick(sender As System.Object, e As System.EventArgs) Handles lblBPFacilityDefault.DoubleClick
         ' Load the default facility for the selected activity if it's not already the default
         If lblBPFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
             LoadingFacilityActivities = True ' Don't trigger a combo load yet
@@ -6977,6 +6993,16 @@ Tabs:
 
         cmbBPBlueprintSelection.Text = "Select Blueprint"
 
+        ' Exort type (might change with build buy selection
+        Select Case UserBPTabSettings.ExporttoShoppingListType
+            Case rbtnBPComponentCopy.Text
+                rbtnBPComponentCopy.Checked = True
+            Case rbtnBPCopyInvREMats.Text
+                rbtnBPCopyInvREMats.Checked = True
+            Case rbtnBPRawmatCopy.Text
+                rbtnBPRawmatCopy.Checked = True
+        End Select
+
         ' Default build/buy
         chkBPBuildBuy.Checked = UserApplicationSettings.CheckBuildBuy
 
@@ -7265,6 +7291,14 @@ Tabs:
             TempSettings.BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
         ElseIf rbtnBPStationPartsBlueprints.Checked Then
             TempSettings.BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
+        End If
+
+        If rbtnBPComponentCopy.Checked Then
+            TempSettings.ExporttoShoppingListType = rbtnBPComponentCopy.Text
+        ElseIf rbtnBPRawmatCopy.Checked Then
+            TempSettings.ExporttoShoppingListType = rbtnBPRawmatCopy.Text
+        ElseIf rbtnBPCopyInvREMats.Checked Then
+            TempSettings.ExporttoShoppingListType = rbtnBPCopyInvREMats.Text
         End If
 
         TempSettings.Tech1Check = chkBPT1.Checked
@@ -8025,6 +8059,11 @@ Tabs:
         If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
             ' Enable the invention mats
             rbtnBPCopyInvREMats.Enabled = True
+
+            ' Set this value if it just got enabled and they want it
+            If UserBPTabSettings.ExporttoShoppingListType = rbtnBPCopyInvREMats.Text Then
+                rbtnBPCopyInvREMats.Checked = True
+            End If
         Else
             rbtnBPCopyInvREMats.Enabled = False
         End If
@@ -8293,8 +8332,8 @@ ExitForm:
         Dim BPImage As String
         Dim BPTechImagePath As String = ""
 
-        ' Load the image
-        BPImage = UserImagePath & CStr(BPID & "_64.png")
+        ' Load the image - use absolute value since I use negative bpid's for special bps
+        BPImage = UserImagePath & CStr(Math.Abs(BPID) & "_64.png")
 
         ' Check for the Tech Image
         If System.IO.File.Exists(BPImage) Then
@@ -8919,6 +8958,7 @@ ExitForm:
             chkMinerals.Checked = True
             chkIceProducts.Checked = True
             chkGas.Checked = True
+            chkBPCs.Checked = True
             chkMisc.Checked = True
             chkAncientRelics.Checked = True
             chkAncientSalvage.Checked = True
@@ -8938,6 +8978,7 @@ ExitForm:
             chkMinerals.Checked = False
             chkIceProducts.Checked = False
             chkGas.Checked = False
+            chkBPCs.Checked = False
             chkMisc.Checked = False
             chkAncientRelics.Checked = False
             chkAncientSalvage.Checked = False
@@ -9412,6 +9453,10 @@ ExitForm:
     End Sub
 
     Private Sub chkGas_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkGas.CheckedChanged
+        Call UpdatePriceList()
+    End Sub
+
+    Private Sub chkBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPCs.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -10018,6 +10063,7 @@ ExitForm:
             chkMinerals.Checked = .Minerals
             chkIceProducts.Checked = .IceProducts
             chkGas.Checked = .Gas
+            chkBPCs.Checked = .BPCs
             chkMisc.Checked = .Misc
             chkAncientRelics.Checked = .AncientRelics
             chkAncientSalvage.Checked = .AncientSalvage
@@ -10255,6 +10301,7 @@ ExitForm:
             .Minerals = chkMinerals.Checked
             .IceProducts = chkIceProducts.Checked
             .Gas = chkGas.Checked
+            .BPCs = chkBPCs.Checked
             .Misc = chkMisc.Checked
             .AncientRelics = chkAncientRelics.Checked
             .AncientSalvage = chkAncientSalvage.Checked
@@ -10400,7 +10447,8 @@ ExitForm:
             If lstPricesView.Items(i).SubItems(5).Text <> "" Then
                 TempItem.TypeID = CLng(lstPricesView.Items(i).Text)
                 TempItem.Manufacture = CBool(lstPricesView.Items(i).SubItems(4).Text)
-                If Not Items.Contains(TempItem) Then
+                ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
+                If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
                     Items.Add(TempItem)
                 End If
             End If
@@ -10820,7 +10868,12 @@ ExitSub:
 
         ' Reset the value of the progress bar
         pnlProgressBar.Value = 0
-        pnlProgressBar.Maximum = CacheItems.Count - 1
+        If CacheItems.Count <> 0 Then
+            pnlProgressBar.Maximum = CacheItems.Count - 1
+        Else
+            pnlProgressBar.Maximum = 0
+        End If
+
         pnlProgressBar.Visible = True
 
         pnlStatus.Text = "Checking Items..."
@@ -11007,6 +11060,10 @@ ExitSub:
         End If
         If chkGas.Checked Then
             SQL = SQL & "ITEM_GROUP = 'Harvestable Cloud' OR "
+            ItemChecked = True
+        End If
+        If chkBPCs.Checked Then
+            SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
@@ -11489,12 +11546,11 @@ ExitSub:
                 Call cmbCalcBaseFacilityRegion.Focus()
             End If
 
+            ' hide array selection for non-pos, hide the other drop downs
             If cmbCalcBaseFacilityType.Text = POSFacility Then
-                ' Show the boxes
-                SetPOSMultiUseArraysVisibility(True)
+                Call SetPOSMultiUseArraysVisibility(True, False)
             Else
-                ' Show array selection for non-pos, hide the other drop downs
-                SetPOSMultiUseArraysVisibility(False)
+                Call SetPOSMultiUseArraysVisibility(False, False)
             End If
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
@@ -11541,6 +11597,15 @@ ExitSub:
                              lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax)
             CalcBaseFacilityLoaded = False
             PreviousCalcBaseFacilityRegion = cmbCalcBaseFacilityRegion.Text
+
+            ' Make sure the pos facility stuff is still hidden
+            ' hide array selection for non-pos, hide the other drop downs
+            If cmbCalcBaseFacilityType.Text = POSFacility Then
+                Call SetPOSMultiUseArraysVisibility(True, False)
+            Else
+                Call SetPOSMultiUseArraysVisibility(False, False)
+            End If
+
         End If
     End Sub
 
@@ -11584,19 +11649,12 @@ ExitSub:
                                 btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, CalcTab, _
                                 chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, chkCalcBaseFacilityIncludeUsage.Checked, Autoload, OverrideFacilityName)
 
-            If cmbCalcBaseFacilityType.Text <> POSFacility Then
-                ' Hide the POS modules for multi-use
-                SetPOSMultiUseArraysVisibility(False)
-
-            Else
+            If cmbCalcBaseFacilityType.Text = POSFacility Then
                 ' Hide all these labels so we can see the other blocks
                 Call HideFacilityBonusBoxes(lblCalcBaseFacilityBonus, lblCalcBaseFacilityTaxRate, _
                                             lblCalcBaseFacilityManualME, lblCalcBaseFacilityManualTE, _
                                             txtCalcBaseFacilityManualME, txtCalcBaseFacilityManualTE, _
                                             lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax)
-
-                ' Also show all the multi-use array boxes
-                SetPOSMultiUseArraysVisibility(True)
 
                 ' See if this is the default pos
                 With DefaultCalcBaseManufacturingFacility
@@ -11619,6 +11677,13 @@ ExitSub:
 
             End If
 
+            ' Hide for non-pos but show and enable for pos
+            If cmbCalcBaseFacilityType.Text = POSFacility Then
+                Call SetPOSMultiUseArraysVisibility(True, True)
+            Else
+                Call SetPOSMultiUseArraysVisibility(False, False)
+            End If
+
             If Autoload Or cmbCalcBaseFacilityType.Text = POSFacility Then
                 ' reload bp Use the original ME and TE values when they change the meta level
                 CalcBaseFacilityLoaded = True
@@ -11632,9 +11697,8 @@ ExitSub:
 
     End Sub
 
-    Private Sub SetPOSMultiUseArraysVisibility(Visible As Boolean)
+    Private Sub SetPOSMultiUseArraysVisibility(ByVal Visible As Boolean, ByVal Enabled As Boolean)
         If Visible Then
-            ' show all the multi-use array boxes
             cmbCalcBaseFacilityorArray.Visible = False
             ' Show the POS modules for multi-use
             cmbCalcPOSFuelBlocks.Visible = True
@@ -11644,7 +11708,6 @@ ExitSub:
             lblCalcPOSLargeShips.Visible = True
             lblCalcPOSModules.Visible = True
         Else
-            ' Show the array select
             cmbCalcBaseFacilityorArray.Visible = True
             ' Hide the POS modules for multi-use
             cmbCalcPOSFuelBlocks.Visible = False
@@ -11653,6 +11716,24 @@ ExitSub:
             lblCalcPOSFuelBlocks.Visible = False
             lblCalcPOSLargeShips.Visible = False
             lblCalcPOSModules.Visible = False
+        End If
+
+        If Enabled Then
+            ' Enable the POS modules for multi-use
+            cmbCalcPOSFuelBlocks.Enabled = True
+            cmbCalcPOSLargeShips.Enabled = True
+            cmbCalcPOSModules.Enabled = True
+            lblCalcPOSFuelBlocks.Enabled = True
+            lblCalcPOSLargeShips.Enabled = True
+            lblCalcPOSModules.Enabled = True
+        Else
+            ' Disable the POS modules for multi-use
+            cmbCalcPOSFuelBlocks.Enabled = False
+            cmbCalcPOSLargeShips.Enabled = False
+            cmbCalcPOSModules.Enabled = False
+            lblCalcPOSFuelBlocks.Enabled = False
+            lblCalcPOSLargeShips.Enabled = False
+            lblCalcPOSModules.Enabled = False
         End If
 
     End Sub
@@ -16377,8 +16458,6 @@ CheckTechs:
                           btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, _
                           CalcTab, chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, Nothing, CalcBaseFacilityLoaded, Nothing, 1, 0, 0, False)
         If cmbCalcBaseFacilityType.Text = POSFacility Then
-            ' Show the POS modules for multi-use
-            SetPOSMultiUseArraysVisibility(True)
             Call HideFacilityBonusBoxes(lblCalcBaseFacilityBonus, lblCalcBaseFacilityTaxRate, _
                                         lblCalcBaseFacilityManualME, lblCalcBaseFacilityManualTE, _
                                         txtCalcBaseFacilityManualME, txtCalcBaseFacilityManualTE, _
@@ -16387,11 +16466,17 @@ CheckTechs:
             cmbCalcPOSFuelBlocks.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSFuelBlockFacility.FacilityName)
             cmbCalcPOSLargeShips.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSLargeShipFacility.FacilityName)
             cmbCalcPOSModules.Text = GetTruncatedCalcPOSMultiUseArrayName(SelectedCalcPOSModuleFacility.FacilityName)
+        End If
+
+        ' Hide array selection for non-pos, hide the other drop downs
+        If cmbCalcBaseFacilityType.Text = POSFacility Then
+            Call SetPOSMultiUseArraysVisibility(True, False)
         Else
-            SetPOSMultiUseArraysVisibility(False)
+            Call SetPOSMultiUseArraysVisibility(False, False)
         End If
 
         LoadingFacilityActivities = False
+
     End Sub
 
     ' Loads the default calc component facility
@@ -23342,8 +23427,8 @@ Leave:
         ElseIf cmbMineOreType.Text = "Gas" Then
             MLUCount = 0
             ' Update laser count based on skills - max of 5
-            If cmbMineShipType.Text = Venture Then
-                ' Update the laser count if it's less than the turrets on the venture
+            If cmbMineShipType.Text = Venture Or cmbMineShipType.Text = Prospect Then
+                ' Update the laser count if it's less than the turrets on the venture/prospect
                 If CInt(cmbMineGasIceHarvesting.Text) < LaserCount Then
                     LaserCount = CInt(cmbMineGasIceHarvesting.Text)
                 End If
