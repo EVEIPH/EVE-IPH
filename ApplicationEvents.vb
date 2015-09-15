@@ -17,18 +17,8 @@
                 Call WriteMsgToLog(e.Exception.ToString)
             End If
 
-            Dim f2 = New frmError
-            frmErrorText = "An Unhandled Exception has occured and EVE Isk per Hour will now close."
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "Please fill out the following information so I can reproduce the bug - if you just copy and paste this message, that won't be enough!"
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "What is your Operating System? "
-            frmErrorText = frmErrorText & Environment.NewLine & "What tab or screen did the error occur? "
-            frmErrorText = frmErrorText & Environment.NewLine & "What are the steps to reproduce the Error? "
-            frmErrorText = frmErrorText & Environment.NewLine & "Web link to a screenshot of your error: "
-            frmErrorText = frmErrorText & Environment.NewLine & "In addition to a screenshot, copy the data below for sending to developer."
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "Source: " & e.Exception.Source
-            frmErrorText = frmErrorText & Environment.NewLine & "Message: " & e.Exception.Message
-
-            f2.ShowDialog()
+            Dim brd = New BugReportForm(New UnhandledExceptionEventArgs(e.Exception, e.ExitApplication))
+            brd.ShowDialog()
 
         End Sub
     End Class
