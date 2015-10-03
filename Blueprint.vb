@@ -74,6 +74,7 @@ Public Class Blueprint
     Private BPCharacter As Character ' The character for this BP
     Private IndustrySkill As Integer ' Industry skill level of character
     Private AdvancedIndustrySkill As Integer ' Old Production Efficiency skill, now reduces TE on building and researching
+    Private ScienceSkill As Integer
     Private AIImplantValue As Double ' Advanced Industry Implant on character
     Private CopyImplantValue As Double ' Copy implant value for this character
 
@@ -270,6 +271,7 @@ Public Class Blueprint
         ' Set the skills to use for this blueprint - changed to type ID's due to name changes (1/29/2014)
         AdvancedIndustrySkill = BPCharacter.Skills.GetSkillLevel(3388)
         IndustrySkill = BPCharacter.Skills.GetSkillLevel(3380)
+        ScienceSkill = BPCharacter.Skills.GetSkillLevel(3402)
 
         ' Add production implant from settings
         AIImplantValue = 1 - UserSettings.ManufacturingImplantValue
@@ -1633,8 +1635,8 @@ Public Class Blueprint
         NumInventionSessions = CInt(Math.Ceiling(NumInventionJobs / NumberofLaboratoryLines))
 
         If IncludeCopyTime And TechLevel <> BlueprintTechLevel.T3 Then
-            ' Set the total copy time based on the number of invention sessions we need, divided by the lab lines they have
-            CopyTime = GetCopyTime(NumInventionJobs) * Math.Ceiling(NumInventionSessions / NumberofLaboratoryLines)
+            ' Set the total copy time based on the number of invention sessions we need
+            CopyTime = GetCopyTime(NumInventionJobs) / NumberofLaboratoryLines
         Else
             CopyTime = 0 ' No copies for T3
         End If
@@ -1817,7 +1819,7 @@ Public Class Blueprint
 
             ' inventionTime = baseInventionTime * facilityModifier * 3% of AI level * implant (doesn't work) * team if set
             If readerLookup.Read Then
-                TempTime = CDbl(readerLookup.GetInt64(0)) * InventionFacility.TimeMultiplier * (1 - 0.03 * AdvancedIndustrySkill) * GetTeamBonus(InventionTeam, "TE") * 1 '* InventionImplantValue
+                TempTime = CDbl(readerLookup.GetInt64(0)) * InventionFacility.TimeMultiplier * (1 - (0.03 * AdvancedIndustrySkill)) * GetTeamBonus(InventionTeam, "TE") * 1 '* InventionImplantValue
             Else
                 TempTime = 0
             End If
@@ -1826,7 +1828,7 @@ Public Class Blueprint
         End If
 
         ' Finally, set the time
-        InventionTime = TempTime * Math.Ceiling(NumInventionSessions / NumberofLaboratoryLines)
+        InventionTime = TempTime * NumInventionSessions
 
     End Sub
 
@@ -1848,16 +1850,16 @@ Public Class Blueprint
         DBCommand = New SQLiteCommand(SQL, DB)
         readerLookup = DBCommand.ExecuteReader
 
-        ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * facility copyslotmod * (1-implant) * (1-Team value)
-        If readerLookup.Read Then ' 3402 is science skill - just use the number of runs we need to make
-            TempTime = CDec((readerLookup.GetInt64(0)) * UserCopyRuns * (1 - (0.05 * BPCharacter.Skills.GetSkillLevel(3402))) * CopyFacility.TimeMultiplier * (1 - BPUserSettings.CopyImplantValue) * GetTeamBonus(CopyTeam, "TE"))
+        ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * (1 - (0.03 * advancedindustry)) * facility copyslotmod * (1-implant) * (1-Team value)
+        If readerLookup.Read Then ' just use the number of runs we need to make
+            TempTime = CDec((readerLookup.GetInt64(0)) * (1 - (0.05 * ScienceSkill)) * (1 - (0.03 * AdvancedIndustrySkill)) * CopyFacility.TimeMultiplier * (1 - BPUserSettings.CopyImplantValue) * GetTeamBonus(CopyTeam, "TE"))
         Else
             TempTime = 0
         End If
 
         readerLookup.Close()
 
-        Return TempTime
+        Return TempTime * UserCopyRuns
 
     End Function
 

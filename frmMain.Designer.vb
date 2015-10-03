@@ -75,13 +75,15 @@ Partial Class frmMain
         Me.mnuInventionSuccessMonitor = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuIndustryUpgradeBelts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRefinery = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFactoryFinder = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuMarketFinder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuAbout = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuPatchNotes = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCheckforUpdates = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuSelectionAbout = New System.Windows.Forms.ToolStripMenuItem()
         Me.CalcBPStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.AutoScaleModeSettingToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewMarketDataMenu = New System.Windows.Forms.ToolStripMenuItem()
         Me.pnlMain = New System.Windows.Forms.StatusStrip()
         Me.pnlCharacter = New System.Windows.Forms.ToolStripStatusLabel()
         Me.pnlSkills = New System.Windows.Forms.ToolStripStatusLabel()
@@ -277,17 +279,25 @@ Partial Class frmMain
         Me.chkMineAmarr = New System.Windows.Forms.CheckBox()
         Me.lstMineGrid = New System.Windows.Forms.ListView()
         Me.tabReactions = New System.Windows.Forms.TabPage()
-        Me.gbReactionsTaxesFees = New System.Windows.Forms.GroupBox()
-        Me.chkReactionsFees = New System.Windows.Forms.CheckBox()
-        Me.chkReactionsTaxes = New System.Windows.Forms.CheckBox()
-        Me.lblReactionsFees = New System.Windows.Forms.Label()
-        Me.lblReactionsTaxes = New System.Windows.Forms.Label()
         Me.gbReactionsSelectedMats = New System.Windows.Forms.GroupBox()
         Me.lstReactionMats = New System.Windows.Forms.ListView()
         Me.gbReactions = New System.Windows.Forms.GroupBox()
+        Me.gbReactionsRefinery = New System.Windows.Forms.GroupBox()
+        Me.lblReactionRefineryStandings = New System.Windows.Forms.Label()
+        Me.txtReactionsRefineryStanding = New System.Windows.Forms.TextBox()
+        Me.cmbReactionsRefineTax = New System.Windows.Forms.ComboBox()
+        Me.cmbReactionsRefiningEfficiency = New System.Windows.Forms.ComboBox()
+        Me.lblReactionsRefineTax = New System.Windows.Forms.Label()
+        Me.lblReactionsRefineEff = New System.Windows.Forms.Label()
+        Me.gbReactionsTaxesFees = New System.Windows.Forms.GroupBox()
+        Me.lblReactionsTaxes = New System.Windows.Forms.Label()
+        Me.chkReactionsFees = New System.Windows.Forms.CheckBox()
+        Me.chkReactionsTaxes = New System.Windows.Forms.CheckBox()
+        Me.lblReactionsFees = New System.Windows.Forms.Label()
+        Me.btnReactionRefresh = New System.Windows.Forms.Button()
         Me.lblReactionsNumPOS = New System.Windows.Forms.Label()
-        Me.txtReactionsNumPOS = New System.Windows.Forms.TextBox()
         Me.btnReactionsSaveSettings = New System.Windows.Forms.Button()
+        Me.txtReactionsNumPOS = New System.Windows.Forms.TextBox()
         Me.gbReactionsHybrid = New System.Windows.Forms.GroupBox()
         Me.chkReactionsHybrid = New System.Windows.Forms.CheckBox()
         Me.gbReactionsBiochem = New System.Windows.Forms.GroupBox()
@@ -301,7 +311,6 @@ Partial Class frmMain
         Me.chkReactionsAdvMoonMats = New System.Windows.Forms.CheckBox()
         Me.chkReactionsProcMoonMats = New System.Windows.Forms.CheckBox()
         Me.lblReactionPOSFuelCost = New System.Windows.Forms.Label()
-        Me.btnReactionRefresh = New System.Windows.Forms.Button()
         Me.txtReactionPOSFuelCost = New System.Windows.Forms.TextBox()
         Me.lstReactions = New System.Windows.Forms.ListView()
         Me.tabDatacores = New System.Windows.Forms.TabPage()
@@ -1086,6 +1095,12 @@ Partial Class frmMain
         Me.chkBPIncludeT3Time = New System.Windows.Forms.CheckBox()
         Me.chkBPIncludeT3Costs = New System.Windows.Forms.CheckBox()
         Me.tabBPOptions = New System.Windows.Forms.TabPage()
+        Me.gbBPSystemCostIndex = New System.Windows.Forms.GroupBox()
+        Me.lblBPFacilitySystemName = New System.Windows.Forms.Label()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.txtBPUpdateCostIndex = New System.Windows.Forms.TextBox()
+        Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
+        Me.cmbBPUpdateCostIndexActivity = New System.Windows.Forms.ComboBox()
         Me.gbBPIgnoreinCalcs = New System.Windows.Forms.GroupBox()
         Me.chkBPIgnoreMinerals = New System.Windows.Forms.CheckBox()
         Me.chkBPIgnoreT1Item = New System.Windows.Forms.CheckBox()
@@ -1200,9 +1215,10 @@ Partial Class frmMain
         Me.gbMineOreLocSov.SuspendLayout
         Me.gbMineWHSpace.SuspendLayout
         Me.tabReactions.SuspendLayout
-        Me.gbReactionsTaxesFees.SuspendLayout
         Me.gbReactionsSelectedMats.SuspendLayout
         Me.gbReactions.SuspendLayout
+        Me.gbReactionsRefinery.SuspendLayout
+        Me.gbReactionsTaxesFees.SuspendLayout
         Me.gbReactionsHybrid.SuspendLayout
         Me.gbReactionsBiochem.SuspendLayout
         Me.gbReactionsOptions.SuspendLayout
@@ -1280,6 +1296,7 @@ Partial Class frmMain
         Me.tabFacility.SuspendLayout
         Me.tabT3Calcs.SuspendLayout
         Me.tabBPOptions.SuspendLayout
+        Me.gbBPSystemCostIndex.SuspendLayout
         Me.gbBPIgnoreinCalcs.SuspendLayout
         Me.tabInventionCalcs.SuspendLayout
         CType(Me.pictBP,System.ComponentModel.ISupportInitialize).BeginInit
@@ -1583,7 +1600,7 @@ Partial Class frmMain
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuInventionSuccessMonitor, Me.mnuIndustryUpgradeBelts, Me.mnuRefinery})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuInventionSuccessMonitor, Me.mnuIndustryUpgradeBelts, Me.mnuRefinery, Me.mnuFactoryFinder, Me.mnuMarketFinder})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(47, 20)
         Me.mnuTools.Text = "Tools"
@@ -1606,6 +1623,18 @@ Partial Class frmMain
         Me.mnuRefinery.Name = "mnuRefinery"
         Me.mnuRefinery.Size = New System.Drawing.Size(214, 22)
         Me.mnuRefinery.Text = "Refinery"
+        '
+        'mnuFactoryFinder
+        '
+        Me.mnuFactoryFinder.Name = "mnuFactoryFinder"
+        Me.mnuFactoryFinder.Size = New System.Drawing.Size(214, 22)
+        Me.mnuFactoryFinder.Text = "Factory Finder"
+        '
+        'mnuMarketFinder
+        '
+        Me.mnuMarketFinder.Name = "mnuMarketFinder"
+        Me.mnuMarketFinder.Size = New System.Drawing.Size(214, 22)
+        Me.mnuMarketFinder.Text = "Market Finder"
         '
         'mnuAbout
         '
@@ -1639,16 +1668,16 @@ Partial Class frmMain
         '
         'CalcBPStripMenuItem
         '
-        Me.CalcBPStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AutoScaleModeSettingToolStripMenuItem})
+        Me.CalcBPStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewMarketDataMenu})
         Me.CalcBPStripMenuItem.Name = "CalcBPStripMenuItem"
-        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(111, 20)
-        Me.CalcBPStripMenuItem.Text = "View Market Data"
+        Me.CalcBPStripMenuItem.Size = New System.Drawing.Size(40, 20)
+        Me.CalcBPStripMenuItem.Text = "Test"
         '
-        'AutoScaleModeSettingToolStripMenuItem
+        'ViewMarketDataMenu
         '
-        Me.AutoScaleModeSettingToolStripMenuItem.Name = "AutoScaleModeSettingToolStripMenuItem"
-        Me.AutoScaleModeSettingToolStripMenuItem.Size = New System.Drawing.Size(195, 22)
-        Me.AutoScaleModeSettingToolStripMenuItem.Text = "AutoScaleModeSetting"
+        Me.ViewMarketDataMenu.Name = "ViewMarketDataMenu"
+        Me.ViewMarketDataMenu.Size = New System.Drawing.Size(166, 22)
+        Me.ViewMarketDataMenu.Text = "View Market Data"
         '
         'pnlMain
         '
@@ -3595,7 +3624,6 @@ Partial Class frmMain
         '
         'tabReactions
         '
-        Me.tabReactions.Controls.Add(Me.gbReactionsTaxesFees)
         Me.tabReactions.Controls.Add(Me.gbReactionsSelectedMats)
         Me.tabReactions.Controls.Add(Me.gbReactions)
         Me.tabReactions.Controls.Add(Me.lstReactions)
@@ -3606,67 +3634,10 @@ Partial Class frmMain
         Me.tabReactions.Text = "Reactions"
         Me.tabReactions.UseVisualStyleBackColor = true
         '
-        'gbReactionsTaxesFees
-        '
-        Me.gbReactionsTaxesFees.Controls.Add(Me.chkReactionsFees)
-        Me.gbReactionsTaxesFees.Controls.Add(Me.chkReactionsTaxes)
-        Me.gbReactionsTaxesFees.Controls.Add(Me.lblReactionsFees)
-        Me.gbReactionsTaxesFees.Controls.Add(Me.lblReactionsTaxes)
-        Me.gbReactionsTaxesFees.Location = New System.Drawing.Point(928, 524)
-        Me.gbReactionsTaxesFees.Name = "gbReactionsTaxesFees"
-        Me.gbReactionsTaxesFees.Size = New System.Drawing.Size(204, 84)
-        Me.gbReactionsTaxesFees.TabIndex = 18
-        Me.gbReactionsTaxesFees.TabStop = false
-        Me.gbReactionsTaxesFees.Text = "Broker Fees and Taxes:"
-        '
-        'chkReactionsFees
-        '
-        Me.chkReactionsFees.AutoSize = true
-        Me.chkReactionsFees.Checked = true
-        Me.chkReactionsFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkReactionsFees.Location = New System.Drawing.Point(9, 39)
-        Me.chkReactionsFees.Name = "chkReactionsFees"
-        Me.chkReactionsFees.Size = New System.Drawing.Size(52, 17)
-        Me.chkReactionsFees.TabIndex = 10
-        Me.chkReactionsFees.Text = "Fees:"
-        Me.chkReactionsFees.UseVisualStyleBackColor = true
-        '
-        'chkReactionsTaxes
-        '
-        Me.chkReactionsTaxes.AutoSize = true
-        Me.chkReactionsTaxes.Checked = true
-        Me.chkReactionsTaxes.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkReactionsTaxes.Location = New System.Drawing.Point(9, 16)
-        Me.chkReactionsTaxes.Name = "chkReactionsTaxes"
-        Me.chkReactionsTaxes.Size = New System.Drawing.Size(58, 17)
-        Me.chkReactionsTaxes.TabIndex = 9
-        Me.chkReactionsTaxes.Text = "Taxes:"
-        Me.chkReactionsTaxes.UseVisualStyleBackColor = true
-        '
-        'lblReactionsFees
-        '
-        Me.lblReactionsFees.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblReactionsFees.Location = New System.Drawing.Point(73, 39)
-        Me.lblReactionsFees.Name = "lblReactionsFees"
-        Me.lblReactionsFees.Size = New System.Drawing.Size(125, 17)
-        Me.lblReactionsFees.TabIndex = 36
-        Me.lblReactionsFees.Text = "0.00"
-        Me.lblReactionsFees.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'lblReactionsTaxes
-        '
-        Me.lblReactionsTaxes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblReactionsTaxes.Location = New System.Drawing.Point(73, 16)
-        Me.lblReactionsTaxes.Name = "lblReactionsTaxes"
-        Me.lblReactionsTaxes.Size = New System.Drawing.Size(125, 17)
-        Me.lblReactionsTaxes.TabIndex = 35
-        Me.lblReactionsTaxes.Text = "0.00"
-        Me.lblReactionsTaxes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
         'gbReactionsSelectedMats
         '
         Me.gbReactionsSelectedMats.Controls.Add(Me.lstReactionMats)
-        Me.gbReactionsSelectedMats.Location = New System.Drawing.Point(928, 393)
+        Me.gbReactionsSelectedMats.Location = New System.Drawing.Point(930, 483)
         Me.gbReactionsSelectedMats.Name = "gbReactionsSelectedMats"
         Me.gbReactionsSelectedMats.Size = New System.Drawing.Size(204, 125)
         Me.gbReactionsSelectedMats.TabIndex = 17
@@ -3689,21 +3660,161 @@ Partial Class frmMain
         '
         'gbReactions
         '
+        Me.gbReactions.Controls.Add(Me.gbReactionsRefinery)
+        Me.gbReactions.Controls.Add(Me.gbReactionsTaxesFees)
+        Me.gbReactions.Controls.Add(Me.btnReactionRefresh)
         Me.gbReactions.Controls.Add(Me.lblReactionsNumPOS)
-        Me.gbReactions.Controls.Add(Me.txtReactionsNumPOS)
         Me.gbReactions.Controls.Add(Me.btnReactionsSaveSettings)
+        Me.gbReactions.Controls.Add(Me.txtReactionsNumPOS)
         Me.gbReactions.Controls.Add(Me.gbReactionsHybrid)
         Me.gbReactions.Controls.Add(Me.gbReactionsBiochem)
         Me.gbReactions.Controls.Add(Me.gbReactionsOptions)
         Me.gbReactions.Controls.Add(Me.gbReactionsMoonMats)
         Me.gbReactions.Controls.Add(Me.lblReactionPOSFuelCost)
-        Me.gbReactions.Controls.Add(Me.btnReactionRefresh)
         Me.gbReactions.Controls.Add(Me.txtReactionPOSFuelCost)
         Me.gbReactions.Location = New System.Drawing.Point(930, 3)
         Me.gbReactions.Name = "gbReactions"
-        Me.gbReactions.Size = New System.Drawing.Size(204, 384)
+        Me.gbReactions.Size = New System.Drawing.Size(204, 479)
         Me.gbReactions.TabIndex = 16
         Me.gbReactions.TabStop = false
+        '
+        'gbReactionsRefinery
+        '
+        Me.gbReactionsRefinery.Controls.Add(Me.lblReactionRefineryStandings)
+        Me.gbReactionsRefinery.Controls.Add(Me.txtReactionsRefineryStanding)
+        Me.gbReactionsRefinery.Controls.Add(Me.cmbReactionsRefineTax)
+        Me.gbReactionsRefinery.Controls.Add(Me.cmbReactionsRefiningEfficiency)
+        Me.gbReactionsRefinery.Controls.Add(Me.lblReactionsRefineTax)
+        Me.gbReactionsRefinery.Controls.Add(Me.lblReactionsRefineEff)
+        Me.gbReactionsRefinery.Location = New System.Drawing.Point(8, 324)
+        Me.gbReactionsRefinery.Name = "gbReactionsRefinery"
+        Me.gbReactionsRefinery.Size = New System.Drawing.Size(190, 56)
+        Me.gbReactionsRefinery.TabIndex = 37
+        Me.gbReactionsRefinery.TabStop = false
+        Me.gbReactionsRefinery.Text = "Refinery:"
+        '
+        'lblReactionRefineryStandings
+        '
+        Me.lblReactionRefineryStandings.AutoSize = true
+        Me.lblReactionRefineryStandings.Location = New System.Drawing.Point(5, 14)
+        Me.lblReactionRefineryStandings.Name = "lblReactionRefineryStandings"
+        Me.lblReactionRefineryStandings.Size = New System.Drawing.Size(52, 13)
+        Me.lblReactionRefineryStandings.TabIndex = 111
+        Me.lblReactionRefineryStandings.Text = "Standing:"
+        '
+        'txtReactionsRefineryStanding
+        '
+        Me.txtReactionsRefineryStanding.Location = New System.Drawing.Point(7, 29)
+        Me.txtReactionsRefineryStanding.Name = "txtReactionsRefineryStanding"
+        Me.txtReactionsRefineryStanding.Size = New System.Drawing.Size(53, 20)
+        Me.txtReactionsRefineryStanding.TabIndex = 110
+        Me.txtReactionsRefineryStanding.Text = "6.67"
+        Me.txtReactionsRefineryStanding.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'cmbReactionsRefineTax
+        '
+        Me.cmbReactionsRefineTax.FormattingEnabled = true
+        Me.cmbReactionsRefineTax.Items.AddRange(New Object() {"0%", "1%", "2%", "3%", "4%", "5%", "6%", "7%", "8%", "9%", "10%"})
+        Me.cmbReactionsRefineTax.Location = New System.Drawing.Point(69, 28)
+        Me.cmbReactionsRefineTax.Name = "cmbReactionsRefineTax"
+        Me.cmbReactionsRefineTax.Size = New System.Drawing.Size(53, 21)
+        Me.cmbReactionsRefineTax.TabIndex = 46
+        '
+        'cmbReactionsRefiningEfficiency
+        '
+        Me.cmbReactionsRefiningEfficiency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbReactionsRefiningEfficiency.FormattingEnabled = true
+        Me.cmbReactionsRefiningEfficiency.ItemHeight = 13
+        Me.cmbReactionsRefiningEfficiency.Items.AddRange(New Object() {"50%", "52%", "53%", "54%", "57%", "60%"})
+        Me.cmbReactionsRefiningEfficiency.Location = New System.Drawing.Point(131, 28)
+        Me.cmbReactionsRefiningEfficiency.Name = "cmbReactionsRefiningEfficiency"
+        Me.cmbReactionsRefiningEfficiency.Size = New System.Drawing.Size(53, 21)
+        Me.cmbReactionsRefiningEfficiency.TabIndex = 45
+        Me.cmbReactionsRefiningEfficiency.TabStop = false
+        '
+        'lblReactionsRefineTax
+        '
+        Me.lblReactionsRefineTax.AutoSize = true
+        Me.lblReactionsRefineTax.Location = New System.Drawing.Point(66, 14)
+        Me.lblReactionsRefineTax.Name = "lblReactionsRefineTax"
+        Me.lblReactionsRefineTax.Size = New System.Drawing.Size(28, 13)
+        Me.lblReactionsRefineTax.TabIndex = 19
+        Me.lblReactionsRefineTax.Text = "Tax:"
+        '
+        'lblReactionsRefineEff
+        '
+        Me.lblReactionsRefineEff.AutoSize = true
+        Me.lblReactionsRefineEff.Location = New System.Drawing.Point(128, 14)
+        Me.lblReactionsRefineEff.Name = "lblReactionsRefineEff"
+        Me.lblReactionsRefineEff.Size = New System.Drawing.Size(56, 13)
+        Me.lblReactionsRefineEff.TabIndex = 20
+        Me.lblReactionsRefineEff.Text = "Efficiency:"
+        '
+        'gbReactionsTaxesFees
+        '
+        Me.gbReactionsTaxesFees.Controls.Add(Me.lblReactionsTaxes)
+        Me.gbReactionsTaxesFees.Controls.Add(Me.chkReactionsFees)
+        Me.gbReactionsTaxesFees.Controls.Add(Me.chkReactionsTaxes)
+        Me.gbReactionsTaxesFees.Controls.Add(Me.lblReactionsFees)
+        Me.gbReactionsTaxesFees.Location = New System.Drawing.Point(8, 383)
+        Me.gbReactionsTaxesFees.Name = "gbReactionsTaxesFees"
+        Me.gbReactionsTaxesFees.Size = New System.Drawing.Size(190, 60)
+        Me.gbReactionsTaxesFees.TabIndex = 18
+        Me.gbReactionsTaxesFees.TabStop = false
+        Me.gbReactionsTaxesFees.Text = "Broker Fees and Taxes:"
+        '
+        'lblReactionsTaxes
+        '
+        Me.lblReactionsTaxes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblReactionsTaxes.Location = New System.Drawing.Point(64, 16)
+        Me.lblReactionsTaxes.Name = "lblReactionsTaxes"
+        Me.lblReactionsTaxes.Size = New System.Drawing.Size(120, 17)
+        Me.lblReactionsTaxes.TabIndex = 35
+        Me.lblReactionsTaxes.Text = "0.00"
+        Me.lblReactionsTaxes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'chkReactionsFees
+        '
+        Me.chkReactionsFees.AutoSize = true
+        Me.chkReactionsFees.Checked = true
+        Me.chkReactionsFees.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkReactionsFees.Location = New System.Drawing.Point(9, 36)
+        Me.chkReactionsFees.Name = "chkReactionsFees"
+        Me.chkReactionsFees.Size = New System.Drawing.Size(52, 17)
+        Me.chkReactionsFees.TabIndex = 10
+        Me.chkReactionsFees.Text = "Fees:"
+        Me.chkReactionsFees.UseVisualStyleBackColor = true
+        '
+        'chkReactionsTaxes
+        '
+        Me.chkReactionsTaxes.AutoSize = true
+        Me.chkReactionsTaxes.Checked = true
+        Me.chkReactionsTaxes.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkReactionsTaxes.Location = New System.Drawing.Point(9, 16)
+        Me.chkReactionsTaxes.Name = "chkReactionsTaxes"
+        Me.chkReactionsTaxes.Size = New System.Drawing.Size(58, 17)
+        Me.chkReactionsTaxes.TabIndex = 9
+        Me.chkReactionsTaxes.Text = "Taxes:"
+        Me.chkReactionsTaxes.UseVisualStyleBackColor = true
+        '
+        'lblReactionsFees
+        '
+        Me.lblReactionsFees.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblReactionsFees.Location = New System.Drawing.Point(64, 36)
+        Me.lblReactionsFees.Name = "lblReactionsFees"
+        Me.lblReactionsFees.Size = New System.Drawing.Size(120, 17)
+        Me.lblReactionsFees.TabIndex = 36
+        Me.lblReactionsFees.Text = "0.00"
+        Me.lblReactionsFees.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'btnReactionRefresh
+        '
+        Me.btnReactionRefresh.Location = New System.Drawing.Point(8, 446)
+        Me.btnReactionRefresh.Name = "btnReactionRefresh"
+        Me.btnReactionRefresh.Size = New System.Drawing.Size(93, 27)
+        Me.btnReactionRefresh.TabIndex = 12
+        Me.btnReactionRefresh.Text = "Refresh"
+        Me.btnReactionRefresh.UseVisualStyleBackColor = true
         '
         'lblReactionsNumPOS
         '
@@ -3713,6 +3824,15 @@ Partial Class frmMain
         Me.lblReactionsNumPOS.Size = New System.Drawing.Size(72, 13)
         Me.lblReactionsNumPOS.TabIndex = 18
         Me.lblReactionsNumPOS.Text = "Number POS:"
+        '
+        'btnReactionsSaveSettings
+        '
+        Me.btnReactionsSaveSettings.Location = New System.Drawing.Point(105, 446)
+        Me.btnReactionsSaveSettings.Name = "btnReactionsSaveSettings"
+        Me.btnReactionsSaveSettings.Size = New System.Drawing.Size(93, 27)
+        Me.btnReactionsSaveSettings.TabIndex = 16
+        Me.btnReactionsSaveSettings.Text = "Save Settings"
+        Me.btnReactionsSaveSettings.UseVisualStyleBackColor = true
         '
         'txtReactionsNumPOS
         '
@@ -3724,19 +3844,10 @@ Partial Class frmMain
         Me.txtReactionsNumPOS.Text = "1"
         Me.txtReactionsNumPOS.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
-        'btnReactionsSaveSettings
-        '
-        Me.btnReactionsSaveSettings.Location = New System.Drawing.Point(105, 351)
-        Me.btnReactionsSaveSettings.Name = "btnReactionsSaveSettings"
-        Me.btnReactionsSaveSettings.Size = New System.Drawing.Size(93, 27)
-        Me.btnReactionsSaveSettings.TabIndex = 16
-        Me.btnReactionsSaveSettings.Text = "Save Settings"
-        Me.btnReactionsSaveSettings.UseVisualStyleBackColor = true
-        '
         'gbReactionsHybrid
         '
         Me.gbReactionsHybrid.Controls.Add(Me.chkReactionsHybrid)
-        Me.gbReactionsHybrid.Location = New System.Drawing.Point(8, 123)
+        Me.gbReactionsHybrid.Location = New System.Drawing.Point(9, 114)
         Me.gbReactionsHybrid.Name = "gbReactionsHybrid"
         Me.gbReactionsHybrid.Size = New System.Drawing.Size(190, 44)
         Me.gbReactionsHybrid.TabIndex = 4
@@ -3757,9 +3868,9 @@ Partial Class frmMain
         '
         Me.gbReactionsBiochem.Controls.Add(Me.chkReactionsSimpleBio)
         Me.gbReactionsBiochem.Controls.Add(Me.chkReactionsComplexBio)
-        Me.gbReactionsBiochem.Location = New System.Drawing.Point(8, 173)
+        Me.gbReactionsBiochem.Location = New System.Drawing.Point(8, 160)
         Me.gbReactionsBiochem.Name = "gbReactionsBiochem"
-        Me.gbReactionsBiochem.Size = New System.Drawing.Size(190, 69)
+        Me.gbReactionsBiochem.Size = New System.Drawing.Size(190, 64)
         Me.gbReactionsBiochem.TabIndex = 6
         Me.gbReactionsBiochem.TabStop = false
         Me.gbReactionsBiochem.Text = "BioChemical (Boosters)"
@@ -3767,7 +3878,7 @@ Partial Class frmMain
         'chkReactionsSimpleBio
         '
         Me.chkReactionsSimpleBio.AutoSize = true
-        Me.chkReactionsSimpleBio.Location = New System.Drawing.Point(12, 42)
+        Me.chkReactionsSimpleBio.Location = New System.Drawing.Point(12, 37)
         Me.chkReactionsSimpleBio.Name = "chkReactionsSimpleBio"
         Me.chkReactionsSimpleBio.Size = New System.Drawing.Size(117, 17)
         Me.chkReactionsSimpleBio.TabIndex = 8
@@ -3789,9 +3900,9 @@ Partial Class frmMain
         Me.gbReactionsOptions.Controls.Add(Me.chkReactionsRefine)
         Me.gbReactionsOptions.Controls.Add(Me.chkReactionsIgnoreBaseMatPrice)
         Me.gbReactionsOptions.Controls.Add(Me.chkReactionsBuildBasic)
-        Me.gbReactionsOptions.Location = New System.Drawing.Point(8, 248)
+        Me.gbReactionsOptions.Location = New System.Drawing.Point(8, 226)
         Me.gbReactionsOptions.Name = "gbReactionsOptions"
-        Me.gbReactionsOptions.Size = New System.Drawing.Size(190, 100)
+        Me.gbReactionsOptions.Size = New System.Drawing.Size(190, 95)
         Me.gbReactionsOptions.TabIndex = 9
         Me.gbReactionsOptions.TabStop = false
         Me.gbReactionsOptions.Text = "Complex Material Options"
@@ -3830,7 +3941,7 @@ Partial Class frmMain
         Me.gbReactionsMoonMats.Controls.Add(Me.chkReactionsProcMoonMats)
         Me.gbReactionsMoonMats.Location = New System.Drawing.Point(8, 52)
         Me.gbReactionsMoonMats.Name = "gbReactionsMoonMats"
-        Me.gbReactionsMoonMats.Size = New System.Drawing.Size(190, 65)
+        Me.gbReactionsMoonMats.Size = New System.Drawing.Size(190, 60)
         Me.gbReactionsMoonMats.TabIndex = 1
         Me.gbReactionsMoonMats.TabStop = false
         Me.gbReactionsMoonMats.Text = "Moon Materials"
@@ -3848,7 +3959,7 @@ Partial Class frmMain
         'chkReactionsProcMoonMats
         '
         Me.chkReactionsProcMoonMats.AutoSize = true
-        Me.chkReactionsProcMoonMats.Location = New System.Drawing.Point(12, 42)
+        Me.chkReactionsProcMoonMats.Location = New System.Drawing.Point(12, 37)
         Me.chkReactionsProcMoonMats.Name = "chkReactionsProcMoonMats"
         Me.chkReactionsProcMoonMats.Size = New System.Drawing.Size(151, 17)
         Me.chkReactionsProcMoonMats.TabIndex = 3
@@ -3863,15 +3974,6 @@ Partial Class frmMain
         Me.lblReactionPOSFuelCost.Size = New System.Drawing.Size(112, 13)
         Me.lblReactionPOSFuelCost.TabIndex = 15
         Me.lblReactionPOSFuelCost.Text = "Hourly POS Fuel Cost:"
-        '
-        'btnReactionRefresh
-        '
-        Me.btnReactionRefresh.Location = New System.Drawing.Point(8, 351)
-        Me.btnReactionRefresh.Name = "btnReactionRefresh"
-        Me.btnReactionRefresh.Size = New System.Drawing.Size(93, 27)
-        Me.btnReactionRefresh.TabIndex = 12
-        Me.btnReactionRefresh.Text = "Refresh"
-        Me.btnReactionRefresh.UseVisualStyleBackColor = true
         '
         'txtReactionPOSFuelCost
         '
@@ -12357,6 +12459,7 @@ Partial Class frmMain
         '
         'tabBPOptions
         '
+        Me.tabBPOptions.Controls.Add(Me.gbBPSystemCostIndex)
         Me.tabBPOptions.Controls.Add(Me.gbBPIgnoreinCalcs)
         Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
         Me.tabBPOptions.Location = New System.Drawing.Point(4, 4)
@@ -12366,12 +12469,74 @@ Partial Class frmMain
         Me.tabBPOptions.Text = "Options"
         Me.tabBPOptions.UseVisualStyleBackColor = true
         '
+        'gbBPSystemCostIndex
+        '
+        Me.gbBPSystemCostIndex.Controls.Add(Me.lblBPFacilitySystemName)
+        Me.gbBPSystemCostIndex.Controls.Add(Me.Label2)
+        Me.gbBPSystemCostIndex.Controls.Add(Me.txtBPUpdateCostIndex)
+        Me.gbBPSystemCostIndex.Controls.Add(Me.btnBPUpdateCostIndex)
+        Me.gbBPSystemCostIndex.Controls.Add(Me.cmbBPUpdateCostIndexActivity)
+        Me.gbBPSystemCostIndex.Location = New System.Drawing.Point(140, 7)
+        Me.gbBPSystemCostIndex.Name = "gbBPSystemCostIndex"
+        Me.gbBPSystemCostIndex.Size = New System.Drawing.Size(112, 129)
+        Me.gbBPSystemCostIndex.TabIndex = 23
+        Me.gbBPSystemCostIndex.TabStop = false
+        Me.gbBPSystemCostIndex.Text = "Update Cost Index:"
+        '
+        'lblBPFacilitySystemName
+        '
+        Me.lblBPFacilitySystemName.Location = New System.Drawing.Point(11, 14)
+        Me.lblBPFacilitySystemName.Name = "lblBPFacilitySystemName"
+        Me.lblBPFacilitySystemName.Size = New System.Drawing.Size(94, 19)
+        Me.lblBPFacilitySystemName.TabIndex = 27
+        Me.lblBPFacilitySystemName.Text = "System Name"
+        Me.lblBPFacilitySystemName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = true
+        Me.Label2.Location = New System.Drawing.Point(8, 59)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(97, 13)
+        Me.Label2.TabIndex = 26
+        Me.Label2.Text = "System Cost Index:"
+        '
+        'txtBPUpdateCostIndex
+        '
+        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(11, 73)
+        Me.txtBPUpdateCostIndex.MaxLength = 6
+        Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
+        Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(94, 20)
+        Me.txtBPUpdateCostIndex.TabIndex = 22
+        Me.txtBPUpdateCostIndex.Text = "0.00 %"
+        Me.txtBPUpdateCostIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'btnBPUpdateCostIndex
+        '
+        Me.btnBPUpdateCostIndex.Enabled = false
+        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(11, 96)
+        Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
+        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(94, 28)
+        Me.btnBPUpdateCostIndex.TabIndex = 21
+        Me.btnBPUpdateCostIndex.Text = "Update Index"
+        Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = true
+        '
+        'cmbBPUpdateCostIndexActivity
+        '
+        Me.cmbBPUpdateCostIndexActivity.FormattingEnabled = true
+        Me.cmbBPUpdateCostIndexActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
+        Me.cmbBPUpdateCostIndexActivity.Location = New System.Drawing.Point(11, 36)
+        Me.cmbBPUpdateCostIndexActivity.Name = "cmbBPUpdateCostIndexActivity"
+        Me.cmbBPUpdateCostIndexActivity.Size = New System.Drawing.Size(94, 21)
+        Me.cmbBPUpdateCostIndexActivity.TabIndex = 25
+        Me.cmbBPUpdateCostIndexActivity.Text = "Select Activity"
+        '
         'gbBPIgnoreinCalcs
         '
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreMinerals)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreInvention)
-        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(7, 7)
+        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(9, 7)
         Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
         Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(125, 76)
         Me.gbBPIgnoreinCalcs.TabIndex = 20
@@ -13336,11 +13501,13 @@ Partial Class frmMain
         Me.gbMineWHSpace.ResumeLayout(false)
         Me.gbMineWHSpace.PerformLayout
         Me.tabReactions.ResumeLayout(false)
-        Me.gbReactionsTaxesFees.ResumeLayout(false)
-        Me.gbReactionsTaxesFees.PerformLayout
         Me.gbReactionsSelectedMats.ResumeLayout(false)
         Me.gbReactions.ResumeLayout(false)
         Me.gbReactions.PerformLayout
+        Me.gbReactionsRefinery.ResumeLayout(false)
+        Me.gbReactionsRefinery.PerformLayout
+        Me.gbReactionsTaxesFees.ResumeLayout(false)
+        Me.gbReactionsTaxesFees.PerformLayout
         Me.gbReactionsHybrid.ResumeLayout(false)
         Me.gbReactionsHybrid.PerformLayout
         Me.gbReactionsBiochem.ResumeLayout(false)
@@ -13485,6 +13652,8 @@ Partial Class frmMain
         Me.tabT3Calcs.ResumeLayout(false)
         Me.tabT3Calcs.PerformLayout
         Me.tabBPOptions.ResumeLayout(false)
+        Me.gbBPSystemCostIndex.ResumeLayout(false)
+        Me.gbBPSystemCostIndex.PerformLayout
         Me.gbBPIgnoreinCalcs.ResumeLayout(false)
         Me.gbBPIgnoreinCalcs.PerformLayout
         Me.tabInventionCalcs.ResumeLayout(false)
@@ -14649,7 +14818,22 @@ End Sub
     Friend WithEvents mnuRestoreDefaultCalcFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetIgnoredBPs As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents CalcBPStripMenuItem As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents AutoScaleModeSettingToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents ViewMarketDataMenu As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkBPCs As System.Windows.Forms.CheckBox
+    Friend WithEvents mnuFactoryFinder As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuMarketFinder As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents lblReactionsRefineEff As System.Windows.Forms.Label
+    Friend WithEvents lblReactionsRefineTax As System.Windows.Forms.Label
+    Friend WithEvents gbReactionsRefinery As System.Windows.Forms.GroupBox
+    Friend WithEvents cmbReactionsRefineTax As System.Windows.Forms.ComboBox
+    Friend WithEvents cmbReactionsRefiningEfficiency As System.Windows.Forms.ComboBox
+    Friend WithEvents lblReactionRefineryStandings As System.Windows.Forms.Label
+    Friend WithEvents txtReactionsRefineryStanding As System.Windows.Forms.TextBox
+    Friend WithEvents txtBPUpdateCostIndex As System.Windows.Forms.TextBox
+    Friend WithEvents btnBPUpdateCostIndex As System.Windows.Forms.Button
+    Friend WithEvents gbBPSystemCostIndex As System.Windows.Forms.GroupBox
+    Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents cmbBPUpdateCostIndexActivity As System.Windows.Forms.ComboBox
+    Friend WithEvents lblBPFacilitySystemName As System.Windows.Forms.Label
 
 End Class

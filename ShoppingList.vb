@@ -834,7 +834,7 @@ Public Class ShoppingList
 
         ' Get the Shopping list for items
         If Not IsNothing(FullItemList) Then
-            TempListText = FullItemList.GetClipboardList(ExportFormat, IgnorePriceVolume, True, True)
+            TempListText = FullItemList.GetClipboardList(ExportFormat, IgnorePriceVolume, True, True, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No items in List" Then
                 OutputText = "Shopping List for: " & vbCrLf
                 OutputText = OutputText & TempListText
@@ -846,7 +846,7 @@ Public Class ShoppingList
         ' Invention materials (If they exist)
         If IncludeInventionMats Then
             ' Add Invention mats if there are any
-            TempListText = InventionMatList.GetClipboardList(ExportFormat, False, False, False)
+            TempListText = InventionMatList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No items in List" Then
                 OutputText = OutputText & "Estimated Invention Materials: " & vbCrLf
                 OutputText = OutputText & TempListText
@@ -858,7 +858,7 @@ Public Class ShoppingList
         ' RE Materials (If they exist)
         If IncludeREMats Then
             ' Add RE mats if there are any
-            TempListText = REMatList.GetClipboardList(ExportFormat, False, False, False)
+            TempListText = REMatList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No items in List" Then
                 OutputText = OutputText & "Estimated RE Materials: " & vbCrLf
                 OutputText = OutputText & TempListText
@@ -890,7 +890,7 @@ Public Class ShoppingList
 
         ' Output the Build List - list the ME for each - assume no decryptor or relic
         If Not IsNothing(FullBuildList) Then
-            TempListText = FullBuildList.GetClipboardList(ExportFormat, True, True, False)
+            TempListText = FullBuildList.GetClipboardList(ExportFormat, True, True, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No items in List" Then
                 OutputText = OutputText & "Build Items List: " & vbCrLf
                 OutputText = OutputText & TempListText
@@ -917,7 +917,7 @@ Public Class ShoppingList
 
         ' Output the Buy list, add the price and volume to it - in Buy lists don't list ME
         If Not IsNothing(FullBuyList) Then
-            TempListText = FullBuyList.GetClipboardList(ExportFormat, False, False, False)
+            TempListText = FullBuyList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No materials in List" Then
                 OutputText = OutputText & "Buy Materials List: " & vbCrLf
                 OutputText = OutputText & TempListText
@@ -926,7 +926,7 @@ Public Class ShoppingList
             End If
         End If
 
-        ' Add total build volume to end
+        ' Add total build volume to end - Make sure we get quantity and not runs, so use portion size
         If ExportFormat = CSVDataExport Then
             OutputText = OutputText & "Total Volume of Built Item(s):," & CStr(FullItemList.GetTotalVolume) & ",m3"
         ElseIf ExportFormat = SSVDataExport Then
@@ -1022,7 +1022,7 @@ Public Class ShoppingList
         For i = 0 To TotalItemList.Count - 1
             With TotalItemList(i)
                 ' Item sort order is Build Type, Decryptor, NumBps, and Relic for the group name
-                TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" & .BuildLocation, .Quantity, .BuildVolume, 0, CStr(.ItemME))
+                TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" & .BuildLocation, .Quantity, .BuildVolume / .Quantity, 0, CStr(.ItemME))
             End With
             ReturnMaterials.InsertMaterial(TempMat)
         Next

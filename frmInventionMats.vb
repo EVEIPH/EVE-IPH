@@ -101,7 +101,7 @@
         End If
 
         ' Paste to clipboard
-        Call CopyTextToClipboard(MaterialList.GetClipboardList(TempExportType, True, False, False))
+        Call CopyTextToClipboard(MaterialList.GetClipboardList(TempExportType, True, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText))
     End Sub
 
 End Class

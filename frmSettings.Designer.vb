@@ -38,8 +38,6 @@ Partial Class frmSettings
         Me.cmbBeanCounterManufacturing = New System.Windows.Forms.ComboBox()
         Me.chkBeanCounterRefining = New System.Windows.Forms.CheckBox()
         Me.gbStationStandings = New System.Windows.Forms.GroupBox()
-        Me.txtRefineCorpStanding = New System.Windows.Forms.TextBox()
-        Me.chkRefineCorpStanding = New System.Windows.Forms.CheckBox()
         Me.txtBrokerCorpStanding = New System.Windows.Forms.TextBox()
         Me.chkBrokerCorpStanding = New System.Windows.Forms.CheckBox()
         Me.txtBrokerFactionStanding = New System.Windows.Forms.TextBox()
@@ -57,11 +55,6 @@ Partial Class frmSettings
         Me.txtDefaultME = New System.Windows.Forms.TextBox()
         Me.chkDefaultME = New System.Windows.Forms.CheckBox()
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
-        Me.gbRefining = New System.Windows.Forms.GroupBox()
-        Me.cmbRefineTax = New System.Windows.Forms.ComboBox()
-        Me.chkRefineStationTax = New System.Windows.Forms.CheckBox()
-        Me.lblDefaultRefiningEfficiency = New System.Windows.Forms.Label()
-        Me.cmbRefiningEfficiency = New System.Windows.Forms.ComboBox()
         Me.gbShoppingList = New System.Windows.Forms.GroupBox()
         Me.chkIncludeShopListInventMats = New System.Windows.Forms.CheckBox()
         Me.chkIncludeShopListCopyMats = New System.Windows.Forms.CheckBox()
@@ -77,11 +70,11 @@ Partial Class frmSettings
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
+        Me.chkLinksInCopyText = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
         Me.gbDefaultMEPE.SuspendLayout()
-        Me.gbRefining.SuspendLayout()
         Me.gbShoppingList.SuspendLayout()
         Me.gbEVECentral.SuspendLayout()
         Me.gbImplants.SuspendLayout()
@@ -119,12 +112,13 @@ Partial Class frmSettings
         '
         'gbGeneral
         '
+        Me.gbGeneral.Controls.Add(Me.chkLinksInCopyText)
         Me.gbGeneral.Controls.Add(Me.chkDisableSound)
         Me.gbGeneral.Controls.Add(Me.chkDisableSVR)
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
         Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
         Me.gbGeneral.Name = "gbGeneral"
-        Me.gbGeneral.Size = New System.Drawing.Size(237, 81)
+        Me.gbGeneral.Size = New System.Drawing.Size(237, 96)
         Me.gbGeneral.TabIndex = 4
         Me.gbGeneral.TabStop = False
         Me.gbGeneral.Text = "General:"
@@ -132,7 +126,7 @@ Partial Class frmSettings
         'chkDisableSound
         '
         Me.chkDisableSound.AutoSize = True
-        Me.chkDisableSound.Location = New System.Drawing.Point(17, 53)
+        Me.chkDisableSound.Location = New System.Drawing.Point(17, 73)
         Me.chkDisableSound.Name = "chkDisableSound"
         Me.chkDisableSound.Size = New System.Drawing.Size(95, 17)
         Me.chkDisableSound.TabIndex = 24
@@ -142,7 +136,7 @@ Partial Class frmSettings
         'chkDisableSVR
         '
         Me.chkDisableSVR.AutoSize = True
-        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 35)
+        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 54)
         Me.chkDisableSVR.Name = "chkDisableSVR"
         Me.chkDisableSVR.Size = New System.Drawing.Size(129, 17)
         Me.chkDisableSVR.TabIndex = 0
@@ -162,7 +156,7 @@ Partial Class frmSettings
         'chkRefreshBPsonStartup
         '
         Me.chkRefreshBPsonStartup.AutoSize = True
-        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 63)
+        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 58)
         Me.chkRefreshBPsonStartup.Name = "chkRefreshBPsonStartup"
         Me.chkRefreshBPsonStartup.Size = New System.Drawing.Size(85, 17)
         Me.chkRefreshBPsonStartup.TabIndex = 26
@@ -172,7 +166,7 @@ Partial Class frmSettings
         'chkRefreshAssetsonStartup
         '
         Me.chkRefreshAssetsonStartup.AutoSize = True
-        Me.chkRefreshAssetsonStartup.Location = New System.Drawing.Point(17, 41)
+        Me.chkRefreshAssetsonStartup.Location = New System.Drawing.Point(17, 38)
         Me.chkRefreshAssetsonStartup.Name = "chkRefreshAssetsonStartup"
         Me.chkRefreshAssetsonStartup.Size = New System.Drawing.Size(97, 17)
         Me.chkRefreshAssetsonStartup.TabIndex = 23
@@ -221,36 +215,16 @@ Partial Class frmSettings
         '
         'gbStationStandings
         '
-        Me.gbStationStandings.Controls.Add(Me.txtRefineCorpStanding)
-        Me.gbStationStandings.Controls.Add(Me.chkRefineCorpStanding)
         Me.gbStationStandings.Controls.Add(Me.txtBrokerCorpStanding)
         Me.gbStationStandings.Controls.Add(Me.chkBrokerCorpStanding)
         Me.gbStationStandings.Controls.Add(Me.txtBrokerFactionStanding)
         Me.gbStationStandings.Controls.Add(Me.chkBrokerFactionStanding)
         Me.gbStationStandings.Location = New System.Drawing.Point(246, 218)
         Me.gbStationStandings.Name = "gbStationStandings"
-        Me.gbStationStandings.Size = New System.Drawing.Size(160, 86)
+        Me.gbStationStandings.Size = New System.Drawing.Size(160, 64)
         Me.gbStationStandings.TabIndex = 7
         Me.gbStationStandings.TabStop = False
         Me.gbStationStandings.Text = "Station Standings:"
-        '
-        'txtRefineCorpStanding
-        '
-        Me.txtRefineCorpStanding.Location = New System.Drawing.Point(110, 59)
-        Me.txtRefineCorpStanding.MaxLength = 5
-        Me.txtRefineCorpStanding.Name = "txtRefineCorpStanding"
-        Me.txtRefineCorpStanding.Size = New System.Drawing.Size(41, 20)
-        Me.txtRefineCorpStanding.TabIndex = 30
-        Me.txtRefineCorpStanding.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        '
-        'chkRefineCorpStanding
-        '
-        Me.chkRefineCorpStanding.Location = New System.Drawing.Point(9, 61)
-        Me.chkRefineCorpStanding.Name = "chkRefineCorpStanding"
-        Me.chkRefineCorpStanding.Size = New System.Drawing.Size(98, 17)
-        Me.chkRefineCorpStanding.TabIndex = 29
-        Me.chkRefineCorpStanding.Text = "Refine Corp:"
-        Me.chkRefineCorpStanding.UseVisualStyleBackColor = True
         '
         'txtBrokerCorpStanding
         '
@@ -302,7 +276,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildBuyDefault)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
-        Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 231)
+        Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 172)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
         Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 73)
         Me.gbBuildBuySettings.TabIndex = 9
@@ -407,58 +381,6 @@ Partial Class frmSettings
         Me.chkDefaultME.Text = "Default ME:"
         Me.chkDefaultME.UseVisualStyleBackColor = True
         '
-        'gbRefining
-        '
-        Me.gbRefining.Controls.Add(Me.cmbRefineTax)
-        Me.gbRefining.Controls.Add(Me.chkRefineStationTax)
-        Me.gbRefining.Controls.Add(Me.lblDefaultRefiningEfficiency)
-        Me.gbRefining.Controls.Add(Me.cmbRefiningEfficiency)
-        Me.gbRefining.Location = New System.Drawing.Point(410, 169)
-        Me.gbRefining.Name = "gbRefining"
-        Me.gbRefining.Size = New System.Drawing.Size(250, 63)
-        Me.gbRefining.TabIndex = 36
-        Me.gbRefining.TabStop = False
-        Me.gbRefining.Text = "Refining:"
-        '
-        'cmbRefineTax
-        '
-        Me.cmbRefineTax.FormattingEnabled = True
-        Me.cmbRefineTax.Items.AddRange(New Object() {"0%", "1%", "2%", "3%", "4%", "5%", "6%", "7%", "8%", "9%", "10%"})
-        Me.cmbRefineTax.Location = New System.Drawing.Point(188, 12)
-        Me.cmbRefineTax.Name = "cmbRefineTax"
-        Me.cmbRefineTax.Size = New System.Drawing.Size(56, 21)
-        Me.cmbRefineTax.TabIndex = 44
-        '
-        'chkRefineStationTax
-        '
-        Me.chkRefineStationTax.Location = New System.Drawing.Point(9, 16)
-        Me.chkRefineStationTax.Name = "chkRefineStationTax"
-        Me.chkRefineStationTax.Size = New System.Drawing.Size(119, 17)
-        Me.chkRefineStationTax.TabIndex = 37
-        Me.chkRefineStationTax.Text = "Refine Station Tax:"
-        Me.chkRefineStationTax.UseVisualStyleBackColor = True
-        '
-        'lblDefaultRefiningEfficiency
-        '
-        Me.lblDefaultRefiningEfficiency.AutoSize = True
-        Me.lblDefaultRefiningEfficiency.Location = New System.Drawing.Point(6, 38)
-        Me.lblDefaultRefiningEfficiency.Name = "lblDefaultRefiningEfficiency"
-        Me.lblDefaultRefiningEfficiency.Size = New System.Drawing.Size(135, 13)
-        Me.lblDefaultRefiningEfficiency.TabIndex = 36
-        Me.lblDefaultRefiningEfficiency.Text = "Default Refining Efficiency:"
-        '
-        'cmbRefiningEfficiency
-        '
-        Me.cmbRefiningEfficiency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbRefiningEfficiency.FormattingEnabled = True
-        Me.cmbRefiningEfficiency.ItemHeight = 13
-        Me.cmbRefiningEfficiency.Items.AddRange(New Object() {"50%", "52%", "53%", "54%", "57%", "60%"})
-        Me.cmbRefiningEfficiency.Location = New System.Drawing.Point(188, 36)
-        Me.cmbRefiningEfficiency.Name = "cmbRefiningEfficiency"
-        Me.cmbRefiningEfficiency.Size = New System.Drawing.Size(56, 21)
-        Me.cmbRefiningEfficiency.TabIndex = 35
-        Me.cmbRefiningEfficiency.TabStop = False
-        '
         'gbShoppingList
         '
         Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListInventMats)
@@ -541,9 +463,9 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 99)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 114)
         Me.gbStartupOptions.Name = "gbStartupOptions"
-        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 155)
+        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 140)
         Me.gbStartupOptions.TabIndex = 39
         Me.gbStartupOptions.TabStop = False
         Me.gbStartupOptions.Text = "Startup Options"
@@ -551,7 +473,7 @@ Partial Class frmSettings
         'chkRefreshFacilityDataonStartup
         '
         Me.chkRefreshFacilityDataonStartup.AutoSize = True
-        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 130)
+        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 118)
         Me.chkRefreshFacilityDataonStartup.Name = "chkRefreshFacilityDataonStartup"
         Me.chkRefreshFacilityDataonStartup.Size = New System.Drawing.Size(163, 17)
         Me.chkRefreshFacilityDataonStartup.TabIndex = 29
@@ -561,7 +483,7 @@ Partial Class frmSettings
         'chkRefreshMarketDataonStartup
         '
         Me.chkRefreshMarketDataonStartup.AutoSize = True
-        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 108)
+        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 98)
         Me.chkRefreshMarketDataonStartup.Name = "chkRefreshMarketDataonStartup"
         Me.chkRefreshMarketDataonStartup.Size = New System.Drawing.Size(164, 17)
         Me.chkRefreshMarketDataonStartup.TabIndex = 28
@@ -572,7 +494,7 @@ Partial Class frmSettings
         '
         Me.chkRefreshTeamDataonStartup.AutoSize = True
         Me.chkRefreshTeamDataonStartup.Enabled = False
-        Me.chkRefreshTeamDataonStartup.Location = New System.Drawing.Point(17, 86)
+        Me.chkRefreshTeamDataonStartup.Location = New System.Drawing.Point(17, 78)
         Me.chkRefreshTeamDataonStartup.Name = "chkRefreshTeamDataonStartup"
         Me.chkRefreshTeamDataonStartup.Size = New System.Drawing.Size(158, 17)
         Me.chkRefreshTeamDataonStartup.TabIndex = 27
@@ -624,8 +546,18 @@ Partial Class frmSettings
         Me.rbtnExportDefault.Text = "Default"
         Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
+        'chkLinksInCopyText
+        '
+        Me.chkLinksInCopyText.Location = New System.Drawing.Point(17, 35)
+        Me.chkLinksInCopyText.Name = "chkLinksInCopyText"
+        Me.chkLinksInCopyText.Size = New System.Drawing.Size(214, 17)
+        Me.chkLinksInCopyText.TabIndex = 38
+        Me.chkLinksInCopyText.Text = "Include InGame Links in Copy Text"
+        Me.chkLinksInCopyText.UseVisualStyleBackColor = True
+        '
         'frmSettings
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(665, 357)
@@ -634,7 +566,6 @@ Partial Class frmSettings
         Me.Controls.Add(Me.gbImplants)
         Me.Controls.Add(Me.gbEVECentral)
         Me.Controls.Add(Me.gbBuildBuySettings)
-        Me.Controls.Add(Me.gbRefining)
         Me.Controls.Add(Me.btnReset)
         Me.Controls.Add(Me.btnSave)
         Me.Controls.Add(Me.btnCancel)
@@ -657,8 +588,6 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.PerformLayout()
         Me.gbDefaultMEPE.ResumeLayout(False)
         Me.gbDefaultMEPE.PerformLayout()
-        Me.gbRefining.ResumeLayout(False)
-        Me.gbRefining.PerformLayout()
         Me.gbShoppingList.ResumeLayout(False)
         Me.gbShoppingList.PerformLayout()
         Me.gbEVECentral.ResumeLayout(False)
@@ -696,14 +625,8 @@ Partial Class frmSettings
     Friend WithEvents chkDefaultTE As System.Windows.Forms.CheckBox
     Friend WithEvents txtDefaultME As System.Windows.Forms.TextBox
     Friend WithEvents chkDefaultME As System.Windows.Forms.CheckBox
-    Friend WithEvents txtRefineCorpStanding As System.Windows.Forms.TextBox
-    Friend WithEvents chkRefineCorpStanding As System.Windows.Forms.CheckBox
     Friend WithEvents chkDisableSVR As System.Windows.Forms.CheckBox
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
-    Friend WithEvents gbRefining As System.Windows.Forms.GroupBox
-    Friend WithEvents lblDefaultRefiningEfficiency As System.Windows.Forms.Label
-    Friend WithEvents cmbRefiningEfficiency As System.Windows.Forms.ComboBox
-    Friend WithEvents chkRefineStationTax As System.Windows.Forms.CheckBox
     Friend WithEvents gbShoppingList As System.Windows.Forms.GroupBox
     Friend WithEvents chkIncludeShopListCopyMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkIncludeShopListInventMats As System.Windows.Forms.CheckBox
@@ -713,7 +636,6 @@ Partial Class frmSettings
     Friend WithEvents chkEVECentralInterval As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshAssetsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbImplants As System.Windows.Forms.GroupBox
-    Friend WithEvents cmbRefineTax As System.Windows.Forms.ComboBox
     Friend WithEvents chkDisableSound As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshBPsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbStartupOptions As System.Windows.Forms.GroupBox
@@ -725,4 +647,5 @@ Partial Class frmSettings
     Friend WithEvents rbtnExportSSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportCSV As System.Windows.Forms.RadioButton
     Friend WithEvents chkSaveBPRelicsDecryptors As System.Windows.Forms.CheckBox
+    Friend WithEvents chkLinksInCopyText As System.Windows.Forms.CheckBox
 End Class

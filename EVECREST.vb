@@ -92,7 +92,7 @@ Public Class EVECREST
 
             ' Dump the file into the Specializations object
             MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", CacheDate, "Market History"))
+                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", CacheDate, "Market History", True))
 
             ' Read in the data
             If Not IsNothing(MarketPricesOutput) Then
@@ -1517,7 +1517,7 @@ Public Class EVECREST
     End Class
 
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
-    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String) As String
+    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, Optional ByVal IgnoreExceptions As Boolean = False) As String
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse = Nothing
         Dim reader As StreamReader
@@ -1525,9 +1525,6 @@ Public Class EVECREST
         Dim CallStatus As String
 
         Dim Output As String = ""
-
-        Debug.Print(URL)
-        Debug.Print(FormatDateTime(Now))
 
         Try
 
@@ -1562,13 +1559,13 @@ Public Class EVECREST
             Output = reader.ReadToEnd
 
         Catch ex As Exception
-            MsgBox("Unable to download CREST data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
-            Output = ""
+            If Not IgnoreExceptions Then
+                MsgBox("Unable to download CREST data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
+                Output = ""
+            End If
         Finally
             If Not response Is Nothing Then response.Close()
         End Try
-
-        Debug.Print(FormatDateTime(Now))
 
         Return Output
 

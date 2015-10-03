@@ -86,7 +86,7 @@ Class RefiningReprocessing
         While readerBP.Read
             ' Reprocessing Rate for everything else (including unrefined Alchemy products)
             ' rate = facilityModifier * (1 + 0.02 * ScrapMetalProcessingLevel) * (1 − StationTax)
-            AdjustedStationYield = StationEquipment + (1 + (0.02 * ScrapMetalProcessing))
+            AdjustedStationYield = StationEquipment * (1 + (0.02 * ScrapMetalProcessing))
 
             If AdjustedStationYield > 1 Then
                 AdjustedStationYield = 1
@@ -149,7 +149,7 @@ Class RefiningReprocessing
 
     Public Function RefineOre(ByVal OreID As Long, ByVal OreProcessingSkill As Integer, ByVal TotalOre As Double, _
                               ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByRef TotalYield As Double) As Materials
-        Dim TempYeild As Double
+        Dim TempYield As Double
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
         Dim SQL As String
@@ -163,11 +163,11 @@ Class RefiningReprocessing
         ' rate = facilityModifier * (1 + 0.03 * ReprocessingLevel) * (1 + 0.02 * ReprocessingEfficiencyLevel)* (1 + 0.02 * OreSpecificSkillLevel) * implantModifier * (1 − StationTax)
         ' The facilityModifier is 0.5 for most NPC stations, 0.52 for Reprocessing Arrays anchorable in highsec, 0.54 for Reprocessing Arrays anchorable in lowsec/nullsec and 0.50 to 0.60 in nullsec Outposts. 
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
-        TempYeild = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
+        TempYield = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
 
         ' Can't get better than 100%
-        If TempYeild > 1 Then
-            TempYeild = 1
+        If TempYield > 1 Then
+            TempYield = 1
         End If
 
         ' Find the units to refine
@@ -195,8 +195,8 @@ Class RefiningReprocessing
         readerRefine = DBCommand.ExecuteReader
 
         While readerRefine.Read
-            ' Calculate the refine amount based on yeild
-            NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TempYeild * StationTaxes, 0))
+            ' Calculate the refine amount based on yield
+            NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TempYield * StationTaxes, 0))
 
             ' Add the base material
             RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2), _
@@ -213,7 +213,7 @@ Class RefiningReprocessing
         End If
 
         ' Reference
-        TotalYield = TempYeild * StationTaxes
+        TotalYield = TempYield * StationTaxes
 
         Return RefinedMats
 

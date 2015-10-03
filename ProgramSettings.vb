@@ -118,6 +118,8 @@ Public Class ProgramSettings
     Public DefaultDisableSVR As Boolean = False
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
 
+    Public DefaultIncludeInGameLinksinCopyText As Boolean = False
+
     ' For shopping list
     Public DefaultShopListIncludeInventMats As Boolean = True
     Public DefaultShopListIncludeCopyMats As Boolean = True
@@ -993,14 +995,12 @@ Public Class ProgramSettings
                     .ManufacturingImplantValue = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "ManufacturingImplantValue", DefaultImplantValues))
                     .CopyImplantValue = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "CopyImplantValue", DefaultImplantValues))
                     .BrokerCorpStanding = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "BrokerCorpStanding", DefaultBrokerCorpStanding))
-                    .RefineCorpStanding = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
+                    .IncludeInGameLinksinCopyText = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "IncludeInGameLinksinCopyText", DefaultIncludeInGameLinksinCopyText))
                     .BrokerFactionStanding = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "BrokerFactionStanding", DefaultBrokerFactionStanding))
                     .DefaultBPME = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "DefaultBPME", DefaultSettingME))
                     .DefaultBPTE = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "DefaultBPTE", DefaultSettingTE))
                     .CheckBuildBuy = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "CheckBuildBuy", DefaultCheckBuildBuy))
                     .DisableSVR = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSVR", DefaultDisableSVR))
-                    .RefiningEfficiency = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
-                    .RefiningTax = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ShopListIncludeInventMats = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
@@ -1008,14 +1008,6 @@ Public Class ProgramSettings
                     .DisableSound = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                 End With
-
-                Select Case TempSettings.RefiningEfficiency
-                    Case 0.5, 0.52, 0.53, 0.54, 0.57, 0.6
-                        ' Do nothing
-                    Case Else
-                        ' Set to the default
-                        TempSettings.RefiningEfficiency = DefaultRefiningEfficency
-                End Select
 
             Else
                 ' Load defaults 
@@ -1056,16 +1048,11 @@ Public Class ProgramSettings
         ' Station Standings for building and selling
         TempSettings.BrokerCorpStanding = DefaultBrokerCorpStanding
         TempSettings.BrokerFactionStanding = DefaultBrokerFactionStanding
-        TempSettings.RefineCorpStanding = DefaultRefineCorpStanding
 
         TempSettings.CheckBuildBuy = DefaultCheckBuildBuy
 
         TempSettings.DefaultBPME = DefaultSettingME
         TempSettings.DefaultBPTE = DefaultSettingTE
-
-        TempSettings.RefiningEfficiency = DefaultRefiningEfficency
-
-        TempSettings.RefiningTax = DefaultRefineTax
 
         TempSettings.DisableSVR = DefaultDisableSVR
         TempSettings.SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
@@ -1084,7 +1071,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(25) As Setting
+        Dim ApplicationSettingsList(23) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1095,24 +1082,22 @@ Public Class ProgramSettings
             ApplicationSettingsList(5) = New Setting("ManufacturingImplantValue", CStr(SentSettings.ManufacturingImplantValue))
             ApplicationSettingsList(6) = New Setting("CopyImplantValue", CStr(SentSettings.CopyImplantValue))
             ApplicationSettingsList(7) = New Setting("BrokerCorpStanding", CStr(SentSettings.BrokerCorpStanding))
-            ApplicationSettingsList(8) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            ApplicationSettingsList(9) = New Setting("BrokerFactionStanding", CStr(SentSettings.BrokerFactionStanding))
-            ApplicationSettingsList(10) = New Setting("DefaultBPME", CStr(SentSettings.DefaultBPME))
-            ApplicationSettingsList(11) = New Setting("DefaultBPTE", CStr(SentSettings.DefaultBPTE))
-            ApplicationSettingsList(12) = New Setting("CheckBuildBuy", CStr(SentSettings.CheckBuildBuy))
-            ApplicationSettingsList(13) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            ApplicationSettingsList(14) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
-            ApplicationSettingsList(15) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
-            ApplicationSettingsList(16) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
-            ApplicationSettingsList(17) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
-            ApplicationSettingsList(18) = New Setting("EVECentralRefreshInterval", CStr(SentSettings.EVECentralRefreshInterval))
-            ApplicationSettingsList(19) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
-            ApplicationSettingsList(20) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
-            ApplicationSettingsList(21) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
-            ApplicationSettingsList(22) = New Setting("LoadCRESTTeamDataonStartup", CStr(SentSettings.LoadCRESTTeamDataonStartup))
-            ApplicationSettingsList(23) = New Setting("LoadCRESTFacilityDataonStartup", CStr(SentSettings.LoadCRESTFacilityDataonStartup))
-            ApplicationSettingsList(24) = New Setting("LoadCRESTMarketDataonStartup", CStr(SentSettings.LoadCRESTMarketDataonStartup))
-            ApplicationSettingsList(25) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
+            ApplicationSettingsList(8) = New Setting("BrokerFactionStanding", CStr(SentSettings.BrokerFactionStanding))
+            ApplicationSettingsList(9) = New Setting("DefaultBPME", CStr(SentSettings.DefaultBPME))
+            ApplicationSettingsList(10) = New Setting("DefaultBPTE", CStr(SentSettings.DefaultBPTE))
+            ApplicationSettingsList(11) = New Setting("CheckBuildBuy", CStr(SentSettings.CheckBuildBuy))
+            ApplicationSettingsList(12) = New Setting("IncludeInGameLinksinCopyText", CStr(SentSettings.IncludeInGameLinksinCopyText))
+            ApplicationSettingsList(13) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
+            ApplicationSettingsList(14) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
+            ApplicationSettingsList(15) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
+            ApplicationSettingsList(16) = New Setting("EVECentralRefreshInterval", CStr(SentSettings.EVECentralRefreshInterval))
+            ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
+            ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
+            ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
+            ApplicationSettingsList(20) = New Setting("LoadCRESTTeamDataonStartup", CStr(SentSettings.LoadCRESTTeamDataonStartup))
+            ApplicationSettingsList(21) = New Setting("LoadCRESTFacilityDataonStartup", CStr(SentSettings.LoadCRESTFacilityDataonStartup))
+            ApplicationSettingsList(22) = New Setting("LoadCRESTMarketDataonStartup", CStr(SentSettings.LoadCRESTMarketDataonStartup))
+            ApplicationSettingsList(23) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
 
             Call WriteSettingsToFile(AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -2108,6 +2093,9 @@ Public Class ProgramSettings
                     .CheckIgnoreMarket = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckIgnoreMarket", DefaultReactItemChecks))
                     .CheckRefine = CBool(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckRefine", DefaultReactItemChecks))
                     .NumberofPOS = CInt(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "NumberofPOS", DefaultReactNumPOS))
+                    .RefineryEfficiency = CDbl(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryEfficiency", DefaultRefiningEfficency))
+                    .RefineryTax = CDbl(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryTax", DefaultRefineTax))
+                    .RefineryStanding = CDbl(GetSettingValue(ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryStanding", DefaultRefineCorpStanding))
                 End With
 
             Else
@@ -2144,6 +2132,9 @@ Public Class ProgramSettings
         LocalSettings.CheckIgnoreMarket = DefaultReactItemChecks
         LocalSettings.CheckRefine = DefaultReactItemChecks
         LocalSettings.NumberofPOS = DefaultReactNumPOS
+        LocalSettings.RefineryEfficiency = DefaultRefiningEfficency
+        LocalSettings.RefineryTax = DefaultRefineTax
+        LocalSettings.RefineryStanding = DefaultRefineCorpStanding
 
         ' Save locally
         ReactionSettings = LocalSettings
@@ -2153,7 +2144,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveReactionSettings(SentSettings As ReactionsTabSettings)
-        Dim ReactionSettingsList(11) As Setting
+        Dim ReactionSettingsList(14) As Setting
 
         Try
             ReactionSettingsList(0) = New Setting("POSFuelCost", CStr(SentSettings.POSFuelCost))
@@ -2168,6 +2159,9 @@ Public Class ProgramSettings
             ReactionSettingsList(9) = New Setting("CheckIgnoreMarket", CStr(SentSettings.CheckIgnoreMarket))
             ReactionSettingsList(10) = New Setting("CheckRefine", CStr(SentSettings.CheckRefine))
             ReactionSettingsList(11) = New Setting("NumberofPOS", CStr(SentSettings.NumberofPOS))
+            ReactionSettingsList(12) = New Setting("RefineryEfficiency", CStr(SentSettings.RefineryEfficiency))
+            ReactionSettingsList(13) = New Setting("RefineryTax", CStr(SentSettings.RefineryTax))
+            ReactionSettingsList(14) = New Setting("RefineryStanding", CStr(SentSettings.RefineryStanding))
 
             Call WriteSettingsToFile(ReactionSettingsFileName, ReactionSettingsList, ReactionSettingsFileName)
 
@@ -2269,6 +2263,11 @@ Public Class ProgramSettings
                     .CheckSovC5 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC5", DefaultMiningCheckSovC5))
                     .CheckSovC6 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC6", DefaultMiningCheckSovC6))
                     .NumberofMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumberofMiners", DefaultMiningNumberofMiners))
+
+                    .RefiningEfficiency = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
+                    .RefineCorpStanding = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
+                    .RefiningTax = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
+
                 End With
 
             Else
@@ -2359,6 +2358,9 @@ Public Class ProgramSettings
             .MercoxitMiningRig = DefaultMiningRig
             .IceMiningRig = DefaultMiningRig
             .NumberofMiners = DefaultNumMiners
+            .RefineCorpStanding = DefaultRefineCorpStanding
+            .RefiningEfficiency = DefaultRefiningEfficency
+            .RefiningTax = DefaultRefineTax
         End With
 
         ' Save locally
@@ -2369,7 +2371,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(64) As Setting
+        Dim MiningSettingsList(67) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2437,6 +2439,10 @@ Public Class ProgramSettings
             MiningSettingsList(62) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
             MiningSettingsList(63) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
             MiningSettingsList(64) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
+
+            MiningSettingsList(65) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
+            MiningSettingsList(66) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
+            MiningSettingsList(67) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
 
             Call WriteSettingsToFile(MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -3161,6 +3167,11 @@ Public Class ProgramSettings
                     .IncludeBrokerFees = CBool(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeBrokerFees", DefaultIncludeBrokerFees))
                     .IncludeTaxes = CBool(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
                     .TrueSec = CStr(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeString, IndustryFlipBeltSettingsFileName, "TrueSec", DefaultTruesec))
+
+                    .RefiningEfficiency = CDbl(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
+                    .RefiningTax = CDbl(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningTax", DefaultRefineTax))
+                    .RefineCorpStanding = CDbl(GetSettingValue(IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
+
                 End With
 
             Else
@@ -3194,6 +3205,9 @@ Public Class ProgramSettings
             .IncludeBrokerFees = DefaultIncludeBrokerFees
             .IncludeTaxes = DefaultIncludeTaxes
             .TrueSec = DefaultTruesec
+            .RefiningEfficiency = DefaultRefiningEfficency
+            .RefineCorpStanding = DefaultRefineCorpStanding
+            .RefiningTax = DefaultRefineTax
         End With
 
         ' Save locally
@@ -3204,7 +3218,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryFlipBeltSettings(SentSettings As IndustryFlipBeltSettings)
-        Dim IndustryFlipBeltSettingsList(7) As Setting
+        Dim IndustryFlipBeltSettingsList(10) As Setting
 
         Try
             IndustryFlipBeltSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
@@ -3215,6 +3229,9 @@ Public Class ProgramSettings
             IndustryFlipBeltSettingsList(5) = New Setting("IncludeBrokerFees", CStr(SentSettings.IncludeBrokerFees))
             IndustryFlipBeltSettingsList(6) = New Setting("IncludeTaxes", CStr(SentSettings.IncludeTaxes))
             IndustryFlipBeltSettingsList(7) = New Setting("TrueSec", CStr(SentSettings.TrueSec))
+            IndustryFlipBeltSettingsList(8) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
+            IndustryFlipBeltSettingsList(9) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
+            IndustryFlipBeltSettingsList(10) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
 
             Call WriteSettingsToFile(IndustryFlipBeltSettingsFileName, IndustryFlipBeltSettingsList, IndustryFlipBeltSettingsFileName)
 
@@ -4656,14 +4673,11 @@ Public Structure ApplicationSettings
     Dim LoadCRESTMarketDataonStartup As Boolean
     Dim LoadCRESTFacilityDataonStartup As Boolean
     Dim DisableSound As Boolean
+    Dim IncludeInGameLinksinCopyText As Boolean
 
     ' Station Standings for building and selling
     Dim BrokerCorpStanding As Double
     Dim BrokerFactionStanding As Double
-    Dim RefineCorpStanding As Double
-    Dim RefiningEfficiency As Double ' The default base equipment refining
-
-    Dim RefiningTax As Double ' Tax on refining in stations
 
     ' ME/TE for BP's we don't own or haven't entered info for
     Dim DefaultBPME As Integer
@@ -4943,6 +4957,10 @@ Public Structure ReactionsTabSettings
     Dim CheckIgnoreMarket As Boolean
     Dim CheckRefine As Boolean
 
+    Dim RefineryEfficiency As Double
+    Dim RefineryTax As Double
+    Dim RefineryStanding As Double
+
 End Structure
 
 ' For Mining Settings
@@ -5024,6 +5042,10 @@ Public Structure MiningTabSettings
 
     Dim MercoxitMiningRig As Boolean
     Dim IceMiningRig As Boolean
+
+    Dim RefiningEfficiency As Double
+    Dim RefiningTax As Double
+    Dim RefineCorpStanding As Double
 
 End Structure
 
@@ -5267,6 +5289,11 @@ Public Structure IndustryFlipBeltSettings
     Dim IncludeBrokerFees As Boolean
     Dim IncludeTaxes As Boolean
     Dim TrueSec As String
+
+    Dim RefiningEfficiency As Double
+    Dim RefineCorpStanding As Double
+    Dim RefiningTax As Double
+
 End Structure
 
 ' For the checked ore on each mining tab

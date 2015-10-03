@@ -385,7 +385,8 @@ Public Class IndustryFacility
             .TimeMultiplier = TimeMultiplier
             .TaxRate = TaxRate
             .SolarSystemID = SolarSystemID
-            .SolarSystemName = SolarSystemName
+            ' Strip the index value off the name before saving
+            .SolarSystemName = Trim(SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 1))
             .RegionID = RegionID
             .RegionName = RegionName
             .ActivityCostperSecond = ActivityCostPerSecond

@@ -229,7 +229,7 @@ Public Class Materials
 
     ' Returns the list in a clipboard format with CSV as an option - Include ME will include both the ME and the num Bps
     Public Function GetClipboardList(ByVal ExportTextFormat As String, ByVal IgnorePriceVolume As Boolean, _
-                                     ByVal IncludeME As Boolean, ByVal IncludeDecryptorRelic As Boolean) As String
+                                     ByVal IncludeME As Boolean, ByVal IncludeDecryptorRelic As Boolean, IncludeLinks As Boolean) As String
         Dim i As Integer
         Dim OutputString As String
         Dim MatName As String
@@ -275,7 +275,13 @@ Public Class Materials
             ' Loop through all materials
             For i = 0 To MaterialList.Count - 1
 
-                MatName = MaterialList(i).GetMaterialName
+                If IncludeLinks Then
+                    ' Format so users can link in game
+                    '<a href=showinfo:3348>Warfare Link</a> modules
+                    MatName = "<a href=showinfo:" & MaterialList(i).GetMaterialTypeID & ">" & MaterialList(i).GetMaterialName & "</a>"
+                Else
+                    MatName = MaterialList(i).GetMaterialName
+                End If
 
                 ' Don't include data interfaces in the final output - this his poorly hacked but hacked nonetheless
                 If MatName.Contains("Data Interface") Then

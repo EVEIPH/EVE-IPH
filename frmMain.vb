@@ -476,12 +476,17 @@ Public Class frmMain
 
         If Developer Then
             Me.Text = Me.Text & " - Developer"
-            mnuRefinery.Visible = True
             chkUpdatePricesCRESTHistory.Visible = True
             CalcBPStripMenuItem.Visible = True
             mnuInventionSuccessMonitor.Visible = True
+            mnuFactoryFinder.Visible = True
+            mnuMarketFinder.Visible = True
+            mnuRefinery.Visible = True
         Else
             ' Hide all the development stuff
+            mnuInventionSuccessMonitor.Visible = False
+            mnuFactoryFinder.Visible = False
+            mnuMarketFinder.Visible = False
             mnuRefinery.Visible = False
             CalcBPStripMenuItem.Visible = False
             tabMain.TabPages.Remove(tabPI)
@@ -1289,12 +1294,13 @@ NoBonus:
 #Region "Facilities"
 
     ' Resets all combo boxes that might need to be updated 
-    Private Sub ResetComboLoadVariables(Tab As String, ProductionType As IndustryType, RegionsValue As Boolean, SystemsValue As Boolean, FacilitiesValue As Boolean)
+    Private Sub ResetComboLoadVariables(Tab As String, ProductionType As IndustryType, RegionsValue As Boolean, SystemsValue As Boolean, FacilitiesValue As Boolean, ManualIndexUpdate As Boolean)
 
         If Tab = BPTab Then
             BPFacilityRegionsLoaded = RegionsValue
             BPFacilitySystemsLoaded = SystemsValue
             BPFacilitiesLoaded = FacilitiesValue
+            gbBPSystemCostIndex.Enabled = ManualIndexUpdate
         Else
             Select Case ProductionType
                 Case IndustryType.Manufacturing
@@ -1680,8 +1686,6 @@ NoBonus:
             LoadingFacilities = False
         End If
 
-        Call ResetComboLoadVariables(Tab, ProductionType, False, False, False)
-
         ' If this is the BP tab, then refresh the BP prices
         If Not FirstLoad And SetTaxFeeChecks And Tab = BPTab And RefreshBP Then
             If Not IsNothing(SelectedBlueprint) Then
@@ -1690,8 +1694,11 @@ NoBonus:
             End If
         End If
 
+        Call ResetComboLoadVariables(Tab, ProductionType, False, False, False, True)
+
         ' All facilities loaded
         FacilityLoaded = True
+
         If Tab = CalcTab Then
             Call ResetRefresh()
         End If
@@ -1849,7 +1856,7 @@ NoBonus:
         LoadingFacilitySystems = False
         LoadingFacilities = False
 
-        Call ResetComboLoadVariables(Tab, ProductionType, False, False, False)
+        Call ResetComboLoadVariables(Tab, ProductionType, False, False, False, False)
 
     End Sub
 
@@ -1960,7 +1967,7 @@ NoBonus:
         LoadingFacilitySystems = False
         LoadingFacilities = False
 
-        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), True, False, False)
+        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), True, False, False, False)
 
         rsLoader.Close()
         rsLoader = Nothing
@@ -2021,24 +2028,9 @@ NoBonus:
 
             Case POSFacility
                 ' For a POS, load all systems, if wormhole 'region' selected, then load jspace systems
-                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, COST_INDEX FROM SOLAR_SYSTEMS, REGIONS, INDUSTRY_SYSTEMS_COST_INDICIES "
-                SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                If FacilityRegionCombo.Text = "Wormhole Space" Then
-                    SQL = SQL & "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
-                Else
-                    SQL = SQL & "AND regionName = '" & FormatDBString(FacilityRegionCombo.Text) & "'"
-                End If
-
-                ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
-                    SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
-                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
-                    ' For caps, only show low sec
-                    SQL = SQL & " AND security < .45 "
-                End If
-
-                ' Link the activity and index
-                SQL = SQL & " AND solarSystemID = SOLAR_SYSTEM_ID "
+                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS COST_INDEX "
+                SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
+                SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing
@@ -2050,6 +2042,23 @@ NoBonus:
                     Case ActivityInvention
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                 End Select
+
+                SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+
+                If FacilityRegionCombo.Text = "Wormhole Space" Then
+                    SQL = SQL & "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
+                Else
+                    ' For a POS, load all systems that have records linked
+                    SQL = SQL & "AND regionName = '" & FormatDBString(FacilityRegionCombo.Text) & "'"
+                End If
+
+                ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
+                    SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
+                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
+                    ' For caps, only show low sec
+                    SQL = SQL & " AND security < .45 "
+                End If
 
         End Select
 
@@ -2092,7 +2101,7 @@ NoBonus:
         LoadingFacilitySystems = False
         LoadingFacilities = False
 
-        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), False, True, False)
+        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), False, True, False, False)
 
         rsLoader.Close()
         rsLoader = Nothing
@@ -2259,9 +2268,6 @@ NoBonus:
 
         End If
 
-        ' Users might select the facility drop down first, so reload all others
-        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), False, False, True)
-
         If NewFacility Then
             ' Make sure default is not checked yet
             FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
@@ -2269,6 +2275,9 @@ NoBonus:
             Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel, _
                                         FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
         End If
+
+        ' Users might select the facility drop down first, so reload all others
+        Call ResetComboLoadVariables(Tab, GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), False, False, True, True)
 
         LoadingFacilities = False
 
@@ -5567,7 +5576,6 @@ Tabs:
                 Call cmbBPFacilityorArray.Focus()
 
                 PreviousFacilitySystem = cmbBPFacilitySystem.Text
-
             End If
         End If
 
@@ -6699,16 +6707,16 @@ Tabs:
 
         If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
             OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-            OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False)
+            OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
         Else
             OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-            OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False)
+            OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
         End If
 
         If UserApplicationSettings.ShopListIncludeInventMats Then
             If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
                 OutputText = OutputText & Environment.NewLine & Environment.NewLine & "Invention Materials" & Environment.NewLine & Environment.NewLine
-                OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False)
+                OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             End If
         End If
 
@@ -6980,6 +6988,60 @@ Tabs:
 
     Private Sub tabBPInventionEquip_Click(sender As System.Object, e As System.EventArgs) Handles tabBPInventionEquip.Click
         SelectedBPTabIndex = tabBPInventionEquip.SelectedIndex
+    End Sub
+
+    Private Sub txtBPUpdateCostIndex_GotFocus(sender As Object, e As System.EventArgs) Handles txtBPUpdateCostIndex.GotFocus
+        txtBPUpdateCostIndex.SelectAll()
+    End Sub
+
+    Private Sub txtBPUpdateCostIndex_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPUpdateCostIndex.KeyDown
+        Call ProcessCutCopyPasteSelect(txtBPUpdateCostIndex, e)
+        Call EnterKeyRunBP(e)
+    End Sub
+
+    Private Sub txtBPUpdateCostIndex_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPUpdateCostIndex.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtBPUpdateCostIndex_LostFocus(sender As Object, e As System.EventArgs) Handles txtBPUpdateCostIndex.LostFocus
+        If IsNumeric(txtBPAddlCosts.Text) Then
+            txtBPAddlCosts.Text = FormatNumber(txtBPAddlCosts.Text, 2)
+        ElseIf Trim(txtBPAddlCosts.Text) = "" Then
+            txtBPAddlCosts.Text = "0.00"
+        End If
+    End Sub
+
+    Private Sub cmbBPUpdateCostIndex_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPUpdateCostIndexActivity.SelectedIndexChanged
+        If cmbBPUpdateCostIndexActivity.Text <> "Select Activity" Then
+            btnBPUpdateCostIndex.Enabled = True
+        Else
+            btnBPUpdateCostIndex.Enabled = False
+        End If
+    End Sub
+
+    Private Sub cmbBPFacilitySystem_TextChanged(sender As Object, e As System.EventArgs) Handles cmbBPFacilitySystem.TextChanged
+        If cmbBPFacilitySystem.Text <> "Select System" Then
+            lblBPFacilitySystemName.Text = cmbBPFacilitySystem.Text.Substring(0, InStr(cmbBPFacilitySystem.Text, "(") - 2)
+            Dim Start As Integer = InStr(cmbBPFacilitySystem.Text, "(")
+            Dim Length As Integer = InStr(cmbBPFacilitySystem.Text, ")") - 1 - Start
+            txtBPUpdateCostIndex.Text = FormatPercent(cmbBPFacilitySystem.Text.Substring(Start, Length))
+        End If
+    End Sub
+
+    Private Sub cmbBPFacilityActivities_TextChanged(sender As Object, e As System.EventArgs) Handles cmbBPFacilityActivities.TextChanged
+        If cmbBPFacilityActivities.Text <> "Select Activity" Then
+            If cmbBPFacilityActivities.Text = ActivityCapComponentManufacturing Or cmbBPFacilityActivities.Text = ActivityComponentManufacturing Then
+                cmbBPUpdateCostIndexActivity.Text = ActivityManufacturing
+            Else
+                cmbBPUpdateCostIndexActivity.Text = cmbBPFacilityActivities.Text
+            End If
+        End If
     End Sub
 
 #End Region
@@ -8045,7 +8107,19 @@ Tabs:
                 rbtnBPComponentCopy.Enabled = True
             End If
 
-            rbtnBPComponentCopy.Checked = True
+            Select Case UserBPTabSettings.ExporttoShoppingListType
+                Case rbtnBPComponentCopy.Text
+                    rbtnBPComponentCopy.Checked = True
+                Case rbtnBPCopyInvREMats.Text
+                    rbtnBPCopyInvREMats.Checked = True
+                Case rbtnBPRawmatCopy.Text
+                    ' If the raw button isn't enabled, then default to components
+                    If rbtnBPRawmatCopy.Enabled Then
+                        rbtnBPRawmatCopy.Checked = True
+                    Else
+                        rbtnBPComponentCopy.Checked = True
+                    End If
+            End Select
             lstBPComponentMats.Enabled = True
 
         Else ' No components
@@ -8908,6 +8982,102 @@ ExitForm:
         Return TTString
 
     End Function
+
+    ' Updates the cost index in the DB or adds it if it doesn't exist
+    Private Sub btnBPUpdateCostIndex_Click(sender As System.Object, e As System.EventArgs) Handles btnBPUpdateCostIndex.Click
+        ' Check the data
+        Dim Text As String = txtBPUpdateCostIndex.Text.Replace("%", "")
+
+        If Text <> "" Then
+            If Not IsNumeric(Text) Then
+                MsgBox("Invalid Cost index value", vbExclamation, Application.ProductName)
+                txtBPUpdateCostIndex.Focus()
+                Exit Sub
+            End If
+        End If
+
+        If cmbBPUpdateCostIndexActivity.Text = "Select Activity" Then
+            MsgBox("Please select an activity", vbInformation, Application.ProductName)
+            cmbBPUpdateCostIndexActivity.Focus()
+            Exit Sub
+        End If
+
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+
+        Dim SQL As String
+        Dim rsCheck As SQLiteDataReader
+        Dim SolarSystemName As String = Trim(FormatDBString(cmbBPFacilitySystem.Text.Substring(0, InStr(cmbBPFacilitySystem.Text, "(") - 1)))
+        Dim CostIndex As String = CStr(Val(txtBPUpdateCostIndex.Text.Replace("%", "")) / 100)
+
+        ' Look up Solar System ID
+        Dim rsSystem As SQLiteDataReader
+        Dim SSID As String
+        SQL = "SELECT solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & SolarSystemName & "'"
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsSystem = DBCommand.ExecuteReader
+        rsSystem.Read()
+
+        If rsSystem.HasRows Then
+            SSID = CStr(rsSystem.GetInt64(0))
+        Else
+            SSID = "0"
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Dim TempActivityID As String
+
+        Select Case cmbBPUpdateCostIndexActivity.Text
+            Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
+                TempActivityID = "1"
+            Case ActivityCopying
+                TempActivityID = "5"
+            Case ActivityInvention
+                TempActivityID = "8"
+            Case Else
+                TempActivityID = "1"
+        End Select
+
+        SQL = "SELECT * FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
+        SQL = SQL & "AND ACTIVITY_NAME = '" & cmbBPUpdateCostIndexActivity.Text & "'"
+
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsCheck = DBCommand.ExecuteReader
+        rsCheck.Read()
+
+        ' See if the Current facility data exists, and update it. If not, then insert a new record
+        If rsCheck.HasRows Then
+            ' Update
+            SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES SET COST_INDEX = " & CostIndex
+            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_NAME = '" & cmbBPUpdateCostIndexActivity.Text & "'"
+        Else
+            ' Insert 
+            SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SolarSystemName & "'," & TempActivityID & ",'"
+            SQL = SQL & cmbBPUpdateCostIndexActivity.Text & "'," & CostIndex & ")"
+        End If
+
+        rsCheck.Close()
+        DBCommand = Nothing
+
+        Call ExecuteNonQuerySQL(SQL)
+
+        ' Update the station records for this system
+        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
+        Call ExecuteNonQuerySQL(SQL)
+
+        ' Reload the facility now
+        Call SetAllFacilities(True)
+
+        ' Update the current system loaded with the new index
+        cmbBPFacilitySystem.Text = SolarSystemName & " (" & FormatNumber(CostIndex, 3) & ")"
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+        MsgBox("Index Updated", vbInformation, Application.ProductName)
+
+    End Sub
 
 #End Region
 
@@ -10549,8 +10719,10 @@ ExitForm:
             pnlStatus.Text = "Updating Market Price History..."
             Application.DoEvents()
 
+            ' Drop the index for faster inserts
+            'Call ExecuteNonQuerySQL("DROP INDEX IDX_MH_TID_RID")
             ' Set the DB up for speed
-            ' Call ExecuteNonQuerySQL("PRAGMA synchronous = OFF; PRAGMA locking_mode = EXCLUSIVE; PRAGMA temp_store = MEMORY;")
+            'Call ExecuteNonQuerySQL("PRAGMA synchronous = OFF; PRAGMA locking_mode = EXCLUSIVE; PRAGMA temp_store = MEMORY;")
 
             ' Start a transaction here to speed up processing in the updates
             Call BeginSQLiteTransaction()
@@ -10558,28 +10730,40 @@ ExitForm:
             ' Build the list of regions and items for market history
             Dim Pairs As New List(Of ItemRegionPairs)
             Dim CacheDate As Date
+            Dim ItemList As New List(Of Long)
 
+            ' Get the list of items first
+            For j = 0 To Items.Count - 1
+
+                ' Only include items that we can build
+                SQL = "SELECT 'X' FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & CStr(Items(j).TypeID)
+                DBCommand = New SQLiteCommand(SQL, DB)
+                readerLookup = DBCommand.ExecuteReader
+
+                ' Only add if found
+                If readerLookup.Read Then
+                    ItemList.Add(Items(j).TypeID)
+                End If
+
+                readerLookup.Close()
+
+            Next
+
+            readerLookup = Nothing
+            DBCommand = Nothing
+
+            ' Build the pairs
             For i = 0 To SearchRegions.Count - 1
-                For j = 0 To Items.Count - 1
+                For j = 0 To ItemList.Count - 1
                     Dim TempPair As ItemRegionPairs
-                    TempPair.ItemID = Items(j).TypeID
+                    TempPair.ItemID = ItemList(j)
                     TempPair.RegionID = CLng(SearchRegions(i))
-
-                    ' Look up the cache date of each and only add it to the list to look up if it's cache is up
-                    SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TempPair.ItemID) & " AND REGION_ID = " & CStr(TempPair.RegionID)
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerLookup = DBCommand.ExecuteReader
-
-                    CacheDate = ProcessCacheDate(readerLookup)
-
-                    readerLookup.Close()
-                    readerLookup = Nothing
-                    DBCommand = Nothing
 
                     ' Only add if it's time to update
                     If CacheDate <= Now Then
                         Pairs.Add(TempPair)
                     End If
+
                 Next
             Next
 
@@ -10589,6 +10773,8 @@ ExitForm:
             Dim PricesUpdated As Boolean
             Const MaxBatches As Integer = 30
 
+            Dim Times As New List(Of Double)
+
             Dim CRESTHistory As New EVECREST
 
             Dim MaxRequestsperSecond As Integer = CRESTHistory.GetRatePerSecond
@@ -10596,7 +10782,12 @@ ExitForm:
             For i = 0 To Pairs.Count - 1
 
                 ' Add limiting if needed here - only wait if we go over the per request limit and only for the time left
+                Dim Start As Date = Now
                 PricesUpdated = CRESTHistory.UpdateMarketHistory(Pairs(i).ItemID, Pairs(i).RegionID, False)
+                Dim EndDate As Date = Now
+
+                Times.Add((EndDate - Start).TotalMilliseconds)
+                'Debug.Print(CStr((EndDate - Start).TotalMilliseconds))
 
                 ' Only do limiting if we actually update something 
                 If PricesUpdated Then
@@ -10631,6 +10822,9 @@ ExitForm:
             ' Finish updating the DB
             Call CommitSQLiteTransaction()
 
+            ' Rebuild Index
+            ' Call ExecuteNonQuerySQL("CREATE INDEX IDX_MH_TID_RID ON MARKET_HISTORY (TYPE_ID, REGION_ID)")
+
             ' Reset DB variables
             'Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA temp_store = DEFAULT")
 
@@ -10638,6 +10832,15 @@ ExitForm:
             pnlProgressBar.Visible = False
             pnlStatus.Text = ""
             Application.DoEvents()
+
+            Dim TotalMS As Double = 0
+            ' Print total time and average
+            For i = 0 To Times.Count - 1
+                TotalMS += Times(i)
+            Next
+
+            Debug.Print("Total Time (min): " & CStr(TotalMS / 1000 / 60))
+            Debug.Print("Average Time: " & CStr(TotalMS / Times.Count))
 
         End If
 
@@ -21155,6 +21358,14 @@ Leave:
         lstReactions.Sort()
     End Sub
 
+    Private Sub chkReactionsRefine_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkReactionsRefine.CheckedChanged
+        If chkReactionsRefine.Checked Then
+            gbReactionsRefinery.Enabled = True
+        Else
+            gbReactionsRefinery.Enabled = False
+        End If
+    End Sub
+
 #End Region
 
     Private Sub InitReactionsTab()
@@ -21174,6 +21385,10 @@ Leave:
         chkReactionsRefine.Checked = UserReactionTabSettings.CheckRefine
         chkReactionsIgnoreBaseMatPrice.Checked = UserReactionTabSettings.CheckIgnoreMarket
         chkReactionsBuildBasic.Checked = UserReactionTabSettings.CheckBuildBasic
+
+        cmbReactionsRefineTax.Text = FormatPercent(UserReactionTabSettings.RefineryTax, 1)
+        cmbReactionsRefiningEfficiency.Text = FormatPercent(UserReactionTabSettings.RefineryEfficiency, 0)
+        txtReactionsRefineryStanding.Text = FormatNumber(UserReactionTabSettings.RefineryStanding, 2)
 
         txtReactionsNumPOS.Text = CStr(UserReactionTabSettings.NumberofPOS)
         txtReactionPOSFuelCost.Text = FormatNumber(UserReactionTabSettings.POSFuelCost, 2)
@@ -21197,6 +21412,29 @@ Leave:
             Exit Sub
         End If
 
+        If Not IsNumeric(txtReactionsRefineryStanding.Text) Or Trim(txtReactionsRefineryStanding.Text) = "" Then
+            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
+            txtReactionsRefineryStanding.Focus()
+            Exit Sub
+        End If
+
+        If Val(txtReactionsRefineryStanding.Text) > 10 Then
+            MsgBox("Choose a lower value for Refinery Standing", vbExclamation, Me.Text)
+            txtReactionsRefineryStanding.Focus()
+            Exit Sub
+        End If
+
+        ' Refine Tax
+        Dim TempRefine As String
+        TempRefine = cmbReactionsRefineTax.Text.Replace("%", "")
+
+        If Not IsNumeric(TempRefine) Or Trim(TempRefine) = "" Then
+            MsgBox("Invalid Refinery Tax", vbExclamation, Application.ProductName)
+            cmbReactionsRefineTax.Focus()
+        ElseIf CDbl(TempRefine) > 10 Then
+            cmbReactionsRefineTax.Text = "10.0"
+        End If
+
         TempSettings.POSFuelCost = CDbl(txtReactionPOSFuelCost.Text)
         TempSettings.NumberofPOS = CInt(txtReactionsNumPOS.Text)
 
@@ -21206,10 +21444,28 @@ Leave:
         TempSettings.CheckProcessedMoonMats = chkReactionsProcMoonMats.Checked
         TempSettings.CheckHybrid = chkReactionsHybrid.Checked
 
+        TempSettings.CheckRefine = chkReactionsRefine.Checked
         TempSettings.CheckIgnoreMarket = chkReactionsIgnoreBaseMatPrice.Checked
         TempSettings.CheckBuildBasic = chkReactionsBuildBasic.Checked
         TempSettings.CheckSimpleBio = chkReactionsSimpleBio.Checked
         TempSettings.CheckComplexBio = chkReactionsComplexBio.Checked
+
+        If cmbReactionsRefiningEfficiency.Text.Contains("%") Then
+            TempSettings.RefineryEfficiency = CDbl(cmbReactionsRefiningEfficiency.Text.Substring(0, Len(cmbReactionsRefiningEfficiency.Text) - 1)) / 100
+        Else
+            TempSettings.RefineryEfficiency = CDbl(cmbReactionsRefiningEfficiency.Text) / 100
+        End If
+
+        ' Standings
+        TempSettings.RefineryStanding = CDbl(txtReactionsRefineryStanding.Text)
+
+        Dim RefineTax As Double = CDbl(cmbReactionsRefineTax.Text.Replace("%", ""))
+
+        If RefineTax <= 0 Then
+            TempSettings.RefineryTax = 0
+        Else
+            TempSettings.RefineryTax = RefineTax / 100
+        End If
 
         ' Save the data in the XML file
         Call Settings.SaveReactionSettings(TempSettings)
@@ -21296,11 +21552,28 @@ Leave:
             ' Set the output material
             ' If we are refining and the material produced is unrefined, then get refined mats value
             If Refine And readerReactions.GetString(6).Contains("Unrefined") Then
+                Dim Tax As Double
+                Dim Efficiency As Double
+
+                If cmbReactionsRefiningEfficiency.Text.Contains("%") Then
+                    Efficiency = CDbl(cmbReactionsRefiningEfficiency.Text.Substring(0, Len(cmbReactionsRefiningEfficiency.Text) - 1)) / 100
+                Else
+                    Efficiency = CDbl(cmbReactionsRefiningEfficiency.Text) / 100
+                End If
+
+                Dim RefineTax As Double = CDbl(cmbReactionsRefineTax.Text.Replace("%", ""))
+
+                If RefineTax <= 0 Then
+                    Tax = 0
+                Else
+                    Tax = RefineTax / 100
+                End If
+
                 ReprocessingStation = New RefiningReprocessing(SelectedCharacter.Skills.GetSkillLevel(3385), _
                                                               SelectedCharacter.Skills.GetSkillLevel(3389), _
                                                               SelectedCharacter.Skills.GetSkillLevel(12196), _
-                                                              UserApplicationSettings.RefiningImplantValue, CDbl(UserApplicationSettings.RefiningEfficiency), _
-                                                              UserApplicationSettings.RefiningTax, UserApplicationSettings.RefineCorpStanding)
+                                                              UserApplicationSettings.RefiningImplantValue, Efficiency, _
+                                                              Tax, CDbl(txtReactionsRefineryStanding.Text))
 
                 TempMats = ReprocessingStation.ReprocessMaterial(readerReactions.GetInt64(5), 1, 1, False, False, False)
                 RefineOutputName = ""
@@ -21401,11 +21674,20 @@ Leave:
 
                 ' Add the inputs to the list
                 For i = 0 To ReactionSubInputList.GetMaterialList.Count - 1
+                    ReactionSubInputList.GetMaterialList(i).SetTotalCost(0)
+                    ReactionInputList.InsertMaterial(ReactionSubInputList.GetMaterialList(i))
                     ' If this is a base material, and they want to ignore cost, then update
                     If IgnoreBaseMatPrices And (readerSubInput.GetString(1) = "Simple Biochemical Reactions" Or readerSubInput.GetString(1) = "Simple Reaction") Then
-                        ReactionSubInputList.GetMaterialList(i).SetTotalCost(0)
+                        ' Find the material we just insert and set the cost to 0
+                        For j = 0 To ReactionInputList.GetMaterialList.Count - 1
+                            If ReactionInputList.GetMaterialList(j).GetMaterialName = ReactionSubInputList.GetMaterialList(i).GetMaterialName Then
+                                Dim TempPrice As Double
+                                TempPrice = ReactionInputList.GetMaterialList(j).GetTotalCost
+                                ReactionInputList.GetMaterialList(j).SetTotalCost(0)
+                                ReactionInputList.ResetTotalValue(ReactionInputList.GetTotalMaterialsCost - TempPrice)
+                            End If
+                        Next
                     End If
-                    ReactionInputList.InsertMaterial(ReactionSubInputList.GetMaterialList(i))
                 Next
 
                 readerSubInput.Close()
@@ -21466,6 +21748,18 @@ Leave:
             Exit Sub
         Else
             NumberOfPOS = CInt(txtReactionsNumPOS.Text)
+        End If
+
+        If Not IsNumeric(txtReactionsRefineryStanding.Text) Or Trim(txtReactionsRefineryStanding.Text) = "" Then
+            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
+            txtReactionsRefineryStanding.Focus()
+            Exit Sub
+        End If
+
+        If Val(txtReactionsRefineryStanding.Text) > 10 Then
+            MsgBox("Choose a lower value for Refinery Standing", vbExclamation, Me.Text)
+            txtReactionsRefineryStanding.Focus()
+            Exit Sub
         End If
 
         ' Working
@@ -22505,9 +22799,9 @@ Leave:
             Call SetOreRefineChecks()
 
             ' Station numbers
-            cmbMineStationEff.Text = FormatPercent(UserApplicationSettings.RefiningEfficiency, 0)
-            txtMineRefineStanding.Text = FormatNumber(UserApplicationSettings.RefineCorpStanding, 2)
-            cmbMineRefineStationTax.Text = FormatPercent(UserApplicationSettings.RefiningTax, 1)
+            cmbMineStationEff.Text = FormatPercent(.RefiningEfficiency, 0)
+            txtMineRefineStanding.Text = FormatNumber(.RefineCorpStanding, 2)
+            cmbMineRefineStationTax.Text = FormatPercent(.RefiningTax, 1)
 
             ' Jump Ore
             If .CheckIncludeJumpFuelCosts Then
@@ -22851,18 +23145,18 @@ Leave:
             ' Refining
             ' Station numbers
             If cmbMineStationEff.Text.Contains("%") Then
-                UserApplicationSettings.RefiningEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
+                .RefiningEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
             Else
-                UserApplicationSettings.RefiningEfficiency = CDbl(cmbMineStationEff.Text) / 100
+                .RefiningEfficiency = CDbl(cmbMineStationEff.Text) / 100
             End If
             If cmbMineRefineStationTax.Text.Contains("%") Then
-                UserApplicationSettings.RefiningTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1)) / 100
+                .RefiningTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1)) / 100
             Else
-                UserApplicationSettings.RefiningTax = CDbl(cmbMineRefineStationTax.Text) / 100
+                .RefiningTax = CDbl(cmbMineRefineStationTax.Text) / 100
             End If
 
             ' Allow them to update the refine standing here as well
-            UserApplicationSettings.RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
+            .RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
 
             ' Save it in the Application settings
             Settings.SaveApplicationSettings(UserApplicationSettings)

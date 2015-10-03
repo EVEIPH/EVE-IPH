@@ -40,9 +40,9 @@ Public Class frmIndustryBeltFlip
     Private Sub LoadSettings()
 
         ' Station refinery settings
-        cmbMineStationEff.Text = FormatPercent(UserApplicationSettings.RefiningEfficiency, 0)
-        txtMineRefineStanding.Text = FormatNumber(UserApplicationSettings.RefineCorpStanding, 2)
-        cmbRefineStationTax.Text = FormatPercent(UserApplicationSettings.RefiningTax, 1)
+        cmbMineStationEff.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningEfficiency, 0)
+        txtMineRefineStanding.Text = FormatNumber(UserIndustryFlipBeltSettings.RefineCorpStanding, 2)
+        cmbRefineStationTax.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningTax, 1)
 
         ' Miner settings
         txtCycleTime.Text = FormatNumber(UserIndustryFlipBeltSettings.CycleTime)
@@ -186,21 +186,21 @@ Public Class frmIndustryBeltFlip
         TempDouble = CDbl(cmbMineStationEff.Text.Replace("%", ""))
 
         If TempDouble <= 0 Then
-            UserApplicationSettings.RefiningEfficiency = 0
+            TempSettings.RefiningEfficiency = 0
         Else
-            UserApplicationSettings.RefiningEfficiency = TempDouble / 100
+            TempSettings.RefiningEfficiency = TempDouble / 100
         End If
 
         TempDouble = CDbl(cmbRefineStationTax.Text.Replace("%", ""))
 
         If TempDouble <= 0 Then
-            UserApplicationSettings.RefiningTax = 0
+            TempSettings.RefiningTax = 0
         Else
-            UserApplicationSettings.RefiningTax = TempDouble / 100
+            TempSettings.RefiningTax = TempDouble / 100
         End If
 
         ' Allow them to update the refine standing here as well
-        UserApplicationSettings.RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
+        TempSettings.RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
 
         TempSettings.CompressOre = chkCompressOre.Checked
         TempSettings.IPHperMiner = chkIPHperMiner.Checked

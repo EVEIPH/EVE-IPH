@@ -12,17 +12,6 @@ Public Class frmSettings
 
 #Region "Click object Functions"
 
-    Private Sub chkRefineStationTax_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefineStationTax.CheckedChanged
-        If chkRefineStationTax.Checked = True Then
-            cmbRefineTax.Enabled = True
-            cmbRefineTax.Focus()
-        Else
-            cmbRefineTax.Enabled = False
-            cmbRefineTax.Text = FormatPercent(Defaults.DefaultRefineTax, 1)
-        End If
-        btnSave.Text = "Save"
-    End Sub
-
     Private Sub chkBeanCounterManufacturing_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBeanCounterManufacturing.CheckedChanged
         If Not FirstLoad Then
             If chkBeanCounterManufacturing.Checked Then
@@ -84,17 +73,6 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkRefineCorpStanding_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRefineCorpStanding.CheckedChanged
-        If chkRefineCorpStanding.Checked = True Then
-            txtRefineCorpStanding.Enabled = True
-            txtRefineCorpStanding.Focus()
-        Else
-            txtRefineCorpStanding.Enabled = False
-            txtRefineCorpStanding.Text = FormatNumber(Defaults.DefaultRefineCorpStanding, 2)
-        End If
-        btnSave.Text = "Save"
-    End Sub
-
     Private Sub txtEVECentralInterval_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtEVECentralInterval.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
@@ -126,7 +104,7 @@ Public Class frmSettings
         End If
     End Sub
 
-    Private Sub txtRefineCorpStanding_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtRefineCorpStanding.KeyPress
+    Private Sub txtRefineCorpStanding_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
@@ -185,7 +163,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub cmbRefineTax_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbRefineTax.KeyPress
+    Private Sub cmbRefineTax_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers, period or percent and backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
@@ -272,31 +250,6 @@ Public Class frmSettings
                 txtBrokerFactionStanding.Text = FormatNumber(.BrokerFactionStanding, 2)
             End If
 
-            If .RefineCorpStanding = Defaults.DefaultRefineCorpStanding Then
-                ' Default
-                chkRefineCorpStanding.Checked = False
-                txtRefineCorpStanding.Enabled = False
-                txtRefineCorpStanding.Text = FormatNumber(Defaults.DefaultRefineCorpStanding, 2)
-            Else
-                ' User
-                chkRefineCorpStanding.Checked = True
-                txtRefineCorpStanding.Enabled = True
-                txtRefineCorpStanding.Text = FormatNumber(.RefineCorpStanding, 2)
-            End If
-
-            ' Refine Tax
-            If .RefiningTax = Defaults.DefaultRefineTax Then
-                ' Default
-                chkRefineStationTax.Checked = False
-                cmbRefineTax.Enabled = False
-                cmbRefineTax.Text = FormatPercent(Defaults.DefaultRefineTax, 1)
-            Else
-                ' User
-                chkRefineStationTax.Checked = True
-                cmbRefineTax.Enabled = True
-                cmbRefineTax.Text = FormatPercent(.RefiningTax, 1)
-            End If
-
             ' Implants
             If .ManufacturingImplantValue > 0 Then
                 chkBeanCounterManufacturing.Checked = True
@@ -347,15 +300,11 @@ Public Class frmSettings
 
             chkDisableSVR.Checked = .DisableSVR
 
+            chkLinksInCopyText.Checked = .IncludeInGameLinksinCopyText
+
             ' ShoppingList
             chkIncludeShopListInventMats.Checked = .ShopListIncludeInventMats
             chkIncludeShopListCopyMats.Checked = .ShopListIncludeCopyMats
-
-            If .RefiningEfficiency <> Defaults.DefaultRefiningEfficency Then
-                cmbRefiningEfficiency.Text = FormatPercent(.RefiningEfficiency, 0)
-            Else
-                cmbRefiningEfficiency.Text = FormatPercent(Defaults.DefaultRefiningEfficency, 0)
-            End If
 
             If .DefaultBPME = 0 Then
                 txtDefaultME.Text = CStr(Defaults.DefaultSettingME)
@@ -465,16 +414,9 @@ Public Class frmSettings
             ' Standings
             TempSettings.BrokerCorpStanding = CDbl(txtBrokerCorpStanding.Text)
             TempSettings.BrokerFactionStanding = CDbl(txtBrokerFactionStanding.Text)
-            TempSettings.RefineCorpStanding = CDbl(txtRefineCorpStanding.Text)
 
             ' Default build/buy
             TempSettings.CheckBuildBuy = CBool(chkBuildBuyDefault.Checked)
-
-            If cmbRefiningEfficiency.Text.Contains("%") Then
-                TempSettings.RefiningEfficiency = CDbl(cmbRefiningEfficiency.Text.Substring(0, Len(cmbRefiningEfficiency.Text) - 1)) / 100
-            Else
-                TempSettings.RefiningEfficiency = CDbl(cmbRefiningEfficiency.Text) / 100
-            End If
 
             TempSettings.DefaultBPME = CInt(txtDefaultME.Text)
             TempSettings.DefaultBPTE = CInt(txtDefaultTE.Text)
@@ -486,15 +428,9 @@ Public Class frmSettings
             TempSettings.ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
             TempSettings.ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
-            Dim RefineTax As Double = CDbl(cmbRefineTax.Text.Replace("%", ""))
-
-            If RefineTax <= 0 Then
-                TempSettings.RefiningTax = 0
-            Else
-                TempSettings.RefiningTax = RefineTax / 100
-            End If
-
             TempSettings.EVECentralRefreshInterval = CInt(txtEVECentralInterval.Text)
+
+            TempSettings.IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 
             ' Save the data in the XML file
             Call Settings.SaveApplicationSettings(TempSettings)
@@ -524,9 +460,6 @@ Public Class frmSettings
         Dim TempCheckBox As CheckBox = Nothing
         Dim TempComboBox As ComboBox = Nothing
 
-        Dim TempBuildDiscount As String
-        TempBuildDiscount = cmbRefineTax.Text.Replace("%", "")
-
         If (Not IsNumeric(txtBrokerCorpStanding.Text) Or Trim(txtBrokerCorpStanding.Text) = "") And chkBrokerCorpStanding.Checked Then
             TempTextBox = txtBrokerCorpStanding
             TempCheckBox = chkBrokerCorpStanding
@@ -540,26 +473,6 @@ Public Class frmSettings
             TempCheckBox = chkBrokerFactionStanding
             GoTo InvalidData
         ElseIf CDbl(txtBrokerFactionStanding.Text) > 10 Then
-            txtBrokerFactionStanding.Text = "10.0"
-        End If
-
-        If (Not IsNumeric(txtRefineCorpStanding.Text) Or Trim(txtRefineCorpStanding.Text) = "") And chkBrokerFactionStanding.Checked Then
-            TempTextBox = txtRefineCorpStanding
-            TempCheckBox = chkRefineCorpStanding
-            GoTo InvalidData
-        ElseIf CDbl(txtRefineCorpStanding.Text) > 10 Then
-            txtRefineCorpStanding.Text = "10.0"
-        End If
-
-        ' Refine Tax
-        Dim TempRefine As String
-        TempRefine = cmbRefineTax.Text.Replace("%", "")
-
-        If (Not IsNumeric(TempRefine) Or Trim(TempRefine) = "") And chkRefineStationTax.Checked Then
-            TempComboBox = cmbRefineTax
-            TempCheckBox = chkRefineStationTax
-            GoTo InvalidData
-        ElseIf CDbl(TempRefine) > 10 Then
             txtBrokerFactionStanding.Text = "10.0"
         End If
 
