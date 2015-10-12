@@ -5,8 +5,6 @@ Imports System.Threading
 Public Class frmIndustryJobsViewer
 
     Private ColumnPositions(numIndustryJobColumns) As String ' For saving the column order
-    Private ColumnSorter As ListViewColumnSorter
-    Private ColumnSorter2 As ListViewColumnSorter
     Private FirstLoad As Boolean
     Private Updating As Boolean
     Private AddingColumns As Boolean
@@ -15,6 +13,11 @@ Public Class frmIndustryJobsViewer
     Private LoadedCharacters As List(Of IndyCharacter) ' The list of characters to show in the industry jobs list
     Private UserIDToFind As Long
     Private myTimer As Timer
+
+    Private JobListColumnClicked As Integer
+    Private JobListColumnSortOrder As SortOrder
+    Private AcctListColumnClicked As Integer
+    Private AcctListColumnSortOrder As SortOrder
 
     Private Structure IndyCharacter
         Dim API As APIKeyData
@@ -57,6 +60,11 @@ Public Class frmIndustryJobsViewer
         lstCharacters.Columns.Add("Industry Jobs", 75, HorizontalAlignment.Left)
         lstCharacters.Columns.Add("Research Jobs", 83, HorizontalAlignment.Left)
         lstCharacters.Columns.Add("CharID", 0, HorizontalAlignment.Left) ' Hidden
+
+        JobListColumnClicked = 0
+        JobListColumnSortOrder = SortOrder.None
+        AcctListColumnClicked = 0
+        AcctListColumnSortOrder = SortOrder.None
 
         FirstLoad = False
 
@@ -211,10 +219,6 @@ Public Class frmIndustryJobsViewer
         lstIndustryJobs.BeginUpdate()
         Call RefreshColumns()
 
-        ' Create an instance of a ListView column sorter and assign it 
-        ColumnSorter = New ListViewColumnSorter()
-        lstIndustryJobs.ListViewItemSorter = ColumnSorter
-
         While rsJobs.Read
             Application.DoEvents()
 
@@ -240,6 +244,7 @@ Public Class frmIndustryJobsViewer
                 JobStateColor = Color.DarkGray
             End If
 
+            lstIndustryJobs.ListViewItemSorter = Nothing
             ' Always add the end time to column 0 for sorting 
             lstJobRow = lstIndustryJobs.Items.Add(rsJobs.GetString(3))
             lstJobRow.UseItemStyleForSubItems = False
@@ -313,26 +318,8 @@ Public Class frmIndustryJobsViewer
 
         lstIndustryJobs.EndUpdate()
 
-        ' Force a click on the users column sort
-        Dim e As New System.Windows.Forms.ColumnClickEventArgs(UserIndustryJobsColumnSettings.OrderByColumn)
-
-        Select Case UserIndustryJobsColumnSettings.OrderType
-            Case "Ascending"
-                ColumnSorter.Order = SortOrder.Ascending
-            Case "Descending"
-                ColumnSorter.Order = SortOrder.Descending
-            Case Else
-                ColumnSorter.Order = SortOrder.None
-        End Select
-
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstIndustryJobs.Sort()
-
-        '' Enable the timer
-        'Timer1.Enabled = True
+        ' Force last sort order to switch to ascending and sort by the user column
+        Call ListViewColumnSorter(UserIndustryJobsColumnSettings.OrderByColumn, lstIndustryJobs, JobListColumnClicked, SortOrder.Descending)
 
         Application.UseWaitCursor = False
         Me.Enabled = True
@@ -352,10 +339,6 @@ Public Class frmIndustryJobsViewer
 
         ' Load up the chars into the list
         Call LoadCharacters()
-
-        ' Create an instance of a ListView column sorter and assign it 
-        ColumnSorter2 = New ListViewColumnSorter()
-        lstCharacters.ListViewItemSorter = ColumnSorter2
 
         lstCharacters.BeginUpdate()
         lstCharacters.Items.Clear()
@@ -998,33 +981,11 @@ Public Class frmIndustryJobsViewer
     End Sub
 
     Private Sub lstIndustryJobs_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstIndustryJobs.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstIndustryJobs.Sort()
-
-        ' Save the column clicked
-        UserIndustryJobsColumnSettings.OrderByColumn = e.Column
-
-        Select Case ColumnSorter.Order
-            Case SortOrder.Ascending
-                UserIndustryJobsColumnSettings.OrderType = "Ascending"
-            Case SortOrder.Descending
-                UserIndustryJobsColumnSettings.OrderType = "Descending"
-            Case Else
-                UserIndustryJobsColumnSettings.OrderType = None
-        End Select
-
+        Call ListViewColumnSorter(e.Column, lstIndustryJobs, JobListColumnClicked, JobListColumnSortOrder)
     End Sub
 
     Private Sub lstCharacters_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstCharacters.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ColumnSorter2)
-
-        ' Perform the sort with these new sort options.
-        lstCharacters.Sort()
-
+        Call ListViewColumnSorter(e.Column, CType(lstCharacters, ListView), AcctListColumnClicked, AcctListColumnSortOrder)
     End Sub
 
     Private Sub btnRefreshList_Click(sender As System.Object, e As System.EventArgs) Handles btnRefreshList.Click
@@ -1079,8 +1040,6 @@ Public Class frmIndustryJobsViewer
 
                 For i = 0 To myJobList.Items.Count - 1
                     ' Only update records with a time
-
-
                     If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
 
                         TimeToComplete = myJobList.Items(i).SubItems(.TimeToComplete).Text

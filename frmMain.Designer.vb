@@ -14835,5 +14835,4 @@ End Sub
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents cmbBPUpdateCostIndexActivity As System.Windows.Forms.ComboBox
     Friend WithEvents lblBPFacilitySystemName As System.Windows.Forms.Label
-
 End Class

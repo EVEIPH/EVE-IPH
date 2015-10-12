@@ -3,7 +3,8 @@ Imports System.Data.SQLite
 
 Public Class frmResearchAgents
 
-    Private ListColumnSorter As ListViewColumnSorter
+    Private ListColumnClicked As Integer
+    Private ListColumnSortOrder As SortOrder
 
     Public Sub New()
 
@@ -20,6 +21,9 @@ Public Class frmResearchAgents
         lstAgents.Columns.Add("Level", 50, HorizontalAlignment.Center)
         lstAgents.Columns.Add("Location", 265, HorizontalAlignment.Left)
 
+        ListColumnClicked = 0
+        ListColumnSortOrder = SortOrder.None
+
     End Sub
 
     Private Sub frmResearchAgents_Shown(sender As Object, e As System.EventArgs) Handles Me.Shown
@@ -28,11 +32,7 @@ Public Class frmResearchAgents
 
     ' Sort columns
     Private Sub lstAgents_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstAgents.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ListColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstAgents.Sort()
+        Call ListViewColumnSorter(e.Column, lstAgents, ListColumnClicked, ListColumnSortOrder)
     End Sub
 
     Private Sub btnClose_Click(sender As System.Object, e As System.EventArgs) Handles btnClose.Click
@@ -54,9 +54,6 @@ Public Class frmResearchAgents
         If SelectedCharacter.ResearchAccess Then
 
             Application.UseWaitCursor = True
-
-            ListColumnSorter = New ListViewColumnSorter()
-            lstAgents.ListViewItemSorter = ListColumnSorter
 
             lstAgents.BeginUpdate()
 

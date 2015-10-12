@@ -837,39 +837,109 @@ Public Module Public_Variables
 
     End Function
 
-    ' Converts a time in d h m s to a long of seconds
+    ' Sorts the reference listview and column
+    Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder)
+        Dim SortType As SortOrder
+
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+
+        ' Figure out sort order
+        If ColumnIndex = ListPrevColumnClicked Then
+            If ListPrevColumnSortOrder = SortOrder.Ascending Then
+                SortType = SortOrder.Descending
+            Else
+                SortType = SortOrder.Ascending
+            End If
+        Else
+            If ListPrevColumnSortOrder <> SortOrder.None Then
+                ' Swap sort type
+                If ListPrevColumnSortOrder = SortOrder.Ascending Then
+                    SortType = SortOrder.Descending
+                Else
+                    SortType = SortOrder.Ascending
+                End If
+            Else
+                SortType = SortOrder.Ascending
+            End If
+        End If
+
+        ' Perform the sort with these new sort options.
+        RefListView.ListViewItemSorter = New ListViewItemComparer(ColumnIndex, SortType)
+        RefListView.Sort()
+
+        ' Save the values for next check
+        ListPrevColumnClicked = ColumnIndex
+        ListPrevColumnSortOrder = SortType
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
+    End Sub
+
+    ' Converts a time in d h m s to a long of seconds - 3d 12h 2m 33s or 1 Day 12:23:33
     Public Function ConvertDHMSTimetoSeconds(ByVal SentTime As String) As Long
         Dim Days As Integer = 0
         Dim Hours As Integer = 0
         Dim Minutes As Integer = 0
         Dim Seconds As Integer = 0
 
+        Dim StringMarker As String = ""
+
         SentTime = Trim(SentTime)
 
-        If SentTime.Contains("d ") Then
-            ' Get the days
-            Days = CInt(SentTime.Substring(0, SentTime.IndexOf("d")))
-            ' Reset the string
-            SentTime = Trim(SentTime.Substring(SentTime.IndexOf("d") + 1))
-        End If
+        If SentTime.Contains("Day ") Or SentTime.Contains("Days ") Or SentTime.Contains(":") Then
+            ' Time in 2 Days 12:23:05 format
+            If SentTime.Contains("Days") Then
+                StringMarker = "Days "
+            ElseIf SentTime.Contains("Day") Then
+                StringMarker = "Day "
+            Else
+                StringMarker = ""
+            End If
 
-        If SentTime.Contains("h ") Then
-            ' Get the days
-            Hours = CInt(SentTime.Substring(0, SentTime.IndexOf("h")))
-            ' Reset the string
-            SentTime = Trim(SentTime.Substring(SentTime.IndexOf("h") + 1))
-        End If
+            If StringMarker <> "" Then
+                ' Get the days
+                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
+            End If
 
-        If SentTime.Contains("m ") Then
-            ' Get the days
-            Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf("m")))
-            ' Reset the string
-            SentTime = Trim(SentTime.Substring(SentTime.IndexOf("m") + 1))
-        End If
+            'Now parse the times
+            Hours = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
+            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
+            Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
+            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
+            Seconds = CInt(SentTime)
+        Else
 
-        If SentTime.Contains("s") Then
-            ' Get the days
-            Seconds = CInt(SentTime.Substring(0, SentTime.IndexOf("s")))
+            If SentTime.Contains("d ") Then
+                StringMarker = "d "
+
+                ' Get the days
+                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
+            End If
+
+            If SentTime.Contains("h ") Then
+                ' Get the days
+                Hours = CInt(SentTime.Substring(0, SentTime.IndexOf("h")))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("h") + 1))
+            End If
+
+            If SentTime.Contains("m ") Then
+                ' Get the days
+                Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf("m")))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("m") + 1))
+            End If
+
+            If SentTime.Contains("s") Then
+                ' Get the days
+                Seconds = CInt(SentTime.Substring(0, SentTime.IndexOf("s")))
+            End If
         End If
 
         Return (Days * 24 * 60 * 60) + (Hours * 60 * 60) + (Minutes * 60) + Seconds
@@ -1305,28 +1375,6 @@ Public Module Public_Variables
         Return BS
 
     End Function
-
-    ' Sets column sort order for the sorter and args sent
-    Public Sub SetLstVwColumnSortOrder(ByVal EventArgs As System.Windows.Forms.ColumnClickEventArgs, ByRef SentColumnSorter As ListViewColumnSorter)
-        ' Determine if the clicked column is already the column that is 
-        ' being sorted.
-        If Not IsNothing(SentColumnSorter) Then
-            If (EventArgs.Column = SentColumnSorter.SortColumn) Then
-                ' Reverse the current sort direction for this column.
-                If (SentColumnSorter.Order = SortOrder.Ascending) Then
-                    SentColumnSorter.Order = SortOrder.Descending
-                Else
-                    SentColumnSorter.Order = SortOrder.Ascending
-                End If
-            Else
-                ' Set the column number that is to be sorted; default to ascending.
-                SentColumnSorter.SortColumn = EventArgs.Column
-                If SentColumnSorter.Order = SortOrder.None Then
-                    SentColumnSorter.Order = SortOrder.Ascending
-                End If
-            End If
-        End If
-    End Sub
 
     ' Takes a time in seconds and converts it to a string display of Days HH:MM:SS
     Public Function FormatIPHTime(ByVal SentTimeString As Double) As String

@@ -351,7 +351,7 @@
     <Compile Include="EVEIndustryJobs.vb" />
     <Compile Include="IndustryFacility.vb" />
     <Compile Include="IndustryTeam.vb" />
-    <Compile Include="ListViewColumnSorter.vb" />
+    <Compile Include="ListViewItemComparer.vb" />
     <Compile Include="Material.vb" />
     <Compile Include="Materials.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

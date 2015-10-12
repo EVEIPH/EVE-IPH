@@ -1,10 +1,7 @@
 ﻿' Main form for all processing
-
-Imports System.Net
 Imports System.Data.SQLite
 Imports System.Globalization
 Imports System.Threading
-Imports System.Threading.Tasks
 Imports System.IO
 
 Public Class frmMain
@@ -38,13 +35,6 @@ Public Class frmMain
     Private ColumnPositions(NumManufacturingTabColumns) As String ' For saving the column order
     Private AddingColumns As Boolean
     Private MovedColumn As Integer
-
-    ' For sorting grids
-    Private rawBPMatsColumnSorter As ListViewColumnSorter
-    Private compBPMatsColumnSorter As ListViewColumnSorter
-    Private DCColumnSorter As ListViewColumnSorter
-    Private ReactionsColumnSorter As ListViewColumnSorter
-    Private MiningColumnSorter As ListViewColumnSorter
 
     Private DCIPH_COLUMN As Integer ' The number of the DC IPH column for totalling up the price
 
@@ -145,6 +135,22 @@ Public Class frmMain
     Private FinalManufacturingItemList As List(Of ManufacturingItem)
     Private ManufacturingRecordIDToFind As Long ' for Predicate
     Private ManufacturingNameToFind As String ' for Predicate
+
+    ' For column sorting
+    Private ManufacturingColumnClicked As Integer ' What column did they click on to sort
+    Private ManufacturingColumnSortType As SortOrder
+    Private UpdatePricesColumnClicked As Integer
+    Private UpdatePricesColumnSortType As SortOrder
+    Private BPCompColumnClicked As Integer
+    Private BPCompColumnSortType As SortOrder
+    Private BPRawColumnClicked As Integer
+    Private BPRawColumnSortType As SortOrder
+    Private DCColumnClicked As Integer
+    Private DCColumnSortType As SortOrder
+    Private MiningColumnClicked As Integer
+    Private MiningColumnSortType As SortOrder
+    Private ReactionsColumnClicked As Integer
+    Private ReactionsColumnSortType As SortOrder
 
     ' For maximum production and laboratory lines
     Private MaximumProductionLines As Integer
@@ -6152,20 +6158,24 @@ Tabs:
 
     Private Sub lstBPComponentMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPComponentMats.ColumnClick
 
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, compBPMatsColumnSorter)
+        Call ListViewColumnSorter(e.Column, CType(lstBPComponentMats, ListView), BPCompColumnClicked, BPCompColumnSortType)
 
-        ' Perform the sort with these new sort options.
-        lstBPComponentMats.Sort()
+        '' Set the sort order options
+        'Call SetLstVwColumnSortOrder(e, compBPMatsColumnSorter)
+
+        '' Perform the sort with these new sort options.
+        'lstBPComponentMats.Sort()
     End Sub
 
     Private Sub lstBPRawMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPRawMats.ColumnClick
 
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, rawBPMatsColumnSorter)
+        Call ListViewColumnSorter(e.Column, CType(lstBPRawMats, ListView), BPRawColumnClicked, BPRawColumnSortType)
 
-        ' Perform the sort with these new sort options.
-        lstBPRawMats.Sort()
+        '' Set the sort order options
+        'Call SetLstVwColumnSortOrder(e, rawBPMatsColumnSorter)
+
+        '' Perform the sort with these new sort options.
+        'lstBPRawMats.Sort()
     End Sub
 
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
@@ -7998,13 +8008,6 @@ Tabs:
         BPME = CInt(txtBPME.Text)
         BPTE = CInt(txtBPTE.Text)
 
-        ' Create an instance of a ListView column sorter and assign it 
-        ' to the ListView controls on the BP screen
-        rawBPMatsColumnSorter = New ListViewColumnSorter()
-        lstBPRawMats.ListViewItemSorter = rawBPMatsColumnSorter
-
-        compBPMatsColumnSorter = New ListViewColumnSorter()
-        lstBPComponentMats.ListViewItemSorter = compBPMatsColumnSorter
 
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter, _
@@ -9056,7 +9059,8 @@ ExitForm:
             ' Insert 
             SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SolarSystemName & "'," & TempActivityID & ",'"
             SQL = SQL & cmbBPUpdateCostIndexActivity.Text & "'," & CostIndex & ")"
-        End If
+
+        End If
 
         rsCheck.Close()
         DBCommand = Nothing
@@ -9869,6 +9873,12 @@ ExitForm:
                 cmbPriceSystems.Text = DefaultSystemPriceCombo
             End If
         End If
+
+    End Sub
+
+    Private Sub lstPricesView_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstPricesView.ColumnClick
+
+        Call ListViewColumnSorter(e.Column, CType(lstPricesView, ListView), UpdatePricesColumnClicked, UpdatePricesColumnSortType)
 
     End Sub
 
@@ -15691,6 +15701,12 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
+    Private Sub lstManufacturing_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstManufacturing.ColumnClick
+
+        Call ListViewColumnSorter(e.Column, lstManufacturing, ManufacturingColumnClicked, ManufacturingColumnSortType)
+
+    End Sub
+
 #End Region
 
 #Region "Column Select Functions"
@@ -16634,6 +16650,21 @@ CheckTechs:
             txtCalcLabLines.Text = CStr(.LaboratoryLines)
             txtCalcRuns.Text = CStr(.Runs)
             txtCalcNumBPs.Text = CStr(.BPRuns)
+
+            ManufacturingColumnClicked = 0
+            ManufacturingColumnSortType = SortOrder.None
+            UpdatePricesColumnClicked = 0
+            UpdatePricesColumnSortType = SortOrder.None
+            BPRawColumnClicked = 0
+            BPRawColumnSortType = SortOrder.None
+            BPCompColumnClicked = 0
+            BPCompColumnSortType = SortOrder.None
+            DCColumnClicked = 0
+            DCColumnSortType = SortOrder.None
+            MiningColumnClicked = 0
+            MiningColumnSortType = SortOrder.None
+            ReactionsColumnClicked = 0
+            ReactionsColumnSortType = SortOrder.None
 
             RecordIDIterator = 0
 
@@ -18287,6 +18318,9 @@ DisplayResults:
 
         Dim BonusString As String = ""
 
+        ' Reset the sorter in case we reset the columns
+        lstManufacturing.ListViewItemSorter = Nothing
+
         ' Load the final grid
         For i = 0 To FinalItemList.Count - 1
             Application.DoEvents()
@@ -18445,10 +18479,6 @@ DisplayResults:
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).InventionFacilityUsage, 2))
                 End Select
             Next
-
-            If FinalItemList(i).ItemName = "Ark" Then
-                Application.DoEvents()
-            End If
 
             ' Color owned BP's
             If FinalItemList(i).Owned = Yes Then
@@ -19800,7 +19830,6 @@ ExitCalc:
         End If
     End Function
 
-
 #Region "List Options Menu"
 
     ' Gets the line selected, grabs the TypeID and then looks up the CREST Market data for updates, then displays the market history form - add back TODO
@@ -20239,11 +20268,7 @@ ExitCalc:
     End Sub
 
     Private Sub lstDC_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstDC.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, DCColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstDC.Sort()
+        Call ListViewColumnSorter(e.Column, lstDC, DCColumnClicked, DCColumnSortType)
     End Sub
 
 #End Region
@@ -20533,11 +20558,6 @@ ExitCalc:
         Me.Cursor = Cursors.WaitCursor
         pnlStatus.Text = "Loading Agents..."
         Application.DoEvents()
-
-        ' Create an instance of a ListView column sorter and assign it 
-        ' for the data cores
-        DCColumnSorter = New ListViewColumnSorter()
-        lstDC.ListViewItemSorter = DCColumnSorter
 
         ' Load the Research names
         For i = 1 To DCSkillCheckBoxes.Count - 1
@@ -21351,11 +21371,7 @@ Leave:
     End Sub
 
     Private Sub lstReactions_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstReactions.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ReactionsColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstReactions.Sort()
+        Call ListViewColumnSorter(e.Column, lstReactions, ReactionsColumnClicked, ReactionsColumnSortType)
     End Sub
 
     Private Sub chkReactionsRefine_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkReactionsRefine.CheckedChanged
@@ -21764,10 +21780,6 @@ Leave:
 
         ' Working
         Me.Cursor = Cursors.WaitCursor
-
-        ' Create an instance of a ListView column sorter and assign it for reactions
-        ReactionsColumnSorter = New ListViewColumnSorter()
-        lstReactions.ListViewItemSorter = ReactionsColumnSorter
 
         If chkReactionsIgnoreBaseMatPrice.Checked And chkReactionsIgnoreBaseMatPrice.Enabled Then
             IgnoreMoonMatPrice = True
@@ -22308,11 +22320,7 @@ Leave:
     End Sub
 
     Private Sub lstMineGrid_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineGrid.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, MiningColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineGrid.Sort()
+        Call ListViewColumnSorter(e.Column, lstMineGrid, MiningColumnClicked, MiningColumnSortType)
     End Sub
 
     Private Sub chkMineUseFleetBooster_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMineUseFleetBooster.CheckedChanged
@@ -24102,11 +24110,6 @@ Leave:
                                                         SelectedCharacter.Skills.GetSkillLevel(12196), _
                                                         UserApplicationSettings.RefiningImplantValue, _
                                                         StationRefineEfficiency, StationRefineTax, CDbl(txtMineRefineStanding.Text))
-
-        ' Create an instance of a ListView column sorter and assign it 
-        ' for the data cores
-        MiningColumnSorter = New ListViewColumnSorter()
-        lstMineGrid.ListViewItemSorter = MiningColumnSorter
 
         ' First determine what type of stuff we are mining
         SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "

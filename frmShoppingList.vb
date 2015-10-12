@@ -31,9 +31,12 @@ Public Class frmShoppingList
     Private IgnoreFocusChange As Boolean
     Private SelectedGrid As ListView
 
-    Private ItemListColumnSorter As ListViewColumnSorter
-    Private BuyListColumnSorter As ListViewColumnSorter
-    Private BuildListColumnSorter As ListViewColumnSorter
+    Private ItemListColumnClicked As Integer
+    Private ItemListColumnSortOrder As SortOrder
+    Private BuyListColumnClicked As Integer
+    Private BuyListColumnSortOrder As SortOrder
+    Private BuildListColumnClicked As Integer
+    Private BuildListColumnSortOrder As SortOrder
 
     Private ItemBuyTypeList As List(Of ItemBuyType)
 
@@ -164,6 +167,13 @@ Public Class frmShoppingList
         btnCopy.Enabled = False
         btnSaveListToFile.Enabled = False
 
+        ItemListColumnClicked = 0
+        ItemListColumnSortOrder = SortOrder.None
+        BuyListColumnClicked = 0
+        BuyListColumnSortOrder = SortOrder.None
+        BuildListColumnClicked = 0
+        BuildListColumnSortOrder = SortOrder.None
+
         CutPasteUpdate = False
 
         FirstFormLoad = True
@@ -279,10 +289,6 @@ Public Class frmShoppingList
         Const BuyOrder As String = "Buy Order"
         Const BuyMarket As String = "Buy Market"
         Const Unknown As String = "Unknown"
-
-        ' Create an instance of a ListView column sorter and assign it 
-        BuyListColumnSorter = New ListViewColumnSorter()
-        lstBuy.ListViewItemSorter = BuyListColumnSorter
 
         lstBuy.Items.Clear()
         lstBuy.BeginUpdate()
@@ -449,10 +455,6 @@ Public Class frmShoppingList
         Dim lstItem As ListViewItem
         Dim ItemList As List(Of ShoppingListItem)
 
-        ' Create an instance of a ListView column sorter and assign it 
-        ItemListColumnSorter = New ListViewColumnSorter()
-        lstItems.ListViewItemSorter = ItemListColumnSorter
-
         lstItems.BeginUpdate()
         lstItems.Items.Clear()
 
@@ -527,10 +529,6 @@ Public Class frmShoppingList
         Dim lstBuildItem As ListViewItem
         Dim BuildItems As New Materials
         Dim SQL As String
-
-        ' Create an instance of a ListView column sorter and assign it 
-        BuildListColumnSorter = New ListViewColumnSorter()
-        lstBuild.ListViewItemSorter = BuildListColumnSorter
 
         lstBuild.BeginUpdate()
         lstBuild.Items.Clear()
@@ -1584,11 +1582,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub lstBuild_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBuild.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, BuildListColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstBuild.Sort()
+        Call ListViewColumnSorter(e.Column, CType(lstBuild, ListView), BuildListColumnClicked, BuildListColumnSortOrder)
     End Sub
 
     ' Don't allow the first column to show with resize
@@ -1617,11 +1611,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub lstItems_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstItems.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, ItemListColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstItems.Sort()
+        Call ListViewColumnSorter(e.Column, CType(lstItems, ListView), ItemListColumnClicked, ItemListColumnSortOrder)
     End Sub
 
     ' Turn off resizing for the last 4 columns
@@ -1680,11 +1670,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub lstBuy_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBuy.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, BuyListColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstBuy.Sort()
+        Call ListViewColumnSorter(e.Column, CType(lstBuy, ListView), BuyListColumnClicked, BuyListColumnSortOrder)
     End Sub
 
     Private Sub lstBuild_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles lstBuild.KeyDown

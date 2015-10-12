@@ -3,16 +3,26 @@ Imports System.Data.SQLite
 
 Public Class frmIndustryBeltFlip
 
-    Private Ore1ColumnSorter As ListViewColumnSorter
-    Private Mineral1ColumnSorter As ListViewColumnSorter
-    Private Ore2ColumnSorter As ListViewColumnSorter
-    Private Mineral2ColumnSorter As ListViewColumnSorter
-    Private Ore3ColumnSorter As ListViewColumnSorter
-    Private Mineral3ColumnSorter As ListViewColumnSorter
-    Private Ore4ColumnSorter As ListViewColumnSorter
-    Private Mineral4ColumnSorter As ListViewColumnSorter
-    Private Ore5ColumnSorter As ListViewColumnSorter
-    Private Mineral5ColumnSorter As ListViewColumnSorter
+    Private Ore1ColumnClicked As Integer
+    Private Ore1ColumnSortOrder As SortOrder
+    Private Mineral1ColumnClicked As Integer
+    Private Mineral1ColumnSortOrder As SortOrder
+    Private Ore2ColumnClicked As Integer
+    Private Ore2ColumnSortOrder As SortOrder
+    Private Mineral2ColumnClicked As Integer
+    Private Mineral2ColumnSortOrder As SortOrder
+    Private Ore3ColumnClicked As Integer
+    Private Ore3ColumnSortOrder As SortOrder
+    Private Mineral3ColumnClicked As Integer
+    Private Mineral3ColumnSortOrder As SortOrder
+    Private Ore4ColumnClicked As Integer
+    Private Ore4ColumnSortOrder As SortOrder
+    Private Mineral4ColumnClicked As Integer
+    Private Mineral4ColumnSortOrder As SortOrder
+    Private Ore5ColumnClicked As Integer
+    Private Ore5ColumnSortOrder As SortOrder
+    Private Mineral5ColumnClicked As Integer
+    Private Mineral5ColumnSortOrder As SortOrder
 
     Private FirstLoad As Boolean
 
@@ -24,6 +34,27 @@ Public Class frmIndustryBeltFlip
 
         ' Add any initialization after the InitializeComponent() call.
         Call LoadSettings()
+
+        Ore1ColumnClicked = 0
+        Ore1ColumnSortOrder = SortOrder.None
+        Mineral1ColumnClicked = 0
+        Mineral1ColumnSortOrder = SortOrder.None
+        Ore2ColumnClicked = 0
+        Ore2ColumnSortOrder = SortOrder.None
+        Mineral2ColumnClicked = 0
+        Mineral2ColumnSortOrder = SortOrder.None
+        Ore3ColumnClicked = 0
+        Ore3ColumnSortOrder = SortOrder.None
+        Mineral3ColumnClicked = 0
+        Mineral3ColumnSortOrder = SortOrder.None
+        Ore4ColumnClicked = 0
+        Ore4ColumnSortOrder = SortOrder.None
+        Mineral4ColumnClicked = 0
+        Mineral4ColumnSortOrder = SortOrder.None
+        Ore5ColumnClicked = 0
+        Ore5ColumnSortOrder = SortOrder.None
+        Mineral5ColumnClicked = 0
+        Mineral5ColumnSortOrder = SortOrder.None
 
     End Sub
 
@@ -301,28 +332,18 @@ Public Class frmIndustryBeltFlip
             Case BeltType.Small
                 SQL = SQL & "'Small' "
                 CurrentList = lstOresLevel1
-                Ore1ColumnSorter = New ListViewColumnSorter()
-                lstOresLevel1.ListViewItemSorter = Ore1ColumnSorter
             Case BeltType.Medium
                 SQL = SQL & "'Medium' "
                 CurrentList = lstOresLevel2
-                Ore2ColumnSorter = New ListViewColumnSorter()
-                lstOresLevel2.ListViewItemSorter = Ore2ColumnSorter
             Case BeltType.Large
                 SQL = SQL & "'Large' "
                 CurrentList = lstOresLevel3
-                Ore3ColumnSorter = New ListViewColumnSorter()
-                lstOresLevel3.ListViewItemSorter = Ore3ColumnSorter
             Case BeltType.Enormous
                 SQL = SQL & "'Enormous' "
                 CurrentList = lstOresLevel4
-                Ore4ColumnSorter = New ListViewColumnSorter()
-                lstOresLevel4.ListViewItemSorter = Ore4ColumnSorter
             Case BeltType.Colossal
                 SQL = SQL & "'Colossal' "
                 CurrentList = lstOresLevel5
-                Ore5ColumnSorter = New ListViewColumnSorter()
-                lstOresLevel5.ListViewItemSorter = Ore5ColumnSorter
         End Select
 
         SQL = SQL & ") "
@@ -551,8 +572,6 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "'Small' "
                 CurrentOreList = lstOresLevel1
                 CurrentMineralList = lstMineralsLevel1
-                Mineral1ColumnSorter = New ListViewColumnSorter()
-                lstMineralsLevel1.ListViewItemSorter = Mineral1ColumnSorter
 
                 TotalIskLabelForm = lblTotalIskLevel1
                 HrsToFlipForm = lblTotalHourstoFlip1
@@ -568,8 +587,6 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "'Medium' "
                 CurrentOreList = lstOresLevel2
                 CurrentMineralList = lstMineralsLevel2
-                Mineral2ColumnSorter = New ListViewColumnSorter()
-                lstMineralsLevel2.ListViewItemSorter = Mineral2ColumnSorter
 
                 TotalIskLabelForm = lblTotalIskLevel2
                 HrsToFlipForm = lblTotalHourstoFlip2
@@ -585,8 +602,6 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "'Large' "
                 CurrentOreList = lstOresLevel3
                 CurrentMineralList = lstMineralsLevel3
-                Mineral3ColumnSorter = New ListViewColumnSorter()
-                lstMineralsLevel3.ListViewItemSorter = Mineral3ColumnSorter
 
                 TotalIskLabelForm = lblTotalIskLevel3
                 HrsToFlipForm = lblTotalHourstoFlip3
@@ -602,8 +617,6 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "'Extra Large' "
                 CurrentOreList = lstOresLevel4
                 CurrentMineralList = lstMineralsLevel4
-                Mineral4ColumnSorter = New ListViewColumnSorter()
-                lstMineralsLevel4.ListViewItemSorter = Mineral4ColumnSorter
 
                 TotalIskLabelForm = lblTotalIskLevel4
                 HrsToFlipForm = lblTotalHourstoFlip4
@@ -619,8 +632,6 @@ Public Class frmIndustryBeltFlip
                 SQL = SQL & "'Giant' "
                 CurrentOreList = lstOresLevel5
                 CurrentMineralList = lstMineralsLevel5
-                Mineral5ColumnSorter = New ListViewColumnSorter()
-                lstMineralsLevel5.ListViewItemSorter = Mineral5ColumnSorter
 
                 TotalIskLabelForm = lblTotalIskLevel5
                 HrsToFlipForm = lblTotalHourstoFlip5
@@ -1128,19 +1139,11 @@ Public Class frmIndustryBeltFlip
     End Sub
 
     Private Sub lstOresLevel1_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstOresLevel1.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Ore1ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstOresLevel1.Sort()
+        Call ListViewColumnSorter(e.Column, lstOresLevel1, Ore1ColumnClicked, Ore1ColumnSortOrder)
     End Sub
 
     Private Sub lstMineralsLevel1_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineralsLevel1.ColumnClick
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Mineral1ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineralsLevel1.Sort()
+        Call ListViewColumnSorter(e.Column, lstMineralsLevel1, Mineral1ColumnClicked, Mineral1ColumnSortOrder)
     End Sub
 
     Private Sub lstOresLevel1_ItemChecked(sender As Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstOresLevel1.ItemChecked
@@ -1151,20 +1154,12 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub lstOresLevel2_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Ore2ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstOresLevel2.Sort()
+    Private Sub lstOresLevel2_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstOresLevel2.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstOresLevel2, Ore2ColumnClicked, Ore2ColumnSortOrder)
     End Sub
 
-    Private Sub lstMineralsLevel2_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Mineral2ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineralsLevel2.Sort()
+    Private Sub lstMineralsLevel2_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineralsLevel2.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstMineralsLevel2, Mineral2ColumnClicked, Mineral2ColumnSortOrder)
     End Sub
 
     Private Sub lstOresLevel2_ItemChecked(sender As Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstOresLevel2.ItemChecked
@@ -1175,20 +1170,12 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub lstOresLevel3_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Ore3ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstOresLevel3.Sort()
+    Private Sub lstOresLevel3_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstOresLevel3.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstOresLevel3, Ore3ColumnClicked, Ore3ColumnSortOrder)
     End Sub
 
-    Private Sub lstMineralsLevel3_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Mineral3ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineralsLevel3.Sort()
+    Private Sub lstMineralsLevel3_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineralsLevel3.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstMineralsLevel3, Mineral3ColumnClicked, Mineral3ColumnSortOrder)
     End Sub
 
     Private Sub lstOresLevel3_ItemChecked(sender As Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstOresLevel3.ItemChecked
@@ -1199,20 +1186,12 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub lstOresLevel4_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Ore4ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstOresLevel4.Sort()
+    Private Sub lstOresLevel4_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstOresLevel4.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstOresLevel4, Ore4ColumnClicked, Ore4ColumnSortOrder)
     End Sub
 
-    Private Sub lstMineralsLevel4_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Mineral4ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineralsLevel4.Sort()
+    Private Sub lstMineralsLevel4_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineralsLevel4.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstMineralsLevel4, Mineral4ColumnClicked, Mineral4ColumnSortOrder)
     End Sub
 
     Private Sub lstOresLevel4_ItemChecked(sender As Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstOresLevel4.ItemChecked
@@ -1223,20 +1202,12 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub lstOresLevel5_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Ore5ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstOresLevel5.Sort()
+    Private Sub lstOresLevel5_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstOresLevel5.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstOresLevel5, Ore5ColumnClicked, Ore5ColumnSortOrder)
     End Sub
 
-    Private Sub lstMineralsLevel5_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs)
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, Mineral5ColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstMineralsLevel5.Sort()
+    Private Sub lstMineralsLevel5_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineralsLevel5.ColumnClick
+        Call ListViewColumnSorter(e.Column, lstMineralsLevel5, Mineral5ColumnClicked, Mineral5ColumnSortOrder)
     End Sub
 
     Private Sub lstOresLevel5_ItemChecked(sender As Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstOresLevel5.ItemChecked

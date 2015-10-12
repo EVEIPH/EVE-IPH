@@ -2,15 +2,22 @@
 
 Public Class frmManageAccounts
 
-    Private lstColumnSorter As ListViewColumnSorter
+    Private ListColumnClicked As Integer
+    Private ListColumnSortOrder As SortOrder
+
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        ListColumnClicked = 0
+        ListColumnSortOrder = SortOrder.None
+
+    End Sub
 
     Private Sub lstAccounts_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstAccounts.ColumnClick
-
-        ' Set the sort order options
-        Call SetLstVwColumnSortOrder(e, lstColumnSorter)
-
-        ' Perform the sort with these new sort options.
-        lstAccounts.Sort()
+        Call ListViewColumnSorter(e.Column, lstAccounts, ListColumnClicked, ListColumnSortOrder)
     End Sub
 
     Private Sub btnOK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClose.Click
@@ -41,9 +48,6 @@ Public Class frmManageAccounts
 
         DBCommand = New SQLiteCommand(SQL, DB)
         readerAccounts = DBCommand.ExecuteReader
-
-        lstColumnSorter = New ListViewColumnSorter()
-        lstAccounts.ListViewItemSorter = lstColumnSorter
 
         lstAccounts.Items.Clear()
         lstAccounts.BeginUpdate()
@@ -321,12 +325,4 @@ Public Class frmManageAccounts
 
     End Sub
 
-    Public Sub New()
-
-        ' This call is required by the designer.
-        InitializeComponent()
-
-        ' Add any initialization after the InitializeComponent() call.
-
-    End Sub
 End Class
