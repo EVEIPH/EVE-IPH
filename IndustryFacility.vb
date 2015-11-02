@@ -53,9 +53,7 @@ Public Class IndustryFacility
         Dim rsLoader As SQLiteDataReader
         Dim Defaults As New ProgramSettings
 
-
         Try
-
             ' First, figure out the type of facility if the type is set to None (bandaid bug fix for now - don't know why saving these pos facilities saves type as "None")
             ' Only look up factory if we have an id
             If SearchFacilitySettings.FacilityType = None And SearchFacilitySettings.Facility <> "" And SearchFacilitySettings.Facility <> None Then
@@ -75,7 +73,11 @@ Public Class IndustryFacility
 
             End If
 
-            If SearchFacilitySettings.Facility = "" Or SearchFacilitySettings.FacilityType = None Then
+            If SearchFacilitySettings.Facility = "" Or _
+                (SearchFacilitySettings.FacilityType = None And _
+                 SearchFacilitySettings.ProductionType <> IndustryType.Copying And _
+                 SearchFacilitySettings.ProductionType <> IndustryType.Invention And _
+                 SearchFacilitySettings.ProductionType <> IndustryType.T3Invention) Then
 
                 ' Set it to default for the production type, use BP settings
                 Select Case SearchFacilitySettings.ProductionType
@@ -128,8 +130,8 @@ Public Class IndustryFacility
                         Case IndustryType.ComponentManufacturing
                             ActivityID = 1
                         Case IndustryType.Copying
-                            ActivityID = 7
-                        Case IndustryType.Invention
+                            ActivityID = 5
+                        Case IndustryType.Invention, IndustryType.T3Invention
                             ActivityID = 8
                         Case Else
                             ActivityID = 1
@@ -386,7 +388,11 @@ Public Class IndustryFacility
             .TaxRate = TaxRate
             .SolarSystemID = SolarSystemID
             ' Strip the index value off the name before saving
-            .SolarSystemName = Trim(SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 1))
+            If SolarSystemName.Contains("(") Then
+                .SolarSystemName = Trim(SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 1))
+            Else
+                .SolarSystemName = SolarSystemName
+            End If
             .RegionID = RegionID
             .RegionName = RegionName
             .ActivityCostperSecond = ActivityCostPerSecond

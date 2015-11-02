@@ -582,172 +582,196 @@ Public Class frmShoppingList
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        ' Loop through the lists, starting with the build list first and find quantities in hanger to build
-        For i = 0 To 3 ' 4 lists
-            Application.DoEvents()
-            ' TotalShoppingList.GetFullBuildList.Clone uses BuildItem for built in pos, and Volume for the facility ME value
-            Select Case i
-                Case 0
-                    ProcessList = CType(TotalShoppingList.GetFullBuildList.Clone, Materials)
-                Case 1
-                    ProcessList = CType(TotalShoppingList.GetFullBuyList.Clone, Materials)
-                Case 2
-                    ProcessList = CType(TotalShoppingList.GetFullInventionList.Clone, Materials)
-                Case 3
-                    ProcessList = CType(TotalShoppingList.GetFullCopyList.Clone, Materials)
-            End Select
+        Dim IDString As String = ""
 
-            If Not IsNothing(ProcessList) Then
-                If Not IsNothing(ProcessList.GetMaterialList) Then
-                    For j = 0 To ProcessList.GetMaterialList.Count - 1
-                        Application.DoEvents()
-                        UserQuantity = 0
-                        CurrentItemName = ""
+        ' Set the ID string we will use to update
+        If UserAssetWindowShoppingListSettings.AssetType = "Both" Then
+            IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
+        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Personal" Then
+            IDString = CStr(SelectedCharacter.ID)
+        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Corporation" Then
+            IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
+        End If
 
-                        ' Look in table or in the paste list
-                        If Not CutPasteUpdate Then
-                            Dim IDString As String = ""
+        ' Build the where clause to look up data
+        Dim AssetWhereClause As String = ""
+        ' First look up the location and flagID pairs - unique ID of asset locations
+        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE ID IN (" & IDString & ") AND EnumAssetType = 1" ' Enum type 1 is shopping list
+        DBCommand = New SQLiteCommand(SQL, DB)
+        readerAssets = DBCommand.ExecuteReader
 
-                            If UserAssetWindowShoppingListSettings.AssetType = "Both" Then
-                                IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-                            ElseIf UserAssetWindowShoppingListSettings.AssetType = "Personal" Then
-                                IDString = CStr(SelectedCharacter.ID)
-                            ElseIf UserAssetWindowShoppingListSettings.AssetType = "Corporation" Then
-                                IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-                            End If
+        While readerAssets.Read
+            AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ") OR "
+        End While
 
-                            ' Look up each item in their assets in their locations stored, and sum up the quantity
-                            SQL = "SELECT typeName, SUM(Quantity) FROM ASSETS, INVENTORY_TYPES WHERE LocationID IN "
-                            SQL = SQL & "(SELECT LocationID FROM ASSET_LOCATIONS WHERE ID IN (" & IDString & ")"
-                            SQL = SQL & " AND EnumAssetType = 1) " ' Enum type 1 is shopping list
-                            SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
-                            SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
-                            SQL = SQL & " AND ID IN (" & IDString & ")"
+        readerAssets.Close()
 
-                            DBCommand = New SQLiteCommand(SQL, DB)
-                            readerAssets = DBCommand.ExecuteReader
-                            readerAssets.Read()
+        If AssetWhereClause <> "" Then
+            ' Strip the last OR
+            AssetWhereClause = AssetWhereClause.Substring(0, Len(AssetWhereClause) - 4)
 
-                            If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(1)) Then
-                                CurrentItemName = readerAssets.GetString(0)
-                                UserQuantity = CLng(readerAssets.GetValue(1))
-                            End If
+            ' Loop through the lists, starting with the build list first and find quantities in hanger to build
+            For i = 0 To 3 ' 4 lists
+                Application.DoEvents()
+                ' TotalShoppingList.GetFullBuildList.Clone uses BuildItem for built in pos, and Volume for the facility ME value
+                Select Case i
+                    Case 0
+                        ProcessList = CType(TotalShoppingList.GetFullBuildList.Clone, Materials)
+                    Case 1
+                        ProcessList = CType(TotalShoppingList.GetFullBuyList.Clone, Materials)
+                    Case 2
+                        ProcessList = CType(TotalShoppingList.GetFullInventionList.Clone, Materials)
+                    Case 3
+                        ProcessList = CType(TotalShoppingList.GetFullCopyList.Clone, Materials)
+                End Select
 
-                        Else ' Look up in asset list
-                            Dim TempMaterial As Material
+                If Not IsNothing(ProcessList) Then
+                    If Not IsNothing(ProcessList.GetMaterialList) Then
+                        For j = 0 To ProcessList.GetMaterialList.Count - 1
+                            Application.DoEvents()
+                            UserQuantity = 0
+                            CurrentItemName = ""
 
-                            If Not IsNothing(PasteMaterialList) Then
-                                TempMaterial = PasteMaterialList.SearchListbyName(ProcessList.GetMaterialList(j).GetMaterialName, True)
+                            ' Look in table or in the paste list
+                            If Not CutPasteUpdate Then
 
-                                If Not IsNothing(TempMaterial) Then
-                                    ' Found it
-                                    CurrentItemName = TempMaterial.GetMaterialName
-                                    UserQuantity = CLng(TempMaterial.GetQuantity)
+                                ' Look up each item in their assets in their locations stored, and sum up the quantity
+                                SQL = "SELECT typeName, SUM(Quantity) FROM ASSETS, INVENTORY_TYPES "
+                                SQL = SQL & "WHERE " & AssetWhereClause & " "
+                                SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
+                                SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
+                                SQL = SQL & " AND ID IN (" & IDString & ")"
+
+                                DBCommand = New SQLiteCommand(SQL, DB)
+                                readerAssets = DBCommand.ExecuteReader
+                                readerAssets.Read()
+
+                                If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(1)) Then
+                                    CurrentItemName = readerAssets.GetString(0)
+                                    UserQuantity = CLng(readerAssets.GetValue(1))
                                 End If
-                            Else
-                                CurrentItemName = ""
-                                UserQuantity = 0
+
+                            Else ' Look up in asset list
+                                Dim TempMaterial As Material
+
+                                If Not IsNothing(PasteMaterialList) Then
+                                    TempMaterial = PasteMaterialList.SearchListbyName(ProcessList.GetMaterialList(j).GetMaterialName, True)
+
+                                    If Not IsNothing(TempMaterial) Then
+                                        ' Found it
+                                        CurrentItemName = TempMaterial.GetMaterialName
+                                        UserQuantity = CLng(TempMaterial.GetQuantity)
+                                    End If
+                                Else
+                                    CurrentItemName = ""
+                                    UserQuantity = 0
+                                End If
+
                             End If
 
-                        End If
+                            If UserQuantity <> 0 And CurrentItemName <> "" Then
+                                ' Call shoppinglist update numbers with new number
+                                Select Case i
+                                    Case 0
+                                        ' Need to look up the full built item data, however only by name since we don't care how it was built if they already have it
+                                        ' plus we don't have the ME data anyway
+                                        Dim ListQuantity As Long = 0
+                                        Dim TempBuiltList As BuiltItemList
 
-                        If UserQuantity <> 0 And CurrentItemName <> "" Then
-                            ' Call shoppinglist update numbers with new number
-                            Select Case i
-                                Case 0
-                                    ' Need to look up the full built item data, however only by name since we don't care how it was built if they already have it
-                                    ' plus we don't have the ME data anyway
-                                    Dim ListQuantity As Long = 0
-                                    Dim TempBuiltList As BuiltItemList
+                                        ' We could have multiple items in the list (because of different MEs), so loop through all of them and get the quantities on hand
+                                        TempBuiltList = TotalShoppingList.GetFullBuiltItemList.FindBuiltItems(CurrentItemName)
 
-                                    ' We could have multiple items in the list (because of different MEs), so loop through all of them and get the quantities on hand
-                                    TempBuiltList = TotalShoppingList.GetFullBuiltItemList.FindBuiltItems(CurrentItemName)
+                                        For k = 0 To TempBuiltList.GetBuiltItemList.Count - 1
+                                            ListQuantity = TempBuiltList.GetBuiltItemList(k).ItemQuantity
+                                            If ListQuantity <= UserQuantity Then
+                                                ' We found enough already to remove all for this built item, need to keep track and update the rest
+                                                UpdatedQuantity = ListQuantity
+                                                Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltList.GetBuiltItemList(k), 0)
 
-                                    For k = 0 To TempBuiltList.GetBuiltItemList.Count - 1
-                                        ListQuantity = TempBuiltList.GetBuiltItemList(k).ItemQuantity
-                                        If ListQuantity <= UserQuantity Then
-                                            ' We found enough already to remove all for this built item, need to keep track and update the rest
-                                            UpdatedQuantity = ListQuantity
-                                            Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltList.GetBuiltItemList(k), 0)
+                                                ' If the user wants to update the DB with materials they "used" here, update
+                                                If chkUpdateAssetsWhenUsed.Checked Then
+                                                    Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UpdatedQuantity)
+                                                End If
+                                            Else
+                                                ' This list has more, so just remove the difference and leave
+                                                UpdatedQuantity = ListQuantity - UserQuantity
+                                                Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltList.GetBuiltItemList(k), UpdatedQuantity)
+                                                ' If the user wants to update the DB with materials they "used" here, update
+                                                If chkUpdateAssetsWhenUsed.Checked Then
+                                                    Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UpdatedQuantity)
+                                                End If
 
-                                            ' If the user wants to update the DB with materials they "used" here, update
-                                            If chkUpdateAssetsWhenUsed.Checked Then
-                                                Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UpdatedQuantity)
+                                                Exit For
                                             End If
-                                        Else
-                                            ' This list has more, so just remove the difference and leave
-                                            UpdatedQuantity = ListQuantity - UserQuantity
-                                            Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltList.GetBuiltItemList(k), UpdatedQuantity)
-                                            ' If the user wants to update the DB with materials they "used" here, update
-                                            If chkUpdateAssetsWhenUsed.Checked Then
-                                                Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UpdatedQuantity)
-                                            End If
+                                        Next
 
-                                            Exit For
+                                    Case 1, 2, 3
+
+                                        Dim UsedQuantity As Long
+                                        UsedQuantity = ProcessList.GetMaterialList(j).GetQuantity
+
+                                        ' See what the new value is for setting the shopping list
+                                        UpdatedQuantity = ProcessList.GetMaterialList(j).GetQuantity - UserQuantity
+
+                                        If UpdatedQuantity < 0 Then
+                                            ' We have more than this item requires, so zero out the quantity in the shopping list (delete)
+                                            UpdatedQuantity = 0
                                         End If
-                                    Next
 
-                                Case 1, 2, 3
+                                        ' Invention and RE are contained in Buy mats list
+                                        Call TotalShoppingList.UpdateShoppingBuyQuantity(ProcessList.GetMaterialList(j).GetMaterialName, UpdatedQuantity)
 
-                                    Dim UsedQuantity As Long
-                                    UsedQuantity = ProcessList.GetMaterialList(j).GetQuantity
+                                        ' If the user wants to update the DB with materials they "used" here, update
+                                        If chkUpdateAssetsWhenUsed.Checked Then
+                                            Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UsedQuantity)
+                                        End If
 
-                                    ' See what the new value is for setting the shopping list
-                                    UpdatedQuantity = ProcessList.GetMaterialList(j).GetQuantity - UserQuantity
+                                End Select
+                            End If
+                        Next
+                    End If
+                End If
+            Next
 
-                                    If UpdatedQuantity < 0 Then
-                                        ' We have more than this item requires, so zero out the quantity in the shopping list (delete)
-                                        UpdatedQuantity = 0
-                                    End If
+            Application.UseWaitCursor = False
+            Application.DoEvents()
 
-                                    ' Invention and RE are contained in Buy mats list
-                                    Call TotalShoppingList.UpdateShoppingBuyQuantity(ProcessList.GetMaterialList(j).GetMaterialName, UpdatedQuantity)
+            ' Play notification sound
+            Call PlayNotifySound()
 
-                                    ' If the user wants to update the DB with materials they "used" here, update
-                                    If chkUpdateAssetsWhenUsed.Checked Then
-                                        Call UpdateUsedAssets(ProcessList.GetMaterialList(j).GetMaterialTypeID, UserQuantity, UsedQuantity)
-                                    End If
+            ' Refresh the updated lists
+            Call RefreshLists()
 
-                            End Select
+            ' Refresh the asset list with updated assets
+            If chkUpdateAssetsWhenUsed.Checked Then
+                ' First, need to refresh assets for character and corp if used
+                If Not IsNothing(frmShoppingAssets) Then
+                    If Not frmShoppingAssets.IsDisposed Then
+                        If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
+                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
+                        Else ' Just personal
+                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
                         End If
-                    Next
-                End If
-            End If
-        Next
-
-        Application.UseWaitCursor = False
-        Application.DoEvents()
-
-        ' Play notification sound
-        Call PlayNotifySound()
-
-        ' Refresh the updated lists
-        Call RefreshLists()
-
-        ' Refresh the asset list with updated assets
-        If chkUpdateAssetsWhenUsed.Checked Then
-            ' First, need to refresh assets for character and corp if used
-            If Not IsNothing(frmShoppingAssets) Then
-                If Not frmShoppingAssets.IsDisposed Then
-                    If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
-                        SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
-                    Else ' Just personal
-                        SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
+                        frmShoppingAssets.RefreshTree()
                     End If
-                    frmShoppingAssets.RefreshTree()
                 End If
-            End If
 
-            If Not IsNothing(frmDefaultAssets) Then
-                If Not frmDefaultAssets.IsDisposed Then
-                    If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
-                        SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
-                    Else ' Just personal
-                        SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
+                If Not IsNothing(frmDefaultAssets) Then
+                    If Not frmDefaultAssets.IsDisposed Then
+                        If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
+                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
+                        Else ' Just personal
+                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
+                        End If
+                        frmDefaultAssets.RefreshTree()
                     End If
-                    frmDefaultAssets.RefreshTree()
                 End If
             End If
+            Application.DoEvents()
+        Else
+            MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
+            Application.UseWaitCursor = False
+            Application.DoEvents()
         End If
 
     End Sub
@@ -1814,6 +1838,7 @@ Public Class frmShoppingList
                     ShopListItem.NumBPs = CInt(lstItems.SelectedItems(i).SubItems(4).Text)
                     ShopListItem.BuildType = lstItems.SelectedItems(i).SubItems(5).Text
                     ShopListItem.Decryptor = lstItems.SelectedItems(i).SubItems(6).Text
+                    ShopListItem.BuildLocation = lstItems.SelectedItems(i).SubItems(7).Text
 
                     ' Remove it from shopping listxc 
                     TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, 0)

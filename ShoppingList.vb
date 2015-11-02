@@ -258,7 +258,7 @@ Public Class ShoppingList
                         ShoppingItem.AvgInvRunsforSuccess = 0
                         ShoppingItem.NumBPs = 1 ' Built items (components) are always one bp for now
 
-                        ' Get the new quantity for each material to build this item
+                        ' Get the new quantity for each material to build this item - which will be in the buy list
                         UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, .GetMaterialList(i), RefMatQuantity)
 
                         ' Need to update to the quantity sent in the Buy List
@@ -377,7 +377,6 @@ Public Class ShoppingList
         Dim OnHandMats As Long
         Dim ListMatQuantity As Long
         Dim NumInventionJobs As Integer
-        Dim CurrentMatQuantity As Long = 0
         Dim NewMatQuantity As Long = 0
 
         ' Set up the ME bonus and then calculate the new material quantity
@@ -385,10 +384,6 @@ Public Class ShoppingList
         Dim SingleRunQuantity As Long = 0
         Dim rsMatQuantity As SQLiteDataReader
         Dim SQL As String
-
-        If NewItemQuantity = 0 Then
-            Return 0
-        End If
 
         ' Look up the cost for the material
         If ProcessingType = "Invention" Or ProcessingType = "Copying" Then
@@ -428,17 +423,18 @@ Public Class ShoppingList
             MEBonus = (1 - (CurrentItem.ItemME / 100)) * CurrentItem.FacilityMEModifier
 
             ' Figure out how many bps we need now and apply the ME bonus for each bp and sum up
-            Dim NewNumBPs As Integer
-            Dim NewRunsperBP As Integer
+            Dim NewNumBPs As Integer = 0
+            Dim NewRunsperBP As Integer = 0
 
             If CurrentItem.InventionJobs <> 0 Then
-                If CurrentItem.NumBPs = 1 Then
-                    NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / CurrentItem.InventedRunsPerBP))
-                Else
-                    NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / (CurrentItem.Quantity / CurrentItem.NumBPs)))
+                If NewItemQuantity <> 0 Then
+                    If CurrentItem.NumBPs = 1 Then
+                        NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / CurrentItem.InventedRunsPerBP))
+                    Else
+                        NewNumBPs = CInt(Math.Ceiling(NewItemQuantity / (CurrentItem.Quantity / CurrentItem.NumBPs)))
+                    End If
+                    NewRunsperBP = CInt(Math.Ceiling(NewItemQuantity / NewNumBPs))
                 End If
-
-                NewRunsperBP = CInt(Math.Ceiling(NewItemQuantity / NewNumBPs))
             Else
                 ' This isn't invented so just use the number of blueprints
                 NewNumBPs = CurrentItem.NumBPs
@@ -467,9 +463,6 @@ Public Class ShoppingList
             ElseIf ProcessingType = "Build" Then
                 ListMatQuantity = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem).ItemQuantity
             End If
-
-            ' Set the current mat quantity for calc below
-            CurrentMatQuantity = UpdateItemMaterial.GetQuantity
 
         End If
 

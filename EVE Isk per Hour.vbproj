@@ -156,6 +156,12 @@
     <Compile Include="frmCRESTMarketViewer.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmLPStore.Designer.vb">
+      <DependentUpon>frmLPStore.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmLPStore.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmReqSkills.Designer.vb">
       <DependentUpon>frmReqSkills.vb</DependentUpon>
     </Compile>
@@ -400,6 +406,9 @@
   <ItemGroup>
     <EmbeddedResource Include="frmCRESTMarketViewer.resx">
       <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmLPStore.resx">
+      <DependentUpon>frmLPStore.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmReqSkills.resx">
       <DependentUpon>frmReqSkills.vb</DependentUpon>
