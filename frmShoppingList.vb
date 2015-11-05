@@ -596,7 +596,7 @@ Public Class frmShoppingList
         ' Build the where clause to look up data
         Dim AssetWhereClause As String = ""
         ' First look up the location and flagID pairs - unique ID of asset locations
-        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE ID IN (" & IDString & ") AND EnumAssetType = 1" ' Enum type 1 is shopping list
+        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & ")" ' Enum type 1 is shopping list
         DBCommand = New SQLiteCommand(SQL, DB)
         readerAssets = DBCommand.ExecuteReader
 
@@ -637,7 +637,7 @@ Public Class frmShoppingList
 
                                 ' Look up each item in their assets in their locations stored, and sum up the quantity
                                 SQL = "SELECT typeName, SUM(Quantity) FROM ASSETS, INVENTORY_TYPES "
-                                SQL = SQL & "WHERE " & AssetWhereClause & " "
+                                SQL = SQL & "WHERE (" & AssetWhereClause & ") "
                                 SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
                                 SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
                                 SQL = SQL & " AND ID IN (" & IDString & ")"
@@ -796,8 +796,7 @@ Public Class frmShoppingList
         If UserQuantity <= UsedQuantity Then
             ' Need to just delete the records because we are using everything we have in all locations
             SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID IN"
-            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE ID IN (" & IDString & ")"
-            SQL = SQL & " AND EnumAssetType = 1) " ' Enum type 1 is shopping list
+            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & "))" ' Enum type 1 is shopping list
             SQL = SQL & " AND ID IN (" & IDString & ")"
 
             Call ExecuteNonQuerySQL(SQL)
@@ -805,8 +804,7 @@ Public Class frmShoppingList
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
             SQL = "SELECT Quantity, LocationID FROM ASSETS, INVENTORY_TYPES WHERE LocationID IN"
-            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE ID IN (" & IDString & ")"
-            SQL = SQL & " AND EnumAssetType = 1)" ' Enum type 1 is shopping list
+            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & "))" ' Enum type 1 is shopping list
             SQL = SQL & " AND ID IN (" & IDString & ")"
             SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
             SQL = SQL & " AND ASSETS.TypeID = " & MaterialTypeID
