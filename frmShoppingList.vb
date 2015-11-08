@@ -601,7 +601,12 @@ Public Class frmShoppingList
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
-            AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ") OR "
+            If readerAssets.GetInt32(1) = -4 Then
+                ' If the flag is the base location, then we want all items at the location id
+                AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & ") OR "
+            Else
+                AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ") OR "
+            End If
         End While
 
         readerAssets.Close()
