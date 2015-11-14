@@ -366,7 +366,7 @@ Public Class frmIndustryBeltFlip
         Call CurrentList.BeginUpdate()
 
         While readerBelts.Read
-            lstOreRow = CurrentList.Items.Add("")
+            lstOreRow = New ListViewItem("")
             'The remaining columns are subitems
             lstOreRow.SubItems.Add(readerBelts.GetString(0))
             lstOreRow.SubItems.Add(CStr(readerBelts.GetInt32(2)))
@@ -374,6 +374,7 @@ Public Class frmIndustryBeltFlip
 
             ' All records are initially checked
             lstOreRow.Checked = GetOreCheckValue(readerBelts.GetString(0), Belt)
+            Call CurrentList.Items.Add(lstOreRow)
         End While
 
         Call CurrentList.EndUpdate()
@@ -706,10 +707,11 @@ Public Class frmIndustryBeltFlip
 
             ' Now that we've refined all the ores, put the minerals into minerals list
             For i = 0 To TotalRefinedMinerals.GetMaterialList.Count - 1
-                lstOreRow = CurrentMineralList.Items.Add(TotalRefinedMinerals.GetMaterialList(i).GetMaterialName)
+                lstOreRow = New ListViewItem(TotalRefinedMinerals.GetMaterialList(i).GetMaterialName)
                 'The remaining columns are subitems
                 lstOreRow.SubItems.Add(FormatNumber(TotalRefinedMinerals.GetMaterialList(i).GetQuantity, 0))
                 lstOreRow.SubItems.Add(FormatNumber(TotalRefinedMinerals.GetMaterialList(i).GetTotalCost, 2))
+                Call CurrentMineralList.Items.Add(lstOreRow)
             Next
 
             Call CurrentMineralList.EndUpdate()

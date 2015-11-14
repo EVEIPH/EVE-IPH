@@ -42,6 +42,8 @@ Public Module SettingsVariables
     ' Asset windows - multiple
     Public UserAssetWindowDefaultSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
+    ' For LP store
+    Public UserLPStoreSettings As LPStore
 
 End Module
 
@@ -745,6 +747,23 @@ Public Class ProgramSettings
     Private DefaultAssetType As String = "Both"
     Private DefaultAssetSortbyName As Boolean = True
 
+    ' Default LP Store
+    Private DefaultLPRewardType As String = "All"
+    Private DefaultLPCheckRaceAmarr As Boolean = True
+    Private DefaultLPCheckRaceCaldari As Boolean = True
+    Private DefaultLPCheckRaceGallente As Boolean = True
+    Private DefaultLPCheckRaceMinmatar As Boolean = True
+    Private DefaultLPCheckRacePirate As Boolean = True
+    Private DefaultLPTextItemSearch As String = ""
+    Private DefaultLPTextReqItemSearch As String = ""
+    Private DefaultLPLPCostLessThan As String = ""
+    Private DefaultLPLPCostGreaterThan As String = ""
+    Private DefaultLPISKCostLessThan As String = ""
+    Private DefaultLPISKCostGreaterThan As String = ""
+    Private DefaulTLPSearchOption As String = "All Corporations"
+    Private DefaultLPHighlightCheck As Boolean = True
+    Private DefaultLPSelectedCorporations As String = ""
+
     ' Local versions of settings
     Private ApplicationSettings As ApplicationSettings
     Private POSSettings As PlayerOwnedStationSettings
@@ -759,6 +778,7 @@ Public Class ProgramSettings
     Private IndustryFlipBeltsSettings As IndustryFlipBeltSettings
     Private ShoppingListTabSettings As ShoppingListSettings
     Private IndustryTeamSettings As TeamSettings
+    Private LPStoreSettings As LPStore
 
     ' Facilities
     Private ManufacturingFacilitySettings As FacilitySettings
@@ -835,6 +855,8 @@ Public Class ProgramSettings
     Private Const ComponentManufacturingTeamSettingsFileName As String = "ComponentsManufacturingTeamSettings"
     Private Const CopyTeamSettingsFileName As String = "CopyTeamSettings"
     Private Const InventionTeamSettingsFileName As String = "InventionTeamSettings"
+
+    Private Const LPStoreSettingsFileName As String = "LPStoreSettings"
 
     ' 5 belts
     Private IndustryBeltOreChecksFileName As String = IndustryBeltOreChecksFileName
@@ -4667,6 +4689,115 @@ Public Class ProgramSettings
 
 #End Region
 
+#Region "LP Store Settings"
+
+    ' Loads the tab settings
+    Public Function LoadLPStoreSettings() As LPStore
+        Dim TempSettings As LPStore = Nothing
+
+        Try
+
+            If FileExists(LPStoreSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .RewardType = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "RewardType", DefaultLPRewardType))
+                    .CheckRaceAmarr = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckRaceAmarr", DefaultLPCheckRaceAmarr))
+                    .CheckRaceCaldari = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckRaceCaldari", DefaultLPCheckRaceCaldari))
+                    .CheckRaceGallente = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckRaceGallente", DefaultLPCheckRaceGallente))
+                    .CheckRaceMinmatar = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckRaceMinmatar", DefaultLPCheckRaceMinmatar))
+                    .CheckRacePirate = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckRacePirate", DefaultLPCheckRacePirate))
+                    .TextItemSearch = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "TextItemSearch", DefaultLPTextItemSearch))
+                    .TextReqItemSearch = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "TextReqItemSearch", DefaultLPTextReqItemSearch))
+                    .LPCostLessThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostLessThan", DefaultLPLPCostLessThan))
+                    .LPCostGreaterThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostGreaterThan", DefaultLPLPCostGreaterThan))
+                    .ISKCostLessThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostLessThan", DefaultLPISKCostLessThan))
+                    .ISKCostGreaterThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostGreaterThan", DefaultLPISKCostGreaterThan))
+                    .SearchOption = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SearchOption", DefaulTLPSearchOption))
+                    .HighlightCheck = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "HighlightCheck", DefaultLPHighlightCheck))
+                    .SelectedCorporations = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SelectedCorporations", DefaultLPSelectedCorporations))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultLPStoreSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading LPStore Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultLPStoreSettings()
+        End Try
+
+        ' Save them locally and then export
+        LPStoreSettings = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    Public Function SetDefaultLPStoreSettings() As LPStore
+        Dim LocalSettings As LPStore
+
+        With LocalSettings
+            .RewardType = DefaultLPRewardType
+            .CheckRaceAmarr = DefaultLPCheckRaceAmarr
+            .CheckRaceCaldari = DefaultLPCheckRaceCaldari
+            .CheckRaceGallente = DefaultLPCheckRaceGallente
+            .CheckRaceMinmatar = DefaultLPCheckRaceMinmatar
+            .CheckRacePirate = DefaultLPCheckRacePirate
+            .TextItemSearch = DefaultLPTextItemSearch
+            .TextReqItemSearch = DefaultLPTextReqItemSearch
+            .LPCostLessThan = DefaultLPLPCostLessThan
+            .LPCostGreaterThan = DefaultLPLPCostGreaterThan
+            .ISKCostLessThan = DefaultLPISKCostLessThan
+            .ISKCostGreaterThan = DefaultLPISKCostGreaterThan
+            .SearchOption = DefaulTLPSearchOption
+            .HighlightCheck = DefaultLPHighlightCheck
+            .SelectedCorporations = DefaultLPSelectedCorporations
+        End With
+
+        ' Save locally
+        LPStoreSettings = LocalSettings
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveLPStoreSettings(SentSettings As LPStore)
+        Dim LPStoreSettingsList(14) As Setting
+
+        Try
+            LPStoreSettingsList(0) = New Setting("RewardType", CStr(SentSettings.RewardType))
+            LPStoreSettingsList(1) = New Setting("CheckRaceAmarr", CStr(SentSettings.CheckRaceAmarr))
+            LPStoreSettingsList(2) = New Setting("CheckRaceCaldari", CStr(SentSettings.CheckRaceCaldari))
+            LPStoreSettingsList(3) = New Setting("CheckRaceGallente", CStr(SentSettings.CheckRaceGallente))
+            LPStoreSettingsList(4) = New Setting("CheckRaceMinmatar", CStr(SentSettings.CheckRaceMinmatar))
+            LPStoreSettingsList(5) = New Setting("CheckRacePirate", CStr(SentSettings.CheckRacePirate))
+            LPStoreSettingsList(6) = New Setting("TextItemSearch", CStr(SentSettings.TextItemSearch))
+            LPStoreSettingsList(7) = New Setting("TextReqItemSearch", CStr(SentSettings.TextReqItemSearch))
+            LPStoreSettingsList(8) = New Setting("LPCostLessThan", CStr(SentSettings.LPCostLessThan))
+            LPStoreSettingsList(9) = New Setting("LPCostGreaterThan", CStr(SentSettings.LPCostGreaterThan))
+            LPStoreSettingsList(10) = New Setting("ISKCostLessThan", CStr(SentSettings.ISKCostLessThan))
+            LPStoreSettingsList(11) = New Setting("ISKCostGreaterThan", CStr(SentSettings.ISKCostGreaterThan))
+            LPStoreSettingsList(12) = New Setting("SearchOption", CStr(SentSettings.SearchOption))
+            LPStoreSettingsList(13) = New Setting("HighlightCheck", CStr(SentSettings.HighlightCheck))
+            LPStoreSettingsList(14) = New Setting("SelectedCorporations", CStr(SentSettings.SelectedCorporations))
+
+            Call WriteSettingsToFile(LPStoreSettingsFileName, LPStoreSettingsList, LPStoreSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving LP Store Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetLPStoreSettings() As LPStore
+        Return LPStoreSettings
+    End Function
+
+#End Region
+
 End Class
 
 ' For general program settings
@@ -5462,4 +5593,30 @@ End Structure
 Public Structure TeamSettings
     Dim TeamID As Long
     Dim TeamTab As String ' BP or Calc
+End Structure
+
+' Settings on LP Store form
+Public Structure LPStore
+    Dim RewardType As String
+
+    Dim CheckRaceAmarr As Boolean
+    Dim CheckRaceCaldari As Boolean
+    Dim CheckRaceGallente As Boolean
+    Dim CheckRaceMinmatar As Boolean
+    Dim CheckRacePirate As Boolean
+
+    Dim TextItemSearch As String
+    Dim TextReqItemSearch As String
+
+    Dim LPCostLessThan As String
+    Dim LPCostGreaterThan As String
+    Dim ISKCostLessThan As String
+    Dim ISKCostGreaterThan As String
+
+    Dim SearchOption As String
+
+    Dim HighlightCheck As Boolean
+
+    Dim SelectedCorporations As String ' CSV string with all the corp names checked
+
 End Structure

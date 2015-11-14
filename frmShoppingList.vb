@@ -446,6 +446,9 @@ Public Class frmShoppingList
             End If
         End If
 
+        ' Finally sort it if there is a value it's already sorted
+        Call ListViewColumnSorter(ItemListColumnClicked, CType(lstItems, ListView), ItemListColumnClicked, ItemListColumnSortOrder)
+
         lstBuy.EndUpdate()
 
     End Sub

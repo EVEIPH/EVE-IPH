@@ -45,17 +45,19 @@ Public Class frmCostSplitViewer
         If Not IsNothing(CostSplits) Then
             For i = 0 To CostSplits.Count - 1
                 Application.DoEvents()
-                MatList = lstCosts.Items.Add(CostSplits(i).SplitName)
+                MatList = New ListViewItem(CostSplits(i).SplitName)
                 MatList.SubItems.Add(FormatNumber(CostSplits(i).SplitValue, 2))
                 TotalCost += CostSplits(i).SplitValue
+                Call lstCosts.Items.Add(MatList)
             Next
         End If
 
         ' Finally add the total cost
-        MatList = lstCosts.Items.Add("Total Cost")
+        MatList = New ListViewItem("Total Cost")
         ' Color this last line grey
         MatList.BackColor = Color.LightGray
         MatList.SubItems.Add(FormatNumber(TotalCost, 2))
+        Call lstCosts.Items.Add(MatList)
 
         lstCosts.EndUpdate()
         Application.UseWaitCursor = False

@@ -218,7 +218,7 @@ Public Class frmInventionMonitor
         lstInventionItems.BeginUpdate()
 
         While rsInvention.Read
-            lstJobRow = lstInventionItems.Items.Add(CStr(rsInvention.GetInt32(1))) ' BP ID
+            lstJobRow = New ListViewItem(CStr(rsInvention.GetInt32(1))) ' BP ID
             'The remaining columns are subitems  
             lstJobRow.SubItems.Add(rsInvention.GetString(2)) ' BP Name
             lstJobRow.SubItems.Add(CStr(rsInvention.GetInt32(3))) ' BP Runs
@@ -230,6 +230,7 @@ Public Class frmInventionMonitor
             lstJobRow.SubItems.Add(CStr(rsInvention.GetInt32(7))) ' Successes
             lstJobRow.SubItems.Add(CStr(rsInvention.GetInt32(8))) ' Total Attempts
             lstJobRow.SubItems.Add(CStr(rsInvention.GetInt32(9))) ' BPC Runs
+            Call lstInventionItems.Items.Add(lstJobRow)
         End While
 
         lstInventionItems.EndUpdate()

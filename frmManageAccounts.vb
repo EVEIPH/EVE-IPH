@@ -55,7 +55,7 @@ Public Class frmManageAccounts
         While readerAccounts.Read
 
             ' Insert into table
-            lstViewRow = lstAccounts.Items.Add(readerAccounts.GetString(0)) ' API Type
+            lstViewRow = New ListViewItem(readerAccounts.GetString(0)) ' API Type
             'The remaining columns are subitems  
             lstViewRow.SubItems.Add(CStr(CLng(readerAccounts.GetValue(1)))) ' KeyID
             lstViewRow.SubItems.Add(readerAccounts.GetString(2)) ' API
@@ -90,6 +90,8 @@ Public Class frmManageAccounts
             Else
                 lstViewRow.SubItems.Add(CStr(CDate(readerAccounts.GetString(4))))
             End If
+
+            Call lstAccounts.Items.Add(lstViewRow)
 
             CharList = ""
 

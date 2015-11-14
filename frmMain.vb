@@ -1628,6 +1628,12 @@ Public Class frmMain
         f1.Show()
     End Sub
 
+    Private Sub mnuLPStore_Click(sender As System.Object, e As System.EventArgs) Handles mnuLPStore.Click
+        Dim f1 As New frmLPStore
+
+        f1.Show()
+    End Sub
+
     ' Full reset - will delete all data downloaded, updated, or otherwise set by the user
     Private Sub mnuResetAllData_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuResetAllData.Click
         Dim Response As MsgBoxResult
@@ -5804,9 +5810,9 @@ Tabs:
             lstBPComponentMats.Items.Clear()
             lstBPComponentMats.BeginUpdate()
             For i = 0 To BPComponentMats.Count - 1
-                complstViewRow = lstBPComponentMats.Items.Add(BPComponentMats(i).GetMaterialName) ' Check TODO - Add check box?
+                'complstViewRow = lstBPComponentMats.Items.Add(BPComponentMats(i).GetMaterialName) ' Check TODO - Add check box?
                 'The remaining columns are subitems  
-                'complstViewRow.SubItems.Add(BPComponentMats(i).GetMaterialName)
+                complstViewRow = New ListViewItem(BPComponentMats(i).GetMaterialName)
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetQuantity, 0))
                 TempME = BPComponentMats(i).GetItemME
 
@@ -5837,6 +5843,7 @@ Tabs:
                 End If
                 complstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetTotalCost, 2))
+                Call lstBPComponentMats.Items.Add(complstViewRow) ' Check TODO - Add check box?
             Next
 
             lstBPComponentMats.EndUpdate()
@@ -5890,7 +5897,7 @@ Tabs:
             lstBPRawMats.Items.Clear()
             lstBPRawMats.BeginUpdate()
             For i = 0 To BPRawMats.Count - 1
-                rawlstViewRow = lstBPRawMats.Items.Add(BPRawMats(i).GetMaterialName)
+                rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
                 'The remaining columns are subitems  
                 rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
                 rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
@@ -5903,6 +5910,7 @@ Tabs:
                 End If
                 rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
                 rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
+                Call lstBPRawMats.Items.Add(rawlstViewRow)
             Next
             lstBPRawMats.EndUpdate()
         End If
@@ -8979,7 +8987,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
-            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous', 'Unknown Components') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
+            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
             ItemChecked = True
         End If
         If chkSalvage.Checked Then
@@ -9057,7 +9065,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkImplants.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Cyberimplant' OR "
+            SQL = SQL & "(ITEM_GROUP = 'Cyberimplant' OR (ITEM_CATEGORY = 'Implant' AND ITEM_GROUP <> 'Booster')) OR "
             ItemChecked = True
         End If
         If chkDeployables.Checked Then
@@ -9205,7 +9213,7 @@ ExitSub:
             ' Fill list
             While readerMats.Read
                 'ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE
-                lstViewRow = lstPricesView.Items.Add(CStr(readerMats.GetValue(0)))
+                lstViewRow = New ListViewItem(CStr(readerMats.GetValue(0)))
                 'The remaining columns are subitems  
                 lstViewRow.SubItems.Add(CStr(readerMats.GetString(2)))
                 lstViewRow.SubItems.Add(CStr(readerMats.GetString(1)))
@@ -9216,6 +9224,7 @@ ExitSub:
                 Else
                     lstViewRow.SubItems.Add(CStr(readerMats.GetInt64(5)))
                 End If
+                Call lstPricesView.Items.Add(lstViewRow)
             End While
 
             readerMats.Close()
@@ -16089,8 +16098,7 @@ DisplayResults:
         For i = 0 To FinalItemList.Count - 1
             Application.DoEvents()
 
-            'The remaining columns are subitems - Add depending on position
-            BPList = lstManufacturing.Items.Add(CStr(FinalItemList(i).RecordID)) ' Always the first item
+            BPList = New ListViewItem(CStr(FinalItemList(i).RecordID)) ' Always the first item
 
             For j = 1 To ColumnPositions.Count - 1
                 Select Case ColumnPositions(j)
@@ -16270,6 +16278,9 @@ DisplayResults:
             If Not FinalItemList(i).CanRE And FinalItemList(i).TechLevel = "T3" And FinalItemList(i).BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
                 BPList.ForeColor = Color.DarkGreen
             End If
+
+            ' Add the record
+            Call lstManufacturing.Items.Add(BPList)
 
             ' For each record, update the progress bar
             Call IncrementToolStripProgressBar(pnlProgressBar)
@@ -18761,7 +18772,7 @@ ExitCalc:
         lstDC.BeginUpdate()
         For i = 0 To DCAgentList.Count - 1
             If DCAgentList(i).AgentAvailable Or (Not DCAgentList(i).AgentAvailable And chkDCIncludeAllAgents.Checked) Then
-                lstDCViewRow = lstDC.Items.Add("") ' Check
+                lstDCViewRow = New ListViewItem("") ' Check
                 'The remaining columns are subitems  
                 lstDCViewRow.SubItems.Add(DCAgentList(i).Corporation)
                 lstDCViewRow.SubItems.Add(DCAgentList(i).Agent)
@@ -18808,6 +18819,8 @@ ExitCalc:
                         Exit For
                     End If
                 Next
+
+                Call lstDC.Items.Add(lstDCViewRow)
 
             End If
 
@@ -19580,7 +19593,7 @@ Leave:
             lstReactions.Items.Clear()
 
             For i = 0 To GlobalReactionList.Count - 1
-                lstViewRow = lstReactions.Items.Add(GlobalReactionList(i).ReactionType)
+                lstViewRow = New ListViewItem(GlobalReactionList(i).ReactionType)
                 'The remaining columns are subitems  
                 lstViewRow.SubItems.Add(GlobalReactionList(i).Reaction)
                 lstViewRow.SubItems.Add(GlobalReactionList(i).Output.GetMaterialName)
@@ -19611,6 +19624,9 @@ Leave:
                 End Select
 
                 lstViewRow.SubItems.Add(FormatNumber(ReactionIPH, 2)) ' IPH
+
+                Call lstReactions.Items.Add(lstViewRow)
+
             Next
 
             lstReactions.EndUpdate()
@@ -19625,7 +19641,7 @@ Leave:
         Dim lstViewRow As ListViewItem
         Dim ReactionIPH As Double
 
-        lstViewRow = lstReactions.Items.Add(SentReaction.ReactionType)
+        lstViewRow = New ListViewItem(SentReaction.ReactionType)
         'The remaining columns are subitems  
         lstViewRow.SubItems.Add(SentReaction.Reaction)
         lstViewRow.SubItems.Add(SentReaction.Output.GetMaterialName)
@@ -19655,6 +19671,8 @@ Leave:
         End Select
 
         lstViewRow.SubItems.Add(FormatNumber(ReactionIPH, 2))
+
+        Call lstReactions.Items.Add(lstViewRow)
 
     End Sub
 
@@ -19775,11 +19793,11 @@ Leave:
             If Not IsNothing(GlobalReactionList(index).Inputs.GetMaterialList) Then
                 For i = 0 To GlobalReactionList(index).Inputs.GetMaterialList.Count - 1
 
-                    lstViewRow = lstReactionMats.Items.Add(GlobalReactionList(index).Inputs.GetMaterialList(i).GetMaterialName)
+                    lstViewRow = New ListViewItem(GlobalReactionList(index).Inputs.GetMaterialList(i).GetMaterialName)
                     'The remaining columns are subitems  
                     'lstViewRow.SubItems.Add(GlobalReactionList(index).Inputs.GetMaterialList(i).GetCostPerItem)
                     lstViewRow.SubItems.Add(CStr(GlobalReactionList(index).Inputs.GetMaterialList(i).GetQuantity))
-
+                    Call lstReactionMats.Items.Add(lstViewRow)
                 Next
 
                 ' Populate Taxes and Fees
@@ -22200,7 +22218,7 @@ Leave:
         For i = 0 To OreList.Count - 1
             ' Make sure we want to add Mercoxit
             If Not OreList(i).OreName.Contains("Mercoxit") Or (OreList(i).OreName.Contains("Mercoxit") And cmbMineMiningLaser.Text.Contains("Deep Core")) Then
-                lstOreRow = lstMineGrid.Items.Add(CStr(OreList(i).OreID))
+                lstOreRow = New ListViewItem(CStr(OreList(i).OreID))
                 'The remaining columns are subitems  
                 lstOreRow.SubItems.Add(OreList(i).OreName)
                 lstOreRow.SubItems.Add(OreList(i).RefineType)
@@ -22215,6 +22233,7 @@ Leave:
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitsPerCycle * MinerMultiplier, 2))
                 lstOreRow.SubItems.Add(FormatNumber(Math.Round(OreList(i).UnitsPerHour * MinerMultiplier), 0))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).IPH * MinerMultiplier, 2))
+                Call lstMineGrid.Items.Add(lstOreRow)
             End If
         Next
 

@@ -246,7 +246,7 @@ Public Class frmIndustryJobsViewer
 
             lstIndustryJobs.ListViewItemSorter = Nothing
             ' Always add the end time to column 0 for sorting 
-            lstJobRow = lstIndustryJobs.Items.Add(rsJobs.GetString(3))
+            lstJobRow = New ListViewItem(rsJobs.GetString(3))
             lstJobRow.UseItemStyleForSubItems = False
 
             With UserIndustryJobsColumnSettings
@@ -314,6 +314,9 @@ Public Class frmIndustryJobsViewer
                     End Select
                 Next
             End With
+
+            Call lstIndustryJobs.Items.Add(lstJobRow)
+
         End While
 
         lstIndustryJobs.EndUpdate()
@@ -346,7 +349,7 @@ Public Class frmIndustryJobsViewer
         For i = 0 To LoadedCharacters.Count - 1
             Application.DoEvents()
             With LoadedCharacters(i)
-                lstCharacterRow = lstCharacters.Items.Add("") ' Check
+                lstCharacterRow = New ListViewItem("") ' Check
                 lstCharacterRow.SubItems.Add(.Name) ' Name
                 lstCharacterRow.SubItems.Add(.Corporation)
 
@@ -367,6 +370,9 @@ Public Class frmIndustryJobsViewer
                     lstCharacterRow.Checked = True
                 End If
             End With
+
+            Call lstCharacters.Items.Add(lstCharacterRow)
+
         Next
 
         lstCharacters.EndUpdate()

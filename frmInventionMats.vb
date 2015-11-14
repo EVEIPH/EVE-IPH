@@ -49,18 +49,19 @@
         If Not IsNothing(MaterialList.GetMaterialList) Then
             For i = 0 To MaterialList.GetMaterialList.Count - 1
                 Application.DoEvents()
-                MatList = lstMats.Items.Add(MaterialList.GetMaterialList(i).GetMaterialName)
+                MatList = New ListViewItem(MaterialList.GetMaterialList(i).GetMaterialName)
                 MatCost = CDbl(MaterialList.GetMaterialList(i).GetTotalCost)
                 Quantity = CLng(MaterialList.GetMaterialList(i).GetQuantity)
                 MatList.SubItems.Add(FormatNumber(MatCost / Quantity, 2))
                 MatList.SubItems.Add(FormatNumber(MatCost, 2))
                 MatList.SubItems.Add(FormatNumber(Quantity, 0))
                 TotalCost += MatCost
+                Call lstMats.Items.Add(MatList)
             Next
         End If
 
         ' Add the total cost
-        MatList = lstMats.Items.Add("Total " & ListType & " Cost")
+        MatList = New ListViewItem("Total " & ListType & " Cost")
         ' Color this last line grey
         MatList.BackColor = Color.WhiteSmoke
         MatList.SubItems.Add("")
@@ -76,6 +77,8 @@
             MatList.SubItems.Add(FormatNumber(TotalCost / TotalInventedRuns * UserRuns, 2))
             MatList.SubItems.Add(FormatNumber(UserRuns, 0))
         End If
+
+        Call lstMats.Items.Add(MatList)
 
         Application.UseWaitCursor = False
 

@@ -626,7 +626,7 @@ Public Class frmBlueprintManagement
 
             Application.DoEvents()
 
-            BPList = lstBPs.Items.Add("")
+            BPList = New ListViewItem("")
             'The remaining columns are subitems  
             ' 0-BP_ID, 1-BLUEPRINT_GROUP, 2-BLUEPRINT_NAME, 3-ITEM_GROUP_ID, 4-ITEM_GROUP, 5-ITEM_CATEGORY_ID, 
             ' 6-ITEM_CATEGORY, 7-ITEM_ID, 8-ITEM_NAME, 9-ME, 10-TE, 11-USERID, 12-ITEM_TYPE, 13-RACE_ID, 14-OWNED, 15-SCANNED 
@@ -751,6 +751,8 @@ Public Class frmBlueprintManagement
             Else
                 BPList.Checked = False
             End If
+
+            Call lstBPs.Items.Add(BPList)
 
         End While
 

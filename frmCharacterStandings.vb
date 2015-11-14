@@ -60,11 +60,11 @@ Public Class frmCharacterStandings
             While readerStandings.Read
                 Application.DoEvents()
 
-                lstViewRow = lstStandings.Items.Add(readerStandings.GetString(0))
+                lstViewRow = New ListViewItem(readerStandings.GetString(0))
                 'The remaining columns are subitems  
                 lstViewRow.SubItems.Add(readerStandings.GetString(1))
                 lstViewRow.SubItems.Add(FormatNumber(readerStandings.GetDouble(2), 2))
-
+                Call lstStandings.Items.Add(lstViewRow)
             End While
 
             lstStandings.EndUpdate()
