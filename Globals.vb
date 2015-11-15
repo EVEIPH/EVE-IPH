@@ -3890,6 +3890,9 @@ InvalidDate:
             Return False
         End If
 
+        ' Make sure the sent string has no extra spaces that create a blank array entry
+        SentTimeString = Trim(SentTimeString)
+
         ' Break up the string sections
         strArr = SentTimeString.Split(New Char() {" "c})
 
