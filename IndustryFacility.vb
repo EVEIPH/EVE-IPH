@@ -14,6 +14,7 @@ Public Class IndustryFacility
     Public RegionID As Long
     Public SolarSystemName As String ' System where this is located
     Public SolarSystemID As Long
+    Public FWUpgradeLevel As Integer ' Level of the FW upgrade for this system (if applies)
     Public TaxRate As Double ' The tax rate
     Public MaterialMultiplier As Double ' The bonus material percentage for materials used in this facility
     Public TimeMultiplier As Double ' The bonus to time to conduct an activity in this facility
@@ -35,6 +36,7 @@ Public Class IndustryFacility
         RegionID = 0
         SolarSystemName = None
         SolarSystemID = 0
+        FWUpgradeLevel = 0
         TaxRate = 0
         MaterialMultiplier = 0
         TimeMultiplier = 0
@@ -140,6 +142,8 @@ Public Class IndustryFacility
                     RegionID = .RegionID
                     SolarSystemName = .SolarSystemName
                     SolarSystemID = .SolarSystemID
+                    FWUpgradeLevel = 0
+
                     TaxRate = .TaxRate
                     MaterialMultiplier = .MaterialMultiplier
                     TimeMultiplier = .TimeMultiplier
@@ -159,10 +163,10 @@ Public Class IndustryFacility
                     SQL = "SELECT '" & .Facility & "' AS FACILITY_NAME, "
                     ' Need to load location from the settings since the location is specific to the user
                     SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
-                    SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
+                    SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SSID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                     SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
-                    SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
+                    SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID, CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL "
+                    SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES LEFT JOIN FW_SYSTEM_UPGRADES ON FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID "
                     SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                     SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
                     SQL = SQL & "AND AID = " & CStr(.ActivityID) & " "
@@ -204,6 +208,8 @@ Public Class IndustryFacility
                         IncludeActivityTime = .IncludeActivityTime
                         IncludeActivityUsage = .IncludeActivityUsage
 
+                        FWUpgradeLevel = rsLoader.GetInt32(13)
+
                         rsLoader.Close()
                         rsLoader = Nothing
                         DBCommand = Nothing
@@ -222,16 +228,16 @@ Public Class IndustryFacility
                         SQL = "SELECT ARRAY_NAME AS FACILITY_NAME, "
                         ' Need to load location from the settings since the location is specific to the user
                         SQL = SQL & "'" & .RegionName & "' AS REGION_NAME, " & CStr(.RegionID) & " AS REGION_ID, '"
-                        SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SOLAR_SYSTEM_ID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
+                        SQL = SQL & .SolarSystemName & "' AS SOLAR_SYSTEM_NAME, " & CStr(.SolarSystemID) & " AS SSID, " & CStr(POSTaxRate) & " AS FACILITY_TAX, COST_INDEX, "
                         SQL = SQL & "MATERIAL_MULTIPLIER AS MATERIAL_MULTIPLIER, TIME_MULTIPLIER AS TIME_MULTIPLIER, "
-                        SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
-                        SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
+                        SQL = SQL & "ASSEMBLY_ARRAYS.ACTIVITY_ID AS AID, ARRAY_TYPE_ID AS FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID, CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL "
+                        SQL = SQL & "FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES LEFT JOIN FW_SYSTEM_UPGRADES ON FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID "
                         SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
 
                     Case OutpostFacility
                         SQL = "SELECT FACILITY_NAME, REGION_NAME, REGION_ID, "
-                        SQL = SQL & "SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, COST_INDEX, "
+                        SQL = SQL & "SOLAR_SYSTEM_NAME, STATION_FACILITIES.SOLAR_SYSTEM_ID AS SSID, FACILITY_TAX, COST_INDEX, "
                         ' Check the values sent to see if they set it to something instead of loading from DB
                         If .MaterialMultiplier <> Defaults.FacilityDefaultMM Then
                             ' They didn't set a value, so load the default for each type
@@ -246,15 +252,15 @@ Public Class IndustryFacility
                         Else
                             SQL = SQL & "TIME_MULTIPLIER, "
                         End If
-                        SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
-                        SQL = SQL & "FROM STATION_FACILITIES "
+                        SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID, CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL "
+                        SQL = SQL & "FROM STATION_FACILITIES LEFT JOIN FW_SYSTEM_UPGRADES ON FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = STATION_FACILITIES.SOLAR_SYSTEM_ID "
                         SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Outpost) & " "
                     Case StationFacility
                         SQL = "SELECT FACILITY_NAME, REGION_NAME, REGION_ID, "
-                        SQL = SQL & "SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, COST_INDEX, "
+                        SQL = SQL & "SOLAR_SYSTEM_NAME, STATION_FACILITIES.SOLAR_SYSTEM_ID AS SSID, FACILITY_TAX, COST_INDEX, "
                         SQL = SQL & "MATERIAL_MULTIPLIER, TIME_MULTIPLIER, "
-                        SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID "
-                        SQL = SQL & "FROM STATION_FACILITIES "
+                        SQL = SQL & "ACTIVITY_ID AS AID, FACILITY_TYPE_ID, GROUP_ID, CATEGORY_ID, CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL "
+                        SQL = SQL & "FROM STATION_FACILITIES LEFT JOIN FW_SYSTEM_UPGRADES ON FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = STATION_FACILITIES.SOLAR_SYSTEM_ID "
                         SQL = SQL & "WHERE OUTPOST = " & CStr(StationType.Station) & " "
                 End Select
 
@@ -295,8 +301,8 @@ Public Class IndustryFacility
                     End Select
                 End If
 
-                SQL = SQL & "GROUP BY FACILITY_NAME, REGION_NAME, REGION_ID, SOLAR_SYSTEM_NAME, SOLAR_SYSTEM_ID, FACILITY_TAX, "
-                SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, FACILITY_TYPE_ID"
+                SQL = SQL & "GROUP BY FACILITY_NAME, REGION_NAME, REGION_ID, SOLAR_SYSTEM_NAME, SSID, FACILITY_TAX, "
+                SQL = SQL & "COST_INDEX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, AID, FACILITY_TYPE_ID, FW_UPGRADE_LEVEL"
 
             End With
 
@@ -332,6 +338,8 @@ Public Class IndustryFacility
                 IncludeActivityTime = SearchFacilitySettings.IncludeActivityTime
                 IncludeActivityUsage = SearchFacilitySettings.IncludeActivityUsage
 
+                FWUpgradeLevel = rsLoader.GetInt32(13)
+
                 rsLoader.Close()
                 rsLoader = Nothing
                 DBCommand = Nothing
@@ -358,6 +366,7 @@ Public Class IndustryFacility
         RegionID = SearchFacilitySettings.RegionID
         SolarSystemName = SearchFacilitySettings.SolarSystemName & " (0.000)"
         SolarSystemID = SearchFacilitySettings.SolarSystemID
+        FWUpgradeLevel = 0
         TaxRate = 0
         CostIndex = 0
         MaterialMultiplier = SearchFacilitySettings.MaterialMultiplier
@@ -430,6 +439,7 @@ Public Class IndustryFacility
 
             .SolarSystemID = SentFacility.SolarSystemID
             .SolarSystemName = SentFacility.SolarSystemName
+
             .RegionID = SentFacility.RegionID
             .RegionName = SentFacility.RegionName
             .ActivityCostperSecond = SentFacility.ActivityCostPerSecond
@@ -463,6 +473,8 @@ Public Class IndustryFacility
                 Return False
             ElseIf .SolarSystemID <> SolarSystemID Then
                 Return False
+            ElseIf .FWUpgradeLevel <> FWUpgradeLevel Then
+                Return False
             ElseIf .TaxRate <> TaxRate Then
                 Return False
             ElseIf .MaterialMultiplier <> MaterialMultiplier And .FacilityType <> POSFacility Then ' Only for non-pos
@@ -495,6 +507,7 @@ Public Class IndustryFacility
         CopyOfMe.RegionID = RegionID
         CopyOfMe.SolarSystemName = SolarSystemName
         CopyOfMe.SolarSystemID = SolarSystemID
+        CopyOfMe.FWUpgradeLevel = FWUpgradeLevel
         CopyOfMe.TaxRate = TaxRate
         CopyOfMe.MaterialMultiplier = MaterialMultiplier
         CopyOfMe.TimeMultiplier = TimeMultiplier

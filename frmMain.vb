@@ -135,8 +135,8 @@ Public Class frmMain
     Private ManufacturingRecordIDToFind As Long ' for Predicate
     Private ManufacturingNameToFind As String ' for Predicate
 
-    ' For column sorting
-    Private ManufacturingColumnClicked As Integer ' What column did they click on to sort
+    ' For column sorting - What column did they click on to sort
+    Private ManufacturingColumnClicked As Integer
     Private ManufacturingColumnSortType As SortOrder
     Private UpdatePricesColumnClicked As Integer
     Private UpdatePricesColumnSortType As SortOrder
@@ -207,6 +207,7 @@ Public Class frmMain
     Private SelectedGrid As ListView
 
     Private IgnoreFocus As Boolean
+    Private IgnoreMarketFocus As Boolean
 
     ' Column width consts - may change depending on Ore, Ice or Gas so change the widths of the columns based on these and use them to add and move
     Private Const MineOreNameColumnWidth As Integer = 120
@@ -283,6 +284,7 @@ Public Class frmMain
 
         ' Initialize stuff
         Call SetProgress("Initializing Database...")
+        Application.DoEvents()
         Call InitDB()
 
         ' Set these here for later use
@@ -315,11 +317,8 @@ Public Class frmMain
             ' Always do cost indicies first
             Application.UseWaitCursor = True
             Timecheck = Now
-            Call SetProgress("Updating Industry Systems Cost Indicies...")
-            Call CREST.UpdateIndustrySystemsCostIndex()
-            Debug.Print("System Indicies " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
-            Timecheck = Now
             Call SetProgress("Updating Industry Facilities...")
+            Application.DoEvents()
             Call CREST.UpdateIndustryFacilties(Nothing, Nothing, True)
             Debug.Print("Facilities " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
             Timecheck = Now
@@ -605,6 +604,8 @@ Public Class frmMain
             ttMain.SetToolTip(lblCalcBoosterFacilityDefault, "Double-Click to load default facility")
             ttMain.SetToolTip(lblCalcNoPOSFacilityDefault, "Double-Click to load default facility")
 
+            ttMain.SetToolTip(gbCalcFWUpgrade, "Sets the FW System Upgrade Level for any system not set (on BP tab) for the selected category.")
+
         End If
         FirstLoadCalcBPTypes = True
         FirstManufacturingGridLoad = True
@@ -717,6 +718,9 @@ Public Class frmMain
         '****************************************
         '**** All Tabs **************************
         '****************************************
+
+        ' For indy jobs viewer
+        FirstIndustryJobsViewerLoad = True
 
         ' All set, we are done loading
         FirstLoad = False
@@ -862,7 +866,7 @@ Public Class frmMain
     Private Sub OutpostMETETaxText_KeyUp(ByVal UpdateType As String, ByRef ManualTextBox As TextBox, ByRef SelectedFacility As IndustryFacility, _
                                          ByRef FacilityTypeCombo As ComboBox, ByRef SaveButton As Button, ByRef DefaultLabel As Label)
         Dim Temp As String
-        Dim TempValue As Double
+        Dim TempValue As Decimal
 
         ' Get rid of the percent sign if it exists
         Temp = Replace(ManualTextBox.Text, "%", "")
@@ -872,7 +876,7 @@ Public Class frmMain
             ManualTextBox.Text = "0.0%"
         End If
 
-        TempValue = (100 - CDbl(Temp)) / 100
+        TempValue = (100 - CDec(Temp)) / 100
 
         ' If it's an outpost, then save the ME/TE/Tax for this in the current facility
         If FacilityTypeCombo.Text = OutpostFacility Then
@@ -881,7 +885,7 @@ Public Class frmMain
             ElseIf UpdateType = "TE" Then
                 SelectedFacility.TimeMultiplier = TempValue
             Else
-                SelectedFacility.TaxRate = CDbl(TempValue)
+                SelectedFacility.TaxRate = CDbl(1 - TempValue) ' Tax rate is a straight multiplication, not multiplied with other bonuses
             End If
 
         End If
@@ -1182,7 +1186,8 @@ Public Class frmMain
                                      BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, _
                                      InventionFacility As IndustryFacility, CopyFacility As IndustryFacility, _
                                      IncludeTaxes As Boolean, IncludeFees As Boolean, _
-                                     IncludeUsage As Boolean, MEValue As String, SentRuns As String, SentLines As String, NumBPs As String)
+                                     IncludeUsage As Boolean, MEValue As String, SentRuns As String, _
+                                     SentLines As String, NumBPs As String, Optional CompareType As String = "")
         Dim BPTech As Integer
         Dim BPDecryptor As New Decryptor
         Dim DecryptorName As String = None
@@ -1287,6 +1292,14 @@ Public Class frmMain
 
             txtBPInventionLines.Text = txtCalcLabLines.Text
             txtBPRelicLines.Text = txtCalcLabLines.Text
+
+            If CompareType <> "" Then ' if "" then let the BP tab handle it
+                If CompareType = "Components" Then
+                    rbtnBPComponentCopy.Checked = True
+                Else
+                    rbtnBPRawmatCopy.Checked = True
+                End If
+            End If
 
             ' Need to load the team and the facility used
             SelectedBPComponentManufacturingFacility = CType(ComponentFacility.Clone, IndustryFacility)
@@ -2471,7 +2484,7 @@ Public Class frmMain
     End Sub
 
     Private Sub UpdateIndustryFacilitiesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateIndustryFacilities.Click
-        Call UpdateCRESTIndustrySystemIndicies()
+        Call UpdateCRESTIndustryFacilities()
     End Sub
 
     Private Sub UpdateMarketPricesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateCRESTMarketPrices.Click
@@ -2479,7 +2492,7 @@ Public Class frmMain
     End Sub
 
     ' Function runs the CREST update for system indicies
-    Private Sub UpdateCRESTIndustrySystemIndicies()
+    Private Sub UpdateCRESTIndustryFacilities()
         Dim CREST As New EVECREST
         Dim f1 As New frmCRESTStatus
 
@@ -2487,7 +2500,7 @@ Public Class frmMain
         Call f1.Show()
         Application.DoEvents()
         ' Always do indicies first since facilities has a field it uses
-        If CREST.UpdateIndustrySystemsCostIndex(f1.lblCRESTStatus, f1.pgCREST) And CREST.UpdateIndustryFacilties(f1.lblCRESTStatus, f1.pgCREST) Then
+        If CREST.UpdateIndustryFacilties(f1.lblCRESTStatus, f1.pgCREST) Then
             ' Reset all facility combos
             CalcBaseFacilityRegionsLoaded = False
             CalcBaseFacilitySystemsLoaded = False
@@ -2641,6 +2654,7 @@ Public Class frmMain
                 End If
 
             End If
+
 
         Else ' Price update
 
@@ -3141,7 +3155,7 @@ Tabs:
                                   btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
                                   chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, _
                                   cmbBPFacilityActivities, SelectedBlueprint.GetTechLevel, CurrentBPGroupID, CurrentBPCategoryID, False, True, _
-                                  Nothing, gbBPManualSystemCostIndex, ttMain)
+                                  Nothing, gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade)
                 PreviousIndustryType = CurrentIndustryType
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = cmbBPFacilityType.Text
@@ -3218,7 +3232,8 @@ Tabs:
                               lblBPFacilityManualTE, txtBPFacilityManualTE, _
                               lblBPFacilityManualTax, txtBPFacilityManualTax, _
                               btnBPFacilitySave, lblBPFacilityTaxRate, _
-                              chkBPFacilityIncludeUsage, CostCheck, TimeCheck, BPTab, FullyLoadedBPFacility, chkBPFacilityIncludeUsage.Checked, ttMain)
+                              chkBPFacilityIncludeUsage, CostCheck, TimeCheck, BPTab, FullyLoadedBPFacility, _
+                              chkBPFacilityIncludeUsage.Checked, ttMain, GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text))
             End If
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
@@ -3309,7 +3324,8 @@ Tabs:
                                     cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray, _
                                     lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
                                     lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
-                                    chkBPFacilityIncludeUsage, Nothing, Nothing, Autoload, chkBPFacilityIncludeUsage.Checked, OverrideFacilityName, lblBPFacilityUsage, gbBPManualSystemCostIndex, ttMain)
+                                    chkBPFacilityIncludeUsage, Nothing, Nothing, Autoload, chkBPFacilityIncludeUsage.Checked, OverrideFacilityName, lblBPFacilityUsage, _
+                                    gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
 
 
                 If Autoload Then
@@ -3343,7 +3359,8 @@ Tabs:
                                 lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
                                 lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, _
                                 btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, chkBPFacilityIncludeUsage, _
-                                Nothing, Nothing, Nothing, chkBPFacilityIncludeUsage.Checked, "", lblBPFacilityUsage, gbBPManualSystemCostIndex, ttMain)
+                                Nothing, Nothing, Nothing, chkBPFacilityIncludeUsage.Checked, "", lblBPFacilityUsage, gbBPManualSystemCostIndex, ttMain, _
+                                lblBPFWUpgrade, cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
         End If
     End Sub
 
@@ -3362,7 +3379,8 @@ Tabs:
                                       lblBPFacilityManualTE, txtBPFacilityManualTE, _
                                       lblBPFacilityManualTax, txtBPFacilityManualTax, _
                                       btnBPFacilitySave, lblBPFacilityTaxRate, _
-                                      chkBPFacilityIncludeUsage, Nothing, Nothing, BPTab, FullyLoadedBPFacility, chkBPFacilityIncludeUsage.Checked, ttMain)
+                                      chkBPFacilityIncludeUsage, Nothing, Nothing, BPTab, FullyLoadedBPFacility, _
+                                      chkBPFacilityIncludeUsage.Checked, ttMain, GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text))
 
             If txtBPFacilityManualME.Visible Then
                 Call txtBPFacilityManualME.Focus()
@@ -3552,7 +3570,7 @@ Tabs:
                               lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
                               lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, btnBPFacilitySave, lblBPFacilityTaxRate, _
                               BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False, Nothing, _
-                              gbBPManualSystemCostIndex, ttMain)
+                              gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade)
             LoadingFacilityActivities = False
         End If
     End Sub
@@ -3902,25 +3920,11 @@ Tabs:
     End Sub
 
     Private Sub lstBPComponentMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPComponentMats.ColumnClick
-
         Call ListViewColumnSorter(e.Column, CType(lstBPComponentMats, ListView), BPCompColumnClicked, BPCompColumnSortType)
-
-        '' Set the sort order options
-        'Call SetLstVwColumnSortOrder(e, compBPMatsColumnSorter)
-
-        '' Perform the sort with these new sort options.
-        'lstBPComponentMats.Sort()
     End Sub
 
     Private Sub lstBPRawMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPRawMats.ColumnClick
-
         Call ListViewColumnSorter(e.Column, CType(lstBPRawMats, ListView), BPRawColumnClicked, BPRawColumnSortType)
-
-        '' Set the sort order options
-        'Call SetLstVwColumnSortOrder(e, rawBPMatsColumnSorter)
-
-        '' Perform the sort with these new sort options.
-        'lstBPRawMats.Sort()
     End Sub
 
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
@@ -4786,6 +4790,10 @@ Tabs:
             Dim Start As Integer = InStr(cmbBPFacilitySystem.Text, "(")
             Dim Length As Integer = InStr(cmbBPFacilitySystem.Text, ")") - 1 - Start
             txtBPUpdateCostIndex.Text = FormatPercent(cmbBPFacilitySystem.Text.Substring(Start, Length))
+
+            ' Load the faction system upgrade for this system
+            Call SetFWUpgradeControls(BPTab, lblBPFWUpgrade, cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+
         End If
     End Sub
 
@@ -4799,6 +4807,60 @@ Tabs:
         End If
     End Sub
 
+    Private Sub txtBPMarketPriceEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtBPMarketPriceEdit.GotFocus
+        txtBPMarketPriceEdit.SelectAll()
+    End Sub
+
+    Private Sub txtBPMarketPriceEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPMarketPriceEdit.KeyDown
+        If Not DataEntered Then ' If data already entered, then they didn't do it through paste
+            DataEntered = ProcessCutCopyPasteSelect(txtBPMarketPriceEdit, e)
+        End If
+
+        If e.KeyCode = Keys.Enter Then
+            IgnoreMarketFocus = True
+            ' Update the price for this item
+            Call UpdateMarketPriceManually()
+            IgnoreMarketFocus = False
+        End If
+    End Sub
+
+    Private Sub txtBPMarketPriceEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPMarketPriceEdit.KeyPress
+        ' Make sure it's the right format for Price update
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+
+    End Sub
+
+    Private Sub txtBPMarketPriceEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtBPMarketPriceEdit.LostFocus
+        If Not IgnoreMarketFocus And txtBPMarketPriceEdit.Text <> lblBPMarketCost.Text Then
+            Call UpdateMarketPriceManually()
+        End If
+        txtBPMarketPriceEdit.Visible = False
+    End Sub
+
+    Private Sub cmbBPFWUpgrade_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPFWUpgrade.SelectedIndexChanged
+
+    End Sub
+
+    Private Sub cmbBPFWUpgrade_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFWUpgrade.KeyPress
+        e.Handled = True
+    End Sub
+
+    Private Sub UpdateMarketPriceManually()
+
+        Dim SQL As String = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
+        Call ExecuteNonQuerySQL(SQL)
+        Call PlayNotifySound()
+        lblBPMarketCost.Text = FormatNumber(txtBPMarketPriceEdit.Text, 2)
+        IgnoreFocus = True
+        Call RefreshBP()
+    End Sub
+
 #End Region
 
     ' Initializes all the boxes on the BP tab
@@ -4810,153 +4872,170 @@ Tabs:
 
         cmbBPBlueprintSelection.Text = "Select Blueprint"
 
-        ' Exort type (might change with build buy selection
-        Select Case UserBPTabSettings.ExporttoShoppingListType
-            Case rbtnBPComponentCopy.Text
-                rbtnBPComponentCopy.Checked = True
-            Case rbtnBPCopyInvREMats.Text
-                rbtnBPCopyInvREMats.Checked = True
-            Case rbtnBPRawmatCopy.Text
-                rbtnBPRawmatCopy.Checked = True
-        End Select
+        With UserBPTabSettings
+            ' Exort type (might change with build buy selection
+            Select Case .ExporttoShoppingListType
+                Case rbtnBPComponentCopy.Text
+                    rbtnBPComponentCopy.Checked = True
+                Case rbtnBPCopyInvREMats.Text
+                    rbtnBPCopyInvREMats.Checked = True
+                Case rbtnBPRawmatCopy.Text
+                    rbtnBPRawmatCopy.Checked = True
+            End Select
 
-        ' Default build/buy
-        chkBPBuildBuy.Checked = UserApplicationSettings.CheckBuildBuy
+            ' Default build/buy
+            chkBPBuildBuy.Checked = UserApplicationSettings.CheckBuildBuy
 
-        cmbBPsLoaded = False
-        InventionDecryptorsLoaded = False
+            cmbBPsLoaded = False
+            InventionDecryptorsLoaded = False
 
-        ' Set BP Lines to run production on
-        txtBPNumBPs.Text = "1"
+            ' Set BP Lines to run production on
+            txtBPNumBPs.Text = "1"
 
-        ' Set the runs to 1
-        txtBPRuns.Text = "1"
+            ' Set the runs to 1
+            txtBPRuns.Text = "1"
 
-        ' Production time label
-        lblBPProductionTime.Text = "00:00:00"
-        lblBPTotalItemPT.Text = "00:00:00"
+            ' Production time label
+            lblBPProductionTime.Text = "00:00:00"
+            lblBPTotalItemPT.Text = "00:00:00"
 
-        ' Cost labels
-        lblBPRawMatCost.Text = "0.00"
-        lblBPComponentMatCost.Text = "0.00"
-        txtBPAddlCosts.Text = "0.00"
+            ' Cost labels
+            lblBPRawMatCost.Text = "0.00"
+            lblBPComponentMatCost.Text = "0.00"
+            txtBPAddlCosts.Text = "0.00"
 
-        ' Total
-        lblBPRawTotalCost.Text = "0.00"
-        lblBPTotalCompCost.Text = "0.00"
+            ' Total
+            lblBPRawTotalCost.Text = "0.00"
+            lblBPTotalCompCost.Text = "0.00"
 
-        lblBPRawIPH.Text = "0.00"
-        lblBPRawIPH.ForeColor = Color.Black
-        lblBPCompIPH.Text = "0.00"
-        lblBPCompIPH.ForeColor = Color.Black
+            lblBPRawIPH.Text = "0.00"
+            lblBPRawIPH.ForeColor = Color.Black
+            lblBPCompIPH.Text = "0.00"
+            lblBPCompIPH.ForeColor = Color.Black
 
-        lblBPCompProfit.Text = "0.00"
-        lblBPCompProfit.ForeColor = Color.Black
-        lblBPRawProfit.Text = "0.00"
-        lblBPRawProfit.ForeColor = Color.Black
+            lblBPCompProfit.Text = "0.00"
+            lblBPCompProfit.ForeColor = Color.Black
+            lblBPRawProfit.Text = "0.00"
+            lblBPRawProfit.ForeColor = Color.Black
 
-        lblBPMarketCost.Text = "0.00"
+            lblBPMarketCost.Text = "0.00"
 
-        ' Don't show labels to make
-        lblBPCanMakeBP.Visible = False
-        lblBPCanMakeBPAll.Visible = False
+            ' Don't show labels to make
+            lblBPCanMakeBP.Visible = False
+            lblBPCanMakeBPAll.Visible = False
 
-        ' Saved settings
-        Select Case UserBPTabSettings.BlueprintTypeSelection
-            Case rbtnBPAllBlueprints.Text
-                rbtnBPAllBlueprints.Checked = True
-            Case rbtnBPOwnedBlueprints.Text
-                rbtnBPOwnedBlueprints.Checked = True
-            Case rbtnBPFavoriteBlueprints.Text
-                rbtnBPFavoriteBlueprints.Checked = True
-            Case rbtnBPShipBlueprints.Text
-                rbtnBPShipBlueprints.Checked = True
-            Case rbtnBPDroneBlueprints.Text
-                rbtnBPDroneBlueprints.Checked = True
-            Case rbtnBPAmmoChargeBlueprints.Text
-                rbtnBPAmmoChargeBlueprints.Checked = True
-            Case rbtnBPModuleBlueprints.Text
-                rbtnBPModuleBlueprints.Checked = True
-            Case rbtnBPComponentBlueprints.Text
-                rbtnBPComponentBlueprints.Checked = True
-            Case rbtnBPStructureBlueprints.Text
-                rbtnBPStructureBlueprints.Checked = True
-            Case rbtnBPSubsystemBlueprints.Text
-                rbtnBPSubsystemBlueprints.Checked = True
-            Case rbtnBPRigBlueprints.Text
-                rbtnBPRigBlueprints.Checked = True
-            Case rbtnBPBoosterBlueprints.Text
-                rbtnBPBoosterBlueprints.Checked = True
-            Case rbtnBPMiscBlueprints.Text
-                rbtnBPMiscBlueprints.Checked = True
-            Case rbtnBPDeployableBlueprints.Text
-                rbtnBPDeployableBlueprints.Checked = True
-            Case rbtnBPCelestialsBlueprints.Text
-                rbtnBPCelestialsBlueprints.Checked = True
-            Case rbtnBPStationPartsBlueprints.Text
-                rbtnBPStationPartsBlueprints.Checked = True
-        End Select
+            ' Saved settings
+            Select Case .BlueprintTypeSelection
+                Case rbtnBPAllBlueprints.Text
+                    rbtnBPAllBlueprints.Checked = True
+                Case rbtnBPOwnedBlueprints.Text
+                    rbtnBPOwnedBlueprints.Checked = True
+                Case rbtnBPFavoriteBlueprints.Text
+                    rbtnBPFavoriteBlueprints.Checked = True
+                Case rbtnBPShipBlueprints.Text
+                    rbtnBPShipBlueprints.Checked = True
+                Case rbtnBPDroneBlueprints.Text
+                    rbtnBPDroneBlueprints.Checked = True
+                Case rbtnBPAmmoChargeBlueprints.Text
+                    rbtnBPAmmoChargeBlueprints.Checked = True
+                Case rbtnBPModuleBlueprints.Text
+                    rbtnBPModuleBlueprints.Checked = True
+                Case rbtnBPComponentBlueprints.Text
+                    rbtnBPComponentBlueprints.Checked = True
+                Case rbtnBPStructureBlueprints.Text
+                    rbtnBPStructureBlueprints.Checked = True
+                Case rbtnBPSubsystemBlueprints.Text
+                    rbtnBPSubsystemBlueprints.Checked = True
+                Case rbtnBPRigBlueprints.Text
+                    rbtnBPRigBlueprints.Checked = True
+                Case rbtnBPBoosterBlueprints.Text
+                    rbtnBPBoosterBlueprints.Checked = True
+                Case rbtnBPMiscBlueprints.Text
+                    rbtnBPMiscBlueprints.Checked = True
+                Case rbtnBPDeployableBlueprints.Text
+                    rbtnBPDeployableBlueprints.Checked = True
+                Case rbtnBPCelestialsBlueprints.Text
+                    rbtnBPCelestialsBlueprints.Checked = True
+                Case rbtnBPStationPartsBlueprints.Text
+                    rbtnBPStationPartsBlueprints.Checked = True
+            End Select
 
-        chkBPT1.Checked = UserBPTabSettings.Tech1Check
-        chkBPT2.Checked = UserBPTabSettings.Tech2Check
-        chkBPT3.Checked = UserBPTabSettings.Tech3Check
-        chkBPNavyFaction.Checked = UserBPTabSettings.TechFactionCheck
-        chkBPStoryline.Checked = UserBPTabSettings.TechStorylineCheck
-        chkBPPirateFaction.Checked = UserBPTabSettings.TechPirateCheck
+            chkBPT1.Checked = .Tech1Check
+            chkBPT2.Checked = .Tech2Check
+            chkBPT3.Checked = .Tech3Check
+            chkBPNavyFaction.Checked = .TechFactionCheck
+            chkBPStoryline.Checked = .TechStorylineCheck
+            chkBPPirateFaction.Checked = .TechPirateCheck
 
-        chkBPIncludeIgnoredBPs.Checked = UserBPTabSettings.IncludeIgnoredBPs
+            chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
 
-        chkBPSmall.Checked = UserBPTabSettings.SmallCheck
-        chkBPMedium.Checked = UserBPTabSettings.MediumCheck
-        chkBPLarge.Checked = UserBPTabSettings.LargeCheck
-        chkBPXL.Checked = UserBPTabSettings.XLCheck
+            chkBPSmall.Checked = .SmallCheck
+            chkBPMedium.Checked = .MediumCheck
+            chkBPLarge.Checked = .LargeCheck
+            chkBPXL.Checked = .XLCheck
 
-        SetTaxFeeChecks = False
-        chkBPFacilityIncludeUsage.Checked = UserBPTabSettings.IncludeUsage
-        chkBPTaxes.Checked = UserBPTabSettings.IncludeTaxes
-        chkBPBrokerFees.Checked = UserBPTabSettings.IncludeFees
-        SetTaxFeeChecks = True
+            SetTaxFeeChecks = False
+            chkBPFacilityIncludeUsage.Checked = .IncludeUsage
+            chkBPTaxes.Checked = .IncludeTaxes
+            chkBPBrokerFees.Checked = .IncludeFees
+            SetTaxFeeChecks = True
 
-        chkBPPricePerUnit.Checked = UserBPTabSettings.PricePerUnit
+            chkBPPricePerUnit.Checked = .PricePerUnit
 
-        ' Invention checks
-        UpdatingInventionChecks = True
-        chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
-        chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
-        chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
-        chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
-        chkBPIncludeT3Costs.Checked = UserBPTabSettings.IncludeT3Cost
-        chkBPIncludeT3Time.Checked = UserBPTabSettings.IncludeT3Time
-        UpdatingInventionChecks = False
+            BPRawColumnClicked = .RawColumnSort
+            BPCompColumnClicked = .CompColumnSort
 
-        ' These facilities use the same include checks
-        SelectedBPInventionFacility.IncludeActivityCost = UserBPTabSettings.IncludeInventionCost
-        SelectedBPInventionFacility.IncludeActivityTime = UserBPTabSettings.IncludeInventionTime
-        SelectedBPCopyFacility.IncludeActivityCost = UserBPTabSettings.IncludeCopyCost
-        SelectedBPCopyFacility.IncludeActivityTime = UserBPTabSettings.IncludeCopyTime
+            If .RawColumnSortType = "Ascending" Then
+                BPRawColumnSortType = SortOrder.Ascending
+            Else
+                BPRawColumnSortType = SortOrder.Descending
+            End If
 
-        SelectedBPSubsystemManufacturingFacility.IncludeActivityCost = UserBPTabSettings.IncludeT3Cost
-        SelectedBPSubsystemManufacturingFacility.IncludeActivityTime = UserBPTabSettings.IncludeT3Time
-        SelectedBPT3CruiserManufacturingFacility.IncludeActivityCost = UserBPTabSettings.IncludeT3Cost
-        SelectedBPT3CruiserManufacturingFacility.IncludeActivityTime = UserBPTabSettings.IncludeT3Time
-        SelectedBPT3InventionFacility.IncludeActivityCost = UserBPTabSettings.IncludeT3Cost
-        SelectedBPT3InventionFacility.IncludeActivityTime = UserBPTabSettings.IncludeT3Time
+            If .CompColumnSortType = "Ascending" Then
+                BPCompColumnSortType = SortOrder.Ascending
+            Else
+                BPCompColumnSortType = SortOrder.Descending
+            End If
 
-        ' Enter the max lines we have regardless
-        txtBPLines.Text = CStr(UserBPTabSettings.ProductionLines)
-        ' Set Max Invention Lines
-        txtBPInventionLines.Text = CStr(UserBPTabSettings.LaboratoryLines)
-        txtBPRelicLines.Text = CStr(UserBPTabSettings.T3Lines)
+            ' Invention checks
+            UpdatingInventionChecks = True
+            chkBPIncludeInventionCosts.Checked = .IncludeInventionCost
+            chkBPIncludeInventionTime.Checked = .IncludeInventionTime
+            chkBPIncludeCopyCosts.Checked = .IncludeCopyCost
+            chkBPIncludeCopyTime.Checked = .IncludeCopyTime
+            chkBPIncludeT3Costs.Checked = .IncludeT3Cost
+            chkBPIncludeT3Time.Checked = .IncludeT3Time
+            UpdatingInventionChecks = False
 
-        ' Facility combos
-        cmbBPFacilitySystem.Enabled = False
-        cmbBPFacilityRegion.Enabled = False
-        cmbBPFacilityorArray.Enabled = False
+            ' These facilities use the same include checks
+            SelectedBPInventionFacility.IncludeActivityCost = .IncludeInventionCost
+            SelectedBPInventionFacility.IncludeActivityTime = .IncludeInventionTime
+            SelectedBPCopyFacility.IncludeActivityCost = .IncludeCopyCost
+            SelectedBPCopyFacility.IncludeActivityTime = .IncludeCopyTime
 
-        ' Ignore settings
-        chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
-        chkBPIgnoreMinerals.Checked = UserBPTabSettings.IgnoreMinerals
-        chkBPIgnoreT1Item.Checked = UserBPTabSettings.IgnoreT1Item
+            SelectedBPSubsystemManufacturingFacility.IncludeActivityCost = .IncludeT3Cost
+            SelectedBPSubsystemManufacturingFacility.IncludeActivityTime = .IncludeT3Time
+            SelectedBPT3CruiserManufacturingFacility.IncludeActivityCost = .IncludeT3Cost
+            SelectedBPT3CruiserManufacturingFacility.IncludeActivityTime = .IncludeT3Time
+            SelectedBPT3InventionFacility.IncludeActivityCost = .IncludeT3Cost
+            SelectedBPT3InventionFacility.IncludeActivityTime = .IncludeT3Time
+
+            ' Enter the max lines we have regardless
+            txtBPLines.Text = CStr(.ProductionLines)
+            ' Set Max Invention Lines
+            txtBPInventionLines.Text = CStr(.LaboratoryLines)
+            txtBPRelicLines.Text = CStr(.T3Lines)
+
+            ' Facility combos
+            cmbBPFacilitySystem.Enabled = False
+            cmbBPFacilityRegion.Enabled = False
+            cmbBPFacilityorArray.Enabled = False
+
+            ' Ignore settings
+            chkBPIgnoreInvention.Checked = .IgnoreInvention
+            chkBPIgnoreMinerals.Checked = .IgnoreMinerals
+            chkBPIgnoreT1Item.Checked = .IgnoreT1Item
+        End With
 
         ' Only show the facility and options tab first
         tabBPInventionEquip.TabPages.Remove(tabInventionCalcs)
@@ -4984,7 +5063,7 @@ Tabs:
                           lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME, _
                           lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, btnBPFacilitySave, lblBPFacilityTaxRate, _
                           BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False, _
-                          Nothing, gbBPManualSystemCostIndex, ttMain)
+                          Nothing, gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade)
         LoadingFacilityActivities = False
 
         CurrentBPCategoryID = 0
@@ -5072,115 +5151,133 @@ Tabs:
             End If
         End If
 
-        ' Prod/Lab Lines
-        TempSettings.ProductionLines = CInt(txtBPLines.Text)
-        TempSettings.LaboratoryLines = CInt(txtBPInventionLines.Text)
-        TempSettings.T3Lines = CInt(txtBPRelicLines.Text)
+        With TempSettings
+            ' Prod/Lab Lines
+            .ProductionLines = CInt(txtBPLines.Text)
+            .LaboratoryLines = CInt(txtBPInventionLines.Text)
+            .T3Lines = CInt(txtBPRelicLines.Text)
 
-        If rbtnBPAllBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPAllBlueprints.Text
-        ElseIf rbtnBPOwnedBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPOwnedBlueprints.Text
-        ElseIf rbtnBPFavoriteBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPFavoriteBlueprints.Text
-        ElseIf rbtnBPShipBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPShipBlueprints.Text
-        ElseIf rbtnBPDroneBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPDroneBlueprints.Text
-        ElseIf rbtnBPAmmoChargeBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPAmmoChargeBlueprints.Text
-        ElseIf rbtnBPModuleBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPModuleBlueprints.Text
-        ElseIf rbtnBPComponentBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPComponentBlueprints.Text
-        ElseIf rbtnBPStructureBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPStructureBlueprints.Text
-        ElseIf rbtnBPSubsystemBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPSubsystemBlueprints.Text
-        ElseIf rbtnBPRigBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPRigBlueprints.Text
-        ElseIf rbtnBPBoosterBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPBoosterBlueprints.Text
-        ElseIf rbtnBPMiscBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPMiscBlueprints.Text
-        ElseIf rbtnBPCelestialsBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
-        ElseIf rbtnBPDeployableBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
-        ElseIf rbtnBPStationPartsBlueprints.Checked Then
-            TempSettings.BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
-        End If
-
-        If rbtnBPComponentCopy.Checked Then
-            TempSettings.ExporttoShoppingListType = rbtnBPComponentCopy.Text
-        ElseIf rbtnBPRawmatCopy.Checked Then
-            TempSettings.ExporttoShoppingListType = rbtnBPRawmatCopy.Text
-        ElseIf rbtnBPCopyInvREMats.Checked Then
-            TempSettings.ExporttoShoppingListType = rbtnBPCopyInvREMats.Text
-        End If
-
-        TempSettings.Tech1Check = chkBPT1.Checked
-        TempSettings.Tech2Check = chkBPT2.Checked
-        TempSettings.Tech3Check = chkBPT3.Checked
-        TempSettings.TechStorylineCheck = chkBPStoryline.Checked
-        TempSettings.TechFactionCheck = chkBPNavyFaction.Checked
-        TempSettings.TechPirateCheck = chkBPPirateFaction.Checked
-
-        TempSettings.IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
-
-        TempSettings.SmallCheck = chkBPSmall.Checked
-        TempSettings.MediumCheck = chkBPMedium.Checked
-        TempSettings.LargeCheck = chkBPLarge.Checked
-        TempSettings.XLCheck = chkBPXL.Checked
-
-        TempSettings.IncludeUsage = chkBPFacilityIncludeUsage.Checked
-        TempSettings.IncludeTaxes = chkBPTaxes.Checked
-        TempSettings.IncludeFees = chkBPBrokerFees.Checked
-
-        TempSettings.IncludeInventionCost = chkBPIncludeInventionCosts.Checked
-        TempSettings.IncludeInventionTime = chkBPIncludeInventionTime.Checked
-        SelectedBPInventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
-        SelectedBPInventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
-
-        TempSettings.IncludeCopyCost = chkBPIncludeCopyCosts.Checked
-        TempSettings.IncludeCopyTime = chkBPIncludeCopyTime.Checked
-        SelectedBPCopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
-        SelectedBPCopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
-
-        ' For T3 on the BP tab, save both facility data
-        TempSettings.IncludeT3Cost = chkBPIncludeT3Costs.Checked
-        TempSettings.IncludeT3Time = chkBPIncludeT3Time.Checked
-
-        ' Ignore settings
-        TempSettings.IgnoreInvention = chkBPIgnoreInvention.Checked
-        TempSettings.IgnoreMinerals = chkBPIgnoreMinerals.Checked
-        TempSettings.IgnoreT1Item = chkBPIgnoreT1Item.Checked
-
-        SelectedBPSubsystemManufacturingFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
-        SelectedBPSubsystemManufacturingFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
-        SelectedBPT3CruiserManufacturingFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
-        SelectedBPT3CruiserManufacturingFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
-        SelectedBPT3InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
-        SelectedBPT3InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
-
-        TempSettings.PricePerUnit = chkBPPricePerUnit.Checked
-
-        ' Save the relic and decryptor if they have the setting set
-        If UserApplicationSettings.SaveBPRelicsDecryptors Then
-            ' See if the T2 window is open and has a decryptor then save, only will be open if they have a t2 bp loaded
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                TempSettings.T2DecryptorType = cmbBPInventionDecryptor.Text
-                TempSettings.RelicType = UserBPTabSettings.RelicType
-                TempSettings.T3DecryptorType = UserBPTabSettings.T3DecryptorType ' Save the old one
+            If rbtnBPAllBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPAllBlueprints.Text
+            ElseIf rbtnBPOwnedBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPOwnedBlueprints.Text
+            ElseIf rbtnBPFavoriteBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPFavoriteBlueprints.Text
+            ElseIf rbtnBPShipBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPShipBlueprints.Text
+            ElseIf rbtnBPDroneBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPDroneBlueprints.Text
+            ElseIf rbtnBPAmmoChargeBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPAmmoChargeBlueprints.Text
+            ElseIf rbtnBPModuleBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPModuleBlueprints.Text
+            ElseIf rbtnBPComponentBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPComponentBlueprints.Text
+            ElseIf rbtnBPStructureBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStructureBlueprints.Text
+            ElseIf rbtnBPSubsystemBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPSubsystemBlueprints.Text
+            ElseIf rbtnBPRigBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPRigBlueprints.Text
+            ElseIf rbtnBPBoosterBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPBoosterBlueprints.Text
+            ElseIf rbtnBPMiscBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPMiscBlueprints.Text
+            ElseIf rbtnBPCelestialsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
+            ElseIf rbtnBPDeployableBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
+            ElseIf rbtnBPStationPartsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
             End If
 
-            ' See if the T3 window is open and has a decryptor then save, only will be open if they have a t3 bp loaded
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                TempSettings.T2DecryptorType = UserBPTabSettings.T2DecryptorType ' Save the old one
-                TempSettings.RelicType = cmbBPRelic.Text
-                TempSettings.T3DecryptorType = cmbBPT3Decryptor.Text
+            If rbtnBPComponentCopy.Checked Then
+                .ExporttoShoppingListType = rbtnBPComponentCopy.Text
+            ElseIf rbtnBPRawmatCopy.Checked Then
+                .ExporttoShoppingListType = rbtnBPRawmatCopy.Text
+            ElseIf rbtnBPCopyInvREMats.Checked Then
+                .ExporttoShoppingListType = rbtnBPCopyInvREMats.Text
             End If
-        End If
+
+            .Tech1Check = chkBPT1.Checked
+            .Tech2Check = chkBPT2.Checked
+            .Tech3Check = chkBPT3.Checked
+            .TechStorylineCheck = chkBPStoryline.Checked
+            .TechFactionCheck = chkBPNavyFaction.Checked
+            .TechPirateCheck = chkBPPirateFaction.Checked
+
+            .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+
+            .SmallCheck = chkBPSmall.Checked
+            .MediumCheck = chkBPMedium.Checked
+            .LargeCheck = chkBPLarge.Checked
+            .XLCheck = chkBPXL.Checked
+
+            .IncludeUsage = chkBPFacilityIncludeUsage.Checked
+            .IncludeTaxes = chkBPTaxes.Checked
+            .IncludeFees = chkBPBrokerFees.Checked
+
+            .IncludeInventionCost = chkBPIncludeInventionCosts.Checked
+            .IncludeInventionTime = chkBPIncludeInventionTime.Checked
+            SelectedBPInventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
+            SelectedBPInventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
+
+            .IncludeCopyCost = chkBPIncludeCopyCosts.Checked
+            .IncludeCopyTime = chkBPIncludeCopyTime.Checked
+            SelectedBPCopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
+            SelectedBPCopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
+
+            ' For T3 on the BP tab, save both facility data
+            .IncludeT3Cost = chkBPIncludeT3Costs.Checked
+            .IncludeT3Time = chkBPIncludeT3Time.Checked
+
+            ' Ignore settings
+            .IgnoreInvention = chkBPIgnoreInvention.Checked
+            .IgnoreMinerals = chkBPIgnoreMinerals.Checked
+            .IgnoreT1Item = chkBPIgnoreT1Item.Checked
+
+            SelectedBPSubsystemManufacturingFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
+            SelectedBPSubsystemManufacturingFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
+            SelectedBPT3CruiserManufacturingFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
+            SelectedBPT3CruiserManufacturingFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
+            SelectedBPT3InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
+            SelectedBPT3InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
+
+            .PricePerUnit = chkBPPricePerUnit.Checked
+
+            .CompColumnSort = BPCompColumnClicked
+            .RawColumnSort = BPRawColumnClicked
+
+            If BPCompColumnSortType = SortOrder.Ascending Then
+                .CompColumnSortType = "Ascending"
+            Else
+                .CompColumnSortType = "Descending"
+            End If
+
+            If BPRawColumnSortType = SortOrder.Ascending Then
+                .RawColumnSortType = "Ascending"
+            Else
+                .RawColumnSortType = "Descending"
+            End If
+
+            ' Save the relic and decryptor if they have the setting set
+            If UserApplicationSettings.SaveBPRelicsDecryptors Then
+                ' See if the T2 window is open and has a decryptor then save, only will be open if they have a t2 bp loaded
+                If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                    .T2DecryptorType = cmbBPInventionDecryptor.Text
+                    .RelicType = UserBPTabSettings.RelicType
+                    .T3DecryptorType = UserBPTabSettings.T3DecryptorType ' Save the old one
+                End If
+
+                ' See if the T3 window is open and has a decryptor then save, only will be open if they have a t3 bp loaded
+                If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                    .T2DecryptorType = UserBPTabSettings.T2DecryptorType ' Save the old one
+                    .RelicType = cmbBPRelic.Text
+                    .T3DecryptorType = cmbBPT3Decryptor.Text
+                End If
+            End If
+
+        End With
 
         ' Save these here too
         UserApplicationSettings.CheckBuildBuy = chkBPBuildBuy.Checked
@@ -5506,7 +5603,7 @@ Tabs:
                             lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, _
                             btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
                             chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities, _
-                            TempTech, ItemGroupID, ItemCategoryID, False, False, Nothing, gbBPManualSystemCostIndex, ttMain) ' Don't load activites again
+                            TempTech, ItemGroupID, ItemCategoryID, False, False, Nothing, gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade) ' Don't load activites again
         End If
 
         cmbBPBlueprintSelection.Focus()
@@ -5730,11 +5827,42 @@ Tabs:
                               lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, _
                               btnBPFacilitySave, lblBPFacilityTaxRate, BPTab, _
                               chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities, _
-                              BPTech, BPGroupID, BPCategoryID, False, True, Nothing, gbBPManualSystemCostIndex, ttMain)
+                              BPTech, BPGroupID, BPCategoryID, False, True, Nothing, gbBPManualSystemCostIndex, ttMain, lblBPFWUpgrade, cmbBPFWUpgrade)
         End If
 
         ' Determine the type of facility we want to build from for this blueprint first
         BlueprintBuildFacility = GetManufacturingFacility(GetProductionType(ActivityManufacturing, BPGroupID, BPCategoryID, cmbBPFacilityType.Text), BPTab)
+
+        ' Set the fw upgrade level for the five facilities
+        If cmbBPUpdateCostIndexActivity.Text = ActivityManufacturing Then
+            BlueprintBuildFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+        Else
+            BlueprintBuildFacility.FWUpgradeLevel = GetFWUpgradeLevel(BlueprintBuildFacility.SolarSystemName)
+        End If
+
+        If cmbBPUpdateCostIndexActivity.Text = ActivityComponentManufacturing Then
+            SelectedBPComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+        Else
+            SelectedBPComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPComponentManufacturingFacility.SolarSystemName)
+        End If
+
+        If cmbBPUpdateCostIndexActivity.Text = ActivityCapComponentManufacturing Then
+            SelectedBPCapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+        Else
+            SelectedBPCapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPCapitalComponentManufacturingFacility.SolarSystemName)
+        End If
+
+        If cmbBPUpdateCostIndexActivity.Text = ActivityCopying Then
+            SelectedBPCopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+        Else
+            SelectedBPCopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPCopyFacility.SolarSystemName)
+        End If
+
+        If cmbBPUpdateCostIndexActivity.Text = ActivityInvention Then
+            SelectedBPInventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
+        Else
+            SelectedBPInventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPInventionFacility.SolarSystemName)
+        End If
 
         ' Working
         ' Now load the materials into the lists
@@ -5754,6 +5882,7 @@ Tabs:
         BPME = CInt(txtBPME.Text)
         BPTE = CInt(txtBPTE.Text)
 
+        Dim FWUpgradeLevel As Integer = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
 
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter, _
@@ -5784,10 +5913,6 @@ Tabs:
 
         ' Build the item and get the list of materials
         Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, chkBPTaxes.Checked, chkBPFacilityIncludeUsage.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
-
-        ' Sort the lists
-        SelectedBlueprint.GetRawMaterials.SortMaterialListByQuantity()
-        SelectedBlueprint.GetComponentMaterials.SortMaterialListByQuantity()
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -5846,6 +5971,16 @@ Tabs:
                 Call lstBPComponentMats.Items.Add(complstViewRow) ' Check TODO - Add check box?
             Next
 
+            Dim TempSort As SortOrder
+            If BPCompColumnSortType = SortOrder.Ascending Then
+                TempSort = SortOrder.Descending
+            Else
+                TempSort = SortOrder.Ascending
+            End If
+
+            ' Sort the component list
+            Call ListViewColumnSorter(BPCompColumnClicked, CType(lstBPComponentMats, ListView), BPCompColumnClicked, TempSort)
+
             lstBPComponentMats.EndUpdate()
 
             ' Enable the raw and component selector radio for exporting to shopping list (only if we don't have calc build/buy checked)
@@ -5857,20 +5992,22 @@ Tabs:
                 rbtnBPComponentCopy.Enabled = True
             End If
 
-            Select Case UserBPTabSettings.ExporttoShoppingListType
-                Case rbtnBPComponentCopy.Text
-                    rbtnBPComponentCopy.Checked = True
-                Case rbtnBPCopyInvREMats.Text
-                    rbtnBPCopyInvREMats.Checked = True
-                Case rbtnBPRawmatCopy.Text
-                    ' If the raw button isn't enabled, then default to components
-                    If rbtnBPRawmatCopy.Enabled Then
-                        rbtnBPRawmatCopy.Checked = True
-                    Else
+            If Not SentFromManufacturingTab Then
+                Select Case UserBPTabSettings.ExporttoShoppingListType
+                    Case rbtnBPComponentCopy.Text
                         rbtnBPComponentCopy.Checked = True
-                    End If
-            End Select
-            lstBPComponentMats.Enabled = True
+                    Case rbtnBPCopyInvREMats.Text
+                        rbtnBPCopyInvREMats.Checked = True
+                    Case rbtnBPRawmatCopy.Text
+                        ' If the raw button isn't enabled, then default to components
+                        If rbtnBPRawmatCopy.Enabled Then
+                            rbtnBPRawmatCopy.Checked = True
+                        Else
+                            rbtnBPComponentCopy.Checked = True
+                        End If
+                End Select
+                lstBPComponentMats.Enabled = True
+            End If
 
         Else ' No components
             ' Disable the raw and component selector radio for exporting to shopping list, the button will still just pull the data from the list anyway though
@@ -5912,6 +6049,17 @@ Tabs:
                 rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
                 Call lstBPRawMats.Items.Add(rawlstViewRow)
             Next
+
+            ' Sort the raw mats list
+            Dim TempSort As SortOrder
+            If BPRawColumnSortType = SortOrder.Ascending Then
+                TempSort = SortOrder.Descending
+            Else
+                TempSort = SortOrder.Ascending
+            End If
+
+            Call ListViewColumnSorter(BPRawColumnClicked, CType(lstBPRawMats, ListView), BPRawColumnClicked, TempSort)
+
             lstBPRawMats.EndUpdate()
         End If
 
@@ -6682,7 +6830,14 @@ ExitForm:
 
         ' TODO - need to update if they add Teams back in
         TTString = "Total cost of doing the selected activity at this facility using:" & vbCrLf
-        TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseJobCost, 2) & " " & vbCrLf
+        If cmbBPFacilityActivities.Text = ActivityCopying Then
+            TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseCopyJobCost, 2) & " " & vbCrLf
+        ElseIf cmbBPFacilityActivities.Text = ActivityInvention Then
+            TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseInventionJobCost, 2) & " " & vbCrLf
+        Else
+            TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseJobCost, 2) & " " & vbCrLf
+        End If
+
         TTString = TTString & "System Index = " & FormatPercent(SentFacility.CostIndex, 2) & " " & vbCrLf
         If IncludeTax Then
             TTString = TTString & "Facility Tax Rate = " & FormatPercent(SentFacility.TaxRate, 2) & " " & vbCrLf
@@ -6775,8 +6930,47 @@ ExitForm:
         Call ExecuteNonQuerySQL(SQL)
 
         ' Update the station records for this system
-        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
+        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex
+        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
+
         Call ExecuteNonQuerySQL(SQL)
+
+        ' Add the fw system upgrade information
+        If cmbBPFWUpgrade.Enabled = True Then
+            ' See if we update or insert
+            SQL = "SELECT * FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
+
+            DBCommand = New SQLiteCommand(SQL, DB)
+            rsCheck = DBCommand.ExecuteReader
+            rsCheck.Read()
+
+            Dim FWUpgradeLevel As Integer
+            Select Case cmbBPFWUpgrade.Text
+                Case "Level 1"
+                    FWUpgradeLevel = 1
+                Case "Level 2"
+                    FWUpgradeLevel = 2
+                Case "Level 3"
+                    FWUpgradeLevel = 3
+                Case "Level 4"
+                    FWUpgradeLevel = 4
+                Case "Level 5"
+                    FWUpgradeLevel = 5
+                Case Else
+                    FWUpgradeLevel = 0
+            End Select
+
+            If rsCheck.HasRows Then
+                SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
+                SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID
+            Else
+                SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SSID & "," & CStr(FWUpgradeLevel) & ")"
+            End If
+
+            Call ExecuteNonQuerySQL(SQL)
+            rsCheck.Close()
+
+        End If
 
         ' Reload the facility now
         Call SetAllFacilities(True)
@@ -6788,6 +6982,17 @@ ExitForm:
         Application.DoEvents()
         MsgBox("Index Updated", vbInformation, Application.ProductName)
 
+    End Sub
+
+    ' Allow update of the market price from clicking on the label
+    Private Sub lblBPMarketCost_Click(sender As System.Object, e As System.EventArgs) Handles lblBPMarketCost.Click
+        txtBPMarketPriceEdit.Size = lblBPMarketCost.Size
+        Dim p As Point = lblBPMarketCost.Location
+        p.Y = lblBPMarketCost.Location.Y - 2 ' move the text box up two pixels since it is larger than the label and looks funky
+        txtBPMarketPriceEdit.Location = p
+        txtBPMarketPriceEdit.Text = lblBPMarketCost.Text
+        txtBPMarketPriceEdit.Visible = True
+        txtBPMarketPriceEdit.Focus()
     End Sub
 
 #End Region
@@ -8068,6 +8273,13 @@ ExitForm:
             IgnoreSystemCheckUpdates = False
         End If
 
+        UpdatePricesColumnClicked = UserUpdatePricesTabSettings.ColumnSort
+        If UserUpdatePricesTabSettings.ColumnSortType = "Ascending" Then
+            UpdatePricesColumnSortType = SortOrder.Ascending
+        Else
+            UpdatePricesColumnSortType = SortOrder.Descending
+        End If
+
         If Developer Then
             chkUpdatePricesCRESTHistory.Checked = UserUpdatePricesTabSettings.UpdatePriceHistory
         Else
@@ -8230,6 +8442,14 @@ ExitForm:
             .Deployables = chkDeployables.Checked
             .Celestials = chkCelestials.Checked
         End With
+
+        TempSettings.ColumnSort = UpdatePricesColumnClicked
+
+        If UpdatePricesColumnSortType = SortOrder.Ascending Then
+            TempSettings.ColumnSortType = "Ascending"
+        Else
+            TempSettings.ColumnSortType = "Descending"
+        End If
 
         ' Save the data in the XML file
         Call AllSettings.SaveUpdatePricesSettings(TempSettings)
@@ -9206,17 +9426,18 @@ ExitSub:
 
             ' Clear List
             lstPricesView.Items.Clear()
-            'lstViewPrices.Hide()
+            ' Disable sorting because it will crawl after we update if there are too many records
+            lstPricesView.ListViewItemSorter = Nothing
             lstPricesView.BeginUpdate()
             Me.Cursor = Cursors.WaitCursor
 
             ' Fill list
             While readerMats.Read
                 'ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE
-                lstViewRow = New ListViewItem(CStr(readerMats.GetValue(0)))
+                lstViewRow = New ListViewItem(CStr(readerMats.GetValue(0))) ' ID
                 'The remaining columns are subitems  
-                lstViewRow.SubItems.Add(CStr(readerMats.GetString(2)))
-                lstViewRow.SubItems.Add(CStr(readerMats.GetString(1)))
+                lstViewRow.SubItems.Add(CStr(readerMats.GetString(2))) ' Group
+                lstViewRow.SubItems.Add(CStr(readerMats.GetString(1))) ' Name
                 lstViewRow.SubItems.Add(FormatNumber(readerMats.GetDouble(3), 2))
                 lstViewRow.SubItems.Add(CStr(readerMats.GetValue(4)))
                 If IsDBNull(readerMats.GetValue(5)) Then
@@ -9231,7 +9452,14 @@ ExitSub:
             readerMats = Nothing
             DBCommand = Nothing
 
-            lstPricesView.Show()
+            ' Now sort this
+            Dim TempType As SortOrder
+            If UpdatePricesColumnSortType = SortOrder.Ascending Then
+                TempType = SortOrder.Descending
+            Else
+                TempType = SortOrder.Ascending
+            End If
+            Call ListViewColumnSorter(UpdatePricesColumnClicked, CType(lstPricesView, ListView), UpdatePricesColumnClicked, TempType)
             Me.Cursor = Cursors.Default
             lstPricesView.EndUpdate()
         End If
@@ -9378,6 +9606,18 @@ ExitSub:
 
 #Region "Manufacturing Object Functions"
 
+    Private Sub cmbCalcFWManufUpgradeLevel_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcFWManufUpgradeLevel.SelectedIndexChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub cmbCalcFWCopyUpgradeLevel_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcFWCopyUpgradeLevel.SelectedIndexChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub cmbCalcFWInventionUpgradeLevel_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcFWInventionUpgradeLevel.SelectedIndexChanged
+        Call ResetRefresh()
+    End Sub
+
     Private Sub lblCalcBaseFacilityDefault_DoubleClick(sender As System.Object, e As System.EventArgs) Handles lblCalcBaseFacilityDefault.DoubleClick
         If lblCalcBaseFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
             Call LoadDefaultCalcBaseFacility()
@@ -9442,6 +9682,10 @@ ExitSub:
         If lblCalcNoPOSFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
             Call LoadDefaultCalcNoPOSFacility()
         End If
+    End Sub
+
+    Private Sub cmbCalcFWUpgrade_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcFWManufUpgradeLevel.KeyPress
+        e.Handled = True
     End Sub
 
     ' CalcBaseFacility functions
@@ -9692,7 +9936,8 @@ ExitSub:
                                       lblCalcBaseFacilityManualTE, txtCalcBaseFacilityManualTE, _
                                       lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax, _
                                       btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, _
-                                      chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcBaseFacilityLoaded, chkCalcBaseFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcBaseFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcBaseFacilityLoaded, _
+                                      chkCalcBaseFacilityIncludeUsage.Checked, ttMain, GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcBaseFacilitySystem.Text))
 
             If txtCalcBaseFacilityManualME.Visible Then
                 Call txtCalcBaseFacilityManualME.Focus()
@@ -9977,7 +10222,8 @@ ExitSub:
                                       lblCalcComponentFacilityManualTE, txtCalcComponentFacilityManualTE, _
                                       lblCalcComponentFacilityManualTax, txtCalcComponentFacilityManualTax, _
                                       btnCalcComponentFacilitySave, lblCalcComponentFacilityTaxRate, _
-                                      chkCalcComponentFacilityIncludeUsage, Nothing, Nothing, CalcTab, TempCalcComponentFacilityLoaded, chkCalcComponentFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcComponentFacilityIncludeUsage, Nothing, Nothing, CalcTab, TempCalcComponentFacilityLoaded, _
+                                      chkCalcComponentFacilityIncludeUsage.Checked, ttMain, GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcComponentFacilitySystem.Text))
             Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded)
             If txtCalcComponentFacilityManualME.Visible Then
                 Call txtCalcComponentFacilityManualME.Focus()
@@ -10105,7 +10351,8 @@ ExitSub:
                                lblCalcInventionFacilityManualTax, txtCalcInventionFacilityManualTax, _
                                btnCalcInventionFacilitySave, lblCalcInventionFacilityTaxRate, _
                                chkCalcInventionFacilityIncludeUsage, chkCalcInventionFacilityIncludeCost, chkCalcInventionFacilityIncludeTime, _
-                               CalcTab, CalcInventionFacilityLoaded, chkCalcInventionFacilityIncludeUsage.Checked, ttMain)
+                               CalcTab, CalcInventionFacilityLoaded, chkCalcInventionFacilityIncludeUsage.Checked, ttMain, _
+                               GetFWUpgradeLevel(cmbCalcFWInventionUpgradeLevel, cmbCalcInventionFacilitySystem.Text))
             End If
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
@@ -10231,7 +10478,8 @@ ExitSub:
                                       lblCalcInventionFacilityManualTax, txtCalcInventionFacilityManualTax, _
                                       btnCalcInventionFacilitySave, lblCalcInventionFacilityTaxRate, _
                                       chkCalcInventionFacilityIncludeUsage, chkCalcInventionFacilityIncludeCost, chkCalcInventionFacilityIncludeTime, _
-                                      CalcTab, CalcInventionFacilityLoaded, chkCalcInventionFacilityIncludeUsage.Checked, ttMain)
+                                      CalcTab, CalcInventionFacilityLoaded, chkCalcInventionFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWInventionUpgradeLevel, cmbCalcInventionFacilitySystem.Text))
 
             If txtCalcInventionFacilityManualME.Visible Then
                 Call txtCalcInventionFacilityManualME.Focus()
@@ -10381,7 +10629,8 @@ ExitSub:
                                lblCalcT3InventionFacilityManualTax, txtCalcT3InventionFacilityManualTax, _
                                btnCalcT3InventionFacilitySave, lblCalcT3InventionFacilityTaxRate, _
                                chkCalcT3InventionFacilityIncludeUsage, chkCalcT3InventionFacilityIncludeCost, chkCalcT3InventionFacilityIncludeTime, _
-                               CalcTab, CalcT3InventionFacilityLoaded, chkCalcT3InventionFacilityIncludeUsage.Checked, ttMain)
+                               CalcTab, CalcT3InventionFacilityLoaded, chkCalcT3InventionFacilityIncludeUsage.Checked, ttMain, _
+                               GetFWUpgradeLevel(cmbCalcFWInventionUpgradeLevel, cmbCalcT3InventionFacilitySystem.Text))
             End If
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
@@ -10507,7 +10756,8 @@ ExitSub:
                                       lblCalcT3InventionFacilityManualTax, txtCalcT3InventionFacilityManualTax, _
                                       btnCalcT3InventionFacilitySave, lblCalcT3InventionFacilityTaxRate, _
                                       chkCalcT3InventionFacilityIncludeUsage, chkCalcT3InventionFacilityIncludeCost, chkCalcT3InventionFacilityIncludeTime, _
-                                      CalcTab, CalcT3InventionFacilityLoaded, chkCalcT3InventionFacilityIncludeUsage.Checked, ttMain)
+                                      CalcTab, CalcT3InventionFacilityLoaded, chkCalcT3InventionFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWInventionUpgradeLevel, cmbCalcT3InventionFacilitySystem.Text))
 
             If txtCalcT3InventionFacilityManualME.Visible Then
                 Call txtCalcT3InventionFacilityManualME.Focus()
@@ -10659,7 +10909,8 @@ ExitSub:
                                lblCalcCopyFacilityManualTax, txtCalcCopyFacilityManualTax, _
                                btnCalcCopyFacilitySave, lblCalcCopyFacilityTaxRate, _
                                chkCalcCopyFacilityIncludeUsage, chkCalcCopyFacilityIncludeCost, chkCalcCopyFacilityIncludeTime, _
-                               CalcTab, CalcCopyFacilityLoaded, chkCalcCopyFacilityIncludeUsage.Checked, ttMain)
+                               CalcTab, CalcCopyFacilityLoaded, chkCalcCopyFacilityIncludeUsage.Checked, ttMain, _
+                               GetFWUpgradeLevel(cmbCalcFWCopyUpgradeLevel, cmbCalcCopyFacilitySystem.Text))
             End If
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
@@ -10785,7 +11036,8 @@ ExitSub:
                                       lblCalcCopyFacilityManualTax, txtCalcCopyFacilityManualTax, _
                                       btnCalcCopyFacilitySave, lblCalcCopyFacilityTaxRate, _
                                       chkCalcCopyFacilityIncludeUsage, chkCalcCopyFacilityIncludeCost, chkCalcCopyFacilityIncludeCost, _
-                                      CalcTab, CalcCopyFacilityLoaded, chkCalcCopyFacilityIncludeUsage.Checked, ttMain)
+                                      CalcTab, CalcCopyFacilityLoaded, chkCalcCopyFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWCopyUpgradeLevel, cmbCalcCopyFacilitySystem.Text))
 
             If txtCalcCopyFacilityManualME.Visible Then
                 Call txtCalcCopyFacilityManualME.Focus()
@@ -11036,7 +11288,9 @@ ExitSub:
                                       lblCalcNoPOSFacilityManualTE, txtCalcNoPOSFacilityManualTE, _
                                       lblCalcNoPOSFacilityManualTax, txtCalcNoPOSFacilityManualTax, _
                                       btnCalcNoPOSFacilitySave, lblCalcNoPOSFacilityTaxRate, _
-                                      chkCalcNoPOSFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcNoPOSFacilityLoaded, chkCalcNoPOSFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcNoPOSFacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      CalcNoPOSFacilityLoaded, chkCalcNoPOSFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcNoPOSFacilitySystem.Text))
 
             If txtCalcNoPOSFacilityManualME.Visible Then
                 Call txtCalcNoPOSFacilityManualME.Focus()
@@ -11256,7 +11510,9 @@ ExitSub:
                                       lblCalcSuperFacilityManualTE, txtCalcSuperFacilityManualTE, _
                                       lblCalcSuperFacilityManualTax, txtCalcSuperFacilityManualTax, _
                                       btnCalcSuperFacilitySave, lblCalcSuperFacilityTaxRate, _
-                                      chkCalcSuperFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcSuperFacilityLoaded, chkCalcSuperFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcSuperFacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      CalcSuperFacilityLoaded, chkCalcSuperFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcSuperFacilitySystem.Text))
 
             If txtCalcSuperFacilityManualME.Visible Then
                 Call txtCalcSuperFacilityManualME.Focus()
@@ -11475,7 +11731,9 @@ ExitSub:
                                       lblCalcCapitalFacilityManualTE, txtCalcCapitalFacilityManualTE, _
                                       lblCalcCapitalFacilityManualTax, txtCalcCapitalFacilityManualTax, _
                                       btnCalcCapitalFacilitySave, lblCalcCapitalFacilityTaxRate, _
-                                      chkCalcCapitalFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcCapitalFacilityLoaded, chkCalcCapitalFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcCapitalFacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      CalcCapitalFacilityLoaded, chkCalcCapitalFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcCapitalFacilitySystem.Text))
 
             If txtCalcCapitalFacilityManualME.Visible Then
                 Call txtCalcCapitalFacilityManualME.Focus()
@@ -11717,7 +11975,10 @@ ExitSub:
                                       lblCalcT3FacilityManualTE, txtCalcT3FacilityManualTE, _
                                       lblCalcT3FacilityManualTax, txtCalcT3FacilityManualTax, _
                                       btnCalcT3FacilitySave, lblCalcT3FacilityTaxRate, _
-                                      chkCalcT3FacilityIncludeUsage, Nothing, Nothing, CalcTab, TempCalcT3FacilityLoaded, chkCalcT3FacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcT3FacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      TempCalcT3FacilityLoaded, chkCalcT3FacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcT3FacilitySystem.Text))
+
             Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
             If txtCalcT3FacilityManualME.Visible Then
                 Call txtCalcT3FacilityManualME.Focus()
@@ -11971,7 +12232,9 @@ ExitSub:
                                       lblCalcSubsystemFacilityManualTE, txtCalcSubsystemFacilityManualTE, _
                                       lblCalcSubsystemFacilityManualTax, txtCalcSubsystemFacilityManualTax, _
                                       btnCalcSubsystemFacilitySave, lblCalcSubsystemFacilityTaxRate, _
-                                      chkCalcSubsystemFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcSubsystemFacilityLoaded, chkCalcSubsystemFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcSubsystemFacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      CalcSubsystemFacilityLoaded, chkCalcSubsystemFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcSubsystemFacilitySystem.Text))
 
             If txtCalcSubsystemFacilityManualME.Visible Then
                 Call txtCalcSubsystemFacilityManualME.Focus()
@@ -12190,7 +12453,9 @@ ExitSub:
                                       lblCalcBoosterFacilityManualTE, txtCalcBoosterFacilityManualTE, _
                                       lblCalcBoosterFacilityManualTax, txtCalcBoosterFacilityManualTax, _
                                       btnCalcBoosterFacilitySave, lblCalcBoosterFacilityTaxRate, _
-                                      chkCalcBoosterFacilityIncludeUsage, Nothing, Nothing, CalcTab, CalcBoosterFacilityLoaded, chkCalcBoosterFacilityIncludeUsage.Checked, ttMain)
+                                      chkCalcBoosterFacilityIncludeUsage, Nothing, Nothing, CalcTab, _
+                                      CalcBoosterFacilityLoaded, chkCalcBoosterFacilityIncludeUsage.Checked, ttMain, _
+                                      GetFWUpgradeLevel(cmbCalcFWManufUpgradeLevel, cmbCalcBoosterFacilitySystem.Text))
 
             If txtCalcBoosterFacilityManualME.Visible Then
                 Call txtCalcBoosterFacilityManualME.Focus()
@@ -13525,6 +13790,7 @@ CheckTechs:
             ColumnPositions(.ManufacturingFacilityMEBonus) = ProgramSettings.ManufacturingFacilityMEBonusColumnName
             ColumnPositions(.ManufacturingFacilityTEBonus) = ProgramSettings.ManufacturingFacilityTEBonusColumnName
             ColumnPositions(.ManufacturingFacilityUsage) = ProgramSettings.ManufacturingFacilityUsageColumnName
+            ColumnPositions(.ManufacturingFacilityFWSystemLevel) = ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
             ColumnPositions(.ComponentFacilityName) = ProgramSettings.ComponentFacilityNameColumnName
             ColumnPositions(.ComponentFacilitySystem) = ProgramSettings.ComponentFacilitySystemColumnName
             ColumnPositions(.ComponentFacilityRegion) = ProgramSettings.ComponentFacilityRegionColumnName
@@ -13533,6 +13799,16 @@ CheckTechs:
             ColumnPositions(.ComponentFacilityMEBonus) = ProgramSettings.ComponentFacilityMEBonusColumnName
             ColumnPositions(.ComponentFacilityTEBonus) = ProgramSettings.ComponentFacilityTEBonusColumnName
             ColumnPositions(.ComponentFacilityUsage) = ProgramSettings.ComponentFacilityUsageColumnName
+            ColumnPositions(.ComponentFacilityFWSystemLevel) = ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+            ColumnPositions(.CapComponentFacilityName) = ProgramSettings.CapComponentFacilityNameColumnName
+            ColumnPositions(.CapComponentFacilitySystem) = ProgramSettings.CapComponentFacilitySystemColumnName
+            ColumnPositions(.CapComponentFacilityRegion) = ProgramSettings.CapComponentFacilityRegionColumnName
+            ColumnPositions(.CapComponentFacilitySystemIndex) = ProgramSettings.CapComponentFacilitySystemIndexColumnName
+            ColumnPositions(.CapComponentFacilityTax) = ProgramSettings.CapComponentFacilityTaxColumnName
+            ColumnPositions(.CapComponentFacilityMEBonus) = ProgramSettings.CapComponentFacilityMEBonusColumnName
+            ColumnPositions(.CapComponentFacilityTEBonus) = ProgramSettings.CapComponentFacilityTEBonusColumnName
+            ColumnPositions(.CapComponentFacilityUsage) = ProgramSettings.CapComponentFacilityUsageColumnName
+            ColumnPositions(.CapComponentFacilityFWSystemLevel) = ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
             ColumnPositions(.CopyingFacilityName) = ProgramSettings.CopyingFacilityNameColumnName
             ColumnPositions(.CopyingFacilitySystem) = ProgramSettings.CopyingFacilitySystemColumnName
             ColumnPositions(.CopyingFacilityRegion) = ProgramSettings.CopyingFacilityRegionColumnName
@@ -13541,6 +13817,7 @@ CheckTechs:
             ColumnPositions(.CopyingFacilityMEBonus) = ProgramSettings.CopyingFacilityMEBonusColumnName
             ColumnPositions(.CopyingFacilityTEBonus) = ProgramSettings.CopyingFacilityTEBonusColumnName
             ColumnPositions(.CopyingFacilityUsage) = ProgramSettings.CopyingFacilityUsageColumnName
+            ColumnPositions(.CopyingFacilityFWSystemLevel) = ProgramSettings.CopyingFacilityFWSystemLevelColumnName
             ColumnPositions(.InventionFacilityName) = ProgramSettings.InventionFacilityNameColumnName
             ColumnPositions(.InventionFacilitySystem) = ProgramSettings.InventionFacilitySystemColumnName
             ColumnPositions(.InventionFacilityRegion) = ProgramSettings.InventionFacilityRegionColumnName
@@ -13549,6 +13826,7 @@ CheckTechs:
             ColumnPositions(.InventionFacilityMEBonus) = ProgramSettings.InventionFacilityMEBonusColumnName
             ColumnPositions(.InventionFacilityTEBonus) = ProgramSettings.InventionFacilityTEBonusColumnName
             ColumnPositions(.InventionFacilityUsage) = ProgramSettings.InventionFacilityUsageColumnName
+            ColumnPositions(.InventionFacilityFWSystemLevel) = ProgramSettings.InventionFacilityFWSystemLevelColumnName
         End With
 
         ' First column is always the bptypeid
@@ -13651,6 +13929,8 @@ CheckTechs:
                     Return .ManufacturingFacilityTEBonusWidth
                 Case ProgramSettings.ManufacturingFacilityUsageColumnName
                     Return .ManufacturingFacilityUsageWidth
+                Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
+                    Return .ManufacturingFacilityFWSystemLevelWidth
                 Case ProgramSettings.ComponentFacilityNameColumnName
                     Return .ComponentFacilityNameWidth
                 Case ProgramSettings.ComponentFacilitySystemColumnName
@@ -13667,6 +13947,26 @@ CheckTechs:
                     Return .ComponentFacilityTEBonusWidth
                 Case ProgramSettings.ComponentFacilityUsageColumnName
                     Return .ComponentFacilityUsageWidth
+                Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+                    Return .ComponentFacilityFWSystemLevelWidth
+                Case ProgramSettings.CapComponentFacilityNameColumnName
+                    Return .CapComponentFacilityNameWidth
+                Case ProgramSettings.CapComponentFacilitySystemColumnName
+                    Return .CapComponentFacilitySystemWidth
+                Case ProgramSettings.CapComponentFacilityRegionColumnName
+                    Return .CapComponentFacilityRegionWidth
+                Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                    Return .CapComponentFacilitySystemIndexWidth
+                Case ProgramSettings.CapComponentFacilityTaxColumnName
+                    Return .CapComponentFacilityTaxWidth
+                Case ProgramSettings.CapComponentFacilityMEBonusColumnName
+                    Return .CapComponentFacilityMEBonusWidth
+                Case ProgramSettings.CapComponentFacilityTEBonusColumnName
+                    Return .CapComponentFacilityTEBonusWidth
+                Case ProgramSettings.CapComponentFacilityUsageColumnName
+                    Return .CapComponentFacilityUsageWidth
+                Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
+                    Return .CapComponentFacilityFWSystemLevelWidth
                 Case ProgramSettings.CopyingFacilityNameColumnName
                     Return .CopyingFacilityNameWidth
                 Case ProgramSettings.CopyingFacilitySystemColumnName
@@ -13683,6 +13983,8 @@ CheckTechs:
                     Return .CopyingFacilityTEBonusWidth
                 Case ProgramSettings.CopyingFacilityUsageColumnName
                     Return .CopyingFacilityUsageWidth
+                Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
+                    Return .CopyingFacilityFWSystemLevelWidth
                 Case ProgramSettings.InventionFacilityNameColumnName
                     Return .InventionFacilityNameWidth
                 Case ProgramSettings.InventionFacilitySystemColumnName
@@ -13699,6 +14001,8 @@ CheckTechs:
                     Return .InventionFacilityTEBonusWidth
                 Case ProgramSettings.InventionFacilityUsageColumnName
                     Return .InventionFacilityUsageWidth
+                Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                    Return .InventionFacilityFWSystemLevelWidth
                 Case Else
                     Return 0
             End Select
@@ -13783,13 +14087,13 @@ CheckTechs:
             Case ProgramSettings.PortionSizeColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingJobFeeColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityNameColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilitySystemColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityRegionColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilitySystemIndexColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilityTaxColumnName
@@ -13799,7 +14103,9 @@ CheckTechs:
             Case ProgramSettings.ManufacturingFacilityTEBonusColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilityUsageColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityNameColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilitySystemColumnName
@@ -13816,6 +14122,26 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ComponentFacilityUsageColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityNameColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilitySystemColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityRegionColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityTaxColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityMEBonusColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityTEBonusColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityUsageColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilityNameColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilitySystemColumnName
@@ -13832,6 +14158,8 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilityUsageColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityNameColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilitySystemColumnName
@@ -13848,6 +14176,8 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.InventionFacilityUsageColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Left
             Case Else
                 Return 0
         End Select
@@ -14002,6 +14332,8 @@ CheckTechs:
                         .ManufacturingFacilityTEBonus = i
                     Case ProgramSettings.ManufacturingFacilityUsageColumnName
                         .ManufacturingFacilityUsage = i
+                    Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
+                        .ManufacturingFacilityFWSystemLevel = i
                     Case ProgramSettings.ComponentFacilityNameColumnName
                         .ComponentFacilityName = i
                     Case ProgramSettings.ComponentFacilitySystemColumnName
@@ -14018,6 +14350,26 @@ CheckTechs:
                         .ComponentFacilityTEBonus = i
                     Case ProgramSettings.ComponentFacilityUsageColumnName
                         .ComponentFacilityUsage = i
+                    Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+                        .ComponentFacilityFWSystemLevel = i
+                    Case ProgramSettings.CapComponentFacilityNameColumnName
+                        .CapComponentFacilityName = i
+                    Case ProgramSettings.CapComponentFacilitySystemColumnName
+                        .CapComponentFacilitySystem = i
+                    Case ProgramSettings.CapComponentFacilityRegionColumnName
+                        .CapComponentFacilityRegion = i
+                    Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                        .CapComponentFacilitySystemIndex = i
+                    Case ProgramSettings.CapComponentFacilityTaxColumnName
+                        .CapComponentFacilityTax = i
+                    Case ProgramSettings.CapComponentFacilityMEBonusColumnName
+                        .CapComponentFacilityMEBonus = i
+                    Case ProgramSettings.CapComponentFacilityTEBonusColumnName
+                        .CapComponentFacilityTEBonus = i
+                    Case ProgramSettings.CapComponentFacilityUsageColumnName
+                        .CapComponentFacilityUsage = i
+                    Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
+                        .CapComponentFacilityFWSystemLevel = i
                     Case ProgramSettings.CopyingFacilityNameColumnName
                         .CopyingFacilityName = i
                     Case ProgramSettings.CopyingFacilitySystemColumnName
@@ -14034,6 +14386,8 @@ CheckTechs:
                         .CopyingFacilityTEBonus = i
                     Case ProgramSettings.CopyingFacilityUsageColumnName
                         .CopyingFacilityUsage = i
+                    Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
+                        .CopyingFacilityFWSystemLevel = i
                     Case ProgramSettings.InventionFacilityNameColumnName
                         .InventionFacilityName = i
                     Case ProgramSettings.InventionFacilitySystemColumnName
@@ -14050,6 +14404,8 @@ CheckTechs:
                         .InventionFacilityTEBonus = i
                     Case ProgramSettings.InventionFacilityUsageColumnName
                         .InventionFacilityUsage = i
+                    Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                        .InventionFacilityFWSystemLevel = i
                 End Select
             Next
         End With
@@ -14161,6 +14517,8 @@ CheckTechs:
                         .ManufacturingFacilityTEBonusWidth = NewWidth
                     Case ProgramSettings.ManufacturingFacilityUsageColumnName
                         .ManufacturingFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
+                        .ManufacturingFacilityFWSystemLevelWidth = NewWidth
                     Case ProgramSettings.ComponentFacilityNameColumnName
                         .ComponentFacilityNameWidth = NewWidth
                     Case ProgramSettings.ComponentFacilitySystemColumnName
@@ -14177,6 +14535,26 @@ CheckTechs:
                         .ComponentFacilityTEBonusWidth = NewWidth
                     Case ProgramSettings.ComponentFacilityUsageColumnName
                         .ComponentFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+                        .ComponentFacilityFWSystemLevelWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityNameColumnName
+                        .CapComponentFacilityNameWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilitySystemColumnName
+                        .CapComponentFacilitySystemWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityRegionColumnName
+                        .CapComponentFacilityRegionWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                        .CapComponentFacilitySystemIndexWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityTaxColumnName
+                        .CapComponentFacilityTaxWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityMEBonusColumnName
+                        .CapComponentFacilityMEBonusWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityTEBonusColumnName
+                        .CapComponentFacilityTEBonusWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityUsageColumnName
+                        .CapComponentFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
+                        .CapComponentFacilityFWSystemLevelWidth = NewWidth
                     Case ProgramSettings.CopyingFacilityNameColumnName
                         .CopyingFacilityNameWidth = NewWidth
                     Case ProgramSettings.CopyingFacilitySystemColumnName
@@ -14193,6 +14571,8 @@ CheckTechs:
                         .CopyingFacilityTEBonusWidth = NewWidth
                     Case ProgramSettings.CopyingFacilityUsageColumnName
                         .CopyingFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
+                        .CopyingFacilityFWSystemLevelWidth = NewWidth
                     Case ProgramSettings.InventionFacilityNameColumnName
                         .InventionFacilityNameWidth = NewWidth
                     Case ProgramSettings.InventionFacilitySystemColumnName
@@ -14209,6 +14589,8 @@ CheckTechs:
                         .InventionFacilityTEBonusWidth = NewWidth
                     Case ProgramSettings.InventionFacilityUsageColumnName
                         .InventionFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                        .InventionFacilityFWSystemLevelWidth = NewWidth
                 End Select
             End With
         End If
@@ -14312,18 +14694,18 @@ CheckTechs:
             chkCalcLarge.Checked = .CheckLarge
             chkCalcXL.Checked = .CheckXL
 
-            Select Case .SortBy
-                Case rbtnCalcIPH.Text
-                    rbtnCalcIPH.Checked = True
-                Case rbtnCalcProfit.Text
-                    rbtnCalcProfit.Checked = True
-                Case rbtnCalcShowProfitPercent.Text
-                    rbtnCalcShowProfitPercent.Checked = True
-                Case rbtnCalcSortSVR.Text
-                    rbtnCalcSortSVR.Checked = True
-                Case rbtnCalcSortSVRIPH.Text
-                    rbtnCalcSortSVRIPH.Checked = True
-            End Select
+            'Select Case .SortBy
+            '    Case rbtnCalcIPH.Text
+            '        rbtnCalcIPH.Checked = True
+            '    Case rbtnCalcProfit.Text
+            '        rbtnCalcProfit.Checked = True
+            '    Case rbtnCalcShowProfitPercent.Text
+            '        rbtnCalcShowProfitPercent.Checked = True
+            '    Case rbtnCalcSortSVR.Text
+            '        rbtnCalcSortSVR.Checked = True
+            '    Case rbtnCalcSortSVRIPH.Text
+            '        rbtnCalcSortSVRIPH.Checked = True
+            'End Select
 
             Select Case .PriceCompare
                 Case rbtnCalcCompareAll.Text
@@ -14402,25 +14784,22 @@ CheckTechs:
 
             chkCalcPPU.Checked = .CalcPPU
 
-            ManufacturingColumnClicked = 0
-            ManufacturingColumnSortType = SortOrder.None
-            UpdatePricesColumnClicked = 0
-            UpdatePricesColumnSortType = SortOrder.None
-            BPRawColumnClicked = 0
-            BPRawColumnSortType = SortOrder.None
-            BPCompColumnClicked = 0
-            BPCompColumnSortType = SortOrder.None
-            DCColumnClicked = 0
-            DCColumnSortType = SortOrder.None
-            MiningColumnClicked = 0
-            MiningColumnSortType = SortOrder.None
-            ReactionsColumnClicked = 0
-            ReactionsColumnSortType = SortOrder.None
-
             RecordIDIterator = 0
 
             btnCalculate.Enabled = True
             lstManufacturing.Enabled = True
+
+            If .ColumnSortType = "Ascending" Then
+                ManufacturingColumnSortType = SortOrder.Ascending
+            Else
+                ManufacturingColumnSortType = SortOrder.Descending
+            End If
+
+            ManufacturingColumnClicked = .ColumnSort
+
+            cmbCalcFWManufUpgradeLevel.Text = .ManufacturingFWUpgradeLevel
+            cmbCalcFWCopyUpgradeLevel.Text = .CopyingFWUpgradeLevel
+            cmbCalcFWInventionUpgradeLevel.Text = .InventionFWUpgradeLevel
 
         End With
 
@@ -14694,6 +15073,9 @@ CheckTechs:
             End If
         End If
 
+        ' Save the column order and width first
+        AllSettings.SaveManufacturingTabColumnSettings(UserManufacturingTabColumnSettings)
+
         With TempSettings
             .CheckBPTypeAmmoCharges = chkCalcAmmo.Checked
             .CheckBPTypeBoosters = chkCalcBoosters.Checked
@@ -14760,17 +15142,37 @@ CheckTechs:
 
             .CalcPPU = chkCalcPPU.Checked
 
-            If rbtnCalcIPH.Checked Then
-                .SortBy = rbtnCalcIPH.Text
-            ElseIf rbtnCalcProfit.Checked Then
-                .SortBy = rbtnCalcProfit.Text
-            ElseIf rbtnCalcShowProfitPercent.Checked Then
-                .SortBy = rbtnCalcShowProfitPercent.Text
-            ElseIf rbtnCalcSortSVR.Checked Then
-                .SortBy = rbtnCalcSortSVR.Text
-            ElseIf rbtnCalcSortSVRIPH.Checked Then
-                .SortBy = rbtnCalcSortSVRIPH.Text
+            .ColumnSort = ManufacturingColumnClicked
+            If ManufacturingColumnSortType = SortOrder.Ascending Then
+                .ColumnSortType = "Ascending"
+            Else
+                .ColumnSortType = "Decending"
             End If
+
+            ' Sort the list based on the saved column, if they change the number of columns below value, then find IPH, if not there, use column 0
+            If ManufacturingColumnClicked > lstManufacturing.Columns.Count Then
+                ' Find the IPH column
+                If UserManufacturingTabColumnSettings.IskperHour <> 0 Then
+                    ManufacturingColumnClicked = UserManufacturingTabColumnSettings.IskperHour
+                Else
+                    ManufacturingColumnClicked = 0 ' Default, will always be there
+                End If
+
+            End If
+
+            .ColumnSort = ManufacturingColumnClicked
+
+            'If rbtnCalcIPH.Checked Then
+            '    .SortBy = rbtnCalcIPH.Text
+            'ElseIf rbtnCalcProfit.Checked Then
+            '    .SortBy = rbtnCalcProfit.Text
+            'ElseIf rbtnCalcShowProfitPercent.Checked Then
+            '    .SortBy = rbtnCalcShowProfitPercent.Text
+            'ElseIf rbtnCalcSortSVR.Checked Then
+            '    .SortBy = rbtnCalcSortSVR.Text
+            'ElseIf rbtnCalcSortSVRIPH.Checked Then
+            '    .SortBy = rbtnCalcSortSVRIPH.Text
+            'End If
 
             If rbtnCalcCompareAll.Checked Then
                 .PriceCompare = rbtnCalcCompareAll.Text
@@ -14806,13 +15208,14 @@ CheckTechs:
             .Runs = CInt(txtCalcRuns.Text)
             .BPRuns = CInt(txtCalcNumBPs.Text)
 
+            .ManufacturingFWUpgradeLevel = cmbCalcFWManufUpgradeLevel.Text
+            .CopyingFWUpgradeLevel = cmbCalcFWCopyUpgradeLevel.Text
+            .InventionFWUpgradeLevel = cmbCalcFWInventionUpgradeLevel.Text
+
         End With
 
         ' Save the data in the XML file
         Call Settings.SaveManufacturingSettings(TempSettings)
-
-        ' Save the column order and width too
-        AllSettings.SaveManufacturingTabColumnSettings(UserManufacturingTabColumnSettings)
 
         ' Save the data to the local variable
         UserManufacturingTabSettings = TempSettings
@@ -14983,6 +15386,54 @@ CheckTechs:
         Else
             SVRThresholdValue = CDbl(txtCalcSVRThreshold.Text)
         End If
+
+        Dim FWManufacturingUpgradeLevel As Integer
+        Select Case cmbCalcFWManufUpgradeLevel.Text
+            Case "1"
+                FWManufacturingUpgradeLevel = 1
+            Case "2"
+                FWManufacturingUpgradeLevel = 2
+            Case "3"
+                FWManufacturingUpgradeLevel = 3
+            Case "4"
+                FWManufacturingUpgradeLevel = 4
+            Case "5"
+                FWManufacturingUpgradeLevel = 5
+            Case Else
+                FWManufacturingUpgradeLevel = 0
+        End Select
+
+        Dim FWCopyUpgradeLevel As Integer
+        Select Case cmbCalcFWCopyUpgradeLevel.Text
+            Case "1"
+                FWCopyUpgradeLevel = 1
+            Case "2"
+                FWCopyUpgradeLevel = 2
+            Case "3"
+                FWCopyUpgradeLevel = 3
+            Case "4"
+                FWCopyUpgradeLevel = 4
+            Case "5"
+                FWCopyUpgradeLevel = 5
+            Case Else
+                FWCopyUpgradeLevel = 0
+        End Select
+
+        Dim FWInventionUpgradeLevel As Integer
+        Select Case cmbCalcFWInventionUpgradeLevel.Text
+            Case "1"
+                FWInventionUpgradeLevel = 1
+            Case "2"
+                FWInventionUpgradeLevel = 2
+            Case "3"
+                FWInventionUpgradeLevel = 3
+            Case "4"
+                FWInventionUpgradeLevel = 4
+            Case "5"
+                FWInventionUpgradeLevel = 5
+            Case Else
+                FWInventionUpgradeLevel = 0
+        End Select
 
         ' Save the refresh value since everytime we load the facility it will change it
         Dim SavedRefreshValue As Boolean = RefreshCalcData
@@ -15428,6 +15879,12 @@ CheckTechs:
                 InsertItem.CapComponentManufacturingFacility = SelectedCalcCapitalComponentManufacturingFacility
                 InsertItem.CopyFacility = SelectedCalcCopyFacility
 
+                ' Set the FW upgrade level for each facility if not set in system
+                InsertItem.ManufacturingFacility.FWUpgradeLevel = FWManufacturingUpgradeLevel
+                InsertItem.ComponentManufacturingFacility.FWUpgradeLevel = FWManufacturingUpgradeLevel
+                InsertItem.CapComponentManufacturingFacility.FWUpgradeLevel = FWManufacturingUpgradeLevel
+                InsertItem.CopyFacility.FWUpgradeLevel = FWCopyUpgradeLevel
+
                 ' Now determine how many copies of the base item we need with different data changed
                 ' If T1, just select compare types (raw and components)
                 ' If T2, first select each decryptor, then select Compare types (raw and components)
@@ -15484,6 +15941,9 @@ CheckTechs:
                                 InsertItem.CopyFacility = NoFacility
                                 InsertItem.CopyTeam = NoTeam
                             End If
+
+                            InsertItem.InventionFacility.FWUpgradeLevel = FWInventionUpgradeLevel
+                            InsertItem.CopyFacility.FWUpgradeLevel = FWCopyUpgradeLevel
 
                             InsertItem.InventionTeam = NoTeam ' Disable until CCP implements
 
@@ -16061,20 +16521,20 @@ DisplayResults:
             NumManufacturingItems = FinalManufacturingItemList.Count
         End If
 
-        ' Sort options
-        If NumManufacturingItems > 0 Then
-            If rbtnCalcIPH.Checked Then ' IPH
-                FinalManufacturingItemList.Sort(New CalcIPHComparer)
-            ElseIf rbtnCalcProfit.Checked Then ' By profit
-                FinalManufacturingItemList.Sort(New CalcProfitComparer)
-            ElseIf rbtnCalcShowProfitPercent.Checked Then ' Profit %
-                FinalManufacturingItemList.Sort(New CalcProfitPComparer)
-            ElseIf rbtnCalcSortSVR.Checked Then ' SVR only
-                FinalManufacturingItemList.Sort(New CalcSVRComparer)
-            ElseIf rbtnCalcSortSVRIPH.Checked Then ' SVR * IPH
-                FinalManufacturingItemList.Sort(New CalcSVRIPHComparer)
-            End If
-        End If
+        '' Sort options
+        'If NumManufacturingItems > 0 Then
+        '    If rbtnCalcIPH.Checked Then ' IPH
+        '        FinalManufacturingItemList.Sort(New CalcIPHComparer)
+        '    ElseIf rbtnCalcProfit.Checked Then ' By profit
+        '        FinalManufacturingItemList.Sort(New CalcProfitComparer)
+        '    ElseIf rbtnCalcShowProfitPercent.Checked Then ' Profit %
+        '        FinalManufacturingItemList.Sort(New CalcProfitPComparer)
+        '    ElseIf rbtnCalcSortSVR.Checked Then ' SVR only
+        '        FinalManufacturingItemList.Sort(New CalcSVRComparer)
+        '    ElseIf rbtnCalcSortSVRIPH.Checked Then ' SVR * IPH
+        '        FinalManufacturingItemList.Sort(New CalcSVRIPHComparer)
+        '    End If
+        'End If
 
         ' Set final list
         FinalItemList = FinalManufacturingItemList
@@ -16085,20 +16545,24 @@ DisplayResults:
         pnlProgressBar.Visible = True
 
         lstManufacturing.Items.Clear()
+        ' Disable sorting because it will crawl after we update if there are too many records
+        lstManufacturing.ListViewItemSorter = Nothing
         lstManufacturing.BeginUpdate()
 
         pnlStatus.Text = "Refreshing List..."
 
         Dim BonusString As String = ""
 
-        ' Reset the sorter in case we reset the columns
-        lstManufacturing.ListViewItemSorter = Nothing
-
         ' Load the final grid
         For i = 0 To FinalItemList.Count - 1
             Application.DoEvents()
 
             BPList = New ListViewItem(CStr(FinalItemList(i).RecordID)) ' Always the first item
+
+            If FinalItemList(i).DivideUnits = 0 Then
+                ' So the display will show zeros instead of NaN (divide by zero)
+                FinalItemList(i).DivideUnits = 1
+            End If
 
             For j = 1 To ColumnPositions.Count - 1
                 Select Case ColumnPositions(j)
@@ -16182,6 +16646,7 @@ DisplayResults:
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalVolume / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.PortionSizeColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).PortionSize, 0))
+
                     Case ProgramSettings.ManufacturingJobFeeColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).JobFee / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.ManufacturingFacilityNameColumnName
@@ -16200,6 +16665,8 @@ DisplayResults:
                         BPList.SubItems.Add(CStr(FinalItemList(i).ManufacturingFacility.TimeMultiplier))
                     Case ProgramSettings.ManufacturingFacilityUsageColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).ManufacturingFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ManufacturingFacility.FWUpgradeLevel))
 
                     Case ProgramSettings.ComponentFacilityNameColumnName
                         BPList.SubItems.Add(FinalItemList(i).ComponentManufacturingFacility.FacilityName)
@@ -16217,6 +16684,27 @@ DisplayResults:
                         BPList.SubItems.Add(CStr(FinalItemList(i).ComponentManufacturingFacility.TimeMultiplier))
                     Case ProgramSettings.ComponentFacilityUsageColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).ComponentManufacturingFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ComponentManufacturingFacility.FWUpgradeLevel))
+
+                    Case ProgramSettings.CapComponentFacilityNameColumnName
+                        BPList.SubItems.Add(FinalItemList(i).CapComponentManufacturingFacility.FacilityName)
+                    Case ProgramSettings.CapComponentFacilitySystemColumnName
+                        BPList.SubItems.Add(FinalItemList(i).CapComponentManufacturingFacility.SolarSystemName)
+                    Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).CapComponentManufacturingFacility.CostIndex, 5))
+                    Case ProgramSettings.CapComponentFacilityTaxColumnName
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).CapComponentManufacturingFacility.TaxRate, 1))
+                    Case ProgramSettings.CapComponentFacilityRegionColumnName
+                        BPList.SubItems.Add(FinalItemList(i).CapComponentManufacturingFacility.RegionName)
+                    Case ProgramSettings.CapComponentFacilityMEBonusColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).CapComponentManufacturingFacility.MaterialMultiplier))
+                    Case ProgramSettings.CapComponentFacilityTEBonusColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).CapComponentManufacturingFacility.TimeMultiplier))
+                    Case ProgramSettings.CapComponentFacilityUsageColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).CapComponentManufacturingFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).CapComponentManufacturingFacility.FWUpgradeLevel))
 
                     Case ProgramSettings.CopyingFacilityNameColumnName
                         BPList.SubItems.Add(FinalItemList(i).CopyFacility.FacilityName)
@@ -16234,6 +16722,8 @@ DisplayResults:
                         BPList.SubItems.Add(CStr(FinalItemList(i).CopyFacility.TimeMultiplier))
                     Case ProgramSettings.CopyingFacilityUsageColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).CopyFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).CopyFacility.FWUpgradeLevel))
 
                     Case ProgramSettings.InventionFacilityNameColumnName
                         BPList.SubItems.Add(FinalItemList(i).InventionFacility.FacilityName)
@@ -16251,6 +16741,8 @@ DisplayResults:
                         BPList.SubItems.Add(CStr(FinalItemList(i).InventionFacility.TimeMultiplier))
                     Case ProgramSettings.InventionFacilityUsageColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).InventionFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).InventionFacility.FWUpgradeLevel))
                 End Select
             Next
 
@@ -16286,6 +16778,28 @@ DisplayResults:
             Call IncrementToolStripProgressBar(pnlProgressBar)
 
         Next
+
+        ' Now sort this
+        Dim TempType As SortOrder
+        If ManufacturingColumnSortType = SortOrder.Ascending Then
+            TempType = SortOrder.Descending
+        Else
+            TempType = SortOrder.Ascending
+        End If
+
+        ' Sort the list based on the saved column, if they change the number of columns below value, then find IPH, if not there, use column 0
+        If ManufacturingColumnClicked > lstManufacturing.Columns.Count Then
+            ' Find the IPH column
+            If UserManufacturingTabColumnSettings.IskperHour <> 0 Then
+                ManufacturingColumnClicked = UserManufacturingTabColumnSettings.IskperHour
+            Else
+                ManufacturingColumnClicked = 0 ' Default, will always be there
+            End If
+
+        End If
+
+        ' Sort away
+        Call ListViewColumnSorter(ManufacturingColumnClicked, lstManufacturing, ManufacturingColumnClicked, TempType)
 
         lstManufacturing.EndUpdate()
 
@@ -16659,6 +17173,10 @@ ExitCalc:
                 ExportData = FormatNumber(DataText, 5) & Separator
             Case ProgramSettings.ComponentFacilityUsageColumnName
                 ExportData = Format(DataText, "Fixed") & Separator
+            Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
+                ExportData = FormatNumber(DataText, 5) & Separator
+            Case ProgramSettings.CapComponentFacilityUsageColumnName
+                ExportData = Format(DataText, "Fixed") & Separator
             Case ProgramSettings.CopyingFacilitySystemIndexColumnName
                 ExportData = FormatNumber(DataText, 5) & Separator
             Case ProgramSettings.CopyingFacilityUsageColumnName
@@ -17017,6 +17535,7 @@ ExitCalc:
     ' On double click of the item, it will open up the bp window with the item 
     Private Sub lstManufacturing_DoubleClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles lstManufacturing.DoubleClick
         Dim FoundItem As New ManufacturingItem
+        Dim CompareType As String
 
         ' Find the item clicked in the list of items then just send those values over
         ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
@@ -17027,11 +17546,18 @@ ExitCalc:
         If FoundItem IsNot Nothing Then
             ' We found it, so load the current bp
             With FoundItem
+                If rbtnCalcCompareAll.Checked Or rbtnCalcCompareComponents.Checked Or rbtnCalcCompareBuildBuy.Checked Then
+                    CompareType = "Components"
+                Else
+                    CompareType = "Raw"
+                End If
+
                 Call LoadBPfromDoubleClick(.BPID, .CalcType, .Inputs, "Manufacturing Tab", _
                                            .ManufacturingTeam, .ComponentTeam, .CopyTeam, _
                                            .ManufacturingFacility, .ComponentManufacturingFacility, .InventionFacility, .CopyFacility, _
                                            chkCalcTaxes.Checked, chkCalcFees.Checked, _
-                                           chkCalcBaseFacilityIncludeUsage.Checked, CStr(.BPME), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcNumBPs.Text)
+                                           chkCalcBaseFacilityIncludeUsage.Checked, CStr(.BPME), txtCalcRuns.Text, txtCalcProdLines.Text, _
+                                           txtCalcNumBPs.Text, CompareType)
             End With
         End If
 
@@ -17425,11 +17951,13 @@ ExitCalc:
 
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
             CopyofMe.ComponentManufacturingFacilityUsage = ComponentManufacturingFacilityUsage
+            CopyofMe.CapComponentManufacturingFacilityUsage = CapComponentManufacturingFacilityUsage
             CopyofMe.CopyFacilityUsage = CopyFacilityUsage
             CopyofMe.InventionFacilityUsage = InventionFacilityUsage
 
             CopyofMe.ManufacturingTeamUsage = ManufacturingTeamUsage
             CopyofMe.ComponentTeamUsage = ComponentTeamUsage
+            'CopyofMe.CapComponentTeamUsage = CapComponentTeamUsage
             CopyofMe.CopyTeamUsage = CopyTeamUsage
             CopyofMe.InventionTeamUsage = InventionTeamUsage
 
@@ -17538,7 +18066,7 @@ ExitCalc:
                 SVRIPH1 = CDbl(p1.SVRxIPH)
             End If
 
-            If IsNothing(p1.SVR) Then
+            If IsNothing(p2.SVRxIPH) Then
                 SVRIPH2 = 0
             Else
                 SVRIPH2 = CDbl(p2.SVRxIPH)
@@ -18180,6 +18708,13 @@ ExitCalc:
         chkDCSyndicateSov.Checked = UserDCTabSettings.CheckSovSyndicate
         chkDCThukkerSov.Checked = UserDCTabSettings.CheckSovThukker
 
+        DCColumnClicked = UserDCTabSettings.ColumnSort
+        If UserDCTabSettings.ColumnSortType = "Ascending" Then
+            DCColumnSortType = SortOrder.Ascending
+        Else
+            DCColumnSortType = SortOrder.Descending
+        End If
+
         cmbDCRegions.Text = UserDCTabSettings.AgentsInRegion
 
     End Sub
@@ -18275,6 +18810,14 @@ ExitCalc:
             TempSettings.ResearchProjectMgt = Settings.DefaultResearchProjMgt
         Else
             TempSettings.ResearchProjectMgt = CInt(cmbDCResearchMgmt.Text)
+        End If
+
+        TempSettings.ColumnSort = DCColumnClicked
+
+        If DCColumnSortType = SortOrder.Ascending Then
+            TempSettings.ColumnSortType = "Ascending"
+        Else
+            TempSettings.ColumnSortType = "Decending"
         End If
 
         ' Save the data in the XML file
@@ -18736,10 +19279,6 @@ ExitCalc:
         ' Set the updated list
         DCAgentList = TempDCAgentList
 
-        ' Sort the Agent List by Isk per hour
-        ' Sort the ore List by the iph
-        DCAgentList.Sort(New DataCoreIPHComparer)
-
         ' Get number of R&D Agents they can use
         ReDim UniqueAgentList(TotalRDAgents - 1)
         j = 0
@@ -18829,6 +19368,15 @@ ExitCalc:
 
         Next
 
+        ' Now sort this
+        Dim TempType As SortOrder
+        If DCColumnSortType = SortOrder.Ascending Then
+            TempType = SortOrder.Descending
+        Else
+            TempType = SortOrder.Ascending
+        End If
+        Call ListViewColumnSorter(DCColumnClicked, CType(lstDC, ListView), DCColumnClicked, TempType)
+        Me.Cursor = Cursors.Default
         lstDC.EndUpdate()
 
         ' Update the Total IPH
@@ -19176,6 +19724,13 @@ Leave:
         chkReactionsTaxes.Checked = UserReactionTabSettings.CheckTaxes
         chkReactionsFees.Checked = UserReactionTabSettings.CheckFees
 
+        ReactionsColumnClicked = UserReactionTabSettings.ColumnSort
+        If UserReactionTabSettings.ColumnSortType = "Ascending" Then
+            ReactionsColumnSortType = SortOrder.Ascending
+        Else
+            ReactionsColumnSortType = SortOrder.Descending
+        End If
+
         chkReactionsAdvMoonMats.Checked = UserReactionTabSettings.CheckAdvMoonMats
         chkReactionsProcMoonMats.Checked = UserReactionTabSettings.CheckProcessedMoonMats
         chkReactionsHybrid.Checked = UserReactionTabSettings.CheckHybrid
@@ -19250,6 +19805,14 @@ Leave:
         TempSettings.CheckBuildBasic = chkReactionsBuildBasic.Checked
         TempSettings.CheckSimpleBio = chkReactionsSimpleBio.Checked
         TempSettings.CheckComplexBio = chkReactionsComplexBio.Checked
+
+        TempSettings.ColumnSort = ReactionsColumnClicked
+
+        If ReactionsColumnSortType = SortOrder.Ascending Then
+            TempSettings.ColumnSortType = "Ascending"
+        Else
+            TempSettings.ColumnSortType = "Decending"
+        End If
 
         If cmbReactionsRefiningEfficiency.Text.Contains("%") Then
             TempSettings.RefineryEfficiency = CDbl(cmbReactionsRefiningEfficiency.Text.Substring(0, Len(cmbReactionsRefiningEfficiency.Text) - 1)) / 100
@@ -19628,6 +20191,16 @@ Leave:
                 Call lstReactions.Items.Add(lstViewRow)
 
             Next
+
+            ' Now sort this
+            Dim TempType As SortOrder
+            If ReactionsColumnSortType = SortOrder.Ascending Then
+                TempType = SortOrder.Descending
+            Else
+                TempType = SortOrder.Ascending
+            End If
+            Call ListViewColumnSorter(ReactionsColumnClicked, CType(lstReactions, ListView), ReactionsColumnClicked, TempType)
+            Me.Cursor = Cursors.Default
 
             lstReactions.EndUpdate()
         End If
@@ -20384,6 +20957,8 @@ Leave:
                 ImageFile = MiningShipTypeID.Rokh
             Case Prospect
                 ImageFile = MiningShipTypeID.Prospect
+            Case Endurance
+                ImageFile = MiningShipTypeID.Endurance
             Case Else
                 ImageFile = 0
         End Select
@@ -20488,6 +21063,7 @@ Leave:
         Drake = 24698
         Rokh = 24688
         Prospect = 33697
+        Endurance = 37135
     End Enum
 
     Private Sub InitMiningTab()
@@ -20640,6 +21216,13 @@ Leave:
             txtMineRTSec.Text = FormatNumber(.RoundTripSec, 0)
             txtMineHaulerM3.Text = FormatNumber(.Haulerm3, 0)
 
+            MiningColumnClicked = .ColumnSort
+            If .ColumnSortType = "Ascending" Then
+                MiningColumnSortType = SortOrder.Ascending
+            Else
+                MiningColumnSortType = SortOrder.Descending
+            End If
+
             ' Taxes and Fees
             chkMineIncludeBrokerFees.Checked = .CheckIncludeFees
             chkMineIncludeTaxes.Checked = .CheckIncludeTaxes
@@ -20732,1097 +21315,6 @@ Leave:
 
         ' Clear the grid
         lstMineGrid.Items.Clear()
-
-    End Sub
-
-    Public Sub LoadCharacterMiningSkills()
-
-        ' Load the Mining Skills for this character
-        cmbMineDeepCore.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(11395))
-        cmbMineAstrogeology.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3410))
-        cmbMineSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3386))
-        cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3389))
-        cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3385))
-        If cmbMineOreType.Text = "Gas" Then
-            If SelectedCharacter.Skills.GetSkillLevel(25544) = 0 Then
-                ' Set it to base 1 - even though if they don't have this skill they can't fit a gas harvester
-                cmbMineGasIceHarvesting.Text = "1"
-            Else
-                cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(25544))
-            End If
-        ElseIf cmbMineOreType.Text = "Ice" Then
-            cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(16281))
-        Else
-            cmbMineGasIceHarvesting.Text = "0"
-        End If
-
-        If cmbMineOreType.Text <> "Gas" Then
-            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(22551))
-        Else
-            ' Load the Expedition frigate skill for the prospect
-            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(33856))
-        End If
-
-        Dim MiningBarge As Integer = SelectedCharacter.Skills.GetSkillLevel(17940)
-        Dim MiningFrigate As Integer = SelectedCharacter.Skills.GetSkillLevel(32918)
-
-        If MiningBarge = 0 Then
-            ' Look up Mining Frigate skill
-            If MiningFrigate = 0 Then
-                ' Just set it to 1
-                cmbMineBaseShipSkill.Text = "1"
-            Else
-                cmbMineBaseShipSkill.Text = CStr(MiningFrigate)
-            End If
-        Else
-            cmbMineBaseShipSkill.Text = CStr(MiningBarge)
-        End If
-
-    End Sub
-
-    ' Saves all the settings on the screen selected
-    Private Sub btnMineSaveAllSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineSaveAllSettings.Click
-        Dim TempSettings As MiningTabSettings = Nothing
-        Dim Settings As New ProgramSettings
-
-        ' Check data first
-        If Not CheckMiningEntryData() Then
-            Exit Sub
-        End If
-
-        With TempSettings
-            ' Ore types
-            .OreType = cmbMineOreType.Text
-
-            .CheckHighSecOres = chkMineIncludeHighSec.Checked
-            .CheckLowSecOres = chkMineIncludeLowSec.Checked
-            .CheckNullSecOres = chkMineIncludeNullSec.Checked
-            .CheckHighYieldOres = chkMineIncludeHighYieldOre.Checked
-
-            .MiningDroneM3perHour = CDbl(txtMineMiningDroneM3.Text)
-            .RefinedOre = chkMineRefinedOre.Checked
-            .UnrefinedOre = chkMineUnrefinedOre.Checked
-            .CompressedOre = chkMineCompressedOre.Checked
-
-            ' Upgrades and miner types - different for Ice, Ore, or Gas
-            If .OreType = "Ore" Then
-                .OreMiningShip = cmbMineShipType.Text
-                .OreStrip = cmbMineMiningLaser.Text
-                .OreUpgrade = cmbMineMiningUpgrade.Text
-                .NumOreMiners = CInt(cmbMineNumLasers.Text)
-                .NumOreUpgrades = CInt(cmbMineNumMiningUpgrades.Text)
-                .OreImplant = cmbMineImplant.Text
-
-                ' Save the rigs
-                If rbtnMineMercoxitRig.Checked = True Then
-                    .MercoxitMiningRig = True
-                Else
-                    .MercoxitMiningRig = False
-                End If
-
-                ' Save Ice data
-                .IceMiningShip = UserMiningTabSettings.IceMiningShip
-                .IceStrip = UserMiningTabSettings.IceStrip
-                .IceUpgrade = UserMiningTabSettings.IceUpgrade
-                .NumIceMiners = UserMiningTabSettings.NumOreMiners
-                .NumIceUpgrades = UserMiningTabSettings.NumOreUpgrades
-                .IceImplant = UserMiningTabSettings.IceImplant
-                .IceMiningRig = UserMiningTabSettings.IceMiningRig
-
-                ' Save Gas Data
-                .GasMiningShip = UserMiningTabSettings.GasMiningShip
-                .GasHarvester = UserMiningTabSettings.GasHarvester
-                .GasUpgrade = UserMiningTabSettings.GasUpgrade
-                .NumGasHarvesters = UserMiningTabSettings.NumGasHarvesters
-                .NumGasUpgrades = UserMiningTabSettings.NumGasUpgrades
-                .GasImplant = UserMiningTabSettings.GasImplant
-
-            ElseIf .OreType = "Ice" Then
-                .IceMiningShip = cmbMineShipType.Text
-                .IceStrip = cmbMineMiningLaser.Text
-                .IceUpgrade = cmbMineMiningUpgrade.Text
-                .NumIceMiners = CInt(cmbMineNumLasers.Text)
-                .NumIceUpgrades = CInt(cmbMineNumMiningUpgrades.Text)
-                .IceImplant = cmbMineImplant.Text
-
-                ' Save Rig
-                If rbtnMineIceRig.Checked = True Then
-                    .IceMiningRig = True
-                Else
-                    .IceMiningRig = False
-                End If
-
-                ' Save Ore data
-                .OreMiningShip = UserMiningTabSettings.OreMiningShip
-                .OreStrip = UserMiningTabSettings.OreStrip
-                .OreUpgrade = UserMiningTabSettings.OreUpgrade
-                .NumOreMiners = UserMiningTabSettings.NumOreMiners
-                .NumOreUpgrades = UserMiningTabSettings.NumOreUpgrades
-                .OreImplant = UserMiningTabSettings.OreImplant
-                .MercoxitMiningRig = UserMiningTabSettings.MercoxitMiningRig
-
-                ' Save Gas Data
-                .GasMiningShip = UserMiningTabSettings.GasMiningShip
-                .GasHarvester = UserMiningTabSettings.GasHarvester
-                .GasUpgrade = UserMiningTabSettings.GasUpgrade
-                .NumGasHarvesters = UserMiningTabSettings.NumGasHarvesters
-                .NumGasUpgrades = UserMiningTabSettings.NumGasUpgrades
-                .GasImplant = UserMiningTabSettings.GasImplant
-
-            ElseIf .OreType = "Gas" Then
-                .GasMiningShip = cmbMineShipType.Text
-                .GasHarvester = cmbMineMiningLaser.Text
-                .GasUpgrade = None
-                .NumGasHarvesters = CInt(cmbMineNumLasers.Text)
-                .NumGasUpgrades = 0
-                .GasImplant = cmbMineImplant.Text
-
-                ' Save Ore data
-                .OreMiningShip = UserMiningTabSettings.OreMiningShip
-                .OreStrip = UserMiningTabSettings.OreStrip
-                .OreUpgrade = UserMiningTabSettings.OreUpgrade
-                .NumOreMiners = UserMiningTabSettings.NumOreMiners
-                .NumOreUpgrades = UserMiningTabSettings.NumOreUpgrades
-                .OreImplant = UserMiningTabSettings.OreImplant
-                .MercoxitMiningRig = UserMiningTabSettings.MercoxitMiningRig
-
-                ' Save Ice data
-                .IceMiningShip = UserMiningTabSettings.IceMiningShip
-                .IceStrip = UserMiningTabSettings.IceStrip
-                .IceUpgrade = UserMiningTabSettings.IceUpgrade
-                .NumIceMiners = UserMiningTabSettings.NumOreMiners
-                .NumIceUpgrades = UserMiningTabSettings.NumOreUpgrades
-                .IceImplant = UserMiningTabSettings.IceImplant
-                .IceMiningRig = UserMiningTabSettings.IceMiningRig
-
-            End If
-
-            .T2Crystals = rbtnMineT2Crystals.Checked
-
-            ' Fleet booster
-            .CheckUseFleetBooster = chkMineUseFleetBooster.Checked
-            .BoosterShip = cmbMineBoosterShip.Text
-            .MiningDirectorSkill = CInt(cmbMineMiningDirector.Text)
-            .MiningFormanSkill = CInt(cmbMineMiningForeman.Text)
-            .BoosterShipSkill = CInt(cmbMineBoosterShipSkill.Text)
-            .WarfareLinkSpecSkill = CInt(cmbMineWarfareLinkSpec.Text)
-            .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
-            .CheckRorqDeployed = chkMineRorqDeployedMode.Checked
-            .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
-
-            If chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate Then
-                .CheckMineForemanLaserOpBoost = 2
-            ElseIf chkMineForemanLaserOpBoost.Checked = True Then
-                .CheckMineForemanLaserOpBoost = 1
-            Else
-                .CheckMineForemanLaserOpBoost = 0
-            End If
-
-            If chkMineForemanLaserRangeBoost.CheckState = CheckState.Indeterminate Then
-                .CheckMineForemanLaserRangeBoost = 2
-            ElseIf chkMineForemanLaserRangeBoost.Checked = True Then
-                .CheckMineForemanLaserRangeBoost = 1
-            Else
-                .CheckMineForemanLaserRangeBoost = 0
-            End If
-
-            ' Check all locations
-            .CheckSovAmarr = chkMineAmarr.Checked
-            .CheckSovCaldari = chkMineCaldari.Checked
-            .CheckSovGallente = chkMineGallente.Checked
-            .CheckSovMinmatar = chkMineMinmatar.Checked
-            .CheckSovWormhole = chkMineWH.Checked
-
-            .CheckSovC1 = chkMineC1.Checked
-            .CheckSovC2 = chkMineC2.Checked
-            .CheckSovC3 = chkMineC3.Checked
-            .CheckSovC4 = chkMineC4.Checked
-            .CheckSovC5 = chkMineC5.Checked
-            .CheckSovC6 = chkMineC6.Checked
-
-            ' Refining
-            ' Station numbers
-            If cmbMineStationEff.Text.Contains("%") Then
-                .RefiningEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
-            Else
-                .RefiningEfficiency = CDbl(cmbMineStationEff.Text) / 100
-            End If
-            If cmbMineRefineStationTax.Text.Contains("%") Then
-                .RefiningTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1)) / 100
-            Else
-                .RefiningTax = CDbl(cmbMineRefineStationTax.Text) / 100
-            End If
-
-            ' Allow them to update the refine standing here as well
-            .RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
-
-            ' Save it in the Application settings
-            Settings.SaveApplicationSettings(UserApplicationSettings)
-
-            ' Jump costs
-            .CheckIncludeJumpFuelCosts = chkMineIncludeJumpCosts.Checked
-            .JumpCompressedOre = rbtnMineJumpCompress.Checked
-            .JumpMinerals = rbtnMineJumpMinerals.Checked
-            .TotalJumpFuelCost = CDbl(txtMineTotalJumpFuel.Text)
-            .TotalJumpFuelM3 = CDbl(txtMineTotalJumpM3.Text)
-
-            .CheckUseHauler = chkMineUseHauler.Checked
-
-            ' Hauler - only save values if not using hauler
-            If chkMineUseHauler.Checked = False Then
-                .RoundTripMin = CInt(txtMineRTMin.Text)
-                .RoundTripSec = CInt(txtMineRTSec.Text)
-                .Haulerm3 = CDbl(txtMineHaulerM3.Text)
-            Else
-                .RoundTripMin = Settings.DefaultMiningRoundTripMin
-                .RoundTripSec = Settings.DefaultMiningRoundTripSec
-                .Haulerm3 = Settings.DefaultMiningHaulerm3
-            End If
-
-            ' Taxes and Fees
-            .CheckIncludeFees = chkMineIncludeBrokerFees.Checked
-            .CheckIncludeTaxes = chkMineIncludeTaxes.Checked
-
-            ' Michii
-            .MichiiImplant = chkMineMichiImplant.Checked
-
-            ' Number of miners
-            .NumberofMiners = CInt(txtMineNumberMiners.Text)
-
-        End With
-
-        ' Save the data in the XML file
-        Call Settings.SaveMiningSettings(TempSettings)
-
-        ' Save the data to the local variable
-        UserMiningTabSettings = TempSettings
-
-        MsgBox("Settings Saved", vbInformation, Application.ProductName)
-
-    End Sub
-
-    ' Sets the screen settings for ore type selected
-    Private Sub SetOreRefineChecks()
-        If cmbMineOreType.Text <> "Gas" Then
-            If chkMineRefinedOre.Checked Then
-                gbMineBaseRefineSkills.Enabled = True
-                gbMineStationYield.Enabled = True
-            Else
-                gbMineBaseRefineSkills.Enabled = False
-                gbMineStationYield.Enabled = False
-            End If
-            gbMineRefining.Enabled = True
-        Else
-            gbMineBaseRefineSkills.Enabled = False
-            gbMineStationYield.Enabled = False
-            gbMineRefining.Enabled = False
-            If cmbMineOreType.Text = "Gas" Then
-                ' Can't refine gas
-                chkMineRefinedOre.Checked = False
-                chkMineUnrefinedOre.Checked = False
-                chkMineCompressedOre.Checked = False
-            End If
-        End If
-    End Sub
-
-    ' Loads the Fleet Boost Ship image
-    Private Sub LoadFleetBoosterImage()
-        If chkMineUseFleetBooster.Checked Then
-            Dim ShipName As String
-
-            If cmbMineBoosterShip.Text = "Other" Then
-                ShipName = Rokh
-            ElseIf cmbMineBoosterShip.Text = "Battlecruiser" Then
-                ShipName = Drake
-            Else
-                ShipName = cmbMineBoosterShip.Text
-            End If
-
-            Dim BPImage As String = GetMiningShipImage(ShipName)
-
-            If System.IO.File.Exists(BPImage) Then
-                pictMineFleetBoostShip.Image = Image.FromFile(BPImage)
-            Else
-                pictMineFleetBoostShip.Image = Nothing
-            End If
-
-        Else
-            pictMineFleetBoostShip.Image = Nothing
-        End If
-
-        pictMineFleetBoostShip.Update()
-
-    End Sub
-
-    ' Loads the Mining Ship Image
-    Private Sub LoadMiningshipImage()
-        Dim ShipName As String
-
-        If cmbMineShipType.Text = "Other" Then
-            ShipName = Rokh
-        ElseIf cmbMineShipType.Text = "Battlecruiser" Then
-            ShipName = Drake
-        Else
-            ShipName = cmbMineShipType.Text
-        End If
-
-        Dim BPImage As String = GetMiningShipImage(ShipName)
-
-        If System.IO.File.Exists(BPImage) Then
-            pictMineSelectedShip.Image = Image.FromFile(BPImage)
-        Else
-            pictMineSelectedShip.Image = Nothing
-        End If
-
-        pictMineSelectedShip.Update()
-
-    End Sub
-
-    ' Loads the implants for the mining type
-    Private Sub UpdateMiningImplants()
-        Dim ReqSkill As Integer
-
-        ' Clear implants
-        cmbMineImplant.Items.Clear()
-
-        ' Set Ore or Ice implants
-        If cmbMineOreType.Text = "Ice" Then
-            cmbMineImplant.Items.Add(None)
-            'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-            cmbMineImplant.Items.Add("'Yeti' IH-1001")
-            cmbMineImplant.Items.Add("'Yeti' IH-1003")
-            cmbMineImplant.Items.Add("'Yeti' IH-1005")
-
-            ' No Michi for ice
-            chkMineMichiImplant.Enabled = False
-            chkMineMichiImplant.ForeColor = Color.Black
-
-            cmbMineImplant.Text = UserMiningTabSettings.IceImplant
-
-        ElseIf cmbMineOreType.Text = "Ore" Then
-            'Inherent Implants 'Highwall' Mining MX-1001
-            cmbMineImplant.Items.Add(None)
-            cmbMineImplant.Items.Add("'Highwall' MX-1001")
-            cmbMineImplant.Items.Add("'Highwall' MX-1003")
-            cmbMineImplant.Items.Add("'Highwall' MX-1005")
-
-            chkMineMichiImplant.Enabled = True
-
-            ' Michi Implant
-            ReqSkill = CInt(GetAttribute("requiredSkill1Level", "Michi's Excavation Augmentor"))
-            If ReqSkill <> SelectedCharacter.Skills.GetSkillLevel(3411) Then
-                chkMineMichiImplant.ForeColor = Color.Red
-                If UserApplicationSettings.ShowToolTips Then
-                    ttMain.SetToolTip(chkMineMichiImplant, "Requires Cybernetics " & ReqSkill)
-                End If
-            Else
-                chkMineMichiImplant.ForeColor = Color.Black
-            End If
-
-            cmbMineImplant.Text = UserMiningTabSettings.OreImplant
-
-        ElseIf cmbMineOreType.Text = "Gas" Then
-            cmbMineImplant.Items.Add(None)
-            'Eifyr and Co. 'Alchemist' Gas Harvesting GH-801
-            cmbMineImplant.Items.Add("'Alchemist' GH-801")
-            cmbMineImplant.Items.Add("'Alchemist' GH-803")
-            cmbMineImplant.Items.Add("'Alchemist' GH-805")
-
-            ' No Michi for gas
-            chkMineMichiImplant.Enabled = False
-            chkMineMichiImplant.ForeColor = Color.Black
-
-            cmbMineImplant.Text = UserMiningTabSettings.GasImplant
-        End If
-
-    End Sub
-
-    ' Updates the skills and combos associated with the ship selected
-    Private Sub UpdateMiningShipForm(UpdateEquipment As Boolean)
-
-        ' Update the mining skills first, ships loaded depend on these
-        Call UpdateMiningSkills()
-
-        ' Load the ships into the ship combo
-        Call UpdateMiningShipsCombo()
-
-        If UpdateEquipment Then
-            ' Finally load all the ship equipment
-            Call UpdateMiningShipEquipment()
-        End If
-
-    End Sub
-
-    ' Updates the mining skills for the ships and equipment
-    Private Sub UpdateMiningSkills()
-        ' Mining upgrades - need mining upgrades 1 or 4 for T2
-        ' * mercoxit - T2's Deep core Mining 2
-        ' Deep Core Strip Mining skill - Astrogeology 5 and Mining 5
-        ' Ice miners - Need to change the mining combo name to Ice Harvesting
-        ' * Need level 4 for T1 and level 5 for T2
-        ' If they choose 'Other' for ship, hide strip miners and then show 'Miners' and number
-        ' If they choose frigs or cruisers, show skill level of ship along with miners
-
-        ' Mining Skill
-        ' 3 for mining upgrades
-        ' 4 for Astrology and ice harvesting
-        ' 5 for Deep core mining
-
-        ' Mining upgrades (ice and ore)
-        If CInt(cmbMineSkill.Text) >= 3 And cmbMineOreType.Text <> "Gas" Then
-            cmbMineMiningUpgrade.Enabled = True
-        Else
-            cmbMineMiningUpgrade.Enabled = False
-        End If
-
-        ' Ice/Gas Harvesting skill
-        If CInt(cmbMineSkill.Text) >= 4 Then
-            If cmbMineOreType.Text = "Ice" Then
-                lblMineGasIceHarvesting.Text = "Ice Harv:"
-                lblMineGasIceHarvesting.Enabled = True
-                cmbMineGasIceHarvesting.Enabled = True
-                cmbMineAstrogeology.Enabled = True
-            ElseIf cmbMineOreType.Text = "Gas" Then
-                lblMineGasIceHarvesting.Text = "Gas Harv:"
-                lblMineGasIceHarvesting.Enabled = True
-                cmbMineGasIceHarvesting.Enabled = True
-                cmbMineAstrogeology.Enabled = False
-            ElseIf cmbMineOreType.Text = "Ore" Then
-                lblMineGasIceHarvesting.Enabled = False
-                cmbMineGasIceHarvesting.Enabled = False
-                cmbMineAstrogeology.Enabled = True
-            End If
-        Else
-            cmbMineAstrogeology.Enabled = False
-            lblMineGasIceHarvesting.Enabled = False
-            cmbMineGasIceHarvesting.Enabled = False
-        End If
-
-        ' Deep core only for asteroid mining
-        If CInt(cmbMineSkill.Text) = 5 And CInt(cmbMineAstrogeology.Text) = 5 And cmbMineOreType.Text = "Ore" Then
-            cmbMineDeepCore.Enabled = True
-            lblMineDeepCore.Enabled = True
-        Else
-            cmbMineDeepCore.Enabled = False
-            lblMineDeepCore.Enabled = False
-        End If
-
-        ' Set exhumer skill combo for ice, but the prospect can mine ore so enable it for all
-        If cmbMineOreType.Text = "Ice" Then
-            If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 Then
-                cmbMineExhumers.Enabled = True
-                lblMineExhumers.Enabled = True
-            Else
-                cmbMineExhumers.Enabled = False
-                lblMineExhumers.Enabled = False
-            End If
-        Else
-            cmbMineExhumers.Enabled = True
-            lblMineExhumers.Enabled = True
-        End If
-
-        ' Set true, can be set false when they choose "other"
-        cmbMineBaseShipSkill.Enabled = True
-        lblMineBaseShipSkill.Enabled = True
-
-        ' Set the skill level of the ship they selected if not a mining barge/exhumer
-        Select Case cmbMineShipType.Text
-            Case "Other"
-                cmbMineBaseShipSkill.Enabled = False
-                lblMineBaseShipSkill.Enabled = False
-                cmbMineExhumers.Enabled = False
-                lblMineExhumers.Enabled = False
-        End Select
-
-    End Sub
-
-    ' Updates the ships combo with ships based on the levels of skills set
-    Private Sub UpdateMiningShipsCombo()
-        Dim PreviousShip As String = cmbMineShipType.Text
-        Dim MaxShipName As String = ""
-        Dim ShipSkillLevel As Integer = 0
-
-        UpdatingMiningShips = True
-        cmbMineShipType.Items.Clear()
-
-        ' For gas and ore, load venture, prospect and other
-        If cmbMineOreType.Text <> "Ice" Then
-            ' Check for Mining Frigate skill to load the Venture
-            If CInt(cmbMineBaseShipSkill.Text) >= 1 Then
-                cmbMineShipType.Items.Add(Venture)
-                MaxShipName = Venture
-            End If
-
-            ' Use exhumers skill for expedition frigate
-            If CInt(cmbMineExhumers.Text) >= 1 Then
-                cmbMineShipType.Items.Add(Prospect)
-                MaxShipName = Prospect
-            End If
-
-            ' Always add other for non ICE mining
-            cmbMineShipType.Items.Add("Other")
-        End If
-
-        If cmbMineOreType.Text <> "Gas" Then
-            ' Exhumers and Mining Barges - Load for both Ice and Ore
-            ' 3 for Mining barge, Procurer, 4 for Retriever, 5 for Covetor
-            ' 5 for Exhumers and Deep core mining
-            'Covetor, Retriever, Procurer. Hulk, Skiff, Mackinaw
-            If CInt(cmbMineAstrogeology.Text) >= 3 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) >= 1 Then
-                cmbMineShipType.Items.Add(Procurer)
-                MaxShipName = Procurer
-                cmbMineShipType.Items.Add(Retriever)
-                MaxShipName = Retriever
-                cmbMineShipType.Items.Add(Covetor)
-                MaxShipName = Covetor
-            End If
-
-            If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineExhumers.Text) >= 1 Then
-                cmbMineShipType.Items.Add(Skiff)
-                MaxShipName = Skiff
-                cmbMineShipType.Items.Add(Mackinaw)
-                MaxShipName = Mackinaw
-                cmbMineShipType.Items.Add(Hulk)
-                MaxShipName = Hulk
-            End If
-        End If
-
-        If MaxShipName = "" And cmbMineOreType.Text <> "Ice" Then
-            MaxShipName = "Other"
-        ElseIf MaxShipName = "" And cmbMineOreType.Text = "Ice" Then ' Only 6 ships can mine ice.
-            MaxShipName = None
-            ' Always add None for this case
-            cmbMineShipType.Items.Add(None)
-        End If
-
-        ' Use settings to load the ships, else load the maxshipname unless first load
-        If cmbMineOreType.Text = "Ore" And UserMiningTabSettings.OreMiningShip <> "" And FirstShowMining Then
-            cmbMineShipType.Text = UserMiningTabSettings.OreMiningShip
-        ElseIf cmbMineOreType.Text = "Ice" And UserMiningTabSettings.IceMiningShip <> "" And FirstShowMining Then
-            cmbMineShipType.Text = UserMiningTabSettings.IceMiningShip
-        ElseIf cmbMineOreType.Text = "Gas" And UserMiningTabSettings.GasMiningShip <> "" And FirstShowMining Then
-            cmbMineShipType.Text = UserMiningTabSettings.GasMiningShip
-        Else
-            If cmbMineShipType.Items.Contains(PreviousShip) Then
-                cmbMineShipType.Text = PreviousShip
-            Else
-                cmbMineShipType.Text = MaxShipName
-            End If
-        End If
-
-        ' If we have a max ship name, then set it if it didn't stick in the combo after checking settings
-        If MaxShipName <> "" And cmbMineShipType.Text = "" Then
-            cmbMineShipType.Text = MaxShipName
-        End If
-
-        UpdatingMiningShips = False
-        Call LoadMiningshipImage()
-
-    End Sub
-
-    ' Loads the laser/strip combos, implant, etc for the ship types
-    Private Sub UpdateMiningShipEquipment()
-        Dim LaserCount As Integer = 0
-        Dim MLUCount As Integer = 0
-        Dim i As Integer
-        Dim MaxStrip As String = ""
-        Dim ShipName As String
-        Dim DeepCoreLoaded As Boolean = False
-
-        ' Clear miners
-        cmbMineMiningLaser.Items.Clear()
-
-        ShipName = cmbMineShipType.Text
-
-        Select Case ShipName
-            Case Hulk, Mackinaw, Skiff, Covetor, Retriever, Procurer
-                ' Get the numbers
-                'LaserCount = CInt(GetAttribute("High Slots", ShipName))
-                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
-                Select Case ShipName
-                    Case Hulk, Covetor
-                        LaserCount = 3
-                        MLUCount = 2
-                    Case Mackinaw, Retriever
-                        LaserCount = 2
-                        MLUCount = 3
-                    Case Skiff
-                        LaserCount = 1
-                        MLUCount = 3
-                    Case Procurer
-                        LaserCount = 1
-                        MLUCount = 2
-                End Select
-
-                ' Now load the strips
-                If cmbMineOreType.Text = "Ore" Then
-                    ' Mining Skill
-                    ' Mining 4 for T1 Strips
-                    ' Mining 5 for T2 Strips
-
-                    If CInt(cmbMineSkill.Text) >= 4 Then
-                        cmbMineMiningLaser.Items.Add("Strip Miner I")
-                        cmbMineMiningLaser.Items.Add("ORE Strip Miner")
-                        MaxStrip = "Strip Miner I"
-                        rbtnMineT1Crystals.Enabled = False
-                        rbtnMineT2Crystals.Enabled = False
-                    End If
-
-                    If CInt(cmbMineSkill.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Modulated Strip Miner II")
-                        MaxStrip = "Modulated Strip Miner II"
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
-                    End If
-
-                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Strip Miner II")
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
-                    End If
-
-                Else
-                    ' Ice harvesting skill
-                    ' 1 for T1 strip
-                    ' 5 for T2 strips
-
-                    If CInt(cmbMineGasIceHarvesting.Text) >= 1 Then
-                        cmbMineMiningLaser.Items.Add("Ice Harvester I")
-                        cmbMineMiningLaser.Items.Add("ORE Ice Harvester")
-                        MaxStrip = "Ice Harvester I"
-                    End If
-
-                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Ice Harvester II")
-                        MaxStrip = "Ice Harvester II"
-                    End If
-
-                    rbtnMineT1Crystals.Enabled = False
-                    rbtnMineT2Crystals.Enabled = False
-
-                End If
-
-                ' Turn on the num lasers
-                lblMineLaserNumber.Enabled = True
-                cmbMineNumLasers.Enabled = True
-
-            Case Else ' Other ships that are not mining barges
-
-                'LaserCount = CInt(GetAttribute("Turret hardpoints", ShipName)) ' Use turret hardpoints for this
-                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
-                Select Case ShipName
-                    Case Prospect
-                        LaserCount = 2
-                        MLUCount = 4
-                    Case Venture
-                        LaserCount = 2
-                        MLUCount = 1
-                End Select
-
-                ' For Other Ships
-                lblMineLaserNumber.Visible = True
-                cmbMineNumLasers.Visible = True
-
-                If cmbMineOreType.Text = "Ore" Then
-                    rbtnMineT1Crystals.Enabled = False
-                    rbtnMineT2Crystals.Enabled = False
-
-                    ' Add all the basic mining lasers
-                    cmbMineMiningLaser.Items.Clear()
-                    cmbMineMiningLaser.Items.Add("Miner I")
-
-                    If CInt(cmbMineSkill.Text) >= 4 Then
-                        cmbMineMiningLaser.Items.Add("Miner II")
-                        MaxStrip = "Miner II"
-                    End If
-
-                    cmbMineMiningLaser.Items.Add("Civilian Miner")
-                    cmbMineMiningLaser.Items.Add("EP-S Gaussian Scoped Mining Laser")
-                    cmbMineMiningLaser.Items.Add("Particle Bore Compact Mining Laser")
-                    cmbMineMiningLaser.Items.Add("Gallente Mining Laser")
-                    cmbMineMiningLaser.Items.Add("ORE Miner")
-                    cmbMineMiningLaser.Items.Add("Single Diode Basic Mining Laser")
-
-                    Select Case UserMiningTabSettings.OreStrip
-                        Case "Civilian Miner"
-                            MaxStrip = "Civilian Miner"
-                        Case "EP-S Gaussian Scoped Mining Laser"
-                            MaxStrip = "EP-S Gaussian Scoped Mining Laser"
-                        Case "Particle Bore Compact Mining Laser"
-                            MaxStrip = "Particle Bore Compact Mining Laser"
-                        Case "Gallente Mining Laser"
-                            MaxStrip = "Gallente Mining Laser"
-                        Case "ORE Miner"
-                            MaxStrip = "ORE Miner"
-                        Case "Single Diode Basic Mining Laserr"
-                            MaxStrip = "Single Diode Basic Mining Laser"
-                        Case Else
-                            MaxStrip = "Miner I"
-                    End Select
-
-                    ' Deep core (Mercoxit)
-                    If CInt(cmbMineDeepCore.Text) >= 1 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Deep Core Mining Laser I")
-                        cmbMineMiningLaser.Items.Add("ORE Deep Core Mining Laser")
-                    End If
-
-                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Miner II")
-                        ' Uses crystals
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
-                    End If
-
-                ElseIf cmbMineOreType.Text = "Gas" Then
-                    ' Only venture and other
-                    cmbMineMiningLaser.Items.Add("'Crop' Gas Cloud Harvester")
-                    cmbMineMiningLaser.Items.Add("Gas Cloud Harvester I")
-                    cmbMineMiningLaser.Items.Add("'Plow' Gas Cloud Harvester")
-                    cmbMineMiningLaser.Items.Add("Syndicate Gas Cloud Harvester")
-
-                    Select Case UserMiningTabSettings.OreStrip
-                        Case "'Crop' Gas Cloud Harvester"
-                            MaxStrip = "'Crop' Gas Cloud Harvester"
-                        Case "Gas Cloud Harvester I"
-                            MaxStrip = "Gas Cloud Harvester I"
-                        Case "'Plow' Gas Cloud Harvester"
-                            MaxStrip = "'Plow' Gas Cloud Harvester"
-                        Case "Syndicate Gas Cloud Harvester"
-                            MaxStrip = "Syndicate Gas Cloud Harvester"
-                        Case Else
-                            MaxStrip = "Gas Cloud Harvester I"
-                    End Select
-
-                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Gas Cloud Harvester II")
-                        MaxStrip = "Gas Cloud Harvester II"
-                    End If
-
-                End If
-
-        End Select
-
-        ' Set crystals
-        rbtnMineT2Crystals.Checked = UserMiningTabSettings.T2Crystals
-
-        ' Set Strip name
-        cmbMineMiningLaser.Text = MaxStrip
-
-        ' Set the MLU numbers
-        cmbMineNumMiningUpgrades.Items.Clear()
-        cmbMineNumMiningUpgrades.Enabled = True
-
-        ' Allow 8 for MLU's if other ship (Rohk, Iteron, etc)
-        If ShipName = "Other" And cmbMineOreType.Text <> "Gas" Then
-            MLUCount = 8
-            LaserCount = 8
-        ElseIf cmbMineOreType.Text = "Gas" Then
-            MLUCount = 0
-            ' Update laser count based on skills - max of 5
-            If cmbMineShipType.Text = Venture Or cmbMineShipType.Text = Prospect Then
-                ' Update the laser count if it's less than the turrets on the venture/prospect
-                If CInt(cmbMineGasIceHarvesting.Text) < LaserCount Then
-                    LaserCount = CInt(cmbMineGasIceHarvesting.Text)
-                End If
-            Else ' Other Ship
-                ' Update the turrets based on the skill, max of 5
-                LaserCount = CInt(cmbMineGasIceHarvesting.Text)
-            End If
-        End If
-
-        For i = 1 To MLUCount
-            cmbMineNumMiningUpgrades.Items.Add(CStr(i))
-        Next
-
-        ' Set the number of Strip miners available
-        cmbMineNumLasers.Items.Clear()
-
-        ' Set the max allowable lasers
-        For i = 1 To LaserCount
-            cmbMineNumLasers.Items.Add(CStr(i))
-        Next
-
-        ' Choose options for None ships first, these should be just clear settings
-        If cmbMineShipType.Text = None Then
-
-            cmbMineNumMiningUpgrades.Text = "0"
-            cmbMineMiningUpgrade.Text = None
-            cmbMineNumLasers.Text = "0"
-            cmbMineMiningLaser.Text = None
-
-        Else ' Normal ship or "other"
-            ' Load settings, only change to user settings if the ship is the same as the one selected
-
-            ' Set the names and numbers for upgrades and strips
-            If cmbMineOreType.Text = "Ore" Then
-                ' Set the number of MLUs
-                If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> UserMiningTabSettings.OreMiningShip Then
-                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
-                Else
-                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumOreUpgrades)
-                End If
-
-                ' Set the MLU Text - These are hardcoded so just use the default or user setting
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.OreUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> UserMiningTabSettings.OreMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumOreMiners)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.OreStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.OreStrip
-                End If
-
-            ElseIf cmbMineOreType.Text = "Ice" Then
-                ' Set the number of MLUs
-                If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> UserMiningTabSettings.IceMiningShip Then
-                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
-                Else
-                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumIceUpgrades)
-                End If
-
-                ' Set the MLU Text - These are hardcoded so just use the default or user setting
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.IceUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> UserMiningTabSettings.IceMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    ' Update with the user settings they have, up to the max the ship can use
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumIceMiners)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.IceStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.IceStrip
-                End If
-
-            ElseIf cmbMineOreType.Text = "Gas" Then
-                ' No MLUs for gas
-                cmbMineNumMiningUpgrades.Enabled = False
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.GasUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> UserMiningTabSettings.GasMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumGasHarvesters)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.IceStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.GasHarvester
-                End If
-            End If
-
-        End If
-
-        Call RefreshHaulerM3()
-
-        lblMineCycleTime.Text = ""
-        lblMineRange.Text = ""
-
-    End Sub
-
-    ' Updates the processing skills (enable, disable) depending on the refining skills selected
-    Private Sub UpdateProcessingSkills()
-
-        If FirstLoad Then
-            Exit Sub
-        End If
-
-        ' Set them all false first
-        For i = 1 To MineProcessingCheckBoxes.Count - 1
-            MineProcessingCheckBoxes(i).Enabled = False
-        Next
-
-        For i = 1 To MineProcessingCombos.Count - 1
-            MineProcessingCombos(i).Enabled = False
-        Next
-
-        For i = 1 To MineProcessingLabels.Count - 1
-            MineProcessingLabels(i).Enabled = False
-        Next
-
-        cmbMineRefineryEff.Enabled = False
-
-        If cmbMineOreType.Text = "Ore" Then
-
-            If cmbMineRefining.Text = "4" Or cmbMineRefining.Text = "5" Then
-                ' Veld, Scordite, Pyroxeres, and Plag
-                Call EnableOreProcessingGroup(1, True)
-                Call EnableOreProcessingGroup(2, True)
-                Call EnableOreProcessingGroup(9, True)
-                Call EnableOreProcessingGroup(10, True)
-            End If
-
-            If cmbMineRefining.Text = "5" Then
-                ' Hemo, Jaspet, Kernite, Omber, Refinery Effy
-                Call EnableOreProcessingGroup(3, True)
-                Call EnableOreProcessingGroup(4, True)
-                Call EnableOreProcessingGroup(11, True)
-                Call EnableOreProcessingGroup(12, True)
-
-                cmbMineRefineryEff.Enabled = True
-
-            End If
-
-            If cmbMineRefineryEff.Text = "4" Or cmbMineRefineryEff.Text = "5" Then
-                ' Dark Ochre, Gneiss, Hedb, Spod
-                Call EnableOreProcessingGroup(5, True)
-                Call EnableOreProcessingGroup(6, True)
-                Call EnableOreProcessingGroup(13, True)
-                Call EnableOreProcessingGroup(14, True)
-            End If
-
-            If cmbMineRefineryEff.Text = "5" Then
-                ' Ark, Bisot, Crokite, Mercoxit
-                Call EnableOreProcessingGroup(7, True)
-                Call EnableOreProcessingGroup(8, True)
-                Call EnableOreProcessingGroup(15, True)
-                Call EnableOreProcessingGroup(16, True)
-            End If
-
-        ElseIf cmbMineOreType.Text = "Ice" Then
-            ' Enable the one ice processing skill
-            If cmbMineRefining.Text = "5" Then
-                cmbMineRefineryEff.Enabled = True
-            End If
-
-            If cmbMineRefineryEff.Enabled And cmbMineRefineryEff.Text = "5" Then
-                Call EnableOreProcessingGroup(17, True)
-            End If
-
-        Else ' Gas
-            ' We don't refine, so leave them all off
-        End If
-
-    End Sub
-
-    ' Changes the ore processing skill group to enabled or disabled
-    Private Sub EnableOreProcessingGroup(ByVal Index As Integer, ByVal EnableObject As Boolean)
-        If MineProcessingCheckBoxes(Index).Checked And EnableObject Then
-            ' Ok to enable
-            MineProcessingCombos(Index).Enabled = True
-            MineProcessingLabels(Index).Enabled = True
-        Else
-            ' Don't enable
-            MineProcessingCombos(Index).Enabled = False
-            MineProcessingLabels(Index).Enabled = False
-        End If
-
-        MineProcessingCheckBoxes(Index).Enabled = EnableObject
-    End Sub
-
-    ' Updates the skills and boxes associated with the booster
-    Private Sub UpdateBoosterSkills()
-        Dim CurrentShip As String
-
-        ' Industrial command ships = orca. Need Mining director 1
-        ' Capital industrial = rorq, need nothing
-
-        ' Mining director needs mining foreman 5
-        ' Mindlink (implant) needs mining director 5 
-        ' Mining gang link needs mining director 1
-        ' Mining gang link II needs mining director 5 (three way check box)
-        If chkMineUseFleetBooster.Checked Then
-            cmbMineBoosterShip.Enabled = True
-            cmbMineMiningForeman.Enabled = True
-            lblMineBoosterShipSkill.Enabled = True
-            cmbMineBoosterShipSkill.Enabled = True
-            lblMineWarfareLinkSpec.Enabled = True
-            cmbMineWarfareLinkSpec.Enabled = True
-
-            If cmbMineMiningForeman.Text = "5" Then
-                cmbMineMiningDirector.Enabled = True
-
-                If cmbMineMiningDirector.Text = "5" Then
-                    chkMineForemanMindlink.Enabled = True ' Implant
-                    chkMineForemanLaserOpBoost.ThreeState = True ' Allow for t2 mindlink
-                    chkMineForemanLaserOpBoost.Enabled = True
-                    chkMineForemanLaserRangeBoost.ThreeState = True ' Allow for t2 mindlink
-                    chkMineForemanLaserRangeBoost.Enabled = True
-                Else
-                    chkMineForemanMindlink.Enabled = False
-                    chkMineForemanLaserOpBoost.Enabled = True
-                    chkMineForemanLaserOpBoost.ThreeState = False ' Only the T1 mindlink
-                    chkMineForemanLaserRangeBoost.Enabled = True
-                    chkMineForemanLaserRangeBoost.ThreeState = False ' Only the T1 mindlink
-                End If
-            Else
-                chkMineForemanLaserOpBoost.Enabled = False
-                chkMineForemanLaserRangeBoost.Enabled = False
-                chkMineForemanMindlink.Enabled = False
-                cmbMineMiningDirector.Enabled = False
-            End If
-
-            Call UpdateMiningBoosterObjects()
-
-            UpdatingMiningShips = True
-
-            CurrentShip = cmbMineBoosterShip.Text
-            cmbMineBoosterShip.Items.Clear()
-
-            cmbMineBoosterShip.Items.Add(Rorqual)
-            cmbMineBoosterShip.Items.Add(Orca)
-            cmbMineBoosterShip.Items.Add("Battlecruiser")
-            cmbMineBoosterShip.Items.Add("Other")
-
-            If cmbMineBoosterShip.Items.Contains(CurrentShip) Then
-                cmbMineBoosterShip.Text = CurrentShip
-            Else
-                cmbMineBoosterShip.Text = "Other"
-            End If
-
-            UpdatingMiningShips = False
-
-            If cmbMineBoosterShip.Text = "Other" Then
-                ' Disable mining foreman link
-                chkMineForemanLaserOpBoost.Enabled = False
-                chkMineForemanLaserRangeBoost.Enabled = False
-            End If
-
-            If cmbMineBoosterShip.Text = Orca Or cmbMineBoosterShip.Text = Rorqual Then
-                cmbMineBoosterShipSkill.Enabled = True
-            Else
-                cmbMineBoosterShipSkill.Enabled = False
-            End If
-
-            If cmbMineBoosterShip.Text = Rorqual Then
-                chkMineRorqDeployedMode.Enabled = True
-                cmbMineIndustReconfig.Enabled = True
-                lblMineIndustrialReconfig.Enabled = True
-            Else
-                chkMineRorqDeployedMode.Enabled = False
-                cmbMineIndustReconfig.Enabled = False
-                lblMineIndustrialReconfig.Enabled = False
-            End If
-
-        Else
-            cmbMineBoosterShip.Enabled = False
-            cmbMineMiningDirector.Enabled = False
-            cmbMineMiningForeman.Enabled = False
-            chkMineForemanMindlink.Enabled = False
-            chkMineForemanLaserOpBoost.Enabled = False
-            chkMineForemanLaserRangeBoost.Enabled = False
-            lblMineBoosterShipSkill.Enabled = False
-            cmbMineBoosterShipSkill.Enabled = False
-            lblMineWarfareLinkSpec.Enabled = False
-            cmbMineWarfareLinkSpec.Enabled = False
-            chkMineRorqDeployedMode.Enabled = False
-            cmbMineIndustReconfig.Enabled = False
-            lblMineIndustrialReconfig.Enabled = False
-        End If
 
     End Sub
 
@@ -22237,6 +21729,16 @@ Leave:
             End If
         Next
 
+        ' Now sort this
+        Dim TempType As SortOrder
+        If MiningColumnSortType = SortOrder.Ascending Then
+            TempType = SortOrder.Descending
+        Else
+            TempType = SortOrder.Ascending
+        End If
+        Call ListViewColumnSorter(MiningColumnClicked, CType(lstMineGrid, ListView), MiningColumnClicked, TempType)
+        Me.Cursor = Cursors.Default
+
         lstMineGrid.EndUpdate()
 
         ' Last thing, calculate the mining range of the mining lasers selected
@@ -22244,6 +21746,1130 @@ Leave:
 
         i = 0
         Me.Cursor = Cursors.Default
+
+    End Sub
+
+    Public Sub LoadCharacterMiningSkills()
+
+        ' Load the Mining Skills for this character
+        cmbMineDeepCore.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(11395))
+        cmbMineAstrogeology.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3410))
+        cmbMineSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3386))
+        cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3389))
+        cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3385))
+        If cmbMineOreType.Text = "Gas" Then
+            If SelectedCharacter.Skills.GetSkillLevel(25544) = 0 Then
+                ' Set it to base 1 - even though if they don't have this skill they can't fit a gas harvester
+                cmbMineGasIceHarvesting.Text = "1"
+            Else
+                cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(25544))
+            End If
+        ElseIf cmbMineOreType.Text = "Ice" Then
+            cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(16281))
+        Else
+            cmbMineGasIceHarvesting.Text = "0"
+        End If
+
+        If cmbMineOreType.Text <> "Gas" Then
+            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(22551))
+        Else
+            ' Load the Expedition frigate skill for the prospect
+            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(33856))
+        End If
+
+        Dim MiningBarge As Integer = SelectedCharacter.Skills.GetSkillLevel(17940)
+        Dim MiningFrigate As Integer = SelectedCharacter.Skills.GetSkillLevel(32918)
+
+        If MiningBarge = 0 Then
+            ' Look up Mining Frigate skill
+            If MiningFrigate = 0 Then
+                ' Just set it to 1
+                cmbMineBaseShipSkill.Text = "1"
+            Else
+                cmbMineBaseShipSkill.Text = CStr(MiningFrigate)
+            End If
+        Else
+            cmbMineBaseShipSkill.Text = CStr(MiningBarge)
+        End If
+
+    End Sub
+
+    ' Saves all the settings on the screen selected
+    Private Sub btnMineSaveAllSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineSaveAllSettings.Click
+        Dim TempSettings As MiningTabSettings = Nothing
+        Dim Settings As New ProgramSettings
+
+        ' Check data first
+        If Not CheckMiningEntryData() Then
+            Exit Sub
+        End If
+
+        With TempSettings
+            ' Ore types
+            .OreType = cmbMineOreType.Text
+
+            .CheckHighSecOres = chkMineIncludeHighSec.Checked
+            .CheckLowSecOres = chkMineIncludeLowSec.Checked
+            .CheckNullSecOres = chkMineIncludeNullSec.Checked
+            .CheckHighYieldOres = chkMineIncludeHighYieldOre.Checked
+
+            .MiningDroneM3perHour = CDbl(txtMineMiningDroneM3.Text)
+            .RefinedOre = chkMineRefinedOre.Checked
+            .UnrefinedOre = chkMineUnrefinedOre.Checked
+            .CompressedOre = chkMineCompressedOre.Checked
+
+            ' Upgrades and miner types - different for Ice, Ore, or Gas
+            If .OreType = "Ore" Then
+                .OreMiningShip = cmbMineShipType.Text
+                .OreStrip = cmbMineMiningLaser.Text
+                .OreUpgrade = cmbMineMiningUpgrade.Text
+                .NumOreMiners = CInt(cmbMineNumLasers.Text)
+                .NumOreUpgrades = CInt(cmbMineNumMiningUpgrades.Text)
+                .OreImplant = cmbMineImplant.Text
+
+                ' Save the rigs
+                If rbtnMineMercoxitRig.Checked = True Then
+                    .MercoxitMiningRig = True
+                Else
+                    .MercoxitMiningRig = False
+                End If
+
+                ' Save Ice data
+                .IceMiningShip = UserMiningTabSettings.IceMiningShip
+                .IceStrip = UserMiningTabSettings.IceStrip
+                .IceUpgrade = UserMiningTabSettings.IceUpgrade
+                .NumIceMiners = UserMiningTabSettings.NumOreMiners
+                .NumIceUpgrades = UserMiningTabSettings.NumOreUpgrades
+                .IceImplant = UserMiningTabSettings.IceImplant
+                .IceMiningRig = UserMiningTabSettings.IceMiningRig
+
+                ' Save Gas Data
+                .GasMiningShip = UserMiningTabSettings.GasMiningShip
+                .GasHarvester = UserMiningTabSettings.GasHarvester
+                .GasUpgrade = UserMiningTabSettings.GasUpgrade
+                .NumGasHarvesters = UserMiningTabSettings.NumGasHarvesters
+                .NumGasUpgrades = UserMiningTabSettings.NumGasUpgrades
+                .GasImplant = UserMiningTabSettings.GasImplant
+
+            ElseIf .OreType = "Ice" Then
+                .IceMiningShip = cmbMineShipType.Text
+                .IceStrip = cmbMineMiningLaser.Text
+                .IceUpgrade = cmbMineMiningUpgrade.Text
+                .NumIceMiners = CInt(cmbMineNumLasers.Text)
+                .NumIceUpgrades = CInt(cmbMineNumMiningUpgrades.Text)
+                .IceImplant = cmbMineImplant.Text
+
+                ' Save Rig
+                If rbtnMineIceRig.Checked = True Then
+                    .IceMiningRig = True
+                Else
+                    .IceMiningRig = False
+                End If
+
+                ' Save Ore data
+                .OreMiningShip = UserMiningTabSettings.OreMiningShip
+                .OreStrip = UserMiningTabSettings.OreStrip
+                .OreUpgrade = UserMiningTabSettings.OreUpgrade
+                .NumOreMiners = UserMiningTabSettings.NumOreMiners
+                .NumOreUpgrades = UserMiningTabSettings.NumOreUpgrades
+                .OreImplant = UserMiningTabSettings.OreImplant
+                .MercoxitMiningRig = UserMiningTabSettings.MercoxitMiningRig
+
+                ' Save Gas Data
+                .GasMiningShip = UserMiningTabSettings.GasMiningShip
+                .GasHarvester = UserMiningTabSettings.GasHarvester
+                .GasUpgrade = UserMiningTabSettings.GasUpgrade
+                .NumGasHarvesters = UserMiningTabSettings.NumGasHarvesters
+                .NumGasUpgrades = UserMiningTabSettings.NumGasUpgrades
+                .GasImplant = UserMiningTabSettings.GasImplant
+
+            ElseIf .OreType = "Gas" Then
+                .GasMiningShip = cmbMineShipType.Text
+                .GasHarvester = cmbMineMiningLaser.Text
+                .GasUpgrade = None
+                .NumGasHarvesters = CInt(cmbMineNumLasers.Text)
+                .NumGasUpgrades = 0
+                .GasImplant = cmbMineImplant.Text
+
+                ' Save Ore data
+                .OreMiningShip = UserMiningTabSettings.OreMiningShip
+                .OreStrip = UserMiningTabSettings.OreStrip
+                .OreUpgrade = UserMiningTabSettings.OreUpgrade
+                .NumOreMiners = UserMiningTabSettings.NumOreMiners
+                .NumOreUpgrades = UserMiningTabSettings.NumOreUpgrades
+                .OreImplant = UserMiningTabSettings.OreImplant
+                .MercoxitMiningRig = UserMiningTabSettings.MercoxitMiningRig
+
+                ' Save Ice data
+                .IceMiningShip = UserMiningTabSettings.IceMiningShip
+                .IceStrip = UserMiningTabSettings.IceStrip
+                .IceUpgrade = UserMiningTabSettings.IceUpgrade
+                .NumIceMiners = UserMiningTabSettings.NumOreMiners
+                .NumIceUpgrades = UserMiningTabSettings.NumOreUpgrades
+                .IceImplant = UserMiningTabSettings.IceImplant
+                .IceMiningRig = UserMiningTabSettings.IceMiningRig
+
+            End If
+
+            .T2Crystals = rbtnMineT2Crystals.Checked
+
+            ' Fleet booster
+            .CheckUseFleetBooster = chkMineUseFleetBooster.Checked
+            .BoosterShip = cmbMineBoosterShip.Text
+            .MiningDirectorSkill = CInt(cmbMineMiningDirector.Text)
+            .MiningFormanSkill = CInt(cmbMineMiningForeman.Text)
+            .BoosterShipSkill = CInt(cmbMineBoosterShipSkill.Text)
+            .WarfareLinkSpecSkill = CInt(cmbMineWarfareLinkSpec.Text)
+            .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
+            .CheckRorqDeployed = chkMineRorqDeployedMode.Checked
+            .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
+
+            If chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate Then
+                .CheckMineForemanLaserOpBoost = 2
+            ElseIf chkMineForemanLaserOpBoost.Checked = True Then
+                .CheckMineForemanLaserOpBoost = 1
+            Else
+                .CheckMineForemanLaserOpBoost = 0
+            End If
+
+            If chkMineForemanLaserRangeBoost.CheckState = CheckState.Indeterminate Then
+                .CheckMineForemanLaserRangeBoost = 2
+            ElseIf chkMineForemanLaserRangeBoost.Checked = True Then
+                .CheckMineForemanLaserRangeBoost = 1
+            Else
+                .CheckMineForemanLaserRangeBoost = 0
+            End If
+
+            ' Check all locations
+            .CheckSovAmarr = chkMineAmarr.Checked
+            .CheckSovCaldari = chkMineCaldari.Checked
+            .CheckSovGallente = chkMineGallente.Checked
+            .CheckSovMinmatar = chkMineMinmatar.Checked
+            .CheckSovWormhole = chkMineWH.Checked
+
+            .CheckSovC1 = chkMineC1.Checked
+            .CheckSovC2 = chkMineC2.Checked
+            .CheckSovC3 = chkMineC3.Checked
+            .CheckSovC4 = chkMineC4.Checked
+            .CheckSovC5 = chkMineC5.Checked
+            .CheckSovC6 = chkMineC6.Checked
+
+            ' Refining
+            ' Station numbers
+            If cmbMineStationEff.Text.Contains("%") Then
+                .RefiningEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
+            Else
+                .RefiningEfficiency = CDbl(cmbMineStationEff.Text) / 100
+            End If
+            If cmbMineRefineStationTax.Text.Contains("%") Then
+                .RefiningTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1)) / 100
+            Else
+                .RefiningTax = CDbl(cmbMineRefineStationTax.Text) / 100
+            End If
+
+            ' Allow them to update the refine standing here as well
+            .RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
+
+            ' Save it in the Application settings
+            Settings.SaveApplicationSettings(UserApplicationSettings)
+
+            ' Jump costs
+            .CheckIncludeJumpFuelCosts = chkMineIncludeJumpCosts.Checked
+            .JumpCompressedOre = rbtnMineJumpCompress.Checked
+            .JumpMinerals = rbtnMineJumpMinerals.Checked
+            .TotalJumpFuelCost = CDbl(txtMineTotalJumpFuel.Text)
+            .TotalJumpFuelM3 = CDbl(txtMineTotalJumpM3.Text)
+
+            .ColumnSort = MiningColumnClicked
+            If MiningColumnSortType = SortOrder.Ascending Then
+                .ColumnSortType = "Ascending"
+            Else
+                .ColumnSortType = "Decending"
+            End If
+
+            .CheckUseHauler = chkMineUseHauler.Checked
+
+            ' Hauler - only save values if not using hauler
+            If chkMineUseHauler.Checked = False Then
+                .RoundTripMin = CInt(txtMineRTMin.Text)
+                .RoundTripSec = CInt(txtMineRTSec.Text)
+                .Haulerm3 = CDbl(txtMineHaulerM3.Text)
+            Else
+                .RoundTripMin = Settings.DefaultMiningRoundTripMin
+                .RoundTripSec = Settings.DefaultMiningRoundTripSec
+                .Haulerm3 = Settings.DefaultMiningHaulerm3
+            End If
+
+            ' Taxes and Fees
+            .CheckIncludeFees = chkMineIncludeBrokerFees.Checked
+            .CheckIncludeTaxes = chkMineIncludeTaxes.Checked
+
+            ' Michii
+            .MichiiImplant = chkMineMichiImplant.Checked
+
+            ' Number of miners
+            .NumberofMiners = CInt(txtMineNumberMiners.Text)
+
+        End With
+
+        ' Save the data in the XML file
+        Call Settings.SaveMiningSettings(TempSettings)
+
+        ' Save the data to the local variable
+        UserMiningTabSettings = TempSettings
+
+        MsgBox("Settings Saved", vbInformation, Application.ProductName)
+
+    End Sub
+
+    ' Sets the screen settings for ore type selected
+    Private Sub SetOreRefineChecks()
+        If cmbMineOreType.Text <> "Gas" Then
+            If chkMineRefinedOre.Checked Then
+                gbMineBaseRefineSkills.Enabled = True
+                gbMineStationYield.Enabled = True
+            Else
+                gbMineBaseRefineSkills.Enabled = False
+                gbMineStationYield.Enabled = False
+            End If
+            gbMineRefining.Enabled = True
+        Else
+            gbMineBaseRefineSkills.Enabled = False
+            gbMineStationYield.Enabled = False
+            gbMineRefining.Enabled = False
+            If cmbMineOreType.Text = "Gas" Then
+                ' Can't refine gas
+                chkMineRefinedOre.Checked = False
+                chkMineUnrefinedOre.Checked = False
+                chkMineCompressedOre.Checked = False
+            End If
+        End If
+    End Sub
+
+    ' Loads the Fleet Boost Ship image
+    Private Sub LoadFleetBoosterImage()
+        If chkMineUseFleetBooster.Checked Then
+            Dim ShipName As String
+
+            If cmbMineBoosterShip.Text = "Other" Then
+                ShipName = Rokh
+            ElseIf cmbMineBoosterShip.Text = "Battlecruiser" Then
+                ShipName = Drake
+            Else
+                ShipName = cmbMineBoosterShip.Text
+            End If
+
+            Dim BPImage As String = GetMiningShipImage(ShipName)
+
+            If System.IO.File.Exists(BPImage) Then
+                pictMineFleetBoostShip.Image = Image.FromFile(BPImage)
+            Else
+                pictMineFleetBoostShip.Image = Nothing
+            End If
+
+        Else
+            pictMineFleetBoostShip.Image = Nothing
+        End If
+
+        pictMineFleetBoostShip.Update()
+
+    End Sub
+
+    ' Loads the Mining Ship Image
+    Private Sub LoadMiningshipImage()
+        Dim ShipName As String
+
+        If cmbMineShipType.Text = "Other" Then
+            ShipName = Rokh
+        ElseIf cmbMineShipType.Text = "Battlecruiser" Then
+            ShipName = Drake
+        Else
+            ShipName = cmbMineShipType.Text
+        End If
+
+        Dim BPImage As String = GetMiningShipImage(ShipName)
+
+        If System.IO.File.Exists(BPImage) Then
+            pictMineSelectedShip.Image = Image.FromFile(BPImage)
+        Else
+            pictMineSelectedShip.Image = Nothing
+        End If
+
+        pictMineSelectedShip.Update()
+
+    End Sub
+
+    ' Loads the implants for the mining type
+    Private Sub UpdateMiningImplants()
+        Dim ReqSkill As Integer
+
+        ' Clear implants
+        cmbMineImplant.Items.Clear()
+
+        ' Set Ore or Ice implants
+        If cmbMineOreType.Text = "Ice" Then
+            cmbMineImplant.Items.Add(None)
+            'Inherent Implants 'Yeti' Ice Harvesting IH-1001
+            cmbMineImplant.Items.Add("'Yeti' IH-1001")
+            cmbMineImplant.Items.Add("'Yeti' IH-1003")
+            cmbMineImplant.Items.Add("'Yeti' IH-1005")
+
+            ' No Michi for ice
+            chkMineMichiImplant.Enabled = False
+            chkMineMichiImplant.ForeColor = Color.Black
+
+            cmbMineImplant.Text = UserMiningTabSettings.IceImplant
+
+        ElseIf cmbMineOreType.Text = "Ore" Then
+            'Inherent Implants 'Highwall' Mining MX-1001
+            cmbMineImplant.Items.Add(None)
+            cmbMineImplant.Items.Add("'Highwall' MX-1001")
+            cmbMineImplant.Items.Add("'Highwall' MX-1003")
+            cmbMineImplant.Items.Add("'Highwall' MX-1005")
+
+            chkMineMichiImplant.Enabled = True
+
+            ' Michi Implant
+            ReqSkill = CInt(GetAttribute("requiredSkill1Level", "Michi's Excavation Augmentor"))
+            If ReqSkill <> SelectedCharacter.Skills.GetSkillLevel(3411) Then
+                chkMineMichiImplant.ForeColor = Color.Red
+                If UserApplicationSettings.ShowToolTips Then
+                    ttMain.SetToolTip(chkMineMichiImplant, "Requires Cybernetics " & ReqSkill)
+                End If
+            Else
+                chkMineMichiImplant.ForeColor = Color.Black
+            End If
+
+            cmbMineImplant.Text = UserMiningTabSettings.OreImplant
+
+        ElseIf cmbMineOreType.Text = "Gas" Then
+            cmbMineImplant.Items.Add(None)
+            'Eifyr and Co. 'Alchemist' Gas Harvesting GH-801
+            cmbMineImplant.Items.Add("'Alchemist' GH-801")
+            cmbMineImplant.Items.Add("'Alchemist' GH-803")
+            cmbMineImplant.Items.Add("'Alchemist' GH-805")
+
+            ' No Michi for gas
+            chkMineMichiImplant.Enabled = False
+            chkMineMichiImplant.ForeColor = Color.Black
+
+            cmbMineImplant.Text = UserMiningTabSettings.GasImplant
+        End If
+
+    End Sub
+
+    ' Updates the skills and combos associated with the ship selected
+    Private Sub UpdateMiningShipForm(UpdateEquipment As Boolean)
+
+        ' Update the mining skills first, ships loaded depend on these
+        Call UpdateMiningSkills()
+
+        ' Load the ships into the ship combo
+        Call UpdateMiningShipsCombo()
+
+        If UpdateEquipment Then
+            ' Finally load all the ship equipment
+            Call UpdateMiningShipEquipment()
+        End If
+
+    End Sub
+
+    ' Updates the mining skills for the ships and equipment
+    Private Sub UpdateMiningSkills()
+        ' Mining upgrades - need mining upgrades 1 or 4 for T2
+        ' * mercoxit - T2's Deep core Mining 2
+        ' Deep Core Strip Mining skill - Astrogeology 5 and Mining 5
+        ' Ice miners - Need to change the mining combo name to Ice Harvesting
+        ' * Need level 4 for T1 and level 5 for T2
+        ' If they choose 'Other' for ship, hide strip miners and then show 'Miners' and number
+        ' If they choose frigs or cruisers, show skill level of ship along with miners
+
+        ' Mining Skill
+        ' 3 for mining upgrades
+        ' 4 for Astrology and ice harvesting
+        ' 5 for Deep core mining
+
+        ' Mining upgrades (ice and ore)
+        If CInt(cmbMineSkill.Text) >= 3 And cmbMineOreType.Text <> "Gas" Then
+            cmbMineMiningUpgrade.Enabled = True
+        Else
+            cmbMineMiningUpgrade.Enabled = False
+        End If
+
+        ' Ice/Gas Harvesting skill
+        If CInt(cmbMineSkill.Text) >= 4 Then
+            If cmbMineOreType.Text = "Ice" Then
+                lblMineGasIceHarvesting.Text = "Ice Harv:"
+                lblMineGasIceHarvesting.Enabled = True
+                cmbMineGasIceHarvesting.Enabled = True
+                cmbMineAstrogeology.Enabled = True
+            ElseIf cmbMineOreType.Text = "Gas" Then
+                lblMineGasIceHarvesting.Text = "Gas Harv:"
+                lblMineGasIceHarvesting.Enabled = True
+                cmbMineGasIceHarvesting.Enabled = True
+                cmbMineAstrogeology.Enabled = False
+            ElseIf cmbMineOreType.Text = "Ore" Then
+                lblMineGasIceHarvesting.Enabled = False
+                cmbMineGasIceHarvesting.Enabled = False
+                cmbMineAstrogeology.Enabled = True
+            End If
+        Else
+            cmbMineAstrogeology.Enabled = False
+            lblMineGasIceHarvesting.Enabled = False
+            cmbMineGasIceHarvesting.Enabled = False
+        End If
+
+        ' Deep core only for asteroid mining
+        If CInt(cmbMineSkill.Text) = 5 And CInt(cmbMineAstrogeology.Text) = 5 And cmbMineOreType.Text = "Ore" Then
+            cmbMineDeepCore.Enabled = True
+            lblMineDeepCore.Enabled = True
+        Else
+            cmbMineDeepCore.Enabled = False
+            lblMineDeepCore.Enabled = False
+        End If
+
+        ' Set exhumer skill combo for ice, but the prospect can mine ore so enable it for all
+        If cmbMineOreType.Text = "Ice" Then
+            If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 Then
+                cmbMineExhumers.Enabled = True
+                lblMineExhumers.Enabled = True
+            Else
+                cmbMineExhumers.Enabled = False
+                lblMineExhumers.Enabled = False
+            End If
+        Else
+            cmbMineExhumers.Enabled = True
+            lblMineExhumers.Enabled = True
+        End If
+
+        ' Set true, can be set false when they choose "other"
+        cmbMineBaseShipSkill.Enabled = True
+        lblMineBaseShipSkill.Enabled = True
+
+        ' Set the skill level of the ship they selected if not a mining barge/exhumer
+        Select Case cmbMineShipType.Text
+            Case "Other"
+                cmbMineBaseShipSkill.Enabled = False
+                lblMineBaseShipSkill.Enabled = False
+                cmbMineExhumers.Enabled = False
+                lblMineExhumers.Enabled = False
+        End Select
+
+    End Sub
+
+    ' Updates the ships combo with ships based on the levels of skills set
+    Private Sub UpdateMiningShipsCombo()
+        Dim PreviousShip As String = cmbMineShipType.Text
+        Dim MaxShipName As String = ""
+        Dim ShipSkillLevel As Integer = 0
+
+        UpdatingMiningShips = True
+        cmbMineShipType.Items.Clear()
+
+        ' For gas and ore, load venture, prospect and other
+        If cmbMineOreType.Text <> "Ice" Then
+            ' Check for Mining Frigate skill to load the Venture
+            If CInt(cmbMineBaseShipSkill.Text) >= 1 Then
+                cmbMineShipType.Items.Add(Venture)
+                MaxShipName = Venture
+            End If
+
+            ' Use exhumers skill for expedition frigate
+            If CInt(cmbMineExhumers.Text) >= 1 Then
+                cmbMineShipType.Items.Add(Prospect)
+                cmbMineShipType.Items.Add(Endurance)
+                MaxShipName = Prospect
+            End If
+
+            ' Always add other for non ICE mining
+            cmbMineShipType.Items.Add("Other")
+        End If
+
+        If cmbMineOreType.Text <> "Gas" Then
+            ' Exhumers and Mining Barges - Load for both Ice and Ore
+            ' 3 for Mining barge, Procurer, 4 for Retriever, 5 for Covetor
+            ' 5 for Exhumers and Deep core mining
+            'Covetor, Retriever, Procurer. Hulk, Skiff, Mackinaw
+            If CInt(cmbMineAstrogeology.Text) >= 3 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) >= 1 Then
+                cmbMineShipType.Items.Add(Procurer)
+                MaxShipName = Procurer
+                cmbMineShipType.Items.Add(Retriever)
+                MaxShipName = Retriever
+                cmbMineShipType.Items.Add(Covetor)
+                MaxShipName = Covetor
+            End If
+
+            If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineExhumers.Text) >= 1 Then
+                cmbMineShipType.Items.Add(Skiff)
+                MaxShipName = Skiff
+                cmbMineShipType.Items.Add(Mackinaw)
+                MaxShipName = Mackinaw
+                cmbMineShipType.Items.Add(Hulk)
+                MaxShipName = Hulk
+            End If
+        End If
+
+        If cmbMineOreType.Text = "Ice" And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineExhumers.Text) >= 1 Then
+            ' Add the prospect and endurance
+            cmbMineShipType.Items.Add(Endurance)
+            cmbMineShipType.Items.Add(Prospect)
+            MaxShipName = Endurance
+        End If
+
+        If MaxShipName = "" And cmbMineOreType.Text <> "Ice" Then
+            MaxShipName = "Other"
+        ElseIf MaxShipName = "" And cmbMineOreType.Text = "Ice" Then ' Only 6 ships can mine ice.
+            MaxShipName = None
+            ' Always add None for this case
+            cmbMineShipType.Items.Add(None)
+        End If
+
+        ' Use settings to load the ships, else load the maxshipname unless first load
+        If cmbMineOreType.Text = "Ore" And UserMiningTabSettings.OreMiningShip <> "" And FirstShowMining Then
+            cmbMineShipType.Text = UserMiningTabSettings.OreMiningShip
+        ElseIf cmbMineOreType.Text = "Ice" And UserMiningTabSettings.IceMiningShip <> "" And FirstShowMining Then
+            cmbMineShipType.Text = UserMiningTabSettings.IceMiningShip
+        ElseIf cmbMineOreType.Text = "Gas" And UserMiningTabSettings.GasMiningShip <> "" And FirstShowMining Then
+            cmbMineShipType.Text = UserMiningTabSettings.GasMiningShip
+        Else
+            If cmbMineShipType.Items.Contains(PreviousShip) Then
+                cmbMineShipType.Text = PreviousShip
+            Else
+                cmbMineShipType.Text = MaxShipName
+            End If
+        End If
+
+        ' If we have a max ship name, then set it if it didn't stick in the combo after checking settings
+        If MaxShipName <> "" And cmbMineShipType.Text = "" Then
+            cmbMineShipType.Text = MaxShipName
+        End If
+
+        UpdatingMiningShips = False
+        Call LoadMiningshipImage()
+
+    End Sub
+
+    ' Loads the laser/strip combos, implant, etc for the ship types
+    Private Sub UpdateMiningShipEquipment()
+        Dim LaserCount As Integer = 0
+        Dim MLUCount As Integer = 0
+        Dim i As Integer
+        Dim MaxStrip As String = ""
+        Dim ShipName As String
+        Dim DeepCoreLoaded As Boolean = False
+
+        ' Clear miners
+        cmbMineMiningLaser.Items.Clear()
+
+        ShipName = cmbMineShipType.Text
+
+        Select Case ShipName
+            Case Hulk, Mackinaw, Skiff, Covetor, Retriever, Procurer
+                ' Get the numbers
+                'LaserCount = CInt(GetAttribute("High Slots", ShipName))
+                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
+                Select Case ShipName
+                    Case Hulk, Covetor
+                        LaserCount = 3
+                        MLUCount = 2
+                    Case Mackinaw, Retriever
+                        LaserCount = 2
+                        MLUCount = 3
+                    Case Skiff
+                        LaserCount = 1
+                        MLUCount = 3
+                    Case Procurer
+                        LaserCount = 1
+                        MLUCount = 2
+                End Select
+
+                ' Now load the strips
+                If cmbMineOreType.Text = "Ore" Then
+                    ' Mining Skill
+                    ' Mining 4 for T1 Strips
+                    ' Mining 5 for T2 Strips
+
+                    If CInt(cmbMineSkill.Text) >= 4 Then
+                        cmbMineMiningLaser.Items.Add("Strip Miner I")
+                        cmbMineMiningLaser.Items.Add("ORE Strip Miner")
+                        MaxStrip = "Strip Miner I"
+                        rbtnMineT1Crystals.Enabled = False
+                        rbtnMineT2Crystals.Enabled = False
+                    End If
+
+                    If CInt(cmbMineSkill.Text) = 5 Then
+                        cmbMineMiningLaser.Items.Add("Modulated Strip Miner II")
+                        MaxStrip = "Modulated Strip Miner II"
+                        rbtnMineT1Crystals.Enabled = True
+                        rbtnMineT2Crystals.Enabled = True
+                    End If
+
+                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
+                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Strip Miner II")
+                        rbtnMineT1Crystals.Enabled = True
+                        rbtnMineT2Crystals.Enabled = True
+                    End If
+
+                Else
+                    ' Ice harvesting skill
+                    ' 1 for T1 strip
+                    ' 5 for T2 strips
+
+                    If CInt(cmbMineGasIceHarvesting.Text) >= 1 Then
+                        cmbMineMiningLaser.Items.Add("Ice Harvester I")
+                        cmbMineMiningLaser.Items.Add("ORE Ice Harvester")
+                        MaxStrip = "Ice Harvester I"
+                    End If
+
+                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
+                        cmbMineMiningLaser.Items.Add("Ice Harvester II")
+                        MaxStrip = "Ice Harvester II"
+                    End If
+
+                    rbtnMineT1Crystals.Enabled = False
+                    rbtnMineT2Crystals.Enabled = False
+
+                End If
+
+                ' Turn on the num lasers
+                lblMineLaserNumber.Enabled = True
+                cmbMineNumLasers.Enabled = True
+
+            Case Else ' Other ships that are not mining barges
+
+                'LaserCount = CInt(GetAttribute("Turret hardpoints", ShipName)) ' Use turret hardpoints for this
+                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
+                Select Case ShipName
+                    Case Prospect
+                        LaserCount = 2
+                        MLUCount = 4
+                    Case Venture
+                        LaserCount = 2
+                        MLUCount = 1
+                    Case Endurance
+                        LaserCount = 1
+                        MLUCount = 3
+                End Select
+
+                ' For Other Ships
+                lblMineLaserNumber.Visible = True
+                cmbMineNumLasers.Visible = True
+
+                If cmbMineOreType.Text = "Ore" Then
+                    rbtnMineT1Crystals.Enabled = False
+                    rbtnMineT2Crystals.Enabled = False
+
+                    ' Add all the basic mining lasers
+                    cmbMineMiningLaser.Items.Clear()
+                    cmbMineMiningLaser.Items.Add("Miner I")
+
+                    If CInt(cmbMineSkill.Text) >= 4 Then
+                        cmbMineMiningLaser.Items.Add("Miner II")
+                        MaxStrip = "Miner II"
+                    End If
+
+                    cmbMineMiningLaser.Items.Add("Civilian Miner")
+                    cmbMineMiningLaser.Items.Add("EP-S Gaussian Scoped Mining Laser")
+                    cmbMineMiningLaser.Items.Add("Particle Bore Compact Mining Laser")
+                    cmbMineMiningLaser.Items.Add("Gallente Mining Laser")
+                    cmbMineMiningLaser.Items.Add("ORE Miner")
+                    cmbMineMiningLaser.Items.Add("Single Diode Basic Mining Laser")
+
+                    Select Case UserMiningTabSettings.OreStrip
+                        Case "Civilian Miner"
+                            MaxStrip = "Civilian Miner"
+                        Case "EP-S Gaussian Scoped Mining Laser"
+                            MaxStrip = "EP-S Gaussian Scoped Mining Laser"
+                        Case "Particle Bore Compact Mining Laser"
+                            MaxStrip = "Particle Bore Compact Mining Laser"
+                        Case "Gallente Mining Laser"
+                            MaxStrip = "Gallente Mining Laser"
+                        Case "ORE Miner"
+                            MaxStrip = "ORE Miner"
+                        Case "Single Diode Basic Mining Laserr"
+                            MaxStrip = "Single Diode Basic Mining Laser"
+                        Case Else
+                            MaxStrip = "Miner I"
+                    End Select
+
+                    ' Deep core (Mercoxit)
+                    If CInt(cmbMineDeepCore.Text) >= 1 And cmbMineDeepCore.Enabled = True Then
+                        cmbMineMiningLaser.Items.Add("Deep Core Mining Laser I")
+                        cmbMineMiningLaser.Items.Add("ORE Deep Core Mining Laser")
+                    End If
+
+                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
+                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Miner II")
+                        ' Uses crystals
+                        rbtnMineT1Crystals.Enabled = True
+                        rbtnMineT2Crystals.Enabled = True
+                    End If
+
+                ElseIf cmbMineOreType.Text = "Gas" Then
+                    ' Only venture and other
+                    cmbMineMiningLaser.Items.Add("'Crop' Gas Cloud Harvester")
+                    cmbMineMiningLaser.Items.Add("Gas Cloud Harvester I")
+                    cmbMineMiningLaser.Items.Add("'Plow' Gas Cloud Harvester")
+                    cmbMineMiningLaser.Items.Add("Syndicate Gas Cloud Harvester")
+
+                    Select Case UserMiningTabSettings.OreStrip
+                        Case "'Crop' Gas Cloud Harvester"
+                            MaxStrip = "'Crop' Gas Cloud Harvester"
+                        Case "Gas Cloud Harvester I"
+                            MaxStrip = "Gas Cloud Harvester I"
+                        Case "'Plow' Gas Cloud Harvester"
+                            MaxStrip = "'Plow' Gas Cloud Harvester"
+                        Case "Syndicate Gas Cloud Harvester"
+                            MaxStrip = "Syndicate Gas Cloud Harvester"
+                        Case Else
+                            MaxStrip = "Gas Cloud Harvester I"
+                    End Select
+
+                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
+                        cmbMineMiningLaser.Items.Add("Gas Cloud Harvester II")
+                        MaxStrip = "Gas Cloud Harvester II"
+                    End If
+
+                ElseIf cmbMineOreType.Text = "Ice" And (ShipName = Endurance Or ShipName = Prospect) Then
+                    cmbMineMiningLaser.Items.Add("Ice Mining Laser I")
+                    cmbMineMiningLaser.Items.Add("Ice Mining Laser II")
+                    cmbMineMiningLaser.Items.Add("ORE Ice Mining Laser")
+
+                    Select Case UserMiningTabSettings.OreStrip
+                        Case "Ice Mining Laser I"
+                            MaxStrip = "Ice Mining Laser I"
+                        Case "Ice Mining Laser II"
+                            MaxStrip = "Ice Mining Laser II"
+                        Case "ORE Ice Mining Laser"
+                            MaxStrip = "ORE Ice Mining Laser"
+                        Case Else
+                            MaxStrip = "Ice Mining Laser I"
+                    End Select
+                End If
+
+        End Select
+
+        ' Set crystals
+        rbtnMineT2Crystals.Checked = UserMiningTabSettings.T2Crystals
+
+        ' Set Strip name
+        cmbMineMiningLaser.Text = MaxStrip
+
+        ' Set the MLU numbers
+        cmbMineNumMiningUpgrades.Items.Clear()
+        cmbMineNumMiningUpgrades.Enabled = True
+
+        ' Allow 8 for MLU's if other ship (Rohk, Iteron, etc)
+        If ShipName = "Other" And cmbMineOreType.Text <> "Gas" And cmbMineOreType.Text <> "Ice" Then
+            MLUCount = 8
+            LaserCount = 8
+        ElseIf cmbMineOreType.Text = "Gas" Then
+            MLUCount = 0
+            ' Update laser count based on skills - max of 5
+            If cmbMineShipType.Text = Venture Or cmbMineShipType.Text = Prospect And cmbMineOreType.Text <> "Gas" Then
+                ' Update the laser count if it's less than the turrets on the venture/prospect
+                If CInt(cmbMineGasIceHarvesting.Text) < LaserCount Then
+                    LaserCount = CInt(cmbMineGasIceHarvesting.Text)
+                End If
+            Else ' Other Ship
+                ' Update the turrets based on the skill, max of 5
+                LaserCount = CInt(cmbMineGasIceHarvesting.Text)
+            End If
+        End If
+
+        For i = 1 To MLUCount
+            cmbMineNumMiningUpgrades.Items.Add(CStr(i))
+        Next
+
+        ' Set the number of Strip miners available
+        cmbMineNumLasers.Items.Clear()
+
+        ' Set the max allowable lasers
+        For i = 1 To LaserCount
+            cmbMineNumLasers.Items.Add(CStr(i))
+        Next
+
+        ' Choose options for None ships first, these should be just clear settings
+        If cmbMineShipType.Text = None Then
+
+            cmbMineNumMiningUpgrades.Text = "0"
+            cmbMineMiningUpgrade.Text = None
+            cmbMineNumLasers.Text = "0"
+            cmbMineMiningLaser.Text = None
+
+        Else ' Normal ship or "other"
+            ' Load settings, only change to user settings if the ship is the same as the one selected
+
+            ' Set the names and numbers for upgrades and strips
+            If cmbMineOreType.Text = "Ore" Then
+                ' Set the number of MLUs
+                If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
+                Else
+                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumOreUpgrades)
+                End If
+
+                ' Set the MLU Text - These are hardcoded so just use the default or user setting
+                cmbMineMiningUpgrade.Text = UserMiningTabSettings.OreUpgrade
+
+                ' Set number of strips
+                If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+                    cmbMineNumLasers.Text = CStr(LaserCount)
+                Else
+                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumOreMiners)
+                End If
+
+                ' Set Strip name
+                If UserMiningTabSettings.OreStrip = "" Then
+                    cmbMineMiningLaser.Text = MaxStrip
+                Else
+                    cmbMineMiningLaser.Text = UserMiningTabSettings.OreStrip
+                End If
+
+            ElseIf cmbMineOreType.Text = "Ice" Then
+                ' Set the number of MLUs
+                If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
+                Else
+                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumIceUpgrades)
+                End If
+
+                ' Set the MLU Text - These are hardcoded so just use the default or user setting
+                cmbMineMiningUpgrade.Text = UserMiningTabSettings.IceUpgrade
+
+                ' Set number of strips
+                If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+                    cmbMineNumLasers.Text = CStr(LaserCount)
+                Else
+                    ' Update with the user settings they have, up to the max the ship can use
+                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumIceMiners)
+                End If
+
+                ' Set Strip name
+                If UserMiningTabSettings.IceStrip = "" Then
+                    cmbMineMiningLaser.Text = MaxStrip
+                Else
+                    cmbMineMiningLaser.Text = UserMiningTabSettings.IceStrip
+                End If
+
+            ElseIf cmbMineOreType.Text = "Gas" Then
+                ' No MLUs for gas
+                cmbMineNumMiningUpgrades.Enabled = False
+                cmbMineMiningUpgrade.Text = UserMiningTabSettings.GasUpgrade
+
+                ' Set number of strips
+                If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> UserMiningTabSettings.GasMiningShip Then
+                    cmbMineNumLasers.Text = CStr(LaserCount)
+                Else
+                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumGasHarvesters)
+                End If
+
+                ' Set Strip name
+                If UserMiningTabSettings.IceStrip = "" Then
+                    cmbMineMiningLaser.Text = MaxStrip
+                Else
+                    cmbMineMiningLaser.Text = UserMiningTabSettings.GasHarvester
+                End If
+            End If
+
+        End If
+
+        Call RefreshHaulerM3()
+
+        lblMineCycleTime.Text = ""
+        lblMineRange.Text = ""
+
+    End Sub
+
+    ' Updates the processing skills (enable, disable) depending on the refining skills selected
+    Private Sub UpdateProcessingSkills()
+
+        If FirstLoad Then
+            Exit Sub
+        End If
+
+        ' Set them all false first
+        For i = 1 To MineProcessingCheckBoxes.Count - 1
+            MineProcessingCheckBoxes(i).Enabled = False
+        Next
+
+        For i = 1 To MineProcessingCombos.Count - 1
+            MineProcessingCombos(i).Enabled = False
+        Next
+
+        For i = 1 To MineProcessingLabels.Count - 1
+            MineProcessingLabels(i).Enabled = False
+        Next
+
+        cmbMineRefineryEff.Enabled = False
+
+        If cmbMineOreType.Text = "Ore" Then
+
+            If cmbMineRefining.Text = "4" Or cmbMineRefining.Text = "5" Then
+                ' Veld, Scordite, Pyroxeres, and Plag
+                Call EnableOreProcessingGroup(1, True)
+                Call EnableOreProcessingGroup(2, True)
+                Call EnableOreProcessingGroup(9, True)
+                Call EnableOreProcessingGroup(10, True)
+            End If
+
+            If cmbMineRefining.Text = "5" Then
+                ' Hemo, Jaspet, Kernite, Omber, Refinery Effy
+                Call EnableOreProcessingGroup(3, True)
+                Call EnableOreProcessingGroup(4, True)
+                Call EnableOreProcessingGroup(11, True)
+                Call EnableOreProcessingGroup(12, True)
+
+                cmbMineRefineryEff.Enabled = True
+
+            End If
+
+            If cmbMineRefineryEff.Text = "4" Or cmbMineRefineryEff.Text = "5" Then
+                ' Dark Ochre, Gneiss, Hedb, Spod
+                Call EnableOreProcessingGroup(5, True)
+                Call EnableOreProcessingGroup(6, True)
+                Call EnableOreProcessingGroup(13, True)
+                Call EnableOreProcessingGroup(14, True)
+            End If
+
+            If cmbMineRefineryEff.Text = "5" Then
+                ' Ark, Bisot, Crokite, Mercoxit
+                Call EnableOreProcessingGroup(7, True)
+                Call EnableOreProcessingGroup(8, True)
+                Call EnableOreProcessingGroup(15, True)
+                Call EnableOreProcessingGroup(16, True)
+            End If
+
+        ElseIf cmbMineOreType.Text = "Ice" Then
+            ' Enable the one ice processing skill
+            If cmbMineRefining.Text = "5" Then
+                cmbMineRefineryEff.Enabled = True
+            End If
+
+            If cmbMineRefineryEff.Enabled And cmbMineRefineryEff.Text = "5" Then
+                Call EnableOreProcessingGroup(17, True)
+            End If
+
+        Else ' Gas
+            ' We don't refine, so leave them all off
+        End If
+
+    End Sub
+
+    ' Changes the ore processing skill group to enabled or disabled
+    Private Sub EnableOreProcessingGroup(ByVal Index As Integer, ByVal EnableObject As Boolean)
+        If MineProcessingCheckBoxes(Index).Checked And EnableObject Then
+            ' Ok to enable
+            MineProcessingCombos(Index).Enabled = True
+            MineProcessingLabels(Index).Enabled = True
+        Else
+            ' Don't enable
+            MineProcessingCombos(Index).Enabled = False
+            MineProcessingLabels(Index).Enabled = False
+        End If
+
+        MineProcessingCheckBoxes(Index).Enabled = EnableObject
+    End Sub
+
+    ' Updates the skills and boxes associated with the booster
+    Private Sub UpdateBoosterSkills()
+        Dim CurrentShip As String
+
+        ' Industrial command ships = orca. Need Mining director 1
+        ' Capital industrial = rorq, need nothing
+
+        ' Mining director needs mining foreman 5
+        ' Mindlink (implant) needs mining director 5 
+        ' Mining gang link needs mining director 1
+        ' Mining gang link II needs mining director 5 (three way check box)
+        If chkMineUseFleetBooster.Checked Then
+            cmbMineBoosterShip.Enabled = True
+            cmbMineMiningForeman.Enabled = True
+            lblMineBoosterShipSkill.Enabled = True
+            cmbMineBoosterShipSkill.Enabled = True
+            lblMineWarfareLinkSpec.Enabled = True
+            cmbMineWarfareLinkSpec.Enabled = True
+
+            If cmbMineMiningForeman.Text = "5" Then
+                cmbMineMiningDirector.Enabled = True
+
+                If cmbMineMiningDirector.Text = "5" Then
+                    chkMineForemanMindlink.Enabled = True ' Implant
+                    chkMineForemanLaserOpBoost.ThreeState = True ' Allow for t2 mindlink
+                    chkMineForemanLaserOpBoost.Enabled = True
+                    chkMineForemanLaserRangeBoost.ThreeState = True ' Allow for t2 mindlink
+                    chkMineForemanLaserRangeBoost.Enabled = True
+                Else
+                    chkMineForemanMindlink.Enabled = False
+                    chkMineForemanLaserOpBoost.Enabled = True
+                    chkMineForemanLaserOpBoost.ThreeState = False ' Only the T1 mindlink
+                    chkMineForemanLaserRangeBoost.Enabled = True
+                    chkMineForemanLaserRangeBoost.ThreeState = False ' Only the T1 mindlink
+                End If
+            Else
+                chkMineForemanLaserOpBoost.Enabled = False
+                chkMineForemanLaserRangeBoost.Enabled = False
+                chkMineForemanMindlink.Enabled = False
+                cmbMineMiningDirector.Enabled = False
+            End If
+
+            Call UpdateMiningBoosterObjects()
+
+            UpdatingMiningShips = True
+
+            CurrentShip = cmbMineBoosterShip.Text
+            cmbMineBoosterShip.Items.Clear()
+
+            cmbMineBoosterShip.Items.Add(Rorqual)
+            cmbMineBoosterShip.Items.Add(Orca)
+            cmbMineBoosterShip.Items.Add("Battlecruiser")
+            cmbMineBoosterShip.Items.Add("Other")
+
+            If cmbMineBoosterShip.Items.Contains(CurrentShip) Then
+                cmbMineBoosterShip.Text = CurrentShip
+            Else
+                cmbMineBoosterShip.Text = "Other"
+            End If
+
+            UpdatingMiningShips = False
+
+            If cmbMineBoosterShip.Text = "Other" Then
+                ' Disable mining foreman link
+                chkMineForemanLaserOpBoost.Enabled = False
+                chkMineForemanLaserRangeBoost.Enabled = False
+            End If
+
+            If cmbMineBoosterShip.Text = Orca Or cmbMineBoosterShip.Text = Rorqual Then
+                cmbMineBoosterShipSkill.Enabled = True
+            Else
+                cmbMineBoosterShipSkill.Enabled = False
+            End If
+
+            If cmbMineBoosterShip.Text = Rorqual Then
+                chkMineRorqDeployedMode.Enabled = True
+                cmbMineIndustReconfig.Enabled = True
+                lblMineIndustrialReconfig.Enabled = True
+            Else
+                chkMineRorqDeployedMode.Enabled = False
+                cmbMineIndustReconfig.Enabled = False
+                lblMineIndustrialReconfig.Enabled = False
+            End If
+
+        Else
+            cmbMineBoosterShip.Enabled = False
+            cmbMineMiningDirector.Enabled = False
+            cmbMineMiningForeman.Enabled = False
+            chkMineForemanMindlink.Enabled = False
+            chkMineForemanLaserOpBoost.Enabled = False
+            chkMineForemanLaserRangeBoost.Enabled = False
+            lblMineBoosterShipSkill.Enabled = False
+            cmbMineBoosterShipSkill.Enabled = False
+            lblMineWarfareLinkSpec.Enabled = False
+            cmbMineWarfareLinkSpec.Enabled = False
+            chkMineRorqDeployedMode.Enabled = False
+            cmbMineIndustReconfig.Enabled = False
+            lblMineIndustrialReconfig.Enabled = False
+        End If
 
     End Sub
 
@@ -22417,7 +23043,7 @@ Leave:
         'If UserMiningTabSettings.Haulerm3 = DefaultSettings.DefaultMiningHaulerm3 Then
         ' Load the ore hold of the ship selected
         Select Case cmbMineShipType.Text
-            Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect
+            Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
                 txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text), 2)
             Case Mackinaw, Retriever
                 txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text) * (1 + (CInt(cmbMineBaseShipSkill.Text) * 0.05)), 2)
@@ -22495,6 +23121,10 @@ Leave:
                         ' 5% per level plus 100% role bonus
                         BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
                         RoleBonus = 2
+                    Case Endurance
+                        ' 5% per level plus 300% role bonus
+                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
+                        RoleBonus = 4
                     Case Else
                         BaseShipBonus = 0
                 End Select
@@ -22740,6 +23370,9 @@ Leave:
                 Case Hulk
                     ' 4% reduction for mining barges and 3% reduction for exhumers
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.04)) * (1 - (CDec(cmbMineExhumers.Text) * 0.03))
+                Case Endurance
+                    ' 5% reduction for Expedition Frigate level and 5% for mining frigate level plus 50% role bonus
+                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05)) * (1 - (CDec(cmbMineExhumers.Text) * 0.05)) * (1 - 0.5)
             End Select
 
             If cmbMineGasIceHarvesting.Enabled Then
@@ -22770,7 +23403,7 @@ Leave:
             ' Gas, look for venture ship and implant
 
             Select Case cmbMineShipType.Text
-                Case Prospect, Venture
+                Case Prospect, Venture, Endurance
                     ' 5% reduction to gas cloud harvesting duration per level
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))
             End Select

@@ -70,7 +70,7 @@
 
         If ListType.Contains("Invention") Then
             ' Finally add the cost per bp
-            MatList = lstMats.Items.Add("Total Invention Cost for " & CStr(UserRuns) & " Runs")
+            MatList = New ListViewItem("Total Invention Cost for " & CStr(UserRuns) & " Runs")
             ' Color this last line grey
             MatList.BackColor = Color.LightGray
             MatList.SubItems.Add("")

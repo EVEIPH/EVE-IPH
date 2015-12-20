@@ -30,6 +30,8 @@ Public Class frmAssetsViewer
     ' Where the form was loaded from
     Private WindowForm As AssetWindow
 
+    Private AnchorNode As TreeNode
+
     'Private AssetTreeTest As TriStateTreeView
 
     ' For drawing checkboxes
@@ -253,7 +255,6 @@ Public Class frmAssetsViewer
         ' Everything will be just normal at first - add to settings for the format they save? Also, check the locations they have checked only TODO-AV!
         ToggleAllOpen = False
 
-        ' Load what we have to start
         Call RefreshTree()
 
     End Sub
@@ -348,7 +349,6 @@ Public Class frmAssetsViewer
 
     ' Main function that refresh's the tree
     Public Sub RefreshTree()
-        Dim AnchorNode As New TreeNode
         Dim BaseNode As New TreeNode
         Dim SortOption As SortType
         Dim SearchItemList As List(Of Long)
@@ -942,6 +942,12 @@ Public Class frmAssetsViewer
                 .AssetType = rbtnPersonalAssets.Text
             ElseIf rbtnCorpAssets.Checked Then
                 .AssetType = rbtnCorpAssets.Text
+            End If
+
+            If rbtnAllItems.Checked Then
+                .AllItems = True
+            Else
+                .AllItems = False
             End If
 
             .AllRawMats = chkRawMaterialItems.Checked

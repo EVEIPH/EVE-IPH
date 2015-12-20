@@ -463,7 +463,20 @@ Partial Class frmMain
         Me.lblDCStanding3 = New System.Windows.Forms.Label()
         Me.btnDCRefresh = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
+        Me.gbCalcType = New System.Windows.Forms.GroupBox()
+        Me.rbtnCalcSortSVRIPH = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcSortSVR = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcShowProfitPercent = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcProfit = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcIPH = New System.Windows.Forms.RadioButton()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
+        Me.gbCalcFWUpgrade = New System.Windows.Forms.GroupBox()
+        Me.lblCalcFWInventionUpgradeLevel = New System.Windows.Forms.Label()
+        Me.cmbCalcFWInventionUpgradeLevel = New System.Windows.Forms.ComboBox()
+        Me.lblCalcFWCopyUpgradeLevel = New System.Windows.Forms.Label()
+        Me.cmbCalcFWCopyUpgradeLevel = New System.Windows.Forms.ComboBox()
+        Me.lblCalcFWManufUpgradeLevel = New System.Windows.Forms.Label()
+        Me.cmbCalcFWManufUpgradeLevel = New System.Windows.Forms.ComboBox()
         Me.gbCalcIgnoreinCalcs = New System.Windows.Forms.GroupBox()
         Me.chkCalcIgnoreMinerals = New System.Windows.Forms.CheckBox()
         Me.chkCalcIgnoreT1Item = New System.Windows.Forms.CheckBox()
@@ -755,12 +768,6 @@ Partial Class frmMain
         Me.chkCalcT3 = New System.Windows.Forms.CheckBox()
         Me.chkCalcT2 = New System.Windows.Forms.CheckBox()
         Me.chkCalcT1 = New System.Windows.Forms.CheckBox()
-        Me.gbCalcType = New System.Windows.Forms.GroupBox()
-        Me.rbtnCalcSortSVRIPH = New System.Windows.Forms.RadioButton()
-        Me.rbtnCalcSortSVR = New System.Windows.Forms.RadioButton()
-        Me.rbtnCalcShowProfitPercent = New System.Windows.Forms.RadioButton()
-        Me.rbtnCalcProfit = New System.Windows.Forms.RadioButton()
-        Me.rbtnCalcIPH = New System.Windows.Forms.RadioButton()
         Me.gbCalcIncludeOwned = New System.Windows.Forms.GroupBox()
         Me.chkCalcIncludeT3Owned = New System.Windows.Forms.CheckBox()
         Me.chkCalcIncludeT2Owned = New System.Windows.Forms.CheckBox()
@@ -840,7 +847,6 @@ Partial Class frmMain
         Me.chkSystems5 = New System.Windows.Forms.CheckBox()
         Me.chkSystems3 = New System.Windows.Forms.CheckBox()
         Me.chkSystems1 = New System.Windows.Forms.CheckBox()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.chkSplitPrices = New System.Windows.Forms.CheckBox()
         Me.gbSplitPrices = New System.Windows.Forms.GroupBox()
@@ -1023,9 +1029,8 @@ Partial Class frmMain
         Me.rbtnBPShipBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPDeployableBlueprints = New System.Windows.Forms.RadioButton()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
-        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
-        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
+        Me.txtBPMarketPriceEdit = New System.Windows.Forms.TextBox()
         Me.lblBPProductionTime = New System.Windows.Forms.Label()
         Me.lblBPTotalUnits = New System.Windows.Forms.Label()
         Me.lblBPTaxes = New System.Windows.Forms.Label()
@@ -1081,6 +1086,19 @@ Partial Class frmMain
         Me.chkBPFacilityIncludeUsage = New System.Windows.Forms.CheckBox()
         Me.lblBPFacilityManualME = New System.Windows.Forms.Label()
         Me.lblBPFacilityBonus = New System.Windows.Forms.Label()
+        Me.tabBPOptions = New System.Windows.Forms.TabPage()
+        Me.gbBPManualSystemCostIndex = New System.Windows.Forms.GroupBox()
+        Me.lblBPFWUpgrade = New System.Windows.Forms.Label()
+        Me.cmbBPFWUpgrade = New System.Windows.Forms.ComboBox()
+        Me.lblBPFacilitySystemName = New System.Windows.Forms.Label()
+        Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
+        Me.lblBPSystemCostIndexManual = New System.Windows.Forms.Label()
+        Me.txtBPUpdateCostIndex = New System.Windows.Forms.TextBox()
+        Me.cmbBPUpdateCostIndexActivity = New System.Windows.Forms.ComboBox()
+        Me.gbBPIgnoreinCalcs = New System.Windows.Forms.GroupBox()
+        Me.chkBPIgnoreMinerals = New System.Windows.Forms.CheckBox()
+        Me.chkBPIgnoreT1Item = New System.Windows.Forms.CheckBox()
+        Me.chkBPIgnoreInvention = New System.Windows.Forms.CheckBox()
         Me.tabT3Calcs = New System.Windows.Forms.TabPage()
         Me.lblBPT3Decryptor = New System.Windows.Forms.Label()
         Me.cmbBPT3Decryptor = New System.Windows.Forms.ComboBox()
@@ -1096,17 +1114,6 @@ Partial Class frmMain
         Me.lblT3InventStatus = New System.Windows.Forms.Label()
         Me.chkBPIncludeT3Time = New System.Windows.Forms.CheckBox()
         Me.chkBPIncludeT3Costs = New System.Windows.Forms.CheckBox()
-        Me.tabBPOptions = New System.Windows.Forms.TabPage()
-        Me.gbBPManualSystemCostIndex = New System.Windows.Forms.GroupBox()
-        Me.lblBPFacilitySystemName = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.txtBPUpdateCostIndex = New System.Windows.Forms.TextBox()
-        Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
-        Me.cmbBPUpdateCostIndexActivity = New System.Windows.Forms.ComboBox()
-        Me.gbBPIgnoreinCalcs = New System.Windows.Forms.GroupBox()
-        Me.chkBPIgnoreMinerals = New System.Windows.Forms.CheckBox()
-        Me.chkBPIgnoreT1Item = New System.Windows.Forms.CheckBox()
-        Me.chkBPIgnoreInvention = New System.Windows.Forms.CheckBox()
         Me.tabInventionCalcs = New System.Windows.Forms.TabPage()
         Me.lblBPCopyTime = New System.Windows.Forms.Label()
         Me.lblBPT2InventStatus = New System.Windows.Forms.Label()
@@ -1170,7 +1177,6 @@ Partial Class frmMain
         Me.cmbBPBlueprintSelection = New System.Windows.Forms.ComboBox()
         Me.tabMain = New System.Windows.Forms.TabControl()
         Me.tabPI = New System.Windows.Forms.TabPage()
-        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
         Me.chkPILava = New System.Windows.Forms.CheckBox()
@@ -1182,6 +1188,10 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
+        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
@@ -1238,7 +1248,9 @@ Partial Class frmMain
         Me.gbDCCorpsCaldari.SuspendLayout
         Me.gbDCCorpsGallente.SuspendLayout
         Me.tabManufacturing.SuspendLayout
+        Me.gbCalcType.SuspendLayout
         Me.gbCalcBPSelectOptions.SuspendLayout
+        Me.gbCalcFWUpgrade.SuspendLayout
         Me.gbCalcIgnoreinCalcs.SuspendLayout
         Me.gbIncludeTaxesFees.SuspendLayout
         Me.gbCalcIncludeNoTeam.SuspendLayout
@@ -1263,7 +1275,6 @@ Partial Class frmMain
         Me.tabCalcFacilityNoPOS.SuspendLayout
         Me.gbCalcFilter.SuspendLayout
         Me.gbCalcBPTech.SuspendLayout
-        Me.gbCalcType.SuspendLayout
         Me.gbCalcIncludeOwned.SuspendLayout
         Me.gbCalcAvgPrice.SuspendLayout
         Me.gbCalcTextFilter.SuspendLayout
@@ -1295,10 +1306,10 @@ Partial Class frmMain
         Me.gbBPMEPEImage.SuspendLayout
         Me.tabBPInventionEquip.SuspendLayout
         Me.tabFacility.SuspendLayout
-        Me.tabT3Calcs.SuspendLayout
         Me.tabBPOptions.SuspendLayout
         Me.gbBPManualSystemCostIndex.SuspendLayout
         Me.gbBPIgnoreinCalcs.SuspendLayout
+        Me.tabT3Calcs.SuspendLayout
         Me.tabInventionCalcs.SuspendLayout
         CType(Me.pictBP,System.ComponentModel.ISupportInitialize).BeginInit
         Me.gbBPTeam.SuspendLayout
@@ -5499,6 +5510,7 @@ Partial Class frmMain
         '
         'tabManufacturing
         '
+        Me.tabManufacturing.Controls.Add(Me.gbCalcType)
         Me.tabManufacturing.Controls.Add(Me.gbCalcBPSelectOptions)
         Me.tabManufacturing.Controls.Add(Me.lstManufacturing)
         Me.tabManufacturing.Location = New System.Drawing.Point(4, 22)
@@ -5508,8 +5520,74 @@ Partial Class frmMain
         Me.tabManufacturing.Text = "Manufacturing List"
         Me.tabManufacturing.UseVisualStyleBackColor = true
         '
+        'gbCalcType
+        '
+        Me.gbCalcType.Controls.Add(Me.rbtnCalcSortSVRIPH)
+        Me.gbCalcType.Controls.Add(Me.rbtnCalcSortSVR)
+        Me.gbCalcType.Controls.Add(Me.rbtnCalcShowProfitPercent)
+        Me.gbCalcType.Controls.Add(Me.rbtnCalcProfit)
+        Me.gbCalcType.Controls.Add(Me.rbtnCalcIPH)
+        Me.gbCalcType.Location = New System.Drawing.Point(798, 248)
+        Me.gbCalcType.Name = "gbCalcType"
+        Me.gbCalcType.Size = New System.Drawing.Size(96, 26)
+        Me.gbCalcType.TabIndex = 19
+        Me.gbCalcType.TabStop = false
+        Me.gbCalcType.Text = "Sort By:"
+        Me.gbCalcType.Visible = false
+        '
+        'rbtnCalcSortSVRIPH
+        '
+        Me.rbtnCalcSortSVRIPH.AutoSize = true
+        Me.rbtnCalcSortSVRIPH.Location = New System.Drawing.Point(10, 86)
+        Me.rbtnCalcSortSVRIPH.Name = "rbtnCalcSortSVRIPH"
+        Me.rbtnCalcSortSVRIPH.Size = New System.Drawing.Size(75, 17)
+        Me.rbtnCalcSortSVRIPH.TabIndex = 4
+        Me.rbtnCalcSortSVRIPH.Text = "SVR * IPH"
+        Me.rbtnCalcSortSVRIPH.UseVisualStyleBackColor = true
+        '
+        'rbtnCalcSortSVR
+        '
+        Me.rbtnCalcSortSVR.AutoSize = true
+        Me.rbtnCalcSortSVR.Location = New System.Drawing.Point(10, 68)
+        Me.rbtnCalcSortSVR.Name = "rbtnCalcSortSVR"
+        Me.rbtnCalcSortSVR.Size = New System.Drawing.Size(47, 17)
+        Me.rbtnCalcSortSVR.TabIndex = 3
+        Me.rbtnCalcSortSVR.Text = "SVR"
+        Me.rbtnCalcSortSVR.UseVisualStyleBackColor = true
+        '
+        'rbtnCalcShowProfitPercent
+        '
+        Me.rbtnCalcShowProfitPercent.AutoSize = true
+        Me.rbtnCalcShowProfitPercent.Location = New System.Drawing.Point(10, 50)
+        Me.rbtnCalcShowProfitPercent.Name = "rbtnCalcShowProfitPercent"
+        Me.rbtnCalcShowProfitPercent.Size = New System.Drawing.Size(60, 17)
+        Me.rbtnCalcShowProfitPercent.TabIndex = 2
+        Me.rbtnCalcShowProfitPercent.Text = "Profit %"
+        Me.rbtnCalcShowProfitPercent.UseVisualStyleBackColor = true
+        '
+        'rbtnCalcProfit
+        '
+        Me.rbtnCalcProfit.AutoSize = true
+        Me.rbtnCalcProfit.Location = New System.Drawing.Point(10, 32)
+        Me.rbtnCalcProfit.Name = "rbtnCalcProfit"
+        Me.rbtnCalcProfit.Size = New System.Drawing.Size(49, 17)
+        Me.rbtnCalcProfit.TabIndex = 1
+        Me.rbtnCalcProfit.Text = "Profit"
+        Me.rbtnCalcProfit.UseVisualStyleBackColor = true
+        '
+        'rbtnCalcIPH
+        '
+        Me.rbtnCalcIPH.AutoSize = true
+        Me.rbtnCalcIPH.Location = New System.Drawing.Point(10, 14)
+        Me.rbtnCalcIPH.Name = "rbtnCalcIPH"
+        Me.rbtnCalcIPH.Size = New System.Drawing.Size(43, 17)
+        Me.rbtnCalcIPH.TabIndex = 0
+        Me.rbtnCalcIPH.Text = "IPH"
+        Me.rbtnCalcIPH.UseVisualStyleBackColor = true
+        '
         'gbCalcBPSelectOptions
         '
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcFWUpgrade)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbIncludeTaxesFees)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIncludeNoTeam)
@@ -5524,7 +5602,6 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.Controls.Add(Me.tabCalcFacilities)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcFilter)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcBPTech)
-        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcType)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIncludeOwned)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcAvgPrice)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcSaveSettings)
@@ -5544,6 +5621,78 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabIndex = 0
         Me.gbCalcBPSelectOptions.TabStop = false
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
+        '
+        'gbCalcFWUpgrade
+        '
+        Me.gbCalcFWUpgrade.Controls.Add(Me.lblCalcFWInventionUpgradeLevel)
+        Me.gbCalcFWUpgrade.Controls.Add(Me.cmbCalcFWInventionUpgradeLevel)
+        Me.gbCalcFWUpgrade.Controls.Add(Me.lblCalcFWCopyUpgradeLevel)
+        Me.gbCalcFWUpgrade.Controls.Add(Me.cmbCalcFWCopyUpgradeLevel)
+        Me.gbCalcFWUpgrade.Controls.Add(Me.lblCalcFWManufUpgradeLevel)
+        Me.gbCalcFWUpgrade.Controls.Add(Me.cmbCalcFWManufUpgradeLevel)
+        Me.gbCalcFWUpgrade.Location = New System.Drawing.Point(1019, 199)
+        Me.gbCalcFWUpgrade.Name = "gbCalcFWUpgrade"
+        Me.gbCalcFWUpgrade.Size = New System.Drawing.Size(96, 95)
+        Me.gbCalcFWUpgrade.TabIndex = 26
+        Me.gbCalcFWUpgrade.TabStop = false
+        Me.gbCalcFWUpgrade.Text = "FW Upgrade:"
+        '
+        'lblCalcFWInventionUpgradeLevel
+        '
+        Me.lblCalcFWInventionUpgradeLevel.AutoSize = true
+        Me.lblCalcFWInventionUpgradeLevel.Location = New System.Drawing.Point(3, 72)
+        Me.lblCalcFWInventionUpgradeLevel.Name = "lblCalcFWInventionUpgradeLevel"
+        Me.lblCalcFWInventionUpgradeLevel.Size = New System.Drawing.Size(51, 13)
+        Me.lblCalcFWInventionUpgradeLevel.TabIndex = 9
+        Me.lblCalcFWInventionUpgradeLevel.Text = "Invention"
+        '
+        'cmbCalcFWInventionUpgradeLevel
+        '
+        Me.cmbCalcFWInventionUpgradeLevel.FormattingEnabled = true
+        Me.cmbCalcFWInventionUpgradeLevel.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbCalcFWInventionUpgradeLevel.Location = New System.Drawing.Point(59, 68)
+        Me.cmbCalcFWInventionUpgradeLevel.Name = "cmbCalcFWInventionUpgradeLevel"
+        Me.cmbCalcFWInventionUpgradeLevel.Size = New System.Drawing.Size(31, 21)
+        Me.cmbCalcFWInventionUpgradeLevel.TabIndex = 8
+        Me.cmbCalcFWInventionUpgradeLevel.Text = "5"
+        '
+        'lblCalcFWCopyUpgradeLevel
+        '
+        Me.lblCalcFWCopyUpgradeLevel.AutoSize = true
+        Me.lblCalcFWCopyUpgradeLevel.Location = New System.Drawing.Point(3, 48)
+        Me.lblCalcFWCopyUpgradeLevel.Name = "lblCalcFWCopyUpgradeLevel"
+        Me.lblCalcFWCopyUpgradeLevel.Size = New System.Drawing.Size(45, 13)
+        Me.lblCalcFWCopyUpgradeLevel.TabIndex = 7
+        Me.lblCalcFWCopyUpgradeLevel.Text = "Copying"
+        '
+        'cmbCalcFWCopyUpgradeLevel
+        '
+        Me.cmbCalcFWCopyUpgradeLevel.FormattingEnabled = True
+        Me.cmbCalcFWCopyUpgradeLevel.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbCalcFWCopyUpgradeLevel.Location = New System.Drawing.Point(59, 44)
+        Me.cmbCalcFWCopyUpgradeLevel.Name = "cmbCalcFWCopyUpgradeLevel"
+        Me.cmbCalcFWCopyUpgradeLevel.Size = New System.Drawing.Size(31, 21)
+        Me.cmbCalcFWCopyUpgradeLevel.TabIndex = 6
+        Me.cmbCalcFWCopyUpgradeLevel.Text = "5"
+        '
+        'lblCalcFWManufUpgradeLevel
+        '
+        Me.lblCalcFWManufUpgradeLevel.AutoSize = true
+        Me.lblCalcFWManufUpgradeLevel.Location = New System.Drawing.Point(3, 23)
+        Me.lblCalcFWManufUpgradeLevel.Name = "lblCalcFWManufUpgradeLevel"
+        Me.lblCalcFWManufUpgradeLevel.Size = New System.Drawing.Size(40, 13)
+        Me.lblCalcFWManufUpgradeLevel.TabIndex = 5
+        Me.lblCalcFWManufUpgradeLevel.Text = "Manuf."
+        '
+        'cmbCalcFWManufUpgradeLevel
+        '
+        Me.cmbCalcFWManufUpgradeLevel.FormattingEnabled = true
+        Me.cmbCalcFWManufUpgradeLevel.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbCalcFWManufUpgradeLevel.Location = New System.Drawing.Point(59, 20)
+        Me.cmbCalcFWManufUpgradeLevel.Name = "cmbCalcFWManufUpgradeLevel"
+        Me.cmbCalcFWManufUpgradeLevel.Size = New System.Drawing.Size(31, 21)
+        Me.cmbCalcFWManufUpgradeLevel.TabIndex = 4
+        Me.cmbCalcFWManufUpgradeLevel.Text = "5"
         '
         'gbCalcIgnoreinCalcs
         '
@@ -5720,9 +5869,9 @@ Partial Class frmMain
         '
         'btnCalcSelectColumns
         '
-        Me.btnCalcSelectColumns.Location = New System.Drawing.Point(1019, 211)
+        Me.btnCalcSelectColumns.Location = New System.Drawing.Point(1019, 107)
         Me.btnCalcSelectColumns.Name = "btnCalcSelectColumns"
-        Me.btnCalcSelectColumns.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalcSelectColumns.Size = New System.Drawing.Size(96, 29)
         Me.btnCalcSelectColumns.TabIndex = 23
         Me.btnCalcSelectColumns.Text = "Select Columns"
         Me.btnCalcSelectColumns.UseVisualStyleBackColor = true
@@ -8743,70 +8892,6 @@ Partial Class frmMain
         Me.chkCalcT1.Text = "Tech 1"
         Me.chkCalcT1.UseVisualStyleBackColor = true
         '
-        'gbCalcType
-        '
-        Me.gbCalcType.Controls.Add(Me.rbtnCalcSortSVRIPH)
-        Me.gbCalcType.Controls.Add(Me.rbtnCalcSortSVR)
-        Me.gbCalcType.Controls.Add(Me.rbtnCalcShowProfitPercent)
-        Me.gbCalcType.Controls.Add(Me.rbtnCalcProfit)
-        Me.gbCalcType.Controls.Add(Me.rbtnCalcIPH)
-        Me.gbCalcType.Location = New System.Drawing.Point(1019, 15)
-        Me.gbCalcType.Name = "gbCalcType"
-        Me.gbCalcType.Size = New System.Drawing.Size(96, 110)
-        Me.gbCalcType.TabIndex = 19
-        Me.gbCalcType.TabStop = false
-        Me.gbCalcType.Text = "Sort By:"
-        '
-        'rbtnCalcSortSVRIPH
-        '
-        Me.rbtnCalcSortSVRIPH.AutoSize = true
-        Me.rbtnCalcSortSVRIPH.Location = New System.Drawing.Point(10, 86)
-        Me.rbtnCalcSortSVRIPH.Name = "rbtnCalcSortSVRIPH"
-        Me.rbtnCalcSortSVRIPH.Size = New System.Drawing.Size(75, 17)
-        Me.rbtnCalcSortSVRIPH.TabIndex = 4
-        Me.rbtnCalcSortSVRIPH.Text = "SVR * IPH"
-        Me.rbtnCalcSortSVRIPH.UseVisualStyleBackColor = true
-        '
-        'rbtnCalcSortSVR
-        '
-        Me.rbtnCalcSortSVR.AutoSize = true
-        Me.rbtnCalcSortSVR.Location = New System.Drawing.Point(10, 68)
-        Me.rbtnCalcSortSVR.Name = "rbtnCalcSortSVR"
-        Me.rbtnCalcSortSVR.Size = New System.Drawing.Size(47, 17)
-        Me.rbtnCalcSortSVR.TabIndex = 3
-        Me.rbtnCalcSortSVR.Text = "SVR"
-        Me.rbtnCalcSortSVR.UseVisualStyleBackColor = true
-        '
-        'rbtnCalcShowProfitPercent
-        '
-        Me.rbtnCalcShowProfitPercent.AutoSize = true
-        Me.rbtnCalcShowProfitPercent.Location = New System.Drawing.Point(10, 50)
-        Me.rbtnCalcShowProfitPercent.Name = "rbtnCalcShowProfitPercent"
-        Me.rbtnCalcShowProfitPercent.Size = New System.Drawing.Size(60, 17)
-        Me.rbtnCalcShowProfitPercent.TabIndex = 2
-        Me.rbtnCalcShowProfitPercent.Text = "Profit %"
-        Me.rbtnCalcShowProfitPercent.UseVisualStyleBackColor = true
-        '
-        'rbtnCalcProfit
-        '
-        Me.rbtnCalcProfit.AutoSize = true
-        Me.rbtnCalcProfit.Location = New System.Drawing.Point(10, 32)
-        Me.rbtnCalcProfit.Name = "rbtnCalcProfit"
-        Me.rbtnCalcProfit.Size = New System.Drawing.Size(49, 17)
-        Me.rbtnCalcProfit.TabIndex = 1
-        Me.rbtnCalcProfit.Text = "Profit"
-        Me.rbtnCalcProfit.UseVisualStyleBackColor = true
-        '
-        'rbtnCalcIPH
-        '
-        Me.rbtnCalcIPH.AutoSize = true
-        Me.rbtnCalcIPH.Location = New System.Drawing.Point(10, 14)
-        Me.rbtnCalcIPH.Name = "rbtnCalcIPH"
-        Me.rbtnCalcIPH.Size = New System.Drawing.Size(43, 17)
-        Me.rbtnCalcIPH.TabIndex = 0
-        Me.rbtnCalcIPH.Text = "IPH"
-        Me.rbtnCalcIPH.UseVisualStyleBackColor = true
-        '
         'gbCalcIncludeOwned
         '
         Me.gbCalcIncludeOwned.Controls.Add(Me.chkCalcIncludeT3Owned)
@@ -8920,45 +9005,45 @@ Partial Class frmMain
         '
         'btnCalcSaveSettings
         '
-        Me.btnCalcSaveSettings.Location = New System.Drawing.Point(1019, 239)
+        Me.btnCalcSaveSettings.Location = New System.Drawing.Point(1019, 136)
         Me.btnCalcSaveSettings.Name = "btnCalcSaveSettings"
-        Me.btnCalcSaveSettings.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalcSaveSettings.Size = New System.Drawing.Size(96, 29)
         Me.btnCalcSaveSettings.TabIndex = 24
         Me.btnCalcSaveSettings.Text = "Save Settings"
         Me.btnCalcSaveSettings.UseVisualStyleBackColor = true
         '
         'btnCalcExportList
         '
-        Me.btnCalcExportList.Location = New System.Drawing.Point(1019, 267)
+        Me.btnCalcExportList.Location = New System.Drawing.Point(1019, 165)
         Me.btnCalcExportList.Name = "btnCalcExportList"
-        Me.btnCalcExportList.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalcExportList.Size = New System.Drawing.Size(96, 29)
         Me.btnCalcExportList.TabIndex = 25
         Me.btnCalcExportList.Text = "Export Table"
         Me.btnCalcExportList.UseVisualStyleBackColor = true
         '
         'btnCalcPreview
         '
-        Me.btnCalcPreview.Location = New System.Drawing.Point(1019, 127)
+        Me.btnCalcPreview.Location = New System.Drawing.Point(1019, 20)
         Me.btnCalcPreview.Name = "btnCalcPreview"
-        Me.btnCalcPreview.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalcPreview.Size = New System.Drawing.Size(96, 29)
         Me.btnCalcPreview.TabIndex = 20
         Me.btnCalcPreview.Text = "Preview Item List"
         Me.btnCalcPreview.UseVisualStyleBackColor = true
         '
         'btnCalculate
         '
-        Me.btnCalculate.Location = New System.Drawing.Point(1019, 155)
+        Me.btnCalculate.Location = New System.Drawing.Point(1019, 49)
         Me.btnCalculate.Name = "btnCalculate"
-        Me.btnCalculate.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalculate.Size = New System.Drawing.Size(96, 29)
         Me.btnCalculate.TabIndex = 21
         Me.btnCalculate.Text = "Calculate"
         Me.btnCalculate.UseVisualStyleBackColor = true
         '
         'btnCalcReset
         '
-        Me.btnCalcReset.Location = New System.Drawing.Point(1019, 183)
+        Me.btnCalcReset.Location = New System.Drawing.Point(1019, 78)
         Me.btnCalcReset.Name = "btnCalcReset"
-        Me.btnCalcReset.Size = New System.Drawing.Size(96, 27)
+        Me.btnCalcReset.Size = New System.Drawing.Size(96, 29)
         Me.btnCalcReset.TabIndex = 22
         Me.btnCalcReset.Text = "Reset"
         Me.btnCalcReset.UseVisualStyleBackColor = true
@@ -9632,19 +9717,6 @@ Partial Class frmMain
         Me.chkSystems1.TabIndex = 0
         Me.chkSystems1.Text = "Jita"
         Me.chkSystems1.UseVisualStyleBackColor = true
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = true
-        Me.lstPricesView.GridLines = true
-        Me.lstPricesView.HideSelection = false
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = false
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = false
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
         'txtPriceItemFilter
         '
@@ -11657,37 +11729,10 @@ Partial Class frmMain
         Me.lblBPSelectBlueprint.TabIndex = 0
         Me.lblBPSelectBlueprint.Text = "Selected Blueprint"
         '
-        'lstBPComponentMats
-        '
-        Me.lstBPComponentMats.FullRowSelect = true
-        Me.lstBPComponentMats.GridLines = true
-        Me.lstBPComponentMats.HideSelection = false
-        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
-        Me.lstBPComponentMats.MultiSelect = false
-        Me.lstBPComponentMats.Name = "lstBPComponentMats"
-        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPComponentMats.TabIndex = 35
-        Me.lstBPComponentMats.TabStop = false
-        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
-        '
-        'lstBPRawMats
-        '
-        Me.lstBPRawMats.FullRowSelect = true
-        Me.lstBPRawMats.GridLines = true
-        Me.lstBPRawMats.HideSelection = false
-        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
-        Me.lstBPRawMats.MultiSelect = false
-        Me.lstBPRawMats.Name = "lstBPRawMats"
-        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPRawMats.TabIndex = 34
-        Me.lstBPRawMats.TabStop = false
-        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
-        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
-        '
         'gbBPInventionStats
         '
         Me.gbBPInventionStats.BackColor = System.Drawing.Color.Transparent
+        Me.gbBPInventionStats.Controls.Add(Me.txtBPMarketPriceEdit)
         Me.gbBPInventionStats.Controls.Add(Me.lblBPProductionTime)
         Me.gbBPInventionStats.Controls.Add(Me.lblBPTotalUnits)
         Me.gbBPInventionStats.Controls.Add(Me.lblBPTaxes)
@@ -11722,6 +11767,16 @@ Partial Class frmMain
         Me.gbBPInventionStats.Size = New System.Drawing.Size(278, 224)
         Me.gbBPInventionStats.TabIndex = 17
         Me.gbBPInventionStats.TabStop = false
+        '
+        'txtBPMarketPriceEdit
+        '
+        Me.txtBPMarketPriceEdit.Location = New System.Drawing.Point(53, 97)
+        Me.txtBPMarketPriceEdit.Name = "txtBPMarketPriceEdit"
+        Me.txtBPMarketPriceEdit.Size = New System.Drawing.Size(131, 20)
+        Me.txtBPMarketPriceEdit.TabIndex = 60
+        Me.txtBPMarketPriceEdit.TabStop = false
+        Me.txtBPMarketPriceEdit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtBPMarketPriceEdit.Visible = false
         '
         'lblBPProductionTime
         '
@@ -12070,8 +12125,8 @@ Partial Class frmMain
         '
         Me.tabBPInventionEquip.Alignment = System.Windows.Forms.TabAlignment.Right
         Me.tabBPInventionEquip.Controls.Add(Me.tabFacility)
-        Me.tabBPInventionEquip.Controls.Add(Me.tabT3Calcs)
         Me.tabBPInventionEquip.Controls.Add(Me.tabBPOptions)
+        Me.tabBPInventionEquip.Controls.Add(Me.tabT3Calcs)
         Me.tabBPInventionEquip.Controls.Add(Me.tabInventionCalcs)
         Me.tabBPInventionEquip.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
         Me.tabBPInventionEquip.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
@@ -12120,7 +12175,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualTax
         '
-        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(181, 108)
+        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(181, 111)
         Me.txtBPFacilityManualTax.MaxLength = 5
         Me.txtBPFacilityManualTax.Name = "txtBPFacilityManualTax"
         Me.txtBPFacilityManualTax.Size = New System.Drawing.Size(35, 20)
@@ -12132,7 +12187,7 @@ Partial Class frmMain
         'lblBPFacilityManualTax
         '
         Me.lblBPFacilityManualTax.AutoSize = true
-        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(152, 111)
+        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(152, 114)
         Me.lblBPFacilityManualTax.Name = "lblBPFacilityManualTax"
         Me.lblBPFacilityManualTax.Size = New System.Drawing.Size(28, 13)
         Me.lblBPFacilityManualTax.TabIndex = 18
@@ -12183,7 +12238,7 @@ Partial Class frmMain
         'btnBPFacilitySave
         '
         Me.btnBPFacilitySave.Enabled = false
-        Me.btnBPFacilitySave.Location = New System.Drawing.Point(222, 107)
+        Me.btnBPFacilitySave.Location = New System.Drawing.Point(222, 110)
         Me.btnBPFacilitySave.Name = "btnBPFacilitySave"
         Me.btnBPFacilitySave.Size = New System.Drawing.Size(56, 22)
         Me.btnBPFacilitySave.TabIndex = 20
@@ -12193,7 +12248,7 @@ Partial Class frmMain
         'lblBPFacilityTaxRate
         '
         Me.lblBPFacilityTaxRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPFacilityTaxRate.Location = New System.Drawing.Point(158, 108)
+        Me.lblBPFacilityTaxRate.Location = New System.Drawing.Point(158, 111)
         Me.lblBPFacilityTaxRate.Name = "lblBPFacilityTaxRate"
         Me.lblBPFacilityTaxRate.Size = New System.Drawing.Size(62, 20)
         Me.lblBPFacilityTaxRate.TabIndex = 17
@@ -12203,7 +12258,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualTE
         '
-        Me.txtBPFacilityManualTE.Location = New System.Drawing.Point(100, 108)
+        Me.txtBPFacilityManualTE.Location = New System.Drawing.Point(100, 111)
         Me.txtBPFacilityManualTE.MaxLength = 5
         Me.txtBPFacilityManualTE.Name = "txtBPFacilityManualTE"
         Me.txtBPFacilityManualTE.Size = New System.Drawing.Size(35, 20)
@@ -12214,7 +12269,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualME
         '
-        Me.txtBPFacilityManualME.Location = New System.Drawing.Point(39, 108)
+        Me.txtBPFacilityManualME.Location = New System.Drawing.Point(39, 111)
         Me.txtBPFacilityManualME.MaxLength = 5
         Me.txtBPFacilityManualME.Name = "txtBPFacilityManualME"
         Me.txtBPFacilityManualME.Size = New System.Drawing.Size(35, 20)
@@ -12264,7 +12319,7 @@ Partial Class frmMain
         'lblBPFacilityManualTE
         '
         Me.lblBPFacilityManualTE.AutoSize = true
-        Me.lblBPFacilityManualTE.Location = New System.Drawing.Point(77, 111)
+        Me.lblBPFacilityManualTE.Location = New System.Drawing.Point(77, 114)
         Me.lblBPFacilityManualTE.Name = "lblBPFacilityManualTE"
         Me.lblBPFacilityManualTE.Size = New System.Drawing.Size(24, 13)
         Me.lblBPFacilityManualTE.TabIndex = 15
@@ -12305,7 +12360,7 @@ Partial Class frmMain
         'lblBPFacilityManualME
         '
         Me.lblBPFacilityManualME.AutoSize = true
-        Me.lblBPFacilityManualME.Location = New System.Drawing.Point(14, 111)
+        Me.lblBPFacilityManualME.Location = New System.Drawing.Point(14, 114)
         Me.lblBPFacilityManualME.Name = "lblBPFacilityManualME"
         Me.lblBPFacilityManualME.Size = New System.Drawing.Size(26, 13)
         Me.lblBPFacilityManualME.TabIndex = 13
@@ -12315,13 +12370,149 @@ Partial Class frmMain
         'lblBPFacilityBonus
         '
         Me.lblBPFacilityBonus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPFacilityBonus.Location = New System.Drawing.Point(6, 108)
+        Me.lblBPFacilityBonus.Location = New System.Drawing.Point(6, 111)
         Me.lblBPFacilityBonus.Name = "lblBPFacilityBonus"
         Me.lblBPFacilityBonus.Size = New System.Drawing.Size(150, 20)
         Me.lblBPFacilityBonus.TabIndex = 12
         Me.lblBPFacilityBonus.Text = " Bonus: -20% ME; -20% TE"
         Me.lblBPFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         Me.lblBPFacilityBonus.Visible = false
+        '
+        'tabBPOptions
+        '
+        Me.tabBPOptions.Controls.Add(Me.gbBPManualSystemCostIndex)
+        Me.tabBPOptions.Controls.Add(Me.gbBPIgnoreinCalcs)
+        Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
+        Me.tabBPOptions.Location = New System.Drawing.Point(4, 4)
+        Me.tabBPOptions.Name = "tabBPOptions"
+        Me.tabBPOptions.Size = New System.Drawing.Size(261, 139)
+        Me.tabBPOptions.TabIndex = 3
+        Me.tabBPOptions.Text = "Options"
+        Me.tabBPOptions.UseVisualStyleBackColor = true
+        '
+        'gbBPManualSystemCostIndex
+        '
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPFWUpgrade)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.cmbBPFWUpgrade)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPFacilitySystemName)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.btnBPUpdateCostIndex)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPSystemCostIndexManual)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.txtBPUpdateCostIndex)
+        Me.gbBPManualSystemCostIndex.Controls.Add(Me.cmbBPUpdateCostIndexActivity)
+        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(6, 40)
+        Me.gbBPManualSystemCostIndex.Name = "gbBPManualSystemCostIndex"
+        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(241, 96)
+        Me.gbBPManualSystemCostIndex.TabIndex = 23
+        Me.gbBPManualSystemCostIndex.TabStop = false
+        Me.gbBPManualSystemCostIndex.Text = "Update System Data:"
+        '
+        'lblBPFWUpgrade
+        '
+        Me.lblBPFWUpgrade.AutoSize = true
+        Me.lblBPFWUpgrade.Location = New System.Drawing.Point(6, 56)
+        Me.lblBPFWUpgrade.Name = "lblBPFWUpgrade"
+        Me.lblBPFWUpgrade.Size = New System.Drawing.Size(105, 13)
+        Me.lblBPFWUpgrade.TabIndex = 28
+        Me.lblBPFWUpgrade.Text = "FW System Upgrade"
+        '
+        'cmbBPFWUpgrade
+        '
+        Me.cmbBPFWUpgrade.FormattingEnabled = true
+        Me.cmbBPFWUpgrade.Items.AddRange(New Object() {"None", "Level 1", "Level 2", "Level 3", "Level 4", "Level 5"})
+        Me.cmbBPFWUpgrade.Location = New System.Drawing.Point(9, 70)
+        Me.cmbBPFWUpgrade.Name = "cmbBPFWUpgrade"
+        Me.cmbBPFWUpgrade.Size = New System.Drawing.Size(106, 21)
+        Me.cmbBPFWUpgrade.TabIndex = 4
+        Me.cmbBPFWUpgrade.Text = "Level 5"
+        '
+        'lblBPFacilitySystemName
+        '
+        Me.lblBPFacilitySystemName.Location = New System.Drawing.Point(8, 12)
+        Me.lblBPFacilitySystemName.Name = "lblBPFacilitySystemName"
+        Me.lblBPFacilitySystemName.Size = New System.Drawing.Size(227, 19)
+        Me.lblBPFacilitySystemName.TabIndex = 27
+        Me.lblBPFacilitySystemName.Text = "System Name"
+        Me.lblBPFacilitySystemName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'btnBPUpdateCostIndex
+        '
+        Me.btnBPUpdateCostIndex.Enabled = false
+        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(124, 64)
+        Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
+        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(111, 28)
+        Me.btnBPUpdateCostIndex.TabIndex = 21
+        Me.btnBPUpdateCostIndex.Text = "Update System"
+        Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = true
+        '
+        'lblBPSystemCostIndexManual
+        '
+        Me.lblBPSystemCostIndexManual.Location = New System.Drawing.Point(121, 31)
+        Me.lblBPSystemCostIndexManual.Name = "lblBPSystemCostIndexManual"
+        Me.lblBPSystemCostIndexManual.Size = New System.Drawing.Size(61, 35)
+        Me.lblBPSystemCostIndexManual.TabIndex = 26
+        Me.lblBPSystemCostIndexManual.Text = "System Cost Index:"
+        '
+        'txtBPUpdateCostIndex
+        '
+        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(182, 35)
+        Me.txtBPUpdateCostIndex.MaxLength = 6
+        Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
+        Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(52, 20)
+        Me.txtBPUpdateCostIndex.TabIndex = 22
+        Me.txtBPUpdateCostIndex.Text = "0.00 %"
+        Me.txtBPUpdateCostIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'cmbBPUpdateCostIndexActivity
+        '
+        Me.cmbBPUpdateCostIndexActivity.FormattingEnabled = true
+        Me.cmbBPUpdateCostIndexActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
+        Me.cmbBPUpdateCostIndexActivity.Location = New System.Drawing.Point(9, 34)
+        Me.cmbBPUpdateCostIndexActivity.Name = "cmbBPUpdateCostIndexActivity"
+        Me.cmbBPUpdateCostIndexActivity.Size = New System.Drawing.Size(106, 21)
+        Me.cmbBPUpdateCostIndexActivity.TabIndex = 25
+        Me.cmbBPUpdateCostIndexActivity.Text = "Select Activity"
+        '
+        'gbBPIgnoreinCalcs
+        '
+        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreMinerals)
+        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
+        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreInvention)
+        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(6, 5)
+        Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
+        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(241, 35)
+        Me.gbBPIgnoreinCalcs.TabIndex = 20
+        Me.gbBPIgnoreinCalcs.TabStop = false
+        Me.gbBPIgnoreinCalcs.Text = "Ignore in Calculations:"
+        '
+        'chkBPIgnoreMinerals
+        '
+        Me.chkBPIgnoreMinerals.AutoSize = true
+        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(85, 15)
+        Me.chkBPIgnoreMinerals.Name = "chkBPIgnoreMinerals"
+        Me.chkBPIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
+        Me.chkBPIgnoreMinerals.TabIndex = 1
+        Me.chkBPIgnoreMinerals.Text = "Minerals"
+        Me.chkBPIgnoreMinerals.UseVisualStyleBackColor = true
+        '
+        'chkBPIgnoreT1Item
+        '
+        Me.chkBPIgnoreT1Item.AutoSize = true
+        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(156, 15)
+        Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
+        Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
+        Me.chkBPIgnoreT1Item.TabIndex = 2
+        Me.chkBPIgnoreT1Item.Text = "T1 Item"
+        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = true
+        '
+        'chkBPIgnoreInvention
+        '
+        Me.chkBPIgnoreInvention.AutoSize = true
+        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(9, 15)
+        Me.chkBPIgnoreInvention.Name = "chkBPIgnoreInvention"
+        Me.chkBPIgnoreInvention.Size = New System.Drawing.Size(70, 17)
+        Me.chkBPIgnoreInvention.TabIndex = 0
+        Me.chkBPIgnoreInvention.Text = "Invention"
+        Me.chkBPIgnoreInvention.UseVisualStyleBackColor = true
         '
         'tabT3Calcs
         '
@@ -12474,122 +12665,6 @@ Partial Class frmMain
         Me.chkBPIncludeT3Costs.TabIndex = 47
         Me.chkBPIncludeT3Costs.Text = "Invention Costs:"
         Me.chkBPIncludeT3Costs.UseVisualStyleBackColor = true
-        '
-        'tabBPOptions
-        '
-        Me.tabBPOptions.Controls.Add(Me.gbBPManualSystemCostIndex)
-        Me.tabBPOptions.Controls.Add(Me.gbBPIgnoreinCalcs)
-        Me.tabBPOptions.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0,Byte))
-        Me.tabBPOptions.Location = New System.Drawing.Point(4, 4)
-        Me.tabBPOptions.Name = "tabBPOptions"
-        Me.tabBPOptions.Size = New System.Drawing.Size(261, 139)
-        Me.tabBPOptions.TabIndex = 3
-        Me.tabBPOptions.Text = "Options"
-        Me.tabBPOptions.UseVisualStyleBackColor = true
-        '
-        'gbBPManualSystemCostIndex
-        '
-        Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPFacilitySystemName)
-        Me.gbBPManualSystemCostIndex.Controls.Add(Me.Label2)
-        Me.gbBPManualSystemCostIndex.Controls.Add(Me.txtBPUpdateCostIndex)
-        Me.gbBPManualSystemCostIndex.Controls.Add(Me.btnBPUpdateCostIndex)
-        Me.gbBPManualSystemCostIndex.Controls.Add(Me.cmbBPUpdateCostIndexActivity)
-        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(140, 7)
-        Me.gbBPManualSystemCostIndex.Name = "gbBPManualSystemCostIndex"
-        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(112, 129)
-        Me.gbBPManualSystemCostIndex.TabIndex = 23
-        Me.gbBPManualSystemCostIndex.TabStop = false
-        Me.gbBPManualSystemCostIndex.Text = "Update Cost Index:"
-        '
-        'lblBPFacilitySystemName
-        '
-        Me.lblBPFacilitySystemName.Location = New System.Drawing.Point(11, 14)
-        Me.lblBPFacilitySystemName.Name = "lblBPFacilitySystemName"
-        Me.lblBPFacilitySystemName.Size = New System.Drawing.Size(94, 19)
-        Me.lblBPFacilitySystemName.TabIndex = 27
-        Me.lblBPFacilitySystemName.Text = "System Name"
-        Me.lblBPFacilitySystemName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'Label2
-        '
-        Me.Label2.AutoSize = true
-        Me.Label2.Location = New System.Drawing.Point(8, 59)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(97, 13)
-        Me.Label2.TabIndex = 26
-        Me.Label2.Text = "System Cost Index:"
-        '
-        'txtBPUpdateCostIndex
-        '
-        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(11, 73)
-        Me.txtBPUpdateCostIndex.MaxLength = 6
-        Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
-        Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(94, 20)
-        Me.txtBPUpdateCostIndex.TabIndex = 22
-        Me.txtBPUpdateCostIndex.Text = "0.00 %"
-        Me.txtBPUpdateCostIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'btnBPUpdateCostIndex
-        '
-        Me.btnBPUpdateCostIndex.Enabled = false
-        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(11, 96)
-        Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
-        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(94, 28)
-        Me.btnBPUpdateCostIndex.TabIndex = 21
-        Me.btnBPUpdateCostIndex.Text = "Update Index"
-        Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = true
-        '
-        'cmbBPUpdateCostIndexActivity
-        '
-        Me.cmbBPUpdateCostIndexActivity.FormattingEnabled = true
-        Me.cmbBPUpdateCostIndexActivity.Items.AddRange(New Object() {"Manufacturing", "Invention", "Copying", "RE"})
-        Me.cmbBPUpdateCostIndexActivity.Location = New System.Drawing.Point(11, 36)
-        Me.cmbBPUpdateCostIndexActivity.Name = "cmbBPUpdateCostIndexActivity"
-        Me.cmbBPUpdateCostIndexActivity.Size = New System.Drawing.Size(94, 21)
-        Me.cmbBPUpdateCostIndexActivity.TabIndex = 25
-        Me.cmbBPUpdateCostIndexActivity.Text = "Select Activity"
-        '
-        'gbBPIgnoreinCalcs
-        '
-        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreMinerals)
-        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
-        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreInvention)
-        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(9, 7)
-        Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
-        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(125, 76)
-        Me.gbBPIgnoreinCalcs.TabIndex = 20
-        Me.gbBPIgnoreinCalcs.TabStop = false
-        Me.gbBPIgnoreinCalcs.Text = "Ignore in Calculations:"
-        '
-        'chkBPIgnoreMinerals
-        '
-        Me.chkBPIgnoreMinerals.AutoSize = true
-        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(9, 35)
-        Me.chkBPIgnoreMinerals.Name = "chkBPIgnoreMinerals"
-        Me.chkBPIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
-        Me.chkBPIgnoreMinerals.TabIndex = 1
-        Me.chkBPIgnoreMinerals.Text = "Minerals"
-        Me.chkBPIgnoreMinerals.UseVisualStyleBackColor = true
-        '
-        'chkBPIgnoreT1Item
-        '
-        Me.chkBPIgnoreT1Item.AutoSize = true
-        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(9, 52)
-        Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
-        Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
-        Me.chkBPIgnoreT1Item.TabIndex = 2
-        Me.chkBPIgnoreT1Item.Text = "T1 Item"
-        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = true
-        '
-        'chkBPIgnoreInvention
-        '
-        Me.chkBPIgnoreInvention.AutoSize = true
-        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(9, 18)
-        Me.chkBPIgnoreInvention.Name = "chkBPIgnoreInvention"
-        Me.chkBPIgnoreInvention.Size = New System.Drawing.Size(70, 17)
-        Me.chkBPIgnoreInvention.TabIndex = 0
-        Me.chkBPIgnoreInvention.Text = "Invention"
-        Me.chkBPIgnoreInvention.UseVisualStyleBackColor = true
         '
         'tabInventionCalcs
         '
@@ -13240,20 +13315,6 @@ Partial Class frmMain
         Me.tabPI.Text = "Planetary Interaction"
         Me.tabPI.UseVisualStyleBackColor = true
         '
-        'MyListView6
-        '
-        Me.MyListView6.FullRowSelect = true
-        Me.MyListView6.GridLines = true
-        Me.MyListView6.HideSelection = false
-        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = false
-        Me.MyListView6.Name = "MyListView6"
-        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
-        Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = false
-        Me.MyListView6.UseCompatibleStateImageBehavior = false
-        Me.MyListView6.View = System.Windows.Forms.View.Details
-        '
         'btnPISaveSettings
         '
         Me.btnPISaveSettings.Location = New System.Drawing.Point(315, 47)
@@ -13368,6 +13429,61 @@ Partial Class frmMain
         Me.btnPIReset.TabIndex = 73
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = true
+        '
+        'lstBPComponentMats
+        '
+        Me.lstBPComponentMats.FullRowSelect = true
+        Me.lstBPComponentMats.GridLines = true
+        Me.lstBPComponentMats.HideSelection = false
+        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
+        Me.lstBPComponentMats.MultiSelect = false
+        Me.lstBPComponentMats.Name = "lstBPComponentMats"
+        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPComponentMats.TabIndex = 35
+        Me.lstBPComponentMats.TabStop = false
+        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
+        '
+        'lstBPRawMats
+        '
+        Me.lstBPRawMats.FullRowSelect = true
+        Me.lstBPRawMats.GridLines = true
+        Me.lstBPRawMats.HideSelection = false
+        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
+        Me.lstBPRawMats.MultiSelect = false
+        Me.lstBPRawMats.Name = "lstBPRawMats"
+        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPRawMats.TabIndex = 34
+        Me.lstBPRawMats.TabStop = false
+        Me.lstBPRawMats.UseCompatibleStateImageBehavior = false
+        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
+        '
+        'lstPricesView
+        '
+        Me.lstPricesView.FullRowSelect = true
+        Me.lstPricesView.GridLines = true
+        Me.lstPricesView.HideSelection = false
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = false
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(691, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = false
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
+        'MyListView6
+        '
+        Me.MyListView6.FullRowSelect = true
+        Me.MyListView6.GridLines = true
+        Me.MyListView6.HideSelection = false
+        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
+        Me.MyListView6.MultiSelect = false
+        Me.MyListView6.Name = "MyListView6"
+        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
+        Me.MyListView6.TabIndex = 75
+        Me.MyListView6.TabStop = false
+        Me.MyListView6.UseCompatibleStateImageBehavior = false
+        Me.MyListView6.View = System.Windows.Forms.View.Details
         '
         'MyListView5
         '
@@ -13549,7 +13665,11 @@ Partial Class frmMain
         Me.gbDCCorpsGallente.ResumeLayout(false)
         Me.gbDCCorpsGallente.PerformLayout
         Me.tabManufacturing.ResumeLayout(false)
+        Me.gbCalcType.ResumeLayout(false)
+        Me.gbCalcType.PerformLayout
         Me.gbCalcBPSelectOptions.ResumeLayout(false)
+        Me.gbCalcFWUpgrade.ResumeLayout(false)
+        Me.gbCalcFWUpgrade.PerformLayout
         Me.gbCalcIgnoreinCalcs.ResumeLayout(false)
         Me.gbCalcIgnoreinCalcs.PerformLayout
         Me.gbIncludeTaxesFees.ResumeLayout(false)
@@ -13596,8 +13716,6 @@ Partial Class frmMain
         Me.gbCalcFilter.ResumeLayout(false)
         Me.gbCalcBPTech.ResumeLayout(false)
         Me.gbCalcBPTech.PerformLayout
-        Me.gbCalcType.ResumeLayout(false)
-        Me.gbCalcType.PerformLayout
         Me.gbCalcIncludeOwned.ResumeLayout(false)
         Me.gbCalcIncludeOwned.PerformLayout
         Me.gbCalcAvgPrice.ResumeLayout(false)
@@ -13657,13 +13775,13 @@ Partial Class frmMain
         Me.tabBPInventionEquip.ResumeLayout(false)
         Me.tabFacility.ResumeLayout(false)
         Me.tabFacility.PerformLayout
-        Me.tabT3Calcs.ResumeLayout(false)
-        Me.tabT3Calcs.PerformLayout
         Me.tabBPOptions.ResumeLayout(false)
         Me.gbBPManualSystemCostIndex.ResumeLayout(false)
         Me.gbBPManualSystemCostIndex.PerformLayout
         Me.gbBPIgnoreinCalcs.ResumeLayout(false)
         Me.gbBPIgnoreinCalcs.PerformLayout
+        Me.tabT3Calcs.ResumeLayout(false)
+        Me.tabT3Calcs.PerformLayout
         Me.tabInventionCalcs.ResumeLayout(false)
         Me.tabInventionCalcs.PerformLayout
         CType(Me.pictBP,System.ComponentModel.ISupportInitialize).EndInit
@@ -14839,9 +14957,19 @@ End Sub
     Friend WithEvents txtBPUpdateCostIndex As System.Windows.Forms.TextBox
     Friend WithEvents btnBPUpdateCostIndex As System.Windows.Forms.Button
     Friend WithEvents gbBPManualSystemCostIndex As System.Windows.Forms.GroupBox
-    Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents lblBPSystemCostIndexManual As System.Windows.Forms.Label
     Friend WithEvents cmbBPUpdateCostIndexActivity As System.Windows.Forms.ComboBox
     Friend WithEvents lblBPFacilitySystemName As System.Windows.Forms.Label
     Friend WithEvents mnuLPStore As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkCalcPPU As System.Windows.Forms.CheckBox
+    Friend WithEvents gbCalcFWUpgrade As System.Windows.Forms.GroupBox
+    Friend WithEvents lblCalcFWManufUpgradeLevel As System.Windows.Forms.Label
+    Friend WithEvents cmbCalcFWManufUpgradeLevel As System.Windows.Forms.ComboBox
+    Friend WithEvents cmbBPFWUpgrade As System.Windows.Forms.ComboBox
+    Friend WithEvents txtBPMarketPriceEdit As System.Windows.Forms.TextBox
+    Friend WithEvents lblBPFWUpgrade As System.Windows.Forms.Label
+    Friend WithEvents lblCalcFWInventionUpgradeLevel As System.Windows.Forms.Label
+    Friend WithEvents cmbCalcFWInventionUpgradeLevel As System.Windows.Forms.ComboBox
+    Friend WithEvents lblCalcFWCopyUpgradeLevel As System.Windows.Forms.Label
+    Friend WithEvents cmbCalcFWCopyUpgradeLevel As System.Windows.Forms.ComboBox
 End Class

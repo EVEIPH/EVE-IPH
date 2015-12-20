@@ -29,6 +29,9 @@ Public Class frmBlueprintManagement
     Private IgnoredBPUpdate As Boolean
     Private BPTypeUpdate As Boolean
 
+    Private BPColumnClicked As Integer
+    Private BPColumnSortOrder As SortOrder
+
     Private Const SelectTypeText As String = "Select Type"
 
     Private Structure BlueprintAsset
@@ -37,6 +40,10 @@ Public Class frmBlueprintManagement
     End Structure
 
 #Region "ObjectSection"
+
+    Private Sub lstBPs_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPs.ColumnClick
+        Call ListViewColumnSorter(e.Column, CType(lstBPs, ListView), BPColumnClicked, BPColumnSortOrder)
+    End Sub
 
     Private Sub lstBPs_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles lstBPs.SelectedIndexChanged
 
@@ -608,7 +615,6 @@ Public Class frmBlueprintManagement
 
         lstBPs.Visible = False
         Me.Cursor = Cursors.WaitCursor
-        lstBPs.Items.Clear()
 
         ' Disable buttons till done
         gbBPFilter.Enabled = False
@@ -619,6 +625,10 @@ Public Class frmBlueprintManagement
 
         Me.Refresh()
         Application.DoEvents()
+
+        lstBPs.Items.Clear()
+        ' Disable sorting because it will crawl after we update if there are too many records
+        lstBPs.ListViewItemSorter = Nothing
         lstBPs.BeginUpdate()
 
         ' Add the records
@@ -756,6 +766,14 @@ Public Class frmBlueprintManagement
 
         End While
 
+        ' Now sort this
+        Dim TempType As SortOrder
+        If BPColumnSortOrder = SortOrder.Ascending Then
+            TempType = SortOrder.Descending
+        Else
+            TempType = SortOrder.Ascending
+        End If
+        Call ListViewColumnSorter(BPColumnClicked, CType(lstBPs, ListView), BPColumnClicked, TempType)
         lstBPs.EndUpdate()
 
         If CheckAllItems Then

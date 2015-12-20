@@ -805,6 +805,8 @@ Public Class EVECREST
         Dim TimeCounter As Integer
         Dim StatusText As String = ""
 
+        Dim SystemIndiciesUpdated As Boolean
+
         Dim TempLabel As Label
         Dim TempPB As ProgressBar
 
@@ -822,13 +824,16 @@ Public Class EVECREST
             TempPB = PB
         End If
 
-        ' First look up the cache date to see if it's time to run the update
+        ' Before doing anything, update the system indicies
+        Call UpdateIndustrySystemsCostIndex(SystemIndiciesUpdated, UpdateLabel, PB)
+
+        ' Now look up the cache date to see if it's time to run the update
         CacheDate = GetCRESTCacheDate(IndustryFacilitiesField)
 
         ' If it's later than now, update
         If CacheDate <= Now Then
 
-            StatusText = "Downloading Facility Data..."
+            StatusText = "Updating Facility Data..."
             If SplashVisible Then
                 Call SetProgress(StatusText)
             Else
@@ -932,10 +937,6 @@ Public Class EVECREST
                     TimeCounter = 0
                     Application.DoEvents()
 
-                    ' Temp hack fix, I set the outpost field to 2 when users updated the ME/TE/Tax data and now I don't use the flag (ME/TE/Tax is saved and not updated)
-                    ' Remove this in like 6 months and suggest people reset their industry facility data if it comes up again after that
-                    Call ExecuteNonQuerySQL("UPDATE STATION_FACILITIES SET OUTPOST = 1 WHERE OUTPOST = 2")
-
                     ' Find all facilities not already in the stations table and loop through to add them
                     SQL = "SELECT DISTINCT FACILITY_ID FROM INDUSTRY_FACILITIES WHERE FACILITY_ID NOT IN (SELECT DISTINCT FACILITY_ID FROM STATION_FACILITIES) "
                     SQL = SQL & "AND (FACILITY_ID IN (SELECT stationID FROM RAM_ASSEMBLY_LINE_STATIONS) " ' Stations with assembly lines
@@ -1002,20 +1003,6 @@ Public Class EVECREST
                         TempLabel.Text = StatusText
                     End If
 
-                    ' Update the cost indicies for the solar system of the stations
-                    SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    rsLookup = DBCommand.ExecuteReader
-
-                    While rsLookup.Read
-                        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
-                        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
-                        Call ExecuteNonQuerySQL(SQL)
-                    End While
-
-                    rsLookup.Close()
-                    DBCommand = Nothing
-
                     ' Update the outposts names, which can change and do
                     SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM INDUSTRY_FACILITIES "
                     SQL = SQL & "WHERE FACILITY_TYPE_ID IN (21642,21644,21645,21646) " ' Outpost types
@@ -1030,7 +1017,7 @@ Public Class EVECREST
                     rsLookup.Close()
                     DBCommand = Nothing
 
-                    ' Finally, update the stations table for easy look ups in assets
+                    ' Finally, update the stations table for easy look ups in assets - most should be there from the SDE
                     ' note some stations may not be in the CREST update since those are just industry facilities but contains all outposts, which we want
                     SQL = "SELECT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
                     SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
@@ -1044,16 +1031,37 @@ Public Class EVECREST
                         SQL = SQL & CStr(rsLookup.GetInt64(2)) & ","
                         SQL = SQL & CStr(rsLookup.GetInt64(3)) & ","
                         SQL = SQL & CStr(rsLookup.GetFloat(4)) & ","
-                        SQL = SQL & CStr(rsLookup.GetInt64(5)) & ")"
+                        SQL = SQL & CStr(rsLookup.GetInt64(5)) & ",0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
                         ErrorTracker = SQL
                         Call ExecuteNonQuerySQL(SQL)
                     End While
 
-                    ' Set the Cache Date to now plus the length since it's not sent in the file
+                    ' Set the Cache Date to now plus the length since it's not sent in the file 
+                    ' for industry facilities though, this only needs to be run once a day - after downtime
                     Call SetCRESTCacheDate(IndustryFacilitiesField, CacheDate)
 
                     Call CommitSQLiteTransaction()
                     ErrorTracker = ""
+
+                    ' Finally, Update the cost indicies for the solar system of the stations every time we update the system indicies (above)
+                    If SystemIndiciesUpdated Then
+                        Call BeginSQLiteTransaction()
+                        SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
+                        DBCommand = New SQLiteCommand(SQL, DB)
+                        rsLookup = DBCommand.ExecuteReader
+
+                        While rsLookup.Read
+                            SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
+                            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
+                            Call ExecuteNonQuerySQL(SQL)
+                        End While
+
+                        rsLookup.Close()
+                        DBCommand = Nothing
+
+                        Call CommitSQLiteTransaction()
+                    End If
+
                     Return True
 
                 End If
@@ -1183,7 +1191,7 @@ Public Class EVECREST
             SQL = SQL & CStr(rsFacility.GetInt64(14)) & ", " ' Group ID
             SQL = SQL & CStr(rsFacility.GetInt64(15)) & ", " ' Category ID
             SQL = SQL & CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
-            SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost
+            SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
 
             Call ExecuteNonQuerySQL(SQL)
             Application.DoEvents()
@@ -1247,7 +1255,9 @@ Public Class EVECREST
     ' Lists the cost index for installing industry jobs per type of activity. This does not include wormhole space.
 
     ' Gets the CREST file from CCP for current Cost Indexes of Industry Systems and updates the EVEIPH DB with the values
-    Public Function UpdateIndustrySystemsCostIndex(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+
+    ' Make private so we can only run with the update industry facilities function
+    Private Function UpdateIndustrySystemsCostIndex(ByRef IndiciesUpdated As Boolean, Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
         Dim IndustrySystemsIndex As IndustrySystemCostIndicies
         Dim SQL As String
         Dim CacheDate As Date
@@ -1276,7 +1286,7 @@ Public Class EVECREST
 
         ' If it's later than now, update
         If CacheDate <= Now Then
-
+            IndiciesUpdated = True
             TempLabel.Text = "Downloading System Index Data..."
             Application.DoEvents()
 
@@ -1349,6 +1359,8 @@ Public Class EVECREST
             End If
             ' Json file didn't download
             Return False
+        Else
+            IndiciesUpdated = False
         End If
 
         Return True
@@ -1517,6 +1529,7 @@ Public Class EVECREST
     End Class
 
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
+    ' Note Cache Date is returned in local time, not GMT
     Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, Optional ByVal IgnoreExceptions As Boolean = False) As String
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse = Nothing
@@ -1545,13 +1558,20 @@ Public Class EVECREST
             ' Get the response stream into a reader  
             reader = New StreamReader(response.GetResponseStream())
 
-            ' Set the cache date by ref - if we are looking at market history, use special processing until we get this figured out
-            If URL.Contains("/market/") And URL.Contains("/history/") Then
-                Dim Tempdate As DateTime
-                ' TODO Fix processing to use the seconds from headers if it's from midnight
-                Tempdate = DateValue(response.Headers.Get("Date"))
-                ' Strip off time here from GMT date and add one day so it gets set to midnight tomorrow GMT
-                CacheDate = DateAdd(DateInterval.Day, 1, CDate(Tempdate.ToShortDateString))
+            ' Set the cache date by ref for market history and industry facilities
+            ' These only change once per day. So for these cases set the cache date to take into account
+            ' the next downtime or midnight. There could be a case where the servers are down for awhile and the CREST server is
+            ' not updated, but it's past the cache time - in that case the users can reset the ca
+            If URL.Contains("/history/") Then
+                ' Strip off time here from GMT date and add one day so it gets set to midnight tomorrow GMT - Add GMT and then convert to 
+                ' make it a local date time for when the server is restarted
+                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateValue(response.Headers.Get("Date"))) & " 00:00:00 GMT"))
+            ElseIf URL.Contains("/market/prices/") Then
+                ' The header isn't correct and the cache of these prices is every 23 hours, so just adjust for this (the time sent is the current time)
+                CacheDate = DateAdd(DateInterval.Hour, 23, CDate(response.Headers.Get("Date")))
+            ElseIf URL.Contains("/industry/facilities/") Then
+                ' Industry changes can only occur once per day after downtime (new outposts)
+                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateValue(response.Headers.Get("Date"))) & " 12:00:00 GMT"))
             Else
                 CacheDate = DateAdd(DateInterval.Second, Seconds, CDate(response.Headers.Get("Date")))
             End If

@@ -112,9 +112,12 @@ Public Class frmIndustryJobsViewer
             rbtnJobHistory.Checked = True
         End If
 
-        Call RefreshCharacterList()
+        Call UpdateJobs(FirstIndustryJobsViewerLoad)
 
-        Call RefreshGrid()
+        If FirstIndustryJobsViewerLoad Then
+            ' Don't run this if they reopen again, make them manually update
+            FirstIndustryJobsViewerLoad = False
+        End If
 
         FirstLoad = False
         'End If
@@ -332,7 +335,7 @@ Public Class frmIndustryJobsViewer
     End Sub
 
     ' Refreshes the user grid with all users in the DB
-    Private Sub RefreshCharacterList()
+    Private Sub RefreshCharacterList(UpdateCharactersfromAPI As Boolean)
         Dim lstCharacterRow As ListViewItem
 
         Application.UseWaitCursor = True
@@ -341,7 +344,7 @@ Public Class frmIndustryJobsViewer
         Application.DoEvents()
 
         ' Load up the chars into the list
-        Call LoadCharacters()
+        Call LoadCharacters(UpdateCharactersfromAPI)
 
         lstCharacters.BeginUpdate()
         lstCharacters.Items.Clear()
@@ -385,12 +388,14 @@ Public Class frmIndustryJobsViewer
     End Sub
 
     ' Loads the selected characters checked in the list into the variables
-    Private Sub LoadCharacters()
+    Private Sub LoadCharacters(UpdateCharactersfromAPI As Boolean)
         Dim SQL As String
         Dim rsJobs As SQLiteDataReader
 
         ' Update the API data first
-        Call UpdateCharacterIndustryJobsAPI()
+        If UpdateCharactersfromAPI Then
+            Call UpdateCharacterIndustryJobsAPI()
+        End If
 
         SQL = "SELECT CHARACTER_NAME, CORPORATION_NAME, INDUSTRY_JOBS_CACHED_UNTIL, CHARACTER_ID, "
         SQL = SQL & "KEY_ID, API_KEY, ACCESS_MASK, API_TYPE, "
@@ -456,6 +461,22 @@ Public Class frmIndustryJobsViewer
             Application.DoEvents()
 
         End While
+
+    End Sub
+
+    ' Updates all the jobs
+    Private Sub UpdateJobs(RunAPIUpdate As Boolean)
+        Updating = True
+
+        ' Just refresh the char list and it will update the API
+        Call RefreshCharacterList(RunAPIUpdate)
+        Call RefreshGrid()
+
+        If RunAPIUpdate Then
+            MsgBox("Industry Jobs updated.", vbInformation, Application.ProductName)
+        End If
+
+        Updating = False
 
     End Sub
 
@@ -969,15 +990,7 @@ Public Class frmIndustryJobsViewer
 
     Private Sub btnUpdateJobs_Click(sender As System.Object, e As System.EventArgs) Handles btnUpdateJobs.Click
 
-        Updating = True
-
-        ' Just refresh the char list and it will update the API
-        Call RefreshCharacterList()
-        Call RefreshGrid()
-
-        MsgBox("Industry Jobs updated.", vbInformation, Application.ProductName)
-
-        Updating = False
+        Call UpdateJobs(True)
 
     End Sub
 
@@ -1016,14 +1029,6 @@ Public Class frmIndustryJobsViewer
         End If
     End Sub
 
-    Private Sub Timer1_Tick(sender As System.Object, e As System.EventArgs)
-
-
-
-
-
-    End Sub
-
     Private Delegate Sub ListDelegate(ByVal myJobList As ListView)
 
     Private Sub UpdateTimes(ByVal sentJobList As Object)
@@ -1048,10 +1053,22 @@ Public Class frmIndustryJobsViewer
                     ' Only update records with a time
                     If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
 
-                        TimeToComplete = myJobList.Items(i).SubItems(.TimeToComplete).Text
                         EndDate = CDate(myJobList.Items(i).SubItems(0).Text)
+                        TimeToComplete = GetTimeToComplete(EndDate, CurrentDateTime)
 
-                        myJobList.Items(i).SubItems(.TimeToComplete).Text = GetTimeToComplete(EndDate, CurrentDateTime)
+                        ' If the time comes back negative, then switch it to blank and reset the job state to 'Complete'
+                        If TimeToComplete = "" Then
+                            TimeToComplete = "0"
+                        End If
+
+                        If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
+                            myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
+                            myJobList.Items(i).SubItems(.JobState).Text = "Complete"
+                            myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
+                        Else
+                            myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
+                        End If
+
                         myJobList.Update()
                         Application.DoEvents()
                     End If

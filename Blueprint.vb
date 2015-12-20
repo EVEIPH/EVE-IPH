@@ -43,6 +43,8 @@ Public Class Blueprint
 
     ' New cost variables
     Private BaseJobCost As Double ' Total per material used * average price
+    Private BaseCopyJobCost As Double ' Total job cost for copying (need to use the BPC job cost)
+    Private BaseInventionJobCost As Double ' Total job cost for invention (need to use the BPC job cost)
 
     ' Base Fees for activity
     Private JobFee As Double
@@ -161,6 +163,10 @@ Public Class Blueprint
 
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
+
+    Private FWManufacturingCostBonus As Double
+    Private FWCopyingCostBonus As Double
+    Private FWInventionCostBonus As Double
 
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
@@ -285,6 +291,22 @@ Public Class Blueprint
         ComponentManufacturingFacility = BPComponentProductionFacility
         CapitalComponentManufacturingFacility = BPCapComponentProductionFacility
 
+        ' Set the faction warfare bonus for the usage calculations
+        Select Case ManufacturingFacility.FWUpgradeLevel
+            Case 1
+                FWManufacturingCostBonus = 0.9
+            Case 2
+                FWManufacturingCostBonus = 0.8
+            Case 3
+                FWManufacturingCostBonus = 0.7
+            Case 4
+                FWManufacturingCostBonus = 0.6
+            Case 5
+                FWManufacturingCostBonus = 0.5
+            Case Else
+                FWManufacturingCostBonus = 1
+        End Select
+
         ' Set the flag if the user sent to this blueprint can invent it
         CanInventRE = False ' Can invent T1 BP to this T2 BP
         CanBuildBP = True ' Can build BP (assume we can until we change it)
@@ -393,6 +415,37 @@ Public Class Blueprint
         ' Save copy and invention facility
         CopyFacility = BPCopyFacility
         InventionFacility = BPInventionFacility
+
+        ' Set the FW bonus levels
+        Select Case CopyFacility.FWUpgradeLevel
+            Case 1
+                FWCopyingCostBonus = 0.9
+            Case 2
+                FWCopyingCostBonus = 0.8
+            Case 3
+                FWCopyingCostBonus = 0.7
+            Case 4
+                FWCopyingCostBonus = 0.6
+            Case 5
+                FWCopyingCostBonus = 0.5
+            Case Else
+                FWCopyingCostBonus = 1
+        End Select
+
+        Select Case InventionFacility.FWUpgradeLevel
+            Case 1
+                FWInventionCostBonus = 0.9
+            Case 2
+                FWInventionCostBonus = 0.8
+            Case 3
+                FWInventionCostBonus = 0.7
+            Case 4
+                FWInventionCostBonus = 0.6
+            Case 5
+                FWInventionCostBonus = 0.5
+            Case Else
+                FWInventionCostBonus = 1
+        End Select
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
@@ -1257,10 +1310,6 @@ Public Class Blueprint
         TotalRawCost = RawMaterials.GetTotalMaterialsCost + InventionCost + CopyCost + TaxesFees + AdditionalCosts + TotalUsage
         TotalComponentCost = ComponentMaterials.GetTotalMaterialsCost + InventionCost + CopyCost + TaxesFees + AdditionalCosts + (TotalUsage - ComponentUsage) ' don't build components
 
-        If BlueprintName = "Ares Blueprint" Then
-            Application.DoEvents()
-        End If
-
         ' Don't include usage in the total cost above but if we are doing build/buy add it back
         If BuildBuy Then
             TotalComponentCost += ComponentUsage
@@ -1453,8 +1502,8 @@ Public Class Blueprint
             ' facilityUsage = (jobFee + teamCost) * taxRate
             FacilityUsage = (JobFee + ManufacturingTeamFee) * ManufacturingFacility.TaxRate
 
-            ' totalInstallationCost = jobFee + teamCost + facilityTax
-            ManufacturingFacilityUsage = JobFee + ManufacturingTeamFee + FacilityUsage
+            ' totalInstallationCost = jobFee + teamCost + facilityUsage
+            ManufacturingFacilityUsage = (JobFee + ManufacturingTeamFee + FacilityUsage) * FWManufacturingCostBonus
         Else
             ManufacturingFacilityUsage = 0
         End If
@@ -1635,8 +1684,8 @@ Public Class Blueprint
         NumInventionSessions = CInt(Math.Ceiling(NumInventionJobs / NumberofLaboratoryLines))
 
         If IncludeCopyTime And TechLevel <> BlueprintTechLevel.T3 Then
-            ' Set the total copy time based on the number of invention sessions we need
-            CopyTime = GetCopyTime(NumInventionJobs) / NumberofLaboratoryLines
+            ' Set the total copy time based on the number of invention jobs we need - assume only one bp to copy
+            CopyTime = GetCopyTime(NumInventionJobs)
         Else
             CopyTime = 0 ' No copies for T3
         End If
@@ -1797,7 +1846,15 @@ Public Class Blueprint
     ' Sets the cost of doing the number of invention jobs sent
     Private Function GetInventionUsage(InventionJobs As Double) As Double
         'jobFee = baseJobCost * systemCostIndex * 0.02
-        Return BaseJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
+        BaseInventionJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
+        Dim InventionJobFee As Double = BaseInventionJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
+
+        ' facilityUsage = (jobFee + teamCost) * taxRate
+        Dim InventionFacilityTax As Double = (InventionJobFee + InventionTeamFee) * InventionFacility.TaxRate
+
+        ' totalInstallationCost = jobFee + teamCost + facilityTax
+        Return (InventionJobFee + InventionTeamFee + InventionFacilityTax) * FWInventionCostBonus
+
     End Function
 
     ' Sets the invention time for the sent BP 
@@ -1835,7 +1892,15 @@ Public Class Blueprint
     ' Sets and returns the copy cost for the number of copies sent
     Private Function GetCopyUsage(NumberofCopies As Integer) As Double
         ' jobFee = baseJobCost * systemCostIndex * 0.02 * runs * runsPerCopy (just use the total number of copies here)
-        Return BaseJobCost * CopyFacility.CostIndex * 0.02 * NumberofCopies
+        BaseCopyJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
+        Dim CopyJobFee As Double = BaseCopyJobCost * CopyFacility.CostIndex * 0.02 * NumberofCopies
+
+        ' facilityUsage = (jobFee + teamCost) * taxRate
+        Dim CopyFacilityTax As Double = (CopyJobFee + CopyTeamFee) * CopyFacility.TaxRate
+
+        ' totalInstallationCost = jobFee + teamCost + facilityTax
+        Return (CopyJobFee + CopyTeamFee + CopyFacilityTax) * FWCopyingCostBonus
+
     End Function
 
     ' Returns the copy time for a single T1 copy in seconds to copy the sent number of runs
@@ -1912,6 +1977,28 @@ Public Class Blueprint
         DBCommand = Nothing
 
     End Sub
+
+    ' Gets the job fee for the BPC and not the current T2/T3 bp
+    Private Function GetBaseJobCostforBPC(ByVal BPCTypeID As Long) As Double
+        Dim SQL As String
+        Dim readerLookup As SQLiteDataReader
+        Dim BaseJobCost As Double = 0
+
+        ' Look up the sum of the quantity from the sent BPC ID 
+        SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS "
+        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
+        SQL = SQL & "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY = 1 "
+
+        DBCommand = New SQLiteCommand(SQL, DB)
+        readerLookup = DBCommand.ExecuteReader
+
+        While readerLookup.Read
+            BaseJobCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
+        End While
+
+        Return BaseJobCost
+
+    End Function
 
 #End Region
 
@@ -2024,6 +2111,16 @@ Public Class Blueprint
     ' Returns the base job cost for this blueprint
     Public Function GetBaseJobCost() As Double
         Return BaseJobCost
+    End Function
+
+    ' Returns the base job cost for the BPC to make this bp
+    Public Function GetBaseInventionJobCost() As Double
+        Return BaseInventionJobCost
+    End Function
+
+    ' Returns the base job cost for the BPC to make the invention bpc
+    Public Function GetBaseCopyJobCost() As Double
+        Return BaseCopyJobCost
     End Function
 
     ' Returns the base team cost for this blueprint

@@ -317,7 +317,7 @@ Public Class frmShoppingList
                     ' Reset
                     BuyOrderText = Unknown
 
-                    RawmatList = lstBuy.Items.Add(CStr(RawItems.GetMaterialList(i).GetMaterialTypeID)) ' Hidden
+                    RawmatList = New ListViewItem(CStr(RawItems.GetMaterialList(i).GetMaterialTypeID)) ' Hidden
                     'The remaining columns are subitems  
                     RawmatList.SubItems.Add(RawItems.GetMaterialList(i).GetMaterialName)
                     RawmatList.SubItems.Add(FormatNumber(RawItems.GetMaterialList(i).GetQuantity, 0))
@@ -441,13 +441,15 @@ Public Class frmShoppingList
 
                     RawmatList.SubItems.Add(FormatNumber(BuyOrderFees, 2)) ' Fees for buy orders
                     RawmatList.SubItems.Add(FormatNumber(RawItems.GetMaterialList(i).GetTotalCost + BuyOrderFees, 2)) ' Total Cost
+
+                    Call lstBuy.Items.Add(RawmatList)
                 Next
 
             End If
         End If
 
         ' Finally sort it if there is a value it's already sorted
-        Call ListViewColumnSorter(ItemListColumnClicked, CType(lstItems, ListView), ItemListColumnClicked, ItemListColumnSortOrder)
+        'Call ListViewColumnSorter(ItemListColumnClicked, CType(lstItems, ListView), ItemListColumnClicked, ItemListColumnSortOrder)
 
         lstBuy.EndUpdate()
 
@@ -583,6 +585,7 @@ Public Class frmShoppingList
         Dim CurrentItemName As String = ""
 
         Application.UseWaitCursor = True
+        Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
         Dim IDString As String = ""
@@ -597,7 +600,7 @@ Public Class frmShoppingList
         End If
 
         ' Build the where clause to look up data
-        Dim AssetWhereClause As String = ""
+        Dim AssetLocationFlagList As New List(Of String)
         ' First look up the location and flagID pairs - unique ID of asset locations
         SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & ")" ' Enum type 1 is shopping list
         DBCommand = New SQLiteCommand(SQL, DB)
@@ -606,17 +609,15 @@ Public Class frmShoppingList
         While readerAssets.Read
             If readerAssets.GetInt32(1) = -4 Then
                 ' If the flag is the base location, then we want all items at the location id
-                AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & ") OR "
+                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
             Else
-                AssetWhereClause = AssetWhereClause & "(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ") OR "
+                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ")")
             End If
         End While
 
         readerAssets.Close()
 
-        If AssetWhereClause <> "" Then
-            ' Strip the last OR
-            AssetWhereClause = AssetWhereClause.Substring(0, Len(AssetWhereClause) - 4)
+        If AssetLocationFlagList.Count <> 0 Then
 
             ' Loop through the lists, starting with the build list first and find quantities in hanger to build
             For i = 0 To 3 ' 4 lists
@@ -643,21 +644,41 @@ Public Class frmShoppingList
                             ' Look in table or in the paste list
                             If Not CutPasteUpdate Then
 
-                                ' Look up each item in their assets in their locations stored, and sum up the quantity
-                                SQL = "SELECT typeName, SUM(Quantity) FROM ASSETS, INVENTORY_TYPES "
-                                SQL = SQL & "WHERE (" & AssetWhereClause & ") "
-                                SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
-                                SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
-                                SQL = SQL & " AND ID IN (" & IDString & ")"
+                                ' Look up each item in their assets in their locations stored, and sum up the quantity'
+                                ' Split into groups to run (1000 identifiers max so limit to 900)
+                                Dim Splits As Integer = CInt(Math.Ceiling(AssetLocationFlagList.Count / 900))
+                                For k = 0 To Splits - 1
+                                    Application.DoEvents()
+                                    Dim TempAssetWhereList As String = ""
+                                    ' Build the partial asset location id/flag list
+                                    For z = k * 900 To (k + 1) * 900 - 1
+                                        If z = AssetLocationFlagList.Count Then
+                                            ' exit if we get to the end of the list
+                                            Exit For
+                                        End If
+                                        TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " OR "
+                                    Next
 
-                                DBCommand = New SQLiteCommand(SQL, DB)
-                                readerAssets = DBCommand.ExecuteReader
-                                readerAssets.Read()
+                                    ' Strip final OR
+                                    TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
 
-                                If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(1)) Then
-                                    CurrentItemName = readerAssets.GetString(0)
-                                    UserQuantity = CLng(readerAssets.GetValue(1))
-                                End If
+                                    SQL = "SELECT typeName, SUM(Quantity) FROM "
+                                    SQL = SQL & "ASSETS, INVENTORY_TYPES "
+                                    SQL = SQL & "WHERE (" & TempAssetWhereList & ") "
+                                    SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
+                                    SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
+                                    SQL = SQL & " AND ID IN (" & IDString & ")"
+
+                                    DBCommand = New SQLiteCommand(SQL, DB)
+                                    readerAssets = DBCommand.ExecuteReader
+                                    readerAssets.Read()
+
+                                    If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(1)) Then
+                                        CurrentItemName = readerAssets.GetString(0)
+                                        UserQuantity = UserQuantity + CLng(readerAssets.GetValue(1)) ' sum up
+                                    End If
+
+                                Next
 
                             Else ' Look up in asset list
                                 Dim TempMaterial As Material
@@ -742,6 +763,7 @@ Public Class frmShoppingList
             Next
 
             Application.UseWaitCursor = False
+            Me.Cursor = Cursors.Default
             Application.DoEvents()
 
             ' Play notification sound
@@ -1285,6 +1307,22 @@ Public Class frmShoppingList
                         Line = BPStream.ReadLine ' Read next line
 
                     End While
+
+                    Dim FWUpgradeLevel As Integer
+                    Select Case frmMain.cmbBPFWUpgrade.Text
+                        Case "Level 1"
+                            FWUpgradeLevel = 1
+                        Case "Level 2"
+                            FWUpgradeLevel = 2
+                        Case "Level 3"
+                            FWUpgradeLevel = 3
+                        Case "Level 4"
+                            FWUpgradeLevel = 4
+                        Case "Level 5"
+                            FWUpgradeLevel = 5
+                        Case Else
+                            FWUpgradeLevel = 0
+                    End Select
 
                     ' Now that all the lists are loaded, we need to build the blueprints and adjust the final lists
                     For i = 0 To ItemList.Count - 1

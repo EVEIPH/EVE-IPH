@@ -8,7 +8,7 @@ Imports System.Xml
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const DataDumpVersion As String = "Parallax_1.0_115480"
+    Public Const SDEVersion As String = "Frostline_1.0_116241"
     Public Const VersionNumber As String = "3.1.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -60,7 +60,8 @@ Public Module Public_Variables
     Public Const TheForgeTypeID As Long = 10000002
 
     Public Const USER_BLUEPRINTS As String = "(SELECT ALL_BLUEPRINTS.BLUEPRINT_ID AS BP_ID, ALL_BLUEPRINTS.BLUEPRINT_GROUP, ALL_BLUEPRINTS.BLUEPRINT_NAME, " _
-                                            & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, ITEM_CATEGORY, ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
+                                            & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, CASE WHEN ITEM_GROUP LIKE 'Rig%' THEN 'Rig' ELSE ITEM_CATEGORY END AS ITEM_CATEGORY, " _
+                                            & "ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
                                             & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME," _
                                             & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE," _
                                             & "CASE WHEN USER_ID IS NOT NULL THEN USER_ID ELSE 0 END AS USER_ID, ITEM_TYPE," _
@@ -103,10 +104,12 @@ Public Module Public_Variables
 
     Public Const DataCoreRedeemCost As Double = 10000.0
 
+    Public FirstIndustryJobsViewerLoad As Boolean
+
     Public Const SpaceFlagCode As Integer = 500
 
     ' Column processing
-    Public Const NumManufacturingTabColumns As Integer = 69
+    Public Const NumManufacturingTabColumns As Integer = 82
     Public Const NumIndustryJobColumns As Integer = 20
 
     Public Const NoDate As Date = #1/1/1900#
@@ -225,6 +228,7 @@ Public Module Public_Variables
     Public Const Hulk As String = "Hulk"
     Public Const Venture As String = "Venture"
     Public Const Prospect As String = "Prospect"
+    Public Const Endurance As String = "Endurance"
     Public Const Rorqual As String = "Rorqual"
     Public Const Orca As String = "Orca"
     Public Const Drake As String = "Drake"
@@ -1387,7 +1391,8 @@ NoBonus:
                              Optional ItemGroupID As Integer = 0, Optional ItemCategoryID As Integer = 0, _
                              Optional LoadActivites As Boolean = True, Optional RefreshBP As Boolean = True, _
                              Optional ByRef FacilityUsageLabel As Label = Nothing, _
-                             Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing)
+                             Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing, _
+                             Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing)
 
         Dim SelectedFacility As New IndustryFacility
         Dim SelectedActivity As String = ActivityManufacturing
@@ -1665,7 +1670,7 @@ NoBonus:
                                 FacilityManualTELabel, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, _
                                 FacilitySaveButton, FacilityTaxRateLabel, Tab, _
                                 FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, AutoLoad, _
-                                SelectedFacility.IncludeActivityUsage, SelectedFacility.FacilityName, FacilityUsageLabel, ManualSystemIndexGroupBox, ToolTipRef)
+                                SelectedFacility.IncludeActivityUsage, SelectedFacility.FacilityName, FacilityUsageLabel, ManualSystemIndexGroupBox, ToolTipRef, FWUpgradeLabel, FWUpgradeCombo)
         ElseIf Tab = CalcTab Then
             ' Load all facilities for each calc tab facility
             Call LoadFacilities(ItemGroupID, ItemCategoryID, False, _
@@ -1691,6 +1696,9 @@ NoBonus:
         End If
         ChangingUsageChecks = False
 
+        ' Set her in case we load the bonuses
+        Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, SelectedFacility.SolarSystemName)
+
         ' Finally show the results and save the facility locally
         If Not AutoLoad Then
             LoadingFacilities = True
@@ -1704,7 +1712,8 @@ NoBonus:
                                       FacilityManualTELabel, FacilityManualTETextBox, _
                                       FacilityManualTaxLabel, FacilityManualTaxTextBox, _
                                       FacilitySaveButton, FacilityTaxRateLabel, _
-                                      FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, Tab, FacilityLoaded, SelectedFacility.IncludeActivityUsage, ToolTipRef)
+                                      FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, Tab, FacilityLoaded, _
+                                      SelectedFacility.IncludeActivityUsage, ToolTipRef, GetFWUpgradeLevel(FWUpgradeCombo, FacilitySystemCombo.Text))
             LoadingFacilities = False
         End If
 
@@ -2037,7 +2046,7 @@ NoBonus:
                     Case ActivityManufacturing
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Manufacturing)
-                    Case ActivityComponentManufacturing
+                    Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for components - All types can be built in stations
                         SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, -1, IndustryActivities.Manufacturing)
@@ -2059,9 +2068,7 @@ NoBonus:
                 SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
 
                 Select Case FacilityActivity
-                    Case ActivityManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
-                    Case ActivityComponentManufacturing
+                    Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                     Case ActivityCopying
                         SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
@@ -2148,7 +2155,8 @@ NoBonus:
                                ByRef FacilityIncludeActivityCostsCheck As CheckBox, ByRef FacilityIncludeActivityTimeCheck As CheckBox, _
                                ByRef AutoLoadFacility As Boolean, ByVal FacilityUsageCheckValue As Boolean, _
                                Optional OverrideFacilityName As String = "", Optional ByRef FacilityUsageLabel As Label = Nothing, _
-                               Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing)
+                               Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing, _
+                               Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing, Optional ByVal SolarSystemName As String = "")
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
@@ -2257,6 +2265,9 @@ NoBonus:
             ' Display bonuses - Need to load everything since the array won't change to cause it to reload
             Dim Defaults As New ProgramSettings
 
+            ' Set the FW controls before loading bonuses
+            Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, FacilitySystemCombo.Text)
+
             ' For a pos, need to display the results and reload the bp
             Call DisplayFacilityBonus(GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text), _
                           Defaults.FacilityDefaultMM, Defaults.FacilityDefaultTM, Defaults.FacilityDefaultTax, ItemGroupID, ItemCategoryID, _
@@ -2268,7 +2279,7 @@ NoBonus:
                           FacilityManualTaxLabel, FacilityManualTaxTextBox, _
                           FacilitySaveButton, FacilityTaxRateLabel, _
                           FacilityUsageCheck, FacilityIncludeActivityCostsCheck, FacilityIncludeActivityTimeCheck, _
-                          Tab, FullyLoadedBPFacility, FacilityUsageCheckValue, ToolTipRef)
+                          Tab, FullyLoadedBPFacility, FacilityUsageCheckValue, ToolTipRef, GetFWUpgradeLevel(FWUpgradeCombo, FacilitySystemCombo.Text))
 
         Else
             If Not FacilityCombo.Items.Contains(FacilityCombo.Text) Then
@@ -2327,7 +2338,7 @@ NoBonus:
                                      ByRef FacilityUsageCheck As CheckBox, _
                                      ByRef ActivityCostCheck As CheckBox, ByRef ActivityTimeCheck As CheckBox, _
                                      ByRef Tab As String, ByRef FacilityLoaded As Boolean, ByRef FacilityUsageCheckValue As Boolean,
-                                     ByRef ToolTipRef As ToolTip)
+                                     ByRef ToolTipRef As ToolTip, ByVal FWUpgradeLevel As Integer)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
@@ -2450,23 +2461,26 @@ NoBonus:
 
         Dim MMText As String = FormatPercent(1 - MaterialMultiplier, 1)
         Dim TMText As String = FormatPercent(1 - TimeMultiplier, 1)
-        Dim TaxText As String = FormatPercent(Tax / 100, 1)
+        Dim TaxText As String = FormatPercent(Tax, 1)
 
         ' Show boxes for the user to enter for outposts since I can't get the upgrades or taxes from CREST
         If FacilityType = OutpostFacility Then
-            FacilityBonusLabel.Visible = False
+
             FacilityManualMELabel.Visible = True
             FacilityManualTELabel.Visible = True
-            FacilityManualTaxLabel.Visible = True
             FacilityManualMEText.Visible = True
             FacilityManualTEText.Visible = True
-            FacilityManualTaxText.Visible = True
             FacilityManualMEText.Text = MMText
             FacilityManualTEText.Text = TMText
+
+            FacilityBonusLabel.Visible = False
+            FacilityManualTaxLabel.Visible = True
+            FacilityManualTaxText.Visible = True
             FacilityManualTaxText.Text = TaxText
             FacilityTaxRateLabel.Text = ""
             FacilityTaxRateLabel.Visible = False
         Else
+
             FacilityBonusLabel.Visible = True
             FacilityManualMELabel.Visible = False
             FacilityManualTELabel.Visible = False
@@ -2476,7 +2490,7 @@ NoBonus:
             FacilityManualTaxText.Visible = False
 
             FacilityBonusLabel.Text = "ME: " & MMText & " TE: " & TMText
-            FacilityTaxRateLabel.Text = "Tax: " & FormatPercent(Tax, 1)
+            FacilityTaxRateLabel.Text = "Tax: " & TaxText
             FacilityTaxRateLabel.Visible = True
         End If
 
@@ -2503,6 +2517,7 @@ NoBonus:
             .IncludeActivityUsage = FacilityUsageCheckValue ' Use this value when loading from Load Facility (using the selected facility) or from the form dropdown (use the checkbox)
             ChangingUsageChecks = False
             .TaxRate = Tax
+            .FWUpgradeLevel = FWUpgradeLevel
 
             If Not IsNothing(ActivityCostCheck) Then
                 .IncludeActivityCost = ActivityCostCheck.Checked
@@ -2573,6 +2588,128 @@ NoBonus:
 
         Application.DoEvents()
 
+    End Sub
+
+    Public Function GetFWUpgradeLevel(SolarSystemName As String) As Integer
+        Dim rsFW As SQLiteDataReader
+
+        ' Format system name
+        If SolarSystemName.Contains("(") Then
+            SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
+        End If
+
+        Dim SQL As String = "SELECT UPGRADE_LEVEL FROM SOLAR_SYSTEMS, FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = solarSystemID AND factionWarzone <> 0 AND solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsFW = DBCommand.ExecuteReader
+
+        If rsFW.Read Then
+            Return rsFW.GetInt32(0)
+        Else
+            Return 0
+        End If
+
+    End Function
+
+    Public Function GetFWUpgradeLevel(FWUpgradeCombo As ComboBox, SolarSystemName As String) As Integer
+        Dim FWUpgradeLevel As Integer
+
+        Dim rsFW As SQLiteDataReader
+        Dim SSID As Long
+
+        ' Format system name
+        If SolarSystemName.Contains("(") Then
+            SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
+        End If
+
+        Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
+        DBCommand = New SQLiteCommand(SQL, DB)
+        rsFW = DBCommand.ExecuteReader
+
+        Dim Warzone As Boolean
+        If rsFW.Read Then
+            Warzone = CBool(rsFW.GetInt32(0))
+            SSID = rsFW.GetInt64(1)
+        Else
+            Warzone = False
+        End If
+
+        If Warzone Then
+            If Not IsNothing(FWUpgradeCombo) Then
+                Select Case FWUpgradeCombo.Text
+                    Case "Level 1"
+                        FWUpgradeLevel = 1
+                    Case "Level 2"
+                        FWUpgradeLevel = 2
+                    Case "Level 3"
+                        FWUpgradeLevel = 3
+                    Case "Level 4"
+                        FWUpgradeLevel = 4
+                    Case "Level 5"
+                        FWUpgradeLevel = 5
+                    Case Else
+                        FWUpgradeLevel = 0
+                End Select
+            Else
+                FWUpgradeLevel = 0
+            End If
+        Else
+            FWUpgradeLevel = 0
+        End If
+
+        Return FWUpgradeLevel
+
+    End Function
+
+    ' enables the controls for fw settings on the bp tab
+    Public Sub SetFWUpgradeControls(Tab As String, ByRef FWUpgradeLabel As Label, ByRef FWUpgradeCombo As ComboBox, ByVal SolarSystemName As String)
+        ' Load the faction warfare upgrade if set for the BP tab
+        If Tab = BPTab Then
+            Dim rsFW As SQLiteDataReader
+            Dim SSID As Long
+
+            ' Format system name
+            If SolarSystemName.Contains("(") Then
+                SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
+            End If
+
+            Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
+            DBCommand = New SQLiteCommand(SQL, DB)
+            rsFW = DBCommand.ExecuteReader
+
+            Dim Warzone As Boolean
+            If rsFW.Read Then
+                Warzone = CBool(rsFW.GetInt32(0))
+                SSID = rsFW.GetInt64(1)
+            Else
+                Warzone = False
+            End If
+
+            If Warzone Then
+                FWUpgradeLabel.Enabled = True
+                FWUpgradeCombo.Enabled = True
+                ' look up level
+                Dim rsFWLevel As SQLiteDataReader
+                SQL = "SELECT UPGRADE_LEVEL FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & CStr(SSID)
+                DBCommand = New SQLiteCommand(SQL, DB)
+                rsFWLevel = DBCommand.ExecuteReader
+                rsFWLevel.Read()
+
+                If rsFWLevel.HasRows Then
+                    If rsFWLevel.GetInt32(0) = 0 Then
+                        FWUpgradeCombo.Text = None
+                    Else
+                        FWUpgradeCombo.Text = "Level " & CStr(rsFWLevel.GetInt32(0))
+                    End If
+                Else
+                    FWUpgradeCombo.Text = None
+                End If
+            Else
+                FWUpgradeLabel.Enabled = False
+                FWUpgradeCombo.Enabled = False
+                FWUpgradeCombo.Text = None
+            End If
+            rsFW.Close()
+        End If
     End Sub
 
     ' Sets the sent facility to the one we are selecting and sets the default 
