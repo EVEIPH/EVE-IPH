@@ -247,7 +247,6 @@ Public Class ProgramSettings
     Public DefaultPriceRegion As String = ""
     Public DefaultPriceRawMatsCombo As String = "Max Buy"
     Public DefaultPriceItemsCombo As String = "Min Sell"
-    Public DefaultPriceCRESTHistory As Boolean = False
     Public DefaultUPColumnSort As Integer = 1
     Public DefaultUPColumnSortType As String = "Ascending"
 
@@ -320,6 +319,7 @@ Public Class ProgramSettings
     Public DefaultCalcIgnoreMinerals As Boolean = False
     Public DefaultCalcIgnoreT1Item As Boolean = False
     Public DefaultCalcPPU As Boolean = False
+    Public DefaultCalcCRESTHistory As Boolean = True
     Public DefaultCalcManufacturingFWLevel As String = "0"
     Public DefaultCalcCopyingFWLevel As String = "0"
     Public DefaultCalcInventionFWLevel As String = "0"
@@ -1546,7 +1546,6 @@ Public Class ProgramSettings
                     .PriceImportType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PriceImportType", DefaultPriceImportPriceType))
                     .ItemsCombo = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ItemsCombo", DefaultPriceItemsCombo))
                     .RawMatsCombo = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "RawMatsCombo", DefaultPriceRawMatsCombo))
-                    .UpdatePriceHistory = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UpdatePriceHistory", DefaultPriceCRESTHistory))
 
                     .ColumnSort = CInt(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "ColumnSort", DefaultUPColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ColumnSortType", DefaultUPColumnSortType))
@@ -1573,7 +1572,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(52) As Setting
+        Dim UpdatePricesSettingsList(51) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1642,10 +1641,8 @@ Public Class ProgramSettings
 
             UpdatePricesSettingsList(49) = New Setting("BPCs", CStr(PriceSettings.BPCs))
 
-            UpdatePricesSettingsList(50) = New Setting("UpdatePriceHistory", CStr(PriceSettings.UpdatePriceHistory))
-
-            UpdatePricesSettingsList(51) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
-            UpdatePricesSettingsList(52) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
+            UpdatePricesSettingsList(50) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
+            UpdatePricesSettingsList(51) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
 
             Call WriteSettingsToFile(UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1709,7 +1706,6 @@ Public Class ProgramSettings
             .PriceImportType = DefaultPriceImportPriceType
             .ItemsCombo = DefaultPriceItemsCombo
             .RawMatsCombo = DefaultPriceRawMatsCombo
-            .UpdatePriceHistory = DefaultPriceCRESTHistory
             .ColumnSort = DefaultUPColumnSort
             .ColumnSortType = DefaultUPColumnSortType
         End With
@@ -1808,6 +1804,7 @@ Public Class ProgramSettings
                     .IgnoreMinerals = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreMinerals", DefaultCalcIgnoreMinerals))
                     .IgnoreT1Item = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreT1Item", DefaultCalcIgnoreT1Item))
                     .CalcPPU = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CalcPPU", DefaultCalcPPU))
+                    .UpdatePriceHistory = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "UpdatePriceHistory", DefaultCalcCRESTHistory))
                     .ManufacturingFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "ManufacturingFWUpgradeLevel", DefaultCalcManufacturingFWLevel))
                     .CopyingFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "CopyingFWUpgradeLevel", DefaultCalcCopyingFWLevel))
                     .InventionFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "InventionFWUpgradeLevel", DefaultCalcInventionFWLevel))
@@ -1909,6 +1906,7 @@ Public Class ProgramSettings
             .IgnoreMinerals = DefaultCalcIgnoreMinerals
             .IgnoreT1Item = DefaultCalcIgnoreT1Item
             .CalcPPU = DefaultCalcPPU
+            .UpdatePriceHistory = DefaultCalcCRESTHistory
             .ManufacturingFWUpgradeLevel = DefaultCalcManufacturingFWLevel
             .CopyingFWUpgradeLevel = DefaultCalcCopyingFWLevel
             .InventionFWUpgradeLevel = DefaultCalcInventionFWLevel
@@ -1924,7 +1922,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(75) As Setting
+        Dim ManufacturingSettingsList(76) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2003,6 +2001,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(73) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
             ManufacturingSettingsList(74) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
             ManufacturingSettingsList(75) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
+            ManufacturingSettingsList(76) = New Setting("UpdatePriceHistory", CStr(SentSettings.UpdatePriceHistory))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -5160,8 +5159,6 @@ Public Structure UpdatePriceTabSettings
     Dim ItemsCombo As String
     Dim RawMatsCombo As String
 
-    Dim UpdatePriceHistory As Boolean
-
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
 
@@ -5261,6 +5258,8 @@ Public Structure ManufacturingTabSettings
     Dim IgnoreT1Item As Boolean
 
     Dim CalcPPU As Boolean
+
+    Dim UpdatePriceHistory As Boolean
 
     Dim ManufacturingFWUpgradeLevel As String
     Dim CopyingFWUpgradeLevel As String

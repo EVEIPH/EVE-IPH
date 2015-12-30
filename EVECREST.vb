@@ -36,8 +36,9 @@ Public Class EVECREST
     ' You can send an occasional burst of 100 requests all at once. If you do, you'll hit the rate limit once you try to send your 101st request unless you wait.
     ' Your bucket refills at a rate of 1 per 1/30th of a second. So if you send 100 requests at once, you need to wait 3.33 seconds before you can send another 100 requests. 
     ' Or if you only wait 2 seconds you can send another 60 etc. Or you can send a constant 30 requests every 1 second instead.
-    Private Const CRESTRatePerSecond As Integer = 30 ' max requests per second
-    Private Const CRESTBurstSize As Integer = 100 ' max burst of requests, which need 3.33 seconds to refill before re-bursting
+    Public Const CRESTRatePerSecond As Integer = 150 ' max requests per second
+    Public Const CRESTBurstSize As Integer = 400 ' max burst of requests, which need 2.46 seconds to refill before re-bursting
+    Public Const CRESTMaximumConnections As Integer = 20
 
     Public RecordsInserted As Integer ' number of records currently inserted
 
@@ -60,7 +61,7 @@ Public Class EVECREST
     ' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketHistory(ByVal TypeID As Long, RegionID As Long, _
+    Public Function UpdateMarketHistory(ByVal TypeID As Long, ByVal RegionID As Long, _
                                         Optional OpenTransaction As Boolean = True, _
                                         Optional IgnoreCacheLookup As Boolean = False) As Boolean
         Dim MarketPricesOutput As MarketHistory
@@ -89,7 +90,6 @@ Public Class EVECREST
         If CacheDate <= Now Then
 
             Application.DoEvents()
-
             ' Dump the file into the Specializations object
             MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
                 (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", CacheDate, "Market History", True))
@@ -102,7 +102,6 @@ Public Class EVECREST
                 End If
 
                 If MarketPricesOutput.items.Count > 0 Then
-
                     ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
                     SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
                     DBCommand = New SQLiteCommand(SQL, DB)
@@ -124,8 +123,8 @@ Public Class EVECREST
                         With MarketPricesOutput.items(i)
                             ' only insert the records that are larger than the max date
                             If CDate(.date_str.Replace("T", " ")) >= MaxRecordDate Then
-                                SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & CStr(.volume) & ","
-                                SQL = SQL & CStr(.lowPrice) & "," & CStr(.highPrice) & "," & CStr(.avgPrice) & "," & CStr(.orderCount) & ",'" & .date_str.Replace("T", " ") & "')"
+                                SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
+                                SQL = SQL & CStr(.lowPrice) & "," & CStr(.highPrice) & "," & CStr(.avgPrice) & "," & CStr(.volume) & "," & CStr(.orderCount) & ")"
                                 Call ExecuteNonQuerySQL(SQL)
                                 RecordsInserted += 1
                             End If
@@ -144,6 +143,7 @@ Public Class EVECREST
                 If OpenTransaction Then
                     Call CommitSQLiteTransaction()
                 End If
+
                 Return True
 
             End If
@@ -1530,7 +1530,8 @@ Public Class EVECREST
 
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
     ' Note Cache Date is returned in local time, not GMT
-    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, Optional ByVal IgnoreExceptions As Boolean = False) As String
+    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, _
+                                 Optional ByVal IgnoreExceptions As Boolean = False, Optional RecursiveCalls As Integer = 0) As String
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse = Nothing
         Dim reader As StreamReader
@@ -1541,8 +1542,15 @@ Public Class EVECREST
 
         Try
 
+            Dim myUri As New Uri(URL)
+
             ' Create the web request  
-            request = DirectCast(WebRequest.Create(URL), HttpWebRequest)
+            request = DirectCast(WebRequest.Create(myUri), HttpWebRequest)
+            ' Settings for speed
+            request.Method = "GET"
+            request.Proxy = Nothing
+            request.PreAuthenticate = True
+            request.UnsafeAuthenticatedConnectionSharing = True
 
             ' Get response  
             response = DirectCast(request.GetResponse(), HttpWebResponse)
@@ -1576,13 +1584,40 @@ Public Class EVECREST
                 CacheDate = DateAdd(DateInterval.Second, Seconds, CDate(response.Headers.Get("Date")))
             End If
 
+            ' Read the data
             Output = reader.ReadToEnd
+
+            If Output.Substring(Len(Output) - 1, 1) <> "}" Then
+                Application.DoEvents()
+                Call WriteMsgToLog("File did not download completely - " & CStr(Now))
+                ' Re-run this function - limit to 10 calls
+                If RecursiveCalls <= 10 Then
+                    Dim NumCalls As Integer = RecursiveCalls + 1
+                    Output = GetJSONFile(URL, CacheDate, UpdateType, IgnoreExceptions, NumCalls)
+                End If
+            End If
+
+            reader.Close()
+            response.Close()
+            request = Nothing
 
         Catch ex As Exception
             If Not IgnoreExceptions Then
                 MsgBox("Unable to download CREST data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
                 Output = ""
             End If
+
+            Call WriteMsgToLog(ex.Message & " - " & CStr(Now) & " for url: " & URL)
+
+            If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
+                Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") Then
+                ' Re-run this function - limit to 10 calls
+                If RecursiveCalls <= 10 Then
+                    Dim NumCalls As Integer = RecursiveCalls + 1
+                    Output = GetJSONFile(URL, CacheDate, UpdateType, IgnoreExceptions, NumCalls)
+                End If
+            End If
+
         Finally
             If Not response Is Nothing Then response.Close()
         End Try

@@ -28,6 +28,10 @@ Public Class ListViewItemComparer
                 StrY = CStr(ConvertDHMSTimetoSeconds(StrY))
             End If
 
+            ' Strip out any percentages
+            StrX = Trim(StrX.Replace("%", ""))
+            StrY = Trim(StrY.Replace("%", ""))
+
             ' Sort numbers
             If IsNumeric(StrX) And IsNumeric(StrY) Then
 
@@ -40,7 +44,6 @@ Public Class ListViewItemComparer
             ElseIf IsStringdate(StrX) And IsStringdate(StrY) Then
                 ' This is a date sorted as a string like 2 Days 14:23:22
                 result = CDbl(FormatStringdate(StrX)).CompareTo(FormatStringdate(StrY))
-
             Else ' Strings or any other object
                 ' Compare the two items.
                 result = StrX.CompareTo(StrY)
