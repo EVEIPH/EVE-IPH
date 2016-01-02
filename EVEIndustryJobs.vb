@@ -46,7 +46,7 @@ Public Class EVEIndustryJobs
         SQL = "SELECT * FROM INDUSTRY_JOBS WHERE installerID = " & KeyData.ID
         SQL = SQL & " AND JobType = " & CStr(JobType)
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerJobs = DBCommand.ExecuteReader
 
         While readerJobs.Read
@@ -119,7 +119,7 @@ Public Class EVEIndustryJobs
             SQL = SQL & " AND API_TYPE = 'Corporation'"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerJobs = DBCommand.ExecuteReader
 
         If readerJobs.Read Then
@@ -147,7 +147,7 @@ Public Class EVEIndustryJobs
             End If
 
             ' Begin session
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Update the cache date
             SQL = "UPDATE API SET INDUSTRY_JOBS_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat)
@@ -160,13 +160,13 @@ Public Class EVEIndustryJobs
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Clear out all the industry jobs for the user - 90 days from the API should be enough
             SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & KeyData.ID
             SQL = SQL & " AND JobType = " & CStr(JobType)
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             If Not IsNothing(IndyJobs) Then
 
@@ -176,7 +176,7 @@ Public Class EVEIndustryJobs
                     With IndyJobs(i)
 
                         SQL = "SELECT 'X' FROM INDUSTRY_JOBS WHERE jobID = " & .jobID
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerJobs = DBCommand.ExecuteReader
 
                         If Not readerJobs.Read Then
@@ -199,7 +199,7 @@ Public Class EVEIndustryJobs
                             SQL = SQL & .completedCharacterID & ","
                             SQL = SQL & CStr(JobType) & ")"
 
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                         End If
                         readerJobs.Close()
@@ -212,7 +212,7 @@ Public Class EVEIndustryJobs
 
             End If
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 

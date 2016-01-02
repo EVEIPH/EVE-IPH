@@ -80,6 +80,7 @@ Public Class frmMain
 
     ' Updates for threading
     Public PriceHistoryUpdateCount As Integer
+    Public PriceOrdersUpdateCount As Integer
 
     ' Same with shopping list
     Public SentFromShoppingList As Boolean
@@ -107,6 +108,10 @@ Public Class frmMain
 
     Private PriceToggleButtonHit As Boolean
 
+    ' For update prices, to cancel update
+    Private CancelUpdatePrices As Boolean
+    Private CancelManufacturingTabCalc As Boolean
+
     ' Total isk per hour selected on datacore grid
     Private TotalSelectedIPH As Double
 
@@ -118,7 +123,6 @@ Public Class frmMain
     ' For loading the Manufacturing Grid
     Private FirstLoadCalcBPTypes As Boolean
     Private FirstManufacturingGridLoad As Boolean
-    Private CancelManufacturingCalculate As Boolean
 
     Private UserInventedBPs As New List(Of Long)  ' This is a list of all the BPs that the user will invent from owned T1s (Manufacturing Grid)
 
@@ -289,8 +293,9 @@ Public Class frmMain
         ' Initialize stuff
         Call SetProgress("Initializing Database...")
         Application.DoEvents()
-        Call InitDB()
+        EVEDB = New DBConnection(SQLiteDBFileName)
 
+        ' For speed on CREST calls
         ServicePointManager.DefaultConnectionLimit = 20
         ServicePointManager.UseNagleAlgorithm = False
         ServicePointManager.Expect100Continue = False
@@ -342,7 +347,7 @@ Public Class frmMain
             Application.DoEvents()
             Timecheck = Now
             Call SetProgress("Updating Avg/Adj Market Prices...")
-            Call CREST.UpdateMarketPrices()
+            Call CREST.UpdateAdjAvgMarketPrices()
             Debug.Print("Market Prices " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -354,8 +359,6 @@ Public Class frmMain
 
         If Developer Then
             Me.Text = Me.Text & " - Developer"
-            chkCalcUpdateCRESTHistory.Visible = True
-            CalcBPStripMenuItem.Visible = True
             mnuInventionSuccessMonitor.Visible = True
             mnuFactoryFinder.Visible = True
             mnuMarketFinder.Visible = True
@@ -368,18 +371,8 @@ Public Class frmMain
             mnuMarketFinder.Visible = False
             mnuRefinery.Visible = False
             mnuLPStore.Visible = False
-            CalcBPStripMenuItem.Visible = False
             tabMain.TabPages.Remove(tabPI)
-            chkCalcUpdateCRESTHistory.Visible = False
         End If
-
-        ' For changes to mining upgrade combo
-        MiningUpgradesCollection.Add(None)
-        MiningUpgradesCollection.Add("5% (T1)")
-        MiningUpgradesCollection.Add("8% (M1)")
-        MiningUpgradesCollection.Add("9% (T2)")
-        MiningUpgradesCollection.Add("9% (M6)")
-        MiningUpgradesCollection.Add("10% (M6)")
 
         ' Don't include invention teams until CCP implements it
         tabCalcTeams.TabPages.Remove(tabCalcTeamInvention)
@@ -439,8 +432,7 @@ Public Class frmMain
             mnuSelectDefaultChar.Enabled = False
         End If
 
-        ' Default character set, now set the panel
-        pnlCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+        Call LoadCharacterNamesinMenu()
 
         ' Type of skills loaded
         Call UpdateSkillPanel()
@@ -564,6 +556,9 @@ Public Class frmMain
         End If
 
         PriceHistoryUpdateCount = 0
+        PriceOrdersUpdateCount = 0
+        CancelUpdatePrices = False
+        CancelManufacturingTabCalc = False
 
         Call InitUpdatePricesTab()
 
@@ -739,7 +734,7 @@ Public Class frmMain
     Protected Overrides Sub Finalize()
         MyBase.Finalize()
         On Error Resume Next
-        DB.Close()
+        EVEDB.CloseDB()
         On Error GoTo 0
     End Sub
 
@@ -766,7 +761,7 @@ Public Class frmMain
 
         SQL = "SELECT COUNT(*) FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         numChars = CLng(DBCommand.ExecuteScalar())
 
         If numChars = 0 Then
@@ -853,6 +848,446 @@ Public Class frmMain
     Private Sub lblCalcColorCode5_MouseEnter(sender As System.Object, e As System.EventArgs) Handles lblCalcColorCode5.MouseEnter
         If UserApplicationSettings.ShowToolTips Then
             ttMain.SetToolTip(lblCalcColorCode3, "Red Text: Unable to Build Item")
+        End If
+    End Sub
+
+#End Region
+
+#Region "SVR Functions"
+
+    ' For updating market prices and history
+    Private Structure ItemRegionPairs
+        Dim ItemID As Long
+        Dim RegionID As Long
+    End Structure
+
+    ' For use with threading to speed up the CREST calls
+    Private Sub UpdateMarketHistory(ByVal PairsList As Object, Optional ByRef PG As ToolStripProgressBar = Nothing)
+        Dim BatchStart As DateTime = Now
+        Dim BatchCounter As Integer = 0
+        Dim PricesUpdated As Boolean
+        Dim TotalTimes As New List(Of Double)
+        Dim DownloadTime As New List(Of Double)
+        Dim ProcessingTime As New List(Of Double)
+        Dim CRESTHistory As New EVECREST
+        Dim MaxRequestsperSecond As Integer = CRESTHistory.GetRatePerSecond
+
+        Dim Pairs As List(Of ItemRegionPairs) = CType(PairsList, List(Of ItemRegionPairs))
+
+        For i = 0 To Pairs.Count - 1
+
+            ' Update the prices then check limiting if needed - Note, the internets suggests opening new threads with new db connections but I can't do transactions in each thread, which slows it down and this seems to work fine.
+            PricesUpdated = CRESTHistory.UpdateMarketHistory(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, True)
+
+            ' Only do limiting if we actually update something 
+            If PricesUpdated Then
+                BatchCounter += 1
+
+                If CRESTHistory.LimitCRESTCalls(BatchStart, Pairs.Count, BatchCounter) Then
+                    ' Reset
+                    BatchCounter = 0
+                    BatchStart = Now
+                End If
+            End If
+
+            ' Now that we updated it, for each record, update the total record count for the progressbar on frmMain
+            PriceHistoryUpdateCount += 1
+
+            If Not IsNothing(PG) Then
+                ' Update the pg here
+                Call UpdateToolStripProgressBar(PG, PriceHistoryUpdateCount)
+                Application.DoEvents()
+            End If
+        Next
+
+
+    End Sub
+
+    ' Updates all the price history from CREST
+    Private Sub UpdateCRESTPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long)
+        Dim Pairs As New List(Of ItemRegionPairs)
+
+        ' Build the pairs
+        For i = 0 To SentTypeIDs.Count - 1
+            ' Only add data we want to query
+            If UpdatableMarketData(SentTypeIDs(i), UpdateRegionID, "History") Then
+                Dim TempPair As ItemRegionPairs
+                TempPair.ItemID = SentTypeIDs(i)
+                TempPair.RegionID = UpdateRegionID
+                Pairs.Add(TempPair)
+            End If
+        Next
+
+        If Pairs.Count > 0 Then
+            Dim CREST As New EVECREST
+            Dim NumberofThreads As Integer = 0
+            ' How many records per thread do we need?
+            Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / CREST.GetMaximumConnections))
+            If Splits = 1 Then
+                ' If the return is 1, then we have less than the max connections
+                ' so just set up enough pairs for 1 run each
+                NumberofThreads = Pairs.Count
+            Else
+                NumberofThreads = CREST.GetMaximumConnections
+            End If
+
+            ' For processing
+            Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
+            Dim TempPairs As New List(Of ItemRegionPairs)
+            Dim PairMarker As Integer = 0
+            Dim j As Integer = 0
+
+            ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
+            For i = 0 To NumberofThreads - 1
+                For j = PairMarker To Pairs.Count - 1
+                    If j < Splits * (i + 1) Then
+                        TempPairs.Add(Pairs(j))
+                    Else
+                        Exit For
+                    End If
+                Next
+                ThreadPairs.Add(TempPairs)
+                TempPairs = New List(Of ItemRegionPairs)
+                PairMarker = j
+                If j = Pairs.Count Then
+                    Exit For
+                End If
+            Next
+
+            ' Start a transaction here to speed up processing in the updates
+            Call EVEDB.BeginSQLiteTransaction()
+
+            ' Reset the value of the progress bar
+            pnlProgressBar.Visible = True
+            pnlProgressBar.Value = 0
+            PriceHistoryUpdateCount = 0
+            pnlProgressBar.Maximum = Pairs.Count
+            Application.DoEvents()
+
+            ' Call this manually if it's just one item to update
+            If ThreadPairs.Count = 1 Then
+                Call UpdateMarketHistory(ThreadPairs(0), pnlProgressBar)
+            Else
+                ' Call each thread for the pairs
+                Dim ThreadsArray As List(Of Threading.Thread) = New List(Of Threading.Thread)
+                ' Call each thread for the pairs
+                For i = 0 To ThreadPairs.Count - 1
+                    Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
+                    UPHThread.Start(ThreadPairs(i))
+                    ' Save the thread if we need to kill it
+                    ThreadsArray.Add(UPHThread)
+                Next
+
+                ' Now loop until all the threads are done
+                While PriceHistoryUpdateCount < Pairs.Count
+                    ' Update the progress bar with data from each thread
+                    Call UpdateToolStripProgressBar(pnlProgressBar, PriceHistoryUpdateCount)
+
+                    If CancelManufacturingTabCalc Then
+                        ' Kill all the threads
+                        For i = 0 To ThreadsArray.Count - 1
+                            If ThreadsArray(i).IsAlive Then
+                                ThreadsArray(i).Abort()
+                            End If
+                        Next
+
+                        Exit While
+                    End If
+
+                    Application.DoEvents()
+                End While
+            End If
+
+            ' Finish updating the DB
+            Call EVEDB.CommitSQLiteTransaction()
+            pnlProgressBar.Visible = False
+            Application.DoEvents()
+        End If
+
+    End Sub
+
+    ' EVE MarketData - Updates the item price averages for the region, days, and typeid sent in the cache database - update only each day
+    Public Sub UpdateEMDPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long, UpdateDays As Integer)
+        Dim SQL As String
+        Dim i, j As Integer
+        Dim readerAvgPrices As SQLiteDataReader
+        Dim UpdateIDList As New List(Of Long)
+        Dim CleanupIDs As New List(Of Long)
+        Dim UniqueSentIDs As New List(Of Long)
+        Dim UniqueUpdatedPrices As New List(Of Long)
+        Dim CurrentDateTime As Date = Now
+
+        Dim API As New EVEMarketDataAPI
+        Dim UpdatedAvgPrices As New List(Of EVEMarketDataPriceAverage)
+        Dim SQLTypeIDList As String = ""
+
+        ' Clean up sent ID's and make sure we have a set of unique ids
+        For i = 0 To SentTypeIDs.Count - 1
+            If Not UniqueSentIDs.Contains(SentTypeIDs(i)) Then
+                UniqueSentIDs.Add(SentTypeIDs(i))
+            End If
+        Next
+
+        ' Check the list of Type ID's and see if we ran an update for the ID and days entered in the past day
+        For i = 0 To UniqueSentIDs.Count - 1
+            SQL = "SELECT 'X' FROM EMD_UPDATE_HISTORY WHERE TYPE_ID =" & CStr(UniqueSentIDs(i)) & " AND REGION_ID = " & CStr(UpdateRegionID)
+            SQL = SQL & " AND DateTime(UPDATE_LAST_RAN) >= DateTime('" & Format(DateAdd(DateInterval.Day, -1, CurrentDateTime), SQLiteDateFormat) & "')"
+            SQL = SQL & " AND DAYS = " & UpdateDays
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerAvgPrices = DBCommand.ExecuteReader
+
+            If Not readerAvgPrices.Read Then
+                ' Then the record needs to be updated, so insert it to the list
+                UpdateIDList.Add(UniqueSentIDs(i))
+            End If
+        Next
+
+        ' Convert list to array of longs
+        If UpdateIDList.Count = 0 Then
+            ' No updates required
+            Exit Sub
+        End If
+
+        ' TypeID list for the records
+        For i = 0 To UpdateIDList.Count - 1
+            SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
+        Next
+
+        ' Now that we have a list of ids, get them updated - note return data might not include all typeids
+        UpdatedAvgPrices = API.GetPriceAverages(UpdateIDList, UpdateRegionID, UpdateDays)
+
+        ' If this errored, then don't update and notify user it's not working
+        If API.GetErrorCode <> 0 Then
+            If Not ShownPriceUpdateError Then
+                MsgBox("Unable to update all Price volume data at this time.", vbInformation, Application.ProductName)
+                ShownPriceUpdateError = True
+            End If
+        End If
+
+        ' Get a unique list of typeID's that were updated to check later
+        ' Clean up sent ID's and make sure we have a set of unique ids
+        For i = 0 To UpdatedAvgPrices.Count - 1
+            If Not UniqueUpdatedPrices.Contains(UpdatedAvgPrices(i).typeID) Then
+                UniqueUpdatedPrices.Add(UpdatedAvgPrices(i).typeID)
+            End If
+        Next
+
+        ' Even if we errored, update any of the data we did get
+        If UpdatedAvgPrices.Count <> 0 Then
+            Call EVEDB.BeginSQLiteTransaction()
+
+            ' First delete any records older than 90 days for these typeIDs
+            SQLTypeIDList = " (" & SQLTypeIDList.Substring(0, Len(SQLTypeIDList) - 1) & ") "
+            SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID IN " & SQLTypeIDList
+            SQL = SQL & "AND REGION_ID = " & CStr(UpdateRegionID)
+            SQL = SQL & " AND DATETIME(PRICE_HISTORY_DATE) <= DateTime('" & Format(DateAdd(DateInterval.Day, -90, CurrentDateTime), SQLiteDateFormat) & "')"
+            Call evedb.ExecuteNonQuerySQL(SQL)
+
+            ' Insert these records to the database 
+            For i = 0 To UpdatedAvgPrices.Count - 1
+
+                ' Delete the record and insert a fresh one if in there
+                SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID = " & CStr(UpdatedAvgPrices(i).typeID)
+                SQL = SQL & " AND REGION_ID = " & CStr(UpdatedAvgPrices(i).regionID)
+                SQL = SQL & " AND PRICE_HISTORY_DATE = '" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "'"
+                Call evedb.ExecuteNonQuerySQL(SQL)
+
+                ' Insert new record - this will make sure any null added records that get updated are current
+                SQL = "INSERT INTO EMD_ITEM_PRICE_HISTORY VALUES ("
+                SQL = SQL & CStr(UpdatedAvgPrices(i).typeID) & ","
+                SQL = SQL & CStr(UpdatedAvgPrices(i).regionID) & ","
+                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "',"
+                SQL = SQL & CStr(UpdatedAvgPrices(i).lowPrice) & ","
+                SQL = SQL & CStr(UpdatedAvgPrices(i).highPrice) & ","
+                SQL = SQL & CStr(UpdatedAvgPrices(i).avgPrice) & ","
+                SQL = SQL & CStr(UpdatedAvgPrices(i).orders) & ","
+                SQL = SQL & CStr(UpdatedAvgPrices(i).volume) & ")"
+                Call evedb.ExecuteNonQuerySQL(SQL)
+
+            Next
+
+            ' We just did a set of updates, so update the update history for the unique typeIDs
+            For i = 0 To UniqueUpdatedPrices.Count - 1
+                ' Delete any records there
+                SQL = "DELETE FROM EMD_UPDATE_HISTORY WHERE TYPE_ID = " & CStr(UniqueUpdatedPrices(i))
+                SQL = SQL & " AND REGION_ID = " & CStr(UpdateRegionID)
+                SQL = SQL & " AND DAYS = " & UpdateDays
+                Call evedb.ExecuteNonQuerySQL(SQL)
+
+                ' Insert the new record
+                SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(UniqueUpdatedPrices(i)) & ","
+                SQL = SQL & UpdateDays & ","
+                SQL = SQL & CStr(UpdateRegionID) & ","
+                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).UpdateRan, SQLiteDateFormat) & "')"
+                Call evedb.ExecuteNonQuerySQL(SQL)
+
+            Next
+
+            Call EVEDB.CommitSQLiteTransaction()
+
+        End If
+
+        ' If there are any ID's that we sent and got nothing back from, 
+        ' then insert update the update history table and try again tomorrow
+        If UniqueUpdatedPrices.Count <> UpdateIDList.Count Then
+            Call EVEDB.BeginSQLiteTransaction()
+
+            ' Save the missed ID's here
+            j = 0
+            SQLTypeIDList = ""
+
+            ' Build the Type ID list
+            For i = 0 To UpdateIDList.Count - 1
+                TypeIDToFind = UpdateIDList(i)
+                If Not UpdatedAvgPrices.Exists(AddressOf FindItem) Then
+                    SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
+                    CleanupIDs.Add(UpdateIDList(i))
+                    j += 1
+                End If
+            Next
+
+            ' If we have items in the list, process them
+            If SQLTypeIDList <> "" Then
+
+                ' Process the missed records one by one
+                For i = 0 To CleanupIDs.Count - 1
+                    ' If the record is not there, then insert
+                    SQL = "SELECT * FROM EMD_UPDATE_HISTORY WHERE TYPE_ID = " & CStr(CleanupIDs(i))
+                    SQL = SQL & " AND REGION_ID = " & CStr(UpdateRegionID)
+                    SQL = SQL & " AND DAYS = " & CStr(UpdateDays)
+
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerAvgPrices = DBCommand.ExecuteReader
+
+                    If Not readerAvgPrices.HasRows Then
+                        ' Insert the record showing we ran an update for this ID
+                        SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(CleanupIDs(i)) & ","
+                        SQL = SQL & CStr(UpdateDays) & ","
+                        SQL = SQL & CStr(UpdateRegionID) & ","
+                        SQL = SQL & "'" & Format(CurrentDateTime, SQLiteDateFormat) & "')"
+                        Call evedb.ExecuteNonQuerySQL(SQL)
+                    End If
+                Next
+            End If
+
+            Call EVEDB.CommitSQLiteTransaction()
+
+        End If
+
+    End Sub
+
+    ' Determine the Sales per Volume Ratio, which will be the amount of items we can build in 24 hours (include fractions) when sent the region, avg days, and production time in seconds to make ItemsProduced (runs * portion size)
+    Public Function GetItemSVR(TypeID As Long, RegionID As Long, AvgDays As Integer, ProductionTimeSeconds As Double, _
+                               ItemsProduced As Long, UseCRESTData As Boolean) As String
+        Dim SQL As String
+        Dim readerAverage As SQLiteDataReader
+        Dim ItemsperDay As Double
+
+        ' The amount of items we can build in 24 hours (include fractions) divided that by the average volume (volume/avgdays)
+        ' The data is stored as a record per day, so just count up the number of records in the time period (days - might not be the same as days shown)
+        ' and divide by the sum of the volumes over that time period
+        If UseCRESTData Then
+            SQL = "SELECT SUM(TOTAL_VOLUME_FILLED)/COUNT(PRICE_HISTORY_DATE) FROM MARKET_HISTORY "
+        Else ' EMD
+            SQL = "SELECT SUM(TOTAL_VOLUME_FILLED)/COUNT(PRICE_HISTORY_DATE) FROM EMD_ITEM_PRICE_HISTORY "
+        End If
+
+        SQL = SQL & "WHERE TYPE_ID = " & TypeID & " AND REGION_ID = " & RegionID & " "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(AvgDays + 1), Now.Date), SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Now.Date, SQLiteDateFormat) & "') "
+        SQL = SQL & "AND TOTAL_VOLUME_FILLED IS NOT NULL "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerAverage = DBCommand.ExecuteReader
+
+        readerAverage.Read()
+
+        If Not IsDBNull(readerAverage.GetValue(0)) Then
+            If ProductionTimeSeconds <> 0 Then
+                ' The number of blueprint runs we can build with the sent production time in a day - Seconds to produce 1, then divide that into seconds per day
+                ItemsperDay = (24 * 60 * 60) / (ProductionTimeSeconds / ItemsProduced)
+                ' Take the items per day and compare to the avg sales volume per day, if it's greater than one you can't make enough items in a day to meet demand = good item to build
+                Return FormatNumber(readerAverage.GetDouble(0) / ItemsperDay, 2)
+            Else
+                ' Just want the volume for the day
+                Return FormatNumber(readerAverage.GetDouble(0), 2)
+            End If
+        Else
+            ' Since 0.00 SVR is possible, return nothing instead
+            Return "-"
+        End If
+
+    End Function
+
+    ' Updates the SVR value and then returns it as a string for the item associated with the Selected BP
+    Private Function GetBPItemSVR(ProductionTime As Double) As String
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+        Dim TypeID As New List(Of Long) ' for just one
+        Dim RegionID As Long = GetRegionID(UserApplicationSettings.SVRAveragePriceRegion)
+
+        Call TypeID.Add(SelectedBlueprint.GetItemID)
+        PriceHistoryUpdateCount = 0
+
+        If UserApplicationSettings.UseCRESTforHistory Then
+            Call UpdateCRESTPriceHistory(TypeID, RegionID)
+        Else
+            ' Use EMD
+            Call UpdateEMDPriceHistory(TypeID, RegionID, CInt(UserApplicationSettings.SVRAveragePriceDuration))
+        End If
+
+        Dim ReturnValue As String = GetItemSVR(TypeID(0), RegionID, CInt(UserApplicationSettings.SVRAveragePriceDuration), ProductionTime, _
+                                               SelectedBlueprint.GetTotalUnits, UserApplicationSettings.UseCRESTforHistory)
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
+        Return ReturnValue
+
+    End Function
+
+    Private Function UpdatableMarketData(ByVal TypeID As Long, ByVal RegionID As Long, ByVal CacheType As String) As Boolean
+        Dim SQL As String
+        Dim TableName As String
+        Dim rsCache As SQLiteDataReader
+        Dim Cachedate As Date
+
+        ' First look up the cache date to see if it's time to run the update
+        If CacheType = "History" Then
+            TableName = "MARKET_HISTORY_UPDATE_CACHE"
+        ElseIf CacheType = "Orders" Then
+            TableName = "MARKET_ORDERS_UPDATE_CACHE"
+        Else
+            Return False
+        End If
+
+        SQL = "SELECT CACHE_DATE FROM " & TableName & " WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsCache = DBCommand.ExecuteReader
+
+        CacheDate = ProcessCacheDate(rsCache)
+
+        rsCache.Close()
+        rsCache = Nothing
+        DBCommand = Nothing
+
+        If Cachedate <= Now Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    Private Sub UpdateToolStripProgressBar(ByRef PG As ToolStripProgressBar, inValue As Integer)
+        ' Updates the value in the progressbar for a smooth progress (slows procesing a little) - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
+        If inValue <= PG.Maximum - 1 And inValue <> 0 Then
+            PG.Value = inValue
+            PG.Value = inValue - 1
+            PG.Value = inValue
+        Else
+            PG.Value = inValue
         End If
     End Sub
 
@@ -1088,6 +1523,244 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub LoadCharacterNamesinMenu()
+        ' Default character set, now set the menu name on the panel
+        mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+        ' Also, load all characters we have
+        Dim rsCharacters As SQLiteDataReader
+        DBCommand = New SQLiteCommand("SELECT CHARACTER_NAME FROM API WHERE API_TYPE <> 'Corporation' ORDER BY CHARACTER_NAME", EVEDB.DBREf)
+        rsCharacters = DBCommand.ExecuteReader
+
+        Dim Counter As Integer = 0
+
+        ' Reset all 
+        ToolStripMenuItem1.Text = ""
+        ToolStripMenuItem1.Visible = False
+        ToolStripMenuItem2.Text = ""
+        ToolStripMenuItem2.Visible = False
+        ToolStripMenuItem3.Text = ""
+        ToolStripMenuItem3.Visible = False
+        ToolStripMenuItem4.Text = ""
+        ToolStripMenuItem4.Visible = False
+        ToolStripMenuItem5.Text = ""
+        ToolStripMenuItem5.Visible = False
+        ToolStripMenuItem6.Text = ""
+        ToolStripMenuItem6.Visible = False
+        ToolStripMenuItem7.Text = ""
+        ToolStripMenuItem7.Visible = False
+        ToolStripMenuItem8.Text = ""
+        ToolStripMenuItem8.Visible = False
+        ToolStripMenuItem9.Text = ""
+        ToolStripMenuItem9.Visible = False
+        ToolStripMenuItem10.Text = ""
+        ToolStripMenuItem10.Visible = False
+        ToolStripMenuItem11.Text = ""
+        ToolStripMenuItem11.Visible = False
+        ToolStripMenuItem12.Text = ""
+        ToolStripMenuItem12.Visible = False
+        ToolStripMenuItem13.Text = ""
+        ToolStripMenuItem13.Visible = False
+        ToolStripMenuItem14.Text = ""
+        ToolStripMenuItem14.Visible = False
+        ToolStripMenuItem15.Text = ""
+        ToolStripMenuItem15.Visible = False
+        ToolStripMenuItem16.Text = ""
+        ToolStripMenuItem16.Visible = False
+        ToolStripMenuItem17.Text = ""
+        ToolStripMenuItem17.Visible = False
+        ToolStripMenuItem18.Text = ""
+        ToolStripMenuItem18.Visible = False
+        ToolStripMenuItem19.Text = ""
+        ToolStripMenuItem19.Visible = False
+        ToolStripMenuItem20.Text = ""
+        ToolStripMenuItem20.Visible = False
+
+        While rsCharacters.Read
+            ' Add all the character names to the list for the number we have - only load 20 characters
+            Select Case Counter
+                Case 0
+                    ToolStripMenuItem1.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem1.Visible = True
+                Case 1
+                    ToolStripMenuItem2.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem2.Visible = True
+                Case 2
+                    ToolStripMenuItem3.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem3.Visible = True
+                Case 3
+                    ToolStripMenuItem4.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem4.Visible = True
+                Case 4
+                    ToolStripMenuItem5.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem5.Visible = True
+                Case 5
+                    ToolStripMenuItem6.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem6.Visible = True
+                Case 6
+                    ToolStripMenuItem7.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem7.Visible = True
+                Case 7
+                    ToolStripMenuItem8.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem8.Visible = True
+                Case 8
+                    ToolStripMenuItem9.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem9.Visible = True
+                Case 9
+                    ToolStripMenuItem10.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem10.Visible = True
+                Case 10
+                    ToolStripMenuItem11.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem11.Visible = True
+                Case 11
+                    ToolStripMenuItem12.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem12.Visible = True
+                Case 12
+                    ToolStripMenuItem13.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem13.Visible = True
+                Case 13
+                    ToolStripMenuItem14.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem14.Visible = True
+                Case 14
+                    ToolStripMenuItem15.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem15.Visible = True
+                Case 15
+                    ToolStripMenuItem16.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem16.Visible = True
+                Case 16
+                    ToolStripMenuItem17.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem17.Visible = True
+                Case 17
+                    ToolStripMenuItem18.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem18.Visible = True
+                Case 18
+                    ToolStripMenuItem19.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem19.Visible = True
+                Case 19
+                    ToolStripMenuItem20.Text = rsCharacters.GetString(0)
+                    ToolStripMenuItem20.Visible = True
+            End Select
+            Counter += 1 ' increment
+        End While
+
+    End Sub
+
+    ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
+    Private Sub ToolStripMenuItem1_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem1.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem1.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem1.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem2_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem2.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem2.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem2.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem3_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem3.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem3.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem3.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem4_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem4.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem4.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem4.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem5_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem5.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem5.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem5.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem6_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem6.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem6.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem6.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem7_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem7.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem7.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem7.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem8_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem8.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem8.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem8.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem9_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem9.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem9.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem9.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem10_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem10.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem10.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem10.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem11_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem11.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem11.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem11.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem12_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem12.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem12.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem12.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem13_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem13.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem13.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem13.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem14_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem14.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem14.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem14.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem15_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem15.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem15.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem15.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem16_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem16.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem16.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem16.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem17_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem17.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem17.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem17.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem18_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem18.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem18.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem18.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem19_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem19.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem19.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem19.Text
+    End Sub
+
+    Private Sub ToolStripMenuItem20_Click(sender As System.Object, e As System.EventArgs) Handles ToolStripMenuItem20.Click
+        Call LoadSelectedCharacter(ToolStripMenuItem20.Text)
+        mnuCharacter.Text = "Character Loaded: " & ToolStripMenuItem20.Text
+    End Sub
+
+    ' Loads a default character from name sent
+    Private Sub LoadSelectedCharacter(CharacterName As String)
+
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+        ' Update them all to 0 first
+        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = 0 WHERE API_TYPE <> 'Corporation'")
+        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "' AND API_TYPE NOT IN ('Corporation', 'Old Key')")
+
+        ' Load the character as default for program and reload additional API data
+        Call SelectedCharacter.LoadDefaultCharacter(True, UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
+        Call PlayNotifySound()
+        Application.UseWaitCursor = False
+
+    End Sub
+
     ' Loads the team settings from a current team
     Private Function LoadTeamSettingsfromTeam(SentTeam As IndustryTeam, SentTab As String) As TeamSettings
         Dim TempSettings As New TeamSettings
@@ -1116,7 +1789,7 @@ Public Class frmMain
         SQL = SQL & "AND INVENTORY_GROUPS.groupID NOT IN (SELECT GROUP_ID FROM ASSEMBLY_ARRAYS) "
         SQL = SQL & "AND INVENTORY_TYPES.typeID IN (SELECT ITEM_ID FROM ALL_BLUEPRINTS) "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
 
         While rsCheck.Read
@@ -1214,7 +1887,7 @@ Public Class frmMain
 
         SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
 
         readerBP.Read()
@@ -1259,7 +1932,7 @@ Public Class frmMain
                 SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
                 SQL = SQL & "and typeID = blueprintTypeID AND typeName LIKE '%" & TempRelic & "%'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerRelic = DBCommand.ExecuteReader
                 readerRelic.Read()
                 cmbBPRelic.Items.Clear()
@@ -1666,37 +2339,43 @@ Public Class frmMain
             Application.DoEvents()
 
             SQL = "DELETE FROM API"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM CHARACTER_STANDINGS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM CHARACTER_SKILLS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM OWNED_BLUEPRINTS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM ITEM_PRICES_CACHE"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM ASSETS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM INDUSTRY_JOBS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE ITEM_PRICES SET PRICE = 0"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM EMD_UPDATE_HISTORY"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM MARKET_HISTORY"
+            evedb.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM MARKET_HISTORY_UPDATE_CACHE"
+            evedb.ExecuteNonQuerySQL(SQL)
 
             ' Reset all the cache dates
             Call ResetCRESTDates()
@@ -1721,8 +2400,7 @@ Public Class frmMain
                 ' Need to set a default, open that form
                 Dim f2 = New frmSetCharacterDefault
                 f2.ShowDialog()
-                ' If we returned, we got a default character set
-                pnlCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+                mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
             End If
 
             ' Reset the tabs
@@ -1745,16 +2423,22 @@ Public Class frmMain
             Application.DoEvents()
 
             SQL = "DELETE FROM ITEM_PRICES_CACHE"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM EMD_UPDATE_HISTORY"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM MARKET_HISTORY"
+            evedb.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM MARKET_HISTORY_UPDATE_CACHE"
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE ITEM_PRICES SET PRICE = 0"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -1776,7 +2460,7 @@ Public Class frmMain
 
         ' Simple update, just set all the CREST cache dates to null
         SQL = "DELETE FROM CREST_CACHE_DATES"
-        ExecuteNonQuerySQL(SQL)
+        evedb.ExecuteNonQuerySQL(SQL)
 
         MsgBox("CREST cache dates reset", vbInformation, Application.ProductName)
 
@@ -1785,12 +2469,12 @@ Public Class frmMain
     Private Sub ResetCRESTIndustryFacilities()
 
         ' Need to delete all outpost data, clear out the industry facilities table and set up for a rebuild
-        Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_FACILITIES")
-        Call ExecuteNonQuerySQL("DELETE FROM STATION_FACILITIES WHERE OUTPOST <> 0")
+        Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_FACILITIES")
+        Call evedb.ExecuteNonQuerySQL("DELETE FROM STATION_FACILITIES WHERE OUTPOST <> 0")
 
         ' Simple update, just set all the CREST cache dates to null
-        Call ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
-        Call ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_FACILITIES_CACHED_UNTIL = NULL")
+        Call evedb.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
+        Call evedb.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_FACILITIES_CACHED_UNTIL = NULL")
 
         MsgBox("CREST Industry Facilities reset", vbInformation, Application.ProductName)
 
@@ -1799,8 +2483,8 @@ Public Class frmMain
     Public Sub ResetCRESTAdjustedMarketPrices()
 
         ' Simple update, just set all the data back to zero
-        Call ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
-        Call ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_MARKET_PRICES_CACHED_UNTIL = NULL")
+        Call evedb.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+        Call evedb.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_MARKET_PRICES_CACHED_UNTIL = NULL")
 
         MsgBox("CREST Adjusted Market Prices reset", vbInformation, Application.ProductName)
 
@@ -1835,10 +2519,10 @@ Public Class frmMain
             Application.DoEvents()
 
             SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID =" & SelectedCharacter.ID
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE API SET RESEARCH_AGENTS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -1859,10 +2543,10 @@ Public Class frmMain
             Application.DoEvents()
 
             SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID =" & SelectedCharacter.ID & " AND JobType =" & ScanType.Personal
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE API SET INDUSTRY_JOBS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -1883,7 +2567,7 @@ Public Class frmMain
             Application.DoEvents()
 
             SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -1904,18 +2588,18 @@ Public Class frmMain
 
             ' Personal
             SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.ID
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             ' Corp
             SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = NULL WHERE CORPORATION_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             SQL = SQL & " AND API_TYPE = 'Corporation'"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             ' Reload the asset variables for the character, which will load nothing but clear the assets out
             Call SelectedCharacter.GetAssets().LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
@@ -2008,8 +2692,8 @@ Public Class frmMain
             ' Open up the default select box here
             Dim f2 = New frmSetCharacterDefault
             f2.ShowDialog()
-            ' If we returned, we got a default character set
-            pnlCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+            ' reload all the names
+            Call LoadCharacterNamesinMenu()
 
             ' Only allow selecting a default if there are accounts to set it to
             If NonDummyAccountsLoaded() Then
@@ -2036,9 +2720,9 @@ Public Class frmMain
         End If
 
         ' Default character set, now set the panel if it changed
-        If SelectedCharacter.Name <> pnlCharacter.Text.Substring(pnlCharacter.Text.IndexOf(":") + 2) Then
+        If SelectedCharacter.Name <> mnuCharacter.Text.Substring(mnuCharacter.Text.IndexOf(":") + 2) Then
             ' If we returned, we got a default character set
-            pnlCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+            mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
             Call ResetTabs()
         End If
 
@@ -2057,11 +2741,8 @@ Public Class frmMain
         Me.Cursor = Cursors.Default
     End Sub
 
-    Private Sub btnEnterPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnEnterPrices.Click
-        Dim f1 = New frmManualPriceUpdate
-        f1.ShowDialog()
-        ' Reset the calc button
-        Call ResetRefresh()
+    Private Sub btnCancelUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancelUpdate.Click
+        CancelUpdatePrices = True
     End Sub
 
     Private Sub mnuSelectionExit_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles mnuSelectionExit.Click
@@ -2090,7 +2771,7 @@ Public Class frmMain
 
         f1.ShowDialog()
         ' If we returned, we got a default character set
-        pnlCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+        mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
 
         ' If they cancel or choose the same one, don't re load everything
         If PreviousChar <> SelectedCharacter.Name Then
@@ -2149,9 +2830,6 @@ Public Class frmMain
         Dim f1 = New frmSettings
         ' Open the settings form
         f1.ShowDialog()
-
-
-
     End Sub
 
     Private Sub ShowShoppingList()
@@ -2598,7 +3276,7 @@ Public Class frmMain
         Application.UseWaitCursor = True
         Call f1.Show()
         Application.DoEvents()
-        If CREST.UpdateMarketPrices(f1.lblCRESTStatus, f1.pgCREST) Then
+        If CREST.UpdateAdjAvgMarketPrices(f1.lblCRESTStatus, f1.pgCREST) Then
 
             ' Update all the prices in the program
             Call UpdateProgramPrices()
@@ -2731,7 +3409,7 @@ Public Class frmMain
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerBP = DBCommand.ExecuteReader
                     readerBP.Read()
 
@@ -2763,7 +3441,7 @@ Public Class frmMain
                 Else ' Price per unit update
 
                     SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
-                    Call ExecuteNonQuerySQL(SQL)
+                    Call evedb.ExecuteNonQuerySQL(SQL)
 
                     ' Mark the line text with black incase it is red for no price
                     CurrentRow.ForeColor = Color.Black
@@ -2785,7 +3463,7 @@ Public Class frmMain
             Else
                 ' Price List Update
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
                 CurrentRow.SubItems(3).Text = FormatNumber(txtListEdit.Text, 2)
@@ -3078,7 +3756,7 @@ Tabs:
             SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
             SQL = SQL & "'" & lstBPComponentMats.SelectedItems(0).SubItems(0).Text & "'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsBP = DBCommand.ExecuteReader()
 
             If chkBPBuildBuy.Checked Then
@@ -3603,7 +4281,7 @@ Tabs:
         SQL = SQL & "WHERE FACILITY_NAME = '" & FormatDBString(SentFacility.FacilityName) & "' "
         SQL = SQL & "AND ACTIVITY_ID = " & CStr(Activity)
 
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
     End Sub
 
@@ -4407,7 +5085,7 @@ Tabs:
         SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
         SQL = SQL & "AND typeID = blueprintTypeID"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRelic = DBCommand.ExecuteReader
 
         If UserBPTabSettings.RelicType <> "" Then
@@ -4861,11 +5539,19 @@ Tabs:
     Private Sub UpdateMarketPriceManually()
 
         Dim SQL As String = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
         Call PlayNotifySound()
         lblBPMarketCost.Text = FormatNumber(txtBPMarketPriceEdit.Text, 2)
         IgnoreFocus = True
         Call RefreshBP()
+    End Sub
+
+    Private Sub lblBPBPSVR_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBPBPSVR.DoubleClick
+        lblBPBPSVR.Text = GetBPItemSVR(SelectedBlueprint.GetProductionTime) ' just bp time
+    End Sub
+
+    Private Sub lblBPRawSVR_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBPRawSVR.DoubleClick
+        lblBPRawSVR.Text = GetBPItemSVR(SelectedBlueprint.GetTotalProductionTime) ' total time to build everything
     End Sub
 
 #End Region
@@ -4905,6 +5591,10 @@ Tabs:
             ' Production time label
             lblBPProductionTime.Text = "00:00:00"
             lblBPTotalItemPT.Text = "00:00:00"
+
+            ' SVR
+            lblBPBPSVR.Text = "-"
+            lblBPRawSVR.Text = "-"
 
             ' Cost labels
             lblBPRawMatCost.Text = "0.00"
@@ -5396,7 +6086,7 @@ Tabs:
             SQL = SQL & "'" & FormatDBString(cmbBPBlueprintSelection.Text) & "'"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
 
         If readerBP.Read() Then
@@ -5448,7 +6138,7 @@ Tabs:
         SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
         SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
 
         Dim HasOwnedBP As Boolean = False
@@ -5462,7 +6152,7 @@ Tabs:
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED = 2 AND OWNED <> 0 "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
 
             If readerBP.Read() Then
@@ -5881,6 +6571,7 @@ Tabs:
         lblBPCanMakeBP.Visible = False
         lblBPCanMakeBPAll.Visible = False
         txtListEdit.Visible = False
+        btnBPRefreshBP.Enabled = False
         Me.Cursor = Cursors.WaitCursor
         IgnoreFocus = True
         Application.DoEvents()
@@ -6298,6 +6989,7 @@ ExitForm:
         lstBPRawMats.Enabled = True
         lblBPCanMakeBP.Visible = True
         lblBPCanMakeBPAll.Visible = True
+        btnBPRefreshBP.Enabled = True
 
         ' Enable Teams and facility selectors
         tabBPInventionEquip.Enabled = True
@@ -6501,7 +7193,7 @@ ExitForm:
             Exit Sub
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBPs = DBCommand.ExecuteReader
         cmbBPBlueprintSelection.BeginUpdate()
 
@@ -6712,6 +7404,19 @@ ExitForm:
         ' Set the total time to produce all items for this Blueprint
         lblBPTotalItemPT.Text = FormatIPHTime(SelectedBlueprint.GetTotalProductionTime)
 
+        ' SVR Values
+        ' Set these first so it doesn't look goofy
+        lblBPBPSVR.Text = "-"
+        lblBPRawSVR.Text = "-"
+
+        If UserApplicationSettings.AutoUpdateSVRonBPTab Then
+            Dim TempBPSVR As String = GetBPItemSVR(SelectedBlueprint.GetProductionTime)
+            Dim TempRawSVR As String = GetBPItemSVR(SelectedBlueprint.GetTotalProductionTime)
+            ' Get the values before setting so they update at the same time on the form
+            lblBPBPSVR.Text = TempBPSVR
+            lblBPRawSVR.Text = TempRawSVR
+        End If
+
         ' Set the ME and TE values if they changed
         txtBPME.Text = CStr(SelectedBlueprint.GetME)
         txtBPTE.Text = CStr(SelectedBlueprint.GetTE)
@@ -6746,7 +7451,7 @@ ExitForm:
         If SentTechLevel = 2 Then
             SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & CStr(BlueprintTypeID)
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerOwned = DBCommand.ExecuteReader()
             readerOwned.Read()
 
@@ -6761,7 +7466,7 @@ ExitForm:
             SQL = "SELECT quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
             SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
 
             If readerBP.Read Then
@@ -6886,7 +7591,7 @@ ExitForm:
         Dim rsSystem As SQLiteDataReader
         Dim SSID As String
         SQL = "SELECT solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & SolarSystemName & "'"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsSystem = DBCommand.ExecuteReader
         rsSystem.Read()
 
@@ -6915,7 +7620,7 @@ ExitForm:
         SQL = "SELECT * FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
         SQL = SQL & "AND ACTIVITY_NAME = '" & cmbBPUpdateCostIndexActivity.Text & "'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
         rsCheck.Read()
 
@@ -6934,20 +7639,20 @@ ExitForm:
         rsCheck.Close()
         DBCommand = Nothing
 
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         ' Update the station records for this system
         SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex
         SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
 
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         ' Add the fw system upgrade information
         If cmbBPFWUpgrade.Enabled = True Then
             ' See if we update or insert
             SQL = "SELECT * FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
             rsCheck.Read()
 
@@ -6974,7 +7679,7 @@ ExitForm:
                 SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SSID & "," & CStr(FWUpgradeLevel) & ")"
             End If
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
             rsCheck.Close()
 
         End If
@@ -8472,11 +9177,6 @@ ExitForm:
         Dim Manufacture As Boolean
     End Structure
 
-    Private Structure ItemRegionPairs
-        Dim ItemID As Long
-        Dim RegionID As Long
-    End Structure
-
     ' Checks the user entry and then sends the type ids and regions to the cache update
     Private Sub btnImportPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnImportPrices.Click
         Dim i As Integer
@@ -8484,7 +9184,6 @@ ExitForm:
 
         Dim RegionChecked As Boolean
         Dim SystemChecked As Boolean
-        Dim readerRegions As SQLiteDataReader
         Dim readerSystems As SQLiteDataReader
         Dim SQL As String
 
@@ -8541,7 +9240,24 @@ ExitForm:
         End If
 
         ' Working
-        tabMain.Enabled = False ' Disable tab
+        ' Disable tab
+        gbRawMaterials.Enabled = False
+        gbManufacturedItems.Enabled = False
+        gbRegions.Enabled = False
+        gbTradeHubSystems.Enabled = False
+        gbPrice.Enabled = False
+        gbSplitPrices.Enabled = False
+        txtPriceItemFilter.Enabled = False
+        lblItemFilter.Enabled = False
+        btnClearItemFilter.Enabled = False
+        chkPriceRawMaterialPrices.Enabled = False
+        chkPriceManufacturedPrices.Enabled = False
+        chkSplitPrices.Enabled = False
+        btnToggleAllPriceItems.Enabled = False
+        btnImportPrices.Enabled = False
+        btnSaveUpdatePrices.Enabled = False
+        lstPricesView.Enabled = False
+
         Me.Refresh()
         Me.Cursor = Cursors.WaitCursor
         pnlStatus.Text = "Initializing Query..."
@@ -8577,26 +9293,17 @@ ExitForm:
                             RegionName = RegionCheckBoxes(i).Text
                     End Select
 
-                    SQL = "SELECT regionID FROM REGIONS WHERE regionName = '" & RegionName & "'"
+                    SearchRegions.Add(CStr(GetRegionID(RegionName)))
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerRegions = DBCommand.ExecuteReader
-
-                    readerRegions.Read()
-                    SearchRegions.Add(CStr(readerRegions.GetInt64(0)))
-                    readerRegions.Close()
                 End If
             Next
-
-            readerRegions = Nothing
-            DBCommand = Nothing
 
         ElseIf SystemChecked Then
             ' Get the system list string
             SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
             SQL = SQL & "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerSystems = DBCommand.ExecuteReader
             If readerSystems.Read Then
                 SearchSystem = CStr(readerSystems.GetValue(0))
@@ -8620,8 +9327,26 @@ UpdateProgramPrices:
 
 ExitSub:
 
+        Application.UseWaitCursor = False
         Application.DoEvents()
-        tabMain.Enabled = True ' Disable tab
+        ' Enable tab
+        gbRawMaterials.Enabled = True
+        gbManufacturedItems.Enabled = True
+        gbRegions.Enabled = True
+        gbTradeHubSystems.Enabled = True
+        gbPrice.Enabled = True
+        gbSplitPrices.Enabled = True
+        txtPriceItemFilter.Enabled = True
+        lblItemFilter.Enabled = True
+        btnClearItemFilter.Enabled = True
+        chkPriceRawMaterialPrices.Enabled = True
+        chkPriceManufacturedPrices.Enabled = True
+        chkSplitPrices.Enabled = True
+        btnToggleAllPriceItems.Enabled = True
+        btnImportPrices.Enabled = True
+        btnSaveUpdatePrices.Enabled = True
+        lstPricesView.Enabled = True
+
         Me.Refresh()
         Me.Cursor = Cursors.Default
         pnlProgressBar.Visible = False
@@ -8639,10 +9364,35 @@ ExitSub:
 
         Dim PriceType As String = "" ' Default
 
-        ' First update the cache
-        If Not UpdatePricesCache(SentItems, SearchRegions, SearchSystem) Then
-            ' Update Failed, don't reload everything
-            Exit Sub
+        If chkUpdatePricesUseCREST.Checked Then
+            Dim RegionID As Long
+            ' Look up regionID
+            If SearchSystem <> "" Then
+                DBCommand = New SQLiteCommand("SELECT regionID FROM SOLAR_SYSTEMS WHERE solarsystemID = '" & SearchSystem & "'", EVEDB.DBREf)
+                readerPrices = DBCommand.ExecuteReader
+                readerPrices.Read()
+                RegionID = readerPrices.GetInt64(0)
+            Else
+                DBCommand = New SQLiteCommand("SELECT regionID FROM REGIONS WHERE regionName = '" & SearchRegions(0) & "'", EVEDB.DBREf)
+                readerPrices = DBCommand.ExecuteReader
+                readerPrices.Read()
+                RegionID = readerPrices.GetInt64(0)
+            End If
+
+            readerPrices.Close()
+            DBCommand = Nothing
+
+            If Not UpdateMarketOrdersCache(SentItems, RegionID) Then
+                ' Update Failed, don't reload everything
+                Exit Sub
+            End If
+        Else
+            ' First update the cache
+            If Not UpdatePricesCache(SentItems, SearchRegions, SearchSystem) Then
+                ' Update Failed, don't reload everything
+                Exit Sub
+            End If
+
         End If
 
         ' Working
@@ -8668,7 +9418,7 @@ ExitSub:
             RegionList = SearchSystem
         End If
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         ' Select the prices from the cache table
         For i = 0 To SentItems.Count - 1
@@ -8778,7 +9528,7 @@ ExitSub:
             ' Load the data based on the option selected
             SQL = "SELECT " & PriceType & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND REGIONLIST = '" & RegionList & "' ORDER BY DateTime(UPDATEDATE) DESC"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPrices = DBCommand.ExecuteReader
 
             ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
@@ -8786,7 +9536,7 @@ ExitSub:
                 SelectedPrice = readerPrices.GetDouble(0)
                 ' Now Update the ITEM_PRICES table, set price and price type
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
                 readerPrices.Close()
                 readerPrices = Nothing
@@ -8799,7 +9549,7 @@ ExitSub:
             Application.DoEvents()
         Next
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
         ' Done updating, hide the progress bar
         pnlProgressBar.Visible = False
@@ -8854,13 +9604,17 @@ ExitSub:
         ' Loop through the list of items to get full query of just those that need to be updated
         For i = 0 To CacheItems.Count - 1
 
+            If CancelUpdatePrices Then
+                Exit For
+            End If
+
             ' Reset Insert
             InsertRecord = False
 
             ' See if the record is in the cache first
             SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND REGIONLIST = '" & RegionSystemSearchList & "'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPriceCheck = DBCommand.ExecuteReader
 
             If Not readerPriceCheck.HasRows Then
@@ -8876,7 +9630,7 @@ ExitSub:
 
                 ' There is a record, see if it needs to be updated (only update every 6 hours)
                 SQL = "SELECT UPDATEDATE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND REGIONLIST = '" & RegionSystemSearchList & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerPriceCheck = DBCommand.ExecuteReader
 
                 ' If no record or the max date
@@ -8938,10 +9692,14 @@ ExitSub:
             pnlStatus.Text = "Updating Price Cache..."
             Application.DoEvents()
 
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Loop through the price records and insert each one
             For i = 0 To PriceRecords.Count - 1
+
+                If CancelUpdatePrices Then
+                    Exit For
+                End If
 
                 ' Insert record in Cache
                 With PriceRecords(i)
@@ -8949,7 +9707,7 @@ ExitSub:
                     If .AllMaxPrice <> 0 Then
                         ' First, delete the record
                         SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND REGIONLIST = '" & .RegionList & "'"
-                        Call ExecuteNonQuerySQL(SQL)
+                        Call evedb.ExecuteNonQuerySQL(SQL)
 
                         ' Set the region list of the price data first
                         SQL = "INSERT INTO ITEM_PRICES_CACHE (typeID, allVolume, allAvg, allMax, allMin, allStdDev, allMedian, allPercentile, "
@@ -8965,7 +9723,7 @@ ExitSub:
                     End If
                 End With
 
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
                 ' For each record, update the progress bar
                 Call IncrementToolStripProgressBar(pnlProgressBar)
@@ -8973,17 +9731,169 @@ ExitSub:
                 Application.DoEvents()
             Next
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 
         ' Done updating, hide the progress bar
+        CancelUpdatePrices = False
         pnlProgressBar.Visible = False
         UpdatePricesCache = True
         pnlStatus.Text = ""
         Application.DoEvents()
 
     End Function
+
+    ' Uses CREST to update market prices
+    Private Function UpdateMarketOrdersCache(ByVal CacheItems As List(Of PriceItem), ByVal SearchRegionID As Long) As Boolean
+
+        Dim Pairs As New List(Of ItemRegionPairs)
+
+        ' Build the pairs
+        For i = 0 To CacheItems.Count - 1
+            If UpdatableMarketData(CacheItems(i).TypeID, SearchRegionID, "Orders") Then
+                Dim TempPair As ItemRegionPairs
+                TempPair.ItemID = CacheItems(i).TypeID
+                TempPair.RegionID = SearchRegionID
+                Pairs.Add(TempPair)
+            End If
+        Next
+
+        If Pairs.Count > 0 Then
+            Dim CREST As New EVECREST
+            Dim NumberofThreads As Integer = 0
+            ' How many records per thread do we need?
+            Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / CREST.GetMaximumConnections))
+            If Splits = 1 Then
+                ' If the return is 1, then we have less than the max connections
+                ' so just set up enough pairs for 1 run each
+                NumberofThreads = Pairs.Count
+            Else
+                NumberofThreads = CREST.GetMaximumConnections
+            End If
+
+            ' For processing
+            Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
+            Dim TempPairs As New List(Of ItemRegionPairs)
+            Dim PairMarker As Integer = 0
+            Dim j As Integer = 0
+
+            ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
+            For i = 0 To NumberofThreads - 1
+                For j = PairMarker To Pairs.Count - 1
+                    If j < Splits * (i + 1) Then
+                        TempPairs.Add(Pairs(j))
+                    Else
+                        Exit For
+                    End If
+                Next
+                ThreadPairs.Add(TempPairs)
+                TempPairs = New List(Of ItemRegionPairs)
+                PairMarker = j
+                If j = Pairs.Count Then
+                    Exit For
+                End If
+            Next
+
+            ' Start a transaction here to speed up processing in the updates
+            Call EVEDB.BeginSQLiteTransaction()
+
+            ' Reset the value of the progress bar
+            pnlStatus.Text = "Downloading prices..."
+            pnlProgressBar.Visible = True
+            pnlProgressBar.Value = 0
+            PriceOrdersUpdateCount = 0
+            pnlProgressBar.Maximum = Pairs.Count
+            Application.DoEvents()
+
+            ' Call this manually if it's just one price to update
+            If ThreadPairs.Count = 1 Then
+                Call UpdateMarketOrders(ThreadPairs(0), pnlProgressBar)
+            Else
+                ' Call each thread for the pairs
+                Dim ThreadsArray As List(Of Threading.Thread) = New List(Of Threading.Thread)
+                ' Call each thread for the pairs
+                For i = 0 To ThreadPairs.Count - 1
+                    Dim UPHThread As New Thread(AddressOf UpdateMarketOrders)
+                    UPHThread.Start(ThreadPairs(i))
+                    ' Save the thread if we need to kill it
+                    ThreadsArray.Add(UPHThread)
+                Next
+
+                ' Now loop until all the threads are done
+                While PriceOrdersUpdateCount < Pairs.Count
+                    ' Update the progress bar with data from each thread
+                    Call UpdateToolStripProgressBar(pnlProgressBar, PriceOrdersUpdateCount)
+
+                    If CancelUpdatePrices Then
+                        ' Kill all the threads
+                        For i = 0 To ThreadsArray.Count - 1
+                            If ThreadsArray(i).IsAlive Then
+                                ThreadsArray(i).Abort()
+                            End If
+                        Next
+
+                        Exit While
+                    End If
+
+                    Application.DoEvents()
+                End While
+            End If
+
+            ' Finish updating the DB
+            Call EVEDB.CommitSQLiteTransaction()
+            pnlProgressBar.Visible = False
+            Application.DoEvents()
+        End If
+
+        pnlStatus.Text = ""
+        CancelUpdatePrices = False
+
+        Return True
+
+    End Function
+
+    ' For use with threading to speed up the CREST calls for market orders
+    Private Sub UpdateMarketOrders(PairsList As Object, Optional PG As ToolStripProgressBar = Nothing)
+        Dim BatchStart As DateTime = Now
+        Dim BatchCounter As Integer = 0
+        Dim PricesUpdated As Boolean
+        Dim TotalTimes As New List(Of Double)
+        Dim DownloadTime As New List(Of Double)
+        Dim ProcessingTime As New List(Of Double)
+        Dim CREST As New EVECREST(True)
+        Dim MaxRequestsperSecond As Integer = CREST.GetRatePerSecond
+
+        Dim Pairs As List(Of ItemRegionPairs) = CType(PairsList, List(Of ItemRegionPairs))
+
+        For i = 0 To Pairs.Count - 1
+
+            ' Update the prices then check limiting if needed - ignore cache lookup, the list we get will be updateable
+            PricesUpdated = CREST.UpdateMarketOrders(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
+
+            ' Only do limiting if we actually update something 
+            If PricesUpdated Then
+                BatchCounter += 1
+
+                If CREST.LimitCRESTCalls(BatchStart, Pairs.Count, BatchCounter) Then
+                    ' Reset
+                    BatchCounter = 0
+                    BatchStart = Now
+                End If
+            End If
+
+            ' Now that we updated it, for each record, update the total record count for the progressbar on frmMain
+            PriceOrdersUpdateCount += 1
+
+            If Not IsNothing(PG) Then
+                ' Update the pg here
+                Call UpdateToolStripProgressBar(PG, PriceOrdersUpdateCount)
+                Application.DoEvents()
+            End If
+
+        Next
+
+    End Sub
 
     ' Function just queries the items table based on the item type selection then updates the list
     Public Sub UpdatePriceList()
@@ -9253,7 +10163,7 @@ ExitSub:
 
             SQL = SQL & " ORDER BY ITEM_GROUP, ITEM_CATEGORY, ITEM_NAME"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerMats = DBCommand.ExecuteReader
 
             ' Clear List
@@ -9359,7 +10269,7 @@ ExitSub:
         SQL = SQL & "AND solarSystemName <> '0.0' "
         SQL = SQL & "ORDER BY solarSystemName"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSS = DBCommand.ExecuteReader
 
         While readerSS.Read
@@ -9386,7 +10296,7 @@ ExitSub:
         SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
         SQL = SQL & "GROUP BY groupName "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerShipType = DBCommand.ExecuteReader
 
         cmbPriceShipTypes.Items.Add("All Ship Types")
@@ -9415,7 +10325,7 @@ ExitSub:
         SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
         SQL = SQL & "GROUP BY groupName "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerChargeType = DBCommand.ExecuteReader
 
         cmbPriceChargeTypes.Items.Add("All Charge Types")
@@ -12886,6 +13796,18 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
+    Private Sub txtCalcSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcSVRThreshold.KeyPress
+        ' Only allow numbers, decimal, negative or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                Call ResetRefresh()
+            End If
+        End If
+    End Sub
+
     Private Sub txtCalcSVRThreshold_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtCalcSVRThreshold.TextChanged
         Call ResetRefresh()
     End Sub
@@ -12994,10 +13916,6 @@ CheckTechs:
         Call InitManufacturingTab()
         ' Load the calc types because it won't get loaded if firstmanufacturinggridload = true
         Call LoadCalcBPTypes()
-    End Sub
-
-    Private Sub btnCalcCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        CancelManufacturingCalculate = True
     End Sub
 
     Private Sub cmbCalcBPTypeFilter_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbCalcBPTypeFilter.DropDown
@@ -13420,10 +14338,10 @@ CheckTechs:
 
         cmbCalcSVRRegion.Items.Clear()
 
-        ' Load the select systems combobox with systems
+        ' Load the select regions combobox with regions
         SQL = "SELECT regionName FROM REGIONS GROUP BY regionName"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLoc = DBCommand.ExecuteReader
 
         While readerLoc.Read
@@ -13434,6 +14352,10 @@ CheckTechs:
         readerLoc = Nothing
         DBCommand = Nothing
 
+    End Sub
+
+    Private Sub cmbCalcSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcSVRRegion.KeyPress
+        e.Handled = True
     End Sub
 
     Private Sub cmbCalcSVRRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcSVRRegion.SelectedIndexChanged
@@ -13604,6 +14526,12 @@ CheckTechs:
             ColumnPositions(.IskperHour) = ProgramSettings.IskperHourColumnName
             ColumnPositions(.SVR) = ProgramSettings.SVRColumnName
             ColumnPositions(.SVRxIPH) = ProgramSettings.SVRxIPHColumnName
+            ColumnPositions(.PriceTrend) = ProgramSettings.PriceTrendColumnName
+            ColumnPositions(.TotalItemsSold) = ProgramSettings.TotalItemsSoldColumnName
+            ColumnPositions(.TotalOrdersFilled) = ProgramSettings.TotalOrdersFilledColumnName
+            ColumnPositions(.AvgItemsperOrder) = ProgramSettings.AvgItemsperOrderColumnName
+            ColumnPositions(.CurrentSellOrders) = ProgramSettings.CurrentSellOrdersColumnName
+            ColumnPositions(.CurrentBuyOrders) = ProgramSettings.CurrentBuyOrdersColumnName
             ColumnPositions(.TotalCost) = ProgramSettings.TotalCostColumnName
             ColumnPositions(.BaseJobCost) = ProgramSettings.BaseJobCostColumnName
             ColumnPositions(.NumBPs) = ProgramSettings.NumBPsColumnName
@@ -13725,6 +14653,18 @@ CheckTechs:
                     Return .SVRWidth
                 Case ProgramSettings.SVRxIPHColumnName
                     Return .SVRxIPHWidth
+                Case ProgramSettings.PriceTrendColumnName
+                    Return .PriceTrendWidth
+                Case ProgramSettings.TotalItemsSoldColumnName
+                    Return .TotalItemsSoldWidth
+                Case ProgramSettings.TotalOrdersFilledColumnName
+                    Return .TotalOrdersFilledWidth
+                Case ProgramSettings.AvgItemsperOrderColumnName
+                    Return .AvgItemsperOrderWidth
+                Case ProgramSettings.CurrentSellOrdersColumnName
+                    Return .CurrentSellOrdersWidth
+                Case ProgramSettings.CurrentBuyOrdersColumnName
+                    Return .CurrentBuyOrdersWidth
                 Case ProgramSettings.TotalCostColumnName
                     Return .TotalCostWidth
                 Case ProgramSettings.BaseJobCostColumnName
@@ -13900,6 +14840,18 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.SVRxIPHColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.PriceTrendColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.TotalItemsSoldColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.TotalOrdersFilledColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.AvgItemsperOrderColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.CurrentSellOrdersColumnName
+                Return HorizontalAlignment.Center
+            Case ProgramSettings.CurrentBuyOrdersColumnName
+                Return HorizontalAlignment.Left
             Case ProgramSettings.TotalCostColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.BaseJobCostColumnName
@@ -13907,9 +14859,9 @@ CheckTechs:
             Case ProgramSettings.NumBPsColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.InventionChanceColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.BPTypeColumnName
-                Return HorizontalAlignment.Center
+                Return HorizontalAlignment.Left
             Case ProgramSettings.RaceColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.VolumeperItemColumnName
@@ -13919,41 +14871,41 @@ CheckTechs:
             Case ProgramSettings.PortionSizeColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingJobFeeColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilityNameColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilitySystemColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityRegionColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilitySystemIndexColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityTaxColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityMEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ManufacturingFacilityTEBonusColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilityUsageColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ComponentFacilityNameColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ComponentFacilitySystemColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ComponentFacilityRegionColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilitySystemIndexColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityTaxColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityMEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityTEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityUsageColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.ComponentFacilityFWSystemLevelColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.CapComponentFacilityNameColumnName
@@ -13969,45 +14921,45 @@ CheckTechs:
             Case ProgramSettings.CapComponentFacilityMEBonusColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.CapComponentFacilityTEBonusColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.CapComponentFacilityUsageColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.CapComponentFacilityFWSystemLevelColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilityNameColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilitySystemColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilityRegionColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilitySystemIndexColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilityTaxColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilityMEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.CopyingFacilityTEBonusColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilityUsageColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.CopyingFacilityFWSystemLevelColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.InventionFacilityNameColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.InventionFacilitySystemColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.InventionFacilityRegionColumnName
                 Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilitySystemIndexColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityTaxColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityMEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityTEBonusColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityUsageColumnName
-                Return HorizontalAlignment.Right
+                Return HorizontalAlignment.Left
             Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                 Return HorizontalAlignment.Left
             Case Else
@@ -14128,6 +15080,18 @@ CheckTechs:
                         .SVR = i
                     Case ProgramSettings.SVRxIPHColumnName
                         .SVRxIPH = i
+                    Case ProgramSettings.PriceTrendColumnName
+                        .PriceTrend = i
+                    Case ProgramSettings.TotalItemsSoldColumnName
+                        .TotalItemsSold = i
+                    Case ProgramSettings.TotalOrdersFilledColumnName
+                        .TotalOrdersFilled = i
+                    Case ProgramSettings.AvgItemsperOrderColumnName
+                        .AvgItemsperOrder = i
+                    Case ProgramSettings.CurrentSellOrdersColumnName
+                        .CurrentSellOrders = i
+                    Case ProgramSettings.CurrentBuyOrdersColumnName
+                        .CurrentBuyOrders = i
                     Case ProgramSettings.TotalCostColumnName
                         .TotalCost = i
                     Case ProgramSettings.BaseJobCostColumnName
@@ -14313,6 +15277,18 @@ CheckTechs:
                         .SVRWidth = NewWidth
                     Case ProgramSettings.SVRxIPHColumnName
                         .SVRxIPHWidth = NewWidth
+                    Case ProgramSettings.PriceTrendColumnName
+                        .PriceTrendWidth = NewWidth
+                    Case ProgramSettings.TotalItemsSoldColumnName
+                        .TotalItemsSoldWidth = NewWidth
+                    Case ProgramSettings.TotalOrdersFilledColumnName
+                        .TotalOrdersFilledWidth = NewWidth
+                    Case ProgramSettings.AvgItemsperOrderColumnName
+                        .AvgItemsperOrderWidth = NewWidth
+                    Case ProgramSettings.CurrentSellOrdersColumnName
+                        .CurrentSellOrdersWidth = NewWidth
+                    Case ProgramSettings.CurrentBuyOrdersColumnName
+                        .CurrentBuyOrdersWidth = NewWidth
                     Case ProgramSettings.TotalCostColumnName
                         .TotalCostWidth = NewWidth
                     Case ProgramSettings.BaseJobCostColumnName
@@ -14436,351 +15412,6 @@ CheckTechs:
         Else
             Return False
         End If
-    End Function
-
-#End Region
-
-#Region "SVR Functions"
-
-    ' For use with threading to speed up the CREST calls
-    Private Sub UpdateMarketHistory(PairsList As Object)
-        Dim BatchStart As DateTime = Now
-        Dim BatchEnd As DateTime
-        Dim BatchCounter As Integer = 0
-        Dim PricesUpdated As Boolean
-        Dim TotalTimes As New List(Of Double)
-        Dim DownloadTime As New List(Of Double)
-        Dim ProcessingTime As New List(Of Double)
-        Dim CRESTHistory As New EVECREST
-        Dim MaxRequestsperSecond As Integer = CRESTHistory.GetRatePerSecond
-
-        Dim Pairs As List(Of ItemRegionPairs) = CType(PairsList, List(Of ItemRegionPairs))
-
-        For i = 0 To Pairs.Count - 1
-
-            ' Update the prices then check limiting if needed
-            PricesUpdated = CRESTHistory.UpdateMarketHistory(Pairs(i).ItemID, Pairs(i).RegionID, False)
-
-            ' If we aren't as big as the burst size, then we don't need to limit our calls
-            If Pairs.Count > EVECREST.CRESTBurstSize Then
-                ' Only do limiting if we actually update something 
-                If PricesUpdated Then
-                    BatchCounter += 1
-
-                    ' Check to see if we hit the maximum calls per second, if so, check for time to sleep
-                    If BatchCounter = EVECREST.CRESTRatePerSecond Then
-                        ' Need to see if we are over the time limit and sleep
-                        BatchEnd = Now
-
-                        ' Figure out the difference between the max time for max requests and our requests (in milliseconds)
-                        Dim Difference As Integer = CInt((1000 - ((BatchEnd - BatchStart).TotalMilliseconds)))
-                        If Difference > 0 Then
-                            Threading.Thread.Sleep(Difference)
-                        End If
-                        ' Reset
-                        BatchCounter = 0
-                        BatchStart = Now
-                    End If
-                End If
-            End If
-
-            ' For each record, update the total record count for the progressbar on frmMain
-            PriceHistoryUpdateCount += 1
-            Application.DoEvents()
-        Next
-
-    End Sub
-
-    ' Updates all the price history from CREST
-    Private Sub UpdateCRESTPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long)
-        Dim Pairs As New List(Of ItemRegionPairs)
-        Dim CacheDate As Date
-
-        ' Build the pairs
-        For i = 0 To SentTypeIDs.Count - 1
-            Dim TempPair As ItemRegionPairs
-            TempPair.ItemID = SentTypeIDs(i)
-            TempPair.RegionID = CLng(UpdateRegionID)
-
-            ' Only add if it's time to update
-            If CacheDate <= Now Then
-                Pairs.Add(TempPair)
-            End If
-        Next
-
-        Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / EVECREST.CRESTMaximumConnections))
-        Dim SplitCount As Integer = CInt(Math.Ceiling(Pairs.Count / Splits))
-        If SplitCount = 1 Then
-            ' If the return is 1, then we have less than the max connections
-            ' so just set up enough pairs for 1 run each
-            SplitCount = Pairs.Count
-        End If
-
-        ' For processing
-        Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
-        Dim TempPairs As New List(Of ItemRegionPairs)
-        Dim PairMarker As Integer = 0
-        Dim j As Integer = 0
-
-        ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
-        For i = 0 To SplitCount - 1
-            For j = PairMarker To Pairs.Count - 1
-                If j < SplitCount * (i + 1) Then
-                    TempPairs.Add(Pairs(j))
-                Else
-                    Exit For
-                End If
-            Next
-            ThreadPairs.Add(TempPairs)
-            TempPairs = New List(Of ItemRegionPairs)
-            PairMarker = j
-            If j = Pairs.Count Then
-                Exit For
-            End If
-        Next
-
-        ' Start a transaction here to speed up processing in the updates
-        Call BeginSQLiteTransaction()
-
-        ' Reset the value of the progress bar
-        pnlProgressBar.Visible = True
-        pnlProgressBar.Value = 0
-        pnlProgressBar.Maximum = Pairs.Count
-        Application.DoEvents()
-
-        ' Call each thread for the pairs
-        For i = 0 To ThreadPairs.Count - 1
-            Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
-            UPHThread.Start(ThreadPairs(i))
-        Next
-
-        ' Now loop until all the threads are done
-        While PriceHistoryUpdateCount < Pairs.Count
-            ' Update the progress bar with data from each thread
-            pnlProgressBar.Value = PriceHistoryUpdateCount
-            ' hack for smooth update
-            pnlProgressBar.Value = pnlProgressBar.Value + 1
-            pnlProgressBar.Value = pnlProgressBar.Value - 1
-
-            Application.DoEvents()
-        End While
-
-        ' Finish updating the DB
-        Call CommitSQLiteTransaction()
-
-    End Sub
-
-    ' EVE MarketData - Updates the item price averages for the region, days, and typeid sent in the cache database - update only each day
-    Public Sub UpdateEMDPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long, UpdateDays As Integer)
-        Dim SQL As String
-        Dim i, j As Integer
-        Dim readerAvgPrices As SQLiteDataReader
-        Dim UpdateIDList As New List(Of Long)
-        Dim CleanupIDs As New List(Of Long)
-        Dim UniqueSentIDs As New List(Of Long)
-        Dim UniqueUpdatedPrices As New List(Of Long)
-        Dim CurrentDateTime As Date = Now
-
-        Dim API As New EVEMarketDataAPI
-        Dim UpdatedAvgPrices As New List(Of EVEMarketDataPriceAverage)
-        Dim SQLTypeIDList As String = ""
-
-        ' Clean up sent ID's and make sure we have a set of unique ids
-        For i = 0 To SentTypeIDs.Count - 1
-            If Not UniqueSentIDs.Contains(SentTypeIDs(i)) Then
-                UniqueSentIDs.Add(SentTypeIDs(i))
-            End If
-        Next
-
-        ' Check the list of Type ID's and see if we ran an update for the ID and days entered in the past day
-        For i = 0 To UniqueSentIDs.Count - 1
-            SQL = "SELECT 'X' FROM EMD_UPDATE_HISTORY WHERE TypeID =" & CStr(UniqueSentIDs(i)) & " AND RegionID = " & CStr(UpdateRegionID)
-            SQL = SQL & " AND DateTime(UpdateLastRan) >= DateTime('" & Format(DateAdd(DateInterval.Day, -1, CurrentDateTime), SQLiteDateFormat) & "')"
-            SQL = SQL & " AND Days = " & UpdateDays
-
-            DBCommand = New SQLiteCommand(SQL, DB)
-            readerAvgPrices = DBCommand.ExecuteReader
-
-            If Not readerAvgPrices.Read Then
-                ' Then the record needs to be updated, so insert it to the list
-                UpdateIDList.Add(UniqueSentIDs(i))
-            End If
-        Next
-
-        ' Convert list to array of longs
-        If UpdateIDList.Count = 0 Then
-            ' No updates required
-            Exit Sub
-        End If
-
-        ' TypeID list for the records
-        For i = 0 To UpdateIDList.Count - 1
-            SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
-        Next
-
-        ' Now that we have a list of ids, get them updated - note return data might not include all typeids
-        UpdatedAvgPrices = API.GetPriceAverages(UpdateIDList, UpdateRegionID, UpdateDays)
-
-        ' If this errored, then don't update and notify user it's not working
-        If API.GetErrorCode <> 0 Then
-            If Not ShownPriceUpdateError Then
-                MsgBox("Unable to update all Price volume data at this time.", vbInformation, Application.ProductName)
-                ShownPriceUpdateError = True
-            End If
-        End If
-
-        ' Get a unique list of typeID's that were updated to check later
-        ' Clean up sent ID's and make sure we have a set of unique ids
-        For i = 0 To UpdatedAvgPrices.Count - 1
-            If Not UniqueUpdatedPrices.Contains(UpdatedAvgPrices(i).typeID) Then
-                UniqueUpdatedPrices.Add(UpdatedAvgPrices(i).typeID)
-            End If
-        Next
-
-        ' Even if we errored, update any of the data we did get
-        If UpdatedAvgPrices.Count <> 0 Then
-            Call BeginSQLiteTransaction()
-
-            ' First delete any records older than 90 days for these typeIDs
-            SQLTypeIDList = " (" & SQLTypeIDList.Substring(0, Len(SQLTypeIDList) - 1) & ") "
-            SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID IN " & SQLTypeIDList
-            SQL = SQL & "AND REGION_ID = " & CStr(UpdateRegionID)
-            SQL = SQL & " AND DATETIME(PRICE_DATE) <= DateTime('" & Format(DateAdd(DateInterval.Day, -90, CurrentDateTime), SQLiteDateFormat) & "')"
-            Call ExecuteNonQuerySQL(SQL)
-
-            ' Insert these records to the database 
-            For i = 0 To UpdatedAvgPrices.Count - 1
-
-                ' Delete the record and insert a fresh one if in there
-                SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID = " & CStr(UpdatedAvgPrices(i).typeID)
-                SQL = SQL & " AND REGION_ID = " & CStr(UpdatedAvgPrices(i).regionID)
-                SQL = SQL & " AND PRICE_DATE = '" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "'"
-                Call ExecuteNonQuerySQL(SQL)
-
-                ' Insert new record - this will make sure any null added records that get updated are current
-                SQL = "INSERT INTO EMD_ITEM_PRICE_HISTORY VALUES ("
-                SQL = SQL & CStr(UpdatedAvgPrices(i).typeID) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).regionID) & ","
-                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "',"
-                SQL = SQL & CStr(UpdatedAvgPrices(i).lowPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).highPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).avgPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).volume) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).orders) & ")"
-                Call ExecuteNonQuerySQL(SQL)
-
-            Next
-
-            ' We just did a set of updates, so update the update history for the unique typeIDs
-            For i = 0 To UniqueUpdatedPrices.Count - 1
-                ' Delete any records there
-                SQL = "DELETE FROM EMD_UPDATE_HISTORY WHERE TypeID = " & CStr(UniqueUpdatedPrices(i))
-                SQL = SQL & " AND RegionID = " & CStr(UpdateRegionID)
-                SQL = SQL & " AND Days = " & UpdateDays
-                Call ExecuteNonQuerySQL(SQL)
-
-                ' Insert the new record
-                SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(UniqueUpdatedPrices(i)) & ","
-                SQL = SQL & UpdateDays & ","
-                SQL = SQL & CStr(UpdateRegionID) & ","
-                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).UpdateRan, SQLiteDateFormat) & "')"
-                Call ExecuteNonQuerySQL(SQL)
-
-            Next
-
-            Call CommitSQLiteTransaction()
-
-        End If
-
-        ' If there are any ID's that we sent and got nothing back from, 
-        ' then insert update the update history table and try again tomorrow
-        If UniqueUpdatedPrices.Count <> UpdateIDList.Count Then
-            Call BeginSQLiteTransaction()
-
-            ' Save the missed ID's here
-            j = 0
-            SQLTypeIDList = ""
-
-            ' Build the Type ID list
-            For i = 0 To UpdateIDList.Count - 1
-                TypeIDToFind = UpdateIDList(i)
-                If Not UpdatedAvgPrices.Exists(AddressOf FindItem) Then
-                    SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
-                    CleanupIDs.Add(UpdateIDList(i))
-                    j += 1
-                End If
-            Next
-
-            ' If we have items in the list, process them
-            If SQLTypeIDList <> "" Then
-
-                ' Process the missed records one by one
-                For i = 0 To CleanupIDs.Count - 1
-                    ' If the record is not there, then insert
-                    SQL = "SELECT * FROM EMD_UPDATE_HISTORY WHERE TypeID = " & CStr(CleanupIDs(i))
-                    SQL = SQL & " AND RegionID = " & CStr(UpdateRegionID)
-                    SQL = SQL & " AND Days = " & CStr(UpdateDays)
-
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerAvgPrices = DBCommand.ExecuteReader
-
-                    If Not readerAvgPrices.HasRows Then
-                        ' Insert the record showing we ran an update for this ID
-                        SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(CleanupIDs(i)) & ","
-                        SQL = SQL & CStr(UpdateDays) & ","
-                        SQL = SQL & CStr(UpdateRegionID) & ","
-                        SQL = SQL & "'" & Format(CurrentDateTime, SQLiteDateFormat) & "')"
-                        Call ExecuteNonQuerySQL(SQL)
-                    End If
-                Next
-            End If
-
-            Call CommitSQLiteTransaction()
-
-        End If
-
-    End Sub
-
-    ' Determine the Sales per Volume Ratio, which will be the amount of items we can build in 24 hours (include fractions) when sent the region, avg days, and production time in seconds to make ItemsProduced
-    Public Function GetItemSVR(TypeID As Long, RegionID As Long, AvgDays As Integer, ProductionTimeSeconds As Double, ItemsProduced As Long, UseCRESTData As Boolean) As Object
-        Dim SQL As String
-        Dim readerAverage As SQLiteDataReader
-        Dim ItemsperDay As Double
-
-        ' The amount of items we can build in 24 hours (include fractions) divided that by the average volume (volume/avgdays)
-        ' The data is stored as a record per day, so just count up the number of records in the time period (days - might not be the same as days shown)
-        ' and divide by the sum of the volumes over that time period
-        If UseCRESTData Then
-            SQL = "SELECT SUM(VOLUME)/COUNT(PRICE_DATE) FROM MARKET_HISTORY "
-        Else ' EMD
-            SQL = "SELECT SUM(VOLUME)/COUNT(PRICE_DATE) FROM EMD_ITEM_PRICE_HISTORY "
-        End If
-
-        SQL = SQL & "WHERE TYPE_ID = " & TypeID & " AND REGION_ID = " & RegionID & " "
-        SQL = SQL & "AND DATETIME(PRICE_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -AvgDays, Now), SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_DATE) < " & " DateTime('" & Format(Now, SQLiteDateFormat) & "') "
-        SQL = SQL & "AND VOLUME IS NOT NULL "
-
-        DBCommand = New SQLiteCommand(SQL, DB)
-        readerAverage = DBCommand.ExecuteReader
-
-        readerAverage.Read()
-
-        If Not IsDBNull(readerAverage.GetValue(0)) Then
-            If ProductionTimeSeconds <> 0 Then
-                ' The number of blueprint runs we can build with the sent production time in a day - Seconds to produce 1, then divide that into seconds per day
-                ItemsperDay = (24 * 60 * 60) / (ProductionTimeSeconds / ItemsProduced)
-                ' Take the items per day and compare to the avg sales volume per day, if it's greater than one you can't make enough items in a day to meet demand = good item to build
-                Return CDbl(readerAverage.GetDouble(0)) / ItemsperDay
-            Else
-                ' Just want the volume for the day
-                Return readerAverage.GetDouble(0)
-            End If
-        Else
-            ' Since 0.00 SVR is possible, return nothing instead
-            Return Nothing
-        End If
-
     End Function
 
 #End Region
@@ -14945,14 +15576,15 @@ CheckTechs:
             txtCalcTempME.Text = CStr(UserApplicationSettings.DefaultBPME)
             txtCalcTempTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
 
-            cmbCalcAvgPriceDuration.Text = .AveragePriceDuration
-
             chkCalcIncludeT2Owned.Checked = .CheckIncludeT2Owned
             chkCalcIncludeT3Owned.Checked = .CheckIncludeT3Owned
 
-            txtCalcSVRThreshold.Text = CStr(.IgnoreSVRThreshold)
             chkCalcSVRIncludeNull.Checked = .CheckSVRIncludeNull
-            cmbCalcSVRRegion.Text = .AveragePriceRegion
+
+            txtCalcSVRThreshold.Text = CStr(UserApplicationSettings.IgnoreSVRThresholdValue)
+            cmbCalcSVRRegion.Text = UserApplicationSettings.SVRAveragePriceRegion
+            cmbCalcAvgPriceDuration.Text = UserApplicationSettings.SVRAveragePriceDuration
+            chkCalcUpdateCRESTHistory.Checked = UserApplicationSettings.UseCRESTforHistory
 
             txtCalcProdLines.Text = CStr(.ProductionLines)
             txtCalcLabLines.Text = CStr(.LaboratoryLines)
@@ -14979,7 +15611,7 @@ CheckTechs:
             cmbCalcFWInventionUpgradeLevel.Text = .InventionFWUpgradeLevel
 
             If Developer Then
-                chkCalcUpdateCRESTHistory.Checked = .UpdatePriceHistory
+                chkCalcUpdateCRESTHistory.Checked = UserApplicationSettings.UseCRESTforHistory
             Else
                 chkCalcUpdateCRESTHistory.Checked = False
             End If
@@ -15372,20 +16004,10 @@ CheckTechs:
             .CheckLarge = chkCalcLarge.Checked
             .CheckXL = chkCalcXL.Checked
 
-            ' Save these here as well as in settings
-            UserApplicationSettings.DefaultBPME = CInt(txtCalcTempME.Text)
-            UserApplicationSettings.DefaultBPTE = CInt(txtCalcTempTE.Text)
-
-            Call Settings.SaveApplicationSettings(UserApplicationSettings)
-
-            .AveragePriceDuration = cmbCalcAvgPriceDuration.Text
-
             .CheckIncludeT2Owned = chkCalcIncludeT2Owned.Checked
             .CheckIncludeT3Owned = chkCalcIncludeT3Owned.Checked
 
-            .IgnoreSVRThreshold = CDbl(txtCalcSVRThreshold.Text)
             .CheckSVRIncludeNull = chkCalcSVRIncludeNull.Checked
-            .AveragePriceRegion = cmbCalcSVRRegion.Text
             .ProductionLines = CInt(txtCalcProdLines.Text)
             .LaboratoryLines = CInt(txtCalcLabLines.Text)
             .Runs = CInt(txtCalcRuns.Text)
@@ -15395,7 +16017,16 @@ CheckTechs:
             .CopyingFWUpgradeLevel = cmbCalcFWCopyUpgradeLevel.Text
             .InventionFWUpgradeLevel = cmbCalcFWInventionUpgradeLevel.Text
 
-            TempSettings.UpdatePriceHistory = chkCalcUpdateCRESTHistory.Checked
+            ' Save these here as well as in settings
+            UserApplicationSettings.DefaultBPME = CInt(txtCalcTempME.Text)
+            UserApplicationSettings.DefaultBPTE = CInt(txtCalcTempTE.Text)
+
+            UserApplicationSettings.IgnoreSVRThresholdValue = CDbl(txtCalcSVRThreshold.Text)
+            UserApplicationSettings.SVRAveragePriceRegion = cmbCalcSVRRegion.Text
+            UserApplicationSettings.SVRAveragePriceDuration = cmbCalcAvgPriceDuration.Text
+            UserApplicationSettings.UseCRESTforHistory = chkCalcUpdateCRESTHistory.Checked
+
+            Call Settings.SaveApplicationSettings(UserApplicationSettings)
 
         End With
 
@@ -15425,7 +16056,6 @@ CheckTechs:
         Dim UpdateTypeIDs As New List(Of Long) ' Full list of TypeID's to update SVR data with, these will have Market IDs
         Dim AveragePriceRegionID As Long
         Dim AveragePriceDays As Integer
-        Dim readerRegion As SQLiteDataReader
 
         Dim BaseItems As New List(Of ManufacturingItem) ' Holds all the items and their decryptors, relics, meta etc for initial list
         Dim ManufacturingList As New List(Of ManufacturingItem) ' List of all the items we manufactured - may be different than the item list
@@ -15811,8 +16441,7 @@ CheckTechs:
             Application.DoEvents()
 
             ' Only cancel if they hit the cancel button
-            CancelManufacturingCalculate = False
-            btnCalculate.Enabled = False
+            btnCalculate.Text = "Cancel"
             btnCalcExportList.Enabled = False
             btnCalcReset.Enabled = False
             btnCalcPreview.Enabled = False
@@ -15829,7 +16458,7 @@ CheckTechs:
             End If
 
             ' Get data
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
             readerBPs = DBCommand.ExecuteReader
 
@@ -15855,6 +16484,10 @@ CheckTechs:
             ' Add the data to the final list, then display into the grid
             While readerBPs.Read
                 Application.DoEvents()
+                ' If they cancel the calc
+                If CancelManufacturingTabCalc Then
+                    GoTo ExitCalc
+                End If
 
                 ' 0-BP_ID, 1-BLUEPRINT_GROUP, 2-BLUEPRINT_NAME, 3-ITEM_GROUP_ID, 4-ITEM_GROUP, 5-ITEM_CATEGORY_ID, 
                 ' 6-ITEM_CATEGORY, 7-ITEM_ID, 8-ITEM_NAME, 9-ME, 10-TE, 11-USERID, 12-ITEM_TYPE, 13-RACE_ID, 14-OWNED, 15-SCANNED 
@@ -16034,7 +16667,7 @@ CheckTechs:
                             SQL = SQL & "AND ARRAY_NAME = '" & ArrayName & "'"
                         End If
 
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerArray = DBCommand.ExecuteReader
 
                         While readerArray.Read()
@@ -16050,6 +16683,8 @@ CheckTechs:
                                 Call MultiUsePOSArrays.Add(InsertItem.ManufacturingFacility)
                             End If
                         End While
+
+                        readerArray.Close()
                     Else
                         ' Load the NO POS facility
                         InsertItem.ManufacturingFacility = GetManufacturingFacility(SelectedIndyType, CalcTab)
@@ -16203,7 +16838,6 @@ CheckTechs:
 
             End While
 
-
             Application.DoEvents()
 
             readerBPs.Close()
@@ -16226,6 +16860,7 @@ CheckTechs:
                     End If
                 End If
 
+                ' Turn off each individually so we can use cancel button
                 gbCalcBPSelectOptions.Enabled = False
                 lstManufacturing.Enabled = False
 
@@ -16244,7 +16879,7 @@ CheckTechs:
                     ' Format string
                     TypeIDCheck = "(" & TypeIDCheck.Substring(0, Len(TypeIDCheck) - 1) & ")"
                     SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeID IN " & TypeIDCheck & " AND marketGroupID IS NOT NULL"
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerIDs = DBCommand.ExecuteReader
 
                     ' Now add these to the list
@@ -16253,15 +16888,12 @@ CheckTechs:
                             UpdateTypeIDs.Add(readerIDs.GetInt64(0))
                         End If
                     End While
+                    readerIDs.Close()
 
                     ' Get the region ID
-                    SQL = "SELECT regionID FROM REGIONS WHERE regionName ='" & cmbCalcSVRRegion.Text & "'"
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    readerRegion = DBCommand.ExecuteReader
+                    AveragePriceRegionID = GetRegionID(cmbCalcSVRRegion.Text)
 
-                    If readerRegion.Read Then
-                        AveragePriceRegionID = readerRegion.GetInt64(0)
-                    Else
+                    If AveragePriceRegionID = 0 Then
                         AveragePriceRegionID = TheForgeTypeID ' The Forge as default
                         cmbCalcSVRRegion.Text = "The Forge"
                     End If
@@ -16274,6 +16906,11 @@ CheckTechs:
                         Call UpdateCRESTPriceHistory(UpdateTypeIDs, AveragePriceRegionID)
                     Else
                         Call UpdateEMDPriceHistory(UpdateTypeIDs, AveragePriceRegionID, AveragePriceDays)
+                    End If
+
+                    ' If they cancel the calc
+                    If CancelManufacturingTabCalc Then
+                        GoTo ExitCalc
                     End If
 
                 End If
@@ -16294,21 +16931,7 @@ CheckTechs:
                     InsertItem = BaseItems(i)
 
                     ' If they cancel the calc
-                    If CancelManufacturingCalculate Then
-                        lstManufacturing.Items.Clear()
-                        pnlStatus.Text = ""
-                        pnlProgressBar.Visible = False
-                        btnCalculate.Enabled = False
-                        btnCalcExportList.Enabled = True
-
-                        btnCalcReset.Enabled = True
-                        btnCalcPreview.Enabled = True
-
-                        gbCalcBPSelectOptions.Enabled = True
-
-                        Me.Cursor = Cursors.Default
-                        lstManufacturing.Enabled = True
-                        Application.DoEvents()
+                    If CancelManufacturingTabCalc Then
                         GoTo ExitCalc
                     End If
 
@@ -16374,9 +16997,13 @@ CheckTechs:
                     ' Adjust the item with calculations
                     If AddItem Then
                         Application.DoEvents()
+                        ' Add data that will the same for all options (need to move more from the bottom but have to test)
                         InsertItem.CanBuildBP = ManufacturingBlueprint.UserCanBuildBlueprint
                         InsertItem.CanInvent = ManufacturingBlueprint.UserCanInventRE
                         InsertItem.CanRE = ManufacturingBlueprint.UserCanInventRE
+                        ' Trend data
+                        InsertItem.PriceTrend = CalculatePriceTrend(InsertItem.ItemTypeID, GetRegionID(cmbCalcSVRRegion.Text), CInt(cmbCalcAvgPriceDuration.Text), chkCalcUpdateCRESTHistory.Checked)
+                        InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
 
                         ' Get the output data
                         If rbtnCalcCompareAll.Checked Then
@@ -16385,13 +17012,16 @@ CheckTechs:
                             ' *** For components, only add if it has buildable components
                             If ManufacturingBlueprint.HasComponents Then
                                 ' Components first
-                                InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                                 InsertItem.ProfitPercent = ManufacturingBlueprint.GetTotalComponentProfitPercent
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalComponentProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourComponents
                                 InsertItem.CalcType = "Components"
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                                InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                                If InsertItem.SVR = "-" Then
+                                    InsertItem.SVRxIPH = "0.00"
+                                Else
+                                    InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                                End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalComponentCost
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
@@ -16442,13 +17072,16 @@ CheckTechs:
                             End If
 
                             ' *** Raw Mats - always add
-                            InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                             InsertItem.ProfitPercent = ManufacturingBlueprint.GetTotalRawProfitPercent
                             InsertItem.Profit = ManufacturingBlueprint.GetTotalRawProfit
                             InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                             InsertItem.CalcType = "Raw Materials"
                             InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                            InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                            If InsertItem.SVR = "-" Then
+                                InsertItem.SVRxIPH = "0.00"
+                            Else
+                                InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                            End If
                             InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
@@ -16521,7 +17154,11 @@ CheckTechs:
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Build/Buy"
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                                InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                                If InsertItem.SVR = "-" Then
+                                    InsertItem.SVRxIPH = "0.00"
+                                Else
+                                    InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                                End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                                 InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
@@ -16581,7 +17218,11 @@ CheckTechs:
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourComponents
                                 InsertItem.CalcType = "Components"
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                                InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                                If InsertItem.SVR = "-" Then
+                                    InsertItem.SVRxIPH = "0.00"
+                                Else
+                                    InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                                End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalComponentCost
                             ElseIf rbtnCalcCompareRawMats.Checked Then
                                 ' Use the Raw values 
@@ -16590,7 +17231,11 @@ CheckTechs:
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Raw Materials"
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                                InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                                If InsertItem.SVR = "-" Then
+                                    InsertItem.SVRxIPH = "0.00"
+                                Else
+                                    InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                                End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                             ElseIf rbtnCalcCompareBuildBuy.Checked Then
                                 ' Use the Build/Buy best rate values (the blueprint was set to get these values above)
@@ -16599,11 +17244,14 @@ CheckTechs:
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Build/Buy"
                                 InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits, chkCalcUpdateCRESTHistory.Checked)
-                                InsertItem.SVRxIPH = IIf(IsNothing(InsertItem.SVR), 0, CType(InsertItem.SVR, Double) * InsertItem.IPH)
+                                If InsertItem.SVR = "-" Then
+                                    InsertItem.SVRxIPH = "0.00"
+                                Else
+                                    InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
+                                End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                             End If
 
-                            InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
@@ -16711,21 +17359,6 @@ DisplayResults:
             NumManufacturingItems = FinalManufacturingItemList.Count
         End If
 
-        '' Sort options
-        'If NumManufacturingItems > 0 Then
-        '    If rbtnCalcIPH.Checked Then ' IPH
-        '        FinalManufacturingItemList.Sort(New CalcIPHComparer)
-        '    ElseIf rbtnCalcProfit.Checked Then ' By profit
-        '        FinalManufacturingItemList.Sort(New CalcProfitComparer)
-        '    ElseIf rbtnCalcShowProfitPercent.Checked Then ' Profit %
-        '        FinalManufacturingItemList.Sort(New CalcProfitPComparer)
-        '    ElseIf rbtnCalcSortSVR.Checked Then ' SVR only
-        '        FinalManufacturingItemList.Sort(New CalcSVRComparer)
-        '    ElseIf rbtnCalcSortSVRIPH.Checked Then ' SVR * IPH
-        '        FinalManufacturingItemList.Sort(New CalcSVRIPHComparer)
-        '    End If
-        'End If
-
         ' Set final list
         FinalItemList = FinalManufacturingItemList
 
@@ -16807,17 +17440,11 @@ DisplayResults:
                     Case ProgramSettings.IskperHourColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).IPH, 2))
                     Case ProgramSettings.SVRColumnName
-                        If IsNothing(FinalItemList(i).SVR) Then
-                            BPList.SubItems.Add("")
-                        Else
-                            BPList.SubItems.Add(FormatNumber(FinalItemList(i).SVR, 2))
-                        End If
+                        BPList.SubItems.Add(FinalItemList(i).SVR)
                     Case ProgramSettings.SVRxIPHColumnName
-                        If IsNothing(FinalItemList(i).SVRxIPH) Then
-                            BPList.SubItems.Add("")
-                        Else
-                            BPList.SubItems.Add(FormatNumber(FinalItemList(i).SVRxIPH, 2))
-                        End If
+                        BPList.SubItems.Add(FinalItemList(i).SVRxIPH)
+                    Case ProgramSettings.PriceTrendColumnName
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).PriceTrend, 2))
                     Case ProgramSettings.TotalCostColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalCost / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.BaseJobCostColumnName
@@ -17000,7 +17627,6 @@ ExitCalc:
 
         pnlStatus.Text = ""
 
-        btnCalculate.Enabled = True
         btnCalcExportList.Enabled = True
         btnCalcReset.Enabled = True
         btnCalcPreview.Enabled = True
@@ -17017,7 +17643,12 @@ ExitCalc:
         If Not Calculate Then
             Call ResetRefresh()
         Else
-            btnCalculate.Text = "Refresh"
+            If Not CancelManufacturingTabCalc Then
+                btnCalculate.Text = "Refresh"
+            Else
+                btnCalculate.Text = "Calculate"
+            End If
+            CancelManufacturingTabCalc = False
             RefreshCalcData = True ' Allow data to be refreshed since we just calcuated
         End If
 
@@ -17130,7 +17761,7 @@ ExitCalc:
 
         SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
         readerTypes = DBCommand.ExecuteReader
 
@@ -17397,7 +18028,11 @@ ExitCalc:
 
     ' Reads through the manufacturing blueprint list and calculates the isk per hour for all that are selected, then sorts them and displays
     Private Sub btnCalculate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCalculate.Click
-        Call DisplayManufacturingResults(True)
+        If btnCalculate.Text = "Cancel" Then
+            CancelManufacturingTabCalc = True
+        Else
+            Call DisplayManufacturingResults(True)
+        End If
     End Sub
 
     ' Builds the query for the main grid update
@@ -17420,7 +18055,7 @@ ExitCalc:
         ' Get the record count first
         SQLTemp = "SELECT COUNT(*) FROM " & USER_BLUEPRINTS & WhereClause
 
-        Dim CMDCount As New SQLiteCommand(SQLTemp, DB)
+        Dim CMDCount As New SQLiteCommand(SQLTemp, EVEDB.DBREf)
         CMDCount.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
         RecordCount = CInt(CMDCount.ExecuteScalar())
 
@@ -17525,7 +18160,7 @@ ExitCalc:
                     End If
                     SQL = SQL & "X.ITEM_TYPE = 1) GROUP BY productTypeID"
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID))
                     readerT1s = DBCommand.ExecuteReader()
 
@@ -17700,7 +18335,7 @@ ExitCalc:
         TempItem.RecordID = RecordIDIterator
 
         ' See if we want to ignore low SVR items
-        If Not IsNothing(TempItem.SVR) Then
+        If TempItem.SVR <> "-" Then
             If IsNothing(SVRThreshold) Then
                 ' Insert the ListItem
                 SentList.Add(TempItem)
@@ -17802,8 +18437,9 @@ ExitCalc:
         Public CanInvent As Boolean
         Public CanRE As Boolean
 
-        Public SVR As Object ' Sales volume ratio, set to an object because this can be Nothing
-        Public SVRxIPH As Object ' could be nothing
+        Public SVR As String ' Sales volume ratio
+        Public SVRxIPH As String
+        Public PriceTrend As Double
 
         Public ManufacturingFacility As IndustryFacility
         Public ManufacturingFacilityUsage As Double
@@ -17894,6 +18530,7 @@ ExitCalc:
 
             CopyofMe.SVR = SVR
             CopyofMe.SVRxIPH = SVRxIPH
+            CopyofMe.PriceTrend = PriceTrend
             CopyofMe.CopyCost = CopyCost
             CopyofMe.InventionCost = InventionCost
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
@@ -18123,14 +18760,136 @@ ExitCalc:
         End If
     End Function
 
+    ' Calculates the slope of the trend line for the market history for the sent type id for the last x days sent
+    ' Formula and logic from here: http://classroom.synonym.com/calculate-trendline-2709.html
+    Private Function CalculatePriceTrend(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer, UseCREST As Boolean) As Double
+        Dim SQL As String
+        Dim rsMarketHistory As SQLiteDataReader
+        Dim GraphData As New List(Of EVEIPHPricePoint)
+        Dim counter As Integer = 0
+
+        Dim n_value As Double = 0 ' Let n = the number of data points, in this case 3
+        Dim a_value As Double = 0
+        Dim b_value As Double = 0
+        Dim c_value As Double = 0
+        Dim d_value As Double = 0
+        Dim e_value As Double = 0
+        Dim f_value As Double = 0
+
+        Dim x_sum As Double = 0
+        Dim x_squared As Double = 0
+        Dim y_sum As Double = 0
+
+        Dim slope As Double = 0
+        Dim y_intercept As Double = 0
+
+        Dim AdjustPrice As Double = 0
+
+        ' Average price is the Y values, dates (or just days) is the x value
+        Dim MainTable As String = ""
+        If UseCREST Then
+            MainTable = "MARKET_HISTORY"
+        Else
+            MainTable = "EMD_ITEM_PRICE_HISTORY"
+        End If
+
+        ' Now get all the prices for the time period
+        SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE FROM " & MainTable & " WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Now.Date), SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Now.Date, SQLiteDateFormat) & "') "
+        SQL = SQL & "ORDER BY PRICE_HISTORY_DATE ASC"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsMarketHistory = DBCommand.ExecuteReader
+
+        While rsMarketHistory.Read
+            Dim TempPoint As EVEIPHPricePoint
+            counter += 1
+            TempPoint.PointDate = rsMarketHistory.GetDateTime(0)
+            TempPoint.X_Date_Marker = counter
+            If counter = 1 Then
+                ' Save the base value and then reduce from all other prices
+                AdjustPrice = rsMarketHistory.GetDouble(1)
+                TempPoint.Y_Price = rsMarketHistory.GetDouble(1)
+            Else
+                TempPoint.Y_Price = rsMarketHistory.GetDouble(1)
+            End If
+
+            ' Since we are looping through the data, just do the summation calcs now
+            a_value += (counter * TempPoint.Y_Price)
+            ' Grab the sum here too
+            y_sum += TempPoint.Y_Price
+            x_sum += TempPoint.X_Date_Marker
+            x_squared += TempPoint.X_Date_Marker ^ 2
+
+            GraphData.Add(TempPoint)
+        End While
+
+        ' Set the n_value from the loop
+        If counter <= 1 Then
+            ' If it's 0 or 1, then we can't do a slope calculation 
+            Return 0
+        Else
+            n_value = counter
+        End If
+
+        ' Now we have all the data to do the calculations
+
+        ' Calculate a
+        ' Let a equal n times the summation of all x-values multiplied by their corresponding y-values, like so: a = 3 x {(1 x 3) +( 2 x 5) + (3 x 6.5)} = 97.5
+        ' Use previous calc value and multiply by n
+        a_value = a_value * n_value
+
+        ' Calculate b
+        ' Let b equal the sum of all x-values times the sum of all y-values, like so: b = (1 + 2 + 3) x (3 + 5 + 6.5) = 87
+        ' Use x_sum and y_sum from earlier and calculate b
+        b_value = x_sum * y_sum
+
+        ' Calculate c
+        ' Let c equal n times the sum of all squared x-values, like so: c = 3 x (1^2 + 2^2 + 3^2) = 42
+        c_value = n_value * x_squared
+
+        ' Calculate d
+        ' Let d equal the squared sum of all x-values, like so: d = (1 + 2 + 3)^2 = 36
+        d_value = x_sum ^ 2
+
+        ' Calculate the slope
+        ' Plug the values that you calculated for a, b, c, and d into the following equation to calculate the slope, m, of the regression line: 
+        ' slope = m = (a - b) / (c - d) = (97.5 - 87) / (42 - 36) = 10.5 / 6 = 1.75
+        slope = (a_value - b_value) / (c_value - d_value)
+
+        ' Now find the intercepts so we can normalize the slope value
+        ' Consider the same data set. Let e equal the sum of all y-values, like so: e = (3 + 5 + 6.5) = 14.5
+        e_value = y_sum
+
+        ' Let f equal the slope times the sum of all x-values, like so: f = 1.75 x (1 + 2 + 3) = 10.5
+        f_value = slope * x_sum
+
+        ' Calculate the y-intercept
+        ' Plug the values you have calculated for e and f into the following equation for the y-intercept, b, of the trendline: 
+        ' y-intercept = b = (e - f) / n = (14.5 - 10.5) / 3 = 1.3)
+        y_intercept = (e_value - f_value) / n_value
+
+        ' Now that we have all the parts of y = mx + b, normalize the trendline to a percentage change value
+        ' First figure out the value today (the start value is the y-intercept)
+        Dim TodaysTrendLinePrice As Double = slope * n_value + y_intercept
+        'y = 50,098.90x - 1,518,343.83
+        Dim trend As Double = (TodaysTrendLinePrice - y_intercept) / TodaysTrendLinePrice
+        Return trend
+
+    End Function
+
+    Public Structure EVEIPHPricePoint
+        Dim PointDate As Date
+        Dim X_Date_Marker As Integer ' simplifies code for dates
+        Dim Y_Price As Double ' price value
+    End Structure
+
 #Region "List Options Menu"
 
     ' Gets the line selected, grabs the TypeID and then looks up the CREST Market data for updates, then displays the market history form - add back TODO
-    Private Sub OpenMarketDataToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles CalcBPStripMenuItem.Click
+    Private Sub OpenMarketDataToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs)
 
         Dim FoundItem As New ManufacturingItem
-        Dim SQL As String
-        Dim readerRegion As SQLiteDataReader
         Dim RegionID As Long
 
         ' Find the item clicked in the list of items by looking up the row number stored in the hidden column
@@ -18142,18 +18901,10 @@ ExitCalc:
                 Dim TempCrest As New EVECREST
 
                 ' Get the region ID
-                SQL = "SELECT regionID FROM REGIONS WHERE regionName ='" & cmbCalcSVRRegion.Text & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
-                readerRegion = DBCommand.ExecuteReader
-
-                If readerRegion.Read Then
-                    RegionID = readerRegion.GetInt64(0)
-                Else
-                    RegionID = TheForgeTypeID ' The Forge as default
+                RegionID = GetRegionID(cmbCalcSVRRegion.Text)
+                If RegionID = 0 Then
+                    RegionID = TheForgeTypeID
                 End If
-
-                readerRegion.Close()
-                DBCommand = Nothing
 
                 'If TempCrest.UpdateMarketHistory(FoundItem.ItemTypeID, RegionID) Then
                 '    ' Now open the window for that item after updated
@@ -18181,7 +18932,7 @@ ExitCalc:
                 ' We found it, so set the bp to ignore
                 With FoundItem
                     SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
-                    Call ExecuteNonQuerySQL(SQL)
+                    Call evedb.ExecuteNonQuerySQL(SQL)
 
                     ' Remove the item from the list in all it's forms plus from the manufacturing list
                     ' Get all the items with the name to remove
@@ -18906,7 +19657,7 @@ ExitCalc:
         ' Get count first
         SQL = "SELECT COUNT(*) FROM RESEARCH_AGENTS WHERE RESEARCH_TYPE IN " & ResearchTypeList & " AND CORPORATION_NAME IN " & CorporationList & SystemSecurityCheck
 
-        Dim CMDCount As New SQLiteCommand(SQL, DB)
+        Dim CMDCount As New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRecordCount = CInt(CMDCount.ExecuteScalar())
 
         ' Read the settings and stats to make the query
@@ -18960,7 +19711,7 @@ ExitCalc:
             SQL = SQL & " AND regionName = '" & cmbDCRegions.Text & "'"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerDC = DBCommand.ExecuteReader
 
         If Not readerDC.HasRows Then
@@ -19083,7 +19834,7 @@ ExitCalc:
 
             SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = 'Datacore - " & TempCoreName & "'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerDC2 = DBCommand.ExecuteReader()
             If readerDC2.Read() Then
                 DCAgentRecord.DataCoreID = readerDC2.GetInt64(0)
@@ -19129,7 +19880,7 @@ ExitCalc:
                 ' First get the record we are updating
                 SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & DCAgentList(i).DataCoreID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDC2 = DBCommand.ExecuteReader()
 
                 ' First save the record and then remove the record we are on
@@ -19182,7 +19933,7 @@ ExitCalc:
             For i = 0 To DCAgentList.Count - 1
                 SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionList ='" & DCAgentList(i).RegionID & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDC2 = DBCommand.ExecuteReader()
 
                 DCAgentRecord = DCAgentList(i)
@@ -19232,7 +19983,7 @@ ExitCalc:
             For i = 0 To DCAgentList.Count - 1
                 SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionList ='" & DCAgentList(i).SystemID & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDC2 = DBCommand.ExecuteReader()
 
                 DCAgentRecord = DCAgentList(i)
@@ -19260,6 +20011,8 @@ ExitCalc:
 
         ' Set the updated list
         DCAgentList = TempDCAgentList
+        ' Sort by IPH for calculating the top 5
+        DCAgentList.Sort(New DataCoreIPHComparer)
 
         ' Get number of R&D Agents they can use
         ReDim UniqueAgentList(TotalRDAgents - 1)
@@ -19523,7 +20276,7 @@ Leave:
             SQL = "SELECT regionName FROM RESEARCH_AGENTS, REGIONS WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "
             SQL = SQL & "GROUP BY regionName"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerReg = DBCommand.ExecuteReader
 
             cmbDCRegions.Items.Add("All Regions")
@@ -19867,7 +20620,7 @@ Leave:
         SQL = SQL & "AND REACTION_GROUP IN (" & ReactionGroupList.Substring(0, Len(ReactionGroupList) - 1) & ") "
         SQL = SQL & "AND MATERIAL_CATEGORY NOT IN ('Commodity','Planetary Commodities')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerReactions = DBCommand.ExecuteReader()
 
         While readerReactions.Read
@@ -19995,7 +20748,7 @@ Leave:
         SQL = SQL & "FROM REACTIONS LEFT OUTER JOIN ITEM_PRICES ON REACTIONS.MATERIAL_TYPE_ID  = ITEM_PRICES.ITEM_ID "
         SQL = SQL & "WHERE REACTION_TYPE = 'Input' AND REACTION_TYPE_ID = " & ReactionTypeID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerInputs = DBCommand.ExecuteReader()
 
         While readerInputs.Read
@@ -20012,7 +20765,7 @@ Leave:
                 ' Get the reaction type id for the input reaction
                 SQL = "SELECT REACTION_TYPE_ID, REACTION_GROUP FROM REACTIONS WHERE REACTION_TYPE = 'Output' and MATERIAL_NAME = '" & readerInputs.GetString(6) & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSubInput = DBCommand.ExecuteReader()
 
                 Call readerSubInput.Read()
@@ -21454,7 +22207,7 @@ Leave:
         ' Group them
         SQL = SQL & "GROUP BY ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMine = DBCommand.ExecuteReader
 
         ' Process 
@@ -21616,7 +22369,7 @@ Leave:
             If chkMineCompressedOre.Checked And Not GasMining Then
                 ' First, get the unit price and volume for the compressed ore
                 SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & TempOre.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerOre = DBCommand.ExecuteReader
 
                 If readerOre.Read() Then
@@ -21644,7 +22397,7 @@ Leave:
             If chkMineUnrefinedOre.Checked Or GasMining Then ' Just use the Ore prices since we are selling it straight
                 ' First, get the unit price for the ore
                 SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = '" & TempOre.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerOre = DBCommand.ExecuteReader
 
                 If readerOre.Read() Then
@@ -23455,7 +24208,7 @@ Leave:
                 ' Get quanity to build 1 compressed block, divide into ore amount (allow partial). 
                 ' Multiply by Compressed block m3, then multiply by iskper m3 to get cost
                 SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE MATERIAL ='" & Ore.OreName & "' AND BLUEPRINT_NAME = 'Compressed " & Ore.OreName & " Blueprint'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerORE = DBCommand.ExecuteReader
 
                 If readerORE.Read Then
@@ -23466,7 +24219,7 @@ Leave:
 
                 readerORE.Close()
                 SQL = "SELECT volume FROM INVENTORY_TYPES WHERE typeName ='" & Ore.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerORE = DBCommand.ExecuteReader
 
                 If readerORE.Read Then
@@ -23562,7 +24315,7 @@ Leave:
 
         ' Look up the cost for Heavy Water
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = 'Heavy Water'"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerHW = DBCommand.ExecuteReader
 
         If readerHW.Read Then

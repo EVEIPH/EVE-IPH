@@ -333,7 +333,7 @@ Public Class frmShoppingList
                     ' of max buy (buy order) plus the brokers fees to set up that order (no tax). Then show the value in the grid of what they should do
                     ' First find out what price and type we have stored
                     SQL = "SELECT PRICE, PRICE_TYPE FROM ITEM_PRICES WHERE ITEM_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerItemPrices = DBCommand.ExecuteReader
                     readerItemPrices.Read()
 
@@ -350,7 +350,7 @@ Public Class frmShoppingList
                     ' Load the Min Sell and Max Buy prices from cache
                     SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
                     SQL = SQL & " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerItemPrices = DBCommand.ExecuteReader
                     readerItemPrices.Read()
 
@@ -549,7 +549,7 @@ Public Class frmShoppingList
                     SQL = "SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & BuildItems.GetMaterialList(i).GetMaterialName & "'"
                     Dim readerBP As SQLiteDataReader
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerBP = DBCommand.ExecuteReader
                     readerBP.Read()
 
@@ -603,7 +603,7 @@ Public Class frmShoppingList
         Dim AssetLocationFlagList As New List(Of String)
         ' First look up the location and flagID pairs - unique ID of asset locations
         SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & ")" ' Enum type 1 is shopping list
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
@@ -669,7 +669,7 @@ Public Class frmShoppingList
                                     SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
                                     SQL = SQL & " AND ID IN (" & IDString & ")"
 
-                                    DBCommand = New SQLiteCommand(SQL, DB)
+                                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                     readerAssets = DBCommand.ExecuteReader
                                     readerAssets.Read()
 
@@ -829,7 +829,7 @@ Public Class frmShoppingList
             SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = 1 AND ID IN (" & IDString & "))" ' Enum type 1 is shopping list
             SQL = SQL & " AND ID IN (" & IDString & ")"
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
@@ -840,7 +840,7 @@ Public Class frmShoppingList
             SQL = SQL & " AND ASSETS.TypeID = " & MaterialTypeID
             SQL = SQL & " ORDER BY Quantity DESC"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerAssets = DBCommand.ExecuteReader
 
             UsedQuantityRemaining = UsedQuantity
@@ -856,13 +856,13 @@ Public Class frmShoppingList
                     SQL = SQL & " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
                     SQL = SQL & " AND ID IN (" & IDString & ")"
 
-                    Call ExecuteNonQuerySQL(SQL)
+                    Call evedb.ExecuteNonQuerySQL(SQL)
                     Exit While
                 Else
                     ' Its less than or equal to the quantity so we need to delete this location's value and update the used quantity
                     SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID)
                     SQL = SQL & " AND ID IN (" & IDString & ")"
-                    Call ExecuteNonQuerySQL(SQL)
+                    Call evedb.ExecuteNonQuerySQL(SQL)
 
                     ' Update used quantity
                     UsedQuantityRemaining = UsedQuantityRemaining - LocUserQuantity
@@ -1009,7 +1009,7 @@ Public Class frmShoppingList
                                 OutputText = OutputText & ListItem.SubItems(6).Text & Separator
                                 OutputText = OutputText & ConvertUStoEUDecimal(ListItem.SubItems(7).Text) & Separator
                                 OutputText = OutputText & ConvertUStoEUDecimal(ListItem.SubItems(8).Text) & Separator
-                                OutputText = OutputText & ConvertUStoEUDecimal(ListItem.SubItems(9).Text) 
+                                OutputText = OutputText & ConvertUStoEUDecimal(ListItem.SubItems(9).Text)
                             Else
                                 OutputText = ListItem.SubItems(1).Text & Separator
                                 OutputText = OutputText & Format(ListItem.SubItems(2).Text, "Fixed") & Separator
@@ -1019,7 +1019,7 @@ Public Class frmShoppingList
                                 OutputText = OutputText & ListItem.SubItems(6).Text & Separator
                                 OutputText = OutputText & Format(ListItem.SubItems(7).Text, "Fixed") & Separator
                                 OutputText = OutputText & Format(ListItem.SubItems(8).Text, "Fixed") & Separator
-                                OutputText = OutputText & Format(ListItem.SubItems(9).Text, "Fixed") 
+                                OutputText = OutputText & Format(ListItem.SubItems(9).Text, "Fixed")
                             End If
 
                             MyStream.Write(OutputText & Environment.NewLine)
@@ -1053,7 +1053,7 @@ Public Class frmShoppingList
                                 OutputText = OutputText & Format(ListItem.SubItems(2).Text, "Fixed") & Separator
                             End If
 
-                            OutputText = OutputText & ListItem.SubItems(3).Text 
+                            OutputText = OutputText & ListItem.SubItems(3).Text
 
                             MyStream.Write(OutputText & Environment.NewLine)
                         Next
@@ -1087,7 +1087,7 @@ Public Class frmShoppingList
                                 TempName = ListItem.SubItems(1).Text
                                 TempRelic = ""
                             End If
-                            
+
                             ' Build the output text for checked items
                             OutputText = TempName & Separator
                             If ExportTypeString = SSVDataExport Then
@@ -1330,7 +1330,7 @@ Public Class frmShoppingList
                         ' Look up BP data
                         SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FormatDBString(ItemList(i).ItemName) & "'"
 
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerBP = DBCommand.ExecuteReader
                         readerBP.Read()
 
@@ -1668,7 +1668,7 @@ Public Class frmShoppingList
 
         SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
-        DBCommand = New SQLiteCommand(Sql, DB)
+        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
@@ -1725,7 +1725,7 @@ Public Class frmShoppingList
 
         SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstItems.SelectedItems(0).SubItems(0).Text
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
@@ -2225,7 +2225,7 @@ Public Class frmShoppingList
             ElseIf ListRef.Name = lstBuy.Name And UpdatePrice Then ' Price update on the lstBuy screen
                 ' Update the price in the database
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
                 CurrentRow.SubItems(2).Text = FormatNumber(txtListEdit.Text, 2)

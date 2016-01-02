@@ -600,7 +600,7 @@ Public Class frmBlueprintManagement
         End If
 
         ' Make sure to set the USER ID for the owned blueprint query
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
         If rbtnScannedCorpBPs.Checked Then
             ' Set the correct ID
@@ -702,7 +702,7 @@ Public Class frmBlueprintManagement
                         SQL = SQL & "AND productTypeID = " & CStr(readerBP.GetInt64(0))
                     End If
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLookup = DBCommand.ExecuteReader
 
                     If rsLookup.Read Then
@@ -716,7 +716,7 @@ Public Class frmBlueprintManagement
                 ElseIf readerBP.GetInt32(16) = BPType.NotOwned Then
                     ' Get max runs from all_blueprints for unowned bps
                     SQL = "SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(readerBP.GetInt64(0))
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLookup = DBCommand.ExecuteReader
 
                     If rsLookup.Read Then
@@ -1277,7 +1277,7 @@ Public Class frmBlueprintManagement
 
         SQL = SQL & WhereClause & " AND IGNORE = 0 GROUP BY ITEM_GROUP"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID))
         readerTypes = DBCommand.ExecuteReader
@@ -1428,7 +1428,7 @@ Public Class frmBlueprintManagement
         ' Just work with the ones that are checked
         checkedItems = lstBPs.CheckedItems
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         ' Update each item based on inputs
         For Each item In checkedItems
@@ -1470,7 +1470,7 @@ Public Class frmBlueprintManagement
 
         Next
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
         ' Refresh grid
         Call UpdateBlueprintGrid(False)
@@ -1543,7 +1543,7 @@ Public Class frmBlueprintManagement
 
         ' Pull all the blueprints, including not owned and output data
         SQL = "SELECT * FROM " & USER_BLUEPRINTS & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(API_ID))
         readerBP = DBCommand.ExecuteReader
@@ -1628,8 +1628,8 @@ Public Class frmBlueprintManagement
 
                     If Line IsNot Nothing Then
                         ' Start the session and delete all the records out of the table for this user
-                        Call BeginSQLiteTransaction()
-                        Call ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
+                        Call EVEDB.BeginSQLiteTransaction()
+                        Call evedb.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
                     Else
                         ' Leave loop
                         Exit Try
@@ -1707,40 +1707,40 @@ Public Class frmBlueprintManagement
                                 SQL = SQL & "0,"
                             End If
 
-                                ' Scanned SQL
-                                If TempScanned Then
-                                    If CLng(UserID) = SelectedCharacter.CharacterCorporation.CorporationID Then
-                                        SQL = SQL & "2," ' Corp BP
-                                    Else
-                                        SQL = SQL & "1,"
-                                    End If
+                            ' Scanned SQL
+                            If TempScanned Then
+                                If CLng(UserID) = SelectedCharacter.CharacterCorporation.CorporationID Then
+                                    SQL = SQL & "2," ' Corp BP
                                 Else
-                                    SQL = SQL & "0,"
-                                End If
-
-                                ' Favorite
-                                Line = Line.Substring(InStr(Line, ","))
-                                If UCase(Line) = "TRUE" Then
                                     SQL = SQL & "1,"
-                                Else
-                                    SQL = SQL & "0,"
                                 End If
-
-                                Line = Line.Substring(InStr(Line, ","))
-                                SQL = SQL & Line ' Additional Costs
-
-                                SQL = SQL & ")"
-
-                                ' Insert the record
-                                Call ExecuteNonQuerySQL(SQL)
-
+                            Else
+                                SQL = SQL & "0,"
                             End If
+
+                            ' Favorite
+                            Line = Line.Substring(InStr(Line, ","))
+                            If UCase(Line) = "TRUE" Then
+                                SQL = SQL & "1,"
+                            Else
+                                SQL = SQL & "0,"
+                            End If
+
+                            Line = Line.Substring(InStr(Line, ","))
+                            SQL = SQL & Line ' Additional Costs
+
+                            SQL = SQL & ")"
+
+                            ' Insert the record
+                            Call evedb.ExecuteNonQuerySQL(SQL)
+
+                        End If
 
                         Line = BPStream.ReadLine ' Read next line
 
                     End While
 
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
 
                     Application.UseWaitCursor = False
                     MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
@@ -1748,7 +1748,7 @@ Public Class frmBlueprintManagement
                 End If
             Catch Ex As Exception
                 Application.UseWaitCursor = False
-                Call RollbackSQLiteTransaction()
+                Call EVEDB.RollbackSQLiteTransaction()
                 MessageBox.Show("Cannot read file from disk. Original error: " & Ex.Message)
             Finally
                 ' Check this again, since we need to make sure we didn't throw an exception on open.

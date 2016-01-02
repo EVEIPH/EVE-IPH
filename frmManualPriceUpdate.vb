@@ -69,7 +69,7 @@ Public Class frmManualPriceUpdate
         SQL = SQL & "FROM ITEM_PRICES "
         SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME IN ('Tritanium','Pyerite','Mexallon','Nocxium','Isogen','Zydrine','Megacyte','Morphite')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMinerals = DBCommand.ExecuteReader()
 
         While readerMinerals.Read
@@ -119,7 +119,7 @@ Public Class frmManualPriceUpdate
             ' Update all the prices
             For i = 1 To MineralTextBoxes.Count - 1
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MineralLabels(i).Text & "'"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -307,7 +307,7 @@ Public Class frmManualPriceUpdate
         SQL = SQL & "('Ferrogel','Crystalline Carbonide','Fermionic Condensates','Titanium Carbide','Fullerides',"
         SQL = SQL & "'Hypersynaptic Fibers','Nanotransistors','Phenolic Composites','Tungsten Carbide','Sylramic Fibers','Fernite Carbide')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMoon = DBCommand.ExecuteReader()
 
         While readerMoon.Read
@@ -356,7 +356,7 @@ Public Class frmManualPriceUpdate
             ' Update all the prices
             For i = 1 To MoonTextBoxes.Count - 1
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MoonLabels(i).Text & "'"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -593,7 +593,7 @@ Public Class frmManualPriceUpdate
 
         SQL = "SELECT ITEM_NAME, PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE '%" & FormatDBString(ItemText) & "%'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader()
 
         While readerLookup.Read
@@ -630,7 +630,7 @@ Public Class frmManualPriceUpdate
 
         ' Update the price
         SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtItemPriceUpdate.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & FormatDBString(lblSelectedItem.Text) & "'"
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         ' Finally update the Program prices
         Call UpdateProgramPrices()

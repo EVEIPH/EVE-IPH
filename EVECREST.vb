@@ -32,18 +32,24 @@ Public Class EVECREST
     Private Const MarketPricesField As String = "CREST_MARKET_PRICES_CACHED_UNTIL"
     Private Const MarketPricesLength As Integer = 23
 
+    ' For looking up market order data
+    Public StationsData As StationLocation
+
     ' Rate limits
-    ' You can send an occasional burst of 100 requests all at once. If you do, you'll hit the rate limit once you try to send your 101st request unless you wait.
-    ' Your bucket refills at a rate of 1 per 1/30th of a second. So if you send 100 requests at once, you need to wait 3.33 seconds before you can send another 100 requests. 
-    ' Or if you only wait 2 seconds you can send another 60 etc. Or you can send a constant 30 requests every 1 second instead.
-    Public Const CRESTRatePerSecond As Integer = 150 ' max requests per second
-    Public Const CRESTBurstSize As Integer = 400 ' max burst of requests, which need 2.46 seconds to refill before re-bursting
-    Public Const CRESTMaximumConnections As Integer = 20
+    'For your requests, this means you can send an occasional burst of 400 requests all at once. 
+    'If you do, you'll hit the rate limit once you try to send your 401st request unless you wait.
 
-    Public RecordsInserted As Integer ' number of records currently inserted
+    'Your bucket refills at a rate of 1 per 1/150th of a second. If you send 400 requests at once, 
+    'you need to wait 2.67 seconds before you can send another 400 requests (1/150 * 400), if you 
+    'only wait 1.33 seconds you can send another 200, and so on. Altrnatively, you can send a constant 150 requests every 1 second. 
+    Private Const CRESTRatePerSecond As Integer = 150 ' max requests per second
+    Private Const CRESTBurstSize As Integer = 400 ' max burst of requests, which need 2.46 seconds to refill before re-bursting
+    Private Const CRESTMaximumConnections As Integer = 20
 
-    Public Sub New()
-        RecordsInserted = 0
+    Public Sub New(Optional LoadStationData As Boolean = False)
+        If LoadStationData Then
+            StationsData = New StationLocation
+        End If
     End Sub
 
     Public Function GetRatePerSecond() As Integer
@@ -54,27 +60,56 @@ Public Class EVECREST
         Return CRESTBurstSize
     End Function
 
-    ' market/{region_id}/types/{type_id}/history/ (cache: 23 hours)
-    'https://public-crest.eveonline.com/market/10000002/types/34/history/
-    ' Provides per day summary of market activity for 13 months for the region_id and type_id sent.
+    Public Function GetMaximumConnections() As Integer
+        Return CRESTMaximumConnections
+    End Function
 
-    ' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
+    ' Implements limiting on the calls to CREST - Total records is the total you are going to update, call count is number already called, returns boolean if slept
+    Public Function LimitCRESTCalls(RequestStart As Date, TotalRecordCount As Integer, CallCount As Integer) As Boolean
+
+        ' If we aren't as big as the burst size, then we don't need to limit our calls
+        If TotalRecordCount <= CRESTBurstSize Then
+            Return False
+        End If
+
+        ' Check to see if we hit the maximum calls per second, if so, check for time to sleep
+        If CallCount = CRESTRatePerSecond Then
+            ' Need to see if we are over the time limit and sleep
+            ' Figure out the difference between the max time for max requests and our requests (in milliseconds)
+            Dim Difference As Integer = CInt((1000 - ((Now - RequestStart).TotalMilliseconds)))
+            If Difference > 0 Then
+                Threading.Thread.Sleep(Difference)
+            End If
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    ' Uses the type from a crest call - replace buy-sell with buy or sell
+    ' market/{region_id}/orders/buy-sell/?type=https://public-crest.eveonline.com/types/{type_id}/ (cache: x hours)
+    'https://public-crest.eveonline.com/market/10000002/orders/sell/?type=https://public-crest.eveonline.com/types/34/
+    ' Provides the current buy or sell orders on the market region for the type id sent - same as in game view
+
+    ' Gets the CREST file from CCP for the current Market orders (buy and sell) for the region_id and type_id sent
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketHistory(ByVal TypeID As Long, ByVal RegionID As Long, _
-                                        Optional OpenTransaction As Boolean = True, _
-                                        Optional IgnoreCacheLookup As Boolean = False) As Boolean
-        Dim MarketPricesOutput As MarketHistory
+    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long, _
+                                    Optional OpenTransaction As Boolean = True, _
+                                    Optional IgnoreCacheLookup As Boolean = False) As Boolean
+        Dim MarketOrdersOutput As MarketOrders
         Dim SQL As String
         Dim rsCache As SQLiteDataReader
         Dim rsCheck As SQLiteDataReader
-        Dim CacheDate As Date
-        Dim MaxRecordDate As Date
+        Dim CacheDate As Date = NoDate
+        Dim ReturnCacheDate As Date = NoDate
+        Dim OrderType As String = ""
 
         If Not IgnoreCacheLookup Then
             ' First look up the cache date to see if it's time to run the update
-            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-            DBCommand = New SQLiteCommand(SQL, DB)
+            SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
             rsCache = DBCommand.ExecuteReader
 
             CacheDate = ProcessCacheDate(rsCache)
@@ -88,31 +123,198 @@ Public Class EVECREST
 
         ' If it's later than now, update
         If CacheDate <= Now Then
+            ' Always open here incase we update below
+            If OpenTransaction Then
+                Call MHDB.BeginSQLiteTransaction()
+            End If
+
+            ' Delete any records for this type and region since we have a fresh set to load
+            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+
+            ' Do two loops, one for buy, one for sell
+            For counter = 0 To 1
+                Application.DoEvents()
+
+                If counter = 0 Then
+                    OrderType = "buy"
+                Else
+                    OrderType = "sell"
+                End If
+
+                ' Dump the file into the Specializations object
+                MarketOrdersOutput = JsonConvert.DeserializeObject(Of MarketOrders) _
+                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/orders/" & OrderType & "/?type=https://public-crest.eveonline.com/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
+
+                ' Read in the data
+                If Not IsNothing(MarketOrdersOutput) Then
+                    ' Parse the data
+                    If MarketOrdersOutput.items.Count > 0 Then
+                        Application.DoEvents()
+
+                        ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
+                        For i = 0 To MarketOrdersOutput.totalCount - 1
+                            With MarketOrdersOutput.items(i)
+                                Dim StationLocation As SystemRegion
+                                Dim OrderDownloadType As String = ""
+
+                                StationLocation = StationsData.FindStationInfo(.location.id)
+
+                                If .buy Then
+                                    OrderDownloadType = "'BUY'"
+                                Else
+                                    OrderDownloadType = "'SELL'"
+                                End If
+
+                                ' Insert all the new records
+                                SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(TypeID) & "," & CStr(StationLocation.RegionID) & ","
+                                SQL = SQL & CStr(StationLocation.SystemID) & ",'" & .issued.Replace("T", " ") & "',"
+                                SQL = SQL & .duration_str & "," & OrderDownloadType & "," & CStr(.price) & "," & .volumeEntered_str & ","
+                                SQL = SQL & .minVolume_str & "," & .volume_str & ")"
+                                Call MHDB.ExecuteNonQuerySQL(SQL)
+
+                            End With
+
+                            Application.DoEvents()
+                        Next
+
+                    End If
+
+                Else
+                    ' Json file didn't download
+                    Return False
+                End If
+            Next
+
+            ' Set the Cache Date for everything queried 
+            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+            Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
+
+            ' Done updating
+            If OpenTransaction Then
+                Call MHDB.CommitSQLiteTransaction()
+            End If
+
+            rsCache = Nothing
+            rsCheck = Nothing
+            DBCommand = Nothing
+
+            Return True
+
+        Else
+            Return False
+        End If
+
+        Return True
+
+    End Function
+
+    ' For MarketOrders
+    Private Class MarketOrders
+        '{"totalCount_str": "182", "items": [], "pageCount": 1, "pageCount_str": "1", "totalCount": 182}
+        <JsonProperty("totalCount_str")> Public totalCount_str As String
+        <JsonProperty("items")> Public items() As MarketOrder
+        <JsonProperty("pageCount")> Public pageCount As Integer
+        <JsonProperty("pageCount_str")> Public pageCount_str As String
+        <JsonProperty("totalCount")> Public totalCount As Integer
+    End Class
+
+    ' For Market Orders
+    Private Class MarketOrder
+        '{"volume_str": "838037", "buy": false, "issued": "2015-12-28T15:25:24", "price": 6.3, "volumeEntered": 1700062, "minVolume": 1, "volume": 838037, "range": "region", 
+        '"href": "https://public-crest.eveonline.com/market/10000002/orders/4379176393/", "duration_str": "7", "location": {}, 
+        '"duration": 7, "minVolume_str": "1", "volumeEntered_str": "1700062", "type": {}, "id": 4379176393, "id_str": "4379176393"}
+
+        <JsonProperty("volume_str")> Public volume_str As String
+        <JsonProperty("buy")> Public buy As Boolean
+        <JsonProperty("issued")> Public issued As String ' date
+        <JsonProperty("price")> Public price As Double
+        <JsonProperty("volumeEntered")> Public volumeEntered As Long
+        <JsonProperty("minVolume")> Public minVolume As Integer
+        <JsonProperty("volume")> Public volume As Long
+        <JsonProperty("range")> Public range As String
+        <JsonProperty("href")> Public href As String
+        <JsonProperty("duration_str")> Public duration_str As String
+        <JsonProperty("location")> Public location As MarketLocation
+        <JsonProperty("duration")> Public duration As Integer
+        <JsonProperty("minVolume_str")> Public minVolume_str As String
+        <JsonProperty("volumeEntered_str")> Public volumeEntered_str As String
+        <JsonProperty("type")> Public type As MarketPriceType
+        <JsonProperty("id")> Public id As Long
+        <JsonProperty("id_str")> Public id_str As String
+    End Class
+
+    ' For Market Orders
+    Private Class MarketLocation
+        '"location": {"id_str": "60005596", "href": "https://public-crest.eveonline.com/universe/locations/60005596/", "id": 60005596, "name": "Itamo VIII - Moon 13 - Core Complexion Inc. Factory"},
+        <JsonProperty("id_str")> Public id_str As String
+        <JsonProperty("href")> Public href As String
+        <JsonProperty("id")> Public id As Long
+        <JsonProperty("name")> Public name As String
+    End Class
+
+    ' market/{region_id}/types/{type_id}/history/ (cache: 23 hours)
+    'https://public-crest.eveonline.com/market/10000002/types/34/history/
+    ' Provides per day summary of market activity for 13 months for the region_id and type_id sent.
+
+    ' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
+    ' Open transaction will open an SQL transaction here instead of the calling function
+    ' Returns boolean if the history was updated or not
+    Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long, _
+                                        Optional ByRef IgnoreCacheLookup As Boolean = False, Optional OpenTransaction As Boolean = False) As Boolean
+        Dim MarketPricesOutput As MarketHistory
+        Dim SQL As String
+        Dim rsCache As SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
+        Dim CacheDate As Date = NoDate
+        Dim MaxRecordDate As Date = NoDate
+        Dim ReturnCacheDate As Date = NoDate
+
+        If Not IgnoreCacheLookup Then
+            ' First look up the cache date to see if it's time to run the update
+            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+            rsCache = DBCommand.ExecuteReader
+
+            CacheDate = ProcessCacheDate(rsCache)
+
+            rsCache.Close()
+            rsCache = Nothing
+            DBCommand = Nothing
+        Else
+            CacheDate = NoDate
+        End If
+
+        ' If it's later than now, update
+        If CacheDate <= Now Then
+            ' Always open here incase we update below
+            If OpenTransaction Then
+                Call MHDB.BeginSQLiteTransaction()
+            End If
 
             Application.DoEvents()
             ' Dump the file into the Specializations object
             MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", CacheDate, "Market History", True))
+                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
 
             ' Read in the data
             If Not IsNothing(MarketPricesOutput) Then
-                ' Always open here incase we update below
-                If OpenTransaction Then
-                    Call BeginSQLiteTransaction()
-                End If
 
                 If MarketPricesOutput.items.Count > 0 Then
                     ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
-                    SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-                    DBCommand = New SQLiteCommand(SQL, DB)
-                    rsCheck = DBCommand.ExecuteReader
+                    If CacheDate = NoDate Then ' only run this if we don't already have the max date for this typeid
+                        SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+                        DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+                        rsCheck = DBCommand.ExecuteReader
 
-                    If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
-                        ' The cache date is the date when we run the next update, so minus one day to take into account that we 
-                        ' don't get the current day's data
-                        MaxRecordDate = DateAdd(DateInterval.Day, -1, CDate(rsCheck.GetString(0)))
+                        If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
+                            ' The cache date is the date when we run the next update
+                            MaxRecordDate = CDate(rsCheck.GetString(0))
+                        Else
+                            MaxRecordDate = NoDate
+                        End If
+                        rsCheck.Close()
                     Else
-                        MaxRecordDate = NoDate
+                        MaxRecordDate = CacheDate
                     End If
 
                     Application.DoEvents()
@@ -121,27 +323,25 @@ Public Class EVECREST
                     ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
                     For i = 0 To MarketPricesOutput.totalCount - 1
                         With MarketPricesOutput.items(i)
-                            ' only insert the records that are larger than the max date
-                            If CDate(.date_str.Replace("T", " ")) >= MaxRecordDate Then
+                            ' only insert the records that are larger than the max date (with no time or 0:00:00 in GMT when records are updated)
+                            If CDate(.date_str.Replace("T", " ")).Date > MaxRecordDate.Date Then
                                 SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
-                                SQL = SQL & CStr(.lowPrice) & "," & CStr(.highPrice) & "," & CStr(.avgPrice) & "," & CStr(.volume) & "," & CStr(.orderCount) & ")"
-                                Call ExecuteNonQuerySQL(SQL)
-                                RecordsInserted += 1
+                                SQL = SQL & CStr(.lowPrice) & "," & CStr(.highPrice) & "," & CStr(.avgPrice) & "," & .orderCount_str & "," & .volume_str & ")"
+                                Call MHDB.ExecuteNonQuerySQL(SQL)
                             End If
                         End With
 
                         Application.DoEvents()
                     Next
-
                 End If
 
                 ' Set the Cache Date for everything queried 
-                Call ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
-                Call ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(CacheDate, SQLiteDateFormat) & "')")
+                Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+                Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
 
                 ' Done updating
                 If OpenTransaction Then
-                    Call CommitSQLiteTransaction()
+                    Call MHDB.CommitSQLiteTransaction()
                 End If
 
                 Return True
@@ -228,11 +428,11 @@ Public Class EVECREST
             ' Read in the data
             If Not IsNothing(TeamSpecialtiesOutput) Then
                 If TeamSpecialtiesOutput.items.Count > 0 Then
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     ' Delete the old records first
-                    Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_GROUP_SPECIALTIES")
-                    Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_CATEGORY_SPECIALTIES")
+                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_GROUP_SPECIALTIES")
+                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_CATEGORY_SPECIALTIES")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To TeamSpecialtiesOutput.totalCount - 1
@@ -253,13 +453,13 @@ Public Class EVECREST
                                 GroupID = TeamSpecialtiesOutput.items(i).groups(j).id
 
                                 SQL = "INSERT INTO INDUSTRY_GROUP_SPECIALTIES VALUES(" & GroupID & "," & SpecializationID & ",'" & SpecializationName & "')"
-                                Call ExecuteNonQuerySQL(SQL)
+                                Call evedb.ExecuteNonQuerySQL(SQL)
 
                             Next
                         Else
                             ' Insert the record with no groups - these are the category of the team, which then can do groups of items in that category
                             SQL = "INSERT INTO INDUSTRY_CATEGORY_SPECIALTIES VALUES(" & SpecializationID & ",'" & SpecializationName & "')"
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
                         End If
 
                         ' For each record, update the progress bar
@@ -269,12 +469,12 @@ Public Class EVECREST
                     Next
 
                     ' Rebuild indexes
-                    Call ExecuteNonQuerySQL("REINDEX IDX_CAT_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_CAT_ID")
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file
                     Call SetCRESTCacheDate(IndustryTeamSpecialtiesCacheDateField, CacheDate)
                     ' Done updating
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
 
                     Return True
 
@@ -378,11 +578,11 @@ Public Class EVECREST
             ' Read in the data
             If Not IsNothing(IndustryTeamsOutput) Then
                 If IndustryTeamsOutput.items.Count > 0 Then
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     ' Delete the old records first
-                    Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS")
-                    Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_BONUSES")
+                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS")
+                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_BONUSES")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To IndustryTeamsOutput.totalCount - 1
@@ -414,7 +614,7 @@ Public Class EVECREST
                         SQL = SQL & Format(ExpiryTime, SQLiteDateFormat) & "',"
                         SQL = SQL & CStr(CategorySpecializationID) & ")"
 
-                        Call ExecuteNonQuerySQL(SQL)
+                        Call evedb.ExecuteNonQuerySQL(SQL)
 
                         ' Now loop through all the workers and input the bonus data
                         For j = 0 To IndustryTeamsOutput.items(i).workers.Count - 1
@@ -429,7 +629,7 @@ Public Class EVECREST
                             SQL = "INSERT INTO INDUSTRY_TEAMS_BONUSES VALUES (" & TeamID & ",'" & TeamName & "'," & CStr(BonusID) & ",'"
                             SQL = SQL & BonusType & "'," & CStr(-1 * BonusValue) & "," & CStr(GroupSpecializationID) & ")" ' make bonus value positive
 
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                         Next
 
@@ -447,25 +647,25 @@ Public Class EVECREST
 
                     ' Finally, update the team names that are duplicates - short term fix for duplicates?
                     SQL = "SELECT TEAM_NAME, COUNT(*) FROM INDUSTRY_TEAMS GROUP BY TEAM_NAME HAVING COUNT(*) > 1"
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
                     While rsCheck.Read
                         ' Update each team name to make it unique
                         SQL = "SELECT TEAM_NAME, TEAM_ID FROM INDUSTRY_TEAMS WHERE TEAM_NAME = '" & rsCheck.GetString(0) & "' ORDER BY TEAM_ID"
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsCheck2 = DBCommand.ExecuteReader
 
                         While rsCheck2.Read
                             ' Update Teams first
                             SQL = "UPDATE INDUSTRY_TEAMS SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                             ' Update Team Bonuses 
                             SQL = "UPDATE INDUSTRY_TEAMS_BONUSES SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                             ' Increment
                             Sequence += 1
@@ -477,12 +677,12 @@ Public Class EVECREST
                     End While
 
                     ' Rebuild indexes on teams and bonuses
-                    Call ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_NAME")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_TEAMS_ACTIVITY_ID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_NAME")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_ACTIVITY_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_ID")
 
-                    Call ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
 
                     rsCheck.Close()
                     DBCommand = Nothing
@@ -490,7 +690,7 @@ Public Class EVECREST
                     rsCheck2 = Nothing
 
                     ' Done updating
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
 
                     Return True
 
@@ -605,7 +805,7 @@ Public Class EVECREST
             ' Read in the data
             If Not IsNothing(IndustryTeamAuctionsOutput) Then
                 If IndustryTeamAuctionsOutput.items.Count > 0 Then
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     TempLabel.Text = "Saving Team Auction Data..."
                     TempPB.Minimum = 0
@@ -615,7 +815,7 @@ Public Class EVECREST
                     Application.DoEvents()
 
                     ' Delete the old records first
-                    Call ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_AUCTIONS")
+                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_AUCTIONS")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To IndustryTeamAuctionsOutput.totalCount - 1
@@ -633,14 +833,14 @@ Public Class EVECREST
                             SQL = SQL & Format(CreationTime, SQLiteDateFormat) & "','" & Format(ExpiryTime, SQLiteDateFormat) & "',"
                             SQL = SQL & CStr(.specialization.id) & "," & AuctionID & ")"
 
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                             For j = 0 To .workers.Count - 1
                                 ' Insert the workers for this team and link by team name (should be unique) - make bonus value negative
                                 SQL = "INSERT INTO INDUSTRY_TEAMS_BONUSES VALUES (" & TeamID & ",'" & TeamName & "'," & CStr(.workers(j).bonus.id) & ",'"
                                 SQL = SQL & .workers(j).bonus.bonusType & "'," & CStr(-1 * .workers(j).bonus.value) & "," & CStr(.workers(j).specialization.id) & ")"
 
-                                Call ExecuteNonQuerySQL(SQL)
+                                Call evedb.ExecuteNonQuerySQL(SQL)
                             Next
 
                             ' Insert the Bid data
@@ -657,7 +857,7 @@ Public Class EVECREST
                                     SQL = SQL & CStr(CInt(.solarSystemBids(j).characterBids(k).character.isNPC)) & ","
                                     SQL = SQL & CStr(.solarSystemBids(j).characterBids(k).bidAmount) & ")"
 
-                                    Call ExecuteNonQuerySQL(SQL)
+                                    Call evedb.ExecuteNonQuerySQL(SQL)
 
                                 Next
                             Next
@@ -677,25 +877,25 @@ Public Class EVECREST
 
                     ' Finally, update the team names that are duplicates - short term fix for duplicates?
                     SQL = "SELECT TEAM_NAME, COUNT(*) FROM INDUSTRY_TEAMS_AUCTIONS GROUP BY TEAM_NAME HAVING COUNT(*) >1"
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
                     While rsCheck.Read
                         ' Update each team name to make it unique
                         SQL = "SELECT TEAM_NAME, TEAM_ID FROM INDUSTRY_TEAMS_AUCTIONS WHERE TEAM_NAME = '" & rsCheck.GetString(0) & "' ORDER BY TEAM_ID"
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsCheck2 = DBCommand.ExecuteReader
 
                         While rsCheck2.Read
                             ' Update Teams first
                             SQL = "UPDATE INDUSTRY_TEAMS_AUCTIONS SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                             ' Update Team Bonuses 
                             SQL = "UPDATE INDUSTRY_TEAMS_BONUSES SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
                             ' Increment
                             Sequence += 1
                         End While
@@ -706,14 +906,14 @@ Public Class EVECREST
                     End While
 
                     ' Rebuild indexes on auctions and bonuses
-                    Call ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_ID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_CTIVITY_ID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_NAME")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_AUCTION_ID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_BIDS_AUCTION_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_CTIVITY_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_NAME")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_AUCTION_ID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BIDS_AUCTION_ID")
 
-                    Call ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
-                    Call ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
 
                     rsCheck.Close()
                     DBCommand = Nothing
@@ -721,7 +921,7 @@ Public Class EVECREST
                     rsCheck2 = Nothing
 
                     ' Done updating
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
 
                     Return True
 
@@ -850,7 +1050,7 @@ Public Class EVECREST
             If Not IsNothing(IndustryFacilitiesOutput) Then
                 If IndustryFacilitiesOutput.items.Count > 0 Then
 
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     StatusText = "Saving Industry Facilities Data..."
                     If SplashVisible Then
@@ -889,7 +1089,7 @@ Public Class EVECREST
                             ' Look up each facility and if found, update it. If not, insert - this way if the CREST is having issues, we won't delete all the station data (which doesn't change much)
                             SQL = "SELECT 'X' FROM INDUSTRY_FACILITIES WHERE FACILITY_ID = " & CStr(.facilityID)
 
-                            DBCommand = New SQLiteCommand(SQL, DB)
+                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                             rsLookup = DBCommand.ExecuteReader
 
                             If rsLookup.Read() Then
@@ -914,7 +1114,7 @@ Public Class EVECREST
                                 ErrorTracker = SQL
                             End If
 
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
 
                             rsLookup.Close()
                             DBCommand = Nothing
@@ -942,7 +1142,7 @@ Public Class EVECREST
                     SQL = SQL & "AND (FACILITY_ID IN (SELECT stationID FROM RAM_ASSEMBLY_LINE_STATIONS) " ' Stations with assembly lines
                     SQL = SQL & "OR FACILITY_TYPE_ID IN (21642,21644,21645,21646)) " ' Outpost types
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLookup = DBCommand.ExecuteReader
 
                     While rsLookup.Read
@@ -985,12 +1185,12 @@ Public Class EVECREST
 
                     '' Update Tax rates - ignore this until they actually could change, NPC is set by CCP and outposts don't get set through CREST
                     'SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TAX FROM STATION_FACILITIES WHERE OUTPOST = 0
-                    'DBCommand = New SQLiteCommand(SQL, DB)
+                    'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     'rsLookup = DBCommand.ExecuteReader
 
                     'While rsLookup.Read
                     '    SQL = "UPDATE STATION_FACILITIES SET FACILITY_TAX = " & CStr(rsLookup.GetDouble(1)) & " WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(0))
-                    '    Call ExecuteNonQuerySQL(SQL)
+                    '    Call evedb.ExecuteNonQuerySQL(SQL)
                     'End While
 
                     'rsLookup.Close()
@@ -1006,12 +1206,12 @@ Public Class EVECREST
                     ' Update the outposts names, which can change and do
                     SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM INDUSTRY_FACILITIES "
                     SQL = SQL & "WHERE FACILITY_TYPE_ID IN (21642,21644,21645,21646) " ' Outpost types
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLookup = DBCommand.ExecuteReader
 
                     While rsLookup.Read
                         SQL = "UPDATE STATION_FACILITIES SET FACILITY_NAME = '" & FormatDBString(rsLookup.GetString(0)) & "' WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(1))
-                        Call ExecuteNonQuerySQL(SQL)
+                        Call evedb.ExecuteNonQuerySQL(SQL)
                     End While
 
                     rsLookup.Close()
@@ -1021,7 +1221,7 @@ Public Class EVECREST
                     ' note some stations may not be in the CREST update since those are just industry facilities but contains all outposts, which we want
                     SQL = "SELECT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
                     SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLookup = DBCommand.ExecuteReader
 
                     ' Insert the new data
@@ -1033,33 +1233,33 @@ Public Class EVECREST
                         SQL = SQL & CStr(rsLookup.GetFloat(4)) & ","
                         SQL = SQL & CStr(rsLookup.GetInt64(5)) & ",0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
                         ErrorTracker = SQL
-                        Call ExecuteNonQuerySQL(SQL)
+                        Call evedb.ExecuteNonQuerySQL(SQL)
                     End While
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file 
                     ' for industry facilities though, this only needs to be run once a day - after downtime
                     Call SetCRESTCacheDate(IndustryFacilitiesField, CacheDate)
 
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
                     ErrorTracker = ""
 
                     ' Finally, Update the cost indicies for the solar system of the stations every time we update the system indicies (above)
                     If SystemIndiciesUpdated Then
-                        Call BeginSQLiteTransaction()
+                        Call EVEDB.BeginSQLiteTransaction()
                         SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsLookup = DBCommand.ExecuteReader
 
                         While rsLookup.Read
                             SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
                             SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
                         End While
 
                         rsLookup.Close()
                         DBCommand = Nothing
 
-                        Call CommitSQLiteTransaction()
+                        Call EVEDB.CommitSQLiteTransaction()
                     End If
 
                     Return True
@@ -1169,7 +1369,7 @@ Public Class EVECREST
         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = RAM_ASSEMBLY_LINE_TYPES.activityID "
         SQL = SQL & "AND RAM_INSTALLATION_TYPE_CONTENTS.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsFacility = DBCommand.ExecuteReader
 
         While rsFacility.Read
@@ -1193,7 +1393,7 @@ Public Class EVECREST
             SQL = SQL & CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
             SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
             Application.DoEvents()
         End While
 
@@ -1297,7 +1497,7 @@ Public Class EVECREST
             ' Read in the data
             If Not IsNothing(IndustrySystemsIndex) Then
                 If IndustrySystemsIndex.items.Count > 0 Then
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     TempLabel.Text = "Saving System Index Data..."
                     TempPB.Minimum = 0
@@ -1317,7 +1517,7 @@ Public Class EVECREST
                                 ' Look up each facility and if found, update it. If not, insert - this way if the CREST is having issues, we won't delete all the station data (which doesn't change much)
                                 SQL = "SELECT 'X' FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " AND ACTIVITY_ID = " & CStr(.activityID)
 
-                                DBCommand = New SQLiteCommand(SQL, DB)
+                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                 rsLookup = DBCommand.ExecuteReader
 
                                 If rsLookup.Read Then
@@ -1334,7 +1534,7 @@ Public Class EVECREST
                                     SQL = SQL & CStr(.activityID) & ",'" & FormatDBString(.activityName) & "'," & CStr(.costIndex) & ")"
                                 End If
 
-                                Call ExecuteNonQuerySQL(SQL)
+                                Call evedb.ExecuteNonQuerySQL(SQL)
                             End With
                         Next
 
@@ -1346,12 +1546,12 @@ Public Class EVECREST
                     TempPB.Visible = False
 
                     ' Rebuild indexes
-                    Call ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
+                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file
                     Call SetCRESTCacheDate(IndustrySystemsField, CacheDate)
                     ' Done updating
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
 
                     Return True
 
@@ -1399,7 +1599,7 @@ Public Class EVECREST
     ' Also includes an adjusted market price which is used in industry calculations.
 
     ' Gets the CREST file from CCP for current Market Prices and updates the EVEIPH DB with the values
-    Public Function UpdateMarketPrices(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+    Public Function UpdateAdjAvgMarketPrices(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
         Dim MarketPricesOutput As MarketPrices
         Dim SQL As String
         Dim CacheDate As Date
@@ -1434,10 +1634,10 @@ Public Class EVECREST
             ' Read in the data
             If Not IsNothing(MarketPricesOutput) Then
                 If MarketPricesOutput.items.Count > 0 Then
-                    Call BeginSQLiteTransaction()
+                    Call EVEDB.BeginSQLiteTransaction()
 
                     ' Clear the old records first
-                    Call ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+                    Call evedb.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
 
                     TempLabel.Text = "Saving Adjusted Market Price Data..."
                     TempPB.Minimum = 0
@@ -1451,7 +1651,7 @@ Public Class EVECREST
                         With MarketPricesOutput.items(i)
                             SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & CStr(.adjustedPrice) & ", AVERAGE_PRICE = " & CStr(.averagePrice)
                             SQL = SQL & " WHERE ITEM_ID = " & CStr(.type.id)
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
                         End With
 
                         ' For each record, update the progress bar
@@ -1463,7 +1663,7 @@ Public Class EVECREST
                     ' Set the Cache Date to now plus the length since it's not sent in the file
                     Call SetCRESTCacheDate(MarketPricesField, CacheDate)
                     ' Done updating
-                    Call CommitSQLiteTransaction()
+                    Call EVEDB.CommitSQLiteTransaction()
                     Return True
                 End If
             End If
@@ -1587,9 +1787,9 @@ Public Class EVECREST
             ' Read the data
             Output = reader.ReadToEnd
 
+            ' See if it downloaded a full file
             If Output.Substring(Len(Output) - 1, 1) <> "}" Then
                 Application.DoEvents()
-                Call WriteMsgToLog("File did not download completely - " & CStr(Now))
                 ' Re-run this function - limit to 10 calls
                 If RecursiveCalls <= 10 Then
                     Dim NumCalls As Integer = RecursiveCalls + 1
@@ -1606,8 +1806,6 @@ Public Class EVECREST
                 MsgBox("Unable to download CREST data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
                 Output = ""
             End If
-
-            Call WriteMsgToLog(ex.Message & " - " & CStr(Now) & " for url: " & URL)
 
             If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
                 Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") Then
@@ -1633,7 +1831,7 @@ Public Class EVECREST
         Dim RefreshDate As Date
 
         SQL = "SELECT " & UpdateField & " FROM CREST_CACHE_DATES"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
 
         If readerData.Read Then
@@ -1665,15 +1863,15 @@ Public Class EVECREST
 
         ' Update the cache for this CREST file
         SQL = "SELECT " & UpdateField & " FROM CREST_CACHE_DATES"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
 
         If readerData.Read Then
             SQL = "UPDATE CREST_CACHE_DATES SET " & UpdateField & " = '" & Format(CacheDate, SQLiteDateFormat) & "'"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
         Else
             SQL = "INSERT INTO CREST_CACHE_DATES (" & UpdateField & ") VALUES ('" & Format(CacheDate, SQLiteDateFormat) & "')"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
         End If
     End Sub
 

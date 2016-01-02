@@ -63,7 +63,7 @@ Public Class Material
         ' Look up the cost for the material
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & TypeID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCost = DBCommand.ExecuteReader
 
         If readerCost.Read Then

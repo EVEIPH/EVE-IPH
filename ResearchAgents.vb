@@ -40,7 +40,7 @@ Public Class ResearchAgents
         SQL = SQL & "AND CHARACTER_ID = " & KeyData.ID & " "
         SQL = SQL & "GROUP BY AGENT_NAME, typeName, RP_PER_DAY, LEVEL, STATION, RESEARCH_START_DATE, REMAINDER_POINTS "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerResearch = DBCommand.ExecuteReader
 
         ' New list
@@ -89,7 +89,7 @@ Public Class ResearchAgents
         ' First see if we can update yet (Cached for 60 minutes)
         SQL = "SELECT RESEARCH_AGENTS_CACHED_UNTIL FROM API WHERE CHARACTER_ID = " & KeyData.ID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerResearch = DBCommand.ExecuteReader
 
         If readerResearch.Read Then
@@ -110,17 +110,17 @@ Public Class ResearchAgents
         If RefreshDate <= DateTime.UtcNow Then
             readerResearch.Close()
 
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Delete all the current records and refresh them
             SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & KeyData.ID
-            ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             CurrentAgents = API.GetCurrentResearchAgents(KeyData, CacheDate)
 
             If Not NoAPIError(API.GetErrorText, "Character") Then
                 ' Errored, exit
-                Call RollbackSQLiteTransaction()
+                Call EVEDB.RollbackSQLiteTransaction()
                 Exit Sub
             End If
 
@@ -133,15 +133,15 @@ Public Class ResearchAgents
                     SQL = SQL & CStr(.remainderPoints) & "," & CStr(KeyData.ID) & ")"
                 End With
 
-                ExecuteNonQuerySQL(SQL)
+                evedb.ExecuteNonQuerySQL(SQL)
             Next
 
             ' Update the cache date
             SQL = "UPDATE API SET RESEARCH_AGENTS_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat) & "' "
             SQL = SQL & "WHERE CHARACTER_ID=" & KeyData.ID & " AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 

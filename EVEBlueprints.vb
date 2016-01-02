@@ -53,7 +53,7 @@ Public Class EVEBlueprints
         SQL = SQL & "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS "
         SQL = SQL & "FROM OWNED_BLUEPRINTS WHERE USER_ID = " & SearchID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBlueprints = DBCommand.ExecuteReader
 
         While readerBlueprints.Read
@@ -126,7 +126,7 @@ Public Class EVEBlueprints
             ScannedFlag = 2
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBlueprints = DBCommand.ExecuteReader
 
         If readerBlueprints.Read Then
@@ -154,7 +154,7 @@ Public Class EVEBlueprints
             End If
 
             ' Begin session
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Update the cache date
             SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat)
@@ -167,7 +167,7 @@ Public Class EVEBlueprints
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             If Not IsNothing(IndyBlueprints) Then
 
@@ -180,7 +180,7 @@ Public Class EVEBlueprints
                         SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED FROM OWNED_BLUEPRINTS "
                         SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID = " & AccountSearchID & " "
 
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerBlueprints = DBCommand.ExecuteReader
                         readerBlueprints.Read()
 
@@ -222,7 +222,7 @@ Public Class EVEBlueprints
                             ' If T2 and a copy, set to invented copy if the ME/TE match, else use what was sent
                             If CurrentBPType = BPType.Copy Then
                                 SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(.typeID)
-                                DBCommand = New SQLiteCommand(SQL, DB)
+                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                 readerCheck = DBCommand.ExecuteReader
                                 If readerCheck.Read() Then
                                     Dim TempDecryptorList As New DecryptorList
@@ -278,7 +278,7 @@ Public Class EVEBlueprints
                             readerBlueprints.Close()
                             readerBlueprints = Nothing
 
-                            Call ExecuteNonQuerySQL(SQL)
+                            Call evedb.ExecuteNonQuerySQL(SQL)
                         End If
 
                     End With
@@ -288,7 +288,7 @@ Public Class EVEBlueprints
 
             End If
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 

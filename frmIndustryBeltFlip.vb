@@ -359,7 +359,7 @@ Public Class frmIndustryBeltFlip
 
         SQL = SQL & "ORDER BY ORE"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBelts = DBCommand.ExecuteReader
 
         Call CurrentList.Items.Clear()
@@ -655,7 +655,7 @@ Public Class frmIndustryBeltFlip
                 OreName = CType(item.SubItems(1).Text, String)
                 SQL = "SELECT typeID from INVENTORY_TYPES WHERE typeName = '" & OreName & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerBelts = DBCommand.ExecuteReader
 
                 If readerBelts.Read Then
@@ -676,7 +676,7 @@ Public Class frmIndustryBeltFlip
 
                         ' First, get the unit price and volume for the compressed ore
                         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & OreName & "'"
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerOre = DBCommand.ExecuteReader
 
                         If readerOre.Read() Then
@@ -796,7 +796,7 @@ Public Class frmIndustryBeltFlip
                 Else
                     SQL = SQL & "AND ORE_NAME = '" & OreName & "'"
                 End If
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerBelts = DBCommand.ExecuteReader
 
                 If readerBelts.Read Then

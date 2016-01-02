@@ -70,7 +70,7 @@ Public Class EVEAssets
         ' Load the assets - corp or personal
         SQL = "SELECT * FROM ASSETS WHERE ID = " & ScanID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
@@ -90,7 +90,7 @@ Public Class EVEAssets
                 If CStr(TempAsset.LocationID).Substring(0, 1) = "6" Then
 
                     SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(TempAsset.LocationID)
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerData = DBCommand.ExecuteReader
 
                     If readerData.Read Then
@@ -105,7 +105,7 @@ Public Class EVEAssets
                 ElseIf CStr(TempAsset.LocationID).Substring(0, 1) = "3" Then ' See if it's a solar system
                     SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(TempAsset.LocationID)
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerData = DBCommand.ExecuteReader
 
                     If readerData.Read Then
@@ -132,7 +132,7 @@ Public Class EVEAssets
             ' Look up the flag text
             SQL = "SELECT FlagText FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(TempAsset.FlagID)) ' FlagID can be negative
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
 
             If readerData.Read Then
@@ -150,7 +150,7 @@ Public Class EVEAssets
             SQL = SQL & "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
             SQL = SQL & "AND INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
 
             If readerData.Read Then
@@ -204,7 +204,7 @@ Public Class EVEAssets
                 Exit Sub
             End If
 
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Update the cache date
             SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat)
@@ -217,7 +217,7 @@ Public Class EVEAssets
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Set the ID - Corp or Personal ID number
             If AssetType = ScanType.Personal Then
@@ -229,7 +229,7 @@ Public Class EVEAssets
             ' Clear the current assets in the database
             SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ScanID)
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Insert the records into the DB
             For i = 0 To Assets.Count - 1
@@ -240,11 +240,11 @@ Public Class EVEAssets
                 SQL = SQL & CStr(Assets(i).TypeID) & "," & CStr(Assets(i).Quantity) & "," & CStr(Assets(i).FlagID) & "," & CStr(Assets(i).Singleton) & ","
                 SQL = SQL & CStr(Assets(i).RawQuantity) & ")"
 
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
             Next
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 
@@ -830,7 +830,7 @@ Public Class EVEAssets
             SQL = SQL & " AND API_TYPE = 'Corporation'"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
         If readerAssets.Read Then

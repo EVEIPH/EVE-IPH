@@ -121,7 +121,7 @@ Public Class frmInventionMonitor
             SQL = SQL & "AND JobType = " & CStr(ScanType.Personal) & " "
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsInvention = DBCommand.ExecuteReader
 
         If rsInvention.Read Then
@@ -210,7 +210,7 @@ Public Class frmInventionMonitor
         SQL = SQL & "INDUSTRY_JOBS.materialMultiplier, INDUSTRY_JOBS.timeMultiplier, FAIL.TOTAL, SUCCESS.TOTAL, "
         SQL = SQL & "TOTAL_JOBS.TOTAL, installedItemLicensedProductionRunsRemaining, SOLAR_SYSTEMS.solarSystemName "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsInvention = DBCommand.ExecuteReader
 
         Application.UseWaitCursor = True
@@ -313,7 +313,7 @@ Public Class frmInventionMonitor
 
             'SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE groupID =" & DecryptorGroup
 
-            'DBCommand = New SQLiteCommand(SQL, DB)
+            'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             'readerDecryptor = DBCommand.ExecuteReader
 
             'Dim InventionDecryptors As New DecryptorList()

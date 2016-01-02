@@ -49,7 +49,7 @@ Public Class Corporation
         SQL = "SELECT KEY_ID, API_KEY, CACHED_UNTIL, API_TYPE FROM API WHERE API_TYPE = '" & CorporationAPITypeName & "' "
         SQL = SQL & "AND CORPORATION_ID =" & ID & " AND CORPORATION_NAME ='" & FormatDBString(Name) & "'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsAPI = DBCommand.ExecuteReader
 
         ' If the key exists, then update it first
@@ -72,7 +72,7 @@ Public Class Corporation
         SQL = SQL & "FROM API WHERE API_TYPE = '" & CorporationAPITypeName & "' "
         SQL = SQL & "AND CORPORATION_ID =" & ID & " AND CORPORATION_NAME ='" & FormatDBString(Name) & "'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsAPI = DBCommand.ExecuteReader
 
         If rsAPI.Read Then

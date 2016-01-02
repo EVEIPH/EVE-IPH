@@ -185,7 +185,7 @@ Public Class Blueprint
         SQL = SQL & "FROM ALL_BLUEPRINTS INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
         SQL = SQL & "WHERE BLUEPRINT_ID =" & BPBlueprintID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
 
         If readerBP.Read Then
@@ -317,7 +317,7 @@ Public Class Blueprint
         ' Look up the cost for the final item
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & ItemID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCost = DBCommand.ExecuteReader
 
         Dim ItemCost As Double
@@ -672,7 +672,7 @@ Public Class Blueprint
                     SQL = "SELECT ALL_BLUEPRINTS.ITEM_GROUP_ID, ALL_BLUEPRINTS.ITEM_CATEGORY, ITEM_PRICES.PRICE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES.ITEM_ID "
                     SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
-                    DBCommand = New SQLiteCommand(Sql, DB)
+                    DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
                     If rsCheck.Read() Then
@@ -787,7 +787,7 @@ Public Class Blueprint
         SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID, INVENTORY_TYPES "
         SQL = SQL & "WHERE ALL_BLUEPRINT_MATERIALS.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
 
         ' For each material in the blueprint, calculate the total mats
@@ -814,7 +814,7 @@ Public Class Blueprint
 
                 ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP
                 SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
 
                 ' Treat augmented drones, polarized weapons, and all ship skins as just base blueprints - don't build the T2 items that they use (yet)
@@ -1356,7 +1356,7 @@ Public Class Blueprint
                 SQL = SQL & "WHERE SPECIALTY_GROUP_ID = " & Team.Bonuses(i).BonusSpecialtyGroupID & " "
                 SQL = SQL & "AND GROUP_ID = " & ItemGroupID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsSearch = DBCommand.ExecuteReader
 
                 If rsSearch.Read Then
@@ -1412,7 +1412,7 @@ Public Class Blueprint
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
         SQL = "SELECT ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID =" & BPCharacter.ID & " AND BLUEPRINT_ID =" & CStr(BlueprintID) & " AND OWNED <> 0 "
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
         If readerLookup.Read Then
@@ -1582,7 +1582,7 @@ Public Class Blueprint
         SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & BlueprintID & " "
         SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_GROUP = 'Datacores'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
 
         ' Get all the Datacores
@@ -1604,7 +1604,7 @@ Public Class Blueprint
             ' Look up the cost for the material
             SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & InventionDecryptor.TypeID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerCost = DBCommand.ExecuteReader
 
             If readerCost.Read Then
@@ -1627,7 +1627,7 @@ Public Class Blueprint
             ' Look up the cost for the material
             SQL = "SELECT PRICE, ITEM_NAME FROM ITEM_PRICES WHERE ITEM_ID =" & InventionBPCTypeID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerCost = DBCommand.ExecuteReader
 
             If readerCost.Read Then
@@ -1652,7 +1652,7 @@ Public Class Blueprint
             SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
             SQL = SQL & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionBPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
 
             If readerBP.Read Then
@@ -1697,7 +1697,7 @@ Public Class Blueprint
             SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & InventionBPCTypeID & " "
             SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY <> 'Skill'"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
 
             ' Get all the mats and add
@@ -1798,7 +1798,7 @@ Public Class Blueprint
         SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
         SQL = SQL & " AND activityID = 8 AND productTypeID = " & BlueprintID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader()
         readerLookup.Read()
 
@@ -1812,7 +1812,7 @@ Public Class Blueprint
         For i = 0 To ReqInventionSkills.GetSkillList.Count - 1
             SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE typeID =" & ReqInventionSkills.GetSkillList(i).TypeID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerLookup = DBCommand.ExecuteReader()
             readerLookup.Read()
 
@@ -1871,7 +1871,7 @@ Public Class Blueprint
             ' Look it up
             SQL = "SELECT BASE_INVENTION_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionBPCTypeID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerLookup = DBCommand.ExecuteReader
 
             ' inventionTime = baseInventionTime * facilityModifier * 3% of AI level * implant (doesn't work) * team if set
@@ -1912,7 +1912,7 @@ Public Class Blueprint
         ' Look up the blueprint name from the sent blueprint ID 
         SQL = "SELECT BASE_COPY_TIME FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & InventionBPCTypeID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
         ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * (1 - (0.03 * advancedindustry)) * facility copyslotmod * (1-implant) * (1-Team value)
@@ -1939,7 +1939,7 @@ Public Class Blueprint
         SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
         SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY = 'Skill'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader
 
         ' Just add all the skills and levels
@@ -1964,7 +1964,7 @@ Public Class Blueprint
         SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
         SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY = 'Skill'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader
 
         ' Just add all the skills and levels
@@ -1989,7 +1989,7 @@ Public Class Blueprint
         SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
         SQL = SQL & "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY = 1 "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
         While readerLookup.Read

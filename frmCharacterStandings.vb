@@ -50,7 +50,7 @@ Public Class frmCharacterStandings
             SQL = SQL & "ORDER BY NPC_TYPE DESC, STANDING DESC"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerStandings = DBCommand.ExecuteReader
 
         If readerStandings.HasRows Then

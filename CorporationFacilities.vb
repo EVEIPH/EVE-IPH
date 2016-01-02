@@ -42,7 +42,7 @@ Public Class CorporationFacilities
         ' Load the facilities
         SQL = "SELECT * FROM CORPORATION_FACILITIES WHERE corporationID=" & CorpID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerFacility = DBCommand.ExecuteReader
 
         While readerFacility.Read
@@ -90,7 +90,7 @@ Public Class CorporationFacilities
         SQL = SQL & "WHERE CORPORATION_ID = " & CorpID
         SQL = SQL & " AND API_TYPE = 'Corporation'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerJobs = DBCommand.ExecuteReader
 
         If readerJobs.Read Then
@@ -118,18 +118,18 @@ Public Class CorporationFacilities
             End If
 
             ' Begin session
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Update the cache date
             SQL = "UPDATE API SET FACILITIES_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat)
             SQL = SQL & "' WHERE CORPORATION_ID = " & CorpID
             SQL = SQL & " AND API_TYPE = 'Corporation'"
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Clear out all facilities for a fresh set each time
             SQL = "DELETE FROM CORPORATION_FACILITIES WHERE corporationID = " & CorpID
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             If Not IsNothing(Facilities) Then
 
@@ -145,7 +145,7 @@ Public Class CorporationFacilities
                         SQL = SQL & .solarSystemID & ",'" & .solarSystemName & "'," & .regionID & ",'" & .regionName & "',"
                         SQL = SQL & .starbaseModifier & "," & .tax & ")"
 
-                        Call ExecuteNonQuerySQL(SQL)
+                        Call evedb.ExecuteNonQuerySQL(SQL)
 
                     End With
                 Next
@@ -154,7 +154,7 @@ Public Class CorporationFacilities
 
             End If
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End If
 

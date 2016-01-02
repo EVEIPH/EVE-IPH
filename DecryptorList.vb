@@ -15,7 +15,7 @@ Public Class DecryptorList
 
         SQL = "SELECT typeName, groupID FROM INVENTORY_TYPES WHERE groupID = 1304" ' Only one Decryptor Group with Pheobe
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerDecryptor = DBCommand.ExecuteReader
 
         While readerDecryptor.Read
@@ -94,24 +94,24 @@ Public Class DecryptorList
             End If
         End If
 
-            For i = 0 To Decryptors.Count - 1
-                With Decryptors(i)
-                    If .MEMod = MEModifier And .TEMod = TEModifier And .RunMod = RunsModifier And CBool(IIf(ProbabilityModifier <> -1, .ProductionMod = ProbabilityModifier, True)) Then
-                        Return (Decryptors(i))
-                    End If
-                End With
-            Next
+        For i = 0 To Decryptors.Count - 1
+            With Decryptors(i)
+                If .MEMod = MEModifier And .TEMod = TEModifier And .RunMod = RunsModifier And CBool(IIf(ProbabilityModifier <> -1, .ProductionMod = ProbabilityModifier, True)) Then
+                    Return (Decryptors(i))
+                End If
+            End With
+        Next
 
-            ' If still not found, look for just ME and TE
-            For i = 0 To Decryptors.Count - 1
-                With Decryptors(i)
-                    If .MEMod = MEModifier And .TEMod = TEModifier Then
-                        Return (Decryptors(i))
-                    End If
-                End With
-            Next
+        ' If still not found, look for just ME and TE
+        For i = 0 To Decryptors.Count - 1
+            With Decryptors(i)
+                If .MEMod = MEModifier And .TEMod = TEModifier Then
+                    Return (Decryptors(i))
+                End If
+            End With
+        Next
 
-            Return NoDecryptor
+        Return NoDecryptor
 
     End Function
 
@@ -128,7 +128,7 @@ Public Class DecryptorList
         SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
         SQL = SQL & "AND INVENTORY_TYPES.typeName = '" & DecryptorName & "'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerDecryptor = DBCommand.ExecuteReader
 
         If Not IsNothing(readerDecryptor) Then

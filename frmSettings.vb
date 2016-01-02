@@ -336,6 +336,17 @@ Public Class frmSettings
                 txtEVECentralInterval.Text = CStr(Defaults.DefaultEVECentralRefreshInterval)
             End If
 
+            ' SVR
+            If .UseCRESTforHistory Then
+                rbtnSVRSourceCCP.Checked = True
+            Else
+                rbtnSVRSourceEMD.Checked = True
+            End If
+
+            cmbSVRRegion.Text = .SVRAveragePriceRegion
+            cmbSVRAvgPriceDuration.Text = .SVRAveragePriceDuration
+            txtSVRThreshold.Text = CStr(.IgnoreSVRThresholdValue)
+            chkAutoUpdateSVRBPTab.Checked = .AutoUpdateSVRonBPTab
         End With
 
         FirstLoad = False
@@ -376,61 +387,77 @@ Public Class frmSettings
                 CopyImplantValue = -1 * GetAttribute("copySpeedBonus", cmbBeanCounterCopy.Text) / 100
             End If
 
-            TempSettings.CheckforUpdatesonStart = CBool(chkCheckUpdatesStartup.Checked)
-            If rbtnExportDefault.Checked Then
-                TempSettings.DataExportFormat = rbtnExportDefault.Text
-            ElseIf rbtnExportCSV.Checked Then
-                TempSettings.DataExportFormat = rbtnExportCSV.Text
-            ElseIf rbtnExportSSV.Checked Then
-                TempSettings.DataExportFormat = rbtnExportSSV.Text
-            End If
-            TempSettings.ShowToolTips = CBool(chkShowToolTips.Checked)
-            TempSettings.DisableSound = CBool(chkDisableSound.Checked)
-            TempSettings.RefiningImplantValue = RefineImplantValue
-            TempSettings.ManufacturingImplantValue = ManufacturingImplantValue
-            TempSettings.CopyImplantValue = CopyImplantValue
+            With TempSettings
 
-            ' CREST
-            TempSettings.LoadCRESTFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
-            TempSettings.LoadCRESTMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
-            TempSettings.LoadCRESTTeamDataonStartup = chkRefreshTeamDataonStartup.Checked
+                .CheckforUpdatesonStart = CBool(chkCheckUpdatesStartup.Checked)
+                If rbtnExportDefault.Checked Then
+                    .DataExportFormat = rbtnExportDefault.Text
+                ElseIf rbtnExportCSV.Checked Then
+                    .DataExportFormat = rbtnExportCSV.Text
+                ElseIf rbtnExportSSV.Checked Then
+                    .DataExportFormat = rbtnExportSSV.Text
+                End If
+                .ShowToolTips = CBool(chkShowToolTips.Checked)
+                .DisableSound = CBool(chkDisableSound.Checked)
+                .RefiningImplantValue = RefineImplantValue
+                .ManufacturingImplantValue = ManufacturingImplantValue
+                .CopyImplantValue = CopyImplantValue
 
-            ' If they didn't have this checked before, refresh assets
-            If TempSettings.LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
-                Call SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, True)
-                Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(ScanType.Corporation, True)
-            End If
+                ' CREST
+                .LoadCRESTFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
+                .LoadCRESTMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
+                .LoadCRESTTeamDataonStartup = chkRefreshTeamDataonStartup.Checked
 
-            ' Same with blueprints
-            If TempSettings.LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                Call SelectedCharacter.GetBlueprints.LoadBlueprints(ScanType.Personal, True)
-                Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(ScanType.Corporation, True)
-            End If
+                ' If they didn't have this checked before, refresh assets
+                If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
+                    Call SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, True)
+                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(ScanType.Corporation, True)
+                End If
 
-            ' Now set these
-            TempSettings.LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
-            TempSettings.LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
+                ' Same with blueprints
+                If .LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
+                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(ScanType.Personal, True)
+                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(ScanType.Corporation, True)
+                End If
 
-            ' Standings
-            TempSettings.BrokerCorpStanding = CDbl(txtBrokerCorpStanding.Text)
-            TempSettings.BrokerFactionStanding = CDbl(txtBrokerFactionStanding.Text)
+                ' Now set these
+                .LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
+                .LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
 
-            ' Default build/buy
-            TempSettings.CheckBuildBuy = CBool(chkBuildBuyDefault.Checked)
+                ' Standings
+                .BrokerCorpStanding = CDbl(txtBrokerCorpStanding.Text)
+                .BrokerFactionStanding = CDbl(txtBrokerFactionStanding.Text)
 
-            TempSettings.DefaultBPME = CInt(txtDefaultME.Text)
-            TempSettings.DefaultBPTE = CInt(txtDefaultTE.Text)
+                ' Default build/buy
+                .CheckBuildBuy = CBool(chkBuildBuyDefault.Checked)
 
-            TempSettings.DisableSVR = chkDisableSVR.Checked
-            TempSettings.SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
-            TempSettings.SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
+                .DefaultBPME = CInt(txtDefaultME.Text)
+                .DefaultBPTE = CInt(txtDefaultTE.Text)
 
-            TempSettings.ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
-            TempSettings.ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
+                .DisableSVR = chkDisableSVR.Checked
+                .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
+                .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
-            TempSettings.EVECentralRefreshInterval = CInt(txtEVECentralInterval.Text)
+                .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
+                .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
-            TempSettings.IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
+                .EVECentralRefreshInterval = CInt(txtEVECentralInterval.Text)
+
+                .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
+
+                ' SVR
+                .IgnoreSVRThresholdValue = CDbl(txtSVRThreshold.Text)
+                .SVRAveragePriceRegion = cmbSVRRegion.Text
+                .SVRAveragePriceDuration = cmbSVRAvgPriceDuration.Text
+                .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
+
+                If rbtnSVRSourceCCP.Checked Then
+                    .UseCRESTforHistory = True
+                Else
+                    .UseCRESTforHistory = False
+                End If
+
+            End With
 
             ' Save the data in the XML file
             Call Settings.SaveApplicationSettings(TempSettings)
@@ -576,6 +603,52 @@ InvalidData:
 
     Private Sub chkSaveBPRelicsDecryptors_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSaveBPRelicsDecryptors.CheckedChanged
         btnSave.Text = "Save"
+    End Sub
+
+    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtSVRThreshold.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
+        Dim SQL As String
+        Dim readerLoc As SQLiteDataReader
+
+        cmbSVRRegion.Items.Clear()
+
+        ' Load the select regions combobox with regions
+        SQL = "SELECT regionName FROM REGIONS GROUP BY regionName"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerLoc = DBCommand.ExecuteReader
+
+        While readerLoc.Read
+            cmbSVRRegion.Items.Add(readerLoc.GetString(0))
+        End While
+
+        readerLoc.Close()
+        readerLoc = Nothing
+        DBCommand = Nothing
+
+    End Sub
+
+    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
+        e.Handled = True
     End Sub
 
 End Class

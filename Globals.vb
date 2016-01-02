@@ -16,8 +16,10 @@ Public Module Public_Variables
 
     Public LocalCulture As CultureInfo
 
-    Public DB As New SQLiteConnection
+    Public EVEDB As DBConnection
     Public DBCommand As SQLiteCommand
+    ' For checking the DB to see if it's ok to write
+    Public DBLock As New Object
 
     Public SelectedCharacter As New Character
     Public SelectedBlueprint As Blueprint
@@ -109,7 +111,7 @@ Public Module Public_Variables
     Public Const SpaceFlagCode As Integer = 500
 
     ' Column processing
-    Public Const NumManufacturingTabColumns As Integer = 82
+    Public Const NumManufacturingTabColumns As Integer = 88
     Public Const NumIndustryJobColumns As Integer = 20
 
     Public Const NoDate As Date = #1/1/1900#
@@ -493,51 +495,6 @@ Public Module Public_Variables
         splash.Invoke(New ProgressSetter(AddressOf splash.SetProgress), progress)
     End Sub
 
-#Region "DataBase"
-
-    Public Sub InitDB()
-
-        DB.ConnectionString = "Data Source=" & SQLiteDBFileName & ";Version=3;"
-        DB.Open()
-        Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = TRUNCATE; PRAGMA count_changes = OFF")
-        Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL;") ' Keep the DB small
-
-    End Sub
-
-    Public Sub CloseDB()
-        DB.Close()
-    End Sub
-
-    Public Sub ExecuteNonQuerySQL(ByVal SQL As String)
-        Dim DBExecuteCmd As SQLiteCommand
-
-        ErrorTracker = SQL
-
-        DBExecuteCmd = DB.CreateCommand
-        DBExecuteCmd.CommandText = SQL
-        DBExecuteCmd.ExecuteNonQuery()
-
-        DBExecuteCmd.Dispose()
-
-        ErrorTracker = ""
-
-    End Sub
-
-    Public Sub BeginSQLiteTransaction()
-        Call ExecuteNonQuerySQL("BEGIN;")
-    End Sub
-
-    Public Sub CommitSQLiteTransaction()
-        Call ExecuteNonQuerySQL("END;")
-    End Sub
-
-    Public Sub RollbackSQLiteTransaction()
-        'DBTransaction.Rollback()
-        Call ExecuteNonQuerySQL("ROLLBACK;")
-    End Sub
-
-#End Region
-
 #Region "Taxes/Fees"
 
     ' Returns the tax on an item price only
@@ -577,7 +534,7 @@ Public Module Public_Variables
 
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
             ' Check for chars (corp chars do not count)
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", DB)
+            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", EVEDB.DBREf)
 
             If CInt(CMDCount.ExecuteScalar()) = 0 Then
                 ' No Characters selected, open the add char form
@@ -619,7 +576,7 @@ Public Module Public_Variables
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerCharacter = DBCommand.ExecuteReader
 
             If Not readerCharacter.Read Then
@@ -660,11 +617,11 @@ Public Module Public_Variables
 
         End With
 
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         ' Update the Access mask of all keys to prevent duplicates
         SQL = "UPDATE API SET ACCESS_MASK = " & InsertData.AccessMask & " WHERE KEY_ID = " & InsertData.KeyID
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         readerCharacter.Close()
         readerCharacter = Nothing
@@ -717,7 +674,7 @@ Public Module Public_Variables
             End If
             SQL = SQL & "WHERE KEY_ID = " & CStr(KeyID) & " AND API_KEY = '" & APIKey & "' "
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         End If
     End Sub
@@ -741,7 +698,7 @@ Public Module Public_Variables
                         SQL = "SELECT INVENTORY_GROUPS.groupID, categoryID FROM INVENTORY_TYPES, INVENTORY_GROUPS "
                         SQL = SQL & "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
                         SQL = SQL & "AND typeID = " & .GetMaterialTypeID
-                        DBCommand = New SQLiteCommand(SQL, DB)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsLookup = DBCommand.ExecuteReader
                         rsLookup.Read()
                         If rsLookup.GetInt64(1) = ComponentCategoryID Then
@@ -789,7 +746,7 @@ Public Module Public_Variables
             SQL = SQL & "AND INDUSTRY_TEAMS_BONUSES.SPECIALTY_GROUP_ID = INDUSTRY_GROUP_SPECIALTIES.SPECIALTY_GROUP_ID "
             SQL = SQL & "GROUP BY BONUS_ID, BONUS_TYPE, BONUS_VALUE, SPECIALTY_GROUP_NAME, INDUSTRY_TEAMS_BONUSES.SPECIALTY_GROUP_ID "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
 
             While rsLoader.Read()
@@ -830,7 +787,7 @@ Public Module Public_Variables
                 SQL = SQL & "WHERE TEAM_NAME = '" & TempTeamText & "'"
                 SQL = SQL & "AND INDUSTRY_TEAMS_AUCTIONS.SPECIALTY_CATEGORY_ID = INDUSTRY_CATEGORY_SPECIALTIES.SPECIALTY_CATEGORY_ID "
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
                 rsLoader.Read()
 
@@ -1014,7 +971,7 @@ NoBonus:
 
         If TeamActivityCombo.Text = ActivityComponentManufacturing Or TeamActivityCombo.Text = ActivityCapComponentManufacturing Then
             ' Reset the groupID list to just categories with components
-            DBCommand = New SQLiteCommand("SELECT groupID FROM INVENTORY_GROUPS WHERE categoryID = " & ComponentCategoryID, DB)
+            DBCommand = New SQLiteCommand("SELECT groupID FROM INVENTORY_GROUPS WHERE categoryID = " & ComponentCategoryID, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             BPItemGroupIDList = New List(Of Long)
 
@@ -1060,7 +1017,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_TEAMS_AUCTIONS.SOLAR_SYSTEM_NAME = '" & frmMain.cmbBPFacilitySystem.Text & "' "
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read()
@@ -1090,7 +1047,7 @@ NoBonus:
             SQL = SQL & "AND INDUSTRY_TEAMS_BONUSES.SPECIALTY_GROUP_ID = INDUSTRY_GROUP_SPECIALTIES.SPECIALTY_GROUP_ID "
             SQL = SQL & "GROUP BY BONUS_TYPE, BONUS_VALUE, INDUSTRY_GROUP_SPECIALTIES.SPECIALTY_GROUP_ID, SPECIALTY_GROUP_NAME "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLookUp = DBCommand.ExecuteReader
 
             ' Loop through the bonuses and display the bonuses that apply to the label, and all for tool tip
@@ -1101,7 +1058,7 @@ NoBonus:
                     SQL = "SELECT SPECIALTY_GROUP_NAME, GROUP_ID FROM INDUSTRY_GROUP_SPECIALTIES "
                     SQL = SQL & "WHERE SPECIALTY_GROUP_ID = " & rsLookUp.GetInt32(2)
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsSearch = DBCommand.ExecuteReader
 
                     While rsSearch.Read
@@ -1963,7 +1920,7 @@ NoBonus:
 
         SQL = SQL & "GROUP BY REGION_NAME "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
@@ -2097,7 +2054,7 @@ NoBonus:
 
         SQL = SQL & " GROUP BY SOLAR_SYSTEM_NAME, COST_INDEX"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
@@ -2233,7 +2190,7 @@ NoBonus:
         ' This is helpful if we auto-load (Capital array before super capital, equipment array before rapid equipment) to choose the one more likely
         SQL = SQL & " ORDER BY FACILITY_NAME"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         FacilityCombo.Enabled = True
@@ -2405,7 +2362,7 @@ NoBonus:
                     SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
             End Select
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
 
             If rsLoader.Read Then
@@ -2536,7 +2493,7 @@ NoBonus:
                 Dim SystemName As String = .SolarSystemName.Substring(0, InStr(.SolarSystemName, "(") - 2)
                 SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
                 rsLoader.Read()
 
@@ -2555,7 +2512,7 @@ NoBonus:
                     SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
                 End If
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
 
                 If rsLoader.Read() Then
@@ -2599,7 +2556,7 @@ NoBonus:
         End If
 
         Dim SQL As String = "SELECT UPGRADE_LEVEL FROM SOLAR_SYSTEMS, FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = solarSystemID AND factionWarzone <> 0 AND solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsFW = DBCommand.ExecuteReader
 
         If rsFW.Read Then
@@ -2622,7 +2579,7 @@ NoBonus:
         End If
 
         Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsFW = DBCommand.ExecuteReader
 
         Dim Warzone As Boolean
@@ -2673,7 +2630,7 @@ NoBonus:
             End If
 
             Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsFW = DBCommand.ExecuteReader
 
             Dim Warzone As Boolean
@@ -2690,7 +2647,7 @@ NoBonus:
                 ' look up level
                 Dim rsFWLevel As SQLiteDataReader
                 SQL = "SELECT UPGRADE_LEVEL FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & CStr(SSID)
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsFWLevel = DBCommand.ExecuteReader
                 rsFWLevel.Read()
 
@@ -3548,7 +3505,7 @@ NoBonus:
 
                 SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(ItemColumns(0)) & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerItem = DBCommand.ExecuteReader
                 readerItem.Read()
 
@@ -3800,6 +3757,28 @@ NoBonus:
         End If
 
     End Sub
+
+    ' Function to get the regionID from the name sent
+    Public Function GetRegionID(ByVal RegionName As String) As Long
+        Dim readerRegion As SQLiteDataReader
+        Dim ReturnID As Long
+
+        ' Get the region ID
+        DBCommand = New SQLiteCommand("SELECT regionID FROM REGIONS WHERE regionName ='" & FormatDBString(RegionName) & "'", EVEDB.DBREf)
+        readerRegion = DBCommand.ExecuteReader
+
+        If readerRegion.Read Then
+            ReturnID = readerRegion.GetInt64(0)
+        Else
+            ReturnID = 0
+        End If
+
+        readerRegion.Close()
+        DBCommand = Nothing
+
+        Return ReturnID
+
+    End Function
 
     ' Limits the referenced text box between 0 and 10/20 on text
     Public Sub VerifyMETEEntry(ByRef METETextBox As TextBox, Type As String)
@@ -4190,7 +4169,7 @@ InvalidDate:
         ' Look up the blueprint we used to invent from the sent blueprint ID
         SQL = "SELECT blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & BlueprintID & " AND activityID = 8"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
         If readerLookup.Read() Then
@@ -4200,7 +4179,7 @@ InvalidDate:
             ' Select all materials now
             SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & T1BPID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerLookup = DBCommand.ExecuteReader
 
             readerLookup.Read()
@@ -4232,7 +4211,7 @@ InvalidDate:
             SQL = SQL & " AND typeName LIKE '%" & RelicName & "%'"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
 
         If rsCheck.Read Then
@@ -4247,7 +4226,7 @@ InvalidDate:
     Public Function GetRace(ByVal RaceID As Integer) As String
         Dim rsLookup As SQLite.SQLiteDataReader
 
-        DBCommand = New SQLiteCommand("SELECT RACE FROM RACE_IDS WHERE ID = " & CStr(RaceID), DB)
+        DBCommand = New SQLiteCommand("SELECT RACE FROM RACE_IDS WHERE ID = " & CStr(RaceID), EVEDB.DBREf)
         rsLookup = DBCommand.ExecuteReader
 
         If rsLookup.Read Then
@@ -4270,7 +4249,7 @@ InvalidDate:
         SQL = SQL & "AND INVENTORY_TYPES.typeName ='" & FormatDBString(TypeName) & "' "
         SQL = SQL & "AND (ATTRIBUTE_TYPES.displayName= '" & AttributeName & "' OR ATTRIBUTE_TYPES.attributeName = '" & AttributeName & "')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAttribute = DBCommand.ExecuteReader
 
         If readerAttribute.Read Then
@@ -4312,22 +4291,22 @@ InvalidDate:
         Dim UserID As String = CStr(SelectedCharacter.ID)
         Dim CorpID As String = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & UserID & ",0)"
-        ExecuteNonQuerySQL(SQL)
+        evedb.ExecuteNonQuerySQL(SQL)
 
         SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & CorpID & ",0)"
-        ExecuteNonQuerySQL(SQL)
+        evedb.ExecuteNonQuerySQL(SQL)
 
         SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE CHARACTER_ID = " & UserID
-        ExecuteNonQuerySQL(SQL)
+        evedb.ExecuteNonQuerySQL(SQL)
 
         SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE API_TYPE = 'Corporation' "
         SQL = SQL & "AND CORPORATION_ID = " & CorpID
-        ExecuteNonQuerySQL(SQL)
+        evedb.ExecuteNonQuerySQL(SQL)
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
         MsgBox("Blueprints reset", vbInformation, Application.ProductName)
 
@@ -4356,7 +4335,7 @@ InvalidDate:
         If UpdatedBPType = BPType.Original Then
             UserRuns = -1
         Else
-            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID), DB)
+            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID), EVEDB.DBREf)
             rsMaxRuns = DBCommand.ExecuteReader
             If rsMaxRuns.Read() Then
                 UserRuns = rsMaxRuns.GetInt32(0)
@@ -4371,23 +4350,23 @@ InvalidDate:
             ' Look up the BP first to see if it is scanned
             SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID = " & CStr(BPID) & " AND SCANNED <> 0"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
 
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
                 SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
                 SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID=" & BPID
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
             SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         Else
 
@@ -4414,7 +4393,7 @@ InvalidDate:
             ' See if the BP is in the DB
             SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
 
             If Not readerBP.HasRows Then
@@ -4423,19 +4402,19 @@ InvalidDate:
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                 SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
                 SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
             Else
                 ' Update it 
                 SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
                 SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
                 SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
             SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         End If
 
@@ -4500,7 +4479,7 @@ InvalidDate:
         SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
         SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
 
         If readerBP.Read Then

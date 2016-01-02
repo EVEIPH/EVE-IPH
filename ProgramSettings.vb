@@ -120,6 +120,13 @@ Public Class ProgramSettings
     Public DefaultDisableSVR As Boolean = False
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
 
+    ' SVR Stuff
+    Public DefaultIgnoreSVRThresholdValue As Double = 0.0
+    Public DefaultSVRAveragePriceRegion As String = "The Forge"
+    Public DefaultSVRAveragePriceDuration As String = "7"
+    Public DefaultUseCRESTforHistory As Boolean = True
+    Public DefaultAutoUpdateSVRonBPTab As Boolean = True
+
     Public DefaultIncludeInGameLinksinCopyText As Boolean = False
 
     ' For shopping list
@@ -273,7 +280,6 @@ Public Class ProgramSettings
     Public DefaultCheckBPTypeDeployables As Boolean = True
     Public DefaultCheckBPTypeCelestials As Boolean = True
     Public DefaultCheckBPTypeStationParts As Boolean = True
-    Public DefaultAveragePriceDuration As String = "7"
     Public DefaultCheckDecryptorNone As Boolean = True
     Public DefaultCheckDecryptor06 As Boolean = False
     Public DefaultCheckDecryptor09 As Boolean = False
@@ -304,9 +310,7 @@ Public Class ProgramSettings
     Public DefaultPriceCompare As String = "Compare All"
     Public DefaultCheckIncludeT2Owned As Boolean = True
     Public DefaultCheckIncludeT3Owned As Boolean = True
-    Public DefaultIgnoreSVRThreshold As Double = 0.0
     Public DefaultCheckSVRIncludeNull As Boolean = True
-    Public DefaultSVRRegion As String = "The Forge"
     Public DefaultCalcProductionLines As Integer = 1
     Public DefaultCalcLaboratoryLines As Integer = 1
     Public DefaultCalcRuns As Integer = 1
@@ -319,7 +323,6 @@ Public Class ProgramSettings
     Public DefaultCalcIgnoreMinerals As Boolean = False
     Public DefaultCalcIgnoreT1Item As Boolean = False
     Public DefaultCalcPPU As Boolean = False
-    Public DefaultCalcCRESTHistory As Boolean = True
     Public DefaultCalcManufacturingFWLevel As String = "0"
     Public DefaultCalcCopyingFWLevel As String = "0"
     Public DefaultCalcInventionFWLevel As String = "0"
@@ -502,6 +505,12 @@ Public Class ProgramSettings
     Dim DefaultMTIskperHour As Integer = 10
     Dim DefaultMTSVR As Integer = 11
     Dim DefaultMTSVRxIPH As Integer = 0
+    Dim DefaultMTPriceTrend As Integer = 0
+    Dim DefaultMTTotalItemsSold As Integer = 0
+    Dim DefaultMTTotalOrdersFilled As Integer = 0
+    Dim DefaultMTAvgItemsperOrder As Integer = 0
+    Dim DefaultMTCurrentSellOrders As Integer = 0
+    Dim DefaultMTCurrentBuyOrders As Integer = 0
     Dim DefaultMTTotalCost As Integer = 12
     Dim DefaultMTBaseJobCost As Integer = 0
     Dim DefaultMTNumBPs As Integer = 0
@@ -585,6 +594,12 @@ Public Class ProgramSettings
     Dim DefaultMTIskperHourWidth As Integer = 100
     Dim DefaultMTSVRWidth As Integer = 100
     Dim DefaultMTSVRxIPHWidth As Integer = 100
+    Dim DefaultMTPriceTrendWidth As Integer = 100
+    Dim DefaultMTTotalItemsSoldWidth As Integer = 100
+    Dim DefaultMTTotalOrdersFilledWidth As Integer = 100
+    Dim DefaultMTAvgItemsperOrderWidth As Integer = 100
+    Dim DefaultMTCurrentSellOrdersWidth As Integer = 100
+    Dim DefaultMTCurrentBuyOrdersWidth As Integer = 100
     Dim DefaultMTTotalCostWidth As Integer = 100
     Dim DefaultMTBaseJobCostWidth As Integer = 100
     Dim DefaultMTNumBPsWidth As Integer = 57
@@ -672,6 +687,12 @@ Public Class ProgramSettings
     Public Const IskperHourColumnName As String = "Isk per Hour"
     Public Const SVRColumnName As String = "SVR"
     Public Const SVRxIPHColumnName As String = "SVR * IPH"
+    Public Const PriceTrendColumnName As String = "Price Trend"
+    Public Const TotalItemsSoldColumnName As String = "Total Items Sold"
+    Public Const TotalOrdersFilledColumnName As String = "Total Orders Filled"
+    Public Const AvgItemsperOrderColumnName As String = "Average Items Per Order"
+    Public Const CurrentSellOrdersColumnName As String = "Current Sell Orders"
+    Public Const CurrentBuyOrdersColumnName As String = "Current Buy Orders"
     Public Const TotalCostColumnName As String = "Total Cost"
     Public Const BaseJobCostColumnName As String = "Base Job Cost"
     Public Const NumBPsColumnName As String = "Num BPs"
@@ -1093,6 +1114,11 @@ Public Class ProgramSettings
                     .EVECentralRefreshInterval = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVECentralRefreshInterval", DefaultEVECentralRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
+                    .IgnoreSVRThresholdValue = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "IgnoreSVRThresholdValue", DefaultIgnoreSVRThresholdValue))
+                    .SVRAveragePriceRegion = CStr(GetSettingValue(AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceRegion", DefaultSVRAveragePriceRegion))
+                    .SVRAveragePriceDuration = CStr(GetSettingValue(AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceDuration", DefaultSVRAveragePriceDuration))
+                    .UseCRESTforHistory = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseCRESTforHistory", DefaultUseCRESTforHistory))
+                    .AutoUpdateSVRonBPTab = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AutoUpdateSVRonBPTab", DefaultAutoUpdateSVRonBPTab))
                 End With
 
             Else
@@ -1117,37 +1143,45 @@ Public Class ProgramSettings
     Public Function SetDefaultApplicationSettings() As ApplicationSettings
         Dim TempSettings As ApplicationSettings
 
-        ' Load default settings
-        TempSettings.CheckforUpdatesonStart = DefaultCheckUpdatesOnStart
-        TempSettings.DataExportFormat = DefaultDataExportFormat
-        TempSettings.ShowToolTips = DefaultShowToolTips
-        TempSettings.LoadAssetsonStartup = DefaultLoadAssetsonStartup
-        TempSettings.LoadBPsonStartup = DefaultLoadBPsonStartup
-        TempSettings.LoadCRESTTeamDataonStartup = DefaultRefreshTeamCRESTDataonStartup
-        TempSettings.LoadCRESTMarketDataonStartup = DefaultRefreshMarketCRESTDataonStartup
-        TempSettings.LoadCRESTFacilityDataonStartup = DefaultRefreshFacilityCRESTDataonStartup
-        TempSettings.DisableSound = DefaultDisableSound
-        TempSettings.ManufacturingImplantValue = DefaultImplantValues
-        TempSettings.RefiningImplantValue = DefaultImplantValues
-        TempSettings.CopyImplantValue = DefaultImplantValues
+        With TempSettings
+            ' Load default settings
+            .CheckforUpdatesonStart = DefaultCheckUpdatesOnStart
+            .DataExportFormat = DefaultDataExportFormat
+            .ShowToolTips = DefaultShowToolTips
+            .LoadAssetsonStartup = DefaultLoadAssetsonStartup
+            .LoadBPsonStartup = DefaultLoadBPsonStartup
+            .LoadCRESTTeamDataonStartup = DefaultRefreshTeamCRESTDataonStartup
+            .LoadCRESTMarketDataonStartup = DefaultRefreshMarketCRESTDataonStartup
+            .LoadCRESTFacilityDataonStartup = DefaultRefreshFacilityCRESTDataonStartup
+            .DisableSound = DefaultDisableSound
+            .ManufacturingImplantValue = DefaultImplantValues
+            .RefiningImplantValue = DefaultImplantValues
+            .CopyImplantValue = DefaultImplantValues
 
-        ' Station Standings for building and selling
-        TempSettings.BrokerCorpStanding = DefaultBrokerCorpStanding
-        TempSettings.BrokerFactionStanding = DefaultBrokerFactionStanding
+            ' Station Standings for building and selling
+            .BrokerCorpStanding = DefaultBrokerCorpStanding
+            .BrokerFactionStanding = DefaultBrokerFactionStanding
 
-        TempSettings.CheckBuildBuy = DefaultCheckBuildBuy
+            .CheckBuildBuy = DefaultCheckBuildBuy
 
-        TempSettings.DefaultBPME = DefaultSettingME
-        TempSettings.DefaultBPTE = DefaultSettingTE
+            .DefaultBPME = DefaultSettingME
+            .DefaultBPTE = DefaultSettingTE
 
-        TempSettings.DisableSVR = DefaultDisableSVR
-        TempSettings.SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
-        TempSettings.SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
+            .DisableSVR = DefaultDisableSVR
+            .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
+            .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
-        TempSettings.ShopListIncludeInventMats = DefaultShopListIncludeInventMats
-        TempSettings.ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
+            .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
+            .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
-        TempSettings.EVECentralRefreshInterval = DefaultEVECentralRefreshInterval
+            .EVECentralRefreshInterval = DefaultEVECentralRefreshInterval
+
+            .IgnoreSVRThresholdValue = DefaultIgnoreSVRThresholdValue
+            .SVRAveragePriceRegion = DefaultSVRAveragePriceRegion
+            .SVRAveragePriceDuration = DefaultSVRAveragePriceDuration
+            .UseCRESTforHistory = DefaultUseCRESTforHistory
+            .AutoUpdateSVRonBPTab = DefaultAutoUpdateSVRonBPTab
+        End With
 
         ' Save locally
         ApplicationSettings = TempSettings
@@ -1157,7 +1191,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(23) As Setting
+        Dim ApplicationSettingsList(28) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1184,6 +1218,11 @@ Public Class ProgramSettings
             ApplicationSettingsList(21) = New Setting("LoadCRESTFacilityDataonStartup", CStr(SentSettings.LoadCRESTFacilityDataonStartup))
             ApplicationSettingsList(22) = New Setting("LoadCRESTMarketDataonStartup", CStr(SentSettings.LoadCRESTMarketDataonStartup))
             ApplicationSettingsList(23) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
+            ApplicationSettingsList(24) = New Setting("IgnoreSVRThresholdValue", CStr(SentSettings.IgnoreSVRThresholdValue))
+            ApplicationSettingsList(25) = New Setting("SVRAveragePriceRegion", CStr(SentSettings.SVRAveragePriceRegion))
+            ApplicationSettingsList(26) = New Setting("SVRAveragePriceDuration", CStr(SentSettings.SVRAveragePriceDuration))
+            ApplicationSettingsList(27) = New Setting("UseCRESTforHistory", CStr(SentSettings.UseCRESTforHistory))
+            ApplicationSettingsList(28) = New Setting("AutoUpdateSVRonBPTab", CStr(SentSettings.AutoUpdateSVRonBPTab))
 
             Call WriteSettingsToFile(AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1755,7 +1794,6 @@ Public Class ProgramSettings
                     .CheckBPTypeDeployables = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeDeployables", DefaultCheckBPTypeDeployables))
                     .CheckBPTypeCelestials = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
                     .CheckBPTypeStationParts = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
-                    .AveragePriceDuration = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "AveragePriceDuration", DefaultAveragePriceDuration))
                     .CheckDecryptorNone = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorNone", DefaultCheckDecryptorNone))
                     .CheckDecryptor06 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor06", DefaultCheckDecryptor06))
                     .CheckDecryptor09 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor09", DefaultCheckDecryptor09))
@@ -1786,9 +1824,7 @@ Public Class ProgramSettings
                     .PriceCompare = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "PriceCompare", DefaultPriceCompare))
                     .CheckIncludeT2Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeT2Owned", DefaultCheckIncludeT2Owned))
                     .CheckIncludeT3Owned = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeT3Owned", DefaultCheckIncludeT3Owned))
-                    .IgnoreSVRThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "IgnoreLowSVRThreshold", DefaultIgnoreSVRThreshold))
                     .CheckSVRIncludeNull = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckSVRIncludeNull", DefaultCheckSVRIncludeNull))
-                    .AveragePriceRegion = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "AveragePriceRegion", DefaultSVRRegion))
                     .ProductionLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "ProductionLines", DefaultCalcProductionLines))
                     .LaboratoryLines = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "LaboratoryLines", DefaultCalcLaboratoryLines))
                     .Runs = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "Runs", DefaultCalcRuns))
@@ -1804,7 +1840,6 @@ Public Class ProgramSettings
                     .IgnoreMinerals = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreMinerals", DefaultCalcIgnoreMinerals))
                     .IgnoreT1Item = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreT1Item", DefaultCalcIgnoreT1Item))
                     .CalcPPU = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CalcPPU", DefaultCalcPPU))
-                    .UpdatePriceHistory = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "UpdatePriceHistory", DefaultCalcCRESTHistory))
                     .ManufacturingFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "ManufacturingFWUpgradeLevel", DefaultCalcManufacturingFWLevel))
                     .CopyingFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "CopyingFWUpgradeLevel", DefaultCalcCopyingFWLevel))
                     .InventionFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "InventionFWUpgradeLevel", DefaultCalcInventionFWLevel))
@@ -1857,7 +1892,6 @@ Public Class ProgramSettings
             .CheckBPTypeCelestials = DefaultCheckBPTypeCelestials
             .CheckBPTypeStationParts = DefaultCheckBPTypeStationParts
             .CheckBPTypeDeployables = DefaultCheckBPTypeDeployables
-            .AveragePriceDuration = DefaultAveragePriceDuration
             .CheckDecryptorNone = DefaultCheckDecryptorNone
             .CheckDecryptor06 = DefaultCheckDecryptor06
             .CheckDecryptor09 = DefaultCheckDecryptor09
@@ -1888,9 +1922,7 @@ Public Class ProgramSettings
             .PriceCompare = DefaultPriceCompare
             .CheckIncludeT2Owned = DefaultCheckIncludeT2Owned
             .CheckIncludeT3Owned = DefaultCheckIncludeT3Owned
-            .IgnoreSVRThreshold = DefaultIgnoreSVRThreshold
             .CheckSVRIncludeNull = DefaultCheckSVRIncludeNull
-            .AveragePriceRegion = DefaultSVRRegion
             .ProductionLines = DefaultCalcProductionLines
             .LaboratoryLines = DefaultCalcLaboratoryLines
             .Runs = DefaultCalcRuns
@@ -1906,7 +1938,6 @@ Public Class ProgramSettings
             .IgnoreMinerals = DefaultCalcIgnoreMinerals
             .IgnoreT1Item = DefaultCalcIgnoreT1Item
             .CalcPPU = DefaultCalcPPU
-            .UpdatePriceHistory = DefaultCalcCRESTHistory
             .ManufacturingFWUpgradeLevel = DefaultCalcManufacturingFWLevel
             .CopyingFWUpgradeLevel = DefaultCalcCopyingFWLevel
             .InventionFWUpgradeLevel = DefaultCalcInventionFWLevel
@@ -1922,7 +1953,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(76) As Setting
+        Dim ManufacturingSettingsList(72) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -1944,64 +1975,60 @@ Public Class ProgramSettings
             ManufacturingSettingsList(16) = New Setting("CheckBPTypeRigs", CStr(SentSettings.CheckBPTypeRigs))
             ManufacturingSettingsList(17) = New Setting("CheckBPTypeSubsystems", CStr(SentSettings.CheckBPTypeSubsystems))
             ManufacturingSettingsList(18) = New Setting("CheckBPTypeBoosters", CStr(SentSettings.CheckBPTypeBoosters))
-            ManufacturingSettingsList(19) = New Setting("AveragePriceDuration", CStr(SentSettings.AveragePriceDuration))
-            ManufacturingSettingsList(20) = New Setting("CheckDecryptorNone", CStr(SentSettings.CheckDecryptorNone))
-            ManufacturingSettingsList(21) = New Setting("CheckDecryptor06", CStr(SentSettings.CheckDecryptor06))
-            ManufacturingSettingsList(22) = New Setting("CheckDecryptor10", CStr(SentSettings.CheckDecryptor10))
-            ManufacturingSettingsList(23) = New Setting("CheckDecryptor11", CStr(SentSettings.CheckDecryptor11))
-            ManufacturingSettingsList(24) = New Setting("CheckDecryptor12", CStr(SentSettings.CheckDecryptor12))
-            ManufacturingSettingsList(25) = New Setting("CheckDecryptor18", CStr(SentSettings.CheckDecryptor18))
-            ManufacturingSettingsList(26) = New Setting("CheckIgnoreInvention", CStr(SentSettings.CheckIgnoreInvention))
-            ManufacturingSettingsList(27) = New Setting("CheckRelicWrecked", CStr(SentSettings.CheckRelicWrecked))
-            ManufacturingSettingsList(28) = New Setting("CheckRelicIntact", CStr(SentSettings.CheckRelicIntact))
-            ManufacturingSettingsList(29) = New Setting("CheckRelicMalfunction", CStr(SentSettings.CheckRelicMalfunction))
-            ManufacturingSettingsList(30) = New Setting("CheckOnlyBuild", CStr(SentSettings.CheckOnlyBuild))
-            ManufacturingSettingsList(31) = New Setting("CheckOnlyInvent", CStr(SentSettings.CheckOnlyInvent))
-            ManufacturingSettingsList(32) = New Setting("CheckOnlyRE", CStr(SentSettings.CheckOnlyRE))
-            ManufacturingSettingsList(33) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
-            ManufacturingSettingsList(34) = New Setting("CheckIncludeUsage", CStr(SentSettings.CheckIncludeUsage))
-            ManufacturingSettingsList(35) = New Setting("CheckRaceAmarr", CStr(SentSettings.CheckRaceAmarr))
-            ManufacturingSettingsList(36) = New Setting("CheckRaceCaldari", CStr(SentSettings.CheckRaceCaldari))
-            ManufacturingSettingsList(37) = New Setting("CheckRaceGallente", CStr(SentSettings.CheckRaceGallente))
-            ManufacturingSettingsList(38) = New Setting("CheckRaceMinmatar", CStr(SentSettings.CheckRaceMinmatar))
-            ManufacturingSettingsList(39) = New Setting("CheckRacePirate", CStr(SentSettings.CheckRacePirate))
-            ManufacturingSettingsList(40) = New Setting("CheckRaceOther", CStr(SentSettings.CheckRaceOther))
-            ManufacturingSettingsList(41) = New Setting("PriceCompare", CStr(SentSettings.PriceCompare))
-            ManufacturingSettingsList(42) = New Setting("CheckIncludeT2Owned", CStr(SentSettings.CheckIncludeT2Owned))
-            ManufacturingSettingsList(43) = New Setting("CheckIncludeT3Owned", CStr(SentSettings.CheckIncludeT3Owned))
-            ManufacturingSettingsList(44) = New Setting("IgnoreLowSVRThreshold", CStr(SentSettings.IgnoreSVRThreshold))
-            ManufacturingSettingsList(45) = New Setting("CheckSVRIncludeNull", CStr(SentSettings.CheckSVRIncludeNull))
-            ManufacturingSettingsList(46) = New Setting("AveragePriceRegion", CStr(SentSettings.AveragePriceRegion))
-            ManufacturingSettingsList(47) = New Setting("ProductionLines", CStr(SentSettings.ProductionLines))
-            ManufacturingSettingsList(48) = New Setting("LaboratoryLines", CStr(SentSettings.LaboratoryLines))
-            ManufacturingSettingsList(49) = New Setting("CheckDecryptor09", CStr(SentSettings.CheckDecryptor09))
-            ManufacturingSettingsList(50) = New Setting("CheckDecryptor15", CStr(SentSettings.CheckDecryptor15))
-            ManufacturingSettingsList(51) = New Setting("CheckDecryptor19", CStr(SentSettings.CheckDecryptor19))
-            ManufacturingSettingsList(52) = New Setting("Runs", CStr(SentSettings.Runs))
-            ManufacturingSettingsList(53) = New Setting("CheckBPTypeCelestials", CStr(SentSettings.CheckBPTypeCelestials))
-            ManufacturingSettingsList(54) = New Setting("CheckBPTypeDeployables", CStr(SentSettings.CheckBPTypeDeployables))
-            ManufacturingSettingsList(55) = New Setting("CheckSmall", CStr(SentSettings.CheckSmall))
-            ManufacturingSettingsList(56) = New Setting("CheckMedium", CStr(SentSettings.CheckMedium))
-            ManufacturingSettingsList(57) = New Setting("CheckLarge", CStr(SentSettings.CheckLarge))
-            ManufacturingSettingsList(58) = New Setting("CheckXL", CStr(SentSettings.CheckXL))
-            ManufacturingSettingsList(59) = New Setting("CheckBPTypeStationParts", CStr(SentSettings.CheckBPTypeStationParts))
-            ManufacturingSettingsList(60) = New Setting("CheckIncludeBrokersFees", CStr(SentSettings.CheckIncludeBrokersFees))
-            ManufacturingSettingsList(61) = New Setting("CheckDecryptorUseforT2", CStr(SentSettings.CheckDecryptorUseforT2))
-            ManufacturingSettingsList(62) = New Setting("CheckDecryptorUseforT3", CStr(SentSettings.CheckDecryptorUseforT3))
-            ManufacturingSettingsList(63) = New Setting("CheckCapitalComponentsFacility", CStr(SentSettings.CheckCapitalComponentsFacility))
-            ManufacturingSettingsList(64) = New Setting("CheckT3DestroyerFacility", CStr(SentSettings.CheckT3DestroyerFacility))
-            ManufacturingSettingsList(65) = New Setting("BPRuns", CStr(SentSettings.BPRuns))
-            ManufacturingSettingsList(66) = New Setting("CheckAutoCalcNumBPs", CStr(SentSettings.CheckAutoCalcNumBPs))
-            ManufacturingSettingsList(67) = New Setting("IgnoreInvention", CStr(SentSettings.IgnoreInvention))
-            ManufacturingSettingsList(68) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
-            ManufacturingSettingsList(69) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
-            ManufacturingSettingsList(70) = New Setting("CalcPPU", CStr(SentSettings.CalcPPU))
-            ManufacturingSettingsList(71) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            ManufacturingSettingsList(72) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
-            ManufacturingSettingsList(73) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
-            ManufacturingSettingsList(74) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
-            ManufacturingSettingsList(75) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
-            ManufacturingSettingsList(76) = New Setting("UpdatePriceHistory", CStr(SentSettings.UpdatePriceHistory))
+            ManufacturingSettingsList(19) = New Setting("CheckDecryptorNone", CStr(SentSettings.CheckDecryptorNone))
+            ManufacturingSettingsList(20) = New Setting("CheckDecryptor06", CStr(SentSettings.CheckDecryptor06))
+            ManufacturingSettingsList(21) = New Setting("CheckDecryptor10", CStr(SentSettings.CheckDecryptor10))
+            ManufacturingSettingsList(22) = New Setting("CheckDecryptor11", CStr(SentSettings.CheckDecryptor11))
+            ManufacturingSettingsList(23) = New Setting("CheckDecryptor12", CStr(SentSettings.CheckDecryptor12))
+            ManufacturingSettingsList(24) = New Setting("CheckDecryptor18", CStr(SentSettings.CheckDecryptor18))
+            ManufacturingSettingsList(25) = New Setting("CheckIgnoreInvention", CStr(SentSettings.CheckIgnoreInvention))
+            ManufacturingSettingsList(26) = New Setting("CheckRelicWrecked", CStr(SentSettings.CheckRelicWrecked))
+            ManufacturingSettingsList(27) = New Setting("CheckRelicIntact", CStr(SentSettings.CheckRelicIntact))
+            ManufacturingSettingsList(28) = New Setting("CheckRelicMalfunction", CStr(SentSettings.CheckRelicMalfunction))
+            ManufacturingSettingsList(29) = New Setting("CheckOnlyBuild", CStr(SentSettings.CheckOnlyBuild))
+            ManufacturingSettingsList(30) = New Setting("CheckOnlyInvent", CStr(SentSettings.CheckOnlyInvent))
+            ManufacturingSettingsList(31) = New Setting("CheckOnlyRE", CStr(SentSettings.CheckOnlyRE))
+            ManufacturingSettingsList(32) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
+            ManufacturingSettingsList(33) = New Setting("CheckIncludeUsage", CStr(SentSettings.CheckIncludeUsage))
+            ManufacturingSettingsList(34) = New Setting("CheckRaceAmarr", CStr(SentSettings.CheckRaceAmarr))
+            ManufacturingSettingsList(35) = New Setting("CheckRaceCaldari", CStr(SentSettings.CheckRaceCaldari))
+            ManufacturingSettingsList(36) = New Setting("CheckRaceGallente", CStr(SentSettings.CheckRaceGallente))
+            ManufacturingSettingsList(37) = New Setting("CheckRaceMinmatar", CStr(SentSettings.CheckRaceMinmatar))
+            ManufacturingSettingsList(38) = New Setting("CheckRacePirate", CStr(SentSettings.CheckRacePirate))
+            ManufacturingSettingsList(39) = New Setting("CheckRaceOther", CStr(SentSettings.CheckRaceOther))
+            ManufacturingSettingsList(40) = New Setting("PriceCompare", CStr(SentSettings.PriceCompare))
+            ManufacturingSettingsList(41) = New Setting("CheckIncludeT2Owned", CStr(SentSettings.CheckIncludeT2Owned))
+            ManufacturingSettingsList(42) = New Setting("CheckIncludeT3Owned", CStr(SentSettings.CheckIncludeT3Owned))
+            ManufacturingSettingsList(43) = New Setting("CheckSVRIncludeNull", CStr(SentSettings.CheckSVRIncludeNull))
+            ManufacturingSettingsList(44) = New Setting("ProductionLines", CStr(SentSettings.ProductionLines))
+            ManufacturingSettingsList(45) = New Setting("LaboratoryLines", CStr(SentSettings.LaboratoryLines))
+            ManufacturingSettingsList(46) = New Setting("CheckDecryptor09", CStr(SentSettings.CheckDecryptor09))
+            ManufacturingSettingsList(47) = New Setting("CheckDecryptor15", CStr(SentSettings.CheckDecryptor15))
+            ManufacturingSettingsList(48) = New Setting("CheckDecryptor19", CStr(SentSettings.CheckDecryptor19))
+            ManufacturingSettingsList(49) = New Setting("Runs", CStr(SentSettings.Runs))
+            ManufacturingSettingsList(50) = New Setting("CheckBPTypeCelestials", CStr(SentSettings.CheckBPTypeCelestials))
+            ManufacturingSettingsList(51) = New Setting("CheckBPTypeDeployables", CStr(SentSettings.CheckBPTypeDeployables))
+            ManufacturingSettingsList(52) = New Setting("CheckSmall", CStr(SentSettings.CheckSmall))
+            ManufacturingSettingsList(53) = New Setting("CheckMedium", CStr(SentSettings.CheckMedium))
+            ManufacturingSettingsList(54) = New Setting("CheckLarge", CStr(SentSettings.CheckLarge))
+            ManufacturingSettingsList(55) = New Setting("CheckXL", CStr(SentSettings.CheckXL))
+            ManufacturingSettingsList(56) = New Setting("CheckBPTypeStationParts", CStr(SentSettings.CheckBPTypeStationParts))
+            ManufacturingSettingsList(57) = New Setting("CheckIncludeBrokersFees", CStr(SentSettings.CheckIncludeBrokersFees))
+            ManufacturingSettingsList(58) = New Setting("CheckDecryptorUseforT2", CStr(SentSettings.CheckDecryptorUseforT2))
+            ManufacturingSettingsList(59) = New Setting("CheckDecryptorUseforT3", CStr(SentSettings.CheckDecryptorUseforT3))
+            ManufacturingSettingsList(60) = New Setting("CheckCapitalComponentsFacility", CStr(SentSettings.CheckCapitalComponentsFacility))
+            ManufacturingSettingsList(61) = New Setting("CheckT3DestroyerFacility", CStr(SentSettings.CheckT3DestroyerFacility))
+            ManufacturingSettingsList(62) = New Setting("BPRuns", CStr(SentSettings.BPRuns))
+            ManufacturingSettingsList(63) = New Setting("CheckAutoCalcNumBPs", CStr(SentSettings.CheckAutoCalcNumBPs))
+            ManufacturingSettingsList(64) = New Setting("IgnoreInvention", CStr(SentSettings.IgnoreInvention))
+            ManufacturingSettingsList(65) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
+            ManufacturingSettingsList(66) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
+            ManufacturingSettingsList(67) = New Setting("CalcPPU", CStr(SentSettings.CalcPPU))
+            ManufacturingSettingsList(68) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            ManufacturingSettingsList(69) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            ManufacturingSettingsList(70) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
+            ManufacturingSettingsList(71) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
+            ManufacturingSettingsList(72) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -2845,6 +2872,12 @@ Public Class ProgramSettings
                     .IskperHour = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "IskperHour", DefaultMTIskperHour))
                     .SVR = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SVR", DefaultMTSVR))
                     .SVRxIPH = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SVRxIPH", DefaultMTSVRxIPH))
+                    .PriceTrend = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "PriceTrend", DefaultMTPriceTrend))
+                    .TotalItemsSold = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalItemsSold", DefaultMTTotalItemsSold))
+                    .TotalOrdersFilled = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalOrdersFilled", DefaultMTTotalOrdersFilled))
+                    .AvgItemsperOrder = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "AvgItemsperOrder", DefaultMTAvgItemsperOrder))
+                    .CurrentSellOrders = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentSellOrders", DefaultMTCurrentSellOrders))
+                    .CurrentBuyOrders = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentBuyOrders", DefaultMTCurrentBuyOrders))
                     .TotalCost = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalCost", DefaultMTTotalCost))
                     .BaseJobCost = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "BaseJobCost", DefaultMTBaseJobCost))
                     .NumBPs = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "NumBPs", DefaultMTNumBPs))
@@ -2928,6 +2961,12 @@ Public Class ProgramSettings
                     .IskperHourWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "IskperHourWidth", DefaultMTIskperHourWidth))
                     .SVRWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SVRWidth", DefaultMTSVRWidth))
                     .SVRxIPHWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SVRxIPHWidth", DefaultMTSVRxIPHWidth))
+                    .PriceTrendWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "PriceTrendWidth", DefaultMTPriceTrendWidth))
+                    .TotalItemsSoldWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalItemsSoldWidth", DefaultMTTotalItemsSoldWidth))
+                    .TotalOrdersFilledWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalOrdersFilledWidth", DefaultMTTotalOrdersFilledWidth))
+                    .AvgItemsperOrderWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "AvgItemsperOrderWidth", DefaultMTAvgItemsperOrderWidth))
+                    .CurrentSellOrdersWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentSellOrdersWidth", DefaultMTCurrentSellOrdersWidth))
+                    .CurrentBuyOrdersWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentBuyOrdersWidth", DefaultMTCurrentBuyOrdersWidth))
                     .TotalCostWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalCostWidth", DefaultMTTotalCostWidth))
                     .BaseJobCostWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "BaseJobCostWidth", DefaultMTBaseJobCostWidth))
                     .NumBPsWidth = CInt(GetSettingValue(ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "NumBPsWidth", DefaultMTNumBPsWidth))
@@ -3039,6 +3078,12 @@ Public Class ProgramSettings
             .IskperHour = DefaultMTIskperHour
             .SVR = DefaultMTSVR
             .SVRxIPH = DefaultMTSVRxIPH
+            .PriceTrend = DefaultMTPriceTrend
+            .TotalItemsSold = DefaultMTTotalItemsSold
+            .TotalOrdersFilled = DefaultMTTotalOrdersFilled
+            .AvgItemsperOrder = DefaultMTAvgItemsperOrder
+            .CurrentSellOrders = DefaultMTCurrentSellOrders
+            .CurrentBuyOrders = DefaultMTCurrentBuyOrders
             .TotalCost = DefaultMTTotalCost
             .BaseJobCost = DefaultMTBaseJobCost
             .NumBPs = DefaultMTNumBPs
@@ -3122,6 +3167,12 @@ Public Class ProgramSettings
             .IskperHourWidth = DefaultMTIskperHourWidth
             .SVRWidth = DefaultMTSVRWidth
             .SVRxIPHWidth = DefaultMTSVRxIPHWidth
+            .PriceTrendWidth = DefaultMTPriceTrendWidth
+            .TotalItemsSoldWidth = DefaultMTTotalItemsSoldWidth
+            .TotalOrdersFilledWidth = DefaultMTTotalOrdersFilledWidth
+            .AvgItemsperOrderWidth = DefaultMTAvgItemsperOrderWidth
+            .CurrentSellOrdersWidth = DefaultMTCurrentSellOrdersWidth
+            .CurrentBuyOrdersWidth = DefaultMTCurrentBuyOrdersWidth
             .TotalCostWidth = DefaultMTTotalCostWidth
             .BaseJobCostWidth = DefaultMTBaseJobCostWidth
             .NumBPsWidth = DefaultMTNumBPsWidth
@@ -3191,7 +3242,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingTabColumnSettings(SentSettings As ManufacturingTabColumnSettings)
-        Dim ManufacturingTabColumnSettingsList(165) As Setting
+        Dim ManufacturingTabColumnSettingsList(177) As Setting
 
         Try
             ManufacturingTabColumnSettingsList(0) = New Setting("ItemCategory", CStr(SentSettings.ItemCategory))
@@ -3221,147 +3272,159 @@ Public Class ProgramSettings
             ManufacturingTabColumnSettingsList(24) = New Setting("IskperHour", CStr(SentSettings.IskperHour))
             ManufacturingTabColumnSettingsList(25) = New Setting("SVR", CStr(SentSettings.SVR))
             ManufacturingTabColumnSettingsList(26) = New Setting("SVRxIPH", CStr(SentSettings.SVRxIPH))
-            ManufacturingTabColumnSettingsList(27) = New Setting("TotalCost", CStr(SentSettings.TotalCost))
-            ManufacturingTabColumnSettingsList(28) = New Setting("BaseJobCost", CStr(SentSettings.BaseJobCost))
-            ManufacturingTabColumnSettingsList(29) = New Setting("NumBPs", CStr(SentSettings.NumBPs))
-            ManufacturingTabColumnSettingsList(30) = New Setting("InventionChance", CStr(SentSettings.InventionChance))
-            ManufacturingTabColumnSettingsList(31) = New Setting("BPType", CStr(SentSettings.BPType))
-            ManufacturingTabColumnSettingsList(32) = New Setting("Race", CStr(SentSettings.Race))
-            ManufacturingTabColumnSettingsList(33) = New Setting("VolumeperItem", CStr(SentSettings.VolumeperItem))
-            ManufacturingTabColumnSettingsList(34) = New Setting("TotalVolume", CStr(SentSettings.TotalVolume))
-            ManufacturingTabColumnSettingsList(35) = New Setting("PortionSize", CStr(SentSettings.PortionSize))
-            ManufacturingTabColumnSettingsList(36) = New Setting("ManufacturingJobFee", CStr(SentSettings.ManufacturingJobFee))
-            ManufacturingTabColumnSettingsList(37) = New Setting("ManufacturingFacilityName", CStr(SentSettings.ManufacturingFacilityName))
-            ManufacturingTabColumnSettingsList(38) = New Setting("ManufacturingFacilitySystem", CStr(SentSettings.ManufacturingFacilitySystem))
-            ManufacturingTabColumnSettingsList(39) = New Setting("ManufacturingFacilityRegion", CStr(SentSettings.ManufacturingFacilityRegion))
-            ManufacturingTabColumnSettingsList(40) = New Setting("ManufacturingFacilitySystemIndex", CStr(SentSettings.ManufacturingFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(41) = New Setting("ManufacturingFacilityTax", CStr(SentSettings.ManufacturingFacilityTax))
-            ManufacturingTabColumnSettingsList(42) = New Setting("ManufacturingFacilityMEBonus", CStr(SentSettings.ManufacturingFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(43) = New Setting("ManufacturingFacilityTEBonus", CStr(SentSettings.ManufacturingFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(44) = New Setting("ManufacturingFacilityUsage", CStr(SentSettings.ManufacturingFacilityUsage))
-            ManufacturingTabColumnSettingsList(45) = New Setting("ManufacturingFacilityFWSystemLevel", CStr(SentSettings.ManufacturingFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(46) = New Setting("ComponentFacilityName", CStr(SentSettings.ComponentFacilityName))
-            ManufacturingTabColumnSettingsList(47) = New Setting("ComponentFacilitySystem", CStr(SentSettings.ComponentFacilitySystem))
-            ManufacturingTabColumnSettingsList(48) = New Setting("ComponentFacilityRegion", CStr(SentSettings.ComponentFacilityRegion))
-            ManufacturingTabColumnSettingsList(49) = New Setting("ComponentFacilitySystemIndex", CStr(SentSettings.ComponentFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(50) = New Setting("ComponentFacilityTax", CStr(SentSettings.ComponentFacilityTax))
-            ManufacturingTabColumnSettingsList(51) = New Setting("ComponentFacilityMEBonus", CStr(SentSettings.ComponentFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(52) = New Setting("ComponentFacilityTEBonus", CStr(SentSettings.ComponentFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(53) = New Setting("ComponentFacilityUsage", CStr(SentSettings.ComponentFacilityUsage))
-            ManufacturingTabColumnSettingsList(54) = New Setting("ComponentFacilityFWSystemLevel", CStr(SentSettings.ComponentFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(55) = New Setting("CapComponentFacilityName", CStr(SentSettings.CapComponentFacilityName))
-            ManufacturingTabColumnSettingsList(56) = New Setting("CapComponentFacilitySystem", CStr(SentSettings.CapComponentFacilitySystem))
-            ManufacturingTabColumnSettingsList(57) = New Setting("CapComponentFacilityRegion", CStr(SentSettings.CapComponentFacilityRegion))
-            ManufacturingTabColumnSettingsList(58) = New Setting("CapComponentFacilitySystemIndex", CStr(SentSettings.CapComponentFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(59) = New Setting("CapComponentFacilityTax", CStr(SentSettings.CapComponentFacilityTax))
-            ManufacturingTabColumnSettingsList(60) = New Setting("CapComponentFacilityMEBonus", CStr(SentSettings.CapComponentFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(61) = New Setting("CapComponentFacilityTEBonus", CStr(SentSettings.CapComponentFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(62) = New Setting("CapComponentFacilityUsage", CStr(SentSettings.CapComponentFacilityUsage))
-            ManufacturingTabColumnSettingsList(63) = New Setting("CapComponentFacilityFWSystemLevel", CStr(SentSettings.CapComponentFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(64) = New Setting("CopyingFacilityName", CStr(SentSettings.CopyingFacilityName))
-            ManufacturingTabColumnSettingsList(65) = New Setting("CopyingFacilitySystem", CStr(SentSettings.CopyingFacilitySystem))
-            ManufacturingTabColumnSettingsList(66) = New Setting("CopyingFacilityRegion", CStr(SentSettings.CopyingFacilityRegion))
-            ManufacturingTabColumnSettingsList(67) = New Setting("CopyingFacilitySystemIndex", CStr(SentSettings.CopyingFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(68) = New Setting("CopyingFacilityTax", CStr(SentSettings.CopyingFacilityTax))
-            ManufacturingTabColumnSettingsList(69) = New Setting("CopyingFacilityMEBonus", CStr(SentSettings.CopyingFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(70) = New Setting("CopyingFacilityTEBonus", CStr(SentSettings.CopyingFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(71) = New Setting("CopyingFacilityUsage", CStr(SentSettings.CopyingFacilityUsage))
-            ManufacturingTabColumnSettingsList(72) = New Setting("CopyingFacilityFWSystemLevel", CStr(SentSettings.CopyingFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(73) = New Setting("InventionFacilityName", CStr(SentSettings.InventionFacilityName))
-            ManufacturingTabColumnSettingsList(74) = New Setting("InventionFacilitySystem", CStr(SentSettings.InventionFacilitySystem))
-            ManufacturingTabColumnSettingsList(75) = New Setting("InventionFacilityRegion", CStr(SentSettings.InventionFacilityRegion))
-            ManufacturingTabColumnSettingsList(76) = New Setting("InventionFacilitySystemIndex", CStr(SentSettings.InventionFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(77) = New Setting("InventionFacilityTax", CStr(SentSettings.InventionFacilityTax))
-            ManufacturingTabColumnSettingsList(78) = New Setting("InventionFacilityMEBonus", CStr(SentSettings.InventionFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(79) = New Setting("InventionFacilityTEBonus", CStr(SentSettings.InventionFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(80) = New Setting("InventionFacilityUsage", CStr(SentSettings.InventionFacilityUsage))
-            ManufacturingTabColumnSettingsList(81) = New Setting("InventionFacilityFWSystemLevel", CStr(SentSettings.InventionFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(27) = New Setting("PriceTrend", CStr(SentSettings.PriceTrend))
+            ManufacturingTabColumnSettingsList(28) = New Setting("TotalItemsSold", CStr(SentSettings.TotalItemsSold))
+            ManufacturingTabColumnSettingsList(29) = New Setting("TotalOrdersFilled", CStr(SentSettings.TotalOrdersFilled))
+            ManufacturingTabColumnSettingsList(30) = New Setting("AvgItemsperOrder", CStr(SentSettings.AvgItemsperOrder))
+            ManufacturingTabColumnSettingsList(31) = New Setting("CurrentSellOrders", CStr(SentSettings.CurrentSellOrders))
+            ManufacturingTabColumnSettingsList(32) = New Setting("CurrentBuyOrders", CStr(SentSettings.CurrentBuyOrders))
+            ManufacturingTabColumnSettingsList(33) = New Setting("TotalCost", CStr(SentSettings.TotalCost))
+            ManufacturingTabColumnSettingsList(34) = New Setting("BaseJobCost", CStr(SentSettings.BaseJobCost))
+            ManufacturingTabColumnSettingsList(35) = New Setting("NumBPs", CStr(SentSettings.NumBPs))
+            ManufacturingTabColumnSettingsList(36) = New Setting("InventionChance", CStr(SentSettings.InventionChance))
+            ManufacturingTabColumnSettingsList(37) = New Setting("BPType", CStr(SentSettings.BPType))
+            ManufacturingTabColumnSettingsList(38) = New Setting("Race", CStr(SentSettings.Race))
+            ManufacturingTabColumnSettingsList(39) = New Setting("VolumeperItem", CStr(SentSettings.VolumeperItem))
+            ManufacturingTabColumnSettingsList(40) = New Setting("TotalVolume", CStr(SentSettings.TotalVolume))
+            ManufacturingTabColumnSettingsList(41) = New Setting("PortionSize", CStr(SentSettings.PortionSize))
+            ManufacturingTabColumnSettingsList(42) = New Setting("ManufacturingJobFee", CStr(SentSettings.ManufacturingJobFee))
+            ManufacturingTabColumnSettingsList(43) = New Setting("ManufacturingFacilityName", CStr(SentSettings.ManufacturingFacilityName))
+            ManufacturingTabColumnSettingsList(44) = New Setting("ManufacturingFacilitySystem", CStr(SentSettings.ManufacturingFacilitySystem))
+            ManufacturingTabColumnSettingsList(45) = New Setting("ManufacturingFacilityRegion", CStr(SentSettings.ManufacturingFacilityRegion))
+            ManufacturingTabColumnSettingsList(46) = New Setting("ManufacturingFacilitySystemIndex", CStr(SentSettings.ManufacturingFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(47) = New Setting("ManufacturingFacilityTax", CStr(SentSettings.ManufacturingFacilityTax))
+            ManufacturingTabColumnSettingsList(48) = New Setting("ManufacturingFacilityMEBonus", CStr(SentSettings.ManufacturingFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(49) = New Setting("ManufacturingFacilityTEBonus", CStr(SentSettings.ManufacturingFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(50) = New Setting("ManufacturingFacilityUsage", CStr(SentSettings.ManufacturingFacilityUsage))
+            ManufacturingTabColumnSettingsList(51) = New Setting("ManufacturingFacilityFWSystemLevel", CStr(SentSettings.ManufacturingFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(52) = New Setting("ComponentFacilityName", CStr(SentSettings.ComponentFacilityName))
+            ManufacturingTabColumnSettingsList(53) = New Setting("ComponentFacilitySystem", CStr(SentSettings.ComponentFacilitySystem))
+            ManufacturingTabColumnSettingsList(54) = New Setting("ComponentFacilityRegion", CStr(SentSettings.ComponentFacilityRegion))
+            ManufacturingTabColumnSettingsList(55) = New Setting("ComponentFacilitySystemIndex", CStr(SentSettings.ComponentFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(56) = New Setting("ComponentFacilityTax", CStr(SentSettings.ComponentFacilityTax))
+            ManufacturingTabColumnSettingsList(57) = New Setting("ComponentFacilityMEBonus", CStr(SentSettings.ComponentFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(58) = New Setting("ComponentFacilityTEBonus", CStr(SentSettings.ComponentFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(59) = New Setting("ComponentFacilityUsage", CStr(SentSettings.ComponentFacilityUsage))
+            ManufacturingTabColumnSettingsList(60) = New Setting("ComponentFacilityFWSystemLevel", CStr(SentSettings.ComponentFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(61) = New Setting("CapComponentFacilityName", CStr(SentSettings.CapComponentFacilityName))
+            ManufacturingTabColumnSettingsList(62) = New Setting("CapComponentFacilitySystem", CStr(SentSettings.CapComponentFacilitySystem))
+            ManufacturingTabColumnSettingsList(63) = New Setting("CapComponentFacilityRegion", CStr(SentSettings.CapComponentFacilityRegion))
+            ManufacturingTabColumnSettingsList(64) = New Setting("CapComponentFacilitySystemIndex", CStr(SentSettings.CapComponentFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(65) = New Setting("CapComponentFacilityTax", CStr(SentSettings.CapComponentFacilityTax))
+            ManufacturingTabColumnSettingsList(66) = New Setting("CapComponentFacilityMEBonus", CStr(SentSettings.CapComponentFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(67) = New Setting("CapComponentFacilityTEBonus", CStr(SentSettings.CapComponentFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(68) = New Setting("CapComponentFacilityUsage", CStr(SentSettings.CapComponentFacilityUsage))
+            ManufacturingTabColumnSettingsList(69) = New Setting("CapComponentFacilityFWSystemLevel", CStr(SentSettings.CapComponentFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(70) = New Setting("CopyingFacilityName", CStr(SentSettings.CopyingFacilityName))
+            ManufacturingTabColumnSettingsList(71) = New Setting("CopyingFacilitySystem", CStr(SentSettings.CopyingFacilitySystem))
+            ManufacturingTabColumnSettingsList(72) = New Setting("CopyingFacilityRegion", CStr(SentSettings.CopyingFacilityRegion))
+            ManufacturingTabColumnSettingsList(73) = New Setting("CopyingFacilitySystemIndex", CStr(SentSettings.CopyingFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(74) = New Setting("CopyingFacilityTax", CStr(SentSettings.CopyingFacilityTax))
+            ManufacturingTabColumnSettingsList(75) = New Setting("CopyingFacilityMEBonus", CStr(SentSettings.CopyingFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(76) = New Setting("CopyingFacilityTEBonus", CStr(SentSettings.CopyingFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(77) = New Setting("CopyingFacilityUsage", CStr(SentSettings.CopyingFacilityUsage))
+            ManufacturingTabColumnSettingsList(78) = New Setting("CopyingFacilityFWSystemLevel", CStr(SentSettings.CopyingFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(79) = New Setting("InventionFacilityName", CStr(SentSettings.InventionFacilityName))
+            ManufacturingTabColumnSettingsList(80) = New Setting("InventionFacilitySystem", CStr(SentSettings.InventionFacilitySystem))
+            ManufacturingTabColumnSettingsList(81) = New Setting("InventionFacilityRegion", CStr(SentSettings.InventionFacilityRegion))
+            ManufacturingTabColumnSettingsList(82) = New Setting("InventionFacilitySystemIndex", CStr(SentSettings.InventionFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(83) = New Setting("InventionFacilityTax", CStr(SentSettings.InventionFacilityTax))
+            ManufacturingTabColumnSettingsList(84) = New Setting("InventionFacilityMEBonus", CStr(SentSettings.InventionFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(85) = New Setting("InventionFacilityTEBonus", CStr(SentSettings.InventionFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(86) = New Setting("InventionFacilityUsage", CStr(SentSettings.InventionFacilityUsage))
+            ManufacturingTabColumnSettingsList(87) = New Setting("InventionFacilityFWSystemLevel", CStr(SentSettings.InventionFacilityFWSystemLevel))
 
-            ManufacturingTabColumnSettingsList(82) = New Setting("ItemCategoryWidth", CStr(SentSettings.ItemCategoryWidth))
-            ManufacturingTabColumnSettingsList(83) = New Setting("ItemGroupWidth", CStr(SentSettings.ItemGroupWidth))
-            ManufacturingTabColumnSettingsList(84) = New Setting("ItemNameWidth", CStr(SentSettings.ItemNameWidth))
-            ManufacturingTabColumnSettingsList(85) = New Setting("OwnedWidth", CStr(SentSettings.OwnedWidth))
-            ManufacturingTabColumnSettingsList(86) = New Setting("TechWidth", CStr(SentSettings.TechWidth))
-            ManufacturingTabColumnSettingsList(87) = New Setting("BPMEWidth", CStr(SentSettings.BPMEWidth))
-            ManufacturingTabColumnSettingsList(88) = New Setting("BPTEWidth", CStr(SentSettings.BPTEWidth))
-            ManufacturingTabColumnSettingsList(89) = New Setting("InputsWidth", CStr(SentSettings.InputsWidth))
-            ManufacturingTabColumnSettingsList(90) = New Setting("ComparedWidth", CStr(SentSettings.ComparedWidth))
-            ManufacturingTabColumnSettingsList(91) = New Setting("TotalRunsWidth", CStr(SentSettings.TotalRunsWidth))
-            ManufacturingTabColumnSettingsList(92) = New Setting("SingleInventedBPCRunsWidth", CStr(SentSettings.SingleInventedBPCRunsWidth))
-            ManufacturingTabColumnSettingsList(93) = New Setting("ProductionLinesWidth", CStr(SentSettings.ProductionLinesWidth))
-            ManufacturingTabColumnSettingsList(94) = New Setting("LaboratoryLinesWidth", CStr(SentSettings.LaboratoryLinesWidth))
-            ManufacturingTabColumnSettingsList(95) = New Setting("TotalInventionCostWidth", CStr(SentSettings.TotalInventionCostWidth))
-            ManufacturingTabColumnSettingsList(96) = New Setting("TotalCopyCostWidth", CStr(SentSettings.TotalCopyCostWidth))
-            ManufacturingTabColumnSettingsList(97) = New Setting("TaxesWidth", CStr(SentSettings.TaxesWidth))
-            ManufacturingTabColumnSettingsList(98) = New Setting("BrokerFeesWidth", CStr(SentSettings.BrokerFeesWidth))
-            ManufacturingTabColumnSettingsList(99) = New Setting("BPProductionTimeWidth", CStr(SentSettings.BPProductionTimeWidth))
-            ManufacturingTabColumnSettingsList(100) = New Setting("TotalProductionTimeWidth", CStr(SentSettings.TotalProductionTimeWidth))
-            ManufacturingTabColumnSettingsList(101) = New Setting("CopyTimeWidth", CStr(SentSettings.CopyTimeWidth))
-            ManufacturingTabColumnSettingsList(102) = New Setting("InventionTimeWidth", CStr(SentSettings.InventionTimeWidth))
-            ManufacturingTabColumnSettingsList(103) = New Setting("ItemMarketPriceWidth", CStr(SentSettings.ItemMarketPriceWidth))
-            ManufacturingTabColumnSettingsList(104) = New Setting("ProfitWidth", CStr(SentSettings.ProfitWidth))
-            ManufacturingTabColumnSettingsList(105) = New Setting("ProfitPercentageWidth", CStr(SentSettings.ProfitPercentageWidth))
-            ManufacturingTabColumnSettingsList(106) = New Setting("IskperHourWidth", CStr(SentSettings.IskperHourWidth))
-            ManufacturingTabColumnSettingsList(107) = New Setting("SVRWidth", CStr(SentSettings.SVRWidth))
-            ManufacturingTabColumnSettingsList(108) = New Setting("SVRxIPHWidth", CStr(SentSettings.SVRxIPHWidth))
-            ManufacturingTabColumnSettingsList(109) = New Setting("TotalCostWidth", CStr(SentSettings.TotalCostWidth))
-            ManufacturingTabColumnSettingsList(110) = New Setting("BaseJobCostWidth", CStr(SentSettings.BaseJobCostWidth))
-            ManufacturingTabColumnSettingsList(111) = New Setting("NumBPsWidth", CStr(SentSettings.NumBPsWidth))
-            ManufacturingTabColumnSettingsList(112) = New Setting("InventionChanceWidth", CStr(SentSettings.InventionChanceWidth))
-            ManufacturingTabColumnSettingsList(113) = New Setting("BPTypeWidth", CStr(SentSettings.BPTypeWidth))
-            ManufacturingTabColumnSettingsList(114) = New Setting("RaceWidth", CStr(SentSettings.RaceWidth))
-            ManufacturingTabColumnSettingsList(115) = New Setting("VolumeperItemWidth", CStr(SentSettings.VolumeperItemWidth))
-            ManufacturingTabColumnSettingsList(116) = New Setting("TotalVolumeWidth", CStr(SentSettings.TotalVolumeWidth))
-            ManufacturingTabColumnSettingsList(117) = New Setting("PortionSizeWidth", CStr(SentSettings.PortionSizeWidth))
-            ManufacturingTabColumnSettingsList(118) = New Setting("ManufacturingJobFeeWidth", CStr(SentSettings.ManufacturingJobFeeWidth))
-            ManufacturingTabColumnSettingsList(119) = New Setting("ManufacturingFacilityNameWidth", CStr(SentSettings.ManufacturingFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(120) = New Setting("ManufacturingFacilitySystemWidth", CStr(SentSettings.ManufacturingFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(121) = New Setting("ManufacturingFacilityRegionWidth", CStr(SentSettings.ManufacturingFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(122) = New Setting("ManufacturingFacilitySystemIndexWidth", CStr(SentSettings.ManufacturingFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(123) = New Setting("ManufacturingFacilityTaxWidth", CStr(SentSettings.ManufacturingFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(124) = New Setting("ManufacturingFacilityMEBonusWidth", CStr(SentSettings.ManufacturingFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(125) = New Setting("ManufacturingFacilityTEBonusWidth", CStr(SentSettings.ManufacturingFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(126) = New Setting("ManufacturingFacilityUsageWidth", CStr(SentSettings.ManufacturingFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(127) = New Setting("ManufacturingFacilityFWSystemLevelWidth", CStr(SentSettings.ManufacturingFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(128) = New Setting("ComponentFacilityNameWidth", CStr(SentSettings.ComponentFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(129) = New Setting("ComponentFacilitySystemWidth", CStr(SentSettings.ComponentFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(130) = New Setting("ComponentFacilityRegionWidth", CStr(SentSettings.ComponentFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(131) = New Setting("ComponentFacilitySystemIndexWidth", CStr(SentSettings.ComponentFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(132) = New Setting("ComponentFacilityTaxWidth", CStr(SentSettings.ComponentFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(133) = New Setting("ComponentFacilityMEBonusWidth", CStr(SentSettings.ComponentFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(134) = New Setting("ComponentFacilityTEBonusWidth", CStr(SentSettings.ComponentFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(135) = New Setting("ComponentFacilityUsageWidth", CStr(SentSettings.ComponentFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(136) = New Setting("ComponentFacilityFWSystemLevelWidth", CStr(SentSettings.ComponentFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(137) = New Setting("CapComponentFacilityNameWidth", CStr(SentSettings.CapComponentFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(138) = New Setting("CapComponentFacilitySystemWidth", CStr(SentSettings.CapComponentFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(139) = New Setting("CapComponentFacilityRegionWidth", CStr(SentSettings.CapComponentFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(140) = New Setting("CapComponentFacilitySystemIndexWidth", CStr(SentSettings.CapComponentFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(141) = New Setting("CapComponentFacilityTaxWidth", CStr(SentSettings.CapComponentFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(142) = New Setting("CapComponentFacilityMEBonusWidth", CStr(SentSettings.CapComponentFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(143) = New Setting("CapComponentFacilityTEBonusWidth", CStr(SentSettings.CapComponentFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(144) = New Setting("CapComponentFacilityUsageWidth", CStr(SentSettings.CapComponentFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(145) = New Setting("CapComponentFacilityFWSystemLevelWidth", CStr(SentSettings.CapComponentFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(146) = New Setting("CopyingFacilityNameWidth", CStr(SentSettings.CopyingFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(147) = New Setting("CopyingFacilitySystemWidth", CStr(SentSettings.CopyingFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(148) = New Setting("CopyingFacilityRegionWidth", CStr(SentSettings.CopyingFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(149) = New Setting("CopyingFacilitySystemIndexWidth", CStr(SentSettings.CopyingFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(150) = New Setting("CopyingFacilityTaxWidth", CStr(SentSettings.CopyingFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(151) = New Setting("CopyingFacilityMEBonusWidth", CStr(SentSettings.CopyingFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(152) = New Setting("CopyingFacilityTEBonusWidth", CStr(SentSettings.CopyingFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(153) = New Setting("CopyingFacilityUsageWidth", CStr(SentSettings.CopyingFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(154) = New Setting("CopyingFacilityFWSystemLevelWidth", CStr(SentSettings.CopyingFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(155) = New Setting("InventionFacilityNameWidth", CStr(SentSettings.InventionFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(156) = New Setting("InventionFacilitySystemWidth", CStr(SentSettings.InventionFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(157) = New Setting("InventionFacilityRegionWidth", CStr(SentSettings.InventionFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(158) = New Setting("InventionFacilitySystemIndexWidth", CStr(SentSettings.InventionFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(159) = New Setting("InventionFacilityTaxWidth", CStr(SentSettings.InventionFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(160) = New Setting("InventionFacilityMEBonusWidth", CStr(SentSettings.InventionFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(161) = New Setting("InventionFacilityTEBonusWidth", CStr(SentSettings.InventionFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(162) = New Setting("InventionFacilityUsageWidth", CStr(SentSettings.InventionFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(163) = New Setting("InventionFacilityFWSystemLevelWidth", CStr(SentSettings.InventionFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(88) = New Setting("ItemCategoryWidth", CStr(SentSettings.ItemCategoryWidth))
+            ManufacturingTabColumnSettingsList(89) = New Setting("ItemGroupWidth", CStr(SentSettings.ItemGroupWidth))
+            ManufacturingTabColumnSettingsList(90) = New Setting("ItemNameWidth", CStr(SentSettings.ItemNameWidth))
+            ManufacturingTabColumnSettingsList(91) = New Setting("OwnedWidth", CStr(SentSettings.OwnedWidth))
+            ManufacturingTabColumnSettingsList(92) = New Setting("TechWidth", CStr(SentSettings.TechWidth))
+            ManufacturingTabColumnSettingsList(93) = New Setting("BPMEWidth", CStr(SentSettings.BPMEWidth))
+            ManufacturingTabColumnSettingsList(94) = New Setting("BPTEWidth", CStr(SentSettings.BPTEWidth))
+            ManufacturingTabColumnSettingsList(95) = New Setting("InputsWidth", CStr(SentSettings.InputsWidth))
+            ManufacturingTabColumnSettingsList(96) = New Setting("ComparedWidth", CStr(SentSettings.ComparedWidth))
+            ManufacturingTabColumnSettingsList(97) = New Setting("TotalRunsWidth", CStr(SentSettings.TotalRunsWidth))
+            ManufacturingTabColumnSettingsList(98) = New Setting("SingleInventedBPCRunsWidth", CStr(SentSettings.SingleInventedBPCRunsWidth))
+            ManufacturingTabColumnSettingsList(99) = New Setting("ProductionLinesWidth", CStr(SentSettings.ProductionLinesWidth))
+            ManufacturingTabColumnSettingsList(100) = New Setting("LaboratoryLinesWidth", CStr(SentSettings.LaboratoryLinesWidth))
+            ManufacturingTabColumnSettingsList(101) = New Setting("TotalInventionCostWidth", CStr(SentSettings.TotalInventionCostWidth))
+            ManufacturingTabColumnSettingsList(102) = New Setting("TotalCopyCostWidth", CStr(SentSettings.TotalCopyCostWidth))
+            ManufacturingTabColumnSettingsList(103) = New Setting("TaxesWidth", CStr(SentSettings.TaxesWidth))
+            ManufacturingTabColumnSettingsList(104) = New Setting("BrokerFeesWidth", CStr(SentSettings.BrokerFeesWidth))
+            ManufacturingTabColumnSettingsList(105) = New Setting("BPProductionTimeWidth", CStr(SentSettings.BPProductionTimeWidth))
+            ManufacturingTabColumnSettingsList(106) = New Setting("TotalProductionTimeWidth", CStr(SentSettings.TotalProductionTimeWidth))
+            ManufacturingTabColumnSettingsList(107) = New Setting("CopyTimeWidth", CStr(SentSettings.CopyTimeWidth))
+            ManufacturingTabColumnSettingsList(108) = New Setting("InventionTimeWidth", CStr(SentSettings.InventionTimeWidth))
+            ManufacturingTabColumnSettingsList(109) = New Setting("ItemMarketPriceWidth", CStr(SentSettings.ItemMarketPriceWidth))
+            ManufacturingTabColumnSettingsList(110) = New Setting("ProfitWidth", CStr(SentSettings.ProfitWidth))
+            ManufacturingTabColumnSettingsList(111) = New Setting("ProfitPercentageWidth", CStr(SentSettings.ProfitPercentageWidth))
+            ManufacturingTabColumnSettingsList(112) = New Setting("IskperHourWidth", CStr(SentSettings.IskperHourWidth))
+            ManufacturingTabColumnSettingsList(113) = New Setting("SVRWidth", CStr(SentSettings.SVRWidth))
+            ManufacturingTabColumnSettingsList(114) = New Setting("SVRxIPHWidth", CStr(SentSettings.SVRxIPHWidth))
+            ManufacturingTabColumnSettingsList(115) = New Setting("PriceTrendWidth", CStr(SentSettings.PriceTrendWidth))
+            ManufacturingTabColumnSettingsList(116) = New Setting("TotalItemsSoldWidth", CStr(SentSettings.TotalItemsSoldWidth))
+            ManufacturingTabColumnSettingsList(117) = New Setting("TotalOrdersFilledWidth", CStr(SentSettings.TotalOrdersFilledWidth))
+            ManufacturingTabColumnSettingsList(118) = New Setting("AvgItemsperOrderWidth", CStr(SentSettings.AvgItemsperOrderWidth))
+            ManufacturingTabColumnSettingsList(119) = New Setting("CurrentSellOrdersWidth", CStr(SentSettings.CurrentSellOrdersWidth))
+            ManufacturingTabColumnSettingsList(120) = New Setting("CurrentBuyOrdersWidth", CStr(SentSettings.CurrentBuyOrdersWidth))
+            ManufacturingTabColumnSettingsList(121) = New Setting("TotalCostWidth", CStr(SentSettings.TotalCostWidth))
+            ManufacturingTabColumnSettingsList(122) = New Setting("BaseJobCostWidth", CStr(SentSettings.BaseJobCostWidth))
+            ManufacturingTabColumnSettingsList(123) = New Setting("NumBPsWidth", CStr(SentSettings.NumBPsWidth))
+            ManufacturingTabColumnSettingsList(124) = New Setting("InventionChanceWidth", CStr(SentSettings.InventionChanceWidth))
+            ManufacturingTabColumnSettingsList(125) = New Setting("BPTypeWidth", CStr(SentSettings.BPTypeWidth))
+            ManufacturingTabColumnSettingsList(126) = New Setting("RaceWidth", CStr(SentSettings.RaceWidth))
+            ManufacturingTabColumnSettingsList(127) = New Setting("VolumeperItemWidth", CStr(SentSettings.VolumeperItemWidth))
+            ManufacturingTabColumnSettingsList(128) = New Setting("TotalVolumeWidth", CStr(SentSettings.TotalVolumeWidth))
+            ManufacturingTabColumnSettingsList(129) = New Setting("PortionSizeWidth", CStr(SentSettings.PortionSizeWidth))
+            ManufacturingTabColumnSettingsList(130) = New Setting("ManufacturingJobFeeWidth", CStr(SentSettings.ManufacturingJobFeeWidth))
+            ManufacturingTabColumnSettingsList(131) = New Setting("ManufacturingFacilityNameWidth", CStr(SentSettings.ManufacturingFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(132) = New Setting("ManufacturingFacilitySystemWidth", CStr(SentSettings.ManufacturingFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(133) = New Setting("ManufacturingFacilityRegionWidth", CStr(SentSettings.ManufacturingFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(134) = New Setting("ManufacturingFacilitySystemIndexWidth", CStr(SentSettings.ManufacturingFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(135) = New Setting("ManufacturingFacilityTaxWidth", CStr(SentSettings.ManufacturingFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(136) = New Setting("ManufacturingFacilityMEBonusWidth", CStr(SentSettings.ManufacturingFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(137) = New Setting("ManufacturingFacilityTEBonusWidth", CStr(SentSettings.ManufacturingFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(138) = New Setting("ManufacturingFacilityUsageWidth", CStr(SentSettings.ManufacturingFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(139) = New Setting("ManufacturingFacilityFWSystemLevelWidth", CStr(SentSettings.ManufacturingFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(140) = New Setting("ComponentFacilityNameWidth", CStr(SentSettings.ComponentFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(141) = New Setting("ComponentFacilitySystemWidth", CStr(SentSettings.ComponentFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(142) = New Setting("ComponentFacilityRegionWidth", CStr(SentSettings.ComponentFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(143) = New Setting("ComponentFacilitySystemIndexWidth", CStr(SentSettings.ComponentFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(144) = New Setting("ComponentFacilityTaxWidth", CStr(SentSettings.ComponentFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(145) = New Setting("ComponentFacilityMEBonusWidth", CStr(SentSettings.ComponentFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(146) = New Setting("ComponentFacilityTEBonusWidth", CStr(SentSettings.ComponentFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(147) = New Setting("ComponentFacilityUsageWidth", CStr(SentSettings.ComponentFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(148) = New Setting("ComponentFacilityFWSystemLevelWidth", CStr(SentSettings.ComponentFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(149) = New Setting("CapComponentFacilityNameWidth", CStr(SentSettings.CapComponentFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(150) = New Setting("CapComponentFacilitySystemWidth", CStr(SentSettings.CapComponentFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(151) = New Setting("CapComponentFacilityRegionWidth", CStr(SentSettings.CapComponentFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(152) = New Setting("CapComponentFacilitySystemIndexWidth", CStr(SentSettings.CapComponentFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(153) = New Setting("CapComponentFacilityTaxWidth", CStr(SentSettings.CapComponentFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(154) = New Setting("CapComponentFacilityMEBonusWidth", CStr(SentSettings.CapComponentFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(155) = New Setting("CapComponentFacilityTEBonusWidth", CStr(SentSettings.CapComponentFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(156) = New Setting("CapComponentFacilityUsageWidth", CStr(SentSettings.CapComponentFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(157) = New Setting("CapComponentFacilityFWSystemLevelWidth", CStr(SentSettings.CapComponentFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(158) = New Setting("CopyingFacilityNameWidth", CStr(SentSettings.CopyingFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(159) = New Setting("CopyingFacilitySystemWidth", CStr(SentSettings.CopyingFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(160) = New Setting("CopyingFacilityRegionWidth", CStr(SentSettings.CopyingFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(161) = New Setting("CopyingFacilitySystemIndexWidth", CStr(SentSettings.CopyingFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(162) = New Setting("CopyingFacilityTaxWidth", CStr(SentSettings.CopyingFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(163) = New Setting("CopyingFacilityMEBonusWidth", CStr(SentSettings.CopyingFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(164) = New Setting("CopyingFacilityTEBonusWidth", CStr(SentSettings.CopyingFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(165) = New Setting("CopyingFacilityUsageWidth", CStr(SentSettings.CopyingFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(166) = New Setting("CopyingFacilityFWSystemLevelWidth", CStr(SentSettings.CopyingFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(167) = New Setting("InventionFacilityNameWidth", CStr(SentSettings.InventionFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(168) = New Setting("InventionFacilitySystemWidth", CStr(SentSettings.InventionFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(169) = New Setting("InventionFacilityRegionWidth", CStr(SentSettings.InventionFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(170) = New Setting("InventionFacilitySystemIndexWidth", CStr(SentSettings.InventionFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(171) = New Setting("InventionFacilityTaxWidth", CStr(SentSettings.InventionFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(172) = New Setting("InventionFacilityMEBonusWidth", CStr(SentSettings.InventionFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(173) = New Setting("InventionFacilityTEBonusWidth", CStr(SentSettings.InventionFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(174) = New Setting("InventionFacilityUsageWidth", CStr(SentSettings.InventionFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(175) = New Setting("InventionFacilityFWSystemLevelWidth", CStr(SentSettings.InventionFacilityFWSystemLevelWidth))
 
-            ManufacturingTabColumnSettingsList(164) = New Setting("OrderMTByColumn", CStr(SentSettings.OrderByColumn))
-            ManufacturingTabColumnSettingsList(165) = New Setting("OrderMTType", CStr(SentSettings.OrderType))
+            ManufacturingTabColumnSettingsList(176) = New Setting("OrderMTByColumn", CStr(SentSettings.OrderByColumn))
+            ManufacturingTabColumnSettingsList(177) = New Setting("OrderMTType", CStr(SentSettings.OrderType))
 
             Call WriteSettingsToFile(ManufacturingTabColumnSettingsFileName, ManufacturingTabColumnSettingsList, ManufacturingTabColumnSettingsFileName)
 
@@ -5044,6 +5107,13 @@ Public Structure ApplicationSettings
     ' The interval for allowing refresh of prices from EVE Central - no less than 1 hour
     Dim EVECentralRefreshInterval As Integer
 
+    ' Default SVR variables
+    Dim IgnoreSVRThresholdValue As Double
+    Dim SVRAveragePriceRegion As String
+    Dim SVRAveragePriceDuration As String
+    Dim UseCRESTforHistory As Boolean
+    Dim AutoUpdateSVRonBPTab As Boolean
+
 End Structure
 
 ' For BP Tab Settings
@@ -5197,8 +5267,6 @@ Public Structure ManufacturingTabSettings
 
     Dim CheckAutoCalcNumBPs As Boolean
 
-    Dim AveragePriceDuration As String
-
     Dim CheckDecryptorNone As Boolean
     Dim CheckDecryptor06 As Boolean
     Dim CheckDecryptor09 As Boolean
@@ -5238,10 +5306,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckIncludeT2Owned As Boolean
     Dim CheckIncludeT3Owned As Boolean
 
-    Dim IgnoreSVRThreshold As Double
     Dim CheckSVRIncludeNull As Boolean
-
-    Dim AveragePriceRegion As String
 
     Dim ProductionLines As Integer
     Dim LaboratoryLines As Integer
@@ -5258,8 +5323,6 @@ Public Structure ManufacturingTabSettings
     Dim IgnoreT1Item As Boolean
 
     Dim CalcPPU As Boolean
-
-    Dim UpdatePriceHistory As Boolean
 
     Dim ManufacturingFWUpgradeLevel As String
     Dim CopyingFWUpgradeLevel As String
@@ -5533,6 +5596,12 @@ Public Structure ManufacturingTabColumnSettings
     Dim IskperHour As Integer
     Dim SVR As Integer
     Dim SVRxIPH As Integer
+    Dim PriceTrend As Integer
+    Dim TotalItemsSold As Integer
+    Dim TotalOrdersFilled As Integer
+    Dim AvgItemsperOrder As Integer
+    Dim CurrentSellOrders As Integer
+    Dim CurrentBuyOrders As Integer
     Dim TotalCost As Integer
     Dim BaseJobCost As Integer
     Dim NumBPs As Integer
@@ -5616,6 +5685,12 @@ Public Structure ManufacturingTabColumnSettings
     Dim IskperHourWidth As Integer
     Dim SVRWidth As Integer
     Dim SVRxIPHWidth As Integer
+    Dim PriceTrendWidth As Integer
+    Dim TotalItemsSoldWidth As Integer
+    Dim TotalOrdersFilledWidth As Integer
+    Dim AvgItemsperOrderWidth As Integer
+    Dim CurrentSellOrdersWidth As Integer
+    Dim CurrentBuyOrdersWidth As Integer
     Dim TotalCostWidth As Integer
     Dim BaseJobCostWidth As Integer
     Dim NumBPsWidth As Integer

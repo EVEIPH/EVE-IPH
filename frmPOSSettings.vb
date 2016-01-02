@@ -100,7 +100,7 @@ Public Class frmPOSSettings
             SQL = SQL & "AND (ITEM_NAME NOT LIKE '%Small%' AND ITEM_NAME NOT LIKE '%Medium%') "
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader
 
         cmbPOSTower.Items.Clear()
@@ -425,7 +425,7 @@ Public Class frmPOSSettings
 
         Sql = "SELECT raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
 
-        DBCommand = New SQLiteCommand(Sql, DB)
+        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
 
         If readerPOS.Read Then
@@ -480,7 +480,7 @@ Public Class frmPOSSettings
         SQL = "SELECT ME FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
 
         If readerPOS.Read Then
@@ -517,7 +517,7 @@ Public Class frmPOSSettings
             ' Update all the prices
             For i = 1 To POSTextBoxes.Count - 1
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & POSLabels(i).Text & "'"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -546,7 +546,7 @@ Public Class frmPOSSettings
         SQL = SQL & "('Hydrogen Isotopes','Oxygen Isotopes','Nitrogen Isotopes','Helium Isotopes','Strontium Clathrates',"
         SQL = SQL & "'Heavy Water','Liquid Ozone','Robotics','Oxygen','Mechanical Parts','Coolant','Enriched Uranium')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
 
         While readerPOS.Read
@@ -587,7 +587,7 @@ Public Class frmPOSSettings
 
             ' Update the prices
             SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtPOSFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlock.Text & " Fuel Block'"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
             Me.Cursor = Cursors.Default
@@ -626,7 +626,7 @@ Public Class frmPOSSettings
             End Select
             SQL = SQL & "AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPOS = DBCommand.ExecuteReader()
             readerPOS.Read()
 
@@ -806,7 +806,7 @@ Public Class frmPOSSettings
 
         SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FuelBlock & "'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
 
         If readerPOS.Read Then

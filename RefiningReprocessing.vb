@@ -79,7 +79,7 @@ Class RefiningReprocessing
         SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & ItemID & " "
         SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
 
         ' Add all the materials 
@@ -101,7 +101,7 @@ Class RefiningReprocessing
                 ' If this mat is a raw mat, just add it, else call this function again and get total mats from reprocessing the item
                 SQL = "SELECT 'X' FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & RefinedMatId
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerReprocess = DBCommand.ExecuteReader
 
                 If readerReprocess.HasRows Then
@@ -173,7 +173,7 @@ Class RefiningReprocessing
         ' Find the units to refine
         SQL = "SELECT UNITS_TO_REFINE FROM ORES WHERE ORE_ID =" & OreID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRefine = DBCommand.ExecuteReader
 
         If readerRefine.Read Then
@@ -191,7 +191,7 @@ Class RefiningReprocessing
         SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & OreID & " "
         SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRefine = DBCommand.ExecuteReader
 
         While readerRefine.Read

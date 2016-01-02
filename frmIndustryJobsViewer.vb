@@ -216,7 +216,7 @@ Public Class frmIndustryJobsViewer
         End If
 
         ' Add sorting options here
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsJobs = DBCommand.ExecuteReader
 
         lstIndustryJobs.BeginUpdate()
@@ -411,7 +411,7 @@ Public Class frmIndustryJobsViewer
         SQL = SQL & "WHERE API_TYPE <> 'Corporation' "
 
         ' Get all the characters and store them regardless so we only need to do one look up
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsJobs = DBCommand.ExecuteReader
 
         LoadedCharacters = New List(Of IndyCharacter)
@@ -503,7 +503,7 @@ Public Class frmIndustryJobsViewer
         SQL = SQL & "WHERE CHARACTER_ID IN (" & GetCharIDs() & ") "
         SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
         While readerCharacter.Read
@@ -600,10 +600,10 @@ Public Class frmIndustryJobsViewer
         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & CombinedKeyData.ID
         SQL = SQL & " AND OVERRIDE_SKILL <> -1"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         ' Insert skill data
         For i = 0 To TempSkills.GetSkillList.Count - 1
@@ -611,7 +611,7 @@ Public Class frmIndustryJobsViewer
             ' Check for skill and update if there
             SQL = "SELECT 'X' FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & " AND CHARACTER_ID =" & CombinedKeyData.ID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerCharacter = DBCommand.ExecuteReader
 
             If Not readerCharacter.HasRows Then
@@ -630,11 +630,11 @@ Public Class frmIndustryJobsViewer
             readerCharacter.Close()
             readerCharacter = Nothing
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         Next
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
     End Sub
 

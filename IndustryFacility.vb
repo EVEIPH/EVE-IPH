@@ -64,7 +64,7 @@ Public Class IndustryFacility
                 SQL = SQL & "SELECT DISTINCT FACILITY_NAME, CASE WHEN OUTPOST = 0 THEN 'STATION' ELSE 'OUTPOST' END AS FACILITY_TYPE FROM STATION_FACILITIES) AS X "
                 SQL = SQL & "WHERE FACILITY_NAME = '" & SearchFacilitySettings.Facility & "'"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
 
                 If rsLoader.Read() Then
@@ -183,7 +183,7 @@ Public Class IndustryFacility
                         End Select
                     End If
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLoader = DBCommand.ExecuteReader
                     rsLoader.Read()
 
@@ -307,7 +307,7 @@ Public Class IndustryFacility
             End With
 
             ' Set the query
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
 

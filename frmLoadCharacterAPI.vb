@@ -97,7 +97,7 @@ Public Class frmLoadCharacterAPI
         ' If this is a corp key and they don't have any keys loaded, then force them to load a dummy
         If KeyType = CorporationAPITypeName Then
             ' See if they have a character key loaded
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", DB)
+            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", EVEDB.DBREf)
             If CInt(CMDCount.ExecuteScalar()) = 0 Then
                 ' No characters, make them load dummy
                 Call AskLoadDummy(True)
@@ -194,7 +194,7 @@ Public Class frmLoadCharacterAPI
                 ' See if it is already set as a default
                 SQL = "SELECT 'X' FROM API WHERE CHARACTER_ID=" & Characters(i).ID & " AND IS_DEFAULT <> 0 AND API_TYPE NOT IN ('Corporation', 'Old Key')"
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDefault = DBCommand.ExecuteReader
 
                 ' Mark the default
@@ -210,7 +210,7 @@ Public Class frmLoadCharacterAPI
 
             ' Delete all records for this API and reload
             SQL = "DELETE FROM API WHERE KEY_ID = " & EnteredKeyID & " AND API_KEY = '" & EnteredAPI & "'"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             ' Find each character in the list and load data to DB
             For i = 0 To Characters.Count - 1
@@ -295,7 +295,7 @@ Public Class frmLoadCharacterAPI
 
         CharactersLoaded = False
 
-        Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", DB)
+        Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", EVEDB.DBREf)
 
         If CInt(CMDCount.ExecuteScalar()) <> 0 Then
             Me.Close()

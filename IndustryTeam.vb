@@ -59,7 +59,7 @@ Public Class IndustryTeam
             SQL = SQL & "WHERE INDUSTRY_TEAMS_AUCTIONS.SPECIALTY_CATEGORY_ID = INDUSTRY_CATEGORY_SPECIALTIES.SPECIALTY_CATEGORY_ID "
             SQL = SQL & "AND TEAM_ID = " & SearchTeamSettings.TeamID & " "
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
 
@@ -89,7 +89,7 @@ Public Class IndustryTeam
                     SQL = SQL & "AND INDUSTRY_TEAMS_BONUSES.SPECIALTY_GROUP_ID = INDUSTRY_GROUP_SPECIALTIES.SPECIALTY_GROUP_ID "
                     SQL = SQL & "GROUP BY BONUS_ID, BONUS_TYPE, BONUS_VALUE, SPECIALTY_GROUP_NAME, INDUSTRY_TEAMS_BONUSES.SPECIALTY_GROUP_ID"
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsLoader = DBCommand.ExecuteReader
 
                     While rsLoader.Read()

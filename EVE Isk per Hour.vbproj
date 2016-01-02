@@ -147,6 +147,7 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="DBConnection.vb" />
     <Compile Include="DoubleTrackBar - No designer.vb">
       <SubType>Component</SubType>
     </Compile>
@@ -401,6 +402,7 @@
     <Compile Include="frmCRESTStatus.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="StationLocation.vb" />
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
@@ -556,6 +558,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="Resources\57.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

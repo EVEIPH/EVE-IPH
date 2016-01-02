@@ -134,7 +134,7 @@ Public Class EVESkillList
                 SQL = "SELECT typeName, groupName FROM INVENTORY_TYPES, INVENTORY_GROUPS "
                 SQL = SQL & "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND typeID = " & SentSkill.TypeID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSkills = DBCommand.ExecuteReader()
 
                 If readerSkills.Read Then
@@ -245,9 +245,9 @@ Public Class EVESkillList
 
             ' Update their user id to override skills
             SQL = "UPDATE API SET OVERRIDE_SKILLS = 1 WHERE CHARACTER_ID = " & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             For i = 0 To OverRideSkills.NumSkills - 1
                 ' Two possiblities - the skill exists, which is where we update the override variables, it doesn't and we enter a new record
@@ -255,7 +255,7 @@ Public Class EVESkillList
                 ' Check for skill and update if there
                 SQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSkills = DBCommand.ExecuteReader
 
                 If readerSkills.Read Then
@@ -276,13 +276,13 @@ Public Class EVESkillList
 
                 readerSkills.Close()
 
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
 
                 UserApplicationSettings.AllowSkillOverride = True
 
             Next
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
             ' Just saved the skill updates so, only reload the skills from db
             SelectedCharacter.LoadSkills(False, False)
@@ -291,15 +291,15 @@ Public Class EVESkillList
             ' Clean up the skills because we are reverting to default API skills
             ' Change their override user setting back to unchecked
             SQL = "UPDATE API SET OVERRIDE_SKILLS = 0 WHERE CHARACTER_ID = " & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Delete any skills that aren't trained by the character
             SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & SelectedCharacter.ID & " AND SKILL_LEVEL = 0"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Update all skills to base
             SQL = "UPDATE CHARACTER_SKILLS SET OVERRIDE_LEVEL = 0, OVERRIDE_SKILL = 0 WHERE CHARACTER_ID = " & SelectedCharacter.ID
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             UserApplicationSettings.AllowSkillOverride = False
 
@@ -334,39 +334,39 @@ Public Class EVESkillList
 
         ' Clean up any skills if they exist - account does not so load a fresh set
         Sql = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = 0"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
 
         ' Insert skill records for dummy
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3426,'Electronics',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3413,'Engineering',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3386,'Mining',1415,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3392,'Mechanics',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3449,'Navigation',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3402,'Science',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3327,'Spaceship Command',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3381,'Amarr Frigate',2829,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3330,'Caldari Frigate',2829,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3328,'Gallente Frigate',2829,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3329,'Minmatar Frigate',2829,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3300,'Gunnery',1415,2,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3303,'Small Energy Turret',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3301,'Small Hybrid Turret',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
         Sql = "INSERT INTO CHARACTER_SKILLS VALUES (0,3302,'Small Projectile Turret',8000,3,0,0)"
-        Call ExecuteNonQuerySQL(Sql)
+        Call evedb.ExecuteNonQuerySQL(Sql)
 
     End Sub
 
@@ -411,7 +411,7 @@ Public Class EVESkill
         SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID > 181 AND TYPE_ATTRIBUTES.attributeID < 185 AND TYPE_ATTRIBUTES_1.attributeID = TYPE_ATTRIBUTES.attributeID + 95 "
         SQL = SQL & "AND INVENTORY_TYPES.typeID = " & CStr(TypeID)
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSkills = DBCommand.ExecuteReader
 
         While readerSkills.Read

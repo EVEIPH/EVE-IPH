@@ -324,7 +324,7 @@ Public Class frmLPStore
             SQL = SQL & "AND ITEM LIKE '%" & FormatDBString(txtItemFilter.Text) & "%' "
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLP = DBCommand.ExecuteReader
 
         Me.Cursor = Cursors.WaitCursor
@@ -373,7 +373,7 @@ Public Class frmLPStore
         ' Load up all the corporations 
         SQL = "SELECT DISTINCT CORP_ID, CORP_NAME FROM LP_STORE "
 
-        DBCommand = New SQLiteCommand(SQL & "ORDER BY CORP_NAME ", DB)
+        DBCommand = New SQLiteCommand(SQL & "ORDER BY CORP_NAME ", EVEDB.DBREf)
         readerCorp = DBCommand.ExecuteReader
 
         lstCorporations.Items.Clear()
@@ -408,7 +408,7 @@ Public Class frmLPStore
             SQL = "SELECT typeName, REQ_QUANTITY FROM LP_OFFER_REQUIREMENTS, INVENTORY_TYPES "
             SQL = SQL & "WHERE REQ_TYPE_ID = typeID AND OFFER_ID = " & lstStoreItems.SelectedItems(0).SubItems(0).Text & " ORDER BY typeName"
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerReq = DBCommand.ExecuteReader
 
             lstRequiredMats.Items.Clear()

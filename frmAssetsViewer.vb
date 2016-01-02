@@ -493,7 +493,7 @@ Public Class frmAssetsViewer
                 SQL = SQL & " AND typeName LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
             End If
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerMats = DBCommand.ExecuteReader
 
             ' Fill list
@@ -757,7 +757,7 @@ Public Class frmAssetsViewer
                     SQL = SQL & " AND ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
                 End If
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerMats = DBCommand.ExecuteReader
 
                 ' Fill list
@@ -779,7 +779,7 @@ Public Class frmAssetsViewer
                     SQL = SQL & " WHERE ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
                 End If
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerMats = DBCommand.ExecuteReader
 
                 ' Fill list
@@ -1001,20 +1001,20 @@ Public Class frmAssetsViewer
             SavedLocationIDs = GetCheckedLocations(AssetTree.Nodes(0))
 
             ' Since a lot of locations will bog down the settings loading, store in a table for this character and corporation
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' First clear out any records in there for both the account and corp assets on the account
             SQL = "DELETE FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(WindowForm)
             SQL = SQL & " AND ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID) & ")"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             For i = 0 To SavedLocationIDs.Count - 1
                 SQL = "INSERT INTO ASSET_LOCATIONS (EnumAssetType, ID, LocationID, FlagID) VALUES "
                 SQL = SQL & "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
         End With
 
@@ -1491,7 +1491,7 @@ Public Class frmAssetsViewer
         SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
         SQL = SQL & "GROUP BY groupName "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerShipType = DBCommand.ExecuteReader
 
         cmbPriceShipTypes.Items.Add("All Ship Types")
@@ -1520,7 +1520,7 @@ Public Class frmAssetsViewer
         SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
         SQL = SQL & "GROUP BY groupName "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerChargeType = DBCommand.ExecuteReader
 
         cmbPriceChargeTypes.Items.Add("All Charge Types")

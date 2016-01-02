@@ -22,12 +22,12 @@ Public Class frmSetCharacterDefault
 
         SQL = "SELECT COUNT(*) FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         numChars = CLng(DBCommand.ExecuteScalar())
 
         SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacters = DBCommand.ExecuteReader()
 
         While readerCharacters.Read()
@@ -71,8 +71,8 @@ Public Class frmSetCharacterDefault
 
         ' If we get here, just clear out the old default and set the new one
         ' Update them all to 0 first
-        Call ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = 0 WHERE API_TYPE <> 'Corporation'")
-        Call ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_NAME = '" & FormatDBString(SelectedCharacterName) & "' AND API_TYPE NOT IN ('Corporation', 'Old Key')")
+        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = 0 WHERE API_TYPE <> 'Corporation'")
+        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_NAME = '" & FormatDBString(SelectedCharacterName) & "' AND API_TYPE NOT IN ('Corporation', 'Old Key')")
 
         ' Load the character as default for program and reload additional API data
         Call SelectedCharacter.LoadDefaultCharacter(True, UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)

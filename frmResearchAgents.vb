@@ -68,7 +68,7 @@ Public Class frmResearchAgents
                         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME ='Datacore - " & .GetResearchAgents(i).Field & "'"
                     End If
 
-                    DBCommand = New SQLiteCommand(SQL, DB)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerPriceLookup = DBCommand.ExecuteReader()
 
                     If readerPriceLookup.Read() Then

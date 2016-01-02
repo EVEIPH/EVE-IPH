@@ -117,7 +117,7 @@ Public Class Character
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
 
-        DBCommand = New SQLiteCommand("SELECT 'X' FROM API WHERE CHARACTER_ID = 0", DB)
+        DBCommand = New SQLiteCommand("SELECT 'X' FROM API WHERE CHARACTER_ID = 0", EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
 
         ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite
@@ -147,7 +147,7 @@ Public Class Character
             SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "',"
             SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "')"
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             ' Load the dummy skills
             Skills.LoadDummySkills()
@@ -167,7 +167,7 @@ Public Class Character
 
         Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
             SQL = "UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_ID = 0"
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
             Call LoadDefaultCharacter()
 
@@ -187,7 +187,7 @@ Public Class Character
 
         SQL = "SELECT COUNT(*) FROM API WHERE API_TYPE <> 'Old Key'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
         If readerCharacter.Read() Then
@@ -196,7 +196,7 @@ Public Class Character
 
         SQL = "SELECT COUNT(*) FROM API WHERE CHARACTER_NAME <> 'None'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
         If readerCharacter.Read() Then
@@ -210,7 +210,7 @@ Public Class Character
 
         ' Get base data and cache date
         SQL = "SELECT CACHED_UNTIL, KEY_ID, API_KEY, CHARACTER_ID, API_TYPE FROM API WHERE IS_DEFAULT <> 0 AND API_TYPE NOT IN ('Old Key','Corporation')"
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
         If readerCharacter.Read() Then
@@ -264,7 +264,7 @@ Public Class Character
         End If
         SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
         If readerCharacter.Read Then
@@ -357,7 +357,7 @@ Public Class Character
         SQL = "SELECT ID, LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(Location)
         SQL = SQL & " AND ID IN (" & CStr(ID) & "," & CStr(CharacterCorporation.CorporationID) & ")"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLocations = DBCommand.ExecuteReader
 
         While readerLocations.Read
@@ -392,7 +392,7 @@ Public Class Character
         ' Load the standings
         SQL = "SELECT NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING FROM CHARACTER_STANDINGS WHERE CHARACTER_ID=" & ID
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerStandings = DBCommand.ExecuteReader
 
         While readerStandings.Read
@@ -430,11 +430,11 @@ Public Class Character
             Exit Sub
         End If
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         ' Delete the old standings data
         SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & ID
-        Call ExecuteNonQuerySQL(SQL)
+        Call evedb.ExecuteNonQuerySQL(SQL)
 
         If Not IsNothing(TempStandings) Then
 
@@ -445,13 +445,13 @@ Public Class Character
                 SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
                 SQL = SQL & "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
                 SQL = SQL & "'," & TempStandings.GetStandingsList(i).Standing & ")"
-                Call ExecuteNonQuerySQL(SQL)
+                Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
             DBCommand = Nothing
         End If
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
     End Sub
 
@@ -484,7 +484,7 @@ Public Class Character
         End If
         SQL = SQL & "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSkills = DBCommand.ExecuteReader
 
         While readerSkills.Read
@@ -546,10 +546,10 @@ Public Class Character
         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & ID
         SQL = SQL & " AND OVERRIDE_SKILL <> -1"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
 
-        Call BeginSQLiteTransaction()
+        Call EVEDB.BeginSQLiteTransaction()
 
         ' Insert skill data
         For i = 0 To TempSkills.GetSkillList.Count - 1
@@ -557,7 +557,7 @@ Public Class Character
             ' Check for skill and update if there
             SQL = "SELECT 'X' FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & " AND CHARACTER_ID =" & ID
 
-            DBCommand = New SQLiteCommand(SQL, DB)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerCharacter = DBCommand.ExecuteReader
 
             If Not readerCharacter.HasRows Then
@@ -576,11 +576,11 @@ Public Class Character
             readerCharacter.Close()
             readerCharacter = Nothing
 
-            Call ExecuteNonQuerySQL(SQL)
+            Call evedb.ExecuteNonQuerySQL(SQL)
 
         Next
 
-        Call CommitSQLiteTransaction()
+        Call EVEDB.CommitSQLiteTransaction()
 
     End Sub
 

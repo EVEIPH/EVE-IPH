@@ -46,7 +46,7 @@ Public Class frmManageAccounts
         SQL = "SELECT API_TYPE, KEY_ID, API_KEY, ACCESS_MASK, KEY_EXPIRATION_DATE, CORPORATION_NAME FROM API WHERE KEY_ID <> 0 "
         SQL = SQL & "GROUP BY KEY_EXPIRATION_DATE, API_TYPE, KEY_ID, API_KEY, ACCESS_MASK"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAccounts = DBCommand.ExecuteReader
 
         lstAccounts.Items.Clear()
@@ -63,7 +63,7 @@ Public Class frmManageAccounts
             If readerAccounts.GetString(0) <> CorporationAPITypeName Then
                 ' Get the characters for this key
                 SQL = "SELECT CHARACTER_NAME FROM API WHERE KEY_ID=" & CStr(readerAccounts.GetValue(1)) & " AND API_KEY = '" & CStr(readerAccounts.GetString(2)) & "'"
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerChars = DBCommand.ExecuteReader
 
                 While readerChars.Read
@@ -101,7 +101,7 @@ Public Class frmManageAccounts
 
         SQL = "SELECT COUNT(*) FROM API WHERE API_TYPE <> 'Old Key'"
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerChars = DBCommand.ExecuteReader
 
         readerChars.Read()
@@ -222,14 +222,14 @@ Public Class frmManageAccounts
             Me.Cursor = Cursors.WaitCursor
             Application.DoEvents()
 
-            Call BeginSQLiteTransaction()
+            Call EVEDB.BeginSQLiteTransaction()
 
             ' Find out what type of key it is - corp or personal
             If lstAccounts.SelectedItems.Item(0).SubItems(0).Text = "Corporation" Then
                 ' Just delete assets and jobs for this corporation ID
                 SQL = "SELECT CORPORATION_ID FROM API WHERE KEY_ID = " & DKeyID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsAPI = DBCommand.ExecuteReader
                 rsAPI.Read()
 
@@ -239,52 +239,52 @@ Public Class frmManageAccounts
                 ' Now look up all the accounts that have this corp ID to delete all associated corp jobs
                 SQL = "SELECT CHARACTER_ID FROM API WHERE CORPORATION_ID = " & CorpID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsAPI = DBCommand.ExecuteReader
 
                 While rsAPI.Read
                     SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & rsAPI.GetInt64(0) & " AND JobType = " & ScanType.Corporation
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
                 End While
 
                 SQL = "DELETE FROM ASSETS WHERE ID = " & CorpID
-                ExecuteNonQuerySQL(SQL)
+                evedb.ExecuteNonQuerySQL(SQL)
 
                 SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CorpID
-                ExecuteNonQuerySQL(SQL)
+                evedb.ExecuteNonQuerySQL(SQL)
 
             Else ' Need to delete any stored skills, standings, agents, assets, and jobs for all characters
                 SQL = "SELECT CHARACTER_ID FROM API WHERE KEY_ID = " & DKeyID
 
-                DBCommand = New SQLiteCommand(SQL, DB)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsAPI = DBCommand.ExecuteReader
 
                 While rsAPI.Read
                     ' Delete all the information associated with this key FIX (SKILLS, STANDINGS, ASSETS, JOBS, AGENTS)
                     SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                     SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                     SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                     SQL = "DELETE FROM ASSETS WHERE ID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                     SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                     SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & rsAPI.GetInt64(0)
-                    ExecuteNonQuerySQL(SQL)
+                    evedb.ExecuteNonQuerySQL(SQL)
 
                 End While
 
             End If
 
             SQL = "DELETE FROM API WHERE KEY_ID = " & DKeyID & " AND API_KEY = '" & DKey & "'"
-            ExecuteNonQuerySQL(SQL)
+            evedb.ExecuteNonQuerySQL(SQL)
 
             ' If it's the account we have loaded, and we just deleted the key, then reset the selected character
             If lstAccounts.SelectedItems.Item(0).SubItems(0).Text <> CorporationAPITypeName And _
@@ -292,7 +292,7 @@ Public Class frmManageAccounts
                 SelectedCharacter = New Character
             End If
 
-            Call CommitSQLiteTransaction()
+            Call EVEDB.CommitSQLiteTransaction()
 
             ' Reload the characters - this will do the default selection, etc
             Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)

@@ -394,7 +394,7 @@ Public Class ShoppingList
             SQL = SQL & " AND ACTIVITY = 1"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsMatQuantity = DBCommand.ExecuteReader
         rsMatQuantity.Read()
 
@@ -514,7 +514,7 @@ Public Class ShoppingList
             SQL = SQL & " AND ACTIVITY = 1"
         End If
 
-        DBCommand = New SQLiteCommand(SQL, DB)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsMatQuantity = DBCommand.ExecuteReader
         rsMatQuantity.Read()
 
