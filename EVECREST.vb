@@ -995,7 +995,8 @@ Public Class EVECREST
     ' This returns a list of all publicly accessible facilities, including player built outposts in nullsec.
 
     ' Gets the CREST file from CCP for current Industry Facilities and updates the EVEIPH DB with the values
-    Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing, Optional SplashVisible As Boolean = False) As Boolean
+    Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing, _
+                                            Optional SplashVisible As Boolean = False) As Boolean
         Dim IndustryFacilitiesOutput As IndustryFacilities
         Dim SQL As String
         Dim CacheDate As Date
@@ -1114,7 +1115,7 @@ Public Class EVECREST
                                 ErrorTracker = SQL
                             End If
 
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             rsLookup.Close()
                             DBCommand = Nothing
@@ -1211,7 +1212,7 @@ Public Class EVECREST
 
                     While rsLookup.Read
                         SQL = "UPDATE STATION_FACILITIES SET FACILITY_NAME = '" & FormatDBString(rsLookup.GetString(0)) & "' WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(1))
-                        Call evedb.ExecuteNonQuerySQL(SQL)
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
                     End While
 
                     rsLookup.Close()
@@ -1233,7 +1234,7 @@ Public Class EVECREST
                         SQL = SQL & CStr(rsLookup.GetFloat(4)) & ","
                         SQL = SQL & CStr(rsLookup.GetInt64(5)) & ",0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
                         ErrorTracker = SQL
-                        Call evedb.ExecuteNonQuerySQL(SQL)
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
                     End While
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file 
@@ -1253,7 +1254,7 @@ Public Class EVECREST
                         While rsLookup.Read
                             SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
                             SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
                         End While
 
                         rsLookup.Close()
@@ -1769,17 +1770,17 @@ Public Class EVECREST
             ' Set the cache date by ref for market history and industry facilities
             ' These only change once per day. So for these cases set the cache date to take into account
             ' the next downtime or midnight. There could be a case where the servers are down for awhile and the CREST server is
-            ' not updated, but it's past the cache time - in that case the users can reset the ca
+            ' not updated, but it's past the cache time - in that case the users can reset the cache
+            Dim TempDate As Date = DateValue(response.Headers.Get("Date").Replace("GMT", "")) ' remove GMT or it will automatically switch to local
             If URL.Contains("/history/") Then
-                ' Strip off time here from GMT date and add one day so it gets set to midnight tomorrow GMT - Add GMT and then convert to 
-                ' make it a local date time for when the server is restarted
-                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateValue(response.Headers.Get("Date"))) & " 00:00:00 GMT"))
+                ' Set this to midnight tomorrow GMT when the prices are updated in history - strip the date received from ccp and add midnight gmt, reparse to get local time
+                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateTime.Parse(CStr(TempDate) & " 00:00:00 GMT"))))
             ElseIf URL.Contains("/market/prices/") Then
                 ' The header isn't correct and the cache of these prices is every 23 hours, so just adjust for this (the time sent is the current time)
                 CacheDate = DateAdd(DateInterval.Hour, 23, CDate(response.Headers.Get("Date")))
             ElseIf URL.Contains("/industry/facilities/") Then
-                ' Industry changes can only occur once per day after downtime (new outposts)
-                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateValue(response.Headers.Get("Date"))) & " 12:00:00 GMT"))
+                ' Industry changes can only occur once per day after downtime (new outposts) so at the morning restart
+                CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateTime.Parse(CStr(TempDate) & " 12:00:00 GMT"))))
             Else
                 CacheDate = DateAdd(DateInterval.Second, Seconds, CDate(response.Headers.Get("Date")))
             End If

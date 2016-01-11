@@ -1608,8 +1608,7 @@ Public Class frmBlueprintManagement
         Dim BPStream As StreamReader = Nothing
         Dim openFileDialog1 As New OpenFileDialog()
         Dim Line As String
-        Dim LinePart As String
-        Dim IgnoreText As String
+        Dim ParsedLine As String()
 
         'openFileDialog1.InitialDirectory = "c:\"
         openFileDialog1.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*"
@@ -1642,52 +1641,38 @@ Public Class frmBlueprintManagement
                         gbBPFilter.Enabled = False
                         gbUpdateOptions.Enabled = False
                         Application.DoEvents()
-                        ' Format is: API ID, Location ID, Item ID, Blueprint ID, Blueprint Group, Blueprint Name, 
-                        ' Quantity, Flag ID, ME, TE, Runs, BP Type, Owned, Scanned, Favorite, Additional Costs
+                        ' Format is: 0-API ID, 1-Location ID, 2-Item ID, 3-Blueprint ID, 4-Blueprint Group, 5-Blueprint Name, 
+                        ' 6-Quantity, 7-Flag ID, 8-ME, 9-TE, 10-Runs, 11-BP Type, 12-Owned, 13-Scanned, 14-Favorite, 15-Additional Costs
+
+                        ' Parse it
+                        ParsedLine = Line.Split(New Char() {","c}, StringSplitOptions.RemoveEmptyEntries)
+
+                        Dim UserID As String = ParsedLine(0)
+
                         ' Only load BP's that have a user ID set
-                        If CLng(Line.Substring(0, InStr(Line, ","))) <> 0 Then
-
-                            ' Get the user id for this record
-                            Dim UserID As String
-                            UserID = Line.Substring(0, InStr(Line, ","))
-
+                        If UserID <> "0" Then
                             SQL = "INSERT INTO OWNED_BLUEPRINTS VALUES ("
-                            SQL = SQL & UserID  ' API ID
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Location ID
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Item ID
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Blueprint ID
-                            Line = Line.Substring(InStr(Line, ","))
-                            IgnoreText = Line.Substring(0, InStr(Line, ",")) ' Blueprint Group (ignore this)
-                            Line = Line.Substring(InStr(Line, ","))
-                            LinePart = Line.Substring(0, InStr(Line, ","))
-                            SQL = SQL & "'" & FormatDBString(LinePart.Substring(0, Len(LinePart) - 1)) & "'," ' Blueprint Name
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Quantity
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Flag ID
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' ME
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' TE
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line.Substring(0, InStr(Line, ",")) ' Runs
+                            SQL = SQL & UserID & "," ' API ID
+                            SQL = SQL & ParsedLine(1) & "," ' Location ID
+                            SQL = SQL & ParsedLine(2) & "," ' Item ID
+                            SQL = SQL & ParsedLine(3) & "," ' Blueprint ID
+                            SQL = SQL & "'" & FormatDBString(ParsedLine(5)) & "'," ' Blueprint Name
+                            SQL = SQL & ParsedLine(6) & "," ' Quantity
+                            SQL = SQL & ParsedLine(7) & "," ' Flag ID
+                            SQL = SQL & ParsedLine(8) & "," ' ME
+                            SQL = SQL & ParsedLine(9) & "," ' TE
+                            SQL = SQL & ParsedLine(10) & "," ' Runs
 
                             Dim TempBPType As BPType
                             Dim TempOwned As Boolean
                             Dim TempScanned As Boolean
 
                             ' BP Type 
-                            Line = Line.Substring(InStr(Line, ","))
-                            TempBPType = GetBPType(Line.Substring(0, InStr(Line, ",") - 1))
+                            TempBPType = GetBPType(ParsedLine(11))
                             ' Owned
-                            Line = Line.Substring(InStr(Line, ","))
-                            TempOwned = CBool(UCase(Line.Substring(0, InStr(Line, ",") - 1)))
+                            TempOwned = CBool(UCase(ParsedLine(12)))
                             ' Scanned
-                            Line = Line.Substring(InStr(Line, ","))
-                            TempScanned = CBool(UCase(Line.Substring(0, InStr(Line, ",") - 1)))
+                            TempScanned = CBool(UCase(ParsedLine(13)))
 
                             If Not TempOwned Then
                                 ' Set the bp type regardless
@@ -1719,20 +1704,17 @@ Public Class frmBlueprintManagement
                             End If
 
                             ' Favorite
-                            Line = Line.Substring(InStr(Line, ","))
-                            If UCase(Line) = "TRUE" Then
+                            If UCase(ParsedLine(14)) = "TRUE" Then
                                 SQL = SQL & "1,"
                             Else
                                 SQL = SQL & "0,"
                             End If
 
-                            Line = Line.Substring(InStr(Line, ","))
-                            SQL = SQL & Line ' Additional Costs
-
+                            SQL = SQL & ParsedLine(15) ' Additional Costs
                             SQL = SQL & ")"
 
                             ' Insert the record
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         End If
 

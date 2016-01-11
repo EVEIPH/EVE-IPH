@@ -684,7 +684,7 @@ Public Class frmShoppingList
                                 Dim TempMaterial As Material
 
                                 If Not IsNothing(PasteMaterialList) Then
-                                    TempMaterial = PasteMaterialList.SearchListbyName(ProcessList.GetMaterialList(j).GetMaterialName, True)
+                                    TempMaterial = PasteMaterialList.SearchListbyName(ProcessList.GetMaterialList(j).GetMaterialName, False)
 
                                     If Not IsNothing(TempMaterial) Then
                                         ' Found it
@@ -1376,7 +1376,7 @@ Public Class frmShoppingList
                         Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, frmMain.chkBPFacilityIncludeUsage.Checked, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 
                         ' Add to shopping list but use BP tab settings
-                        Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, frmMain.rbtnBPComponentCopy.Checked, _
+                        Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, _
                                                TempBuildFacility.MaterialMultiplier, ItemList(i).BuiltInPOS, ItemList(i).IgnoredInvention, _
                                                ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 

@@ -56,7 +56,7 @@ Public Class Materials
     End Sub
 
     ' Searches the list and finds then returns a material for the name part sent
-    Public Function SearchListbyName(ByVal SearchText As String, Optional ExactSearch As Boolean = False) As Material
+    Public Function SearchListbyName(ByVal SearchText As String, Optional ExactSearch As Boolean = True) As Material
 
         If Not IsNothing(MaterialList) Then
             For i = 0 To MaterialList.Count - 1

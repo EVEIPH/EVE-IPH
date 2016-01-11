@@ -110,7 +110,7 @@ Partial Class frmMain
         Me.pnlStatus = New System.Windows.Forms.ToolStripStatusLabel()
         Me.pnlProgressBar = New System.Windows.Forms.ToolStripProgressBar()
         Me.txtListEdit = New System.Windows.Forms.TextBox()
-        Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttBP = New System.Windows.Forms.ToolTip(Me.components)
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
         Me.SaveFileDialog = New System.Windows.Forms.SaveFileDialog()
         Me.gbSystems = New System.Windows.Forms.GroupBox()
@@ -481,7 +481,11 @@ Partial Class frmMain
         Me.lblDCStanding3 = New System.Windows.Forms.Label()
         Me.btnDCRefresh = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
+        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewMarketHistoryToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
+        Me.btnCalcCalculate = New System.Windows.Forms.Button()
         Me.gbCalcFWUpgrade = New System.Windows.Forms.GroupBox()
         Me.lblCalcFWInventionUpgradeLevel = New System.Windows.Forms.Label()
         Me.cmbCalcFWInventionUpgradeLevel = New System.Windows.Forms.ComboBox()
@@ -787,15 +791,14 @@ Partial Class frmMain
         Me.chkCalcUpdateCRESTHistory = New System.Windows.Forms.CheckBox()
         Me.chkCalcSVRIncludeNull = New System.Windows.Forms.CheckBox()
         Me.lblCalcSVRRegion = New System.Windows.Forms.Label()
-        Me.lblCalcAvgPrice = New System.Windows.Forms.Label()
         Me.cmbCalcSVRRegion = New System.Windows.Forms.ComboBox()
         Me.txtCalcSVRThreshold = New System.Windows.Forms.TextBox()
         Me.lblCalcSVRThreshold = New System.Windows.Forms.Label()
         Me.cmbCalcAvgPriceDuration = New System.Windows.Forms.ComboBox()
+        Me.lblCalcAvgPrice = New System.Windows.Forms.Label()
         Me.btnCalcSaveSettings = New System.Windows.Forms.Button()
         Me.btnCalcExportList = New System.Windows.Forms.Button()
         Me.btnCalcPreview = New System.Windows.Forms.Button()
-        Me.btnCalculate = New System.Windows.Forms.Button()
         Me.btnCalcReset = New System.Windows.Forms.Button()
         Me.gbCalcTextFilter = New System.Windows.Forms.GroupBox()
         Me.btnCalcResetTextSearch = New System.Windows.Forms.Button()
@@ -848,11 +851,7 @@ Partial Class frmMain
         Me.lblTempPE = New System.Windows.Forms.Label()
         Me.txtCalcTempME = New System.Windows.Forms.TextBox()
         Me.lblTempME = New System.Windows.Forms.Label()
-        Me.lstManufacturing = New System.Windows.Forms.ListView()
-        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.tabUpdatePrices = New System.Windows.Forms.TabPage()
-        Me.Button1 = New System.Windows.Forms.Button()
         Me.chkUpdatePricesUseCREST = New System.Windows.Forms.CheckBox()
         Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
         Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
@@ -1202,15 +1201,24 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
+        Me.ttUpdatePrices = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttManufacturing = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttDatacores = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttReactions = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttMining = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ttPI = New System.Windows.Forms.ToolTip(Me.components)
+        Me.CalcImageList = New System.Windows.Forms.ImageList(Me.components)
         Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
+        Me.AddToShoppingListToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.tabMining.SuspendLayout
@@ -1262,6 +1270,7 @@ Partial Class frmMain
         Me.gbDCCorpsCaldari.SuspendLayout
         Me.gbDCCorpsGallente.SuspendLayout
         Me.tabManufacturing.SuspendLayout
+        Me.ListOptionsMenu.SuspendLayout
         Me.gbCalcBPSelectOptions.SuspendLayout
         Me.gbCalcFWUpgrade.SuspendLayout
         Me.gbCalcIgnoreinCalcs.SuspendLayout
@@ -1300,7 +1309,6 @@ Partial Class frmMain
         Me.tabCalcTeamInvention.SuspendLayout
         Me.tabCalcTeamCopy.SuspendLayout
         Me.gbTempMEPE.SuspendLayout
-        Me.ListOptionsMenu.SuspendLayout
         Me.tabUpdatePrices.SuspendLayout
         Me.gbTradeHubSystems.SuspendLayout
         Me.gbSplitPrices.SuspendLayout
@@ -1900,9 +1908,9 @@ Partial Class frmMain
         Me.txtListEdit.TabStop = false
         Me.txtListEdit.Visible = false
         '
-        'ttMain
+        'ttBP
         '
-        Me.ttMain.IsBalloon = true
+        Me.ttBP.IsBalloon = true
         '
         'OpenFileDialog
         '
@@ -5658,8 +5666,8 @@ Partial Class frmMain
         '
         'tabManufacturing
         '
-        Me.tabManufacturing.Controls.Add(Me.gbCalcBPSelectOptions)
         Me.tabManufacturing.Controls.Add(Me.lstManufacturing)
+        Me.tabManufacturing.Controls.Add(Me.gbCalcBPSelectOptions)
         Me.tabManufacturing.Location = New System.Drawing.Point(4, 22)
         Me.tabManufacturing.Name = "tabManufacturing"
         Me.tabManufacturing.Size = New System.Drawing.Size(1137, 615)
@@ -5667,8 +5675,27 @@ Partial Class frmMain
         Me.tabManufacturing.Text = "Manufacturing List"
         Me.tabManufacturing.UseVisualStyleBackColor = true
         '
+        'ListOptionsMenu
+        '
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewMarketHistoryToolStripMenuItem, Me.AddToShoppingListToolStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
+        Me.ListOptionsMenu.Name = "ListOptionsMenu"
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(186, 92)
+        '
+        'IgnoreBlueprintToolStripMenuItem
+        '
+        Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
+        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
+        '
+        'ViewMarketHistoryToolStripMenuItem
+        '
+        Me.ViewMarketHistoryToolStripMenuItem.Name = "ViewMarketHistoryToolStripMenuItem"
+        Me.ViewMarketHistoryToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.ViewMarketHistoryToolStripMenuItem.Text = "View Market History"
+        '
         'gbCalcBPSelectOptions
         '
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcCalculate)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcFWUpgrade)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbIncludeTaxesFees)
@@ -5689,7 +5716,6 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcSaveSettings)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcExportList)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcPreview)
-        Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalculate)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcReset)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcTextFilter)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcBPType)
@@ -5703,6 +5729,15 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabIndex = 0
         Me.gbCalcBPSelectOptions.TabStop = false
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
+        '
+        'btnCalcCalculate
+        '
+        Me.btnCalcCalculate.Location = New System.Drawing.Point(1019, 49)
+        Me.btnCalcCalculate.Name = "btnCalcCalculate"
+        Me.btnCalcCalculate.Size = New System.Drawing.Size(96, 29)
+        Me.btnCalcCalculate.TabIndex = 21
+        Me.btnCalcCalculate.Text = "Calculate"
+        Me.btnCalcCalculate.UseVisualStyleBackColor = true
         '
         'gbCalcFWUpgrade
         '
@@ -6305,8 +6340,8 @@ Partial Class frmMain
         Me.chkCalcDecryptor0.Size = New System.Drawing.Size(61, 17)
         Me.chkCalcDecryptor0.TabIndex = 1
         Me.chkCalcDecryptor0.Text = "Optimal"
+        Me.chkCalcDecryptor0.ThreeState = true
         Me.chkCalcDecryptor0.UseVisualStyleBackColor = true
-        Me.chkCalcDecryptor0.Visible = false
         '
         'chkCalcDecryptor9
         '
@@ -6321,7 +6356,7 @@ Partial Class frmMain
         'chkCalcDecryptor8
         '
         Me.chkCalcDecryptor8.AutoSize = true
-        Me.chkCalcDecryptor8.Location = New System.Drawing.Point(204, 30)
+        Me.chkCalcDecryptor8.Location = New System.Drawing.Point(211, 29)
         Me.chkCalcDecryptor8.Name = "chkCalcDecryptor8"
         Me.chkCalcDecryptor8.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor8.TabIndex = 7
@@ -6331,7 +6366,7 @@ Partial Class frmMain
         'chkCalcDecryptor7
         '
         Me.chkCalcDecryptor7.AutoSize = true
-        Me.chkCalcDecryptor7.Location = New System.Drawing.Point(141, 30)
+        Me.chkCalcDecryptor7.Location = New System.Drawing.Point(155, 30)
         Me.chkCalcDecryptor7.Name = "chkCalcDecryptor7"
         Me.chkCalcDecryptor7.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor7.TabIndex = 5
@@ -6341,7 +6376,7 @@ Partial Class frmMain
         'chkCalcDecryptor6
         '
         Me.chkCalcDecryptor6.AutoSize = true
-        Me.chkCalcDecryptor6.Location = New System.Drawing.Point(78, 30)
+        Me.chkCalcDecryptor6.Location = New System.Drawing.Point(99, 30)
         Me.chkCalcDecryptor6.Name = "chkCalcDecryptor6"
         Me.chkCalcDecryptor6.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor6.TabIndex = 3
@@ -6361,7 +6396,7 @@ Partial Class frmMain
         'chkCalcDecryptor4
         '
         Me.chkCalcDecryptor4.AutoSize = true
-        Me.chkCalcDecryptor4.Location = New System.Drawing.Point(204, 14)
+        Me.chkCalcDecryptor4.Location = New System.Drawing.Point(211, 13)
         Me.chkCalcDecryptor4.Name = "chkCalcDecryptor4"
         Me.chkCalcDecryptor4.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor4.TabIndex = 6
@@ -6371,7 +6406,7 @@ Partial Class frmMain
         'chkCalcDecryptor3
         '
         Me.chkCalcDecryptor3.AutoSize = true
-        Me.chkCalcDecryptor3.Location = New System.Drawing.Point(141, 14)
+        Me.chkCalcDecryptor3.Location = New System.Drawing.Point(155, 14)
         Me.chkCalcDecryptor3.Name = "chkCalcDecryptor3"
         Me.chkCalcDecryptor3.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor3.TabIndex = 4
@@ -6381,7 +6416,7 @@ Partial Class frmMain
         'chkCalcDecryptor2
         '
         Me.chkCalcDecryptor2.AutoSize = true
-        Me.chkCalcDecryptor2.Location = New System.Drawing.Point(78, 14)
+        Me.chkCalcDecryptor2.Location = New System.Drawing.Point(99, 14)
         Me.chkCalcDecryptor2.Name = "chkCalcDecryptor2"
         Me.chkCalcDecryptor2.Size = New System.Drawing.Size(46, 17)
         Me.chkCalcDecryptor2.TabIndex = 2
@@ -9010,17 +9045,17 @@ Partial Class frmMain
         Me.gbCalcAvgPrice.Controls.Add(Me.chkCalcUpdateCRESTHistory)
         Me.gbCalcAvgPrice.Controls.Add(Me.chkCalcSVRIncludeNull)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblCalcSVRRegion)
-        Me.gbCalcAvgPrice.Controls.Add(Me.lblCalcAvgPrice)
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbCalcSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.txtCalcSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblCalcSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbCalcAvgPriceDuration)
+        Me.gbCalcAvgPrice.Controls.Add(Me.lblCalcAvgPrice)
         Me.gbCalcAvgPrice.Location = New System.Drawing.Point(208, 201)
         Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
         Me.gbCalcAvgPrice.Size = New System.Drawing.Size(198, 93)
         Me.gbCalcAvgPrice.TabIndex = 10
         Me.gbCalcAvgPrice.TabStop = false
-        Me.gbCalcAvgPrice.Text = "SVR Settings:"
+        Me.gbCalcAvgPrice.Text = "Market History Settings:"
         '
         'chkCalcUpdateCRESTHistory
         '
@@ -9043,56 +9078,56 @@ Partial Class frmMain
         'lblCalcSVRRegion
         '
         Me.lblCalcSVRRegion.AutoSize = true
-        Me.lblCalcSVRRegion.Location = New System.Drawing.Point(6, 42)
+        Me.lblCalcSVRRegion.Location = New System.Drawing.Point(6, 45)
         Me.lblCalcSVRRegion.Name = "lblCalcSVRRegion"
         Me.lblCalcSVRRegion.Size = New System.Drawing.Size(44, 13)
         Me.lblCalcSVRRegion.TabIndex = 4
         Me.lblCalcSVRRegion.Text = "Region:"
         '
-        'lblCalcAvgPrice
-        '
-        Me.lblCalcAvgPrice.Location = New System.Drawing.Point(114, 10)
-        Me.lblCalcAvgPrice.Name = "lblCalcAvgPrice"
-        Me.lblCalcAvgPrice.Size = New System.Drawing.Size(35, 28)
-        Me.lblCalcAvgPrice.TabIndex = 2
-        Me.lblCalcAvgPrice.Text = "Avg Days:"
-        Me.lblCalcAvgPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
         'cmbCalcSVRRegion
         '
         Me.cmbCalcSVRRegion.FormattingEnabled = true
-        Me.cmbCalcSVRRegion.Location = New System.Drawing.Point(55, 39)
+        Me.cmbCalcSVRRegion.Location = New System.Drawing.Point(52, 41)
         Me.cmbCalcSVRRegion.Name = "cmbCalcSVRRegion"
-        Me.cmbCalcSVRRegion.Size = New System.Drawing.Size(137, 21)
+        Me.cmbCalcSVRRegion.Size = New System.Drawing.Size(140, 21)
         Me.cmbCalcSVRRegion.TabIndex = 5
         '
         'txtCalcSVRThreshold
         '
-        Me.txtCalcSVRThreshold.Location = New System.Drawing.Point(63, 15)
+        Me.txtCalcSVRThreshold.Location = New System.Drawing.Point(86, 16)
         Me.txtCalcSVRThreshold.MaxLength = 10
         Me.txtCalcSVRThreshold.Name = "txtCalcSVRThreshold"
-        Me.txtCalcSVRThreshold.Size = New System.Drawing.Size(45, 20)
+        Me.txtCalcSVRThreshold.Size = New System.Drawing.Size(31, 20)
         Me.txtCalcSVRThreshold.TabIndex = 1
         Me.txtCalcSVRThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'lblCalcSVRThreshold
         '
         Me.lblCalcSVRThreshold.AutoSize = true
-        Me.lblCalcSVRThreshold.Location = New System.Drawing.Point(6, 18)
+        Me.lblCalcSVRThreshold.Location = New System.Drawing.Point(6, 19)
         Me.lblCalcSVRThreshold.Name = "lblCalcSVRThreshold"
-        Me.lblCalcSVRThreshold.Size = New System.Drawing.Size(57, 13)
+        Me.lblCalcSVRThreshold.Size = New System.Drawing.Size(82, 13)
         Me.lblCalcSVRThreshold.TabIndex = 0
-        Me.lblCalcSVRThreshold.Text = "Threshold:"
+        Me.lblCalcSVRThreshold.Text = "SVR Threshold:"
         '
         'cmbCalcAvgPriceDuration
         '
         Me.cmbCalcAvgPriceDuration.FormattingEnabled = true
         Me.cmbCalcAvgPriceDuration.Items.AddRange(New Object() {"7", "15", "30", "60", "90"})
-        Me.cmbCalcAvgPriceDuration.Location = New System.Drawing.Point(151, 14)
+        Me.cmbCalcAvgPriceDuration.Location = New System.Drawing.Point(151, 15)
         Me.cmbCalcAvgPriceDuration.MaxLength = 3
         Me.cmbCalcAvgPriceDuration.Name = "cmbCalcAvgPriceDuration"
         Me.cmbCalcAvgPriceDuration.Size = New System.Drawing.Size(41, 21)
         Me.cmbCalcAvgPriceDuration.TabIndex = 3
+        '
+        'lblCalcAvgPrice
+        '
+        Me.lblCalcAvgPrice.Location = New System.Drawing.Point(119, 11)
+        Me.lblCalcAvgPrice.Name = "lblCalcAvgPrice"
+        Me.lblCalcAvgPrice.Size = New System.Drawing.Size(35, 28)
+        Me.lblCalcAvgPrice.TabIndex = 2
+        Me.lblCalcAvgPrice.Text = "Avg Days:"
+        Me.lblCalcAvgPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'btnCalcSaveSettings
         '
@@ -9120,15 +9155,6 @@ Partial Class frmMain
         Me.btnCalcPreview.TabIndex = 20
         Me.btnCalcPreview.Text = "Preview Item List"
         Me.btnCalcPreview.UseVisualStyleBackColor = true
-        '
-        'btnCalculate
-        '
-        Me.btnCalculate.Location = New System.Drawing.Point(1019, 49)
-        Me.btnCalculate.Name = "btnCalculate"
-        Me.btnCalculate.Size = New System.Drawing.Size(96, 29)
-        Me.btnCalculate.TabIndex = 21
-        Me.btnCalculate.Text = "Calculate"
-        Me.btnCalculate.UseVisualStyleBackColor = true
         '
         'btnCalcReset
         '
@@ -9669,36 +9695,8 @@ Partial Class frmMain
         Me.lblTempME.TabIndex = 0
         Me.lblTempME.Text = "ME:"
         '
-        'lstManufacturing
-        '
-        Me.lstManufacturing.AllowColumnReorder = true
-        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
-        Me.lstManufacturing.FullRowSelect = true
-        Me.lstManufacturing.GridLines = true
-        Me.lstManufacturing.HideSelection = false
-        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
-        Me.lstManufacturing.Name = "lstManufacturing"
-        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
-        Me.lstManufacturing.TabIndex = 0
-        Me.lstManufacturing.TabStop = false
-        Me.lstManufacturing.UseCompatibleStateImageBehavior = false
-        Me.lstManufacturing.View = System.Windows.Forms.View.Details
-        '
-        'ListOptionsMenu
-        '
-        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.IgnoreBlueprintToolStripMenuItem})
-        Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(160, 26)
-        '
-        'IgnoreBlueprintToolStripMenuItem
-        '
-        Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
-        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(159, 22)
-        Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
-        '
         'tabUpdatePrices
         '
-        Me.tabUpdatePrices.Controls.Add(Me.Button1)
         Me.tabUpdatePrices.Controls.Add(Me.chkUpdatePricesUseCREST)
         Me.tabUpdatePrices.Controls.Add(Me.gbTradeHubSystems)
         Me.tabUpdatePrices.Controls.Add(Me.lstPricesView)
@@ -9723,26 +9721,16 @@ Partial Class frmMain
         Me.tabUpdatePrices.Text = "Update Prices"
         Me.tabUpdatePrices.UseVisualStyleBackColor = true
         '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(470, 580)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(59, 21)
-        Me.Button1.TabIndex = 16
-        Me.Button1.Text = "Clear"
-        Me.Button1.UseVisualStyleBackColor = true
-        '
         'chkUpdatePricesUseCREST
         '
         Me.chkUpdatePricesUseCREST.AutoSize = true
         Me.chkUpdatePricesUseCREST.Checked = true
         Me.chkUpdatePricesUseCREST.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkUpdatePricesUseCREST.Enabled = false
         Me.chkUpdatePricesUseCREST.Location = New System.Drawing.Point(568, 583)
         Me.chkUpdatePricesUseCREST.Name = "chkUpdatePricesUseCREST"
-        Me.chkUpdatePricesUseCREST.Size = New System.Drawing.Size(84, 17)
+        Me.chkUpdatePricesUseCREST.Size = New System.Drawing.Size(95, 17)
         Me.chkUpdatePricesUseCREST.TabIndex = 15
-        Me.chkUpdatePricesUseCREST.Text = "Use CREST"
+        Me.chkUpdatePricesUseCREST.Text = "Use CCP Data"
         Me.chkUpdatePricesUseCREST.UseVisualStyleBackColor = true
         '
         'gbTradeHubSystems
@@ -13531,6 +13519,18 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = true
         '
+        'CalcImageList
+        '
+        Me.CalcImageList.ImageStream = CType(resources.GetObject("CalcImageList.ImageStream"),System.Windows.Forms.ImageListStreamer)
+        Me.CalcImageList.TransparentColor = System.Drawing.Color.White
+        Me.CalcImageList.Images.SetKeyName(0, "GreenUP.bmp")
+        Me.CalcImageList.Images.SetKeyName(1, "RedDown.bmp")
+        Me.CalcImageList.Images.SetKeyName(2, "T2.bmp")
+        Me.CalcImageList.Images.SetKeyName(3, "T3.bmp")
+        Me.CalcImageList.Images.SetKeyName(4, "Storyline.bmp")
+        Me.CalcImageList.Images.SetKeyName(5, "Faction.bmp")
+        Me.CalcImageList.Images.SetKeyName(6, "Blank.bmp")
+        '
         'lstBPComponentMats
         '
         Me.lstBPComponentMats.FullRowSelect = true
@@ -13571,6 +13571,20 @@ Partial Class frmMain
         Me.lstPricesView.TabIndex = 0
         Me.lstPricesView.UseCompatibleStateImageBehavior = false
         Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturing
+        '
+        Me.lstManufacturing.AllowColumnReorder = true
+        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
+        Me.lstManufacturing.FullRowSelect = true
+        Me.lstManufacturing.GridLines = true
+        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
+        Me.lstManufacturing.Name = "lstManufacturing"
+        Me.lstManufacturing.OwnerDraw = true
+        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
+        Me.lstManufacturing.TabIndex = 1
+        Me.lstManufacturing.UseCompatibleStateImageBehavior = false
+        Me.lstManufacturing.View = System.Windows.Forms.View.Details
         '
         'MyListView6
         '
@@ -13655,6 +13669,12 @@ Partial Class frmMain
         Me.MyListView1.TabStop = false
         Me.MyListView1.UseCompatibleStateImageBehavior = false
         Me.MyListView1.View = System.Windows.Forms.View.Details
+        '
+        'AddToShoppingListToolStripMenuItem
+        '
+        Me.AddToShoppingListToolStripMenuItem.Name = "AddToShoppingListToolStripMenuItem"
+        Me.AddToShoppingListToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.AddToShoppingListToolStripMenuItem.Text = "Add to Shopping List"
         '
         'frmMain
         '
@@ -13766,6 +13786,7 @@ Partial Class frmMain
         Me.gbDCCorpsGallente.ResumeLayout(false)
         Me.gbDCCorpsGallente.PerformLayout
         Me.tabManufacturing.ResumeLayout(false)
+        Me.ListOptionsMenu.ResumeLayout(false)
         Me.gbCalcBPSelectOptions.ResumeLayout(false)
         Me.gbCalcFWUpgrade.ResumeLayout(false)
         Me.gbCalcFWUpgrade.PerformLayout
@@ -13838,7 +13859,6 @@ Partial Class frmMain
         Me.tabCalcTeamCopy.PerformLayout
         Me.gbTempMEPE.ResumeLayout(false)
         Me.gbTempMEPE.PerformLayout
-        Me.ListOptionsMenu.ResumeLayout(false)
         Me.tabUpdatePrices.ResumeLayout(false)
         Me.tabUpdatePrices.PerformLayout
         Me.gbTradeHubSystems.ResumeLayout(false)
@@ -13915,7 +13935,7 @@ End Sub
     Friend WithEvents mnuManageBlueprintsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuUserSettings As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents gbSystems As System.Windows.Forms.GroupBox
-    Friend WithEvents ttMain As System.Windows.Forms.ToolTip
+    Friend WithEvents ttBP As System.Windows.Forms.ToolTip
     Friend WithEvents pnlProgressBar As System.Windows.Forms.ToolStripProgressBar
     Friend WithEvents mnuCheckforUpdates As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ViewToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
@@ -14335,7 +14355,7 @@ End Sub
     Friend WithEvents chkCalcCanBuild As System.Windows.Forms.CheckBox
     Friend WithEvents btnCalcExportList As System.Windows.Forms.Button
     Friend WithEvents btnCalcPreview As System.Windows.Forms.Button
-    Friend WithEvents btnCalculate As System.Windows.Forms.Button
+    Friend WithEvents btnCalcCalculate As System.Windows.Forms.Button
     Friend WithEvents btnCalcReset As System.Windows.Forms.Button
     Friend WithEvents gbCalcCompareType As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnCalcCompareBuildBuy As System.Windows.Forms.RadioButton
@@ -14378,7 +14398,6 @@ End Sub
     Friend WithEvents chkCalcRERelic2 As System.Windows.Forms.CheckBox
     Friend WithEvents chkCalcRERelic3 As System.Windows.Forms.CheckBox
     Friend WithEvents chkCalcRERelic1 As System.Windows.Forms.CheckBox
-    Friend WithEvents lstManufacturing As System.Windows.Forms.ListView
     Friend WithEvents tabUpdatePrices As System.Windows.Forms.TabPage
     Friend WithEvents gbTradeHubSystems As System.Windows.Forms.GroupBox
     Friend WithEvents cmbPriceSystems As System.Windows.Forms.ComboBox
@@ -15084,5 +15103,14 @@ End Sub
     Friend WithEvents ToolStripMenuItem19 As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripMenuItem20 As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkUpdatePricesUseCREST As System.Windows.Forms.CheckBox
-    Friend WithEvents Button1 As System.Windows.Forms.Button
+    Friend WithEvents ttUpdatePrices As System.Windows.Forms.ToolTip
+    Friend WithEvents ttManufacturing As System.Windows.Forms.ToolTip
+    Friend WithEvents ttDatacores As System.Windows.Forms.ToolTip
+    Friend WithEvents ttReactions As System.Windows.Forms.ToolTip
+    Friend WithEvents ttMining As System.Windows.Forms.ToolTip
+    Friend WithEvents ttPI As System.Windows.Forms.ToolTip
+    Friend WithEvents ViewMarketHistoryToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents CalcImageList As System.Windows.Forms.ImageList
+    Friend WithEvents lstManufacturing As EVE_Isk_per_Hour.ManufacturingListView
+    Friend WithEvents AddToShoppingListToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 End Class

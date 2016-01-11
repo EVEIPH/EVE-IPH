@@ -29,6 +29,7 @@ Partial Class frmSelectManufacturingTabColumns
         Me.lblTip = New System.Windows.Forms.Label()
         Me.chkLstBoxColumns = New System.Windows.Forms.CheckedListBox()
         Me.btnDefaults = New System.Windows.Forms.Button()
+        Me.btnToggleAll = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'btnCancel
@@ -70,7 +71,7 @@ Partial Class frmSelectManufacturingTabColumns
         'chkLstBoxColumns
         '
         Me.chkLstBoxColumns.FormattingEnabled = True
-        Me.chkLstBoxColumns.Items.AddRange(New Object() {"Item Category", "Item Group", "Item Name", "Owned", "Tech", "ME", "TE", "Inputs", "Compared", "Total Runs", "Single Invented BPC Runs", "Production Lines", "Laboratory Lines", "Total Invention Cost", "Total Copy Cost", "Taxes", "Broker Fees", "BP Production Time", "Total Production Time", "Copy Time", "Invention Time", "Item Market Price", "Profit", "Profit Percentage", "Isk per Hour", "SVR", "SVR * IPH", "Price Trend", "Total Items Sold", "Total Orders Filled", "Average Items Per Order", "Current Sell Orders", "Current Buy Orders", "Total Cost", "Base Job Cost", "Num BPs", "Invention Chance", "BP Type", "Race", "Volume per Item", "Total Volume", "Portion Size", "Manufacturing Job Fee", "Manufacturing Facility Name", "Manufacturing Facility System", "Manufacturing Facility Region", "Manufacturing Facility System Index", "Manufacturing Facility Tax", "Manufacturing Facility ME Bonus", "Manufacturing Facility TE Bonus", "Manufacturing Facility Usage", "Manufacturing Facility FW System Level", "Component Facility Name", "Component Facility System", "Component Facility Region", "Component Facility System Index", "Component Facility Tax", "Component Facility ME Bonus", "Component Facility TE Bonus", "Component Facility Usage", "Component Facility FW System Level", "Capital Component Facility Name", "Capital Component Facility System", "Capital Component Facility Region", "Capital Component Facility SystemIndex", "Capital Component Facility Tax", "Capital Component Facility ME Bonus", "Capital Component Facility TE Bonus", "Capital Component Facility Usage", "Capital Component Facility FW System Level", "Copying Facility Name", "Copying Facility System", "Copying Facility Region", "Copying Facility System Index", "Copying Facility Tax", "Copying Facility ME Bonus", "Copying Facility TE Bonus", "Copying Facility Usage", "Copying Facility FW System Level", "Invention Facility Name", "Invention Facility System", "Invention Facility Region", "Invention Facility SystemIndex", "Invention Facility Tax", "Invention Facility ME Bonus", "Invention Facility TE Bonus", "Invention Facility Usage", "Invention Facility FW System Level"})
+        Me.chkLstBoxColumns.Items.AddRange(New Object() {"Item Category", "Item Group", "Item Name", "Owned", "Tech", "ME", "TE", "Inputs", "Compared", "Total Runs", "Single Invented BPC Runs", "Production Lines", "Laboratory Lines", "Total Invention Cost", "Total Copy Cost", "Taxes", "Broker Fees", "BP Production Time", "Total Production Time", "Copy Time", "Invention Time", "Item Market Price", "Profit", "Profit Percentage", "Isk per Hour", "SVR", "SVR * IPH", "Price Trend", "Total Items Sold", "Total Orders Filled", "Average Items Per Order", "Current Sell Orders", "Current Buy Orders", "Items in Production", "Items in Stock", "Total Cost", "Base Job Cost", "Num BPs", "Invention Chance", "BP Type", "Race", "Volume per Item", "Total Volume", "Portion Size", "Manufacturing Job Fee", "Manufacturing Facility Name", "Manufacturing Facility System", "Manufacturing Facility Region", "Manufacturing Facility System Index", "Manufacturing Facility Tax", "Manufacturing Facility ME Bonus", "Manufacturing Facility TE Bonus", "Manufacturing Facility Usage", "Manufacturing Facility FW System Level", "Component Facility Name", "Component Facility System", "Component Facility Region", "Component Facility System Index", "Component Facility Tax", "Component Facility ME Bonus", "Component Facility TE Bonus", "Component Facility Usage", "Component Facility FW System Level", "Capital Component Facility Name", "Capital Component Facility System", "Capital Component Facility Region", "Capital Component Facility SystemIndex", "Capital Component Facility Tax", "Capital Component Facility ME Bonus", "Capital Component Facility TE Bonus", "Capital Component Facility Usage", "Capital Component Facility FW System Level", "Copying Facility Name", "Copying Facility System", "Copying Facility Region", "Copying Facility System Index", "Copying Facility Tax", "Copying Facility ME Bonus", "Copying Facility TE Bonus", "Copying Facility Usage", "Copying Facility FW System Level", "Invention Facility Name", "Invention Facility System", "Invention Facility Region", "Invention Facility SystemIndex", "Invention Facility Tax", "Invention Facility ME Bonus", "Invention Facility TE Bonus", "Invention Facility Usage", "Invention Facility FW System Level"})
         Me.chkLstBoxColumns.Location = New System.Drawing.Point(15, 31)
         Me.chkLstBoxColumns.Name = "chkLstBoxColumns"
         Me.chkLstBoxColumns.Size = New System.Drawing.Size(273, 439)
@@ -78,12 +79,21 @@ Partial Class frmSelectManufacturingTabColumns
         '
         'btnDefaults
         '
-        Me.btnDefaults.Location = New System.Drawing.Point(101, 504)
+        Me.btnDefaults.Location = New System.Drawing.Point(41, 504)
         Me.btnDefaults.Name = "btnDefaults"
         Me.btnDefaults.Size = New System.Drawing.Size(97, 25)
         Me.btnDefaults.TabIndex = 73
         Me.btnDefaults.Text = "Reset to Default"
         Me.btnDefaults.UseVisualStyleBackColor = True
+        '
+        'btnToggleAll
+        '
+        Me.btnToggleAll.Location = New System.Drawing.Point(160, 504)
+        Me.btnToggleAll.Name = "btnToggleAll"
+        Me.btnToggleAll.Size = New System.Drawing.Size(97, 25)
+        Me.btnToggleAll.TabIndex = 74
+        Me.btnToggleAll.Text = "Toggle All"
+        Me.btnToggleAll.UseVisualStyleBackColor = True
         '
         'frmSelectManufacturingTabColumns
         '
@@ -91,6 +101,7 @@ Partial Class frmSelectManufacturingTabColumns
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(297, 572)
+        Me.Controls.Add(Me.btnToggleAll)
         Me.Controls.Add(Me.btnDefaults)
         Me.Controls.Add(Me.chkLstBoxColumns)
         Me.Controls.Add(Me.lblTip)
@@ -113,4 +124,5 @@ Partial Class frmSelectManufacturingTabColumns
     Friend WithEvents lblTip As System.Windows.Forms.Label
     Friend WithEvents chkLstBoxColumns As System.Windows.Forms.CheckedListBox
     Friend WithEvents btnDefaults As System.Windows.Forms.Button
+    Friend WithEvents btnToggleAll As System.Windows.Forms.Button
 End Class

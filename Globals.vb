@@ -4,6 +4,7 @@ Imports System.Globalization
 Imports System.Net
 Imports System.IO
 Imports System.Xml
+Imports System.Threading
 
 ' Place to store all public variables and functions
 Public Module Public_Variables
@@ -110,8 +111,12 @@ Public Module Public_Variables
 
     Public Const SpaceFlagCode As Integer = 500
 
+    ' For update prices, to cancel update
+    Public CancelUpdatePrices As Boolean
+    Public CancelManufacturingTabCalc As Boolean
+
     ' Column processing
-    Public Const NumManufacturingTabColumns As Integer = 88
+    Public Const NumManufacturingTabColumns As Integer = 90
     Public Const NumIndustryJobColumns As Integer = 20
 
     Public Const NoDate As Date = #1/1/1900#
@@ -1094,7 +1099,7 @@ NoBonus:
 
             ' Set the tool tip regardless
             If UserApplicationSettings.ShowToolTips And ToolTipLabel <> "" Then
-                frmMain.ttMain.SetToolTip(TeamBonusLabel, ToolTipLabel.Substring(0, Len(ToolTipLabel) - 2))
+                frmMain.ttBP.SetToolTip(TeamBonusLabel, ToolTipLabel.Substring(0, Len(ToolTipLabel) - 2))
             End If
 
         Else
@@ -3543,7 +3548,6 @@ NoBonus:
 
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
-                                 CopyComponents As Boolean, _
                                  FacilityMEModifier As Double, _
                                  BuiltInPOS As Boolean, _
                                  IgnoreInvention As Boolean, _
@@ -3597,7 +3601,7 @@ NoBonus:
 
                 End If
 
-            ElseIf CopyComponents Then
+            Else
                 ' Add the component items and mats to the list and that's it. They are building the end item, nothing else
                 If Not IsNothing(SentBlueprint.GetComponentMaterials) Then
                     .BlueprintTypeID = SentBlueprint.GetTypeID

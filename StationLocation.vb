@@ -21,8 +21,8 @@ Public Class StationLocation
 
         While rsStations.Read()
             TempInfo.StationID = rsStations.GetInt64(0)
-            TempInfo.RegionID = rsStations.GetInt64(1)
-            TempInfo.SystemID = rsStations.GetInt64(2)
+            TempInfo.SystemID = rsStations.GetInt64(1)
+            TempInfo.RegionID = rsStations.GetInt64(2)
 
             StationLocations.Add(TempInfo)
 

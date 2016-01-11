@@ -151,16 +151,22 @@
     <Compile Include="DoubleTrackBar - No designer.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="frmCRESTMarketViewer.Designer.vb">
-      <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    <Compile Include="frmMarketHistoryViewer.Designer.vb">
+      <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmCRESTMarketViewer.vb">
+    <Compile Include="frmMarketHistoryViewer.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmLPStore.Designer.vb">
       <DependentUpon>frmLPStore.vb</DependentUpon>
     </Compile>
     <Compile Include="frmLPStore.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPriceProfileSelector.Designer.vb">
+      <DependentUpon>frmPriceProfileSelector.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmPriceProfileSelector.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmReqSkills.Designer.vb">
@@ -358,7 +364,15 @@
     <Compile Include="EVEIndustryJobs.vb" />
     <Compile Include="IndustryFacility.vb" />
     <Compile Include="IndustryTeam.vb" />
+    <Compile Include="ManufacturingListView.Designer.vb">
+      <DependentUpon>ManufacturingListView.vb</DependentUpon>
+    </Compile>
+    <Compile Include="ManufacturingListView.vb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ListViewItemComparer.vb" />
+    <Compile Include="MarketPriceInterface.vb" />
     <Compile Include="Material.vb" />
     <Compile Include="Materials.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -406,11 +420,14 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="frmCRESTMarketViewer.resx">
-      <DependentUpon>frmCRESTMarketViewer.vb</DependentUpon>
+    <EmbeddedResource Include="frmMarketHistoryViewer.resx">
+      <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmLPStore.resx">
       <DependentUpon>frmLPStore.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPriceProfileSelector.resx">
+      <DependentUpon>frmPriceProfileSelector.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmReqSkills.resx">
       <DependentUpon>frmReqSkills.vb</DependentUpon>
