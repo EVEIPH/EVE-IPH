@@ -47,7 +47,6 @@ Partial Class frmMarketHistoryViewer
         Me.gbTrendOptions = New System.Windows.Forms.GroupBox()
         Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.btnClose = New System.Windows.Forms.Button()
-        Me.chkUseCRESTData = New System.Windows.Forms.CheckBox()
         CType(Me.chrtMarketHistory, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.gbDateSelect.SuspendLayout()
         Me.gbDataOptions.SuspendLayout()
@@ -57,7 +56,7 @@ Partial Class frmMarketHistoryViewer
         'chrtMarketHistory
         '
         Me.chrtMarketHistory.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
-        ChartArea1.Name = "Prices"
+        ChartArea1.Name = "Main"
         Me.chrtMarketHistory.ChartAreas.Add(ChartArea1)
         Me.chrtMarketHistory.Location = New System.Drawing.Point(12, 12)
         Me.chrtMarketHistory.Name = "chrtMarketHistory"
@@ -189,7 +188,7 @@ Partial Class frmMarketHistoryViewer
         'rbtnByDate
         '
         Me.rbtnByDate.AutoSize = True
-        Me.rbtnByDate.Location = New System.Drawing.Point(15, 45)
+        Me.rbtnByDate.Location = New System.Drawing.Point(14, 45)
         Me.rbtnByDate.Name = "rbtnByDate"
         Me.rbtnByDate.Size = New System.Drawing.Size(63, 17)
         Me.rbtnByDate.TabIndex = 13
@@ -236,7 +235,6 @@ Partial Class frmMarketHistoryViewer
         '
         'gbDataOptions
         '
-        Me.gbDataOptions.Controls.Add(Me.chkUseCRESTData)
         Me.gbDataOptions.Controls.Add(Me.chkMinMax)
         Me.gbDataOptions.Controls.Add(Me.chkVolume)
         Me.gbDataOptions.Location = New System.Drawing.Point(386, 522)
@@ -287,16 +285,6 @@ Partial Class frmMarketHistoryViewer
         Me.btnClose.Text = "Close"
         Me.btnClose.UseVisualStyleBackColor = True
         '
-        'chkUseCRESTData
-        '
-        Me.chkUseCRESTData.AutoSize = True
-        Me.chkUseCRESTData.Location = New System.Drawing.Point(6, 53)
-        Me.chkUseCRESTData.Name = "chkUseCRESTData"
-        Me.chkUseCRESTData.Size = New System.Drawing.Size(95, 17)
-        Me.chkUseCRESTData.TabIndex = 6
-        Me.chkUseCRESTData.Text = "Use CCP Data"
-        Me.chkUseCRESTData.UseVisualStyleBackColor = True
-        '
         'frmMarketHistoryViewer
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -344,5 +332,4 @@ Partial Class frmMarketHistoryViewer
     Friend WithEvents btnSaveSettings As System.Windows.Forms.Button
     Friend WithEvents btnClose As System.Windows.Forms.Button
     Friend WithEvents btnRefresh As System.Windows.Forms.Button
-    Friend WithEvents chkUseCRESTData As System.Windows.Forms.CheckBox
 End Class

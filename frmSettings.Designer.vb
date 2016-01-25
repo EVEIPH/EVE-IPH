@@ -72,16 +72,18 @@ Partial Class frmSettings
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
         Me.gbCalcAvgPrice = New System.Windows.Forms.GroupBox()
+        Me.cmbSVRAvgPriceDuration = New System.Windows.Forms.ComboBox()
         Me.chkAutoUpdateSVRBPTab = New System.Windows.Forms.CheckBox()
         Me.lblSVRRegion = New System.Windows.Forms.Label()
         Me.lblSVRAvgPrice = New System.Windows.Forms.Label()
         Me.cmbSVRRegion = New System.Windows.Forms.ComboBox()
         Me.txtSVRThreshold = New System.Windows.Forms.TextBox()
         Me.lblSVRThreshold = New System.Windows.Forms.Label()
-        Me.cmbSVRAvgPriceDuration = New System.Windows.Forms.ComboBox()
-        Me.gbSVRSource = New System.Windows.Forms.GroupBox()
-        Me.rbtnSVRSourceEMD = New System.Windows.Forms.RadioButton()
-        Me.rbtnSVRSourceCCP = New System.Windows.Forms.RadioButton()
+        Me.gbProxySettings = New System.Windows.Forms.GroupBox()
+        Me.txtProxyAddress = New System.Windows.Forms.TextBox()
+        Me.lblProxyAddress = New System.Windows.Forms.Label()
+        Me.txtProxyPort = New System.Windows.Forms.TextBox()
+        Me.lblProxyPort = New System.Windows.Forms.Label()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -92,7 +94,7 @@ Partial Class frmSettings
         Me.gbStartupOptions.SuspendLayout()
         Me.gbExportOptions.SuspendLayout()
         Me.gbCalcAvgPrice.SuspendLayout()
-        Me.gbSVRSource.SuspendLayout()
+        Me.gbProxySettings.SuspendLayout()
         Me.SuspendLayout()
         '
         'chkCheckUpdatesStartup
@@ -107,18 +109,18 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(143, 339)
+        Me.btnSave.Location = New System.Drawing.Point(349, 327)
         Me.btnSave.Name = "btnSave"
-        Me.btnSave.Size = New System.Drawing.Size(117, 30)
+        Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
         Me.btnSave.Text = "Save"
         Me.btnSave.UseVisualStyleBackColor = True
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(405, 339)
+        Me.btnCancel.Location = New System.Drawing.Point(559, 327)
         Me.btnCancel.Name = "btnCancel"
-        Me.btnCancel.Size = New System.Drawing.Size(117, 30)
+        Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
         Me.btnCancel.Text = "Cancel"
         Me.btnCancel.UseVisualStyleBackColor = True
@@ -243,7 +245,7 @@ Partial Class frmSettings
         Me.gbStationStandings.Controls.Add(Me.chkBrokerFactionStanding)
         Me.gbStationStandings.Location = New System.Drawing.Point(246, 200)
         Me.gbStationStandings.Name = "gbStationStandings"
-        Me.gbStationStandings.Size = New System.Drawing.Size(160, 64)
+        Me.gbStationStandings.Size = New System.Drawing.Size(160, 65)
         Me.gbStationStandings.TabIndex = 7
         Me.gbStationStandings.TabStop = False
         Me.gbStationStandings.Text = "Station Standings:"
@@ -286,9 +288,9 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(274, 339)
+        Me.btnReset.Location = New System.Drawing.Point(454, 327)
         Me.btnReset.Name = "btnReset"
-        Me.btnReset.Size = New System.Drawing.Size(117, 30)
+        Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
         Me.btnReset.Text = "Reset"
         Me.btnReset.UseVisualStyleBackColor = True
@@ -300,7 +302,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 73)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 94)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
@@ -308,7 +310,7 @@ Partial Class frmSettings
         'chkSaveBPRelicsDecryptors
         '
         Me.chkSaveBPRelicsDecryptors.AutoSize = True
-        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 51)
+        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 66)
         Me.chkSaveBPRelicsDecryptors.Name = "chkSaveBPRelicsDecryptors"
         Me.chkSaveBPRelicsDecryptors.Size = New System.Drawing.Size(212, 17)
         Me.chkSaveBPRelicsDecryptors.TabIndex = 38
@@ -318,7 +320,7 @@ Partial Class frmSettings
         'chkBuildBuyDefault
         '
         Me.chkBuildBuyDefault.AutoSize = True
-        Me.chkBuildBuyDefault.Location = New System.Drawing.Point(9, 17)
+        Me.chkBuildBuyDefault.Location = New System.Drawing.Point(9, 20)
         Me.chkBuildBuyDefault.Name = "chkBuildBuyDefault"
         Me.chkBuildBuyDefault.Size = New System.Drawing.Size(109, 17)
         Me.chkBuildBuyDefault.TabIndex = 32
@@ -328,7 +330,7 @@ Partial Class frmSettings
         'chkSuggestBuildwhenBPnotOwned
         '
         Me.chkSuggestBuildwhenBPnotOwned.AutoSize = True
-        Me.chkSuggestBuildwhenBPnotOwned.Location = New System.Drawing.Point(9, 34)
+        Me.chkSuggestBuildwhenBPnotOwned.Location = New System.Drawing.Point(9, 43)
         Me.chkSuggestBuildwhenBPnotOwned.Name = "chkSuggestBuildwhenBPnotOwned"
         Me.chkSuggestBuildwhenBPnotOwned.Size = New System.Drawing.Size(222, 17)
         Me.chkSuggestBuildwhenBPnotOwned.TabIndex = 37
@@ -528,9 +530,9 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(5, 270)
+        Me.gbExportOptions.Location = New System.Drawing.Point(248, 270)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(237, 45)
+        Me.gbExportOptions.Size = New System.Drawing.Size(95, 87)
         Me.gbExportOptions.TabIndex = 38
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
@@ -538,7 +540,7 @@ Partial Class frmSettings
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(172, 19)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(17, 63)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -549,7 +551,7 @@ Partial Class frmSettings
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(101, 19)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(17, 40)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -570,24 +572,34 @@ Partial Class frmSettings
         '
         'gbCalcAvgPrice
         '
+        Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRAvgPriceDuration)
         Me.gbCalcAvgPrice.Controls.Add(Me.chkAutoUpdateSVRBPTab)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRAvgPrice)
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.txtSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRThreshold)
-        Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRAvgPriceDuration)
-        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(410, 246)
+        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 270)
         Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
-        Me.gbCalcAvgPrice.Size = New System.Drawing.Size(250, 87)
+        Me.gbCalcAvgPrice.Size = New System.Drawing.Size(237, 87)
         Me.gbCalcAvgPrice.TabIndex = 40
         Me.gbCalcAvgPrice.TabStop = False
         Me.gbCalcAvgPrice.Text = "SVR Settings:"
         '
+        'cmbSVRAvgPriceDuration
+        '
+        Me.cmbSVRAvgPriceDuration.FormattingEnabled = True
+        Me.cmbSVRAvgPriceDuration.Items.AddRange(New Object() {"7", "15", "30", "60", "90", "180", "365"})
+        Me.cmbSVRAvgPriceDuration.Location = New System.Drawing.Point(190, 14)
+        Me.cmbSVRAvgPriceDuration.MaxLength = 3
+        Me.cmbSVRAvgPriceDuration.Name = "cmbSVRAvgPriceDuration"
+        Me.cmbSVRAvgPriceDuration.Size = New System.Drawing.Size(41, 21)
+        Me.cmbSVRAvgPriceDuration.TabIndex = 3
+        '
         'chkAutoUpdateSVRBPTab
         '
         Me.chkAutoUpdateSVRBPTab.AutoSize = True
-        Me.chkAutoUpdateSVRBPTab.Location = New System.Drawing.Point(9, 64)
+        Me.chkAutoUpdateSVRBPTab.Location = New System.Drawing.Point(17, 64)
         Me.chkAutoUpdateSVRBPTab.Name = "chkAutoUpdateSVRBPTab"
         Me.chkAutoUpdateSVRBPTab.Size = New System.Drawing.Size(203, 17)
         Me.chkAutoUpdateSVRBPTab.TabIndex = 39
@@ -605,7 +617,7 @@ Partial Class frmSettings
         '
         'lblSVRAvgPrice
         '
-        Me.lblSVRAvgPrice.Location = New System.Drawing.Point(114, 10)
+        Me.lblSVRAvgPrice.Location = New System.Drawing.Point(113, 10)
         Me.lblSVRAvgPrice.Name = "lblSVRAvgPrice"
         Me.lblSVRAvgPrice.Size = New System.Drawing.Size(78, 28)
         Me.lblSVRAvgPrice.TabIndex = 2
@@ -617,7 +629,7 @@ Partial Class frmSettings
         Me.cmbSVRRegion.FormattingEnabled = True
         Me.cmbSVRRegion.Location = New System.Drawing.Point(63, 39)
         Me.cmbSVRRegion.Name = "cmbSVRRegion"
-        Me.cmbSVRRegion.Size = New System.Drawing.Size(176, 21)
+        Me.cmbSVRRegion.Size = New System.Drawing.Size(168, 21)
         Me.cmbSVRRegion.TabIndex = 5
         '
         'txtSVRThreshold
@@ -638,56 +650,60 @@ Partial Class frmSettings
         Me.lblSVRThreshold.TabIndex = 0
         Me.lblSVRThreshold.Text = "Threshold:"
         '
-        'cmbSVRAvgPriceDuration
+        'gbProxySettings
         '
-        Me.cmbSVRAvgPriceDuration.FormattingEnabled = True
-        Me.cmbSVRAvgPriceDuration.Items.AddRange(New Object() {"7", "15", "30", "60", "90", "180", "365"})
-        Me.cmbSVRAvgPriceDuration.Location = New System.Drawing.Point(198, 14)
-        Me.cmbSVRAvgPriceDuration.MaxLength = 3
-        Me.cmbSVRAvgPriceDuration.Name = "cmbSVRAvgPriceDuration"
-        Me.cmbSVRAvgPriceDuration.Size = New System.Drawing.Size(41, 21)
-        Me.cmbSVRAvgPriceDuration.TabIndex = 3
+        Me.gbProxySettings.Controls.Add(Me.txtProxyAddress)
+        Me.gbProxySettings.Controls.Add(Me.lblProxyAddress)
+        Me.gbProxySettings.Controls.Add(Me.txtProxyPort)
+        Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
+        Me.gbProxySettings.Location = New System.Drawing.Point(349, 270)
+        Me.gbProxySettings.Name = "gbProxySettings"
+        Me.gbProxySettings.Size = New System.Drawing.Size(311, 55)
+        Me.gbProxySettings.TabIndex = 41
+        Me.gbProxySettings.TabStop = False
+        Me.gbProxySettings.Text = "Proxy Settings:"
         '
-        'gbSVRSource
+        'txtProxyAddress
         '
-        Me.gbSVRSource.Controls.Add(Me.rbtnSVRSourceEMD)
-        Me.gbSVRSource.Controls.Add(Me.rbtnSVRSourceCCP)
-        Me.gbSVRSource.Location = New System.Drawing.Point(246, 270)
-        Me.gbSVRSource.Name = "gbSVRSource"
-        Me.gbSVRSource.Size = New System.Drawing.Size(160, 45)
-        Me.gbSVRSource.TabIndex = 39
-        Me.gbSVRSource.TabStop = False
-        Me.gbSVRSource.Text = "SVR Source:"
+        Me.txtProxyAddress.Location = New System.Drawing.Point(9, 29)
+        Me.txtProxyAddress.MaxLength = 0
+        Me.txtProxyAddress.Name = "txtProxyAddress"
+        Me.txtProxyAddress.Size = New System.Drawing.Size(245, 20)
+        Me.txtProxyAddress.TabIndex = 5
         '
-        'rbtnSVRSourceEMD
+        'lblProxyAddress
         '
-        Me.rbtnSVRSourceEMD.AutoSize = True
-        Me.rbtnSVRSourceEMD.Location = New System.Drawing.Point(88, 19)
-        Me.rbtnSVRSourceEMD.Name = "rbtnSVRSourceEMD"
-        Me.rbtnSVRSourceEMD.Size = New System.Drawing.Size(49, 17)
-        Me.rbtnSVRSourceEMD.TabIndex = 1
-        Me.rbtnSVRSourceEMD.TabStop = True
-        Me.rbtnSVRSourceEMD.Text = "EMD"
-        Me.rbtnSVRSourceEMD.UseVisualStyleBackColor = True
+        Me.lblProxyAddress.AutoSize = True
+        Me.lblProxyAddress.Location = New System.Drawing.Point(6, 15)
+        Me.lblProxyAddress.Name = "lblProxyAddress"
+        Me.lblProxyAddress.Size = New System.Drawing.Size(48, 13)
+        Me.lblProxyAddress.TabIndex = 4
+        Me.lblProxyAddress.Text = "Address:"
         '
-        'rbtnSVRSourceCCP
+        'txtProxyPort
         '
-        Me.rbtnSVRSourceCCP.AutoSize = True
-        Me.rbtnSVRSourceCCP.Location = New System.Drawing.Point(23, 19)
-        Me.rbtnSVRSourceCCP.Name = "rbtnSVRSourceCCP"
-        Me.rbtnSVRSourceCCP.Size = New System.Drawing.Size(46, 17)
-        Me.rbtnSVRSourceCCP.TabIndex = 0
-        Me.rbtnSVRSourceCCP.TabStop = True
-        Me.rbtnSVRSourceCCP.Text = "CCP"
-        Me.rbtnSVRSourceCCP.UseVisualStyleBackColor = True
+        Me.txtProxyPort.Location = New System.Drawing.Point(260, 29)
+        Me.txtProxyPort.MaxLength = 0
+        Me.txtProxyPort.Name = "txtProxyPort"
+        Me.txtProxyPort.Size = New System.Drawing.Size(45, 20)
+        Me.txtProxyPort.TabIndex = 3
+        '
+        'lblProxyPort
+        '
+        Me.lblProxyPort.AutoSize = True
+        Me.lblProxyPort.Location = New System.Drawing.Point(257, 15)
+        Me.lblProxyPort.Name = "lblProxyPort"
+        Me.lblProxyPort.Size = New System.Drawing.Size(29, 13)
+        Me.lblProxyPort.TabIndex = 2
+        Me.lblProxyPort.Text = "Port:"
         '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(665, 381)
-        Me.Controls.Add(Me.gbSVRSource)
+        Me.ClientSize = New System.Drawing.Size(665, 361)
+        Me.Controls.Add(Me.gbProxySettings)
         Me.Controls.Add(Me.gbCalcAvgPrice)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
@@ -728,8 +744,8 @@ Partial Class frmSettings
         Me.gbExportOptions.PerformLayout()
         Me.gbCalcAvgPrice.ResumeLayout(False)
         Me.gbCalcAvgPrice.PerformLayout()
-        Me.gbSVRSource.ResumeLayout(False)
-        Me.gbSVRSource.PerformLayout()
+        Me.gbProxySettings.ResumeLayout(False)
+        Me.gbProxySettings.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -787,8 +803,10 @@ Partial Class frmSettings
     Friend WithEvents txtSVRThreshold As System.Windows.Forms.TextBox
     Friend WithEvents lblSVRThreshold As System.Windows.Forms.Label
     Friend WithEvents cmbSVRAvgPriceDuration As System.Windows.Forms.ComboBox
-    Friend WithEvents gbSVRSource As System.Windows.Forms.GroupBox
-    Friend WithEvents rbtnSVRSourceEMD As System.Windows.Forms.RadioButton
-    Friend WithEvents rbtnSVRSourceCCP As System.Windows.Forms.RadioButton
     Friend WithEvents chkAutoUpdateSVRBPTab As System.Windows.Forms.CheckBox
+    Friend WithEvents gbProxySettings As System.Windows.Forms.GroupBox
+    Friend WithEvents txtProxyAddress As System.Windows.Forms.TextBox
+    Friend WithEvents lblProxyAddress As System.Windows.Forms.Label
+    Friend WithEvents txtProxyPort As System.Windows.Forms.TextBox
+    Friend WithEvents lblProxyPort As System.Windows.Forms.Label
 End Class

@@ -158,6 +158,7 @@ Public Class EVEAPI
                     ReturnData(j).CachedUntil = TempData(j).CachedUntil
                     ReturnData(j).ID = TempData(j).ID
                     ReturnData(j).Name = TempData(j).Name
+                    ReturnData(j).Gender = TempData(j).Gender
                     ReturnData(j).CharacterCorporation = TempData(j).CharacterCorporation
                     ReturnData(j).AccessMask = TempData(j).AccessMask
                     ReturnData(j).APIExpiration = TempData(j).APIExpiration
@@ -194,12 +195,12 @@ Public Class EVEAPI
 
         Next
 
-        GetAccountCharacters = ReturnData
+        Return ReturnData
 
     End Function
 
     ' Function will return the set of skills for the character sent
-    Public Function GetCharacterSkills(ByVal APIKey As APIKeyData) As EVESkillList
+    Public Function GetCharacterSheet(ByVal APIKey As APIKeyData) As CharacterSheet
         ' XML Variables
         Dim m_xmld As XmlDocument
         Dim m_nodelist As XmlNodeList
@@ -208,9 +209,18 @@ Public Class EVEAPI
         Dim m_nodeSkills As XmlNode
 
         Dim EVEAPIQuery As String
+        Dim TempCharacterSheet As New CharacterSheet
         Dim TempSkillTree As New EVESkillList
+        Dim TempImplant As Implant
+        Dim TempImplants As New List(Of Implant)
+        Dim TempJumpClone As JumpClone
+        Dim TempJumpClones As New List(Of JumpClone)
+        Dim TempCorpRole As CorporationRole
+        Dim TempCorpRoles As New List(Of CorporationRole)
+        Dim TempCorpTitle As CorporationTitle
+        Dim TempCorpTitles As New List(Of CorporationTitle)
+
         Dim CachedUntil As Date
-        Dim i As Integer
 
         If APIKey.Access Then
 
@@ -222,7 +232,7 @@ Public Class EVEAPI
             ' Check data
             If IsNothing(m_xmld) Then
                 ' Had an error, return nothing
-                GetCharacterSkills = Nothing
+                GetCharacterSheet = Nothing
                 Exit Function
             End If
 
@@ -238,6 +248,78 @@ Public Class EVEAPI
 
             ' Loop through the child nodes and look for rowset = "skills"
             For Each child_node In m_node.ChildNodes
+                ' Base elements
+                Select Case child_node.Name
+                    Case "allianceID"
+                        TempCharacterSheet.AllianceID = CLng(child_node.InnerText)
+                    Case "allianceName"
+                        TempCharacterSheet.AllianceName = child_node.InnerText
+                    Case "ancestry"
+                        TempCharacterSheet.AncestryLine = child_node.InnerText
+                    Case "ancestryID"
+                        TempCharacterSheet.AncestryLineID = CInt(child_node.InnerText)
+                    Case "balance"
+                        TempCharacterSheet.Balance = CDbl(child_node.InnerText)
+                    Case "bloodLine"
+                        TempCharacterSheet.BloodLine = child_node.InnerText
+                    Case "bloodLineID"
+                        TempCharacterSheet.BloodLineID = CInt(child_node.InnerText)
+                    Case "characterID"
+                        TempCharacterSheet.CharacterID = CLng(child_node.InnerText)
+                    Case "cloneJumpDate"
+                        TempCharacterSheet.CloneJumpDate = CDate(child_node.InnerText)
+                    Case "corporationID"
+                        TempCharacterSheet.CorporationID = CLng(child_node.InnerText)
+                    Case "corporationName"
+                        TempCharacterSheet.CorporationName = child_node.InnerText
+                    Case "DoB"
+                        TempCharacterSheet.DOB = CDate(child_node.InnerText)
+                    Case "factionID"
+                        TempCharacterSheet.FactionID = CInt(child_node.InnerText)
+                    Case "factionName"
+                        TempCharacterSheet.FactionName = child_node.InnerText
+                    Case "freeRespecs"
+                        TempCharacterSheet.FreeRespecs = CInt(child_node.InnerText)
+                    Case "freeSkillPoints"
+                        TempCharacterSheet.FreeSkillPoints = CInt(child_node.InnerText)
+                    Case "gender"
+                        TempCharacterSheet.Gender = child_node.InnerText
+                    Case "homeStationID"
+                        TempCharacterSheet.HomeStationID = CLng(child_node.InnerText)
+                    Case "jumpActivation"
+                        TempCharacterSheet.JumpActivation = CDate(child_node.InnerText)
+                    Case "jumpFatigue"
+                        TempCharacterSheet.JumpFatigue = CDate(child_node.InnerText)
+                    Case "jumpLastUpdate"
+                        TempCharacterSheet.JumpLastUpdate = CDate(child_node.InnerText)
+                    Case "lastRespecDate"
+                        TempCharacterSheet.LastRespecDate = CDate(child_node.InnerText)
+                    Case "lastTimedRespec"
+                        TempCharacterSheet.LastTimedRespec = CDate(child_node.InnerText)
+                    Case "name"
+                        TempCharacterSheet.CharacterName = child_node.InnerText
+                    Case "race"
+                        TempCharacterSheet.Race = child_node.InnerText
+                    Case "remoteStationDate"
+                        TempCharacterSheet.RemoteStationDate = CDate(child_node.InnerText)
+                    Case "attributes"
+                        ' Check for attributes
+                        For Each m_nodeSkills In child_node.ChildNodes
+                            Select Case m_nodeSkills.Name
+                                Case "intelligence"
+                                    TempCharacterSheet.AttributeIntelligence = CInt(m_nodeSkills.InnerText)
+                                Case "willpower"
+                                    TempCharacterSheet.AttributeWillpower = CInt(m_nodeSkills.InnerText)
+                                Case "memory"
+                                    TempCharacterSheet.AttributeMemory = CInt(m_nodeSkills.InnerText)
+                                Case "charisma"
+                                    TempCharacterSheet.AttributeCharisma = CInt(m_nodeSkills.InnerText)
+                                Case "perception"
+                                    TempCharacterSheet.AttributePerception = CInt(m_nodeSkills.InnerText)
+                            End Select
+                        Next
+                End Select
+
                 If child_node.Name = "rowset" Then
                     ' In rowsets, check for skills
                     If child_node.Attributes.Item(0).Value = "skills" Then
@@ -247,18 +329,125 @@ Public Class EVEAPI
                                 ' Insert the skill
                                 TempSkillTree.InsertSkill(CLng(.GetNamedItem("typeID").Value), CInt(.GetNamedItem("level").Value), CLng(.GetNamedItem("skillpoints").Value), False, 0)
                             End With
-                            i = i + 1
                         Next
                     End If
+
+                    ' Check for implants
+                    If child_node.Attributes.Item(0).Value = "implants" Or child_node.Attributes.Item(0).Value = "jumpCloneImplants" Then
+                        ' Look through the child node's children for data
+                        For Each m_nodeSkills In child_node.ChildNodes
+                            TempImplant = New Implant
+                            With m_nodeSkills.Attributes
+                                ' Insert the implant
+                                TempImplant.ImplantID = CLng(.GetNamedItem("typeID").Value)
+                                TempImplant.ImplantName = .GetNamedItem("typeName").Value
+                                If child_node.Attributes.Item(0).Value = "jumpCloneImplants" Then
+                                    TempImplant.JumpCloneID = CLng(.GetNamedItem("jumpCloneID").Value)
+                                Else
+                                    TempImplant.JumpCloneID = 0
+                                End If
+
+                                TempImplants.Add(TempImplant)
+                            End With
+                        Next
+                    End If
+
+                    ' Check for Jump clones
+                    If child_node.Attributes.Item(0).Value = "jumpClones" Then
+                        TempJumpClone = New JumpClone
+                        ' Look through the child node's children for data
+                        For Each m_nodeSkills In child_node.ChildNodes
+                            With m_nodeSkills.Attributes
+                                ' Insert the implant
+                                TempJumpClone.JumpCloneID = CLng(.GetNamedItem("jumpCloneID").Value)
+                                TempJumpClone.TypeID = CLng(.GetNamedItem("typeID").Value)
+                                TempJumpClone.LocationID = CLng(.GetNamedItem("locationID").Value)
+                                TempJumpClone.CloneName = .GetNamedItem("cloneName").Value
+
+                                TempJumpClones.Add(TempJumpClone)
+                            End With
+                        Next
+                    End If
+
+                    ' Check for corp roles
+                    If child_node.Attributes.Item(0).Value.Contains("corporationRoles") Then
+                        TempCorpRole = New CorporationRole
+                        ' Look through the child node's children for data
+                        For Each m_nodeSkills In child_node.ChildNodes
+                            With m_nodeSkills.Attributes
+                                ' Insert the implant
+                                Select Case child_node.Attributes.Item(0).Value
+                                    Case "corporationRolesAtHQ"
+                                        TempCorpRole.RoleType = "HQ"
+                                    Case "corporationRolesAtBase"
+                                        TempCorpRole.RoleType = "Base"
+                                    Case "corporationRolesAtOther"
+                                        TempCorpRole.RoleType = "Other"
+                                    Case Else
+                                        TempCorpRole.RoleType = "Main"
+                                End Select
+                                TempCorpRole.RoleID = CLng(.GetNamedItem("roleID").Value)
+                                TempCorpRole.RoleName = .GetNamedItem("roleName").Value
+
+                                TempCorpRoles.Add(TempCorpRole)
+                            End With
+                        Next
+                    End If
+
+                    ' Check for titles
+                    If child_node.Attributes.Item(0).Value = "corporationTitles" Then
+                        TempCorpTitle = New CorporationTitle
+                        ' Look through the child node's children for data
+                        For Each m_nodeSkills In child_node.ChildNodes
+                            With m_nodeSkills.Attributes
+                                ' Insert the implant
+                                TempCorpTitle.TitleID = CInt(.GetNamedItem("titleID").Value)
+                                TempCorpTitle.TitleName = .GetNamedItem("titleName").Value
+
+                                TempCorpTitles.Add(TempCorpTitle)
+                            End With
+                        Next
+                    End If
+
                 End If
             Next
 
-            GetCharacterSkills = TempSkillTree
-
         Else
+            ' Dummy char sheet
+            TempCharacterSheet.CharacterID = 0
+            TempCharacterSheet.CharacterName = "Dummy"
+            TempCharacterSheet.HomeStationID = 0
+            TempCharacterSheet.DOB = NoDate
+            TempCharacterSheet.Race = "Unknown"
+            TempCharacterSheet.BloodLineID = 0
+            TempCharacterSheet.BloodLine = "Unknown"
+            TempCharacterSheet.AncestryLineID = 0
+            TempCharacterSheet.AncestryLine = "Unknown"
+            TempCharacterSheet.Gender = "Male"
+            TempCharacterSheet.CorporationName = ""
+            TempCharacterSheet.CorporationID = 0
+            TempCharacterSheet.AllianceName = ""
+            TempCharacterSheet.AllianceID = 0
+            TempCharacterSheet.FactionName = "Unknown"
+            TempCharacterSheet.FactionID = 0
+            TempCharacterSheet.FreeSkillPoints = 0
+            TempCharacterSheet.FreeRespecs = 0
+            TempCharacterSheet.CloneJumpDate = NoDate
+            TempCharacterSheet.LastRespecDate = NoDate
+            TempCharacterSheet.LastTimedRespec = NoDate
+            TempCharacterSheet.RemoteStationDate = NoDate
+            TempCharacterSheet.JumpActivation = NoDate
+            TempCharacterSheet.JumpFatigue = NoDate
+            TempCharacterSheet.JumpLastUpdate = NoDate
+            TempCharacterSheet.Balance = 0
+            TempCharacterSheet.AttributeMemory = 20
+            TempCharacterSheet.AttributeIntelligence = 20
+            TempCharacterSheet.AttributeWillpower = 20
+            TempCharacterSheet.AttributePerception = 20
+            TempCharacterSheet.AttributeCharisma = 19
+
             ' Now insert one skill that every char will have regardless
             TempSkillTree.InsertSkill(3402, 3, 8000, False, 0, "Science") ' So far just Science
-            GetCharacterSkills = TempSkillTree
 
             APIError.ErrorCode = -1
             If APIError.ErrorText = NoStandingsLoaded Then
@@ -267,6 +456,14 @@ Public Class EVEAPI
                 APIError.ErrorText = NoSkillsLoaded
             End If
         End If
+
+        TempCharacterSheet.CharacterSkills = TempSkillTree
+        TempCharacterSheet.Implants = TempImplants
+        TempCharacterSheet.JumpClones = TempJumpClones
+        TempCharacterSheet.CorporationRoles = TempCorpRoles
+        TempCharacterSheet.CorporationTitles = TempCorpTitles
+
+        Return TempCharacterSheet
 
     End Function
 
@@ -1056,4 +1253,74 @@ Public Structure Station
     Dim solarSystemID As Long
     Dim corporationID As Long
     Dim corporationName As String
+End Structure
+
+' Character sheet
+Public Structure CharacterSheet
+    Dim CharacterID As Long
+    Dim CharacterName As String
+    Dim HomeStationID As Long
+    Dim DOB As Date
+    Dim Race As String
+    Dim BloodLineID As Integer
+    Dim BloodLine As String
+    Dim AncestryLineID As Integer
+    Dim AncestryLine As String
+    Dim Gender As String
+    Dim CorporationName As String
+    Dim CorporationID As Long
+    Dim AllianceName As String
+    Dim AllianceID As Long
+    Dim FactionName As String
+    Dim FactionID As Integer
+    Dim FreeSkillPoints As Long
+    Dim FreeRespecs As Integer
+    Dim CloneJumpDate As Date
+    Dim LastRespecDate As Date
+    Dim LastTimedRespec As Date
+    Dim RemoteStationDate As Date
+    Dim JumpActivation As Date
+    Dim JumpFatigue As Date
+    Dim JumpLastUpdate As Date
+    Dim Balance As Double
+
+    Dim AttributeMemory As Integer
+    Dim AttributeIntelligence As Integer
+    Dim AttributeWillpower As Integer
+    Dim AttributePerception As Integer
+    Dim AttributeCharisma As Integer
+
+    Dim JumpClones As List(Of JumpClone)
+    Dim Implants As List(Of Implant)
+    Dim CorporationRoles As List(Of CorporationRole)
+    Dim CorporationTitles As List(Of CorporationTitle)
+
+    Dim CharacterSkills As EVESkillList
+
+    Dim CachedUntil As Date
+
+End Structure
+
+Public Structure Implant
+    Dim JumpCloneID As Long
+    Dim ImplantID As Long
+    Dim ImplantName As String
+End Structure
+
+Public Structure JumpClone
+    Dim JumpCloneID As Long
+    Dim TypeID As Long
+    Dim LocationID As Long
+    Dim CloneName As String
+End Structure
+
+Public Structure CorporationRole
+    Dim RoleType As String ' Main, HQ, Base, Other
+    Dim RoleID As Long
+    Dim RoleName As String
+End Structure
+
+Public Structure CorporationTitle
+    Dim TitleID As Integer
+    Dim TitleName As String
 End Structure

@@ -7,6 +7,7 @@ Public Class frmSettings
     Private RegionLoaded As Boolean
     Private FirstLoad As Boolean
     Private SelectedReset As Boolean
+    Private SVRComboLoaded As Boolean
 
     Private Defaults As New ProgramSettings ' For default constants
 
@@ -186,6 +187,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
         FirstLoad = True
         SelectedReset = False
+        SVRComboLoaded = False
 
         If UserApplicationSettings.ShowToolTips Then
             ToolTip1.SetToolTip(chkDisableSVR, "If you have issues with SVR updates on the Manufacturing Tab (ie website down, etc), you can disable those queries here.")
@@ -336,17 +338,13 @@ Public Class frmSettings
                 txtEVECentralInterval.Text = CStr(Defaults.DefaultEVECentralRefreshInterval)
             End If
 
-            ' SVR
-            If .UseCRESTforHistory Then
-                rbtnSVRSourceCCP.Checked = True
-            Else
-                rbtnSVRSourceEMD.Checked = True
-            End If
-
             cmbSVRRegion.Text = .SVRAveragePriceRegion
             cmbSVRAvgPriceDuration.Text = .SVRAveragePriceDuration
             txtSVRThreshold.Text = CStr(.IgnoreSVRThresholdValue)
             chkAutoUpdateSVRBPTab.Checked = .AutoUpdateSVRonBPTab
+
+            txtProxyAddress.Text = .ProxyAddress
+            txtProxyPort.Text = CStr(.ProxyPort)
         End With
 
         FirstLoad = False
@@ -451,10 +449,11 @@ Public Class frmSettings
                 .SVRAveragePriceDuration = cmbSVRAvgPriceDuration.Text
                 .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
 
-                If rbtnSVRSourceCCP.Checked Then
-                    .UseCRESTforHistory = True
+                .ProxyAddress = txtProxyAddress.Text
+                If Trim(txtProxyPort.Text) <> "" Then
+                    .ProxyPort = CInt(txtProxyPort.Text)
                 Else
-                    .UseCRESTforHistory = False
+                    .ProxyPort = 0
                 End If
 
             End With
@@ -621,34 +620,57 @@ InvalidData:
             If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
                 ' Invalid Character
                 e.Handled = True
+            Else
+                btnSave.Text = "Save"
             End If
         End If
     End Sub
 
     Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
-        Dim SQL As String
-        Dim readerLoc As SQLiteDataReader
-
-        cmbSVRRegion.Items.Clear()
-
-        ' Load the select regions combobox with regions
-        SQL = "SELECT regionName FROM REGIONS GROUP BY regionName"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerLoc = DBCommand.ExecuteReader
-
-        While readerLoc.Read
-            cmbSVRRegion.Items.Add(readerLoc.GetString(0))
-        End While
-
-        readerLoc.Close()
-        readerLoc = Nothing
-        DBCommand = Nothing
-
+        If Not SVRComboLoaded Then
+            Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
+            SVRComboLoaded = True
+        End If
     End Sub
 
     Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
         e.Handled = True
+    End Sub
+
+    Private Sub txtDefaultME_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultME.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtDefaultTE_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultTE.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtProxyPort_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtProxyPort.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                btnSave.Text = "Save"
+            End If
+        End If
+    End Sub
+
+    Private Sub txtProxyAddress_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtProxyAddress.TextChanged
+        btnSave.Text = "Save"
     End Sub
 
 End Class

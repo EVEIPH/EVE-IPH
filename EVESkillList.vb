@@ -55,8 +55,11 @@ Public Class EVESkillList
         If Not IsNothing(Skills) Then
             For i = 0 To Skills.Count - 1
                 If Skills(i).TypeID = SkillTypeID Then
-                    Return Skills(i).Level
-                    Exit Function
+                    If Skills(i).Overridden Then
+                        Return Skills(i).OverriddenLevel
+                    Else
+                        Return Skills(i).Level
+                    End If
                 End If
             Next
         End If
@@ -73,8 +76,11 @@ Public Class EVESkillList
         If Not IsNothing(Skills) Then
             For i = 0 To Skills.Count - 1
                 If Skills(i).Name = SkillName Then
-                    Return Skills(i).Level
-                    Exit Function
+                    If Skills(i).Overridden Then
+                        Return Skills(i).OverriddenLevel
+                    Else
+                        Return Skills(i).Level
+                    End If
                 End If
             Next
         End If
@@ -285,7 +291,7 @@ Public Class EVESkillList
             Call EVEDB.CommitSQLiteTransaction()
 
             ' Just saved the skill updates so, only reload the skills from db
-            SelectedCharacter.LoadSkills(False, False)
+            SelectedCharacter.LoadCharacterSheet(False, False)
 
         Else
             ' Clean up the skills because we are reverting to default API skills

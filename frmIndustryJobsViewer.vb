@@ -530,7 +530,7 @@ Public Class frmIndustryJobsViewer
 
             Application.DoEvents()
 
-            ' Update the skills now
+            ' Update the skills
             Call UpdateCharacterSkills(CombinedKeyData, BitString, True)
 
         End While
@@ -547,7 +547,7 @@ Public Class frmIndustryJobsViewer
 
     End Sub
 
-    ' Gets the Character Skills from API for this character and inserts them into the Database for later queries
+    ' Gets the Character Data from API for this character and inserts them into the Database for later queries
     Private Sub UpdateCharacterSkills(CombinedKeyData As APIKeyData, BitString As String, UpdateAPIData As Boolean)
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
@@ -581,7 +581,7 @@ Public Class frmIndustryJobsViewer
         CombinedKeyData.Access = APIAccess
 
         ' Get skill data from API
-        TempSkills = API.GetCharacterSkills(CombinedKeyData)
+        TempSkills = API.GetCharacterSheet(CombinedKeyData).CharacterSkills
 
         If Not NoAPIError(API.GetErrorText, "Character") Then
             ' Errored, exit
@@ -630,7 +630,7 @@ Public Class frmIndustryJobsViewer
             readerCharacter.Close()
             readerCharacter = Nothing
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Next
 

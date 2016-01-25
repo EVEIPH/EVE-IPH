@@ -185,7 +185,7 @@ Public Class frmCharacterSkills
         If SelectedCharacter.CachedUntil < DateTime.UtcNow Then
             Me.Cursor = Cursors.WaitCursor
             ' Just refresh the skills from API
-            SelectedCharacter.LoadSkills(False, True, Trim(txtSkillNameFilter.Text))
+            SelectedCharacter.LoadCharacterSheet(False, True, Trim(txtSkillNameFilter.Text))
             ' Refresh
             Call LoadSkillsInTree(chkSkillOverride.Checked)
             Me.Cursor = Cursors.Default
@@ -268,7 +268,7 @@ Public Class frmCharacterSkills
         lblCharacterName.Text = SelectedCharacter.Name
 
         ' Load whatever is in the database
-        SelectedCharacter.LoadSkills(LoadAllSkillsforOverride, False)
+        SelectedCharacter.LoadCharacterSheet(LoadAllSkillsforOverride, False)
 
         If Not IsNothing(SelectedCharacter.Skills) Then
             ' Fill the tree
@@ -447,7 +447,7 @@ Public Class frmCharacterSkills
     Public Sub FinalizeUpdate()
 
         ' Finally reload the skills for the program - whatever changes were done just load them from DB
-        Call SelectedCharacter.LoadSkills(False, False)
+        Call SelectedCharacter.LoadCharacterSheet(False, False)
 
         ' Saved skills, so this is now the default
         FullOverrideChange = chkSkillOverride.Checked

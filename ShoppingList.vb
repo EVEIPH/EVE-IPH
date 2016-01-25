@@ -250,6 +250,7 @@ Public Class ShoppingList
                         ShoppingItem.FacilityMEModifier = FoundItem.FacilityMEModifier
                         ShoppingItem.BuildLocation = ""
                         ShoppingItem.ItemME = FoundItem.BuildME
+                        ShoppingItem.ItemTE = FoundItem.BuildTE
                         ShoppingItem.Quantity = FoundItem.ItemQuantity
 
                         ' Blank these out for now if we use them later
@@ -1244,6 +1245,7 @@ Public Class ShoppingListItem
     Public Name As String ' Item we want to shop for * Key Value
     Public BuildType As String ' Component / Raw / Build/Buy * Key Value
     Public ItemME As Double ' The ME of the Shopping item * Key Value
+    Public ItemTE As Double
     Public TechLevel As Integer ' T1, T2, or T3
     Public BuildVolume As Double ' Volume of the built item
 
@@ -1286,6 +1288,7 @@ Public Class ShoppingListItem
         Name = ""
         BuildType = ""
         ItemME = 0
+        ItemTE = 0
         TechLevel = 0
         BuildVolume = 0
 

@@ -123,6 +123,7 @@ Public Class frmShoppingList
         lstBuild.Columns.Add("Build Item", 237, HorizontalAlignment.Left)
         lstBuild.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
         lstBuild.Columns.Add("ME", 30, HorizontalAlignment.Right)
+        lstBuild.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
 
         ' Item List - What we are building - width = 711 (21 for verticle scroll bar)
         lstItems.Columns.Add("TypeID", 0, HorizontalAlignment.Center) ' always left allignment this column for some reason, so add a dummy, store bpID here though
@@ -137,6 +138,7 @@ Public Class frmShoppingList
         lstItems.Columns.Add("IgnoredInvention", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredMinerals", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredT1BaseItem", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
+        lstItems.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
 
         If UserApplicationSettings.ShowToolTips Then
             ttMain.SetToolTip(btnShowAssets, "Show Assets")
@@ -484,6 +486,7 @@ Public Class frmShoppingList
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredInvention)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredMinerals)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredT1BaseItem)))
+                lstItem.SubItems.Add(CStr(ItemList(i).ItemTE))
             End With
         Next
 
@@ -1672,10 +1675,12 @@ Public Class frmShoppingList
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
-        Call frmMain.LoadBPfromDoubleClick(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
+        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, chkUsage.Checked, _
-                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(2).Text, "0", "1") ' Any buildable component here is one 1 bp
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, _
+                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text, _
+                                           lstBuild.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines), _
+                                           "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
     End Sub
 
     Private Sub lstItems_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstItems.ColumnClick
@@ -1730,11 +1735,12 @@ Public Class frmShoppingList
         rsBPLookup.Read()
 
         ' Get the decryptor or relic used from the item
-        Call frmMain.LoadBPfromDoubleClick(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
+        Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
                                            Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, chkUsage.Checked, _
-                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(2).Text, "0", _
-                                           lstItems.SelectedItems(0).SubItems(4).Text)
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, _
+                                           lstItems.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(12).Text, _
+                                           lstItems.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines), _
+                                           lstItems.SelectedItems(0).SubItems(4).Text, txtAddlCosts.Text, False)
     End Sub
 
     Private Sub lstBuy_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBuy.ColumnClick
@@ -1879,6 +1885,7 @@ Public Class frmShoppingList
                     End If
                     ShopListItem.Quantity = CLng(lstItems.SelectedItems(i).SubItems(2).Text)
                     ShopListItem.ItemME = CInt(lstItems.SelectedItems(i).SubItems(3).Text)
+                    ShopListItem.ItemTE = CInt(lstItems.SelectedItems(i).SubItems(12).Text)
                     ShopListItem.NumBPs = CInt(lstItems.SelectedItems(i).SubItems(4).Text)
                     ShopListItem.BuildType = lstItems.SelectedItems(i).SubItems(5).Text
                     ShopListItem.Decryptor = lstItems.SelectedItems(i).SubItems(6).Text
@@ -2211,6 +2218,7 @@ Public Class frmShoppingList
                     End If
                     ShopListItem.Quantity = CLng(CurrentRow.SubItems(2).Text)
                     ShopListItem.ItemME = CInt(CurrentRow.SubItems(3).Text)
+                    ShopListItem.ItemTE = CInt(CurrentRow.SubItems(12).Text)
                     ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
                     ShopListItem.BuildType = CurrentRow.SubItems(5).Text
                     ShopListItem.Decryptor = CurrentRow.SubItems(6).Text

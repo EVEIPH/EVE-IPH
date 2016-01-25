@@ -9,9 +9,8 @@ Public Class frmMarketHistoryViewer
     Private RegionID As Long
     Private RegionName As String
     Private Days As Integer
-    Private UseCRESTData As Boolean
 
-    Public Sub New(ByVal _ItemID As Long, ByVal _ItemName As String, ByVal _RegionID As Long, ByVal _RegionName As String, ByVal _Days As Integer, ByVal _UseCRESTData As Boolean)
+    Public Sub New(ByVal _ItemID As Long, ByVal _ItemName As String, ByVal _RegionID As Long, ByVal _RegionName As String, ByVal _Days As Integer)
 
         FirstFormLoad = True
 
@@ -24,7 +23,6 @@ Public Class frmMarketHistoryViewer
         RegionID = _RegionID
         RegionName = _RegionName
         Days = _Days
-        UseCRESTData = _UseCRESTData
 
         Call InitForm()
 
@@ -94,6 +92,15 @@ Public Class frmMarketHistoryViewer
 
     End Sub
 
+    Private Structure DataPoint
+        Dim XValue As Integer
+        Dim YValue As Double
+        Dim XValueLabel As String
+        Dim YVolume As Integer
+        Dim YMinValue As Double
+        Dim YMaxValue As Double
+    End Structure
+
     Private Sub RefreshGraph()
         Dim SQL As String
         Dim rsHistory As SQLiteDataReader
@@ -105,13 +112,44 @@ Public Class frmMarketHistoryViewer
         Dim DonchianMin5 As New List(Of Double)
         Dim DonchianMax5 As New List(Of Double)
 
-        Dim XDate As String
-        Dim YAveragePrice As Double = 0
-        Dim YVolume As Integer
-
-        Dim DonchianCount As Integer = 0
-
         Dim Count As Integer = 0
+        Dim MinXDate As Date
+
+        Dim AllData As New List(Of DataPoint)
+        Dim MainData As New List(Of DataPoint)
+        Dim _5DayData As New List(Of DataPoint)
+        Dim _20DayData As New List(Of DataPoint)
+        Dim DonchianData As New List(Of DataPoint)
+
+        Dim MainDataCount As Integer = 0
+        Dim _5DayCount As Integer = 0
+        Dim _20DayCount As Integer = 0
+
+        Dim MH As New MarketPriceInterface(Nothing)
+
+        ' Determine dates and add 20 days (subtract) to it regardless to help build the different trend lines (they get cut off from the front)
+        Dim StartDate As Date
+        Dim EndDate As Date
+
+        If rbtnByDate.Checked Then
+            StartDate = DateAdd(DateInterval.Day, -20, dtpStartDate.Value)
+            MinXDate = dtpStartDate.Value
+            EndDate = dtpEndDate.Value
+        Else
+            StartDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 20), Now.Date)
+            MinXDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 1), Now.Date)
+            EndDate = Now
+        End If
+
+        Dim TypeID As New List(Of Long)
+        TypeID.Add(ItemID)
+
+        ' Update the prices
+        Me.Cursor = Cursors.WaitCursor
+        Application.DoEvents()
+        Call MH.UpdateCRESTPriceHistory(TypeID, RegionID)
+        Me.Cursor = Cursors.Default
+        Application.DoEvents()
 
         ' Set up the chart
         With chrtMarketHistory
@@ -129,7 +167,7 @@ Public Class frmMarketHistoryViewer
                 .Series("Prices").ChartType = SeriesChartType.Point
             End If
             .Series("Prices").IsVisibleInLegend = False
-            .Series("Prices").ChartArea = "Prices"
+            .Series("Prices").ChartArea = "Main"
 
             If chkVolume.Checked Then
                 .Series.Add("Volume")
@@ -137,7 +175,7 @@ Public Class frmMarketHistoryViewer
                 .Series("Volume").YAxisType = AxisType.Secondary
                 .Series("Volume").ChartType = SeriesChartType.Column
                 .Series("Volume").IsVisibleInLegend = False
-                .Series("Volume").ChartArea = "Prices"
+                .Series("Volume").ChartArea = "Main"
             End If
 
             If chkLinearAverage.Checked Then
@@ -148,7 +186,7 @@ Public Class frmMarketHistoryViewer
                 .Series("LinearTrend").BorderWidth = 1
                 .Series("LinearTrend").Color = Color.Crimson
                 .Series("LinearTrend").IsVisibleInLegend = False
-                .Series("LinearTrend").ChartArea = "Prices"
+                .Series("LinearTrend").ChartArea = "Main"
             End If
 
             If chk5DayAverage.Checked Then
@@ -159,7 +197,7 @@ Public Class frmMarketHistoryViewer
                 .Series("5DayTrend").BorderWidth = 2
                 .Series("5DayTrend").Color = Color.SeaGreen
                 .Series("5DayTrend").IsVisibleInLegend = False
-                .Series("5DayTrend").ChartArea = "Prices"
+                .Series("5DayTrend").ChartArea = "Main"
             End If
 
             If chk20DayAverage.Checked Then
@@ -170,7 +208,7 @@ Public Class frmMarketHistoryViewer
                 .Series("20DayTrend").BorderWidth = 2
                 .Series("20DayTrend").Color = Color.DarkOrange
                 .Series("20DayTrend").IsVisibleInLegend = False
-                .Series("20DayTrend").ChartArea = "Prices"
+                .Series("20DayTrend").ChartArea = "Main"
             End If
 
             If chkDonchianChannel.Checked Then
@@ -181,7 +219,7 @@ Public Class frmMarketHistoryViewer
                 .Series("MinDonchian").BorderWidth = 1
                 .Series("MinDonchian").Color = Color.RoyalBlue
                 .Series("MinDonchian").IsVisibleInLegend = False
-                .Series("MinDonchian").ChartArea = "Prices"
+                .Series("MinDonchian").ChartArea = "Main"
 
                 .Series.Add("MaxDonchian")
                 .Series("MaxDonchian").ChartType = SeriesChartType.Line
@@ -190,91 +228,139 @@ Public Class frmMarketHistoryViewer
                 .Series("MaxDonchian").BorderWidth = 1
                 .Series("MaxDonchian").Color = Color.RoyalBlue
                 .Series("MaxDonchian").IsVisibleInLegend = False
-                .Series("MaxDonchian").ChartArea = "Prices"
+                .Series("MaxDonchian").ChartArea = "Main"
             End If
         End With
 
-        If UseCRESTData Then
-            SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE, LOW_PRICE, HIGH_PRICE, TOTAL_VOLUME_FILLED FROM MARKET_HISTORY "
-        Else ' EMD
-            SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE, LOW_PRICE, HIGH_PRICE, TOTAL_VOLUME_FILLED FROM EMD_ITEM_PRICE_HISTORY "
-        End If
-
+        SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE, LOW_PRICE, HIGH_PRICE, TOTAL_VOLUME_FILLED FROM MARKET_HISTORY "
         SQL = SQL & "WHERE TYPE_ID = " & ItemID & " AND REGION_ID = " & RegionID & " "
-        If rbtnByDate.Checked Then
-            SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(dtpStartDate.Value, SQLiteDateFormat) & "') "
-            SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(dtpEndDate.Value, SQLiteDateFormat) & "') "
-        Else
-            SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= "
-            SQL = SQL & " DateTime('" & Format(DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 1), Now.Date), SQLiteDateFormat) & "') "
-            SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Now, SQLiteDateFormat) & "') "
-        End If
-
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(StartDate, SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(EndDate, SQLiteDateFormat) & "') "
         SQL = SQL & "AND TOTAL_VOLUME_FILLED IS NOT NULL "
         SQL = SQL & "ORDER BY PRICE_HISTORY_DATE"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsHistory = DBCommand.ExecuteReader
 
-        While rsHistory.Read()
-            XDate = Format(DateValue(rsHistory.GetString(0)), "dd-MMM")
-            YAveragePrice = rsHistory.GetDouble(1)
-            YVolume = rsHistory.GetInt32(4)
+        Dim DP As New DataPoint
+        Dim TempDP As New DataPoint
 
-            AveragePrices.Add(YAveragePrice)
-            Volumes.Add(YVolume)
+        ' Make all the series first, then add them after
+        While rsHistory.Read()
+            DP.XValue = Count
+            DP.XValueLabel = Format(DateValue(rsHistory.GetString(0)), "dd-MMM")
+            DP.YValue = rsHistory.GetDouble(1)
+            DP.YMinValue = rsHistory.GetDouble(2)
+            DP.YMaxValue = rsHistory.GetDouble(3)
+            DP.YVolume = rsHistory.GetInt32(4)
+
+            AveragePrices.Add(rsHistory.GetDouble(1))
             MinPrices.Add(rsHistory.GetDouble(2))
             MaxPrices.Add(rsHistory.GetDouble(3))
+            Volumes.Add(rsHistory.GetInt32(4))
 
-            If chkMinMax.Checked Then
-                ' min/max
-                chrtMarketHistory.Series("Prices").Points.AddXY(XDate, YAveragePrice, rsHistory.GetDouble(2), rsHistory.GetDouble(3))
-                chrtMarketHistory.Series("Prices").Points(Count).Color = Color.DarkBlue
-                chrtMarketHistory.Series("Prices").Points(Count).MarkerSize = 1
-            Else
-                chrtMarketHistory.Series("Prices").Points.AddXY(XDate, YAveragePrice)
-                chrtMarketHistory.Series("Prices").Points(Count).Color = Color.DarkBlue
-                chrtMarketHistory.Series("Prices").Points(Count).MarkerSize = 4
-                chrtMarketHistory.Series("Prices").Points(Count).MarkerStyle = MarkerStyle.Circle
-            End If
+            ' If it's within the range, add to the main data
+            If MinXDate < DateValue(rsHistory.GetString(0)) Then
+                Dim StartIndex As Integer = 0
 
-            ' If they want volume, add it
-            If chkVolume.Checked Then
-                chrtMarketHistory.Series("Volume").Points.AddY(YVolume)
-                chrtMarketHistory.Series("Volume").Points(Count).Color = Color.Maroon
-                chrtMarketHistory.Series("Volume").Points(Count).MarkerSize = 1
-            End If
+                TempDP = DP
+                TempDP.XValue = MainDataCount
 
-            If chkDonchianChannel.Checked Then
-                DonchianCount += 1
+                MainData.Add(TempDP)
+                MainDataCount += 1
 
-                ' Insert and Reset every 5 values
-                If DonchianCount = 5 Then
-                    DonchianMin5 = New List(Of Double)
-                    DonchianMax5 = New List(Of Double)
-
-                    For i = (Count - 4) To Count
-                        ' Get min and max values
-                        DonchianMin5.Add(MinPrices(i))
-                        DonchianMax5.Add(MaxPrices(i))
-                    Next
-                    DonchianCount = 0
-                End If
-
-                If Count < 4 Then
-                    chrtMarketHistory.Series("MinDonchian").Points.AddXY(XDate, rsHistory.GetDouble(2))
-                    chrtMarketHistory.Series("MaxDonchian").Points.AddXY(XDate, rsHistory.GetDouble(3))
+                If Count <= 4 Then
+                    StartIndex = 0
                 Else
-                    chrtMarketHistory.Series("MinDonchian").Points.AddXY(XDate, DonchianMin5.Min)
-                    chrtMarketHistory.Series("MaxDonchian").Points.AddXY(XDate, DonchianMax5.Max)
+                    StartIndex = Count - 5
                 End If
+
+                ' Get the 5 day average
+                TempDP.YValue = GetDayAverage(StartIndex, Count - 1, AllData)
+                _5DayData.Add(TempDP)
+
+                If Count <= 19 Then
+                    StartIndex = 0
+                Else
+                    StartIndex = Count - 20
+                End If
+
+                ' Now get the 20 day average
+                TempDP.YValue = GetDayAverage(StartIndex, Count - 1, AllData)
+                _20DayData.Add(TempDP)
+
+                ' Set the Donchian channel 
+                DonchianMin5 = New List(Of Double)
+                DonchianMax5 = New List(Of Double)
+
+                For i = (Count - 4) To Count
+                    ' Get min and max values from the main data
+                    DonchianMin5.Add(MinPrices(i))
+                    DonchianMax5.Add(MaxPrices(i))
+                Next
+
+                ' Set the data
+                TempDP.YMinValue = DonchianMin5.Min
+                TempDP.YMaxValue = DonchianMax5.Max
+                TempDP.YValue = 0
+                ' Add and reset
+                DonchianData.Add(TempDP)
+
             End If
 
+            AllData.Add(DP)
             Count += 1
 
         End While
 
         rsHistory.Close()
+
+        ' Loop through and add all the series
+        For i = 0 To MainData.Count - 1
+            With MainData(i)
+                If chkMinMax.Checked Then
+                    ' min/max
+                    chrtMarketHistory.Series("Prices").Points.AddXY(.XValue, .YValue, .YMinValue, .YMaxValue)
+                    chrtMarketHistory.Series("Prices").Points(i).AxisLabel = .XValueLabel
+                    chrtMarketHistory.Series("Prices").Points(i).Color = Color.DarkBlue
+                    chrtMarketHistory.Series("Prices").Points(i).MarkerSize = 1
+                Else
+                    chrtMarketHistory.Series("Prices").Points.AddXY(.XValue, .YValue)
+                    chrtMarketHistory.Series("Prices").Points(i).AxisLabel = .XValueLabel
+                    chrtMarketHistory.Series("Prices").Points(i).Color = Color.DarkBlue
+                    chrtMarketHistory.Series("Prices").Points(i).MarkerSize = 4
+                    chrtMarketHistory.Series("Prices").Points(i).MarkerStyle = MarkerStyle.Circle
+                End If
+
+
+                ' If they want volume, add it
+                If chkVolume.Checked Then
+                    chrtMarketHistory.Series("Volume").Points.AddY(.YVolume)
+                    chrtMarketHistory.Series("Volume").Points(i).Color = Color.Maroon
+                    chrtMarketHistory.Series("Volume").Points(i).MarkerSize = 1
+                End If
+
+            End With
+
+            If chk5DayAverage.Checked Then
+                chrtMarketHistory.Series("5DayTrend").Points.AddXY(_5DayData(i).XValue, _5DayData(i).YValue)
+                chrtMarketHistory.Series("5DayTrend").Points(i).AxisLabel = _5DayData(i).XValueLabel
+            End If
+
+            If chk20DayAverage.Checked Then
+                chrtMarketHistory.Series("20DayTrend").Points.AddXY(_20DayData(i).XValue, _20DayData(i).YValue)
+                chrtMarketHistory.Series("20DayTrend").Points(i).AxisLabel = _20DayData(i).XValueLabel
+            End If
+
+
+            If chkDonchianChannel.Checked Then
+                chrtMarketHistory.Series("MinDonchian").Points.AddXY(DonchianData(i).XValue, DonchianData(i).YMinValue)
+                chrtMarketHistory.Series("MinDonchian").Points(i).AxisLabel = DonchianData(i).XValueLabel
+                chrtMarketHistory.Series("MaxDonchian").Points.AddXY(DonchianData(i).XValue, DonchianData(i).YMaxValue)
+                chrtMarketHistory.Series("MaxDonchian").Points(i).AxisLabel = DonchianData(i).XValueLabel
+            End If
+
+        Next
 
         ' Exit if no records
         If Count = 0 Then
@@ -285,17 +371,17 @@ Public Class frmMarketHistoryViewer
         ' Reset chart
         If MaxPrices.Max / 1000000000 > 1 Then
             ' Billions
-            chrtMarketHistory.ChartAreas("Prices").AxisY.LabelStyle.Format = "#,,," & "B"
+            chrtMarketHistory.ChartAreas("Main").AxisY.LabelStyle.Format = "#,,," & "B"
         ElseIf MaxPrices.Max / 1000000 > 1 Then
             ' Millions
-            chrtMarketHistory.ChartAreas("Prices").AxisY.LabelStyle.Format = "#,," & "M"
+            chrtMarketHistory.ChartAreas("Main").AxisY.LabelStyle.Format = "#,," & "M"
         ElseIf MaxPrices.Max / 1000 > 1 Then
             ' Thousands
-            chrtMarketHistory.ChartAreas("Prices").AxisY.LabelStyle.Format = "#," & "K"
+            chrtMarketHistory.ChartAreas("Main").AxisY.LabelStyle.Format = "#," & "K"
         End If
 
         ' Set up the chart to scale
-        With chrtMarketHistory.ChartAreas("Prices")
+        With chrtMarketHistory.ChartAreas("Main")
             If chkMinMax.Checked Or chkDonchianChannel.Checked Then
                 .AxisY.Minimum = MinPrices.Min - (MinPrices.Min * 0.03)
                 .AxisY.Maximum = MaxPrices.Max + (MaxPrices.Max * 0.03)
@@ -314,20 +400,23 @@ Public Class frmMarketHistoryViewer
             .AxisX2.MajorGrid.LineDashStyle = ChartDashStyle.NotSet
         End With
 
-        ' Set trends if we have more than the needed data points
-        If Count > 4 And chk5DayAverage.Checked Then
-            chrtMarketHistory.DataManipulator.FinancialFormula(FinancialFormula.MovingAverage, "5", chrtMarketHistory.Series("Prices"), chrtMarketHistory.Series("5DayTrend"))
-        End If
-
-        If Count > 19 And chk20DayAverage.Checked Then
-            chrtMarketHistory.DataManipulator.FinancialFormula(FinancialFormula.MovingAverage, "20", chrtMarketHistory.Series("Prices"), chrtMarketHistory.Series("20DayTrend"))
-        End If
-
-        If Count > 1 And chkLinearAverage.Checked Then
+        If MainData.Count > 1 And chkLinearAverage.Checked Then
+            ' Use the price series only for linear
             chrtMarketHistory.DataManipulator.FinancialFormula(FinancialFormula.Forecasting, "Linear,1,false,false", chrtMarketHistory.Series("Prices"), chrtMarketHistory.Series("LinearTrend"))
         End If
 
     End Sub
+
+    Private Function GetDayAverage(StartIndex As Integer, EndIndex As Integer, ByRef Data As List(Of DataPoint)) As Double
+        Dim Sum As Double = 0
+
+        For i = StartIndex To EndIndex
+            Sum += Data(i).YValue
+        Next
+
+        Return Sum / (EndIndex - StartIndex + 1)
+
+    End Function
 
     Private Sub dtpStartDate_ValueChanged(sender As System.Object, e As System.EventArgs) Handles dtpStartDate.ValueChanged
         If Not FirstFormLoad Then
@@ -343,7 +432,7 @@ Public Class frmMarketHistoryViewer
     End Sub
 
     Private Sub dtpEndDate_ValueChanged(sender As System.Object, e As System.EventArgs) Handles dtpEndDate.ValueChanged
-        If Not firstformload Then
+        If Not FirstFormLoad Then
             If dtpStartDate.Value > dtpEndDate.Value Then
                 MsgBox("The End Date cannot be less than the Start Date", vbExclamation, Application.ProductName)
                 dtpEndDate.Value = DateAdd(DateInterval.Day, 1, dtpStartDate.Value)

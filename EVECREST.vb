@@ -1749,7 +1749,7 @@ Public Class EVECREST
             request = DirectCast(WebRequest.Create(myUri), HttpWebRequest)
             ' Settings for speed
             request.Method = "GET"
-            request.Proxy = Nothing
+            request.Proxy = GetProxyData()
             request.PreAuthenticate = True
             request.UnsafeAuthenticatedConnectionSharing = True
 

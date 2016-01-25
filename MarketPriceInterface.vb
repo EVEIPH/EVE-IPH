@@ -200,7 +200,10 @@ Public Class MarketPriceInterface
         ' Build the pairs
         For i = 0 To SentTypeIDs.Count - 1
             ' Only add data we want to query
-            If UpdatableMarketData(SentTypeIDs(i), UpdateRegionID, "History") Then
+            Dim Temp As New TypeIDRegion
+            Temp.TypeIDs.Add(CStr(SentTypeIDs(i)))
+            Temp.RegionString = CStr(UpdateRegionID)
+            If UpdatableMarketData(Temp, "History") Then
                 Dim TempPair As ItemRegionPairs
                 TempPair.ItemID = SentTypeIDs(i)
                 TempPair.RegionID = UpdateRegionID
@@ -221,73 +224,125 @@ Public Class MarketPriceInterface
                 NumberofThreads = CREST.GetMaximumConnections
             End If
 
-            ' For processing
-            Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
-            Dim TempPairs As New List(Of ItemRegionPairs)
-            Dim PairMarker As Integer = 0
-            Dim j As Integer = 0
+            ' Keep both options to test - preferred is to run a thread when we have one available and not batching - but batching a little faster
+            If False Then
 
-            ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
-            For i = 0 To NumberofThreads - 1
-                For j = PairMarker To Pairs.Count - 1
-                    If j < Splits * (i + 1) Then
-                        TempPairs.Add(Pairs(j))
-                    Else
-                        Exit For
-                    End If
-                Next
-                ThreadPairs.Add(TempPairs)
-                TempPairs = New List(Of ItemRegionPairs)
-                PairMarker = j
-                If j = Pairs.Count Then
-                    Exit For
-                End If
-            Next
-
-            ' Start a transaction here to speed up processing in the updates
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' Reset the value of the progress bar
-            If Not IsNothing(RefProgressBar) Then
+                ' Reset the value of the progress bar
                 RefProgressBar.Visible = True
                 RefProgressBar.Value = 0
-                PriceHistoryUpdateCount = 0
+                PriceOrdersUpdateCount = 0
                 RefProgressBar.Maximum = Pairs.Count
-            End If
-            Application.DoEvents()
+                Application.DoEvents()
 
-            ' Call this manually if it's just one item to update
-            If ThreadPairs.Count = 1 Then
-                Call UpdateMarketHistory(ThreadPairs(0))
-            Else
-                ' Call each thread for the pairs
-                For i = 0 To ThreadPairs.Count - 1
-                    Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
-                    UPHThread.Start(ThreadPairs(i))
-                    ' Save the thread if we need to kill it
-                    ThreadsArray.Add(UPHThread)
+                Dim ThreadsArray(19) As Threading.Thread
+                Dim PairCount As Integer = 0
+                Dim TempPairList As List(Of ItemRegionPairs)
+
+                For i = 0 To 19
+                    ThreadsArray(i) = New Thread(AddressOf UpdateMarketHistory)
                 Next
 
-                ' Now loop until all the threads are done
+                ' Start a transaction here to speed up processing in the updates
+                Call EVEDB.BeginSQLiteTransaction()
+
                 While PriceHistoryUpdateCount < Pairs.Count
-                    ' Update the progress bar with data from each thread
-                    Call IncrementToolStripProgressBar(PriceHistoryUpdateCount)
+
+                    For i = 0 To 19
+                        If Not ThreadsArray(i).IsAlive And PairCount < Pairs.Count Then
+                            TempPairList = New List(Of ItemRegionPairs)
+                            TempPairList.Add(Pairs(PairCount))
+                            ' Start new thread
+                            ThreadsArray(i) = New Thread(AddressOf UpdateMarketHistory)
+                            ThreadsArray(i).Start(TempPairList)
+                            PairCount += 1
+                        End If
+                    Next
 
                     If CancelManufacturingTabCalc Then
                         Call AbortUpdate()
                         Exit While
                     End If
 
+                    Call IncrementToolStripProgressBar(PriceHistoryUpdateCount)
                     Application.DoEvents()
-                End While
-            End If
 
-            ' Finish updating the DB
-            Call EVEDB.CommitSQLiteTransaction()
-            If Not IsNothing(RefProgressBar) Then
+                End While
+
+                ' Finish updating the DB
+                Call EVEDB.CommitSQLiteTransaction()
                 RefProgressBar.Visible = False
+                Application.DoEvents()
+
+            Else
+
+                ' For processing
+                Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
+                Dim TempPairs As New List(Of ItemRegionPairs)
+                Dim PairMarker As Integer = 0
+                Dim j As Integer = 0
+
+                ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
+                For i = 0 To NumberofThreads - 1
+                    For j = PairMarker To Pairs.Count - 1
+                        If j < Splits * (i + 1) Then
+                            TempPairs.Add(Pairs(j))
+                        Else
+                            Exit For
+                        End If
+                    Next
+                    ThreadPairs.Add(TempPairs)
+                    TempPairs = New List(Of ItemRegionPairs)
+                    PairMarker = j
+                    If j = Pairs.Count Then
+                        Exit For
+                    End If
+                Next
+
+                ' Start a transaction here to speed up processing in the updates
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' Reset the value of the progress bar
+                If Not IsNothing(RefProgressBar) Then
+                    RefProgressBar.Visible = True
+                    RefProgressBar.Value = 0
+                    PriceHistoryUpdateCount = 0
+                    RefProgressBar.Maximum = Pairs.Count
+                End If
+                Application.DoEvents()
+
+                ' Call this manually if it's just one item to update
+                If ThreadPairs.Count = 1 Then
+                    Call UpdateMarketHistory(ThreadPairs(0))
+                Else
+                    ' Call each thread for the pairs
+                    For i = 0 To ThreadPairs.Count - 1
+                        Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
+                        UPHThread.Start(ThreadPairs(i))
+                        ' Save the thread if we need to kill it
+                        ThreadsArray.Add(UPHThread)
+                    Next
+
+                    ' Now loop until all the threads are done
+                    While PriceHistoryUpdateCount < Pairs.Count
+                        ' Update the progress bar with data from each thread
+                        Call IncrementToolStripProgressBar(PriceHistoryUpdateCount)
+
+                        If CancelManufacturingTabCalc Then
+                            Call AbortUpdate()
+                            Exit While
+                        End If
+
+                        Application.DoEvents()
+                    End While
+                End If
+
+                ' Finish updating the DB
+                Call EVEDB.CommitSQLiteTransaction()
+                If Not IsNothing(RefProgressBar) Then
+                    RefProgressBar.Visible = False
+                End If
+                Application.DoEvents()
             End If
-            Application.DoEvents()
         End If
 
     End Sub
@@ -328,17 +383,18 @@ Public Class MarketPriceInterface
     End Sub
 
     ' Uses CREST to update market prices
-    Public Function UpdateMarketOrders(ByVal CacheItems As List(Of Long), ByVal SearchRegionID As Long) As Boolean
+    Public Function UpdateMarketOrders(ByVal CacheItems As List(Of TypeIDRegion)) As Boolean
 
         Dim Pairs As New List(Of ItemRegionPairs)
 
         ' Build the pairs
         For i = 0 To CacheItems.Count - 1
-            If UpdatableMarketData(CacheItems(i), SearchRegionID, "Orders") Then
-                Dim TempPair As ItemRegionPairs
-                TempPair.ItemID = CacheItems(i)
-                TempPair.RegionID = SearchRegionID
-                Pairs.Add(TempPair)
+            ' Make sure they are ready to update by cache
+            If UpdatableMarketData(CacheItems(i), "Orders") Then
+                Dim Temp As New ItemRegionPairs
+                Temp.ItemID = CLng(CacheItems(i).TypeIDs(0))
+                Temp.RegionID = CLng(CacheItems(i).RegionString)
+                Pairs.Add(Temp)
             End If
         Next
 
@@ -355,71 +411,126 @@ Public Class MarketPriceInterface
                 NumberofThreads = CREST.GetMaximumConnections
             End If
 
-            ' For processing
-            Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
-            Dim TempPairs As New List(Of ItemRegionPairs)
-            Dim PairMarker As Integer = 0
-            Dim j As Integer = 0
+            ' Keep both options to test - preferred is to run a thread when we have one available and not batching - but batching does seem faster for some reason
+            If False Then
 
-            ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
-            For i = 0 To NumberofThreads - 1
-                For j = PairMarker To Pairs.Count - 1
-                    If j < Splits * (i + 1) Then
-                        TempPairs.Add(Pairs(j))
-                    Else
-                        Exit For
-                    End If
-                Next
-                ThreadPairs.Add(TempPairs)
-                TempPairs = New List(Of ItemRegionPairs)
-                PairMarker = j
-                If j = Pairs.Count Then
-                    Exit For
-                End If
-            Next
+                ' Reset the value of the progress bar
+                RefProgressBar.Visible = True
+                RefProgressBar.Value = 0
+                PriceOrdersUpdateCount = 0
+                RefProgressBar.Maximum = Pairs.Count
+                Application.DoEvents()
 
-            ' Start a transaction here to speed up processing in the updates
-            Call EVEDB.BeginSQLiteTransaction()
+                Dim ThreadsArray(19) As Threading.Thread
+                Dim PairCount As Integer = 0
+                Dim TempPairList As List(Of ItemRegionPairs)
 
-            ' Reset the value of the progress bar
-            RefProgressBar.Visible = True
-            RefProgressBar.Value = 0
-            PriceOrdersUpdateCount = 0
-            RefProgressBar.Maximum = Pairs.Count
-            Application.DoEvents()
-
-            ' Call this manually if it's just one price to update
-            If ThreadPairs.Count = 1 Then
-                Call UpdateMarketOrders(ThreadPairs(0), RefProgressBar)
-            Else
-                ' Call each thread for the pairs
-                Dim ThreadsArray As List(Of Threading.Thread) = New List(Of Threading.Thread)
-                ' Call each thread for the pairs
-                For i = 0 To ThreadPairs.Count - 1
-                    Dim UPHThread As New Thread(AddressOf UpdateMarketOrders)
-                    UPHThread.Start(ThreadPairs(i))
-                    ' Save the thread if we need to kill it
-                    ThreadsArray.Add(UPHThread)
+                For i = 0 To 19
+                    ThreadsArray(i) = New Thread(AddressOf UpdateMarketOrders)
                 Next
 
-                ' Now loop until all the threads are done
+                ' Start a transaction here to speed up processing in the updates
+                Call EVEDB.BeginSQLiteTransaction()
+
                 While PriceOrdersUpdateCount < Pairs.Count
-                    ' Update the progress bar with data from each thread
-                    Call IncrementToolStripProgressBar(PriceOrdersUpdateCount)
+
+                    For i = 0 To 19
+                        If Not ThreadsArray(i).IsAlive And PairCount < Pairs.Count Then
+                            TempPairList = New List(Of ItemRegionPairs)
+                            TempPairList.Add(Pairs(PairCount))
+                            ' Start new thread
+                            ThreadsArray(i) = New Thread(AddressOf UpdateMarketOrders)
+                            ThreadsArray(i).Start(TempPairList)
+                            PairCount += 1
+                        End If
+                    Next
 
                     If CancelUpdatePrices Then
                         Call AbortUpdate()
                         Exit While
                     End If
 
+                    Call IncrementToolStripProgressBar(PriceOrdersUpdateCount)
                     Application.DoEvents()
+
                 End While
+
+                ' Finish updating the DB
+                Call EVEDB.CommitSQLiteTransaction()
+                RefProgressBar.Visible = False
+                Application.DoEvents()
+
+            Else
+
+                ' For processing
+                Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
+                Dim TempPairs As New List(Of ItemRegionPairs)
+                Dim PairMarker As Integer = 0
+                Dim j As Integer = 0
+
+                ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
+                For i = 0 To NumberofThreads - 1
+                    For j = PairMarker To Pairs.Count - 1
+                        If j < Splits * (i + 1) Then
+                            TempPairs.Add(Pairs(j))
+                        Else
+                            Exit For
+                        End If
+                    Next
+                    ThreadPairs.Add(TempPairs)
+                    TempPairs = New List(Of ItemRegionPairs)
+                    PairMarker = j
+                    If j = Pairs.Count Then
+                        Exit For
+                    End If
+                Next
+
+                ' Start a transaction here to speed up processing in the updates
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' Reset the value of the progress bar
+                If Not IsNothing(RefProgressBar) Then
+                    RefProgressBar.Visible = True
+                    RefProgressBar.Value = 0
+                    PriceHistoryUpdateCount = 0
+                    RefProgressBar.Maximum = Pairs.Count
+                End If
+                Application.DoEvents()
+
+                ' Call this manually if it's just one item to update
+                If ThreadPairs.Count = 1 Then
+                    Call UpdateMarketHistory(ThreadPairs(0))
+                Else
+                    ' Call each thread for the pairs
+                    For i = 0 To ThreadPairs.Count - 1
+                        Dim UPHThread As New Thread(AddressOf UpdateMarketOrders)
+                        UPHThread.Start(ThreadPairs(i))
+                        ' Save the thread if we need to kill it
+                        ThreadsArray.Add(UPHThread)
+                    Next
+
+                    ' Now loop until all the threads are done
+                    While PriceOrdersUpdateCount < Pairs.Count
+                        ' Update the progress bar with data from each thread
+                        Call IncrementToolStripProgressBar(PriceOrdersUpdateCount)
+
+                        If CancelUpdatePrices Then
+                            Call AbortUpdate()
+                            Exit While
+                        End If
+
+                        Application.DoEvents()
+                    End While
+                End If
+
+                ' Finish updating the DB
+                Call EVEDB.CommitSQLiteTransaction()
+                If Not IsNothing(RefProgressBar) Then
+                    RefProgressBar.Visible = False
+                End If
+                Application.DoEvents()
             End If
 
-            ' Finish updating the DB
-            Call EVEDB.CommitSQLiteTransaction()
-            RefProgressBar.Visible = False
-            Application.DoEvents()
         End If
 
         CancelUpdatePrices = False
@@ -475,7 +586,7 @@ Public Class MarketPriceInterface
     End Sub
 
     ' Sees if the typid and region sent is ready to be updated by a cache date look up
-    Private Function UpdatableMarketData(ByVal TypeID As Long, ByVal RegionID As Long, ByVal CacheType As String) As Boolean
+    Private Function UpdatableMarketData(ByVal Item As TypeIDRegion, ByVal CacheType As String) As Boolean
         Dim SQL As String
         Dim TableName As String
         Dim rsCache As SQLiteDataReader
@@ -490,7 +601,7 @@ Public Class MarketPriceInterface
             Return False
         End If
 
-        SQL = "SELECT CACHE_DATE FROM " & TableName & " WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+        SQL = "SELECT CACHE_DATE FROM " & TableName & " WHERE TYPE_ID = " & CStr(Item.TypeIDs(0)) & " AND REGION_ID = " & CStr(Item.RegionString)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCache = DBCommand.ExecuteReader
 

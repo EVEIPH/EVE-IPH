@@ -9,8 +9,8 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "Frostline_1.0_116241"
-    Public Const VersionNumber As String = "3.1.*"
+    Public Const SDEVersion As String = "YC-118-1_1.0_116645"
+    Public Const VersionNumber As String = "3.2.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -82,7 +82,8 @@ Public Module Public_Variables
                                             & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
-                                            & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID AND OBP.USER_ID = @USERBP_USERID, " _
+                                            & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID " _
+                                            & "AND (OBP.USER_ID = @USERBP_USERID OR OBP.USER_ID = @USERBP_CORPID), " _
                                             & "INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID) AS X "
 
     ' Shopping List
@@ -100,6 +101,7 @@ Public Module Public_Variables
     Public Const allowedRunschars As String = "0123456789"
     Public Const allowedDecimalChars As String = "0123456789.-"
     Public Const allowedPercentChars As String = "0123456789.%"
+    Public Const allowedNegativePercentChars As String = "0123456789.%-"
 
     Public Const SQLiteDateFormat As String = "yyyy-MM-dd HH:mm:ss"
 
@@ -142,6 +144,8 @@ Public Module Public_Variables
 
     ' For getting mining ammount attribute
     Public Const MiningAmountBonus As String = "miningAmountBonus"
+
+    Public Const AllSystems As String = "All Systems"
 
     ' For unhandled exceptions
     Public frmErrorText As String = ""
@@ -3568,6 +3572,7 @@ NoBonus:
                     .Name = SentBlueprint.GetItemData.GetMaterialName
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
+                    .ItemTE = SentBlueprint.GetTE
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
                     .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
@@ -3609,6 +3614,7 @@ NoBonus:
                     .Name = SentBlueprint.GetItemData.GetMaterialName
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
+                    .ItemTE = SentBlueprint.GetTE
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
                     .BuiltInPOS = BuiltInPOS
                     .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
@@ -3783,6 +3789,46 @@ NoBonus:
         Return ReturnID
 
     End Function
+
+    Public Function GetSolarSystemID(ByVal SystemName As String) As Long
+        ' Look up Solar System ID
+        Dim rsSystem As SQLiteDataReader
+        Dim SSID As Long
+
+        DBCommand = New SQLiteCommand("SELECT solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & SystemName & "'", EVEDB.DBREf)
+        rsSystem = DBCommand.ExecuteReader
+
+        If rsSystem.Read() Then
+            SSID = rsSystem.GetInt64(0)
+        Else
+            SSID = 0
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Return SSID
+
+    End Function
+
+    ' Loads a referenced combobox with regions
+    Public Sub LoadRegionCombo(ByRef RegionCombo As ComboBox, ByVal DefaultRegionName As String)
+        Dim SQL As String = ""
+        Dim rsData As SQLiteDataReader
+
+        Sql = "SELECT regionName FROM REGIONS WHERE regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' GROUP BY regionName "
+        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+        RegionCombo.BeginUpdate()
+        RegionCombo.Items.Clear()
+        While rsData.Read
+            RegionCombo.Items.Add(rsData.GetString(0))
+        End While
+        RegionCombo.Text = DefaultRegionName
+        RegionCombo.EndUpdate()
+        rsData.Close()
+
+    End Sub
 
     ' Limits the referenced text box between 0 and 10/20 on text
     Public Sub VerifyMETEEntry(ByRef METETextBox As TextBox, Type As String)
@@ -4444,13 +4490,15 @@ InvalidDate:
 
         Try 'Checks if the file exist
             Request = DirectCast(HttpWebRequest.Create(DownloadURL), HttpWebRequest)
+            Request.Proxy = GetProxyData()
             Request.Credentials = CredentialCache.DefaultCredentials ' Added 9/27 to attempt to fix error: (407) Proxy Authentication Required.
+            Request.Timeout = 50000
             Response = CType(Request.GetResponse, HttpWebResponse)
         Catch ex As Exception
             ' Show error and exit
             'Close the streams
             writeStream.Close()
-            MsgBox("An error occurred while downloading update file.", vbCritical, Application.ProductName)
+            MsgBox("An error occurred while downloading update file: " & ex.Message, vbCritical, Application.ProductName)
             Return ""
         End Try
 
@@ -4469,6 +4517,26 @@ InvalidDate:
         writeStream.Close()
 
         Return FileName
+
+    End Function
+
+    Public Function GetProxyData() As WebProxy
+        Dim ReturnProxy As WebProxy
+
+        If UserApplicationSettings.ProxyAddress <> "" Then
+            If UserApplicationSettings.ProxyPort <> 0 Then
+                ReturnProxy = New WebProxy(UserApplicationSettings.ProxyAddress, UserApplicationSettings.ProxyPort)
+            Else
+                ReturnProxy = New WebProxy(UserApplicationSettings.ProxyAddress)
+            End If
+
+            ReturnProxy = New WebProxy(UserApplicationSettings.ProxyAddress, UserApplicationSettings.ProxyPort)
+            ReturnProxy.Credentials = CredentialCache.DefaultCredentials
+
+            Return ReturnProxy
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -4494,6 +4562,104 @@ InvalidDate:
 
         readerBP.Close()
         readerBP = Nothing
+
+        Return ReturnString
+
+    End Function
+
+    ' Parses the data and builds an AND qualifier for searching text data - adds data for two fields sent
+    Public Function GetSearchText(SearchText As String, Field1 As String, Optional Field2 As String = "") As String
+        Dim ReturnString As String = ""
+        Dim LikePhrase As String = " LIKE "
+        Dim NOTLikePhrase As String = " NOT LIKE "
+
+        Dim SplitPhrase As Boolean = False ' If they have something like 'Oxygen NOT Isotopes'
+        Dim SearchItems() As String = Nothing
+        Dim NotSearchItems() As String = Nothing
+        Dim SearchItemList As String = ""
+        Dim NotSearchItemList As String = ""
+
+        Dim SearchClause As String = ""
+        Dim NotSearchClause As String = ""
+
+        If Trim(SearchText) = "" Or Field1 = "" Then
+            Return ""
+        End If
+
+        ' Options
+        ' 1 - 'mining crystal not rig, jaspet' - want mining crystals but not the mercoxit mining crystal rig or jaspet mining crystals
+        ' 2 - 'Hulk, Mackinaw, Skiff' - want only these three
+        ' 3 - 'NOT Hulk, Mackinaw, Skiff' - don't want these three but all others
+
+        ' See if it has not and if larger than three characters, allow it to be set - test 'bob NOT '
+        If UCase(SearchText).Contains("NOT ") And Trim(SearchText).Length > 4 Then
+            ' Find where the NOT is in the string
+            Dim NotLocation As Integer = InStr(UCase(SearchText), "NOT ")
+
+            ' If it's at the beginning, then the rest is a not phrase
+            If NotLocation = 0 Then
+                ' Strip off the not and add
+                SearchText = Trim(SearchText.Substring(4))
+                NotSearchItemList = Trim(SearchText)
+            Else
+                ' split and Strip off the NOT at the beginning 
+                SearchItemList = Trim(SearchText.Substring(0, NotLocation - 1))
+                NotSearchItemList = Trim(SearchText.Substring(NotLocation + 3))
+            End If
+        Else
+            ' Just search for the terms
+            SearchItemList = Trim(SearchText)
+            SplitPhrase = False
+        End If
+
+        ' Parse by comma then loop through items to build clauses
+        If SearchItemList <> "" Then
+            SearchItems = SearchItemList.Split(New [Char]() {CChar(",")}, StringSplitOptions.RemoveEmptyEntries)
+        End If
+
+        If NotSearchItemList <> "" Then
+            NotSearchItems = NotSearchItemList.Split(New [Char]() {CChar(",")}, StringSplitOptions.RemoveEmptyEntries)
+        End If
+
+        ' Build the like search items
+        If Not IsNothing(SearchItems) Then
+            For i = 0 To SearchItems.Count - 1
+                SearchClause = SearchClause & "(" & Field1 & LikePhrase & "'%" & Trim(SearchItems(i)) & "%' "
+                If Field2 <> "" Then
+                    SearchClause = SearchClause & "OR " & Field2 & LikePhrase & "'%" & Trim(SearchItems(i)) & "%') OR "
+                Else
+                    SearchClause = SearchClause & ") OR "
+                End If
+            Next
+
+            ' Clean up the clause
+            SearchClause = "(" & SearchClause.Substring(0, SearchClause.Length - 4) & ")" ' Strip off the and
+
+        End If
+
+        ' Do the other phrase if needed
+        If Not IsNothing(NotSearchItems) Then
+            For i = 0 To NotSearchItems.Count - 1
+                NotSearchClause = NotSearchClause & "(" & Field1 & " " & NOTLikePhrase & "'%" & Trim(NotSearchItems(i)) & "%' "
+                If Field2 <> "" Then
+                    NotSearchClause = NotSearchClause & "AND " & Field2 & " " & NOTLikePhrase & "'%" & Trim(NotSearchItems(i)) & "%') AND "
+                Else
+                    NotSearchClause = NotSearchClause & ") AND "
+                End If
+            Next
+
+            ' Clean up clause
+            NotSearchClause = "(" & NotSearchClause.Substring(0, NotSearchClause.Length - 5) & ")" ' Strip off the and
+
+        End If
+
+        If SearchClause <> "" And NotSearchClause <> "" Then
+            ReturnString = "(" & SearchClause & " AND " & NotSearchClause & ")"
+        ElseIf SearchClause <> "" Then
+            ReturnString = SearchClause
+        Else
+            ReturnString = NotSearchClause
+        End If
 
         Return ReturnString
 

@@ -6,8 +6,43 @@ Public Class Character
     Public KeyID As Long
     Public APIKey As String
     Public AccessMask As Long ' This number will define what access I have to the character's API
+
     Public ID As Long ' PK
     Public Name As String
+    Public HomeStationID As Long
+    Public DOB As Date
+    Public Race As String
+    Public BloodLineID As Integer
+    Public BloodLine As String
+    Public AncestryLineID As Integer
+    Public AncestryLine As String
+    Public Gender As String
+    Public AllianceName As String
+    Public AllianceID As Long
+    Public FactionName As String
+    Public FactionID As Integer
+    Public FreeSkillPoints As Integer
+    Public FreeRespecs As Integer
+    Public CloneJumpDate As Date
+    Public LastRespecDate As Date
+    Public LastTimedRespec As Date
+    Public RemoteStationDate As Date
+    Public JumpActivation As Date
+    Public JumpFatigue As Date
+    Public JumpLastUpdate As Date
+    Public Balance As Double
+
+    Public AttributeMemory As Integer
+    Public AttributeIntelligence As Integer
+    Public AttributeWillpower As Integer
+    Public AttributePerception As Integer
+    Public AttributeCharisma As Integer
+
+    Public JumpClones As List(Of JumpClone)
+    Public Implants As List(Of Implant)
+    Public CorpRoles As List(Of CorporationRole)
+    Public CorpTitles As List(Of CorporationTitle)
+
     Public OverrideSkills As Boolean
     Public IsDefault As Boolean
     Public APIExpiration As Date ' Date when the API key will expire
@@ -46,10 +81,45 @@ Public Class Character
         APIKey = ""
         ID = 0 ' PK
         Name = ""
+        Gender = ""
         CachedUntil = NoDate
         IsDefault = False
         AccessMask = 0
         APIExpiration = NoDate ' Date when this API key will expire
+
+        HomeStationID = 0
+        DOB = NoDate
+        Race = ""
+        BloodLineID = 0
+        BloodLine = ""
+        AncestryLineID = 0
+        AncestryLine = ""
+        Gender = ""
+        AllianceName = ""
+        AllianceID = 0
+        FactionName = ""
+        FactionID = 0
+        FreeSkillPoints = 0
+        FreeRespecs = 0
+        CloneJumpDate = NoDate
+        LastRespecDate = NoDate
+        LastTimedRespec = NoDate
+        RemoteStationDate = NoDate
+        JumpActivation = NoDate
+        JumpFatigue = NoDate
+        JumpLastUpdate = NoDate
+        Balance = 0
+
+        AttributeMemory = 0
+        AttributeIntelligence = 0
+        AttributeWillpower = 0
+        AttributePerception = 0
+        AttributeCharisma = 0
+
+        JumpClones = New List(Of JumpClone)
+        Implants = New List(Of Implant)
+        CorpRoles = New List(Of CorporationRole)
+        CorpTitles = New List(Of CorporationTitle)
 
         ' For each Access Mask, we can have different access
         SkillsAccess = False
@@ -129,6 +199,7 @@ Public Class Character
             APIKey = "No Key"
             AccessMask = 0
             Name = None
+            Gender = ""
             IsDefault = True
             OverrideSkills = False
 
@@ -145,7 +216,7 @@ Public Class Character
             SQL = SQL & "'" & Format(Jobs.CachedUntil, SQLiteDateFormat) & "',"
             SQL = SQL & "'" & Format(DatacoreAgents.CachedUntil, SQLiteDateFormat) & "',"
             SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "',"
-            SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "')"
+            SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "','Male')"
 
             Call evedb.ExecuteNonQuerySQL(SQL)
 
@@ -296,7 +367,7 @@ Public Class Character
             CombinedKeyData.ID = ID
 
             ' Load the skills from DB for this character locally
-            Call LoadSkills(False, UpdatedNewData)
+            Call LoadCharacterSheet(False, UpdatedNewData)
 
             ' Load the standings for this character
             Call LoadCharacterStandings(UpdatedNewData)
@@ -372,6 +443,323 @@ Public Class Character
         Return ReturnLocations
 
     End Function
+
+    ' Updates and Loads the character sheet and skills from DB - Should be public for processing skills in the skill window
+    Public Sub LoadCharacterSheet(Optional ByVal LoadAllSkillsforOverride As Boolean = False, Optional UpdateAPIData As Boolean = True, Optional SkillNameFilter As String = "")
+        Dim rsData As SQLiteDataReader
+        Dim SQL As String
+
+        ' First Update the data from API
+        Call UpdateCharacterSheet(UpdateAPIData)
+
+        ' Start with character info
+        SQL = "SELECT HOME_STATION_ID, DOB, RACE, BLOOD_LINE_ID, BLOOD_LINE, ANCESTRY_LINE_ID, ANCESTRY_LINE, GENDER, ALLIANCE_NAME, ALLIANCE_ID, "
+        SQL = SQL & " FACTION_NAME, FACTION_ID, FREE_SKILL_POINTS, FREE_RESPECS, CLONE_JUMP_DATE, LAST_RESPEC_DATE, "
+        SQL = SQL & "LAST_TIMED_RESPEC, REMOTE_STATION_DATE, JUMP_ACTIVATION, JUMP_FATIGUE, JUMP_LAST_UPDATE, BALANCE, "
+        SQL = SQL & "INTELLIGENCE, MEMORY, WILLPOWER, PERCEPTION, CHARISMA FROM CHARACTER_SHEET WHERE CHARACTER_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            With rsData
+                HomeStationID = .GetInt64(0)
+                DOB = CDate(.GetString(1))
+                Race = .GetString(2)
+                BloodLineID = .GetInt32(3)
+                BloodLine = .GetString(4)
+                AncestryLineID = .GetInt32(5)
+                AncestryLine = .GetString(6)
+                Gender = .GetString(7)
+                AllianceName = .GetString(8)
+                AllianceID = .GetInt64(9)
+                FactionName = .GetString(10)
+                FactionID = .GetInt32(11)
+                FreeSkillPoints = .GetInt32(12)
+                FreeRespecs = .GetInt32(13)
+                CloneJumpDate = CDate(.GetString(14))
+                LastRespecDate = CDate(.GetString(15))
+                LastTimedRespec = CDate(.GetString(16))
+                RemoteStationDate = CDate(.GetString(17))
+                JumpActivation = CDate(.GetString(18))
+                JumpFatigue = CDate(.GetString(19))
+                JumpLastUpdate = CDate(.GetString(20))
+                Balance = .GetDouble(21)
+
+                AttributeMemory = .GetInt32(22)
+                AttributeIntelligence = .GetInt32(23)
+                AttributeWillpower = .GetInt32(24)
+                AttributePerception = .GetInt32(25)
+                AttributeCharisma = .GetInt32(26)
+            End With
+        End While
+
+        rsData.Close()
+
+        ' Add jump clones
+        SQL = "SELECT JUMP_CLONE_ID, LOCATION_ID, TYPE_ID, CLONE_NAME "
+        SQL = SQL & "FROM CHARACTER_JUMP_CLONES WHERE CHARACTER_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            With rsData
+                Dim TempJC As New JumpClone
+                TempJC.JumpCloneID = rsData.GetInt64(0)
+                TempJC.LocationID = rsData.GetInt64(1)
+                TempJC.TypeID = rsData.GetInt64(2)
+                TempJC.CloneName = rsData.GetString(3)
+
+                JumpClones.Add(TempJC)
+            End With
+        End While
+
+        rsData.Close()
+
+        ' Now implants
+        SQL = "SELECT JUMP_CLONE_ID, IMPLANT_ID, IMPLANT_NAME "
+        SQL = SQL & "FROM CHARACTER_IMPLANTS WHERE CHARACTER_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            With rsData
+                Dim TempImplant As New Implant
+                TempImplant.JumpCloneID = rsData.GetInt64(0)
+                TempImplant.ImplantID = rsData.GetInt64(1)
+                TempImplant.ImplantName = rsData.GetString(2)
+
+                Implants.Add(TempImplant)
+            End With
+        End While
+
+        rsData.Close()
+
+        ' Corp Roles
+        SQL = "SELECT ROLE_TYPE, ROLE_ID, ROLE_NAME "
+        SQL = SQL & "FROM CHARACTER_CORP_ROLES WHERE CHARACTER_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            With rsData
+                Dim TempRole As New CorporationRole
+                TempRole.RoleType = rsData.GetString(0)
+                TempRole.RoleID = rsData.GetInt64(1)
+                TempRole.RoleName = rsData.GetString(2)
+
+                CorpRoles.Add(TempRole)
+            End With
+        End While
+
+        rsData.Close()
+
+        ' Corp Titles
+        SQL = "SELECT Title_ID, Title_NAME "
+        SQL = SQL & "FROM CHARACTER_CORP_TitleS WHERE CHARACTER_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            With rsData
+                Dim TempTitle As New CorporationTitle
+                TempTitle.TitleID = rsData.GetInt32(0)
+                TempTitle.TitleName = rsData.GetString(2)
+
+                CorpTitles.Add(TempTitle)
+            End With
+        End While
+
+        rsData.Close()
+
+        ' Reset Local Skills Variable
+        Skills = New EVESkillList
+
+        ' Get all skills and set skill to 0 if they don't have it
+        SQL = "SELECT SKILLS.SKILL_TYPE_ID,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_LEVEL END AS SKILL_LEVEL,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_POINTS IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_POINTS END AS SKILL_POINTS,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
+        SQL = SQL & "FROM SKILLS LEFT OUTER JOIN "
+        SQL = SQL & "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & ID & ") AS CHAR_SKILLS "
+        SQL = SQL & "ON (SKILLS.SKILL_TYPE_ID = CHAR_SKILLS.SKILL_TYPE_ID) "
+        If SkillNameFilter <> "" Then
+            SQL = SQL & " WHERE SKILLS.SKILL_TYPE_ID IN (SELECT SKILL_TYPE_ID FROM SKILLS WHERE SKILL_NAME LIKE '%" & FormatDBString(SkillNameFilter) & "%') "
+        End If
+        SQL = SQL & "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            ' Insert skill
+            If UserApplicationSettings.AllowSkillOverride And CBool(rsData.GetInt32(3)) And LoadAllSkillsforOverride Then
+                ' Use the override skill if set, save the old skill level in the override so we can reference it later if needed
+                Skills.InsertSkill(rsData.GetInt64(0), rsData.GetInt32(4), rsData.GetInt64(2), CBool(rsData.GetInt32(3)), rsData.GetInt32(1))
+            Else ' Just normal skills
+                Skills.InsertSkill(rsData.GetInt64(0), rsData.GetInt32(1), rsData.GetInt64(2), CBool(rsData.GetInt32(3)), rsData.GetInt32(4))
+            End If
+
+        End While
+
+        rsData.Close()
+        rsData = Nothing
+        DBCommand = Nothing
+
+    End Sub
+
+    ' Gets the Character Skills from API for this character and inserts them into the Database for later queries
+    Private Sub UpdateCharacterSheet(UpdateAPIData As Boolean)
+        Dim readerCharacter As SQLiteDataReader
+        Dim SQL As String
+        Dim API As New EVEAPI
+        Dim i As Integer
+        Dim TempSheet As New CharacterSheet
+        Dim SingleSkill As New EVESkillList
+        Dim SkillList As String = ""
+
+        ' See if we are doing an API update 
+        If Not UpdateAPIData Then
+            Exit Sub
+        End If
+
+        If ID = 0 Then
+            ' Don't run update for dummy
+            Exit Sub
+        End If
+
+        CombinedKeyData.Access = SkillsAccess
+
+        ' Get skill data from API
+        TempSheet = API.GetCharacterSheet(CombinedKeyData)
+
+        If Not NoAPIError(API.GetErrorText, "Character") Then
+            ' Errored, exit
+            Exit Sub
+        End If
+
+        ' Update the Character sheet first
+        ' Delete since this is refreshed each time
+        SQL = "DELETE FROM CHARACTER_SHEET WHERE CHARACTER_ID = " & CStr(ID)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        With TempSheet
+            SQL = "INSERT INTO CHARACTER_SHEET (CHARACTER_ID, CHARACTER_NAME, HOME_STATION_ID, DOB, RACE, BLOOD_LINE_ID, BLOOD_LINE, "
+            SQL = SQL & "ANCESTRY_LINE_ID, ANCESTRY_LINE, GENDER, CORPORATION_NAME, CORPORATION_ID, ALLIANCE_NAME, ALLIANCE_ID, FACTION_NAME, "
+            SQL = SQL & "FACTION_ID, FREE_SKILL_POINTS, FREE_RESPECS, CLONE_JUMP_DATE, LAST_RESPEC_DATE, LAST_TIMED_RESPEC, REMOTE_STATION_DATE,"
+            SQL = SQL & "JUMP_ACTIVATION, JUMP_FATIGUE, JUMP_LAST_UPDATE, BALANCE, INTELLIGENCE, MEMORY, WILLPOWER, PERCEPTION, CHARISMA) VALUES ("
+            SQL = SQL & CStr(.CharacterID) & ",'" & FormatDBString(.CharacterName) & "'," & CStr(.HomeStationID) & ",'" & Format(.DOB, SQLiteDateFormat) & "','"
+            SQL = SQL & FormatDBString(.Race) & "'," & CStr(.BloodLineID) & ",'" & .BloodLine & "'," & CStr(.AncestryLineID) & ",'" & FormatDBString(.AncestryLine) & "','" & .Gender & "','"
+            SQL = SQL & FormatDBString(.CorporationName) & "'," & CStr(.CorporationID) & ",'" & FormatDBString(.AllianceName) & "'," & CStr(.AllianceID) & ",'" & FormatDBString(.FactionName) & "',"
+            SQL = SQL & CStr(.FactionID) & "," & CStr(.FreeSkillPoints) & "," & CStr(.FreeRespecs) & ",'" & Format(.CloneJumpDate, SQLiteDateFormat) & "','"
+            SQL = SQL & Format(.LastRespecDate, SQLiteDateFormat) & "','" & Format(.LastTimedRespec, SQLiteDateFormat) & "','" & Format(.RemoteStationDate, SQLiteDateFormat) & "','"
+            SQL = SQL & Format(.JumpActivation, SQLiteDateFormat) & "','" & Format(.JumpFatigue, SQLiteDateFormat) & "','" & Format(.JumpLastUpdate, SQLiteDateFormat) & "',"
+            SQL = SQL & CStr(.Balance) & "," & CStr(.AttributeIntelligence) & "," & CStr(.AttributeMemory) & ","
+            SQL = SQL & CStr(.AttributeWillpower) & "," & CStr(.AttributePerception) & "," & CStr(.AttributeCharisma) & ")"
+        End With
+
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        ' Implants
+        SQL = "DELETE FROM CHARACTER_IMPLANTS WHERE CHARACTER_ID = " & CStr(ID)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        With TempSheet
+            For i = 0 To .Implants.Count - 1
+                SQL = "INSERT INTO CHARACTER_IMPLANTS (CHARACTER_ID, JUMP_CLONE_ID, IMPLANT_ID, IMPLANT_NAME) "
+                SQL = SQL & " VALUES (" & CStr(.CharacterID) & "," & CStr(.Implants(i).JumpCloneID) & "," & CStr(.Implants(i).ImplantID) & ",'" & FormatDBString(.Implants(i).ImplantName) & "')"
+            Next
+        End With
+
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        ' Jump Clones
+        SQL = "DELETE FROM CHARACTER_JUMP_CLONES WHERE CHARACTER_ID = " & CStr(ID)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        With TempSheet
+            For i = 0 To .JumpClones.Count - 1
+                SQL = "INSERT INTO CHARACTER_JUMP_CLONES (CHARACTER_ID, JUMP_CLONE_ID, LOCATION_ID, TYPE_ID, CLONE_NAME) "
+                SQL = SQL & " VALUES (" & CStr(.CharacterID) & "," & CStr(.JumpClones(i).JumpCloneID) & "," & CStr(.JumpClones(i).LocationID) & "," & CStr(.JumpClones(i).TypeID) & ",'" & FormatDBString(.JumpClones(i).CloneName) & "')"
+            Next
+        End With
+
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        ' Corp Roles
+        SQL = "DELETE FROM CHARACTER_CORP_ROLES WHERE CHARACTER_ID = " & CStr(ID)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        With TempSheet
+            For i = 0 To .CorporationRoles.Count - 1
+                SQL = "INSERT INTO CHARACTER_CORP_ROLES (CHARACTER_ID, ROLE_TYPE, ROLE_ID, ROLE_NAME) "
+                SQL = SQL & " VALUES (" & CStr(.CharacterID) & ",'" & .CorporationRoles(i).RoleType & "'," & CStr(.CorporationRoles(i).RoleID) & ",'" & FormatDBString(.CorporationRoles(i).RoleName) & "')"
+            Next
+        End With
+
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        ' Corp Titles
+        SQL = "DELETE FROM CHARACTER_CORP_TITLES WHERE CHARACTER_ID = " & CStr(ID)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        With TempSheet
+            For i = 0 To .CorporationTitles.Count - 1
+                SQL = "INSERT INTO CHARACTER_CORP_TITLES (CHARACTER_ID, TITLE_ID, TITLE_NAME) "
+                SQL = SQL & " VALUES (" & CStr(.CharacterID) & "," & CStr(.CorporationTitles(i).TitleID) & ",'" & FormatDBString(.CorporationTitles(i).TitleName) & "')"
+            Next
+        End With
+
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        ' Now skills
+        ' Clean out any skills not in the temp skills, make this first. This will ignore any skills the person may have over-ridden and added
+        For i = 0 To TempSheet.CharacterSkills.GetSkillList.Count - 1
+            SkillList = SkillList & TempSheet.CharacterSkills.GetSkillList(i).TypeID & ","
+        Next
+
+        ' Strip comma
+        SkillList = SkillList.Substring(0, Len(SkillList) - 1)
+
+        ' Delete the temp skills but not any that are overridden
+        SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & CStr(ID)
+        SQL = SQL & " AND OVERRIDE_SKILL <> -1"
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        Call EVEDB.BeginSQLiteTransaction()
+
+        ' Insert skill data
+        For i = 0 To TempSheet.CharacterSkills.GetSkillList.Count - 1
+
+            ' Check for skill and update if there
+            SQL = "SELECT 'X' FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & TempSheet.CharacterSkills.GetSkillList(i).TypeID & " AND CHARACTER_ID =" & CStr(ID)
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerCharacter = DBCommand.ExecuteReader
+
+            If Not readerCharacter.HasRows Then
+                ' Insert skill data
+                SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
+                SQL = SQL & " VALUES (" & ID & "," & TempSheet.CharacterSkills.GetSkillList(i).TypeID & ",'" & TempSheet.CharacterSkills.GetSkillList(i).Name & "',"
+                SQL = SQL & TempSheet.CharacterSkills.GetSkillList(i).SkillPoints & "," & TempSheet.CharacterSkills.GetSkillList(i).Level & ",0,0)"
+            Else
+                ' Update skill data
+                SQL = "UPDATE CHARACTER_SKILLS SET "
+                SQL = SQL & "SKILL_TYPE_ID = " & TempSheet.CharacterSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempSheet.CharacterSkills.GetSkillList(i).Name & "',"
+                SQL = SQL & "SKILL_POINTS = " & TempSheet.CharacterSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempSheet.CharacterSkills.GetSkillList(i).Level & " "
+                SQL = SQL & "WHERE CHARACTER_ID = " & ID & " AND SKILL_TYPE_ID = " & TempSheet.CharacterSkills.GetSkillList(i).TypeID
+            End If
+
+            readerCharacter.Close()
+            readerCharacter = Nothing
+
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+        Next
+
+        Call EVEDB.CommitSQLiteTransaction()
+
+    End Sub
 
 #Region "Standings Processing"
 
@@ -450,135 +838,6 @@ Public Class Character
 
             DBCommand = Nothing
         End If
-
-        Call EVEDB.CommitSQLiteTransaction()
-
-    End Sub
-
-#End Region
-
-#Region "Skills Processing"
-
-    ' Updates and Loads the character's skills from DB - Should be public for processing skills in the skill window
-    Public Sub LoadSkills(Optional ByVal LoadAllSkillsforOverride As Boolean = False, Optional UpdateAPIData As Boolean = True, Optional SkillNameFilter As String = "")
-        Dim readerSkills As SQLiteDataReader
-        Dim SQL As String
-
-        ' First Update the data from API
-        Call UpdateCharacterSkills(UpdateAPIData)
-
-        ' Reset Local Variable
-        Skills = New EVESkillList
-
-        ' Get all skills and set skill to 0 if they don't have it
-        SQL = "SELECT SKILLS.SKILL_TYPE_ID,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_LEVEL END AS SKILL_LEVEL,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_POINTS IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_POINTS END AS SKILL_POINTS,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
-        SQL = SQL & "FROM SKILLS LEFT OUTER JOIN "
-        SQL = SQL & "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & ID & ") AS CHAR_SKILLS "
-        SQL = SQL & "ON (SKILLS.SKILL_TYPE_ID = CHAR_SKILLS.SKILL_TYPE_ID) "
-        If SkillNameFilter <> "" Then
-            SQL = SQL & " WHERE SKILLS.SKILL_TYPE_ID IN (SELECT SKILL_TYPE_ID FROM SKILLS WHERE SKILL_NAME LIKE '%" & FormatDBString(SkillNameFilter) & "%') "
-        End If
-        SQL = SQL & "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerSkills = DBCommand.ExecuteReader
-
-        While readerSkills.Read
-            ' Insert skill
-            If UserApplicationSettings.AllowSkillOverride And CBool(readerSkills.GetInt32(3)) And LoadAllSkillsforOverride Then
-                ' Use the override skill if set, save the old skill level in the override so we can reference it later if needed
-                Skills.InsertSkill(readerSkills.GetInt64(0), readerSkills.GetInt32(4), readerSkills.GetInt64(2), CBool(readerSkills.GetInt32(3)), readerSkills.GetInt32(1))
-            Else ' Just normal skills
-                Skills.InsertSkill(readerSkills.GetInt64(0), readerSkills.GetInt32(1), readerSkills.GetInt64(2), CBool(readerSkills.GetInt32(3)), readerSkills.GetInt32(4))
-            End If
-
-        End While
-
-        readerSkills.Close()
-        readerSkills = Nothing
-        DBCommand = Nothing
-
-    End Sub
-
-    ' Gets the Character Skills from API for this character and inserts them into the Database for later queries
-    Private Sub UpdateCharacterSkills(UpdateAPIData As Boolean)
-        Dim readerCharacter As SQLiteDataReader
-        Dim SQL As String
-        Dim API As New EVEAPI
-        Dim i As Integer
-        Dim TempSkills As New EVESkillList
-        Dim SingleSkill As New EVESkillList
-        Dim SkillList As String = ""
-
-        ' See if we are doing an API update 
-        If Not UpdateAPIData Then
-            Exit Sub
-        End If
-
-        If ID = 0 Then
-            ' Don't run update for dummy
-            Exit Sub
-        End If
-
-        CombinedKeyData.Access = SkillsAccess
-
-        ' Get skill data from API
-        TempSkills = API.GetCharacterSkills(CombinedKeyData)
-
-        If Not NoAPIError(API.GetErrorText, "Character") Then
-            ' Errored, exit
-            Exit Sub
-        End If
-
-        ' Clean out any skills not in the temp skills, make this first. This will ignore any skills the person may have over-ridden and added
-        For i = 0 To TempSkills.GetSkillList.Count - 1
-            SkillList = SkillList & TempSkills.GetSkillList(i).TypeID & ","
-        Next
-
-        ' Strip comma
-        SkillList = SkillList.Substring(0, Len(SkillList) - 1)
-
-        ' Delete the temp skills but not any that are overridden
-        SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & ID
-        SQL = SQL & " AND OVERRIDE_SKILL <> -1"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerCharacter = DBCommand.ExecuteReader
-
-        Call EVEDB.BeginSQLiteTransaction()
-
-        ' Insert skill data
-        For i = 0 To TempSkills.GetSkillList.Count - 1
-
-            ' Check for skill and update if there
-            SQL = "SELECT 'X' FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & " AND CHARACTER_ID =" & ID
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerCharacter = DBCommand.ExecuteReader
-
-            If Not readerCharacter.HasRows Then
-                ' Insert skill data
-                SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
-                SQL = SQL & " VALUES (" & ID & "," & TempSkills.GetSkillList(i).TypeID & ",'" & TempSkills.GetSkillList(i).Name & "',"
-                SQL = SQL & TempSkills.GetSkillList(i).SkillPoints & "," & TempSkills.GetSkillList(i).Level & ",0,0)"
-            Else
-                ' Update skill data
-                SQL = "UPDATE CHARACTER_SKILLS SET "
-                SQL = SQL & "SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempSkills.GetSkillList(i).Name & "',"
-                SQL = SQL & "SKILL_POINTS = " & TempSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempSkills.GetSkillList(i).Level & " "
-                SQL = SQL & "WHERE CHARACTER_ID = " & ID & " AND SKILL_TYPE_ID = " & TempSkills.GetSkillList(i).TypeID
-            End If
-
-            readerCharacter.Close()
-            readerCharacter = Nothing
-
-            Call evedb.ExecuteNonQuerySQL(SQL)
-
-        Next
 
         Call EVEDB.CommitSQLiteTransaction()
 

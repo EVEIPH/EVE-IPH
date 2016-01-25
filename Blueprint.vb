@@ -168,12 +168,15 @@ Public Class Blueprint
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
+    ' Helps determine if this is a component that might need special processing
+    Private IsComponentBP As Boolean
+
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
                    ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character, _
                    ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double, BPProductionTeam As IndustryTeam, _
                    ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionTeam As IndustryTeam, ByVal BPComponentProductionFacility As IndustryFacility, _
-                   ByVal BPCapComponentProductionFacility As IndustryFacility)
+                   ByVal BPCapComponentProductionFacility As IndustryFacility, Optional ByVal ComponentBP As Boolean = False)
 
         Dim readerBP As SQLiteDataReader
         Dim readerCost As SQLiteDataReader
@@ -388,6 +391,8 @@ Public Class Blueprint
 
         ' Implement passing in the runs per copy later based on user API, right now though this is unlimited
         MaxRunsPerBP = 0
+
+        IsComponentBP = ComponentBP
 
         ProductionChain = New List(Of List(Of Integer))
 
@@ -695,7 +700,7 @@ Public Class Blueprint
                     ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1, _
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
                                                    0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam, _
-                                                   ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
+                                                   ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -741,12 +746,12 @@ Public Class Blueprint
                 End If
             Next
 
-            ' Update the bp production time to equal the longest runs per line times the number of batches
-            BPProductionTime = BPProductionTime * Batches
+            ' Update the bp production time to equal the longest runs per line times the number of batches - add in copy and invention time if we invented
+            BPProductionTime = (BPProductionTime + CopyTime + InventionTime) * Batches
 
             ' Set the total production time
             If Not IsNothing(ComponentProductionTimes) Then
-                TotalProductionTime = BPProductionTime + GetComponentProductionTime(ComponentProductionTimes)
+                TotalProductionTime = BPProductionTime + GetComponentProductionTime(ComponentProductionTimes) + CopyTime + InventionTime
             End If
 
             ' Finally recalculate our prices
@@ -809,6 +814,11 @@ Public Class Blueprint
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
 
+                If IsComponentBP And PortionSize > 1 Then
+                    ' Reset the quantity to be for only the runs we need
+                    CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / PortionSize * UserRuns))
+                End If
+
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
@@ -846,7 +856,7 @@ Public Class Blueprint
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), CLng(CurrentMaterial.GetQuantity), TempME, TempTE, _
                               1, 1, BPCharacter, BPUserSettings, BuildBuy, _
                               0, ComponentManufacturingTeam, TempComponentFacility, _
-                              ComponentManufacturingTeam, ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
+                              ComponentManufacturingTeam, ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     ' Set this blueprint with the quantity needed and get it's mats
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)

@@ -126,10 +126,13 @@ Public Class ProgramSettings
     Public DefaultIgnoreSVRThresholdValue As Double = 0.0
     Public DefaultSVRAveragePriceRegion As String = "The Forge"
     Public DefaultSVRAveragePriceDuration As String = "7"
-    Public DefaultUseCRESTforHistory As Boolean = True
     Public DefaultAutoUpdateSVRonBPTab As Boolean = True
 
     Public DefaultIncludeInGameLinksinCopyText As Boolean = False
+
+    ' Proxy
+    Public DefaultProxyAddress As String = ""
+    Public DefaultProxyPort As Integer = 0
 
     ' For shopping list
     Public DefaultShopListIncludeInventMats As Boolean = True
@@ -253,13 +256,24 @@ Public Class ProgramSettings
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = False
-    Public DefaultPriceImportPriceType As String = "Minimum Sell"
     Public DefaultPriceSystem As String = "Jita"
     Public DefaultPriceRegion As String = ""
     Public DefaultPriceRawMatsCombo As String = "Max Buy"
     Public DefaultPriceItemsCombo As String = "Min Sell"
     Public DefaultUPColumnSort As Integer = 1
     Public DefaultUPColumnSortType As String = "Ascending"
+    Public DefaultRawPriceModifier As Double = 0
+    Public DefaultItemsPriceModifier As Double = 0
+    Public DefaultUseCRESTData As Boolean = False
+    Public DefaultUsePriceProfile As Boolean = False
+    Public DefaultPPRawPriceType As String = "Max Buy"
+    Public DefaultPPRawRegion As String = "The Forge"
+    Public DefaultPPRawSystem As String = "Jita"
+    Public DefaultPPRawPriceMod As Double = 0
+    Public DefaultPPItemsPriceType As String = "Min Sell"
+    Public DefaultPPItemsRegion As String = "The Forge"
+    Public DefaultPPItemsSystem As String = "Jita"
+    Public DefaultPPItemsPriceMod As Double = 0
 
     ' Default Manufacturing Tab
     Public DefaultBlueprintType As String = "All Blueprints"
@@ -301,7 +315,6 @@ Public Class ProgramSettings
     Public DefaultCheckRelicMalfunction As Boolean = False
     Public DefaultCheckOnlyBuild As Boolean = False
     Public DefaultCheckOnlyInvent As Boolean = False
-    Public DefaultCheckOnlyRE As Boolean = False
     Public DefaultCheckIncludeTaxes As Boolean = True
     Public DefaultIncludeBrokersFees As Boolean = True
     Public DefaultCheckIncludeUsage As Boolean = True
@@ -1139,8 +1152,9 @@ Public Class ProgramSettings
                     .IgnoreSVRThresholdValue = CDbl(GetSettingValue(AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "IgnoreSVRThresholdValue", DefaultIgnoreSVRThresholdValue))
                     .SVRAveragePriceRegion = CStr(GetSettingValue(AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceRegion", DefaultSVRAveragePriceRegion))
                     .SVRAveragePriceDuration = CStr(GetSettingValue(AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceDuration", DefaultSVRAveragePriceDuration))
-                    .UseCRESTforHistory = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseCRESTforHistory", DefaultUseCRESTforHistory))
                     .AutoUpdateSVRonBPTab = CBool(GetSettingValue(AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AutoUpdateSVRonBPTab", DefaultAutoUpdateSVRonBPTab))
+                    .ProxyAddress = CStr(GetSettingValue(AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "ProxyAddress", DefaultProxyAddress))
+                    .ProxyPort = CInt(GetSettingValue(AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "ProxyPort", DefaultProxyPort))
                 End With
 
             Else
@@ -1201,8 +1215,10 @@ Public Class ProgramSettings
             .IgnoreSVRThresholdValue = DefaultIgnoreSVRThresholdValue
             .SVRAveragePriceRegion = DefaultSVRAveragePriceRegion
             .SVRAveragePriceDuration = DefaultSVRAveragePriceDuration
-            .UseCRESTforHistory = DefaultUseCRESTforHistory
             .AutoUpdateSVRonBPTab = DefaultAutoUpdateSVRonBPTab
+
+            .ProxyAddress = DefaultProxyAddress
+            .ProxyPort = DefaultProxyPort
         End With
 
         ' Save locally
@@ -1213,7 +1229,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(28) As Setting
+        Dim ApplicationSettingsList(29) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1243,8 +1259,9 @@ Public Class ProgramSettings
             ApplicationSettingsList(24) = New Setting("IgnoreSVRThresholdValue", CStr(SentSettings.IgnoreSVRThresholdValue))
             ApplicationSettingsList(25) = New Setting("SVRAveragePriceRegion", CStr(SentSettings.SVRAveragePriceRegion))
             ApplicationSettingsList(26) = New Setting("SVRAveragePriceDuration", CStr(SentSettings.SVRAveragePriceDuration))
-            ApplicationSettingsList(27) = New Setting("UseCRESTforHistory", CStr(SentSettings.UseCRESTforHistory))
-            ApplicationSettingsList(28) = New Setting("AutoUpdateSVRonBPTab", CStr(SentSettings.AutoUpdateSVRonBPTab))
+            ApplicationSettingsList(27) = New Setting("AutoUpdateSVRonBPTab", CStr(SentSettings.AutoUpdateSVRonBPTab))
+            ApplicationSettingsList(28) = New Setting("ProxyAddress", CStr(SentSettings.ProxyAddress))
+            ApplicationSettingsList(29) = New Setting("ProxyPort", CStr(SentSettings.ProxyPort))
 
             Call WriteSettingsToFile(AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1614,13 +1631,27 @@ Public Class ProgramSettings
 
                     .SelectedRegions = RegionList
                     .SelectedSystem = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedSystem", DefaultPriceSystem))
-                    .PriceImportType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PriceImportType", DefaultPriceImportPriceType))
                     .ItemsCombo = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ItemsCombo", DefaultPriceItemsCombo))
                     .RawMatsCombo = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "RawMatsCombo", DefaultPriceRawMatsCombo))
+
+                    .RawPriceModifier = CDbl(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "RawPriceModifier", DefaultRawPriceModifier))
+                    .ItemsPriceModifier = CDbl(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "ItemsPriceModifier", DefaultItemsPriceModifier))
+
+                    .UseCRESTData = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UseCRESTData", DefaultUseCRESTData))
+                    .UsePriceProfile = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UsePriceProfile", DefaultUsePriceProfile))
 
                     .ColumnSort = CInt(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "ColumnSort", DefaultUPColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ColumnSortType", DefaultUPColumnSortType))
 
+                    .PPRawPriceType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPRawPriceType", DefaultPPRawPriceType))
+                    .PPRawRegion = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPRawRegion", DefaultPPRawRegion))
+                    .PPRawSystem = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPRawSystem", DefaultPPRawSystem))
+                    .PPRawPriceMod = CDbl(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "PPRawPriceMod", DefaultPPRawPriceMod))
+
+                    .PPItemsPriceType = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPItemsPriceType", DefaultPPItemsPriceType))
+                    .PPItemsRegion = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPItemsRegion", DefaultPPItemsRegion))
+                    .PPItemsSystem = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPItemsSystem", DefaultPPItemsSystem))
+                    .PPItemsPriceMod = CDbl(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "PPItemsPriceMod", DefaultPPItemsPriceMod))
                 End With
 
             Else
@@ -1643,7 +1674,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(51) As Setting
+        Dim UpdatePricesSettingsList(62) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1699,21 +1730,35 @@ Public Class ProgramSettings
             End If
             UpdatePricesSettingsList(39) = New Setting("SelectedRegions", RegionList)
             UpdatePricesSettingsList(40) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
-            UpdatePricesSettingsList(41) = New Setting("PriceImportType", CStr(PriceSettings.PriceImportType))
-            UpdatePricesSettingsList(42) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
-            UpdatePricesSettingsList(43) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
+            UpdatePricesSettingsList(41) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
+            UpdatePricesSettingsList(42) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
 
-            UpdatePricesSettingsList(44) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
-            UpdatePricesSettingsList(45) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(43) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
+            UpdatePricesSettingsList(44) = New Setting("Misc", CStr(PriceSettings.Misc))
 
-            UpdatePricesSettingsList(46) = New Setting("Deployables", CStr(PriceSettings.Deployables))
-            UpdatePricesSettingsList(47) = New Setting("Celestials", CStr(PriceSettings.Celestials))
-            UpdatePricesSettingsList(48) = New Setting("Implants", CStr(PriceSettings.Implants))
+            UpdatePricesSettingsList(45) = New Setting("Deployables", CStr(PriceSettings.Deployables))
+            UpdatePricesSettingsList(46) = New Setting("Celestials", CStr(PriceSettings.Celestials))
+            UpdatePricesSettingsList(47) = New Setting("Implants", CStr(PriceSettings.Implants))
 
-            UpdatePricesSettingsList(49) = New Setting("BPCs", CStr(PriceSettings.BPCs))
+            UpdatePricesSettingsList(48) = New Setting("BPCs", CStr(PriceSettings.BPCs))
 
-            UpdatePricesSettingsList(50) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
-            UpdatePricesSettingsList(51) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
+            UpdatePricesSettingsList(49) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
+            UpdatePricesSettingsList(50) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
+
+            UpdatePricesSettingsList(51) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
+            UpdatePricesSettingsList(52) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
+            UpdatePricesSettingsList(53) = New Setting("UseCRESTData", CStr(PriceSettings.UseCRESTData))
+            UpdatePricesSettingsList(54) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
+
+            UpdatePricesSettingsList(55) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
+            UpdatePricesSettingsList(56) = New Setting("PPRawRegion", CStr(PriceSettings.PPRawRegion))
+            UpdatePricesSettingsList(57) = New Setting("PPRawSystem", CStr(PriceSettings.PPRawSystem))
+            UpdatePricesSettingsList(58) = New Setting("PPRawPriceMod", CStr(PriceSettings.PPRawPriceMod))
+
+            UpdatePricesSettingsList(59) = New Setting("PPItemsPriceType", CStr(PriceSettings.PPItemsPriceType))
+            UpdatePricesSettingsList(60) = New Setting("PPItemsRegion", CStr(PriceSettings.PPItemsRegion))
+            UpdatePricesSettingsList(61) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
+            UpdatePricesSettingsList(62) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
             Call WriteSettingsToFile(UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1774,11 +1819,23 @@ Public Class ProgramSettings
             .Storyline = DefaultPriceChecks
             .SelectedRegions = Nothing
             .SelectedSystem = DefaultPriceSystem
-            .PriceImportType = DefaultPriceImportPriceType
             .ItemsCombo = DefaultPriceItemsCombo
             .RawMatsCombo = DefaultPriceRawMatsCombo
             .ColumnSort = DefaultUPColumnSort
             .ColumnSortType = DefaultUPColumnSortType
+            .RawPriceModifier = DefaultRawPriceModifier
+            .ItemsPriceModifier = DefaultItemsPriceModifier
+            .UseCRESTData = DefaultUseCRESTData
+            .UsePriceProfile = DefaultUsePriceProfile
+
+            .PPItemsPriceType = DefaultPPItemsPriceType
+            .PPItemsRegion = DefaultPPItemsRegion
+            .PPItemsSystem = DefaultPPItemsSystem
+            .PPItemsPriceMod = DefaultPPItemsPriceMod
+            .PPRawPriceType = DefaultPPRawPriceType
+            .PPRawRegion = DefaultPPRawRegion
+            .PPRawSystem = DefaultPPRawSystem
+            .PPRawPriceMod = DefaultPPRawPriceMod
         End With
 
         ' Save locally
@@ -1843,7 +1900,6 @@ Public Class ProgramSettings
                     .CheckRelicMalfunction = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicMalfunction", DefaultCheckRelicMalfunction))
                     .CheckOnlyBuild = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyBuild", DefaultCheckOnlyBuild))
                     .CheckOnlyInvent = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyInvent", DefaultCheckOnlyInvent))
-                    .CheckOnlyRE = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyRE", DefaultCheckOnlyRE))
                     .CheckIncludeTaxes = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeTaxes", DefaultCheckIncludeTaxes))
                     .CheckIncludeBrokersFees = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeBrokersFees", DefaultIncludeBrokersFees))
                     .CheckIncludeUsage = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeUsage", DefaultCheckIncludeUsage))
@@ -1941,7 +1997,6 @@ Public Class ProgramSettings
             .CheckRelicMalfunction = DefaultCheckRelicMalfunction
             .CheckOnlyBuild = DefaultCheckOnlyBuild
             .CheckOnlyInvent = DefaultCheckOnlyInvent
-            .CheckOnlyRE = DefaultCheckOnlyRE
             .CheckIncludeTaxes = DefaultCheckIncludeTaxes
             .CheckIncludeBrokersFees = DefaultIncludeBrokersFees
             .CheckIncludeUsage = DefaultCheckIncludeUsage
@@ -1985,7 +2040,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(72) As Setting
+        Dim ManufacturingSettingsList(71) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2019,48 +2074,47 @@ Public Class ProgramSettings
             ManufacturingSettingsList(28) = New Setting("CheckRelicMalfunction", CStr(SentSettings.CheckRelicMalfunction))
             ManufacturingSettingsList(29) = New Setting("CheckOnlyBuild", CStr(SentSettings.CheckOnlyBuild))
             ManufacturingSettingsList(30) = New Setting("CheckOnlyInvent", CStr(SentSettings.CheckOnlyInvent))
-            ManufacturingSettingsList(31) = New Setting("CheckOnlyRE", CStr(SentSettings.CheckOnlyRE))
-            ManufacturingSettingsList(32) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
-            ManufacturingSettingsList(33) = New Setting("CheckIncludeUsage", CStr(SentSettings.CheckIncludeUsage))
-            ManufacturingSettingsList(34) = New Setting("CheckRaceAmarr", CStr(SentSettings.CheckRaceAmarr))
-            ManufacturingSettingsList(35) = New Setting("CheckRaceCaldari", CStr(SentSettings.CheckRaceCaldari))
-            ManufacturingSettingsList(36) = New Setting("CheckRaceGallente", CStr(SentSettings.CheckRaceGallente))
-            ManufacturingSettingsList(37) = New Setting("CheckRaceMinmatar", CStr(SentSettings.CheckRaceMinmatar))
-            ManufacturingSettingsList(38) = New Setting("CheckRacePirate", CStr(SentSettings.CheckRacePirate))
-            ManufacturingSettingsList(39) = New Setting("CheckRaceOther", CStr(SentSettings.CheckRaceOther))
-            ManufacturingSettingsList(40) = New Setting("PriceCompare", CStr(SentSettings.PriceCompare))
-            ManufacturingSettingsList(41) = New Setting("CheckIncludeT2Owned", CStr(SentSettings.CheckIncludeT2Owned))
-            ManufacturingSettingsList(42) = New Setting("CheckIncludeT3Owned", CStr(SentSettings.CheckIncludeT3Owned))
-            ManufacturingSettingsList(43) = New Setting("CheckSVRIncludeNull", CStr(SentSettings.CheckSVRIncludeNull))
-            ManufacturingSettingsList(44) = New Setting("ProductionLines", CStr(SentSettings.ProductionLines))
-            ManufacturingSettingsList(45) = New Setting("LaboratoryLines", CStr(SentSettings.LaboratoryLines))
-            ManufacturingSettingsList(46) = New Setting("CheckDecryptor09", CStr(SentSettings.CheckDecryptor09))
-            ManufacturingSettingsList(47) = New Setting("CheckDecryptor15", CStr(SentSettings.CheckDecryptor15))
-            ManufacturingSettingsList(48) = New Setting("CheckDecryptor19", CStr(SentSettings.CheckDecryptor19))
-            ManufacturingSettingsList(49) = New Setting("Runs", CStr(SentSettings.Runs))
-            ManufacturingSettingsList(50) = New Setting("CheckBPTypeCelestials", CStr(SentSettings.CheckBPTypeCelestials))
-            ManufacturingSettingsList(51) = New Setting("CheckBPTypeDeployables", CStr(SentSettings.CheckBPTypeDeployables))
-            ManufacturingSettingsList(52) = New Setting("CheckSmall", CStr(SentSettings.CheckSmall))
-            ManufacturingSettingsList(53) = New Setting("CheckMedium", CStr(SentSettings.CheckMedium))
-            ManufacturingSettingsList(54) = New Setting("CheckLarge", CStr(SentSettings.CheckLarge))
-            ManufacturingSettingsList(55) = New Setting("CheckXL", CStr(SentSettings.CheckXL))
-            ManufacturingSettingsList(56) = New Setting("CheckBPTypeStationParts", CStr(SentSettings.CheckBPTypeStationParts))
-            ManufacturingSettingsList(57) = New Setting("CheckIncludeBrokersFees", CStr(SentSettings.CheckIncludeBrokersFees))
-            ManufacturingSettingsList(58) = New Setting("CheckDecryptorUseforT2", CStr(SentSettings.CheckDecryptorUseforT2))
-            ManufacturingSettingsList(59) = New Setting("CheckDecryptorUseforT3", CStr(SentSettings.CheckDecryptorUseforT3))
-            ManufacturingSettingsList(60) = New Setting("CheckCapitalComponentsFacility", CStr(SentSettings.CheckCapitalComponentsFacility))
-            ManufacturingSettingsList(61) = New Setting("CheckT3DestroyerFacility", CStr(SentSettings.CheckT3DestroyerFacility))
-            ManufacturingSettingsList(62) = New Setting("BPRuns", CStr(SentSettings.BPRuns))
-            ManufacturingSettingsList(63) = New Setting("CheckAutoCalcNumBPs", CStr(SentSettings.CheckAutoCalcNumBPs))
-            ManufacturingSettingsList(64) = New Setting("IgnoreInvention", CStr(SentSettings.IgnoreInvention))
-            ManufacturingSettingsList(65) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
-            ManufacturingSettingsList(66) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
-            ManufacturingSettingsList(67) = New Setting("CalcPPU", CStr(SentSettings.CalcPPU))
-            ManufacturingSettingsList(68) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            ManufacturingSettingsList(69) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
-            ManufacturingSettingsList(70) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
-            ManufacturingSettingsList(71) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
-            ManufacturingSettingsList(72) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
+            ManufacturingSettingsList(31) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
+            ManufacturingSettingsList(32) = New Setting("CheckIncludeUsage", CStr(SentSettings.CheckIncludeUsage))
+            ManufacturingSettingsList(33) = New Setting("CheckRaceAmarr", CStr(SentSettings.CheckRaceAmarr))
+            ManufacturingSettingsList(34) = New Setting("CheckRaceCaldari", CStr(SentSettings.CheckRaceCaldari))
+            ManufacturingSettingsList(35) = New Setting("CheckRaceGallente", CStr(SentSettings.CheckRaceGallente))
+            ManufacturingSettingsList(36) = New Setting("CheckRaceMinmatar", CStr(SentSettings.CheckRaceMinmatar))
+            ManufacturingSettingsList(37) = New Setting("CheckRacePirate", CStr(SentSettings.CheckRacePirate))
+            ManufacturingSettingsList(38) = New Setting("CheckRaceOther", CStr(SentSettings.CheckRaceOther))
+            ManufacturingSettingsList(39) = New Setting("PriceCompare", CStr(SentSettings.PriceCompare))
+            ManufacturingSettingsList(40) = New Setting("CheckIncludeT2Owned", CStr(SentSettings.CheckIncludeT2Owned))
+            ManufacturingSettingsList(41) = New Setting("CheckIncludeT3Owned", CStr(SentSettings.CheckIncludeT3Owned))
+            ManufacturingSettingsList(42) = New Setting("CheckSVRIncludeNull", CStr(SentSettings.CheckSVRIncludeNull))
+            ManufacturingSettingsList(43) = New Setting("ProductionLines", CStr(SentSettings.ProductionLines))
+            ManufacturingSettingsList(44) = New Setting("LaboratoryLines", CStr(SentSettings.LaboratoryLines))
+            ManufacturingSettingsList(45) = New Setting("CheckDecryptor09", CStr(SentSettings.CheckDecryptor09))
+            ManufacturingSettingsList(46) = New Setting("CheckDecryptor15", CStr(SentSettings.CheckDecryptor15))
+            ManufacturingSettingsList(47) = New Setting("CheckDecryptor19", CStr(SentSettings.CheckDecryptor19))
+            ManufacturingSettingsList(48) = New Setting("Runs", CStr(SentSettings.Runs))
+            ManufacturingSettingsList(49) = New Setting("CheckBPTypeCelestials", CStr(SentSettings.CheckBPTypeCelestials))
+            ManufacturingSettingsList(50) = New Setting("CheckBPTypeDeployables", CStr(SentSettings.CheckBPTypeDeployables))
+            ManufacturingSettingsList(51) = New Setting("CheckSmall", CStr(SentSettings.CheckSmall))
+            ManufacturingSettingsList(52) = New Setting("CheckMedium", CStr(SentSettings.CheckMedium))
+            ManufacturingSettingsList(53) = New Setting("CheckLarge", CStr(SentSettings.CheckLarge))
+            ManufacturingSettingsList(54) = New Setting("CheckXL", CStr(SentSettings.CheckXL))
+            ManufacturingSettingsList(55) = New Setting("CheckBPTypeStationParts", CStr(SentSettings.CheckBPTypeStationParts))
+            ManufacturingSettingsList(56) = New Setting("CheckIncludeBrokersFees", CStr(SentSettings.CheckIncludeBrokersFees))
+            ManufacturingSettingsList(57) = New Setting("CheckDecryptorUseforT2", CStr(SentSettings.CheckDecryptorUseforT2))
+            ManufacturingSettingsList(58) = New Setting("CheckDecryptorUseforT3", CStr(SentSettings.CheckDecryptorUseforT3))
+            ManufacturingSettingsList(59) = New Setting("CheckCapitalComponentsFacility", CStr(SentSettings.CheckCapitalComponentsFacility))
+            ManufacturingSettingsList(60) = New Setting("CheckT3DestroyerFacility", CStr(SentSettings.CheckT3DestroyerFacility))
+            ManufacturingSettingsList(61) = New Setting("BPRuns", CStr(SentSettings.BPRuns))
+            ManufacturingSettingsList(62) = New Setting("CheckAutoCalcNumBPs", CStr(SentSettings.CheckAutoCalcNumBPs))
+            ManufacturingSettingsList(63) = New Setting("IgnoreInvention", CStr(SentSettings.IgnoreInvention))
+            ManufacturingSettingsList(64) = New Setting("IgnoreMinerals", CStr(SentSettings.IgnoreMinerals))
+            ManufacturingSettingsList(65) = New Setting("IgnoreT1Item", CStr(SentSettings.IgnoreT1Item))
+            ManufacturingSettingsList(66) = New Setting("CalcPPU", CStr(SentSettings.CalcPPU))
+            ManufacturingSettingsList(67) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            ManufacturingSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            ManufacturingSettingsList(69) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
+            ManufacturingSettingsList(70) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
+            ManufacturingSettingsList(71) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -5239,8 +5293,10 @@ Public Structure ApplicationSettings
     Dim IgnoreSVRThresholdValue As Double
     Dim SVRAveragePriceRegion As String
     Dim SVRAveragePriceDuration As String
-    Dim UseCRESTforHistory As Boolean
     Dim AutoUpdateSVRonBPTab As Boolean
+
+    Dim ProxyAddress As String
+    Dim ProxyPort As Integer
 
 End Structure
 
@@ -5338,23 +5394,18 @@ Public Structure UpdatePriceTabSettings
     Dim AllManufacturedItems As Boolean
     Dim Ships As Boolean
     Dim Charges As Boolean
-
     Dim Modules As Boolean
     Dim Drones As Boolean
     Dim Rigs As Boolean
-
     Dim Deployables As Boolean
     Dim Subsystems As Boolean
     Dim Boosters As Boolean
-
     Dim Structures As Boolean
     Dim Celestials As Boolean
     Dim StationComponents As Boolean
-
     Dim Tools As Boolean
     Dim FuelBlocks As Boolean
     Dim Implants As Boolean
-
     Dim CapT2Components As Boolean
     Dim CapitalComponents As Boolean
     Dim Components As Boolean
@@ -5370,9 +5421,25 @@ Public Structure UpdatePriceTabSettings
     Dim SelectedRegions As List(Of String) ' Could have several
     Dim SelectedSystem As String
 
-    Dim PriceImportType As String
+    ' The default price profile settings
+    Dim PPRawPriceType As String
+    Dim PPRawRegion As String
+    Dim PPRawSystem As String
+    Dim PPRawPriceMod As Double
+    Dim PPItemsPriceType As String
+    Dim PPItemsRegion As String
+    Dim PPItemsSystem As String
+    Dim PPItemsPriceMod As Double
+
+    ' For two price types
     Dim ItemsCombo As String
     Dim RawMatsCombo As String
+
+    Dim ItemsPriceModifier As Double
+    Dim RawPriceModifier As Double
+
+    Dim UseCRESTData As Boolean
+    Dim UsePriceProfile As Boolean
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
@@ -5433,7 +5500,6 @@ Public Structure ManufacturingTabSettings
 
     Dim CheckOnlyBuild As Boolean
     Dim CheckOnlyInvent As Boolean
-    Dim CheckOnlyRE As Boolean
 
     Dim CheckIncludeTaxes As Boolean
     Dim CheckIncludeBrokersFees As Boolean

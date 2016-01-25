@@ -610,7 +610,8 @@ Public Class frmBlueprintManagement
             BPUserID = SelectedCharacter.ID
         End If
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID))
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerBP = DBCommand.ExecuteReader
 
         lstBPs.Visible = False
@@ -992,17 +993,7 @@ Public Class frmBlueprintManagement
 
         ' Finally add on text if they added it
         If Trim(txtBPSearch.Text) <> "" Then
-            ' Process NOT filter
-            If txtBPSearch.Text.Length >= 3 Then
-                If UCase(txtBPSearch.Text.Substring(0, 3)) = "NOT" Then
-                    TextClause = TextClause & "AND (BLUEPRINT_NAME NOT LIKE '%" & FormatDBString(Trim(txtBPSearch.Text.Substring(4))) & "%' AND BLUEPRINT_GROUP NOT LIKE '%" & FormatDBString(Trim(txtBPSearch.Text.Substring(4))) & "%') "
-                Else
-                    TextClause = TextClause & "AND (BLUEPRINT_NAME LIKE '%" & FormatDBString(Trim(txtBPSearch.Text)) & "%' OR BLUEPRINT_GROUP LIKE '%" & FormatDBString(Trim(txtBPSearch.Text)) & "%') "
-                End If
-            Else
-                TextClause = TextClause & "AND (BLUEPRINT_NAME LIKE '%" & FormatDBString(Trim(txtBPSearch.Text)) & "%' OR BLUEPRINT_GROUP LIKE '%" & FormatDBString(Trim(txtBPSearch.Text)) & "%') "
-            End If
-
+            TextClause = TextClause & "AND " & GetSearchText(txtBPSearch.Text, "BLUEPRINT_NAME", "BLUEPRINT_GROUP")
         End If
 
         ' If they select a type of item, set that
@@ -1279,7 +1270,8 @@ Public Class frmBlueprintManagement
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID))
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerTypes = DBCommand.ExecuteReader
 
         cmbBPTypeFilter.Items.Clear()
@@ -1545,7 +1537,8 @@ Public Class frmBlueprintManagement
         SQL = "SELECT * FROM " & USER_BLUEPRINTS & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(API_ID))
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(API_ID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerBP = DBCommand.ExecuteReader
 
         ' 0-BP_ID, 1-BLUEPRINT_GROUP, 2-BLUEPRINT_NAME, 3-ITEM_GROUP_ID, 4-ITEM_GROUP, 5-ITEM_CATEGORY_ID, 
