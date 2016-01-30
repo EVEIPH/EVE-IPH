@@ -110,9 +110,9 @@ Public Class ManufacturingListView : Inherits System.Windows.Forms.ListView
             Dim TrendValue As Double = Val(e.SubItem.Text.Replace("%", ""))
 
             If TrendValue < 0 Then
-                imageindex = 1
+                imageindex = 8 ' down
             ElseIf TrendValue > 0 Then '
-                imageindex = 0
+                imageindex = 7 ' up
             Else ' Don't show for 0%
                 imageindex = 6 ' Blank box
             End If

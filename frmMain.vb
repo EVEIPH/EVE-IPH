@@ -20,6 +20,18 @@ Public Class frmMain
     Private RegionCheckBoxes() As CheckBox
     Private SystemCheckBoxes() As CheckBox
     Private TechCheckBoxes() As CheckBox
+    ' For saving the price type that was used in the download
+    Private GroupPricesList As New List(Of GroupPriceType)
+    Private GroupPriceTypetoFind As New GroupPriceType
+    Private Class GroupPriceType
+        Public PriceType As String
+        Public ItemID As Long
+
+        Public Sub New()
+            PriceType = ""
+            ItemID = 0
+        End Sub
+    End Class
 
     ' Datacores
     Private DCSkillCheckBoxes() As CheckBox
@@ -166,8 +178,6 @@ Public Class frmMain
 
     ' If we refresh the manufacturing data or recalcuate
     Private RefreshCalcData As Boolean
-    ' To stop sorting the manufacturing tab
-    Private IgnoreSorting As Boolean
 
     ' Reload of Regions on Datacore class
     Private DCRegionsLoaded As Boolean
@@ -274,6 +284,9 @@ Public Class frmMain
     Private Const MineOreNameColumnWidth As Integer = 120
     Private Const MineRefineYieldColumnWidth As Integer = 70
     Private Const MineCrystalColumnWidth As Integer = 45
+    Private Const PriceListHeaderCSV As String = "Group Name,Item Name,Price,Price Type,Raw Material,Type ID"
+    Private Const PriceListHeaderTXT As String = "Group Name|Item Name|Price|Price Type|Raw Material|Type ID"
+    Private Const PriceListHeaderSSV As String = "Group Name;Item Name;Price;Price Type;Raw Material;Type ID"
 
 #Region "Initialization Code"
 
@@ -449,7 +462,7 @@ Public Class frmMain
         UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
         UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
 
-        UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ProgramDefault)
+        UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
 
         SelectedTower = AllSettings.LoadPOSSettings
@@ -597,6 +610,7 @@ Public Class frmMain
         lstPricesView.Columns.Add("Price", 100, HorizontalAlignment.Right)
         lstPricesView.Columns.Add("Manufacture", 0, HorizontalAlignment.Right) ' Hidden
         lstPricesView.Columns.Add("Market ID", 0, HorizontalAlignment.Right) ' Hidden
+        lstPricesView.Columns.Add("Price Type", 0, HorizontalAlignment.Right) ' Hidden
 
         ' Columns of update prices raw mats in price profiles
         lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
@@ -611,6 +625,26 @@ Public Class frmMain
         lstManufacturedPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
         lstManufacturedPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
+
+        ' Tool Tips
+        If UserApplicationSettings.ShowToolTips Then
+            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
+                                                            "Sell = Use Sell orders only" & vbCrLf & _
+                                                            "Buy & Sell = Use All orders" & vbCrLf & _
+                                                            "Min = Minimum" & vbCrLf & _
+                                                            "Max = Maximum" & vbCrLf & _
+                                                            "Avg = Average" & vbCrLf & _
+                                                            "Med = Median" & vbCrLf & _
+                                                            "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
+            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
+                                                            "Sell = Use Sell orders only" & vbCrLf & _
+                                                            "Buy & Sell = Use All orders" & vbCrLf & _
+                                                            "Min = Minimum" & vbCrLf & _
+                                                            "Max = Maximum" & vbCrLf & _
+                                                            "Avg = Average" & vbCrLf & _
+                                                            "Med = Median" & vbCrLf & _
+                                                            "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
+        End If
 
         FirstSolarSystemComboLoad = True
         FirstPriceChargeTypesComboLoad = True
@@ -4425,6 +4459,7 @@ Tabs:
         End If
     End Sub
 
+
     Private Sub chkPerUnit_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPPricePerUnit.CheckedChanged
         If Not FirstLoad Then
             Call UpdateBPPriceLabels()
@@ -7625,19 +7660,13 @@ ExitForm:
 
     ' Adds item to shopping list
     Private Sub btnAddBPMatstoShoppingList_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBPAddBPMatstoShoppingList.Click
-        Dim POSFlag As Boolean
-
-        If BlueprintBuildFacility.FacilityType = POSFacility Then
-            POSFlag = True
-        Else
-            POSFlag = False
-        End If
 
         ' Just add it to shopping list with options
         Call AddToShoppingList(SelectedBlueprint, chkBPBuildBuy.Checked, rbtnBPRawmatCopy.Checked, _
-                               BlueprintBuildFacility.MaterialMultiplier, POSFlag, _
+                               BlueprintBuildFacility.MaterialMultiplier, BlueprintBuildFacility.FacilityType, _
                                chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked, _
-                               rbtnBPCopyInvREMats.Checked)
+                               BlueprintBuildFacility.IncludeActivityCost, BlueprintBuildFacility.IncludeActivityTime, _
+                               BlueprintBuildFacility.IncludeActivityUsage, rbtnBPCopyInvREMats.Checked)
 
         If TotalShoppingList.GetNumShoppingItems > 0 Then
             ' Add the final item and mark as items in list
@@ -7843,6 +7872,25 @@ ExitForm:
 #Region "Update Prices Tab"
 
 #Region "Update Prices Tab User Object (Check boxes, Text, Buttons) Functions/Procedures "
+
+    ' Disables the forms and controls on update prices
+    Private Sub DisableUpdatePricesTab(Value As Boolean)
+        ' Disable tab
+        gbRawMaterials.Enabled = Not Value
+        gbManufacturedItems.Enabled = Not Value
+        gbRegions.Enabled = Not Value
+        gbTradeHubSystems.Enabled = Not Value
+        gbPriceOptions.Enabled = Not Value
+        txtPriceItemFilter.Enabled = Not Value
+        lblItemFilter.Enabled = Not Value
+        btnClearItemFilter.Enabled = Not Value
+        chkPriceRawMaterialPrices.Enabled = Not Value
+        chkPriceManufacturedPrices.Enabled = Not Value
+        btnToggleAllPriceItems.Enabled = Not Value
+        btnDownloadPrices.Enabled = Not Value
+        btnSaveUpdatePrices.Enabled = Not Value
+        lstPricesView.Enabled = Not Value
+    End Sub
 
     ' Checks or unchecks all the prices
     Private Sub UpdateAllPrices()
@@ -9359,6 +9407,9 @@ ExitForm:
         RunUpdatePriceList = True
         RefreshList = True
 
+        ' Disable cancel
+        btnCancelUpdate.Enabled = False
+
         ' Set system/region 
         If UserUpdatePricesTabSettings.SelectedSystem <> "0" Then
             ' Check the preset systems fist
@@ -9777,21 +9828,10 @@ ExitForm:
         End If
 
         ' Working
-        ' Disable tab
-        gbRawMaterials.Enabled = False
-        gbManufacturedItems.Enabled = False
-        gbRegions.Enabled = False
-        gbTradeHubSystems.Enabled = False
-        gbPriceOptions.Enabled = False
-        txtPriceItemFilter.Enabled = False
-        lblItemFilter.Enabled = False
-        btnClearItemFilter.Enabled = False
-        chkPriceRawMaterialPrices.Enabled = False
-        chkPriceManufacturedPrices.Enabled = False
-        btnToggleAllPriceItems.Enabled = False
-        btnDownloadPrices.Enabled = False
-        btnSaveUpdatePrices.Enabled = False
-        lstPricesView.Enabled = False
+        Call DisableUpdatePricesTab(True)
+
+        ' Enable cancel
+        btnCancelUpdate.Enabled = True
 
         Me.Refresh()
         Me.Cursor = Cursors.WaitCursor
@@ -9852,6 +9892,10 @@ ExitForm:
                 TempItem.Manufacture = CBool(lstPricesView.Items(i).SubItems(4).Text)
                 TempItem.RegionIDList = New List(Of String)
 
+                If TempItem.TypeID = 24657 Then
+                    Application.DoEvents()
+                End If
+
                 If rbtnPriceSettingSingleSelect.Checked Then
                     TempItem.RegionIDList = SearchRegions
                     TempItem.SystemID = SearchSystem
@@ -9906,20 +9950,10 @@ ExitSub:
         Application.UseWaitCursor = False
         Application.DoEvents()
         ' Enable tab
-        gbRawMaterials.Enabled = True
-        gbManufacturedItems.Enabled = True
-        gbRegions.Enabled = True
-        gbTradeHubSystems.Enabled = True
-        gbPriceOptions.Enabled = True
-        txtPriceItemFilter.Enabled = True
-        lblItemFilter.Enabled = True
-        btnClearItemFilter.Enabled = True
-        chkPriceRawMaterialPrices.Enabled = True
-        chkPriceManufacturedPrices.Enabled = True
-        btnToggleAllPriceItems.Enabled = True
-        btnDownloadPrices.Enabled = True
-        btnSaveUpdatePrices.Enabled = True
-        lstPricesView.Enabled = True
+        Call DisableUpdatePricesTab(False)
+
+        ' Disable cancel
+        btnCancelUpdate.Enabled = False
 
         Me.Refresh()
         Me.Cursor = Cursors.Default
@@ -10077,7 +10111,7 @@ ExitSub:
                     Case "allMin"
                         SQL = SQL & "MIN(PRICE)"
                     Case "allPercentile"
-
+                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, "")
                     Case "buyAvg"
                         SQL = SQL & "AVG(PRICE)"
                         LimittoBuy = True
@@ -10090,7 +10124,7 @@ ExitSub:
                         SQL = SQL & "MIN(PRICE)"
                         LimittoBuy = True
                     Case "buyPercentile"
-                        LimittoBuy = True
+                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, "BUY")
                     Case "sellAvg"
                         SQL = SQL & "AVG(PRICE)"
                         LimittoSell = True
@@ -10103,7 +10137,7 @@ ExitSub:
                         SQL = SQL & "MIN(PRICE)"
                         LimittoSell = True
                     Case "sellPercentile"
-                        LimittoSell = True
+                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, "SELL")
                 End Select
 
                 ' Set the main from etc
@@ -10129,14 +10163,14 @@ ExitSub:
 
             ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
             If readerPrices.Read Then
+                If Not IsDBNull(readerPrices.GetValue(0)) Then
+                    ' Modify the price depending on modifier
+                    SelectedPrice = readerPrices.GetDouble(0) * (1 + SentItems(i).PriceModifier)
 
-                ' Modify the price depending on modifier
-                SelectedPrice = readerPrices.GetDouble(0) * (1 + SentItems(i).PriceModifier)
-
-                ' Now Update the ITEM_PRICES table, set price and price type
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
+                    ' Now Update the ITEM_PRICES table, set price and price type
+                    SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End If
                 readerPrices.Close()
                 readerPrices = Nothing
                 DBCommand = Nothing
@@ -10159,31 +10193,7 @@ ExitSub:
 
     ' Queries market orders and calculates the median and returns the median as a string
     Private Function CalcMedian(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As String
-        Dim SQL As String = ""
-        Dim rsData As SQLiteDataReader
-        Dim MedianList As New List(Of Double)
-
-        SQL = "SELECT PRICE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " "
-        If SystemID <> "" Then
-            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
-        Else
-            ' Use the region
-            SQL = SQL & "AND REGION_ID = " & RegionID & " "
-        End If
-
-        If OrderType <> "" Then
-            SQL = SQL & "AND ORDER_TYPE = '" & OrderType & "' "
-        End If
-
-        SQL = SQL & "ORDER BY PRICE ASC"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsData = DBCommand.ExecuteReader
-
-        While rsData.Read
-            MedianList.Add(rsData.GetDouble(0))
-        End While
-
+        Dim MedianList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, OrderType)
         Dim value As Double
         Dim size As Integer = MedianList.Count
 
@@ -10206,12 +10216,52 @@ ExitSub:
 
     End Function
 
-    ' Queries market orders and calculates the percential - 5%
-    ' From EVE Central Definition - If you sold to the top 5% in volume, and took the total price, that would be percentile. 
-    ' For sell, it's as if you've bought 5% of the market in volume, lowest price first.
-    Private Function CalcPercentile() As String
+    ' Queries market orders and calculates the percential price
+    Private Function CalcPercentile(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As String
+        Dim PriceList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, OrderType)
+        Dim index As Integer
 
-        Return ""
+        If OrderType = "BUY" Then
+            ' Get the top 5% 
+            index = CInt(Math.Ceiling(0.95 * PriceList.Count))
+        Else
+            ' Get the bottom 5% for SELL or ALL - matches EVE Central?
+            index = CInt(Math.Ceiling(0.05 * PriceList.Count))
+        End If
+
+        Return CStr(PriceList(index))
+
+    End Function
+
+    ' Returns the list of prices for variables sent, sorted ascending
+    Private Function GetMarketOrderPriceList(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As List(Of Double)
+        Dim SQL As String = ""
+        Dim rsData As SQLiteDataReader
+        Dim PriceList As New List(Of Double)
+
+        SQL = "SELECT PRICE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " "
+        If SystemID <> "" Then
+            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+        Else
+            ' Use the region
+            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+        End If
+
+        If OrderType <> "" Then
+            SQL = SQL & "AND ORDER_TYPE = '" & OrderType & "' "
+        End If
+
+        SQL = SQL & "ORDER BY PRICE ASC"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        While rsData.Read
+            PriceList.Add(rsData.GetDouble(0))
+        End While
+
+        Return PriceList
+
     End Function
 
     ' Gets the group name from ITEM_PRICES
@@ -10256,8 +10306,6 @@ ExitSub:
                     RGN = "Materials & Compounds"
                 Case "Biochemical Material"
                     RGN = "Booster Materials"
-                Case "Asteroid"
-                    RGN = "Asteroids"
                 Case "Advanced Capital Construction Components"
                     RGN = "Adv. Capital Construction Components"
                 Case "Capital Construction Components"
@@ -10294,12 +10342,14 @@ ExitSub:
                         RGN = "Ancient Relics"
                     ElseIf CN = "Deployable" Then
                         RGN = "Deployables"
+                    ElseIf CN = "Asteroid" Then
+                        RGN = "Asteroids"
                     ElseIf CN = "Ship" Then
                         RGN = "Ships"
                     ElseIf CN = "Subsystem" Then
                         RGN = "Subsystems"
                     ElseIf CN = "Starbase" Then
-                        RGN = "Starbase"
+                        RGN = "Structures"
                     ElseIf CN = "Charge" Then
                         RGN = "Charges"
                     ElseIf CN = "Drone" Then
@@ -10526,7 +10576,7 @@ ExitSub:
         Application.DoEvents()
 
         ' Add the marketGroupID to the list for checks later
-        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID FROM ITEM_PRICES, INVENTORY_TYPES"
+        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE FROM ITEM_PRICES, INVENTORY_TYPES"
         SQL = SQL & " WHERE ITEM_PRICES.ITEM_ID = INVENTORY_TYPES.typeID AND ("
 
         ' Raw materials - non-manufacturable
@@ -10797,6 +10847,9 @@ ExitSub:
                 Else
                     lstViewRow.SubItems.Add(CStr(readerMats.GetInt64(5)))
                 End If
+                ' Price Type - look it up
+                lstViewRow.SubItems.Add(CStr(readerMats.GetString(6)))
+
                 Call lstPricesView.Items.Add(lstViewRow)
             End While
 
@@ -10952,6 +11005,216 @@ ExitSub:
 
     End Sub
 
+    Private Sub btnSavePricestoFile_Click(sender As System.Object, e As System.EventArgs) Handles btnSavePricestoFile.Click
+        Dim MyStream As StreamWriter
+        Dim FileName As String
+        Dim OutputText As String
+        Dim Price As ListViewItem
+
+        Dim Items As ListView.ListViewItemCollection
+        Dim i As Integer = 0
+
+        ' Show the dialog
+        Dim ExportTypeString As String
+        Dim Separator As String
+        Dim FileHeader As String
+
+        If UserApplicationSettings.DataExportFormat = CSVDataExport Then
+            ' Save file name with date
+            FileName = "Price List - " & Format(Now, "MMddyyyy") & ".csv"
+            ExportTypeString = CSVDataExport
+            Separator = ","
+            FileHeader = PriceListHeaderCSV
+            SaveFileDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*"
+        ElseIf UserApplicationSettings.DataExportFormat = SSVDataExport Then
+            ' Save file name with date
+            FileName = "Price List - " & Format(Now, "MMddyyyy") & ".ssv"
+            ExportTypeString = SSVDataExport
+            Separator = ";"
+            FileHeader = PriceListHeaderSSV
+            SaveFileDialog.Filter = "ssv files (*.ssv*)|*.ssv*|All files (*.*)|*.*"
+        Else
+            ' Save file name with date
+            FileName = "Price List - " & Format(Now, "MMddyyyy") & ".txt"
+            ExportTypeString = DefaultTextDataExport
+            Separator = "|"
+            FileHeader = PriceListHeaderTXT
+            SaveFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        End If
+
+        SaveFileDialog.FilterIndex = 1
+        SaveFileDialog.RestoreDirectory = True
+        SaveFileDialog.FileName = FileName
+
+        If SaveFileDialog.ShowDialog() = DialogResult.OK Then
+            Try
+                MyStream = File.CreateText(SaveFileDialog.FileName)
+
+                If Not (MyStream Is Nothing) Then
+
+                    ' Output the buy list first
+                    Items = lstPricesView.Items
+
+                    If Items.Count > 0 Then
+                        Me.Cursor = Cursors.WaitCursor
+
+                        Application.DoEvents()
+
+                        OutputText = FileHeader
+                        MyStream.Write(OutputText & Environment.NewLine)
+
+                        For Each Price In Items
+                            Application.DoEvents()
+                            ' Build the output text -"Group,Item Name,Price,Price Type,Raw Material,Type ID"
+                            OutputText = Price.SubItems(1).Text & Separator
+                            OutputText = OutputText & Price.SubItems(2).Text & Separator
+                            If ExportTypeString = SSVDataExport Then
+                                ' Format to EU
+                                OutputText = OutputText & ConvertUStoEUDecimal(Price.SubItems(3).Text) & Separator
+                            Else
+                                OutputText = OutputText & Format(Price.SubItems(3).Text, "Fixed") & Separator
+                            End If
+                            OutputText = OutputText & Price.SubItems(6).Text & Separator
+                            ' Manufacturing flag - set if raw mat or not (raw mats are not manufactured)
+                            If Price.SubItems(4).Text = "0" Then
+                                OutputText = OutputText & "TRUE" & Separator
+                            Else
+                                OutputText = OutputText & "FALSE" & Separator
+                            End If
+                            OutputText = OutputText & Price.SubItems(0).Text
+
+                            MyStream.Write(OutputText & Environment.NewLine)
+                        Next
+
+                    End If
+
+                    MyStream.Flush()
+                    MyStream.Close()
+
+                    MsgBox("Price List Saved", vbInformation, Application.ProductName)
+
+                End If
+            Catch
+                MsgBox(Err.Description, vbExclamation, Application.ProductName)
+            End Try
+        End If
+
+        ' Done processing 
+        Me.Cursor = Cursors.Default
+        Me.Refresh()
+        Application.DoEvents()
+
+    End Sub
+
+    Private Sub btnLoadPricesfromFile_Click(sender As System.Object, e As System.EventArgs) Handles btnLoadPricesfromFile.Click
+        Dim SQL As String
+        Dim BPStream As StreamReader = Nothing
+        Dim openFileDialog1 As New OpenFileDialog()
+        Dim Line As String
+        Dim ParsedLine As String()
+        Dim Separator As String = ""
+        Dim FileType As String
+
+        If UserApplicationSettings.DataExportFormat = CSVDataExport Then
+            FileType = CSVDataExport
+            openFileDialog1.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*"
+            openFileDialog1.FileName = "*.csv"
+            openFileDialog1.FilterIndex = 2
+            openFileDialog1.RestoreDirectory = True
+        ElseIf UserApplicationSettings.DataExportFormat = SSVDataExport Then
+            FileType = SSVDataExport
+            openFileDialog1.Filter = "ssv files (*.ssv*)|*.ssv*|All files (*.*)|*.*"
+            openFileDialog1.FileName = "*.ssv"
+            openFileDialog1.FilterIndex = 2
+            openFileDialog1.RestoreDirectory = True
+        Else
+            FileType = DefaultTextDataExport
+            openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+            openFileDialog1.FileName = "*.txt"
+            openFileDialog1.FilterIndex = 2
+            openFileDialog1.RestoreDirectory = True
+        End If
+
+        If openFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+            Try
+                BPStream = New System.IO.StreamReader(openFileDialog1.FileName)
+
+                If (BPStream IsNot Nothing) Then
+                    ' Read the file line by line here, start with headers
+                    Line = BPStream.ReadLine
+                    Line = BPStream.ReadLine ' First line of data
+
+                    If Line Is Nothing Then
+                        ' Leave loop
+                        Exit Try
+                    Else
+                        ' disable the tab
+                        Call DisableUpdatePricesTab(True)
+                    End If
+
+                    Call EVEDB.BeginSQLiteTransaction()
+                    Application.UseWaitCursor = True
+
+                    While Line IsNot Nothing
+                        Application.DoEvents()
+                        ' Format is: Group Name, Item Name, Price, Price Type, Raw Material, Type ID
+
+                        ' Parse it
+                        Select Case FileType
+                            Case CSVDataExport
+                                ParsedLine = Line.Split(New Char() {","c}, StringSplitOptions.RemoveEmptyEntries)
+                            Case SSVDataExport
+                                ParsedLine = Line.Split(New Char() {";"c}, StringSplitOptions.RemoveEmptyEntries)
+                            Case Else
+                                ParsedLine = Line.Split(New Char() {"|"c}, StringSplitOptions.RemoveEmptyEntries)
+                        End Select
+
+                        ' Loop through and update the price and price type, the rest is static
+                        SQL = "UPDATE ITEM_PRICES SET "
+                        If FileType = SSVDataExport Then
+                            ' Need to swap periods and commas before inserting
+                            ParsedLine(2) = ParsedLine(2).Replace(".", "") ' Just replace the periods as they are commas for numbers, which aren't needed
+                            ParsedLine(2) = ParsedLine(2).Replace(",", ".") ' now update the commas for decimal
+                        Else
+                            ParsedLine(2) = ParsedLine(2).Replace(",", "") ' Make sure we format correctly, strip out any commas
+                        End If
+                        SQL = SQL & "PRICE = " & ParsedLine(2) & ","
+                        SQL = SQL & "PRICE_TYPE = '" & ParsedLine(3) & "' "
+                        SQL = SQL & "WHERE ITEM_ID = " & ParsedLine(5)
+
+                        ' Update the record
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                        Line = BPStream.ReadLine ' Read next line
+
+                    End While
+
+                    Call EVEDB.CommitSQLiteTransaction()
+
+                    Application.UseWaitCursor = False
+                    MsgBox("Prices Loaded", vbInformation, Application.ProductName)
+
+                End If
+            Catch Ex As Exception
+                Application.UseWaitCursor = False
+                Call EVEDB.RollbackSQLiteTransaction()
+                MessageBox.Show("Cannot read file from disk. Original error: " & Ex.Message)
+            Finally
+                ' Check this again, since we need to make sure we didn't throw an exception on open.
+                If (BPStream IsNot Nothing) Then
+                    BPStream.Close()
+                End If
+            End Try
+        End If
+
+        Application.UseWaitCursor = False
+        ' Enable the tab
+        Call DisableUpdatePricesTab(False)
+        Call UpdatePriceList()
+        Application.DoEvents()
+
+    End Sub
+
 #End Region
 
 #Region "Manufacturing"
@@ -10962,11 +11225,11 @@ ExitSub:
         ' Make sure it's not disposed
         If IsNothing(frmDefaultAssets) Then
             ' Make new form
-            frmDefaultAssets = New frmAssetsViewer(AssetWindow.ProgramDefault) ' TODO mark as manufacturing tab not default
+            frmDefaultAssets = New frmAssetsViewer(AssetWindow.ManufacturingTab)
         Else
             If frmDefaultAssets.IsDisposed Then
                 ' Make new form
-                frmDefaultAssets = New frmAssetsViewer(AssetWindow.ProgramDefault)
+                frmDefaultAssets = New frmAssetsViewer(AssetWindow.ManufacturingTab)
             End If
         End If
 
@@ -15091,6 +15354,123 @@ CheckTechs:
 
     End Sub
 
+    Private Sub txtCalcIPHThreshold_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcIPHThreshold.KeyPress
+        ' Only allow numbers, decimal, negative or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                Call ResetRefresh()
+            End If
+        End If
+    End Sub
+
+    Private Sub txtCalcIPHThreshold_LostFocus(sender As Object, e As System.EventArgs) Handles txtCalcIPHThreshold.LostFocus
+        txtCalcIPHThreshold.Text = FormatNumber(txtCalcIPHThreshold.Text, 2)
+    End Sub
+
+    Private Sub txtCalcProfitThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcProfitThreshold.KeyPress
+        ' Only allow numbers, decimal, negative or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                Call ResetRefresh()
+            End If
+        End If
+    End Sub
+
+    Private Sub txtCalcProfitThreshold_LostFocus(sender As Object, e As System.EventArgs) Handles txtCalcProfitThreshold.LostFocus
+        txtCalcProfitThreshold.Text = FormatNumber(txtCalcProfitThreshold.Text, 2)
+    End Sub
+
+    Private Sub txtCalcVolumeThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcVolumeThreshold.KeyPress
+        ' Only allow postive numbers
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                Call ResetRefresh()
+            End If
+        End If
+    End Sub
+
+    Private Sub txtCalcVolumeThreshold_LostFocus(sender As Object, e As System.EventArgs) Handles txtCalcVolumeThreshold.LostFocus
+        txtCalcVolumeThreshold.Text = FormatNumber(txtCalcVolumeThreshold.Text, 0)
+    End Sub
+
+    Private Sub cmbCalcPriceTrend_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcPriceTrend.SelectedIndexChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub txtCalcIPHThreshold_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtCalcIPHThreshold.TextChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub txtCalcProfitThreshold_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtCalcProfitThreshold.TextChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub txtCalcVolumeThreshold_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtCalcVolumeThreshold.TextChanged
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub chkCalcMinBuildTimeFilter_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcMinBuildTimeFilter.CheckedChanged
+        Call ResetRefresh()
+        If chkCalcMinBuildTimeFilter.Checked Then
+            tpMinBuildTimeFilter.Enabled = True
+        Else
+            tpMinBuildTimeFilter.Enabled = False
+        End If
+    End Sub
+
+    Private Sub chkCalcMaxBuildTimeFilter_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcMaxBuildTimeFilter.CheckedChanged
+        Call ResetRefresh()
+        If chkCalcMaxBuildTimeFilter.Checked Then
+            tpMaxBuildTimeFilter.Enabled = True
+        Else
+            tpMaxBuildTimeFilter.Enabled = False
+        End If
+    End Sub
+
+    Private Sub chkCalcIPHThreshold_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIPHThreshold.CheckedChanged
+        Call ResetRefresh()
+        If chkCalcIPHThreshold.Checked Then
+            txtCalcIPHThreshold.Enabled = True
+        Else
+            txtCalcIPHThreshold.Enabled = False
+        End If
+    End Sub
+
+    Private Sub chkCalcProfitThreshold_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcProfitThreshold.CheckedChanged
+        Call ResetRefresh()
+        If chkCalcProfitThreshold.Checked Then
+            txtCalcProfitThreshold.Enabled = True
+        Else
+            txtCalcProfitThreshold.Enabled = False
+        End If
+    End Sub
+
+    Private Sub chkCalcVolumeThreshold_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcVolumeThreshold.CheckedChanged
+        Call ResetRefresh()
+        If chkCalcVolumeThreshold.Checked Then
+            txtCalcVolumeThreshold.Enabled = True
+        Else
+            txtCalcVolumeThreshold.Enabled = False
+        End If
+    End Sub
+
+    Private Sub tpMinBuildTimeFilter_TimeChange(sender As Object, e As System.EventArgs) Handles tpMinBuildTimeFilter.TimeChange
+        Call ResetRefresh()
+    End Sub
+
+    Private Sub tpMaxBuildTimeFilter_TimeChange(sender As Object, e As System.EventArgs) Handles tpMaxBuildTimeFilter.TimeChange
+        Call ResetRefresh()
+    End Sub
+
 #End Region
 
 #Region "Column Select Functions"
@@ -15649,8 +16029,6 @@ CheckTechs:
             Next
         End With
 
-        IgnoreSorting = True
-
         ' Now Refresh the grid
         If lstManufacturing.Items.Count <> 0 Then
             RefreshCalcData = True
@@ -15658,8 +16036,6 @@ CheckTechs:
         Else
             Call RefreshManufacturingTabColumns()
         End If
-
-        IgnoreSorting = False
 
     End Sub
 
@@ -16181,7 +16557,6 @@ CheckTechs:
             lblCalcCopyTeamDefault.Visible = True
             btnCalcSaveCopyTeam.Enabled = False
             CalcCopyTeamComboLoaded = False
-            IgnoreSorting = False
 
             ' Load the Default facilities for the tab
             Call LoadDefaultCalcBaseFacility()
@@ -16213,6 +16588,22 @@ CheckTechs:
             txtCalcLabLines.Text = CStr(.LaboratoryLines)
             txtCalcRuns.Text = CStr(.Runs)
             txtCalcNumBPs.Text = CStr(.BPRuns)
+
+            ' Time pickers
+            chkCalcMaxBuildTimeFilter.Checked = .MaxBuildTimeCheck
+            chkCalcMinBuildTimeFilter.Checked = .MinBuildTimeCheck
+            tpMaxBuildTimeFilter.Text = .MaxBuildTime
+            tpMinBuildTimeFilter.Text = .MinBuildTime
+
+            cmbCalcPriceTrend.Text = .PriceTrend
+
+            ' Thresholds
+            chkCalcIPHThreshold.Checked = .IPHThresholdCheck
+            chkCalcProfitThreshold.Checked = .ProfitThresholdCheck
+            chkCalcVolumeThreshold.Checked = .VolumeThresholdCheck
+            txtCalcIPHThreshold.Text = FormatNumber(.IPHThreshold, 2)
+            txtCalcProfitThreshold.Text = FormatNumber(.ProfitThreshold, 2)
+            txtCalcVolumeThreshold.Text = FormatNumber(.VolumeThreshold, 2)
 
             chkCalcPPU.Checked = .CalcPPU
 
@@ -16627,6 +17018,20 @@ CheckTechs:
             .CheckOnlyBuild = chkCalcCanBuild.Checked
             .CheckOnlyInvent = chkCalcCanInvent.Checked
 
+            .PriceTrend = cmbCalcPriceTrend.Text
+
+            .MaxBuildTimeCheck = chkCalcMaxBuildTimeFilter.Checked
+            .MaxBuildTime = tpMaxBuildTimeFilter.Text
+            .MinBuildTimeCheck = chkCalcMinBuildTimeFilter.Checked
+            .MinBuildTime = tpMinBuildTimeFilter.Text
+
+            .IPHThresholdCheck = chkCalcIPHThreshold.Checked
+            .ProfitThresholdCheck = chkCalcProfitThreshold.Checked
+            .VolumeThresholdCheck = chkCalcVolumeThreshold.Checked
+            .IPHThreshold = CDbl(txtCalcIPHThreshold.Text)
+            .ProfitThreshold = CDbl(txtCalcProfitThreshold.Text)
+            .VolumeThreshold = CDbl(txtCalcVolumeThreshold.Text)
+
             ' Save these here as well as in settings
             UserApplicationSettings.DefaultBPME = CInt(txtCalcTempME.Text)
             UserApplicationSettings.DefaultBPTE = CInt(txtCalcTempTE.Text)
@@ -16670,7 +17075,7 @@ CheckTechs:
         Dim readerArray As SQLiteDataReader
 
         Dim UpdateTypeIDs As New List(Of Long) ' Full list of TypeID's to update SVR data with, these will have Market IDs
-        Dim AveragePriceRegionID As Long
+        Dim MarketRegionID As Long
         Dim AveragePriceDays As Integer
 
         Dim BaseItems As New List(Of ManufacturingItem) ' Holds all the items and their decryptors, relics, meta etc for initial list
@@ -16741,11 +17146,9 @@ CheckTechs:
             End If
         End If
 
-        ' Days can only be between 7 and 90 
-        ' 7 is because that seems to be the minimum threshold for data returned - 1 day sometimes returns nothing
-        ' 90 because the query is for 100 type ids at a time and there is a max of 10k records returned (90 * 100 = 9000"
-        If CInt(cmbCalcAvgPriceDuration.Text) < 7 Or CInt(cmbCalcAvgPriceDuration.Text) > 90 Then
-            MsgBox("Averge price updates can only be done for greater than 7 or less than 90 days", vbExclamation, Application.ProductName)
+        ' Days can only be between 2 and 365 based on CREST data
+        If CInt(cmbCalcAvgPriceDuration.Text) < 2 Or CInt(cmbCalcAvgPriceDuration.Text) > 365 Then
+            MsgBox("Averge price updates can only be done for greater than 1 or less than 365 days", vbExclamation, Application.ProductName)
             cmbCalcAvgPriceDuration.Focus()
             cmbCalcAvgPriceDuration.SelectAll()
             Exit Sub
@@ -16813,6 +17216,15 @@ CheckTechs:
             txtCalcLabLines.Focus()
             txtCalcLabLines.SelectAll()
             Exit Sub
+        End If
+
+        ' Make sure the build times don't overlap if both checked
+        If chkCalcMinBuildTimeFilter.Checked And chkCalcMaxBuildTimeFilter.Checked Then
+            If ConvertDHMSTimetoSeconds(tpMinBuildTimeFilter.Text) >= ConvertDHMSTimetoSeconds(tpMaxBuildTimeFilter.Text) Then
+                MsgBox("You must select a Min Build time less than the Max Build time selected.", vbExclamation, Application.ProductName)
+                chkCalcMinBuildTimeFilter.Focus()
+                Exit Sub
+            End If
         End If
 
         If txtCalcSVRThreshold.Text = "" Then
@@ -17540,17 +17952,17 @@ CheckTechs:
 
                     AveragePriceDays = CInt(cmbCalcAvgPriceDuration.Text)
                     ' Get the region ID
-                    AveragePriceRegionID = GetRegionID(cmbCalcHistoryRegion.Text)
+                    MarketRegionID = GetRegionID(cmbCalcHistoryRegion.Text)
 
-                    If AveragePriceRegionID = 0 Then
-                        AveragePriceRegionID = TheForgeTypeID ' The Forge as default
+                    If MarketRegionID = 0 Then
+                        MarketRegionID = TheForgeTypeID ' The Forge as default
                         cmbCalcHistoryRegion.Text = "The Forge"
                     End If
 
 
                     ' Update the prices
                     Dim timecheck As Date = Now
-                    Call MH.UpdateCRESTPriceHistory(UpdateTypeIDs, AveragePriceRegionID)
+                    Call MH.UpdateCRESTPriceHistory(UpdateTypeIDs, MarketRegionID)
                     Debug.Print("History time " & CStr(DateDiff(DateInterval.Second, timecheck, Now)))
 
                 End If
@@ -17642,8 +18054,17 @@ CheckTechs:
                         InsertItem.CanInvent = ManufacturingBlueprint.UserCanInventRE
                         InsertItem.CanRE = ManufacturingBlueprint.UserCanInventRE
                         ' Trend data
-                        InsertItem.PriceTrend = CalculatePriceTrend(InsertItem.ItemTypeID, GetRegionID(cmbCalcHistoryRegion.Text), CInt(cmbCalcAvgPriceDuration.Text))
+                        InsertItem.PriceTrend = CalculatePriceTrend(InsertItem.ItemTypeID, MarketRegionID, CInt(cmbCalcAvgPriceDuration.Text))
                         InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
+
+                        ' Add all the volume, items on hand, etc here since they won't change
+                        InsertItem.TotalItemsSold = CalculateTotalItemsSold(InsertItem.ItemTypeID, MarketRegionID, CInt(cmbCalcAvgPriceDuration.Text))
+                        InsertItem.TotalOrdersFilled = CalculateTotalOrdersFilled(InsertItem.ItemTypeID, MarketRegionID, CInt(cmbCalcAvgPriceDuration.Text))
+                        InsertItem.AvgItemsperOrder = CDbl(IIf(InsertItem.TotalOrdersFilled = 0, 0, InsertItem.TotalItemsSold / InsertItem.TotalOrdersFilled))
+                        Call GetCurrentOrders(InsertItem.ItemTypeID, MarketRegionID, CInt(cmbCalcAvgPriceDuration.Text), InsertItem.CurrentBuyOrders, InsertItem.CurrentSellOrders)
+
+                        InsertItem.ItemsinStock = GetTotalItemsinStock(InsertItem.ItemTypeID)
+                        InsertItem.ItemsinProduction = GetTotalItemsinProduction(InsertItem.ItemTypeID)
 
                         ' Get the output data
                         If rbtnCalcCompareAll.Checked Then
@@ -17656,7 +18077,7 @@ CheckTechs:
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalComponentProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourComponents
                                 InsertItem.CalcType = "Components"
-                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 If InsertItem.SVR = "-" Then
                                     InsertItem.SVRxIPH = "0.00"
                                 Else
@@ -17722,7 +18143,7 @@ CheckTechs:
                             InsertItem.Profit = ManufacturingBlueprint.GetTotalRawProfit
                             InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                             InsertItem.CalcType = "Raw Materials"
-                            InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                            InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                             If InsertItem.SVR = "-" Then
                                 InsertItem.SVRxIPH = "0.00"
                             Else
@@ -17805,14 +18226,13 @@ CheckTechs:
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalRawProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Build/Buy"
-                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 If InsertItem.SVR = "-" Then
                                     InsertItem.SVRxIPH = "0.00"
                                 Else
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
-                                InsertItem.ItemMarketPrice = ManufacturingBlueprint.GetItemMarketPrice
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
@@ -17875,7 +18295,7 @@ CheckTechs:
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalComponentProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourComponents
                                 InsertItem.CalcType = "Components"
-                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 If InsertItem.SVR = "-" Then
                                     InsertItem.SVRxIPH = "0.00"
                                 Else
@@ -17888,7 +18308,7 @@ CheckTechs:
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalRawProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Raw Materials"
-                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 If InsertItem.SVR = "-" Then
                                     InsertItem.SVRxIPH = "0.00"
                                 Else
@@ -17901,7 +18321,7 @@ CheckTechs:
                                 InsertItem.Profit = ManufacturingBlueprint.GetTotalRawProfit
                                 InsertItem.IPH = ManufacturingBlueprint.GetTotalIskperHourRaw
                                 InsertItem.CalcType = "Build/Buy"
-                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, AveragePriceRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
+                                InsertItem.SVR = GetItemSVR(InsertItem.ItemTypeID, MarketRegionID, AveragePriceDays, ManufacturingBlueprint.GetTotalProductionTime, ManufacturingBlueprint.GetTotalUnits)
                                 If InsertItem.SVR = "-" Then
                                     InsertItem.SVRxIPH = "0.00"
                                 Else
@@ -18112,22 +18532,20 @@ DisplayResults:
                         BPList.SubItems.Add(FinalItemList(i).SVRxIPH)
                     Case ProgramSettings.PriceTrendColumnName
                         BPList.SubItems.Add(FormatPercent(FinalItemList(i).PriceTrend, 2))
-
                     Case ProgramSettings.TotalItemsSoldColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalItemsSold, 0))
                     Case ProgramSettings.TotalOrdersFilledColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalOrdersFilled, 0))
                     Case ProgramSettings.AvgItemsperOrderColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 2))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).AvgItemsperOrder, 2))
                     Case ProgramSettings.CurrentSellOrdersColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).CurrentSellOrders, 0))
                     Case ProgramSettings.CurrentBuyOrdersColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).CurrentBuyOrders, 0))
                     Case ProgramSettings.ItemsinStockColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ItemsinStock, 0))
                     Case ProgramSettings.ItemsinProductionColumnName
-                        BPList.SubItems.Add(FormatNumber(0, 0))
-
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ItemsinProduction, 0))
                     Case ProgramSettings.TotalCostColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalCost / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.BaseJobCostColumnName
@@ -18257,12 +18675,10 @@ DisplayResults:
         Dim TempType As SortOrder
 
         ' Now sort this
-        If IgnoreSorting Then
-            If ManufacturingColumnSortType = SortOrder.Ascending Then
-                TempType = SortOrder.Descending
-            Else
-                TempType = SortOrder.Ascending
-            End If
+        If ManufacturingColumnSortType = SortOrder.Ascending Then
+            TempType = SortOrder.Descending
+        Else
+            TempType = SortOrder.Ascending
         End If
 
         ' Sort the list based on the saved column, if they change the number of columns below value, then find IPH, if not there, use column 0
@@ -18341,6 +18757,160 @@ ExitCalc:
         End If
 
         Return BonusString
+
+    End Function
+
+    ' Finds the total items sold over the time period for the region sent
+    Private Function CalculateTotalItemsSold(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer) As Long
+        Dim SQL As String
+        Dim rsItems As SQLiteDataReader
+
+        SQL = "SELECT SUM(TOTAL_VOLUME_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Now.Date), SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Now.Date, SQLiteDateFormat) & "') "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsItems = DBCommand.ExecuteReader
+
+        If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
+            Return rsItems.GetInt64(0)
+        Else
+            Return 0
+        End If
+
+    End Function
+
+    ' Finds the total orders filled over the time period for the region sent
+    Private Function CalculateTotalOrdersFilled(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer) As Long
+        Dim SQL As String
+        Dim rsItems As SQLiteDataReader
+
+        SQL = "SELECT SUM(TOTAL_ORDERS_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Now.Date), SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Now.Date, SQLiteDateFormat) & "') "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsItems = DBCommand.ExecuteReader
+
+        If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
+            Return rsItems.GetInt64(0)
+        Else
+            Return 0
+        End If
+
+    End Function
+
+    ' Finds the average items sold per order over the time period for the region sent, and sets the two by reference
+    Private Sub GetCurrentOrders(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer, ByRef BuyOrders As Long, ByRef SellOrders As Long)
+        Dim SQL As String
+        Dim rsItems As SQLiteDataReader
+
+        SQL = "SELECT ORDER_TYPE, SUM(VOLUME_REMAINING) FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = SQL & "AND DATETIME(ORDER_ISSUED) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Now.Date), SQLiteDateFormat) & "') "
+        SQL = SQL & "AND DATETIME(ORDER_ISSUED) < " & " DateTime('" & Format(Now.Date, SQLiteDateFormat) & "') "
+        SQL = SQL & "GROUP BY ORDER_TYPE"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsItems = DBCommand.ExecuteReader
+
+        While rsItems.Read
+            If rsItems.GetString(0) = "SELL" Then
+                SellOrders = rsItems.GetInt64(1)
+            Else
+                BuyOrders = rsItems.GetInt64(1)
+            End If
+        End While
+
+    End Sub
+
+    ' Finds the number of items in stock for the asset settings set here
+    Private Function GetTotalItemsinStock(ByVal TypeID As Long) As Integer
+        Dim SQL As String
+        Dim readerAssets As SQLiteDataReader
+        Dim CurrentItemName As String = ""
+        Dim ItemQuantity As Integer = 0
+
+        Application.UseWaitCursor = True
+        Me.Cursor = Cursors.WaitCursor
+        Application.DoEvents()
+
+        Dim IDString As String = ""
+
+        ' Set the ID string we will use to update
+        If UserAssetWindowShoppingListSettings.AssetType = "Both" Then
+            IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
+        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Personal" Then
+            IDString = CStr(SelectedCharacter.ID)
+        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Corporation" Then
+            IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
+        End If
+
+        ' Build the where clause to look up data
+        Dim AssetLocationFlagList As New List(Of String)
+        ' First look up the location and flagID pairs - unique ID of asset locations
+        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = 0 AND ID IN (" & IDString & ")" ' Enum type 0 is manufacturing tab
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerAssets = DBCommand.ExecuteReader
+
+        While readerAssets.Read
+            If readerAssets.GetInt32(1) = -4 Then
+                ' If the flag is the base location, then we want all items at the location id
+                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
+            Else
+                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ")")
+            End If
+        End While
+
+        readerAssets.Close()
+
+        ' Look up each item in their assets in their locations stored, and sum up the quantity'
+        ' Split into groups to run (1000 identifiers max so limit to 900)
+        Dim Splits As Integer = CInt(Math.Ceiling(AssetLocationFlagList.Count / 900))
+        For k = 0 To Splits - 1
+            Application.DoEvents()
+            Dim TempAssetWhereList As String = ""
+            ' Build the partial asset location id/flag list
+            For z = k * 900 To (k + 1) * 900 - 1
+                If z = AssetLocationFlagList.Count Then
+                    ' exit if we get to the end of the list
+                    Exit For
+                End If
+                TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " OR "
+            Next
+
+            ' Strip final OR
+            TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
+
+            SQL = "SELECT SUM(Quantity) FROM ASSETS WHERE (" & TempAssetWhereList & ") "
+            SQL = SQL & " AND ASSETS.TypeID = " & CStr(TypeID) & " AND ID IN (" & IDString & ")"
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerAssets = DBCommand.ExecuteReader
+            readerAssets.Read()
+
+            If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(0)) Then
+                ItemQuantity += readerAssets.GetInt32(0) ' sum up
+            End If
+
+        Next
+
+        Return ItemQuantity
+
+    End Function
+
+    ' Finds the number of items in production from all loaded characters
+    Private Function GetTotalItemsinProduction(ByVal TypeID As Long) As Integer
+        Dim SQL As String
+        Dim rsItems As SQLiteDataReader
+
+        SQL = "SELECT SUM(runs * PORTION_SIZE) FROM INDUSTRY_JOBS, ALL_BLUEPRINTS WHERE INDUSTRY_JOBS.productTypeID = ALL_BLUEPRINTS.ITEM_ID "
+        SQL = SQL & "AND productTypeID = " & CStr(TypeID) & " AND status = 1 AND activityID = 1 "
+        'SQL = SQL & "AND INSTALLER_ID = " & CStr(SelectedCharacter.ID) & " "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsItems = DBCommand.ExecuteReader
+
+        If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
+            Return rsItems.GetInt32(0)
+        Else
+            Return 0
+        End If
 
     End Function
 
@@ -18564,7 +19134,7 @@ ExitCalc:
         Dim MyStream As StreamWriter
         Dim FileName As String
         Dim OutputText As String
-        Dim ListItem As ListViewItem
+        Dim Price As ListViewItem
         Dim Separator As String = ""
         Dim Items As ListView.ListViewItemCollection
         Dim ExportColumns As New List(Of String)
@@ -18618,11 +19188,11 @@ ExitCalc:
 
                         MyStream.Write(OutputText & Environment.NewLine)
 
-                        For Each ListItem In Items
+                        For Each Price In Items
                             OutputText = ""
                             For j = 0 To ExportColumns.Count - 1
                                 ' Format each column value and save
-                                OutputText = OutputText & GetOutputText(ExportColumns(j), ListItem.SubItems(j + 1).Text, Separator, UserApplicationSettings.DataExportFormat)
+                                OutputText = OutputText & GetOutputText(ExportColumns(j), Price.SubItems(j + 1).Text, Separator, UserApplicationSettings.DataExportFormat)
                             Next
 
                             ' For each record, update the progress bar
@@ -19023,69 +19593,126 @@ ExitCalc:
 
     End Function
 
-    ' Checks SVR data and options whether we insert the item
+    ' Checks data on different filters to see if we enter the item, and formats colors, etc. after
     Private Sub InsertManufacturingItem(ByVal SentItem As ManufacturingItem, ByVal SVRThreshold As Double, _
                                         ByVal InsertBlankSVR As Boolean, ByRef SentList As List(Of ManufacturingItem), _
                                         ByRef FormatList As List(Of RowFormat))
-        Dim TempItem As New ManufacturingItem
         Dim CurrentRowFormat As New RowFormat
-
-        TempItem = CType(SentItem.Clone, ManufacturingItem)
+        Dim InsertItem As Boolean = True ' Assume we include until the record doesn't pass one condition
         ListIDIterator += 1
-        TempItem.ListID = ListIDIterator
 
-        ' See if we want to ignore low SVR items
-        If TempItem.SVR <> "-" Then
-            If IsNothing(SVRThreshold) Then
-                ' Insert the ListItem
-                SentList.Add(TempItem)
-            ElseIf CDbl(TempItem.SVR) >= SVRThreshold Then
-                ' Insert the ListItem
-                SentList.Add(TempItem)
+        SentItem.ListID = ListIDIterator
+
+        ' If not blank, does it meet the threshold? If nothing, then we want to include it, so skip
+        If SentItem.SVR <> "-" And Not IsNothing(SVRThreshold) Then
+            ' It's below the threshold, so don't insert
+            If CDbl(SentItem.SVR) < SVRThreshold Then
+                InsertItem = False
             End If
-        ElseIf InsertBlankSVR Then
-            ' Insert the blank svr item into the List
-            SentList.Add(TempItem)
         End If
 
-        ' Now determine the format of the item and save it for drawing the list
-        CurrentRowFormat.ListID = ListIDIterator
+        ' If it's empty and you don't want blank svr's, don't insert
+        If SentItem.SVR = "-" And Not InsertBlankSVR Then
+            InsertItem = False
+        End If
 
-        'Set the row format for background and foreground colors
-        'All columns need to be colored properly
-        ' Color owned BP's
-        If TempItem.Owned = Yes Then
-            If TempItem.Scanned = 1 Or TempItem.Scanned = 0 Then
-                CurrentRowFormat.BackColor = Brushes.BlanchedAlmond
-            ElseIf TempItem.Scanned = 2 Then
-                ' Corp owned
-                CurrentRowFormat.BackColor = Brushes.LightGreen
+        ' Filter based on price trend first
+        If cmbCalcPriceTrend.Text = "Up" Then
+            ' They want up trends and this is less than zero, so false
+            If SentItem.PriceTrend < 0 Then
+                InsertItem = False
             End If
-        ElseIf UserInventedBPs.Contains(TempItem.BPID) Then
-            ' It's an invented BP that we own the T1 BP for
-            CurrentRowFormat.BackColor = Brushes.LightSkyBlue
-        Else
-            CurrentRowFormat.BackColor = Brushes.White
+        ElseIf cmbCalcPriceTrend.Text = "Down" Then
+            ' They want down trends and this is greater than zero, so false
+            If SentItem.PriceTrend > 0 Then
+                InsertItem = False
+            End If
         End If
 
-        ' Set default and change if needed
-        CurrentRowFormat.ForeColor = Brushes.Black
-
-        ' Highlight those we can't build, RE or Invent
-        If Not TempItem.CanBuildBP Then
-            CurrentRowFormat.ForeColor = Brushes.DarkRed
+        ' Min Build time
+        If chkCalcMinBuildTimeFilter.Checked Then
+            ' If greater than max threshold, don't include
+            If ConvertDHMSTimetoSeconds(SentItem.TotalProductionTime) < ConvertDHMSTimetoSeconds(tpMinBuildTimeFilter.Text) Then
+                InsertItem = False
+            End If
         End If
 
-        If Not TempItem.CanInvent And TempItem.TechLevel = "T2" And TempItem.BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
-            CurrentRowFormat.ForeColor = Brushes.DarkOrange
+        ' Max Build time
+        If chkCalcMaxBuildTimeFilter.Checked Then
+            ' If greater than max threshold, don't include
+            If ConvertDHMSTimetoSeconds(SentItem.TotalProductionTime) > ConvertDHMSTimetoSeconds(tpMaxBuildTimeFilter.Text) Then
+                InsertItem = False
+            End If
         End If
 
-        If Not TempItem.CanRE And TempItem.TechLevel = "T3" And TempItem.BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
-            CurrentRowFormat.ForeColor = Brushes.DarkGreen
+        ' IPH Threshold
+        If chkCalcIPHThreshold.Checked Then
+            ' If less than threshold, don't include
+            If SentItem.IPH < CDbl(txtCalcIPHThreshold.Text) Then
+                InsertItem = False
+            End If
         End If
 
-        ' Insert the format
-        FormatList.Add(CurrentRowFormat)
+        ' Profit Threshold
+        If chkCalcProfitThreshold.Checked Then
+            ' If less than threshold, don't include
+            If SentItem.Profit < CDbl(txtCalcProfitThreshold.Text) Then
+                InsertItem = False
+            End If
+        End If
+
+        ' Profit Threshold
+        If chkCalcVolumeThreshold.Checked Then
+            ' If less than threshold, don't include
+            If SentItem.TotalItemsSold < CDbl(txtCalcVolumeThreshold.Text) Then
+                InsertItem = False
+            End If
+        End If
+
+        ' Now determine the format of the item and save it for drawing the list - only if we add it
+        If InsertItem Then
+            ' Add the record
+            SentList.Add(CType(SentItem.Clone, ManufacturingItem))
+
+            CurrentRowFormat.ListID = ListIDIterator
+
+            'Set the row format for background and foreground colors
+            'All columns need to be colored properly
+            ' Color owned BP's
+            If SentItem.Owned = Yes Then
+                If SentItem.Scanned = 1 Or SentItem.Scanned = 0 Then
+                    CurrentRowFormat.BackColor = Brushes.BlanchedAlmond
+                ElseIf SentItem.Scanned = 2 Then
+                    ' Corp owned
+                    CurrentRowFormat.BackColor = Brushes.LightGreen
+                End If
+            ElseIf UserInventedBPs.Contains(SentItem.BPID) Then
+                ' It's an invented BP that we own the T1 BP for
+                CurrentRowFormat.BackColor = Brushes.LightSkyBlue
+            Else
+                CurrentRowFormat.BackColor = Brushes.White
+            End If
+
+            ' Set default and change if needed
+            CurrentRowFormat.ForeColor = Brushes.Black
+
+            ' Highlight those we can't build, RE or Invent
+            If Not SentItem.CanBuildBP Then
+                CurrentRowFormat.ForeColor = Brushes.DarkRed
+            End If
+
+            If Not SentItem.CanInvent And SentItem.TechLevel = "T2" And SentItem.BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
+                CurrentRowFormat.ForeColor = Brushes.DarkOrange
+            End If
+
+            If Not SentItem.CanRE And SentItem.TechLevel = "T3" And SentItem.BlueprintType = BPType.InventedBPC And Not chkCalcIgnoreInvention.Checked Then
+                CurrentRowFormat.ForeColor = Brushes.DarkGreen
+            End If
+
+            ' Insert the format
+            FormatList.Add(CurrentRowFormat)
+
+        End If
 
     End Sub
 
@@ -19272,6 +19899,13 @@ ExitCalc:
         Public SVR As String ' Sales volume ratio
         Public SVRxIPH As String
         Public PriceTrend As Double
+        Public TotalItemsSold As Long
+        Public TotalOrdersFilled As Long
+        Public AvgItemsperOrder As Double
+        Public CurrentSellOrders As Long
+        Public CurrentBuyOrders As Long
+        Public ItemsinStock As Integer
+        Public ItemsinProduction As Integer
 
         Public ManufacturingFacility As IndustryFacility
         Public ManufacturingFacilityUsage As Double
@@ -19365,6 +19999,14 @@ ExitCalc:
             CopyofMe.SVR = SVR
             CopyofMe.SVRxIPH = SVRxIPH
             CopyofMe.PriceTrend = PriceTrend
+            CopyofMe.TotalItemsSold = TotalItemsSold
+            CopyofMe.TotalOrdersFilled = TotalOrdersFilled
+            CopyofMe.AvgItemsperOrder = AvgItemsperOrder
+            CopyofMe.CurrentSellOrders = CurrentSellOrders
+            CopyofMe.CurrentBuyOrders = CurrentBuyOrders
+            CopyofMe.ItemsinStock = ItemsinStock
+            CopyofMe.ItemsinProduction = ItemsinProduction
+
             CopyofMe.CopyCost = CopyCost
             CopyofMe.InventionCost = InventionCost
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
@@ -19733,7 +20375,6 @@ ExitCalc:
                 If FoundItem IsNot Nothing Then
                     Dim BuildBuy As Boolean
                     Dim CopyRaw As Boolean
-                    Dim POS As Boolean
 
                     If FoundItem.CalcType = "Build/Buy" Then
                         BuildBuy = True
@@ -19745,15 +20386,14 @@ ExitCalc:
                         CopyRaw = False
                     End If
 
-                    If FoundItem.Blueprint.GetManufacturingFacility.FacilityType = POSFacility Then
-                        POS = True
-                    Else
-                        POS = False
-                    End If
-
                     ' Get the BP variable and send the other settings to shopping list
-                    Call AddToShoppingList(FoundItem.Blueprint, BuildBuy, CopyRaw, FoundItem.Blueprint.GetManufacturingFacility.MaterialMultiplier, POS, _
-                                           chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                    With FoundItem
+                        Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier, _
+                                               .Blueprint.GetManufacturingFacility.FacilityType, _
+                                               chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked, _
+                                               .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime, _
+                                               .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
+                    End With
                 End If
             Next
         End If

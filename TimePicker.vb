@@ -10,6 +10,7 @@ Public Class TimePicker
     Public ResetHours As Boolean
     Public ResetMinutes As Boolean
     Public ResetSeconds As Boolean
+    Public Event TimeChange(ByVal sender As Object, ByVal e As System.EventArgs)
 
     Public Sub New()
 
@@ -44,16 +45,109 @@ Public Class TimePicker
         Seconds.Items.Clear()
         Seconds.Items.AddRange(_99TwoDigitList)
 
+        ' Default to 1 hour
+        Days.Text = "0"
+        Hours.Text = "01"
+        Minutes.Text = "00"
+        Seconds.Text = "00"
+
         ResetHours = True
         ResetMinutes = True
         ResetSeconds = True
 
     End Sub
 
-    ' Returns the time entered in seconds
-    Public Function GetTime() As Long
-        Return ((CInt(Days.Text) * 86400) + (CInt(Hours.Text) * 3600) + (CInt(Minutes.Text) * 60) + CInt(Seconds.Text))
-    End Function
+    Public Overrides Property Text() As String
+        Get
+            Dim D As String = Trim(Days.Text)
+            Dim H As String = Trim(Hours.Text)
+            Dim M As String = Trim(Minutes.Text)
+            Dim S As String = Trim(Seconds.Text)
+            If D = "" Then
+                D = "0"
+            End If
+            If H = "" Then
+                H = "00"
+            End If
+            If M = "" Then
+                M = "00"
+            End If
+            If S = "" Then
+                S = "00"
+            End If
+            Return (D & " Days " & H & ":" & M & ":" & S)
+        End Get
+
+        Set(value As String)
+            Try
+                ' Add the time from string - X Days
+                Dim strArr() As String
+                Dim count As Integer
+
+                If value = "" Then
+                    ' Default to 1 hour
+                    Days.Text = "0"
+                    Hours.Text = "01"
+                    Minutes.Text = "00"
+                    Seconds.Text = "00"
+                Else
+                    ' Make sure the sent string has no extra spaces that create a blank array entry
+                    value = Trim(value)
+                    ' Strip off the days portion
+                    Dim SentDays As String = value.Substring(0, InStr(UCase(value), "DAY") - 2)
+                    Days.Text = SentDays
+
+                    Dim Time As String = value.Substring(InStr(UCase(value), "DAY") + 4)
+
+                    ' Break up the time sections
+                    strArr = Time.Split(New Char() {":"c})
+
+                    For count = 0 To strArr.Count - 1
+                        Select Case count
+                            Case 0
+                                Hours.Text = Trim(strArr(count))
+                            Case 1
+                                Minutes.Text = Trim(strArr(count))
+                            Case 2
+                                Seconds.Text = Trim(strArr(count))
+                        End Select
+                    Next
+                End If
+            Catch ex As Exception
+                ' Default to 1 hour and exit
+                Days.Text = "0"
+                Hours.Text = "01"
+                Minutes.Text = "00"
+                Seconds.Text = "00"
+            End Try
+
+        End Set
+
+    End Property
+
+    Private Sub Days_SelectedItemChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Days.SelectedItemChanged
+
+        RaiseEvent TimeChange(sender, e)
+
+    End Sub
+
+    Private Sub Hours_SelectedItemChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Hours.SelectedItemChanged
+
+        RaiseEvent TimeChange(sender, e)
+
+    End Sub
+
+    Private Sub Minutes_SelectedItemChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Minutes.SelectedItemChanged
+
+        RaiseEvent TimeChange(sender, e)
+
+    End Sub
+
+    Private Sub Seconds_SelectedItemChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Seconds.SelectedItemChanged
+
+        RaiseEvent TimeChange(sender, e)
+
+    End Sub
 
     Private Sub Days_KeyDown(sender As System.Object, e As System.Windows.Forms.KeyEventArgs) Handles Days.KeyDown
         If (e.KeyValue <> Keys.Delete And e.KeyValue <> Keys.Back And e.KeyValue <> Keys.Left And e.KeyValue <> Keys.Right) And Len(Days.Text) >= 2 Then

@@ -42,7 +42,7 @@ Public Class ListViewItemComparer
                 result = CDate(StrX).CompareTo(DateTime.Parse(StrY))
 
             ElseIf IsStringdate(StrX) And IsStringdate(StrY) Then
-                ' This is a date sorted as a string like 2 Days 14:23:22
+                ' This is a date sorted as a string like 2d 14:23:22
                 result = CDbl(FormatStringdate(StrX)).CompareTo(FormatStringdate(StrY))
             Else ' Strings or any other object
                 ' Compare the two items.

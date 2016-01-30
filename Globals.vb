@@ -41,7 +41,7 @@ Public Module Public_Variables
 
     Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
     Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
-    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH Test.xml"
+    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/view/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
@@ -406,7 +406,7 @@ Public Module Public_Variables
 
     ' Types of Asset windows
     Public Enum AssetWindow
-        ProgramDefault = 0
+        ManufacturingTab = 0
         ShoppingList = 1
         RefiningOre = 2
         RefiningItems = 3
@@ -3252,6 +3252,246 @@ NoBonus:
 
 #End Region
 
+#Region "Time Functions"
+
+    ' Converts a time in d h m s to a long of seconds - 3d 12h 2m 33s or 1 Day 12:23:33
+    Public Function ConvertDHMSTimetoSeconds(ByVal SentTime As String) As Long
+        Dim Days As Integer = 0
+        Dim Hours As Integer = 0
+        Dim Minutes As Integer = 0
+        Dim Seconds As Integer = 0
+
+        Dim StringMarker As String = ""
+
+        SentTime = Trim(SentTime)
+
+        If SentTime.Contains("Day ") Or SentTime.Contains("Days ") Or SentTime.Contains(":") Then
+            ' Time in 2 Days 12:23:05 format
+            If SentTime.Contains("Days") Then
+                StringMarker = "Days "
+            ElseIf SentTime.Contains("Day") Then
+                StringMarker = "Day "
+            Else
+                StringMarker = ""
+            End If
+
+            If StringMarker <> "" Then
+                ' Get the days
+                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
+            End If
+
+            'Now parse the times
+            Hours = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
+            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
+            Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
+            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
+            Seconds = CInt(SentTime)
+        Else
+
+            If SentTime.Contains("d ") Then
+                StringMarker = "d "
+
+                ' Get the days
+                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
+            End If
+
+            If SentTime.Contains("h ") Then
+                ' Get the days
+                Hours = CInt(SentTime.Substring(0, SentTime.IndexOf("h")))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("h") + 1))
+            End If
+
+            If SentTime.Contains("m ") Then
+                ' Get the days
+                Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf("m")))
+                ' Reset the string
+                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("m") + 1))
+            End If
+
+            If SentTime.Contains("s") Then
+                ' Get the days
+                Seconds = CInt(SentTime.Substring(0, SentTime.IndexOf("s")))
+            End If
+        End If
+
+        Return (Days * 24 * 60 * 60) + (Hours * 60 * 60) + (Minutes * 60) + Seconds
+
+    End Function
+
+    ' Formats seconds into a time for display with days, hours, min, sec
+    Public Function FormatTimeToComplete(TimeinSeconds As Long) As String
+        Dim FinalTime As String = ""
+        Dim Days As Long
+        Dim Hours As Long
+        Dim Minutes As Long
+        Dim Seconds As Long
+
+        Seconds = TimeinSeconds
+        Days = CLng(Math.Floor(Seconds / (24 * 60 * 60)))
+        Seconds = Seconds - (Days * 24 * 60 * 60)
+        Hours = CLng(Math.Floor(Seconds / (60 * 60)))
+        Seconds = Seconds - (Hours * 60 * 60)
+        Minutes = CLng(Math.Floor(Seconds / 60))
+        Seconds = Seconds - (Minutes * 60)
+
+        If Days <> 0 Then
+            FinalTime = CStr(Days) & "d " & CStr(Hours) & "h " & CStr(Minutes) & "m " & CStr(Seconds) & "s"
+        ElseIf Days = 0 And Hours <> 0 Then
+            FinalTime = CStr(Hours) & "h " & CStr(Minutes) & "m " & CStr(Seconds) & "s"
+        ElseIf Days = 0 And Hours = 0 And Minutes <> 0 Then
+            FinalTime = CStr(Minutes) & "m " & CStr(Seconds) & "s"
+        ElseIf Days = 0 And Hours = 0 And Minutes = 0 And Seconds <> 0 Then
+            FinalTime = CStr(Seconds) & "s"
+        End If
+
+        Return FinalTime
+
+    End Function
+
+    ' Takes a time in seconds and converts it to a string display of Days HH:MM:SS
+    Public Function FormatIPHTime(ByVal SentTimeString As Double) As String
+        Dim Seconds As Long
+        Dim Minutes As Integer
+        Dim Hours As Integer
+        Dim Days As Integer
+        Dim TimeString As String = ""
+
+        Seconds = CLng(SentTimeString)
+
+        ' Calcuate Days
+        Days = CInt(Seconds \ 86400)
+        Seconds = Seconds Mod 86400
+        'Calculate Hours and remaining Seconds
+        Hours = CInt(Seconds \ 3600)
+        Seconds = Seconds Mod 3600
+        'Calculate Minutes and remaining Seconds
+        Minutes = CInt(Seconds \ 60)
+        Seconds = Seconds Mod 60
+
+        ' Add Days on if needed
+        If Days <> 0 Then
+            TimeString = CStr(Days) & " Days "
+        End If
+
+        Return (TimeString & Format(Hours, "00") & ":" & Format(Minutes, "00") & ":" & Format(Seconds, "00"))
+
+    End Function
+
+    ' Takes a date/time like "1d 22h 38m 46s" and converts it to seconds
+    Public Function FormatStringdate(ByVal SentTimeString As String) As Long
+        Dim Days As Integer
+        Dim Hours As Integer
+        Dim Minutes As Integer
+        Dim Seconds As Integer
+
+        Dim strArr() As String
+        Dim count As Integer
+
+        On Error GoTo InvalidDate
+
+        If SentTimeString = "" Then
+            GoTo InvalidDate
+        End If
+
+        ' Break up the string sections
+        strArr = SentTimeString.Split(New Char() {" "c})
+
+        For count = strArr.Count - 1 To 0 Step -1
+            ' Loop from seconds to the days
+            If strArr(count).Substring(strArr(count).Length - 1) = "s" Then
+                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "s") - 1)) Then
+                    GoTo InvalidDate
+                Else
+                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "s") - 1))
+                End If
+            End If
+
+            If strArr(count).Substring(strArr(count).Length - 1) = "m" Then
+                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "m") - 1)) Then
+                    GoTo InvalidDate
+                Else
+                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "m") - 1))
+                End If
+            End If
+
+            If strArr(count).Substring(strArr(count).Length - 1) = "h" Then
+                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "h") - 1)) Then
+                    GoTo InvalidDate
+                Else
+                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "h") - 1))
+                End If
+            End If
+
+            If strArr(count).Substring(strArr(count).Length - 1) = "d" Then
+                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "d") - 1)) Then
+                    GoTo InvalidDate
+                Else
+                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "d") - 1))
+                End If
+            End If
+
+        Next
+
+        Return CInt(Seconds) + (60 * CInt(Minutes)) + (360 * CInt(Hours)) + (360 * 24 * CInt(Days))
+
+InvalidDate:
+
+        On Error Resume Next
+        Return -1
+
+    End Function
+
+    ' Takes a date/time like "1d 22h 38m 6s" and sees if it is a date/time
+    Public Function IsStringdate(ByVal SentTimeString As String) As Boolean
+        Dim strArr() As String
+        Dim count As Integer
+
+        If SentTimeString = "" Then
+            Return False
+        End If
+
+        ' Make sure the sent string has no extra spaces that create a blank array entry
+        SentTimeString = Trim(SentTimeString)
+
+        ' Break up the string sections
+        strArr = SentTimeString.Split(New Char() {" "c})
+
+        For count = strArr.Count - 1 To 0 Step -1
+            ' Loop from seconds to the days
+            Select Case strArr(count).Substring(strArr(count).Length - 1)
+                Case "s"
+                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "s") - 1)) Then
+                        Return False
+                    End If
+                Case "m"
+                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "m") - 1)) Then
+                        Return False
+                    End If
+                Case "h"
+                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "h") - 1)) Then
+                        Return False
+                    End If
+                Case "d"
+                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "d") - 1)) Then
+                        Return False
+                    End If
+                Case Else
+                    Return False
+            End Select
+
+        Next
+
+        Return True
+
+    End Function
+
+#End Region
+
     Public Function GetBPType(BPTypeValue As Object) As BPType
 
         If IsNothing(BPTypeValue) Then
@@ -3382,75 +3622,6 @@ NoBonus:
 
     End Sub
 
-    ' Converts a time in d h m s to a long of seconds - 3d 12h 2m 33s or 1 Day 12:23:33
-    Public Function ConvertDHMSTimetoSeconds(ByVal SentTime As String) As Long
-        Dim Days As Integer = 0
-        Dim Hours As Integer = 0
-        Dim Minutes As Integer = 0
-        Dim Seconds As Integer = 0
-
-        Dim StringMarker As String = ""
-
-        SentTime = Trim(SentTime)
-
-        If SentTime.Contains("Day ") Or SentTime.Contains("Days ") Or SentTime.Contains(":") Then
-            ' Time in 2 Days 12:23:05 format
-            If SentTime.Contains("Days") Then
-                StringMarker = "Days "
-            ElseIf SentTime.Contains("Day") Then
-                StringMarker = "Day "
-            Else
-                StringMarker = ""
-            End If
-
-            If StringMarker <> "" Then
-                ' Get the days
-                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
-                ' Reset the string
-                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
-            End If
-
-            'Now parse the times
-            Hours = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
-            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
-            Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf(":")))
-            SentTime = Trim(SentTime.Substring(SentTime.IndexOf(":") + 1))
-            Seconds = CInt(SentTime)
-        Else
-
-            If SentTime.Contains("d ") Then
-                StringMarker = "d "
-
-                ' Get the days
-                Days = CInt(SentTime.Substring(0, SentTime.IndexOf(StringMarker)))
-                ' Reset the string
-                SentTime = Trim(SentTime.Substring(SentTime.IndexOf(StringMarker) + Len(StringMarker)))
-            End If
-
-            If SentTime.Contains("h ") Then
-                ' Get the days
-                Hours = CInt(SentTime.Substring(0, SentTime.IndexOf("h")))
-                ' Reset the string
-                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("h") + 1))
-            End If
-
-            If SentTime.Contains("m ") Then
-                ' Get the days
-                Minutes = CInt(SentTime.Substring(0, SentTime.IndexOf("m")))
-                ' Reset the string
-                SentTime = Trim(SentTime.Substring(SentTime.IndexOf("m") + 1))
-            End If
-
-            If SentTime.Contains("s") Then
-                ' Get the days
-                Seconds = CInt(SentTime.Substring(0, SentTime.IndexOf("s")))
-            End If
-        End If
-
-        Return (Days * 24 * 60 * 60) + (Hours * 60 * 60) + (Minutes * 60) + Seconds
-
-    End Function
-
     ' Takes text from copy and paste from game and parses it, returns nothing if not, list of parsed materials if successful
     Public Function ImportCopyPasteText(SentText As String) As Materials
         Dim SQL As String
@@ -3553,10 +3724,9 @@ NoBonus:
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
                                  FacilityMEModifier As Double, _
-                                 BuiltInPOS As Boolean, _
-                                 IgnoreInvention As Boolean, _
-                                 IgnoreMinerals As Boolean, _
-                                 IgnoreT1ITem As Boolean, _
+                                 FacilityType As String, _
+                                 IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean, _
+                                 IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean, _
                                  Optional CopyInventionMatsOnly As Boolean = False)
         Dim TempMats As New Materials
         Dim ShoppingItem As New ShoppingListItem
@@ -3574,11 +3744,11 @@ NoBonus:
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .BuiltInPOS = BuiltInPOS
+                    .FacilityType = FacilityType
                     .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    If BuiltInPOS Then
+                    If FacilityType = POSFacility Then
                         .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
@@ -3616,11 +3786,10 @@ NoBonus:
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
                     .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .BuiltInPOS = BuiltInPOS
                     .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    If BuiltInPOS Then
+                    If FacilityType = POSFacility Then
                         .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
@@ -3857,36 +4026,6 @@ NoBonus:
         End If
     End Sub
 
-    ' Formats seconds into a time for display with days, hours, min, sec
-    Public Function FormatTimeToComplete(TimeinSeconds As Long) As String
-        Dim FinalTime As String = ""
-        Dim Days As Long
-        Dim Hours As Long
-        Dim Minutes As Long
-        Dim Seconds As Long
-
-        Seconds = TimeinSeconds
-        Days = CLng(Math.Floor(Seconds / (24 * 60 * 60)))
-        Seconds = Seconds - (Days * 24 * 60 * 60)
-        Hours = CLng(Math.Floor(Seconds / (60 * 60)))
-        Seconds = Seconds - (Hours * 60 * 60)
-        Minutes = CLng(Math.Floor(Seconds / 60))
-        Seconds = Seconds - (Minutes * 60)
-
-        If Days <> 0 Then
-            FinalTime = CStr(Days) & "d " & CStr(Hours) & "h " & CStr(Minutes) & "m " & CStr(Seconds) & "s"
-        ElseIf Days = 0 And Hours <> 0 Then
-            FinalTime = CStr(Hours) & "h " & CStr(Minutes) & "m " & CStr(Seconds) & "s"
-        ElseIf Days = 0 And Hours = 0 And Minutes <> 0 Then
-            FinalTime = CStr(Minutes) & "m " & CStr(Seconds) & "s"
-        ElseIf Days = 0 And Hours = 0 And Minutes = 0 And Seconds <> 0 Then
-            FinalTime = CStr(Seconds) & "s"
-        End If
-
-        Return FinalTime
-
-    End Function
-
     ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
     Public Sub IncrementToolStripProgressBar(ByRef PG As ToolStripProgressBar)
         If PG.Value <= PG.Maximum - 1 Then
@@ -3951,143 +4090,6 @@ NoBonus:
         End While
 
         Return BS
-
-    End Function
-
-    ' Takes a time in seconds and converts it to a string display of Days HH:MM:SS
-    Public Function FormatIPHTime(ByVal SentTimeString As Double) As String
-        Dim Seconds As Long
-        Dim Minutes As Integer
-        Dim Hours As Integer
-        Dim Days As Integer
-        Dim TimeString As String = ""
-
-        Seconds = CLng(SentTimeString)
-
-        ' Calcuate Days
-        Days = CInt(Seconds \ 86400)
-        Seconds = Seconds Mod 86400
-        'Calculate Hours and remaining Seconds
-        Hours = CInt(Seconds \ 3600)
-        Seconds = Seconds Mod 3600
-        'Calculate Minutes and remaining Seconds
-        Minutes = CInt(Seconds \ 60)
-        Seconds = Seconds Mod 60
-
-        ' Add Days on if needed
-        If Days <> 0 Then
-            TimeString = CStr(Days) & " Days "
-        End If
-
-        Return (TimeString & Format(Hours, "00") & ":" & Format(Minutes, "00") & ":" & Format(Seconds, "00"))
-
-    End Function
-
-    ' Takes a date/time like "1d 22h 38m 46s" and converts it to seconds
-    Public Function FormatStringdate(ByVal SentTimeString As String) As Long
-        Dim Days As Integer
-        Dim Hours As Integer
-        Dim Minutes As Integer
-        Dim Seconds As Integer
-
-        Dim strArr() As String
-        Dim count As Integer
-
-        On Error GoTo InvalidDate
-
-        If SentTimeString = "" Then
-            GoTo InvalidDate
-        End If
-
-        ' Break up the string sections
-        strArr = SentTimeString.Split(New Char() {" "c})
-
-        For count = strArr.Count - 1 To 0 Step -1
-            ' Loop from seconds to the days
-            If strArr(count).Substring(strArr(count).Length - 1) = "s" Then
-                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "s") - 1)) Then
-                    GoTo InvalidDate
-                Else
-                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "s") - 1))
-                End If
-            End If
-
-            If strArr(count).Substring(strArr(count).Length - 1) = "m" Then
-                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "m") - 1)) Then
-                    GoTo InvalidDate
-                Else
-                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "m") - 1))
-                End If
-            End If
-
-            If strArr(count).Substring(strArr(count).Length - 1) = "h" Then
-                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "h") - 1)) Then
-                    GoTo InvalidDate
-                Else
-                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "h") - 1))
-                End If
-            End If
-
-            If strArr(count).Substring(strArr(count).Length - 1) = "d" Then
-                If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "d") - 1)) Then
-                    GoTo InvalidDate
-                Else
-                    Seconds = CInt(strArr(count).Substring(0, InStr(strArr(count), "d") - 1))
-                End If
-            End If
-
-        Next
-
-        Return CInt(Seconds) + (60 * CInt(Minutes)) + (360 * CInt(Hours)) + (360 * 24 * CInt(Days))
-
-InvalidDate:
-
-        On Error Resume Next
-        Return -1
-
-    End Function
-
-    ' Takes a date/time like "1d 22h 38m 6s" and sees if it is a date/time
-    Public Function IsStringdate(ByVal SentTimeString As String) As Boolean
-        Dim strArr() As String
-        Dim count As Integer
-
-        If SentTimeString = "" Then
-            Return False
-        End If
-
-        ' Make sure the sent string has no extra spaces that create a blank array entry
-        SentTimeString = Trim(SentTimeString)
-
-        ' Break up the string sections
-        strArr = SentTimeString.Split(New Char() {" "c})
-
-        For count = strArr.Count - 1 To 0 Step -1
-            ' Loop from seconds to the days
-            Select Case strArr(count).Substring(strArr(count).Length - 1)
-                Case "s"
-                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "s") - 1)) Then
-                        Return False
-                    End If
-                Case "m"
-                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "m") - 1)) Then
-                        Return False
-                    End If
-                Case "h"
-                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "h") - 1)) Then
-                        Return False
-                    End If
-                Case "d"
-                    If Not IsNumeric(strArr(count).Substring(0, InStr(strArr(count), "d") - 1)) Then
-                        Return False
-                    End If
-                Case Else
-                    Return False
-            End Select
-
-        Next
-
-        Return True
 
     End Function
 

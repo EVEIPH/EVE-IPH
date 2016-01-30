@@ -1267,12 +1267,16 @@ Public Class ShoppingListItem
 
     Public BuildLocation As String ' This is the name of the station or Array (with system name) where we build the items
 
-    ' Flag to tell if the item is built in a POS or not
-    Public BuiltInPOS As Boolean
+    Public FacilityType As String
+
     ' Ignore Variables
     Public IgnoredInvention As Boolean
     Public IgnoredMinerals As Boolean
     Public IgnoredT1BaseItem As Boolean
+
+    Public IncludeActivityCost As Boolean
+    Public IncludeActivityTime As Boolean
+    Public IncludeActivityUsage As Boolean
 
     ' Saved price variables for this item - can be updated when quantity updated
     ' Public TotalMaterialCost As Double ' This is the cost of all the materials to build the item (does not include usage, item taxes or item fees) and invention and copy costs
@@ -1307,10 +1311,14 @@ Public Class ShoppingListItem
 
         FacilityMEModifier = 1
         BuildLocation = ""
-        BuiltInPOS = False
+        FacilityType = ""
         IgnoredInvention = False
         IgnoredMinerals = False
         IgnoredT1BaseItem = False
+
+        IncludeActivityCost = False
+        IncludeActivityTime = False
+        IncludeActivityUsage = False
 
     End Sub
 

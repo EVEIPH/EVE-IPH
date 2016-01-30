@@ -105,9 +105,9 @@ Public Class frmAssetsViewer
 
         ' Mark where the window is attached - can have multiple open
         Select Case AssetType
-            Case AssetWindow.ProgramDefault
-                Me.Text = "Default Asset Viewer"
-                SelectedSettings = UserAssetWindowDefaultSettings
+            Case AssetWindow.ManufacturingTab
+                Me.Text = "Manufacturing Asset Viewer"
+                SelectedSettings = UserAssetWindowManufacturingTabSettings
             Case AssetWindow.ShoppingList
                 Me.Text = "Shopping List Assets"
                 SelectedSettings = UserAssetWindowShoppingListSettings
@@ -1023,8 +1023,8 @@ Public Class frmAssetsViewer
 
         ' Save the data to the local variable
         Select Case WindowForm
-            Case AssetWindow.ProgramDefault
-                UserAssetWindowDefaultSettings = TempSettings
+            Case AssetWindow.ManufacturingTab
+                UserAssetWindowManufacturingTabSettings = TempSettings
             Case AssetWindow.ShoppingList
                 UserAssetWindowShoppingListSettings = TempSettings
         End Select

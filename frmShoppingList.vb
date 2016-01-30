@@ -53,17 +53,17 @@ Public Class frmShoppingList
     Private BuyListHeaderCSV As String = "Material,Quantity,Cost Per Item,Min Sell,Max Buy,Buy Type,Total m3,Isk/m3,TotalCost"
     Private BuildListHeaderCSV As String = "Build Item,Quantity,ME"
     Private ItemsListHeaderCSV As String = "Item,Quantity,ME,NumBps,Build Type,Decryptor,Relic"
-    Private ItemsListHeaderCSVAdd As String = ",POS Build,IgnoredInvention,IgnoredMinerals,IgnoredT1BaseItem,Location"
+    Private ItemsListHeaderCSVAdd As String = ",Facility Type,Location,IgnoredInvention,IgnoredMinerals,IgnoredT1BaseItem,IncludeActivityCost,IncludeActivityTime,IncludeUsageCost"
 
     Private BuyListHeaderTXT As String = "Material|Quantity|Cost Per Item|Min Sell|Max Buy|Buy Type|Total m3|Isk/m3|TotalCost"
     Private BuildListHeaderTXT As String = "Build Item|Quantity|ME"
     Private ItemsListHeaderTXT As String = "Item|Quantity|ME|NumBps|Build Type|Decryptor|Relic"
-    Private ItemsListHeaderTXTAdd As String = "|POS Build|IgnoredInvention|IgnoredMinerals|IgnoredT1BaseItem|Location"
+    Private ItemsListHeaderTXTAdd As String = "|Facility Type|Location|IgnoredInvention|IgnoredMinerals|IgnoredT1BaseItem|IncludeActivityCost|IncludeActivityTime|IncludeUsageCost"
 
     Private BuyListHeaderSSV As String = "Material;Quantity;Cost Per Item;Min Sell;Max Buy;Buy Type;Total m3;Isk/m3;TotalCost"
     Private BuildListHeaderSSV As String = "Build Item;Quantity;ME"
     Private ItemsListHeaderSSV As String = "Item;Quantity;ME;NumBps;Build Type;Decryptor;Relic"
-    Private ItemsListHeaderSSVAdd As String = ";POS Build;IgnoredInvention;IgnoredMinerals;IgnoredT1BaseItem;Location"
+    Private ItemsListHeaderSSVAdd As String = ";Facility Type;Location;IgnoredInvention;IgnoredMinerals;IgnoredT1BaseItem;IncludeActivityCost;IncludeActivityTime;IncludeUsageCost"
 
     Private FirstFormLoad As Boolean
 
@@ -92,10 +92,13 @@ Public Class frmShoppingList
         Dim Decryptor As String
         Dim Relic As String
         Dim BuildLocation As String
-        Dim BuiltInPOS As Boolean
+        Dim FacilityType As String
         Dim IgnoredInvention As Boolean
         Dim IgnoredMinerals As Boolean
         Dim IgnoredT1BaseItem As Boolean
+        Dim IncludeActivityCost As Boolean
+        Dim IncludeActivityTime As Boolean
+        Dim IncludeActivityUsage As Boolean
     End Structure
 
     Public Sub New()
@@ -134,10 +137,13 @@ Public Class frmShoppingList
         lstItems.Columns.Add("Build Type", 71, HorizontalAlignment.Left) ' 71 min text
         lstItems.Columns.Add("Decryptor", 105, HorizontalAlignment.Left) '105 min text
         lstItems.Columns.Add("Location", 132, HorizontalAlignment.Left) '132 min text
-        lstItems.Columns.Add("BuildInPOS", 0, HorizontalAlignment.Left) 'Hidden flag for pos building
+        lstItems.Columns.Add("Facility Type", 0, HorizontalAlignment.Left) 'Hidden flag for pos building
         lstItems.Columns.Add("IgnoredInvention", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredMinerals", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredT1BaseItem", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
+        lstItems.Columns.Add("IncludeActivityCost", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
+        lstItems.Columns.Add("IncludeActivityTime", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
+        lstItems.Columns.Add("IncludeActivityUsage", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
 
         If UserApplicationSettings.ShowToolTips Then
@@ -482,10 +488,13 @@ Public Class frmShoppingList
                 lstItem.SubItems.Add(ItemList(i).BuildType)
                 lstItem.SubItems.Add(ItemList(i).Decryptor)
                 lstItem.SubItems.Add(ItemList(i).BuildLocation)
-                lstItem.SubItems.Add(CStr(CInt(ItemList(i).BuiltInPOS)))
+                lstItem.SubItems.Add(CStr(ItemList(i).FacilityType))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredInvention)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredMinerals)))
                 lstItem.SubItems.Add(CStr(CInt(ItemList(i).IgnoredT1BaseItem)))
+                lstItem.SubItems.Add(CStr(CInt(ItemList(i).IncludeActivityCost)))
+                lstItem.SubItems.Add(CStr(CInt(ItemList(i).IncludeActivityTime)))
+                lstItem.SubItems.Add(CStr(CInt(ItemList(i).IncludeActivityUsage)))
                 lstItem.SubItems.Add(CStr(ItemList(i).ItemTE))
             End With
         Next
@@ -1104,10 +1113,14 @@ Public Class frmShoppingList
                             OutputText = OutputText & ListItem.SubItems(6).Text & Separator
                             OutputText = OutputText & TempRelic & Separator
                             OutputText = OutputText & ListItem.SubItems(8).Text & Separator
+                            OutputText = OutputText & ListItem.SubItems(7).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(9).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(10).Text & Separator
                             OutputText = OutputText & ListItem.SubItems(11).Text & Separator
-                            OutputText = OutputText & ListItem.SubItems(7).Text & Separator ' Add location on the end
+                            OutputText = OutputText & ListItem.SubItems(12).Text & Separator
+                            OutputText = OutputText & ListItem.SubItems(13).Text & Separator
+                            OutputText = OutputText & ListItem.SubItems(14).Text
+
                             MyStream.Write(OutputText & Environment.NewLine)
                         Next
 
@@ -1124,7 +1137,7 @@ Public Class frmShoppingList
             End Try
         End If
 
-        ' Done processing the blueprints
+        ' Done processing 
         Me.Cursor = Cursors.Default
         Me.Refresh()
         Application.DoEvents()
@@ -1272,8 +1285,10 @@ Public Class frmShoppingList
                                         TempItem.ItemME = CInt(Record(2))
                                         Call BuildList.Add(TempItem)
                                     Case ItemsListLabel
-                                        ' Item List Format: Item, Quantity, ME, NumBPs, Build Type, Decryptor, Facility ME Modifier
-                                        ' POS Build, IgnoredInvention, IgnoredMinerals, IgnoredT1BaseItem - might not have these
+                                        ' Item List Format: Item, Quantity, ME, NumBps, Build Type, Decryptor, Relic, 
+                                        '   Facility Type, Location, IgnoredInvention, IgnoredMinerals, IgnoredT1BaseItem, 
+                                        '   IncludeActivityCost, IncludeActivityTime, IncludeUsageCost
+
                                         ' Save all the fields
                                         TempBPItem.ItemName = Record(0)
                                         If Trim(Record(1)) = "" Then
@@ -1287,20 +1302,15 @@ Public Class frmShoppingList
                                         TempBPItem.Decryptor = Record(5)
                                         TempBPItem.Relic = Record(6)
 
-                                        If Record.Count = 11 Then
-                                            ' Add the new records
-                                            TempBPItem.BuiltInPOS = CBool(Record(7))
-                                            TempBPItem.IgnoredInvention = CBool(Record(8))
-                                            TempBPItem.IgnoredMinerals = CBool(Record(9))
-                                            TempBPItem.IgnoredT1BaseItem = CBool(Record(10))
-                                            TempBPItem.BuildLocation = Record(11)
-                                        Else
-                                            TempBPItem.BuiltInPOS = False
-                                            TempBPItem.IgnoredInvention = False
-                                            TempBPItem.IgnoredMinerals = False
-                                            TempBPItem.IgnoredT1BaseItem = False
-                                            TempBPItem.BuildLocation = ""
-                                        End If
+                                        ' Facility stuff
+                                        TempBPItem.FacilityType = Record(7)
+                                        TempBPItem.BuildLocation = Record(8)
+                                        TempBPItem.IgnoredInvention = CBool(Record(9))
+                                        TempBPItem.IgnoredMinerals = CBool(Record(10))
+                                        TempBPItem.IgnoredT1BaseItem = CBool(Record(11))
+                                        TempBPItem.IncludeActivityCost = CBool(Record(12))
+                                        TempBPItem.IncludeActivityTime = CBool(Record(13))
+                                        TempBPItem.IncludeActivityUsage = CBool(Record(14))
 
                                         Call ItemList.Add(TempBPItem)
                                 End Select
@@ -1327,6 +1337,11 @@ Public Class frmShoppingList
                             FWUpgradeLevel = 0
                     End Select
 
+                    Dim rsData As SQLiteDataReader
+                    Dim TempBuildFacility As IndustryFacility
+                    Dim TempIndyType As IndustryType
+                    Dim TempSSName As String
+
                     ' Now that all the lists are loaded, we need to build the blueprints and adjust the final lists
                     For i = 0 To ItemList.Count - 1
 
@@ -1340,7 +1355,6 @@ Public Class frmShoppingList
                         ' Get the decryptor
                         Dim TempDecryptor As New Decryptor
                         Dim BuildBuy As Boolean
-                        Dim FacilityType As String
                         Dim InventionDecryptors As New DecryptorList()
                         TempDecryptor = InventionDecryptors.GetDecryptor(ItemList(i).Decryptor)
 
@@ -1350,38 +1364,75 @@ Public Class frmShoppingList
                             BuildBuy = False
                         End If
 
-                        If ItemList(i).BuiltInPOS Then
-                            FacilityType = POSFacility
-                        Else
-                            FacilityType = StationFacility
-                        End If
-
                         ' Determine the build facility 
-                        Dim TempBuildFacility As IndustryFacility
-                        Dim TempIndyType As IndustryType
-                        TempIndyType = GetProductionType(ActivityManufacturing, readerBP.GetInt64(2), readerBP.GetInt64(3), FacilityType)
-                        TempBuildFacility = GetManufacturingFacility(TempIndyType, BPTab, True)
+                        TempIndyType = GetProductionType(ActivityManufacturing, readerBP.GetInt64(2), readerBP.GetInt64(3), ItemList(i).FacilityType)
+                        ' After we get the facility, adjust it from what was in the file else, use the BP tab settings
+                        If ItemList(i).BuildLocation <> "" Then
+                            Dim TF As New IndustryFacility
+                            Dim FS As New FacilitySettings
+                            FS.ActivityID = 1
+                            FS.ActivityCostperSecond = 0
+                            If ItemList(i).BuildLocation.Contains("(") Then
+                                FS.Facility = ItemList(i).BuildLocation.Substring(0, InStr(ItemList(i).BuildLocation, "(") - 2)
+                                TempSSName = ItemList(i).BuildLocation.Substring(InStr(ItemList(i).BuildLocation, "("))
+                                TempSSName = TempSSName.Substring(0, InStr(TempSSName, "(") - 2)
+                                SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName FROM SOLAR_SYSTEMS, REGIONS "
+                                SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID AND solarSystemName = '" & FormatDBString(TempSSName) & "'"
+                            Else
+                                FS.Facility = ItemList(i).BuildLocation
+                                ' Need to look up system, region from station name
+                                SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName FROM SOLAR_SYSTEMS, REGIONS, STATIONS "
+                                SQL = SQL & "WHERE STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID AND SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+                                SQL = SQL & "AND STATION_NAME = '" & FormatDBString(FS.Facility) & "'"
+                            End If
 
-                        ' Build the Item - use everything we can from file import except the component facilities, that's just too hard to save now
-                        TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1, _
-                        SelectedCharacter, UserApplicationSettings, BuildBuy, 0, NoTeam, TempBuildFacility, _
-                        NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                            rsData = DBCommand.ExecuteReader
+                            rsData.Read()
 
-                        ' See if we invent, use selected BP facilities for invention
-                        If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then
-                            Dim MaximumLaboratoryLines As Integer = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
+                            FS.FacilityType = ItemList(i).FacilityType
+                            FS.SolarSystemID = rsData.GetInt64(0)
+                            FS.SolarSystemName = rsData.GetString(1)
+                            FS.RegionID = rsData.GetInt64(2)
+                            FS.RegionName = rsData.GetString(3)
 
-                            TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility, SelectedBPInventionTeam, _
-                                                   SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(CLng(readerBP.GetValue(0)), ItemList(i).Relic))
+                            FS.IncludeActivityCost = ItemList(i).IncludeActivityCost
+                            FS.IncludeActivityTime = ItemList(i).IncludeActivityTime
+                            FS.IncludeActivityUsage = ItemList(i).IncludeActivityUsage
+                            FS.MaterialMultiplier = 0
+                            FS.ProductionType = TempIndyType
+                            FS.TaxRate = 0
+                            FS.TimeMultiplier = 0
+
+                            TF.LoadFacility(FS, True)
+                            TempBuildFacility = TF
+
+                        Else
+                            TempBuildFacility = GetManufacturingFacility(TempIndyType, BPTab, True)
                         End If
 
-                        ' Build the item and get the list of materials
-                        Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, frmMain.chkBPFacilityIncludeUsage.Checked, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
+                            ' Build the Item - use everything we can from file import except the component facilities, that's just too hard to save now
+                            TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1, _
+                            SelectedCharacter, UserApplicationSettings, BuildBuy, 0, NoTeam, TempBuildFacility, _
+                            NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
 
-                        ' Add to shopping list but use BP tab settings
-                        Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, _
-                                               TempBuildFacility.MaterialMultiplier, ItemList(i).BuiltInPOS, ItemList(i).IgnoredInvention, _
-                                               ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
+                            ' See if we invent, use selected BP facilities for invention
+                            If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then
+                                Dim MaximumLaboratoryLines As Integer = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
+
+                                TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility, SelectedBPInventionTeam, _
+                                                       SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(CLng(readerBP.GetValue(0)), ItemList(i).Relic))
+                            End If
+
+                            ' Build the item and get the list of materials
+                            Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, frmMain.chkBPFacilityIncludeUsage.Checked, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
+
+                            ' Add to shopping list but use BP tab settings
+                            Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, _
+                                                   TempBuildFacility.MaterialMultiplier, ItemList(i).FacilityType, ItemList(i).IgnoredInvention, _
+                                                   ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem, _
+                                                   TempBuildFacility.IncludeActivityCost, TempBuildFacility.IncludeActivityTime, _
+                                                   TempBuildFacility.IncludeActivityUsage)
 
                     Next
 

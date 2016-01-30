@@ -316,7 +316,7 @@ Public Class EVECentralAPI
         ' Find the end of the number and save - formatted as "typeid=" & TypeIDList(i) & "&"
         For i = 0 To TypeIDListArray.Count - 1
             ' Look up the price item in the base list and if found, add it to the return list
-            PriceItemToFind.TypeID = CLng(TypeIDListArray(0))
+            PriceItemToFind.TypeID = CLng(TypeIDListArray(i).Substring(InStr(TypeIDListArray(i), "=")))
             TempItem = BaseTypes.Find(AddressOf FindPriceItem)
 
             If TempItem IsNot Nothing Then

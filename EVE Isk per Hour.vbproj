@@ -147,6 +147,14 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="IPHIndustryFacility.Designer.vb">
+      <DependentUpon>IPHIndustryFacility.vb</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="IPHIndustryFacility.vb">
+      <SubType>UserControl</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -552,6 +560,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmShoppingList.resx">
       <DependentUpon>frmShoppingList.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IPHIndustryFacility.resx">
+      <DependentUpon>IPHIndustryFacility.vb</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>

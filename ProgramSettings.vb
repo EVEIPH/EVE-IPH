@@ -42,7 +42,7 @@ Public Module SettingsVariables
     Public UserIndustryFlipBeltOreCheckSettings4 As IndustryBeltOreChecks
     Public UserIndustryFlipBeltOreCheckSettings5 As IndustryBeltOreChecks
     ' Asset windows - multiple
-    Public UserAssetWindowDefaultSettings As AssetWindowSettings
+    Public UserAssetWindowManufacturingTabSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
     ' For LP store
     Public UserLPStoreSettings As LPStore
@@ -345,6 +345,17 @@ Public Class ProgramSettings
     Public DefaultCalcInventionFWLevel As String = "0"
     Public DefaultCalcColumnSort As Integer = 10 ' Default is sorting descending by IPH
     Public DefaultCalcColumnType As String = "Decending"
+    Public DefaultCalcPriceTrend As String = "All"
+    Public DefaultCalcMinBuildTime As String = "0 Days 00:00:00"
+    Public DefaultCalcMinBuildTimeCheck As Boolean = False
+    Public DefaultCalcMaxBuildTime As String = "1 Days 00:00:00"
+    Public DefaultCalcMaxBuildTimeCheck As Boolean = False
+    Public DefaultCalcIPHThreshold As Double = 0
+    Public DefaultCalcIPHThresholdCheck As Boolean = False
+    Public DefaultCalcProfitThreshold As Double = 0
+    Public DefaultCalcProfitThresholdCheck As Boolean = False
+    Public DefaultCalcVolumeThreshold As Double = 0
+    Public DefaultCalcVolumeThresholdCheck As Boolean = False
 
     ' Datacore Default Settings
     Public DefaultDCPricesFrom As String = "Updated Prices"
@@ -924,7 +935,7 @@ Public Class ProgramSettings
     Private CalcInventionTeamSettings As TeamSettings
 
     ' Multiple versions of Asset windows
-    Private AssetWindowSettingsDefault As AssetWindowSettings
+    Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
     Private AssetWindowSettingsShoppingList As AssetWindowSettings
 
     ' 5 belt types
@@ -983,7 +994,7 @@ Public Class ProgramSettings
     Private Const IndustryBeltOreChecksFileName5 As String = "5"
 
     ' Multiple asset windows
-    Private Const AssetWindowFileNameDefault As String = "AssetWindowSettingsDefault"
+    Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
 
     Public Const SettingsFolder As String = "Settings/"
@@ -1933,8 +1944,18 @@ Public Class ProgramSettings
                     .InventionFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "InventionFWUpgradeLevel", DefaultCalcInventionFWLevel))
                     .ColumnSort = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "ColumnSort", DefaultCalcColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "ColumnSortType", DefaultCalcColumnType))
+                    .PriceTrend = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "PriceTrend", DefaultCalcPriceTrend))
+                    .MinBuildTime = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "MinBuildTime", DefaultCalcMinBuildTime))
+                    .MinBuildTimeCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "MinBuildTimeCheck", DefaultCalcMinBuildTimeCheck))
+                    .MaxBuildTime = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "MaxBuildTime", DefaultCalcMaxBuildTime))
+                    .MaxBuildTimeCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "MaxBuildTimeCheck", DefaultCalcMaxBuildTimeCheck))
+                    .IPHThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "IPHThreshold", DefaultCalcIPHThreshold))
+                    .IPHThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IPHThresholdCheck", DefaultCalcMinBuildTimeCheck))
+                    .ProfitThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "ProfitThreshold", DefaultCalcProfitThreshold))
+                    .ProfitThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "ProfitThresholdCheck", DefaultCalcProfitThresholdCheck))
+                    .VolumeThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "VolumeThreshold", DefaultCalcVolumeThreshold))
+                    .VolumeThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "VolumeThresholdCheck", DefaultCalcVolumeThresholdCheck))
                 End With
-
             Else
                 ' Load defaults 
                 TempSettings = SetDefaultManufacturingSettings()
@@ -2030,6 +2051,17 @@ Public Class ProgramSettings
             .InventionFWUpgradeLevel = DefaultCalcInventionFWLevel
             .ColumnSort = DefaultCalcColumnSort
             .ColumnSortType = DefaultCalcColumnType
+            .PriceTrend = DefaultCalcPriceTrend
+            .MinBuildTime = DefaultCalcMinBuildTime
+            .MinBuildTimeCheck = DefaultCalcMinBuildTimeCheck
+            .MaxBuildTime = DefaultCalcMaxBuildTime
+            .MaxBuildTimeCheck = DefaultCalcMaxBuildTimeCheck
+            .IPHThreshold = DefaultCalcIPHThreshold
+            .IPHThresholdCheck = DefaultCalcIPHThresholdCheck
+            .ProfitThreshold = DefaultCalcProfitThreshold
+            .ProfitThresholdCheck = DefaultCalcProfitThresholdCheck
+            .VolumeThreshold = DefaultCalcVolumeThreshold
+            .VolumeThresholdCheck = DefaultCalcVolumeThresholdCheck
         End With
 
         ' Save locally
@@ -2040,7 +2072,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(71) As Setting
+        Dim ManufacturingSettingsList(81) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2114,7 +2146,17 @@ Public Class ProgramSettings
             ManufacturingSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
             ManufacturingSettingsList(69) = New Setting("ManufacturingFWUpgradeLevel", CStr(SentSettings.ManufacturingFWUpgradeLevel))
             ManufacturingSettingsList(70) = New Setting("CopyingFWUpgradeLevel", CStr(SentSettings.CopyingFWUpgradeLevel))
-            ManufacturingSettingsList(71) = New Setting("InventionFWUpgradeLevel", CStr(SentSettings.InventionFWUpgradeLevel))
+            ManufacturingSettingsList(71) = New Setting("PriceTrend", CStr(SentSettings.PriceTrend))
+            ManufacturingSettingsList(72) = New Setting("MinBuildTime", CStr(SentSettings.MinBuildTime))
+            ManufacturingSettingsList(73) = New Setting("MinBuildTimeCheck", CStr(SentSettings.MinBuildTimeCheck))
+            ManufacturingSettingsList(74) = New Setting("MaxBuildTime", CStr(SentSettings.MaxBuildTime))
+            ManufacturingSettingsList(75) = New Setting("MaxBuildTimeCheck", CStr(SentSettings.MaxBuildTimeCheck))
+            ManufacturingSettingsList(76) = New Setting("IPHThreshold", CStr(SentSettings.IPHThreshold))
+            ManufacturingSettingsList(77) = New Setting("IPHThresholdCheck", CStr(SentSettings.IPHThresholdCheck))
+            ManufacturingSettingsList(78) = New Setting("ProfitThreshold", CStr(SentSettings.ProfitThreshold))
+            ManufacturingSettingsList(79) = New Setting("ProfitThresholdCheck", CStr(SentSettings.ProfitThresholdCheck))
+            ManufacturingSettingsList(80) = New Setting("VolumeThreshold", CStr(SentSettings.VolumeThreshold))
+            ManufacturingSettingsList(81) = New Setting("VolumeThresholdCheck", CStr(SentSettings.VolumeThresholdCheck))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -3915,8 +3957,8 @@ Public Class ProgramSettings
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
-            Case AssetWindow.ProgramDefault
-                AssetWindowFileName = AssetWindowFileNameDefault
+            Case AssetWindow.ManufacturingTab
+                AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
         End Select
@@ -3997,8 +4039,8 @@ Public Class ProgramSettings
 
         ' Save them locally and then export
         Select Case Location
-            Case AssetWindow.ProgramDefault
-                AssetWindowSettingsDefault = TempSettings
+            Case AssetWindow.ManufacturingTab
+                AssetWindowSettingsManufacturingTab = TempSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = TempSettings
         End Select
@@ -4013,8 +4055,8 @@ Public Class ProgramSettings
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
-            Case AssetWindow.ProgramDefault
-                AssetWindowFileName = AssetWindowFileNameDefault
+            Case AssetWindow.ManufacturingTab
+                AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
         End Select
@@ -4086,8 +4128,8 @@ Public Class ProgramSettings
     Public Function GetAssetWindowSettings(Location As AssetWindow) As AssetWindowSettings
 
         Select Case Location
-            Case AssetWindow.ProgramDefault
-                Return AssetWindowSettingsDefault
+            Case AssetWindow.ManufacturingTab
+                Return AssetWindowSettingsManufacturingTab
             Case AssetWindow.ShoppingList
                 Return AssetWindowSettingsShoppingList
             Case Else
@@ -4155,8 +4197,8 @@ Public Class ProgramSettings
 
         ' Save locally - Will have more than one
         Select Case Location
-            Case AssetWindow.ProgramDefault
-                AssetWindowSettingsDefault = LocalSettings
+            Case AssetWindow.ManufacturingTab
+                AssetWindowSettingsManufacturingTab = LocalSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = LocalSettings
         End Select
@@ -5289,7 +5331,7 @@ Public Structure ApplicationSettings
     ' The interval for allowing refresh of prices from EVE Central - no less than 1 hour
     Dim EVECentralRefreshInterval As Integer
 
-    ' Default SVR variables
+    ' Filter variables for svr
     Dim IgnoreSVRThresholdValue As Double
     Dim SVRAveragePriceRegion As String
     Dim SVRAveragePriceDuration As String
@@ -5517,7 +5559,19 @@ Public Structure ManufacturingTabSettings
     Dim CheckIncludeT2Owned As Boolean
     Dim CheckIncludeT3Owned As Boolean
 
+    ' Filter variables
     Dim CheckSVRIncludeNull As Boolean
+    Dim PriceTrend As String
+    Dim MinBuildTime As String
+    Dim MinBuildTimeCheck As Boolean
+    Dim MaxBuildTime As String
+    Dim MaxBuildTimeCheck As Boolean
+    Dim IPHThreshold As Double
+    Dim IPHThresholdCheck As Boolean
+    Dim ProfitThreshold As Double
+    Dim ProfitThresholdCheck As Boolean
+    Dim VolumeThreshold As Double
+    Dim VolumeThresholdCheck As Boolean
 
     Dim ProductionLines As Integer
     Dim LaboratoryLines As Integer

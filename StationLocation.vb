@@ -10,7 +10,7 @@ Public Class StationLocation
     Public Sub New()
         Dim SQL As String
         Dim rsStations As SQLiteDataReader
-        Dim TempInfo As SystemRegion
+        Dim TempInfo As New SystemRegion
 
         ' Get a few fields first - Get the region and system id from the location of the station
         SQL = "SELECT STATION_ID, SOLAR_SYSTEM_ID, REGION_ID FROM STATIONS"
