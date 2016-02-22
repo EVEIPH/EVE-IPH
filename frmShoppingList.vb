@@ -570,6 +570,7 @@ Public Class frmShoppingList
                     lstBuildItem.SubItems.Add(BuildItems.GetMaterialList(i).GetMaterialName)
                     lstBuildItem.SubItems.Add(CStr(FormatNumber(BuildItems.GetMaterialList(i).GetQuantity, 0)))
                     lstBuildItem.SubItems.Add(BuildItems.GetMaterialList(i).GetItemME)
+                    lstBuildItem.SubItems.Add(BuildItems.GetMaterialList(i).GetItemtE)
 
                     readerBP.Close()
                     readerBP = Nothing
@@ -1726,11 +1727,11 @@ Public Class frmShoppingList
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
-        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List", _
-                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, _
-                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text, _
-                                           lstBuild.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines), _
+        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List",
+                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing,
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
+                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
+                                           lstBuild.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),
                                            "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
     End Sub
 
@@ -1786,11 +1787,11 @@ Public Class frmShoppingList
         rsBPLookup.Read()
 
         ' Get the decryptor or relic used from the item
-        Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List", _
-                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, _
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, _
-                                           lstItems.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(12).Text, _
-                                           lstItems.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines), _
+        Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List",
+                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing,
+                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
+                                           lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(15).Text,
+                                           lstItems.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),
                                            lstItems.SelectedItems(0).SubItems(4).Text, txtAddlCosts.Text, False)
     End Sub
 
@@ -2224,7 +2225,7 @@ Public Class frmShoppingList
 
                     ' Save the mats they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
-                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "")
+                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
                     TotalShoppingList.OnHandMatList.InsertMaterial(OnHandMaterial)
 
                     ' Update the buy list
@@ -2245,7 +2246,7 @@ Public Class frmShoppingList
 
                     ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
-                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "")
+                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
                     TotalShoppingList.OnHandComponentList.InsertMaterial(OnHandMaterial)
 
                     ' Update the build list

@@ -9,7 +9,7 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC-118-1_1.0_116645"
+    Public Const SDEVersion As String = "YC-118-2_1.0_116998"
     Public Const VersionNumber As String = "3.2.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -503,6 +503,18 @@ Public Module Public_Variables
         'Invoke the spalsh screen's SetProgress method on the thread that owns it.
         splash.Invoke(New ProgressSetter(AddressOf splash.SetProgress), progress)
     End Sub
+
+    ' Takes a string value percent and returns a double
+    Public Function CpctD(ByVal PercentValue As String) As Double
+        Dim PercentNumber As String = PercentValue.Replace("%", "")
+
+        If IsNumeric(PercentNumber) And Not PercentNumber.Contains("E") Then
+            Return CDbl(PercentNumber) / 100
+        Else
+            Return 0
+        End If
+
+    End Function
 
 #Region "Taxes/Fees"
 
@@ -3707,7 +3719,7 @@ InvalidDate:
                         Else
                             TempQuantity = CLng(ItemColumns(1))
                         End If
-                        TempMaterial = New Material(CLng(readerItem.GetValue(0)), ItemColumns(0), "", TempQuantity, 0, 0, "")
+                        TempMaterial = New Material(CLng(readerItem.GetValue(0)), ItemColumns(0), "", TempQuantity, 0, 0, "", "")
                         Call CopyPasteMaterials.InsertMaterial(TempMaterial)
                     End If
                 End If
@@ -4148,6 +4160,20 @@ InvalidDate:
 
     End Function
 
+    Public Function ConvertEUDecimaltoUSDecimal(ByVal EUFormatedValue As String) As String
+        Dim TempString As String = ""
+
+        If EUFormatedValue.Contains(",") Then
+            ' This is the EU decimal so change to us
+            TempString = EUFormatedValue.Replace(",", ".")
+        Else
+            TempString = EUFormatedValue
+        End If
+
+        Return TempString
+
+    End Function
+
     ' MD5 Hash - specify the path to a file and this routine will calculate your hash
     Public Function MD5CalcFile(ByVal filepath As String) As String
 
@@ -4235,7 +4261,7 @@ InvalidDate:
             readerLookup = DBCommand.ExecuteReader
 
             readerLookup.Read()
-            TempMat = New Material(readerLookup.GetInt64(0), readerLookup.GetString(1), readerLookup.GetString(2), 1, 1, 0, "0")
+            TempMat = New Material(readerLookup.GetInt64(0), readerLookup.GetString(1), readerLookup.GetString(2), 1, 1, 0, "0", "0")
             readerLookup.Close()
 
         Else

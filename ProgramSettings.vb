@@ -299,6 +299,7 @@ Public Class ProgramSettings
     Public DefaultCheckBPTypeCelestials As Boolean = True
     Public DefaultCheckBPTypeStationParts As Boolean = True
     Public DefaultCheckDecryptorNone As Boolean = True
+    Public DefaultCheckDecryptorOptimal As Integer = 0
     Public DefaultCheckDecryptor06 As Boolean = False
     Public DefaultCheckDecryptor09 As Boolean = False
     Public DefaultCheckDecryptor10 As Boolean = False
@@ -353,7 +354,7 @@ Public Class ProgramSettings
     Public DefaultCalcIPHThreshold As Double = 0
     Public DefaultCalcIPHThresholdCheck As Boolean = False
     Public DefaultCalcProfitThreshold As Double = 0
-    Public DefaultCalcProfitThresholdCheck As Boolean = False
+    Public DefaultCalcProfitThresholdCheck As Integer = 0
     Public DefaultCalcVolumeThreshold As Double = 0
     Public DefaultCalcVolumeThresholdCheck As Boolean = False
 
@@ -1069,6 +1070,11 @@ Public Class ProgramSettings
             ' If blank, then return default
             If TempValue = "" Then
                 Return DefaultValue
+            End If
+
+            If TempValue = "False" Or TempValue = "True" Then
+                ' Change to type boolean
+                ObjectType = SettingTypes.TypeBoolean
             End If
 
             ' Found it, return the cast
@@ -1895,6 +1901,7 @@ Public Class ProgramSettings
                     .CheckBPTypeCelestials = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
                     .CheckBPTypeStationParts = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
                     .CheckDecryptorNone = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorNone", DefaultCheckDecryptorNone))
+                    .CheckDecryptorOptimal = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "CheckDecrytporOptimal", DefaultCheckDecryptorOptimal))
                     .CheckDecryptor06 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor06", DefaultCheckDecryptor06))
                     .CheckDecryptor09 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor09", DefaultCheckDecryptor09))
                     .CheckDecryptor10 = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptor10", DefaultCheckDecryptor10))
@@ -1952,7 +1959,7 @@ Public Class ProgramSettings
                     .IPHThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "IPHThreshold", DefaultCalcIPHThreshold))
                     .IPHThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IPHThresholdCheck", DefaultCalcMinBuildTimeCheck))
                     .ProfitThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "ProfitThreshold", DefaultCalcProfitThreshold))
-                    .ProfitThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "ProfitThresholdCheck", DefaultCalcProfitThresholdCheck))
+                    .ProfitThresholdCheck = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "ProfitThresholdCheck", DefaultCalcProfitThresholdCheck))
                     .VolumeThreshold = CDbl(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "VolumeThreshold", DefaultCalcVolumeThreshold))
                     .VolumeThresholdCheck = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "VolumeThresholdCheck", DefaultCalcVolumeThresholdCheck))
                 End With
@@ -2002,6 +2009,7 @@ Public Class ProgramSettings
             .CheckBPTypeStationParts = DefaultCheckBPTypeStationParts
             .CheckBPTypeDeployables = DefaultCheckBPTypeDeployables
             .CheckDecryptorNone = DefaultCheckDecryptorNone
+            .CheckDecryptorOptimal = DefaultCheckDecryptorOptimal
             .CheckDecryptor06 = DefaultCheckDecryptor06
             .CheckDecryptor09 = DefaultCheckDecryptor09
             .CheckDecryptor10 = DefaultCheckDecryptor10
@@ -2072,7 +2080,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(81) As Setting
+        Dim ManufacturingSettingsList(82) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2157,6 +2165,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(79) = New Setting("ProfitThresholdCheck", CStr(SentSettings.ProfitThresholdCheck))
             ManufacturingSettingsList(80) = New Setting("VolumeThreshold", CStr(SentSettings.VolumeThreshold))
             ManufacturingSettingsList(81) = New Setting("VolumeThresholdCheck", CStr(SentSettings.VolumeThresholdCheck))
+            ManufacturingSettingsList(82) = New Setting("CheckDecryptorOptimal", CStr(SentSettings.CheckDecryptorOptimal))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -5522,6 +5531,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckAutoCalcNumBPs As Boolean
 
     Dim CheckDecryptorNone As Boolean
+    Dim CheckDecryptorOptimal As Integer ' Check State
     Dim CheckDecryptor06 As Boolean
     Dim CheckDecryptor09 As Boolean
     Dim CheckDecryptor10 As Boolean
@@ -5569,7 +5579,7 @@ Public Structure ManufacturingTabSettings
     Dim IPHThreshold As Double
     Dim IPHThresholdCheck As Boolean
     Dim ProfitThreshold As Double
-    Dim ProfitThresholdCheck As Boolean
+    Dim ProfitThresholdCheck As Integer
     Dim VolumeThreshold As Double
     Dim VolumeThresholdCheck As Boolean
 

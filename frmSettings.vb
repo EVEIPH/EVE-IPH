@@ -465,7 +465,7 @@ Public Class frmSettings
             UserApplicationSettings = TempSettings
 
             ' Reinit any tabs that have settings changes before displaying dialog
-            Call frmMain.ResetTabs()
+            Call frmMain.ResetTabs(False)
             Call frmMain.ResetRefresh()
 
             MsgBox("Settings Saved", vbInformation, Application.ProductName)

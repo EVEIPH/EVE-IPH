@@ -178,7 +178,7 @@ Public Class EVEBlueprints
 
                         ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
                         SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED FROM OWNED_BLUEPRINTS "
-                        SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID = " & AccountSearchID & " "
+                        SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID IN (" & CStr(KeyData.ID) & "," & CStr(CorpID) & ")"
 
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerBlueprints = DBCommand.ExecuteReader

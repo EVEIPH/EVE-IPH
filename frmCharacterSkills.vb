@@ -446,17 +446,17 @@ Public Class frmCharacterSkills
 
     Public Sub FinalizeUpdate()
 
-        ' Finally reload the skills for the program - whatever changes were done just load them from DB
-        Call SelectedCharacter.LoadCharacterSheet(False, False)
-
         ' Saved skills, so this is now the default
         FullOverrideChange = chkSkillOverride.Checked
         CheckSaveBeforeExit = False
         SkillOverridden = False ' Reset change flag
 
-        MsgBox("Settings Saved", vbInformation, Application.ProductName)
+        Call LoadSkillsInTree(chkSkillOverride.Checked)
 
-        Call LoadSkillsinTree(chkSkillOverride.Checked)
+        ' Finally reload the skills for the program - whatever changes were done just load them from DB
+        Call SelectedCharacter.LoadCharacterSheet(False, False)
+
+        MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
     End Sub
 

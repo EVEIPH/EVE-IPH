@@ -124,7 +124,7 @@ Class RefiningReprocessing
             If RecursionMaterials.GetMaterialList.Count = 0 Then
                 ' Add the base material if not inserted as recusive mat
                 TempMaterial = New Material(RefinedMatId, readerBP.GetString(1), readerBP.GetString(2), _
-                                                NewMaterialQuantity, readerBP.GetDouble(3), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "")
+                                                NewMaterialQuantity, readerBP.GetDouble(3), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
                 TempMaterials.InsertMaterial(TempMaterial)
             End If
 
@@ -200,7 +200,7 @@ Class RefiningReprocessing
 
             ' Add the base material
             RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2), _
-                                            NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "")
+                                            NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
             RefinedMats.InsertMaterial(RefinedMat)
         End While
 
@@ -218,5 +218,27 @@ Class RefiningReprocessing
         Return RefinedMats
 
     End Function
+
+    '' Takes a mineral type ID and returns a list of materials that can refine that mineral and quantity
+    'Public Function ReverseRefineOre(MineralTypeID As Long, Quantity As Long, OreType As OreType, Compressed As Boolean) As List(Of Material)
+    '    Dim TempYield As Double
+
+    '    ' First look up all the ores that contain this mineral
+
+
+
+
+
+    '    TempYield = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * 5)) * (1 + ImplantBonus)
+
+
+
+    'End Function
+
+    Public Enum OreType
+        BaseOre = 0
+        FivePercentOre = 1
+        TenPercentOre = 2
+    End Enum
 
 End Class

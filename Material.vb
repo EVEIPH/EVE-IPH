@@ -14,6 +14,7 @@ Public Class Material
 
     ' If this material is a buildable item, store the ME for the grid
     Private ItemME As String
+    Private ItemTE As String
     Private BuildItem As Boolean ' Whether we should build the item or not
 
     ' Calculate
@@ -23,7 +24,8 @@ Public Class Material
     Private ItemType As Integer ' My item type value
 
     Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Long, _
-                   ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, Optional ByVal SentBuild As Boolean = False, Optional ByVal SentItemType As Integer = 0)
+                   ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String, _
+                   Optional ByVal SentBuild As Boolean = False, Optional ByVal SentItemType As Integer = 0)
         TypeID = SentTypeID
         TypeName = SentTypeName
         Quantity = SentQuantity
@@ -36,6 +38,12 @@ Public Class Material
             ItemME = SentItemME
         Else
             ItemME = "-"
+        End If
+
+        If Trim(SentItemTE) <> "" Then
+            ItemTE = SentItemTE
+        Else
+            ItemTE = "-"
         End If
 
         If SentPrice = 0 Then
@@ -51,7 +59,7 @@ Public Class Material
 
     ' For doing a deep copy of Materials
     Public Function Clone() As Object Implements ICloneable.Clone
-        Dim CopyOfMe As New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.Quantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.BuildItem, Me.ItemType)
+        Dim CopyOfMe As New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.Quantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.ItemTE, Me.BuildItem, Me.ItemType)
         Return CopyOfMe
     End Function
 
@@ -98,6 +106,11 @@ Public Class Material
     ' Sets the items ME
     Public Sub SetItemME(ByVal SentME As String)
         ItemME = SentME
+    End Sub
+
+    ' Sets the items TE
+    Public Sub SetItemTE(ByVal SentTE As String)
+        ItemTE = SentTE
     End Sub
 
     ' Sets the item as built
@@ -156,6 +169,10 @@ Public Class Material
 
     Public Function GetItemME() As String
         Return ItemME
+    End Function
+
+    Public Function GetItemTE() As String
+        Return ItemTE
     End Function
 
     Public Function GetBuildItem() As Boolean

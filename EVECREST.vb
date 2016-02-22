@@ -68,15 +68,16 @@ Public Class EVECREST
     Public Function LimitCRESTCalls(RequestStart As Date, TotalRecordCount As Integer, CallCount As Integer) As Boolean
 
         ' If we aren't as big as the burst size, then we don't need to limit our calls
-        If TotalRecordCount <= CRESTBurstSize Then
-            Return False
-        End If
+        'If TotalRecordCount <= CRESTBurstSize Then
+        '    Return False
+        'End If
 
         ' Check to see if we hit the maximum calls per second, if so, check for time to sleep
-        If CallCount = CRESTRatePerSecond Then
+        If CallCount >= CRESTRatePerSecond Then
             ' Need to see if we are over the time limit and sleep
             ' Figure out the difference between the max time for max requests and our requests (in milliseconds)
-            Dim Difference As Integer = CInt((1000 - ((Now - RequestStart).TotalMilliseconds)))
+            Debug.Print("Rest time: " & CStr(Now.Subtract(RequestStart).Milliseconds))
+            Dim Difference As Integer = CInt(1000 - (Now.Subtract(RequestStart).Milliseconds))
             If Difference > 0 Then
                 Threading.Thread.Sleep(Difference)
             End If
@@ -165,10 +166,12 @@ Public Class EVECREST
                                     OrderDownloadType = "'SELL'"
                                 End If
 
+                                Dim Price As String = ConvertEUDecimaltoUSDecimal(.price)
+
                                 ' Insert all the new records
                                 SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(TypeID) & "," & CStr(StationLocation.RegionID) & ","
                                 SQL = SQL & CStr(StationLocation.SystemID) & ",'" & .issued.Replace("T", " ") & "',"
-                                SQL = SQL & .duration_str & "," & OrderDownloadType & "," & CStr(.price) & "," & .volumeEntered_str & ","
+                                SQL = SQL & .duration_str & "," & OrderDownloadType & "," & Price & "," & .volumeEntered_str & ","
                                 SQL = SQL & .minVolume_str & "," & .volume_str & ")"
                                 Call MHDB.ExecuteNonQuerySQL(SQL)
 
@@ -227,7 +230,7 @@ Public Class EVECREST
         <JsonProperty("volume_str")> Public volume_str As String
         <JsonProperty("buy")> Public buy As Boolean
         <JsonProperty("issued")> Public issued As String ' date
-        <JsonProperty("price")> Public price As Double
+        <JsonProperty("price")> Public price As String ' for EU processing
         <JsonProperty("volumeEntered")> Public volumeEntered As Long
         <JsonProperty("minVolume")> Public minVolume As Integer
         <JsonProperty("volume")> Public volume As Long
@@ -262,98 +265,106 @@ Public Class EVECREST
     Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long, _
                                         Optional ByRef IgnoreCacheLookup As Boolean = False, Optional OpenTransaction As Boolean = False) As Boolean
         Dim MarketPricesOutput As MarketHistory
-        Dim SQL As String
+        Dim SQL As String = ""
         Dim rsCache As SQLiteDataReader
         Dim rsCheck As SQLiteDataReader
         Dim CacheDate As Date = NoDate
         Dim MaxRecordDate As Date = NoDate
         Dim ReturnCacheDate As Date = NoDate
 
-        If Not IgnoreCacheLookup Then
-            ' First look up the cache date to see if it's time to run the update
-            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
-            rsCache = DBCommand.ExecuteReader
+        Try
+            If Not IgnoreCacheLookup Then
+                ' First look up the cache date to see if it's time to run the update
+                SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+                DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+                rsCache = DBCommand.ExecuteReader
 
-            CacheDate = ProcessCacheDate(rsCache)
+                CacheDate = ProcessCacheDate(rsCache)
 
-            rsCache.Close()
-            rsCache = Nothing
-            DBCommand = Nothing
-        Else
-            CacheDate = NoDate
-        End If
-
-        ' If it's later than now, update
-        If CacheDate <= Now Then
-            ' Always open here incase we update below
-            If OpenTransaction Then
-                Call MHDB.BeginSQLiteTransaction()
+                rsCache.Close()
+                rsCache = Nothing
+                DBCommand = Nothing
+            Else
+                CacheDate = NoDate
             End If
 
-            Application.DoEvents()
-            ' Dump the file into the Specializations object
-            MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
+            ' If it's later than now, update
+            If CacheDate <= Now Then
+                ' Always open here incase we update below
+                If OpenTransaction Then
+                    Call MHDB.BeginSQLiteTransaction()
+                End If
 
-            ' Read in the data
-            If Not IsNothing(MarketPricesOutput) Then
+                Application.DoEvents()
+                ' Dump the file into the Specializations object
+                MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
+                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
 
-                If MarketPricesOutput.items.Count > 0 Then
-                    ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
-                    If CacheDate = NoDate Then ' only run this if we don't already have the max date for this typeid
-                        SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-                        DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
-                        rsCheck = DBCommand.ExecuteReader
+                ' Read in the data
+                If Not IsNothing(MarketPricesOutput) Then
 
-                        If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
-                            ' The cache date is the date when we run the next update
-                            MaxRecordDate = CDate(rsCheck.GetString(0))
-                        Else
-                            MaxRecordDate = NoDate
-                        End If
-                        rsCheck.Close()
-                    Else
-                        MaxRecordDate = CacheDate
-                    End If
+                    If MarketPricesOutput.items.Count > 0 Then
+                        ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
+                        If CacheDate = NoDate Then ' only run this if we don't already have the max date for this typeid
+                            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+                            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+                            rsCheck = DBCommand.ExecuteReader
 
-                    Application.DoEvents()
-                    Dim i As Integer
-
-                    ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
-                    For i = 0 To MarketPricesOutput.totalCount - 1
-                        With MarketPricesOutput.items(i)
-                            ' only insert the records that are larger than the max date (with no time or 0:00:00 in GMT when records are updated)
-                            If CDate(.date_str.Replace("T", " ")).Date > MaxRecordDate.Date Then
-                                SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
-                                SQL = SQL & CStr(.lowPrice) & "," & CStr(.highPrice) & "," & CStr(.avgPrice) & "," & .orderCount_str & "," & .volume_str & ")"
-                                Call MHDB.ExecuteNonQuerySQL(SQL)
+                            If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
+                                ' The cache date is the date when we run the next update
+                                MaxRecordDate = CDate(rsCheck.GetString(0))
+                            Else
+                                MaxRecordDate = NoDate
                             End If
-                        End With
+                            rsCheck.Close()
+                        Else
+                            MaxRecordDate = CacheDate
+                        End If
 
                         Application.DoEvents()
-                    Next
+                        Dim i As Integer
+
+                        ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
+                        For i = 0 To MarketPricesOutput.totalCount - 1
+                            With MarketPricesOutput.items(i)
+                                Dim LowPrice As String = ConvertEUDecimaltoUSDecimal(.lowPrice)
+                                Dim HighPrice As String = ConvertEUDecimaltoUSDecimal(.highPrice)
+                                Dim AvgPrice As String = ConvertEUDecimaltoUSDecimal(.avgPrice)
+
+                                ' only insert the records that are larger than the max date (with no time or 0:00:00 in GMT when records are updated)
+                                If CDate(.date_str.Replace("T", " ")).Date > MaxRecordDate.Date Then
+                                    SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
+                                    SQL = SQL & LowPrice & "," & HighPrice & "," & AvgPrice & "," & .orderCount_str & "," & .volume_str & ")"
+                                    Call MHDB.ExecuteNonQuerySQL(SQL)
+                                End If
+                            End With
+
+                            Application.DoEvents()
+                        Next
+                    End If
+
+                    ' Set the Cache Date for everything queried 
+                    Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+                    Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
+
+                    ' Done updating
+                    If OpenTransaction Then
+                        Call MHDB.CommitSQLiteTransaction()
+                    End If
+
+                    Return True
+
                 End If
-
-                ' Set the Cache Date for everything queried 
-                Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
-                Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
-
-                ' Done updating
-                If OpenTransaction Then
-                    Call MHDB.CommitSQLiteTransaction()
-                End If
-
-                Return True
-
+                ' Json file didn't download
+                Return False
+            Else
+                Return False
             End If
-            ' Json file didn't download
-            Return False
-        Else
-            Return False
-        End If
 
-        Return True
+            Return True
+        Catch ex As Exception
+            Return False
+        End Try
 
     End Function
 
@@ -372,9 +383,9 @@ Public Class EVECREST
         '{"volume_str": "28662910175", "orderCount": 4312, "lowPrice": 4.98, "highPrice": 5.04, "avgPrice": 5.0, "volume": 28662910175, "orderCount_str": "4312", "date": "2014-02-01T00:00:00"}
         <JsonProperty("volume_str")> Public volume_str As String
         <JsonProperty("orderCount")> Public orderCount As Long
-        <JsonProperty("lowPrice")> Public lowPrice As Double
-        <JsonProperty("highPrice")> Public highPrice As Double
-        <JsonProperty("avgPrice")> Public avgPrice As Double
+        <JsonProperty("lowPrice")> Public lowPrice As String ' Use string for EU processing
+        <JsonProperty("highPrice")> Public highPrice As String ' Use string for EU processing
+        <JsonProperty("avgPrice")> Public avgPrice As String ' Use string for EU processing
         <JsonProperty("volume")> Public volume As Long
         <JsonProperty("orderCount_str")> Public orderCount_str As String
         <JsonProperty("date")> Public date_str As String
@@ -1007,6 +1018,7 @@ Public Class EVECREST
         Dim StatusText As String = ""
 
         Dim SystemIndiciesUpdated As Boolean
+        Dim SuccessfulDownload As Boolean
 
         Dim TempLabel As Label
         Dim TempPB As ProgressBar
@@ -1026,13 +1038,13 @@ Public Class EVECREST
         End If
 
         ' Before doing anything, update the system indicies
-        Call UpdateIndustrySystemsCostIndex(SystemIndiciesUpdated, UpdateLabel, PB)
+        SuccessfulDownload = UpdateIndustrySystemsCostIndex(SystemIndiciesUpdated, UpdateLabel, PB)
 
         ' Now look up the cache date to see if it's time to run the update
         CacheDate = GetCRESTCacheDate(IndustryFacilitiesField)
 
         ' If it's later than now, update
-        If CacheDate <= Now Then
+        If CacheDate <= Now And SuccessfulDownload Then
 
             StatusText = "Updating Facility Data..."
             If SplashVisible Then
@@ -1650,9 +1662,22 @@ Public Class EVECREST
                     ' Now read through all the output items and update them in ITEM_PRICES
                     For i = 0 To MarketPricesOutput.totalCount - 1
                         With MarketPricesOutput.items(i)
-                            SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & CStr(.adjustedPrice) & ", AVERAGE_PRICE = " & CStr(.averagePrice)
+                            Dim AdjustedPrice As String
+                            If Not IsNothing(.adjustedPrice) Then
+                                AdjustedPrice = ConvertEUDecimaltoUSDecimal(.adjustedPrice)
+                            Else
+                                AdjustedPrice = "0.00"
+                            End If
+
+                            Dim AveragePrice As String
+                            If Not IsNothing(.averagePrice) Then
+                                AveragePrice = ConvertEUDecimaltoUSDecimal(.averagePrice)
+                            Else
+                                AveragePrice = "0.00"
+                            End If
+                            SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & AdjustedPrice & ", AVERAGE_PRICE = " & AveragePrice
                             SQL = SQL & " WHERE ITEM_ID = " & CStr(.type.id)
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
                         End With
 
                         ' For each record, update the progress bar
@@ -1689,8 +1714,8 @@ Public Class EVECREST
     ' For Market Prices
     Private Class MarketAdjustedPrice
         '{"adjustedPrice": 567464.0783, "averagePrice": 565523.7836, "type": {} }
-        <JsonProperty("adjustedPrice")> Public adjustedPrice As Double
-        <JsonProperty("averagePrice")> Public averagePrice As Double
+        <JsonProperty("adjustedPrice")> Public adjustedPrice As String ' String for EU processing
+        <JsonProperty("averagePrice")> Public averagePrice As String ' String for EU processing
         <JsonProperty("type")> Public type As MarketPriceType
     End Class
 
@@ -1742,7 +1767,7 @@ Public Class EVECREST
         Dim Output As String = ""
 
         Try
-
+            Dim Start As DateTime = Now
             Dim myUri As New Uri(URL)
 
             ' Create the web request  
@@ -1751,10 +1776,13 @@ Public Class EVECREST
             request.Method = "GET"
             request.Proxy = GetProxyData()
             request.PreAuthenticate = True
+            request.Timeout = 10000
             request.UnsafeAuthenticatedConnectionSharing = True
 
             ' Get response  
             response = DirectCast(request.GetResponse(), HttpWebResponse)
+
+            Debug.Print(CStr(Now.Subtract(Start).Milliseconds))
 
             ' Use later to see what calls hit or fail
             CallStatus = response.Headers.Get("X-Cache-Status")
@@ -1766,6 +1794,8 @@ Public Class EVECREST
 
             ' Get the response stream into a reader  
             reader = New StreamReader(response.GetResponseStream())
+
+            'Throw New System.Exception("An exception has occurred.")
 
             ' Set the cache date by ref for market history and industry facilities
             ' These only change once per day. So for these cases set the cache date to take into account
@@ -1808,14 +1838,21 @@ Public Class EVECREST
                 Output = ""
             End If
 
+            If ex.Message.Contains("Stream was not readable.") Then
+                Application.DoEvents()
+            End If
+
             If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
-                Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") Then
+                Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") _
+                Or ex.Message.Contains("The operation has timed out") Or ex.Message.Contains("503") Then
                 ' Re-run this function - limit to 10 calls
                 If RecursiveCalls <= 10 Then
                     Dim NumCalls As Integer = RecursiveCalls + 1
                     Output = GetJSONFile(URL, CacheDate, UpdateType, IgnoreExceptions, NumCalls)
                 End If
             End If
+
+            Debug.Print(ex.Message)
 
         Finally
             If Not response Is Nothing Then response.Close()

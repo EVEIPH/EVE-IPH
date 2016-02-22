@@ -147,7 +147,9 @@ Public Class frmMarketHistoryViewer
         ' Update the prices
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
-        Call MH.UpdateCRESTPriceHistory(TypeID, RegionID)
+        If Not MH.UpdateCRESTPriceHistory(TypeID, RegionID) Then
+            Call MsgBox("Some prices did not update. Please try again.", vbInformation, Application.ProductName)
+        End If
         Me.Cursor = Cursors.Default
         Application.DoEvents()
 
@@ -293,18 +295,27 @@ Public Class frmMarketHistoryViewer
                 DonchianMin5 = New List(Of Double)
                 DonchianMax5 = New List(Of Double)
 
-                For i = (Count - 4) To Count
-                    ' Get min and max values from the main data
-                    DonchianMin5.Add(MinPrices(i))
-                    DonchianMax5.Add(MaxPrices(i))
-                Next
+                If Count > 4 Then
+                    For i = (Count - 4) To Count
+                        ' Get min and max values from the main data
+                        DonchianMin5.Add(MinPrices(i))
+                        DonchianMax5.Add(MaxPrices(i))
+                    Next
 
-                ' Set the data
-                TempDP.YMinValue = DonchianMin5.Min
-                TempDP.YMaxValue = DonchianMax5.Max
-                TempDP.YValue = 0
-                ' Add and reset
-                DonchianData.Add(TempDP)
+                    ' Set the data
+                    TempDP.YMinValue = DonchianMin5.Min
+                    TempDP.YMaxValue = DonchianMax5.Max
+                    TempDP.YValue = 0
+                    ' Add and reset
+                    DonchianData.Add(TempDP)
+                Else
+                    ' Set the data
+                    TempDP.YMinValue = 0
+                    TempDP.YMaxValue = 0
+                    TempDP.YValue = 0
+                    ' Add and reset
+                    DonchianData.Add(TempDP)
+                End If
 
             End If
 

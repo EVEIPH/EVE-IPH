@@ -78,6 +78,7 @@ Partial Class frmLPStore
         Me.lstRequiredMats = New System.Windows.Forms.ListView()
         Me.lblCorporationList = New System.Windows.Forms.Label()
         Me.Label1 = New System.Windows.Forms.Label()
+        Me.chkManufactureBP = New System.Windows.Forms.CheckBox()
         Me.gbRewardType.SuspendLayout()
         Me.gbSearchOptions.SuspendLayout()
         Me.gbItemFilter.SuspendLayout()
@@ -102,6 +103,7 @@ Partial Class frmLPStore
         Me.gbRewardType.Controls.Add(Me.rbtnAll)
         Me.gbRewardType.Controls.Add(Me.rbtnApparel)
         Me.gbRewardType.Controls.Add(Me.rbtnDeployable)
+        Me.gbRewardType.Controls.Add(Me.chkManufactureBP)
         Me.gbRewardType.Location = New System.Drawing.Point(12, 384)
         Me.gbRewardType.Name = "gbRewardType"
         Me.gbRewardType.Size = New System.Drawing.Size(204, 117)
@@ -122,7 +124,7 @@ Partial Class frmLPStore
         'rbtnShips
         '
         Me.rbtnShips.AutoSize = True
-        Me.rbtnShips.Location = New System.Drawing.Point(98, 79)
+        Me.rbtnShips.Location = New System.Drawing.Point(95, 79)
         Me.rbtnShips.Name = "rbtnShips"
         Me.rbtnShips.Size = New System.Drawing.Size(51, 17)
         Me.rbtnShips.TabIndex = 13
@@ -162,7 +164,7 @@ Partial Class frmLPStore
         'rbtnBlueprints
         '
         Me.rbtnBlueprints.AutoSize = True
-        Me.rbtnBlueprints.Location = New System.Drawing.Point(98, 34)
+        Me.rbtnBlueprints.Location = New System.Drawing.Point(95, 34)
         Me.rbtnBlueprints.Name = "rbtnBlueprints"
         Me.rbtnBlueprints.Size = New System.Drawing.Size(71, 17)
         Me.rbtnBlueprints.TabIndex = 4
@@ -172,7 +174,7 @@ Partial Class frmLPStore
         'rbtnAmmoCharge
         '
         Me.rbtnAmmoCharge.AutoSize = True
-        Me.rbtnAmmoCharge.Location = New System.Drawing.Point(98, 18)
+        Me.rbtnAmmoCharge.Location = New System.Drawing.Point(95, 18)
         Me.rbtnAmmoCharge.Name = "rbtnAmmoCharge"
         Me.rbtnAmmoCharge.Size = New System.Drawing.Size(98, 17)
         Me.rbtnAmmoCharge.TabIndex = 5
@@ -182,7 +184,7 @@ Partial Class frmLPStore
         'rbtnImplants
         '
         Me.rbtnImplants.AutoSize = True
-        Me.rbtnImplants.Location = New System.Drawing.Point(98, 64)
+        Me.rbtnImplants.Location = New System.Drawing.Point(95, 64)
         Me.rbtnImplants.Name = "rbtnImplants"
         Me.rbtnImplants.Size = New System.Drawing.Size(64, 17)
         Me.rbtnImplants.TabIndex = 10
@@ -214,7 +216,7 @@ Partial Class frmLPStore
         'rbtnDeployable
         '
         Me.rbtnDeployable.AutoSize = True
-        Me.rbtnDeployable.Location = New System.Drawing.Point(98, 49)
+        Me.rbtnDeployable.Location = New System.Drawing.Point(95, 49)
         Me.rbtnDeployable.Name = "rbtnDeployable"
         Me.rbtnDeployable.Size = New System.Drawing.Size(78, 17)
         Me.rbtnDeployable.TabIndex = 9
@@ -642,6 +644,16 @@ Partial Class frmLPStore
         Me.Label1.Text = "Total Requirements Cost:"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'chkManufactureBP
+        '
+        Me.chkManufactureBP.AutoSize = True
+        Me.chkManufactureBP.Location = New System.Drawing.Point(95, 97)
+        Me.chkManufactureBP.Name = "chkManufactureBP"
+        Me.chkManufactureBP.Size = New System.Drawing.Size(108, 17)
+        Me.chkManufactureBP.TabIndex = 71
+        Me.chkManufactureBP.Text = "Manufacture BPs"
+        Me.chkManufactureBP.UseVisualStyleBackColor = True
+        '
         'frmLPStore
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -740,4 +752,5 @@ End Sub
     Friend WithEvents lstRequiredMats As System.Windows.Forms.ListView
     Friend WithEvents lblCorporationList As System.Windows.Forms.Label
     Friend WithEvents Label1 As System.Windows.Forms.Label
+    Friend WithEvents chkManufactureBP As CheckBox
 End Class

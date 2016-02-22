@@ -216,7 +216,7 @@ Public Class Character
             SQL = SQL & "'" & Format(Jobs.CachedUntil, SQLiteDateFormat) & "',"
             SQL = SQL & "'" & Format(DatacoreAgents.CachedUntil, SQLiteDateFormat) & "',"
             SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "',"
-            SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "','Male')"
+            SQL = SQL & "'" & Format(APIExpiration, SQLiteDateFormat) & "')"
 
             Call evedb.ExecuteNonQuerySQL(SQL)
 
@@ -563,7 +563,7 @@ Public Class Character
             With rsData
                 Dim TempTitle As New CorporationTitle
                 TempTitle.TitleID = rsData.GetInt32(0)
-                TempTitle.TitleName = rsData.GetString(2)
+                TempTitle.TitleName = rsData.GetString(1)
 
                 CorpTitles.Add(TempTitle)
             End With

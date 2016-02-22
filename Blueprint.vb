@@ -712,7 +712,13 @@ Public Class Blueprint
 
                     Dim ItemPrice As Double = 0
 
-                    If BuildBuy And MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost Then
+                    Dim OwnedBP As Boolean
+                    Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
+
+                    If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
+                        And (BPUserSettings.SuggestBuildBPNotOwned)) _
+                        Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
+                        Or MarketPrice = 0) Then
                         ' Market cost is greater than build cost, so set the mat cost to the build cost
                         ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
                     Else
@@ -721,7 +727,7 @@ Public Class Blueprint
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume, _
-                                                ItemPrice, CStr(.BuildME), True)
+                                                ItemPrice, CStr(.BuildME), CStr(.BuildTE), True)
 
                     ComponentMaterials.InsertMaterial(TempMat)
 
@@ -788,9 +794,12 @@ Public Class Blueprint
         Dim TempNumBPs As Integer = 1
 
         ' Select all materials to buid this BP
-        SQL = "SELECT BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_CATEGORY, ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, groupID, MATERIAL_GROUP "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID, INVENTORY_TYPES "
-        SQL = SQL & "WHERE ALL_BLUEPRINT_MATERIALS.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID "
+        SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_CATEGORY, ACTIVITY, "
+        SQL = SQL & "MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, groupID, MATERIAL_GROUP, PORTION_SIZE "
+        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS AS ABM "
+        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES ON ABM.MATERIAL_ID = ITEM_PRICES.ITEM_ID, INVENTORY_TYPES "
+        SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS ON ALL_BLUEPRINTS.ITEM_ID = ABM.MATERIAL_ID "
+        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -805,8 +814,8 @@ Public Class Blueprint
 
             ElseIf AddMaterial(CurrentMaterialCategory, readerBP.GetString(10), IgnoreMinerals, IgnoreT1Item) Then
 
-                ' Set the current material
-                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "")
+                ' Set the current material - adjust with portion size though if sent
+                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "", "")
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
                 BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(8)), 0, readerBP.GetDouble(8))
@@ -814,9 +823,9 @@ Public Class Blueprint
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
 
-                If IsComponentBP And PortionSize > 1 Then
-                    ' Reset the quantity to be for only the runs we need
-                    CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / PortionSize * UserRuns))
+                If Not IsDBNull(readerBP.GetValue(11)) Then
+                    ' Divide by the portion size if this item has one (component buildable)
+                    CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / readerBP.GetInt64(11)))
                 End If
 
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
@@ -865,7 +874,8 @@ Public Class Blueprint
                     If BuildBuy Then
                         ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
                         If CurrentMaterial.GetTotalCost = 0 Or (CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost _
-                                                                And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+                                                                And ((BPUserSettings.SuggestBuildBPNotOwned) Or _
+                                                                     (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
                             '*** BUILD ***
                             ' We want to build this item
                             CurrentMaterial.SetBuildItem(True)
@@ -1421,7 +1431,8 @@ Public Class Blueprint
         Dim readerLookup As SQLiteDataReader
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
-        SQL = "SELECT ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID =" & BPCharacter.ID & " AND BLUEPRINT_ID =" & CStr(BlueprintID) & " AND OWNED <> 0 "
+        SQL = "SELECT ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & BPCharacter.ID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
+        SQL = SQL & " AND BLUEPRINT_ID =" & CStr(BlueprintID) & " AND OWNED <> 0 "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
@@ -1599,7 +1610,7 @@ Public Class Blueprint
         While readerBP.Read
             ' Add this to the invention materials - add price for data cores
             InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
-                                       readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "")
+                                       readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
             SingleInventionMats.InsertMaterial(InventionMat)
         End While
 
@@ -1627,7 +1638,7 @@ Public Class Blueprint
             readerCost = Nothing
             DBCommand = Nothing
 
-            InventionMat = New Material(InventionDecryptor.TypeID, InventionDecryptor.Name, "Decryptors", 1, 0.1, DecryptorCost, "")
+            InventionMat = New Material(InventionDecryptor.TypeID, InventionDecryptor.Name, "Decryptors", 1, 0.1, DecryptorCost, "", "")
             SingleInventionMats.InsertMaterial(InventionMat)
 
         End If
@@ -1641,7 +1652,7 @@ Public Class Blueprint
             readerCost = DBCommand.ExecuteReader
 
             If readerCost.Read Then
-                InventionMat = New Material(InventionBPCTypeID, readerCost.GetString(1), "Ancient Relics", 1, 100, readerCost.GetDouble(0), "")
+                InventionMat = New Material(InventionBPCTypeID, readerCost.GetString(1), "Ancient Relics", 1, 100, readerCost.GetDouble(0), "", "")
                 SingleInventionMats.InsertMaterial(InventionMat)
             End If
 
@@ -1714,7 +1725,7 @@ Public Class Blueprint
             While readerBP.Read
                 ' Add this to the copy materials 
                 CopyMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
-                                            readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "")
+                                            readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
                 SingleCopyMats.InsertMaterial(CopyMat)
             End While
 
@@ -2354,7 +2365,7 @@ Public Class Blueprint
         Dim TempMat As Material
 
         ' Volume doesn't matter
-        TempMat = New Material(ItemID, ItemName, ItemGroup, UserRuns, 0, ItemMarketCost, "")
+        TempMat = New Material(ItemID, ItemName, ItemGroup, UserRuns, 0, ItemMarketCost, "", "")
 
         Return TempMat
     End Function
