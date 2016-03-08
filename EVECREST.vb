@@ -1196,7 +1196,7 @@ Public Class EVECREST
                     rsLookup.Close()
                     DBCommand = Nothing
 
-                    '' Update Tax rates - ignore this until they actually could change, NPC is set by CCP and outposts don't get set through CREST
+                    '' Update Tax rates - ignore this until they actually change, NPC is set by CCP and outposts don't get sent through CREST
                     'SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TAX FROM STATION_FACILITIES WHERE OUTPOST = 0
                     'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     'rsLookup = DBCommand.ExecuteReader
@@ -1230,8 +1230,11 @@ Public Class EVECREST
                     rsLookup.Close()
                     DBCommand = Nothing
 
-                    ' Finally, update the stations table for easy look ups in assets - most should be there from the SDE
-                    ' note some stations may not be in the CREST update since those are just industry facilities but contains all outposts, which we want
+                    ' Clear out all the outposts from STATIONS to get the most updated data
+                    SQL = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN (21642,21644,21645,21646) " ' Outpost types
+                    EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    ' Now insert non-SDE stations (Outposts) into the stations table for easy look ups in assets
                     SQL = "SELECT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
                     SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

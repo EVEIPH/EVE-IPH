@@ -111,6 +111,7 @@ Public Class Blueprint
     Private TotalInventedRuns As Integer ' Number of runs all the invention jobs will produce
     Private SingleInventedBPCRuns As Integer ' The runs on one bp invented
     Private NumInventionJobs As Integer ' Number of invention jobs we will do
+    Private PerInventionRunCost As Double ' The cost per invention run based on the probability of success
 
     Private TotalCopyCost As Double ' Total Cost of the BPCs for the T2 item - for copy materials for things like data sheets, etc when needed, and get enough successful inventions for these runs
     Private CopyCost As Double ' Cost for the runs given
@@ -574,7 +575,7 @@ Public Class Blueprint
             Next
 
             ' Now we just build each BP for the runs in the batch and total up all the variables - apply additional costs per batch
-            ' Need to revisit for efficiency
+            ' Need to revisit for efficiency - will run one batch for each unique runs in the production chain and muliply by number of unique run batches
             For i = 0 To ProductionChain.Count - 1
                 For j = 0 To ProductionChain(i).Count - 1
                     Application.DoEvents()
@@ -670,13 +671,15 @@ Public Class Blueprint
                 Dim CategoryName As String = ""
                 Dim GroupID As Integer = 0
                 Dim MarketPrice As Double = 0
+                Dim PortionSize As Integer = 1
 
                 With BuiltComponentList.GetBuiltItemList(i)
                     Application.DoEvents()
 
-                    SQL = "SELECT ALL_BLUEPRINTS.ITEM_GROUP_ID, ALL_BLUEPRINTS.ITEM_CATEGORY, ITEM_PRICES.PRICE "
+                    SQL = "SELECT ALL_BLUEPRINTS.ITEM_GROUP_ID, ALL_BLUEPRINTS.ITEM_CATEGORY, ITEM_PRICES.PRICE, PORTION_SIZE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES.ITEM_ID "
                     SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
+
                     DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
@@ -684,6 +687,7 @@ Public Class Blueprint
                         GroupID = rsCheck.GetInt32(0)
                         CategoryName = rsCheck.GetString(1)
                         MarketPrice = rsCheck.GetDouble(2)
+                        PortionSize = rsCheck.GetInt32(3)
                     End If
 
                     ' Build the T1 component
@@ -697,7 +701,10 @@ Public Class Blueprint
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
 
-                    ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1, _
+                    ' Adjust the runs by portion size
+                    Dim TempItemQuantity = CLng(Math.Ceiling(.ItemQuantity / PortionSize))
+
+                    ComponentBlueprint = New Blueprint(.BPTypeID, TempItemQuantity, .BuildME, .BuildTE, 1, _
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
                                                    0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam, _
                                                    ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
@@ -709,6 +716,19 @@ Public Class Blueprint
 
                     ' Reset the component's material list for shopping list functionality
                     BuiltComponentList.GetBuiltItemList(i).BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
+                    ' Set the variables
+                    BuiltComponentList.GetBuiltItemList(i).FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                    BuiltComponentList.GetBuiltItemList(i).FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
+                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
+                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+
+                    ' See if we need to add the system on to the end of the build location for POS
+                    If BuiltComponentList.GetBuiltItemList(i).FacilityType = POSFacility Then
+                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    Else
+                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                    End If
 
                     Dim ItemPrice As Double = 0
 
@@ -917,6 +937,17 @@ Public Class Blueprint
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
                             TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                            TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                            TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
+                            TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
+                            TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+
+                            ' See if we need to add the system on to the end of the build location for POS
+                            If TempBuiltItem.FacilityType = POSFacility Then
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                            Else
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                            End If
 
                             BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
@@ -969,6 +1000,17 @@ Public Class Blueprint
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
                         TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
                         TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                        TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                        TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
+                        TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
+                        TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+
+                        ' See if we need to add the system on to the end of the build location for POS
+                        If TempBuiltItem.FacilityType = POSFacility Then
+                            TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                        Else
+                            TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                        End If
 
                         BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
@@ -1311,7 +1353,9 @@ Public Class Blueprint
         If IncludeInventionCosts Then
             ' Set the total cost for the sent runs by totaling all to get success needed, then dividing it by the runs invented
             ' (some bps have more runs than 1 - i.e. Drones = 10) to get the cost per run, then multiply that cost by the number of runs
-            InventionCost = TotalInventionCost / TotalInventedRuns * UserRuns
+            ' InventionCost = TotalInventionCost / TotalInventedRuns * UserRuns
+            ' Use the Per Run Cost for a more accurate invention cost assuming a large number of runs - more accurate than small runs however will not be the exact cost of the invention materials needed
+            InventionCost = PerInventionRunCost * UserRuns
         Else
             InventionCost = 0
         End If
@@ -1758,6 +1802,10 @@ Public Class Blueprint
 
         ' Finally set the total invention cost for just inventing
         If IncludeInventionCosts Then
+
+            ' Before updating the materials, use the cost of a single run to determine a single run invention cost. This is an accurate cost based on the probability of success with a large number of runs
+            PerInventionRunCost = (SingleInventionMats.GetTotalMaterialsCost() / InventionChance) / SingleInventedBPCRuns
+
             ' Update the invention mats to reflect the number of invention runs we will do and save into the final list
             For i = 0 To SingleInventionMats.GetMaterialList.Count - 1
                 SingleInventionMats.GetMaterialList(i).SetQuantity(SingleInventionMats.GetMaterialList(i).GetQuantity * NumInventionJobs)
@@ -2211,6 +2259,11 @@ Public Class Blueprint
         Return ItemID
     End Function
 
+    ' Returns the item name made from this blueprint
+    Public Function GetItemName() As String
+        Return ItemName
+    End Function
+
     ' Returns the sum of taxes for setting up a sell order for this BP item
     Public Function GetSalesTaxes() As Double
         Return DisplayTaxes
@@ -2415,12 +2468,12 @@ Public Class Blueprint
     End Function
 
     ' Returns the ME of the blueprint
-    Public Function GetME() As Double
+    Public Function GetME() As Integer
         Return iME
     End Function
 
     ' Returns the TE of the blueprint
-    Public Function GetTE() As Double
+    Public Function GetTE() As Integer
         Return iTE
     End Function
 

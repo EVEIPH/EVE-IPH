@@ -167,7 +167,7 @@ Public Class EVEBlueprints
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             If Not IsNothing(IndyBlueprints) Then
 
@@ -175,9 +175,8 @@ Public Class EVEBlueprints
                 For i = 0 To IndyBlueprints.Count - 1
                     ' First make sure it's not already in there
                     With IndyBlueprints(i)
-
                         ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
-                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED FROM OWNED_BLUEPRINTS "
+                        SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED, SCANNED FROM OWNED_BLUEPRINTS "
                         SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " And USER_ID IN (" & CStr(KeyData.ID) & "," & CStr(CorpID) & ")"
 
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -216,7 +215,6 @@ Public Class EVEBlueprints
                         End If
 
                         If Not IgnoreBP Then
-
                             ' Set the correct BP_Type for the BPs they have 
                             Dim CurrentBPType As BPType = .BPType
                             ' If T2 and a copy, set to invented copy if the ME/TE match, else use what was sent
@@ -239,7 +237,6 @@ Public Class EVEBlueprints
                             End If
 
                             If InsertBP Then
-
                                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, "
                                 SQL = SQL & "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                                 SQL = SQL & "VALUES (" & CStr(AccountSearchID) & "," & CStr(.itemID) & "," & CStr(.locationID) & ","
@@ -263,11 +260,15 @@ Public Class EVEBlueprints
                                 SQL = SQL & "BP_TYPE = " & CStr(CurrentBPType) & ","
                                 ' Mark all from API as owned
                                 SQL = SQL & "OWNED = 1,"
-                                SQL = SQL & "BLUEPRINT_NAME = '" & FormatDBString(.typeName) & "' " ' If it changes
+                                SQL = SQL & "BLUEPRINT_NAME = '" & FormatDBString(.typeName) & "', " ' If it changes
+                                SQL = SQL & "SCANNED = " & ScannedFlag & " "
 
-                                If readerBlueprints.GetInt64(3) <> 0 Then
+                                If readerBlueprints.GetInt64(3) <> 0 And readerBlueprints.GetInt32(5) <> 2 Then ' if not a corp bp, then look up account
                                     ' Search with ITEM_ID
                                     SQL = SQL & "WHERE ITEM_ID = " & CStr(readerBlueprints.GetInt64(3)) & " AND USER_ID = " & CStr(AccountSearchID)
+                                ElseIf readerBlueprints.GetInt64(3) <> 0 And readerBlueprints.GetInt32(5) = 2 Then ' if not a corp bp, then look up corporation
+                                    ' Search with ITEM_ID
+                                    SQL = SQL & "WHERE ITEM_ID = " & CStr(readerBlueprints.GetInt64(3)) & " AND USER_ID = " & CStr(CorpID)
                                 Else
                                     ' Search with the ID of the bp and the user ID - they must have saved this manually
                                     SQL = SQL & "WHERE BLUEPRINT_ID = " & .typeID & " AND USER_ID = " & CStr(AccountSearchID)
@@ -278,7 +279,7 @@ Public Class EVEBlueprints
                             readerBlueprints.Close()
                             readerBlueprints = Nothing
 
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
                         End If
 
                     End With

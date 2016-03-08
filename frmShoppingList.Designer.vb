@@ -70,9 +70,6 @@ Partial Class frmShoppingList
         Me.gbUpdateList = New System.Windows.Forms.GroupBox()
         Me.lblTotalInventionCost = New System.Windows.Forms.Label()
         Me.lblTotalCopyCost = New System.Windows.Forms.Label()
-        Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
-        Me.lstItems = New EVE_Isk_per_Hour.MyListView()
-        Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
@@ -80,6 +77,9 @@ Partial Class frmShoppingList
         Me.lblTIC = New System.Windows.Forms.Label()
         Me.lblTCC = New System.Windows.Forms.Label()
         Me.lblTotalItemsInList = New System.Windows.Forms.Label()
+        Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
+        Me.lstItems = New EVE_Isk_per_Hour.MyListView()
+        Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -503,44 +503,6 @@ Partial Class frmShoppingList
         Me.lblTotalCopyCost.TabIndex = 27
         Me.lblTotalCopyCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'lstBuy
-        '
-        Me.lstBuy.ContextMenuStrip = Me.DeleteMaterialStrip
-        Me.lstBuy.FullRowSelect = True
-        Me.lstBuy.GridLines = True
-        Me.lstBuy.Location = New System.Drawing.Point(7, 20)
-        Me.lstBuy.Name = "lstBuy"
-        Me.lstBuy.Size = New System.Drawing.Size(1081, 300)
-        Me.lstBuy.TabIndex = 37
-        Me.lstBuy.TabStop = False
-        Me.lstBuy.UseCompatibleStateImageBehavior = False
-        Me.lstBuy.View = System.Windows.Forms.View.Details
-        '
-        'lstItems
-        '
-        Me.lstItems.ContextMenuStrip = Me.DeleteItemStrip
-        Me.lstItems.FullRowSelect = True
-        Me.lstItems.Location = New System.Drawing.Point(6, 339)
-        Me.lstItems.Name = "lstItems"
-        Me.lstItems.Size = New System.Drawing.Size(711, 198)
-        Me.lstItems.TabIndex = 38
-        Me.lstItems.TabStop = False
-        Me.lstItems.UseCompatibleStateImageBehavior = False
-        Me.lstItems.View = System.Windows.Forms.View.Details
-        '
-        'lstBuild
-        '
-        Me.lstBuild.ContextMenuStrip = Me.DeleteBuildStrip
-        Me.lstBuild.FullRowSelect = True
-        Me.lstBuild.Location = New System.Drawing.Point(720, 339)
-        Me.lstBuild.Name = "lstBuild"
-        Me.lstBuild.Size = New System.Drawing.Size(368, 198)
-        Me.lstBuild.TabIndex = 39
-        Me.lstBuild.TabStop = False
-        Me.lstBuild.Tag = "20"
-        Me.lstBuild.UseCompatibleStateImageBehavior = False
-        Me.lstBuild.View = System.Windows.Forms.View.Details
-        '
         'gbExportOptions
         '
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
@@ -615,6 +577,44 @@ Partial Class frmShoppingList
         Me.lblTotalItemsInList.TabIndex = 77
         Me.lblTotalItemsInList.Text = "9,999 Items to Build"
         Me.lblTotalItemsInList.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lstBuy
+        '
+        Me.lstBuy.ContextMenuStrip = Me.DeleteMaterialStrip
+        Me.lstBuy.FullRowSelect = True
+        Me.lstBuy.GridLines = True
+        Me.lstBuy.Location = New System.Drawing.Point(7, 20)
+        Me.lstBuy.Name = "lstBuy"
+        Me.lstBuy.Size = New System.Drawing.Size(1081, 300)
+        Me.lstBuy.TabIndex = 37
+        Me.lstBuy.TabStop = False
+        Me.lstBuy.UseCompatibleStateImageBehavior = False
+        Me.lstBuy.View = System.Windows.Forms.View.Details
+        '
+        'lstItems
+        '
+        Me.lstItems.ContextMenuStrip = Me.DeleteItemStrip
+        Me.lstItems.FullRowSelect = True
+        Me.lstItems.Location = New System.Drawing.Point(6, 339)
+        Me.lstItems.Name = "lstItems"
+        Me.lstItems.Size = New System.Drawing.Size(711, 198)
+        Me.lstItems.TabIndex = 38
+        Me.lstItems.TabStop = False
+        Me.lstItems.UseCompatibleStateImageBehavior = False
+        Me.lstItems.View = System.Windows.Forms.View.Details
+        '
+        'lstBuild
+        '
+        Me.lstBuild.ContextMenuStrip = Me.DeleteBuildStrip
+        Me.lstBuild.FullRowSelect = True
+        Me.lstBuild.Location = New System.Drawing.Point(720, 339)
+        Me.lstBuild.Name = "lstBuild"
+        Me.lstBuild.Size = New System.Drawing.Size(368, 198)
+        Me.lstBuild.TabIndex = 39
+        Me.lstBuild.TabStop = False
+        Me.lstBuild.Tag = "20"
+        Me.lstBuild.UseCompatibleStateImageBehavior = False
+        Me.lstBuild.View = System.Windows.Forms.View.Details
         '
         'frmShoppingList
         '

@@ -392,7 +392,7 @@ Public Class Character
 
             ' Load the Blueprints but don't update due to long api cache times
             CombinedKeyData.Access = AssetsAccess
-            Blueprints = New EVEBlueprints(CombinedKeyData, 0)
+            Blueprints = New EVEBlueprints(CombinedKeyData, CharacterCorporation.CorporationID)
             Call Blueprints.LoadBlueprints(ScanType.Personal, RefreshBlueprints)
 
             readerCharacter.Close()

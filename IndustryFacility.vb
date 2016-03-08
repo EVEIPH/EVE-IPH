@@ -222,6 +222,8 @@ Public Class IndustryFacility
                 End If
             End With
 
+            Dim UseDBData As Boolean = True
+
             With SearchFacilitySettings
                 Select Case .FacilityType
                     Case POSFacility
@@ -239,16 +241,18 @@ Public Class IndustryFacility
                         SQL = "SELECT FACILITY_NAME, REGION_NAME, REGION_ID, "
                         SQL = SQL & "SOLAR_SYSTEM_NAME, STATION_FACILITIES.SOLAR_SYSTEM_ID AS SSID, FACILITY_TAX, COST_INDEX, "
                         ' Check the values sent to see if they set it to something instead of loading from DB
-                        If .MaterialMultiplier <> Defaults.FacilityDefaultMM Then
+                        If .MaterialMultiplier <> Defaults.FacilityDefaultMM And .MaterialMultiplier <> 0 Then
                             ' They didn't set a value, so load the default for each type
                             SQL = SQL & CStr(.MaterialMultiplier) & " AS MATERIAL_MULTIPLIER, "
+                            UseDBData = False
                         Else
                             SQL = SQL & "MATERIAL_MULTIPLIER, "
                         End If
 
-                        If .TimeMultiplier <> Defaults.FacilityDefaultMM Then
+                        If .TimeMultiplier <> Defaults.FacilityDefaultTM And .TimeMultiplier <> 0 Then
                             ' They didn't set a value, so load the default for each type
                             SQL = SQL & CStr(.TimeMultiplier) & " AS TIME_MULTIPLIER, "
+                            UseDBData = False
                         Else
                             SQL = SQL & "TIME_MULTIPLIER, "
                         End If
@@ -320,7 +324,7 @@ Public Class IndustryFacility
                 CostIndex = rsLoader.GetFloat(6)
                 SolarSystemName = rsLoader.GetString(3) & " (" & FormatNumber(CostIndex, 3) & ")"
                 SolarSystemID = rsLoader.GetInt64(4)
-                If SearchFacilitySettings.FacilityType = OutpostFacility Then
+                If SearchFacilitySettings.FacilityType = OutpostFacility And Not UseDBData Then
                     MaterialMultiplier = SearchFacilitySettings.MaterialMultiplier
                     TimeMultiplier = SearchFacilitySettings.TimeMultiplier
                     TaxRate = SearchFacilitySettings.TaxRate
@@ -677,5 +681,83 @@ Public Module FacilityVariables
         POSLargeShipManufacturing = 16
 
     End Enum
+
+    Public Function GetFacilitySettings(ItemName As String, FacilityName As String, FacilityType As String, ActivityID As Integer, _
+                                                     IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean) As FacilitySettings
+        Dim FS As New FacilitySettings
+        Dim rsData As SQLiteDataReader
+        Dim SQL As String = ""
+        Dim TempSSName As String = ""
+        Dim TempIndyType As IndustryType
+
+        ' Look up BP data
+        SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FormatDBString(ItemName) & "'"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        If rsData.Read() Then
+            ' Determine the build facility 
+            TempIndyType = GetProductionType(ActivityManufacturing, rsData.GetInt64(2), rsData.GetInt64(3), FacilityType)
+        Else
+            TempIndyType = IndustryType.Manufacturing
+        End If
+
+        FS.ActivityID = ActivityID
+        FS.ActivityCostperSecond = 0
+
+        If FacilityName.Contains("(") And FacilityType <> OutpostFacility Then
+            FS.Facility = FacilityName.Substring(0, InStr(FacilityName, "(") - 2)
+            TempSSName = FacilityName.Substring(InStr(FacilityName, "("))
+            TempSSName = TempSSName.Substring(0, InStr(TempSSName, "(") - 2)
+            SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName,'" & FS.Facility & "' AS FACILITY_NAME "
+            SQL = SQL & "FROM SOLAR_SYSTEMS, REGIONS "
+            SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID AND solarSystemName = '" & FormatDBString(TempSSName) & "'"
+        Else
+            If FacilityName.Contains("(") Then
+                FS.Facility = FacilityName.Substring(0, InStr(FacilityName, "(") - 2)
+            Else
+                FS.Facility = FacilityName
+            End If
+
+            ' Need to look up system, region from station name
+            SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName, STATION_NAME "
+            SQL = SQL & "FROM SOLAR_SYSTEMS, REGIONS, STATIONS "
+            SQL = SQL & "WHERE STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID AND SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+            ' If it's an outpost, then there is only one per system...so only look for a like with the first three letters because people update the station names
+            If FacilityType = OutpostFacility Then
+                SQL = SQL & "AND STATION_NAME LIKE '" & FormatDBString(FS.Facility.Substring(0, 3)) & "%'"
+            Else
+                SQL = SQL & "AND STATION_NAME = '" & FormatDBString(FS.Facility) & "'"
+            End If
+        End If
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+
+        If rsData.Read() Then
+
+            FS.Facility = rsData.GetString(4)
+            FS.FacilityType = FacilityType
+            FS.SolarSystemID = rsData.GetInt64(0)
+            FS.SolarSystemName = rsData.GetString(1)
+            FS.RegionID = rsData.GetInt64(2)
+            FS.RegionName = rsData.GetString(3)
+
+            FS.IncludeActivityCost = IncludeActivityCost
+            FS.IncludeActivityTime = IncludeActivityTime
+            FS.IncludeActivityUsage = IncludeActivityUsage
+
+            FS.MaterialMultiplier = 1
+            FS.TimeMultiplier = 1
+
+            FS.ProductionType = TempIndyType
+            FS.TaxRate = 0
+
+        End If
+
+        Return FS
+
+    End Function
+
 
 End Module

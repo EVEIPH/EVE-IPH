@@ -312,7 +312,7 @@ Public Class frmMain
         ErrorTracker = ""
 
         ' Set developer flag
-        If File.Exists("Developer") Then
+        If File.Exists("Developer.txt") Then
             Developer = True
         Else
             Developer = False
@@ -435,7 +435,6 @@ Public Class frmMain
             mnuMarketFinder.Visible = True
             mnuRefinery.Visible = True
             mnuLPStore.Visible = True
-            Button1.Visible = True
         Else
             ' Hide all the development stuff
             mnuInventionSuccessMonitor.Visible = False
@@ -443,7 +442,6 @@ Public Class frmMain
             mnuMarketFinder.Visible = False
             mnuRefinery.Visible = False
             mnuLPStore.Visible = False
-            Button1.Visible = False
             tabMain.TabPages.Remove(tabPI)
         End If
 
@@ -572,8 +570,8 @@ Public Class frmMain
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
-            ttBP.SetToolTip(lblBPInventionCost, "Invention Cost for Runs entered = (Datacores + Decryptors) / Invented Runs * Runs" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
-            ttBP.SetToolTip(lblBPRECost, "Invention Cost for Runs entered = (Datacores + Decryptors + Relics) / Invented Runs * Runs" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
+            ttBP.SetToolTip(lblBPInventionCost, "Invention Cost for Runs entered = (Datacores + Decryptors) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
+            ttBP.SetToolTip(lblBPRECost, "Invention Cost for Runs entered = (Datacores + Decryptors + Relics) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
             ttBP.SetToolTip(lblBPCopyCosts, "Total Cost of materials to make enough BPCs for the number of invention jobs needed" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
             ttBP.SetToolTip(lblBPFacilityUsage, "") ' Set when loaded with data
             ttBP.SetToolTip(lblBPRuns, "Total number of items to produce. I.e. If you have 5 blueprints with 4 runs each, then enter 20")
@@ -1271,8 +1269,9 @@ Public Class frmMain
         mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
         ' Also, load all characters we have
         Dim rsCharacters As SQLiteDataReader
-        Dim SQL As String = "SELECT API.CHARACTER_NAME, GENDER FROM API, CHARACTER_SHEET WHERE API.CHARACTER_ID = CHARACTER_SHEET.CHARACTER_ID  "
-        SQL = SQL & "AND API_TYPE <> 'Corporation' ORDER BY API.CHARACTER_NAME"
+        Dim SQL As String = "SELECT API.CHARACTER_NAME, CASE WHEN GENDER IS NULL THEN 'Male' ELSE GENDER END AS GENDER "
+        SQL = SQL & "FROM API LEFT JOIN CHARACTER_SHEET on API.CHARACTER_ID = CHARACTER_SHEET.CHARACTER_ID  "
+        SQL = SQL & "WHERE API_TYPE <> 'Corporation' ORDER BY API.CHARACTER_NAME"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCharacters = DBCommand.ExecuteReader
 
@@ -2547,6 +2546,7 @@ Public Class frmMain
             ' If we returned, we got a default character set
             mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
             Call ResetTabs()
+            Call LoadCharacterNamesinMenu()
         End If
 
     End Sub
@@ -6085,7 +6085,7 @@ Tabs:
             End If
 
             ' Save the relic and decryptor if they have the setting set
-            If UserApplicationSettings.SaveBPRelicsDecryptors Then
+            If UserApplicationSettings.SaveBPRelicsDecryptors And Not IsNothing(SelectedBlueprint) Then
                 ' See if the T2 window is open and has a decryptor then save, only will be open if they have a t2 bp loaded
                 If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
                     .T2DecryptorType = cmbBPInventionDecryptor.Text
@@ -11301,6 +11301,21 @@ ExitSub:
 
 #Region "Manufacturing Object Functions"
 
+    Private Sub lstManufacturing_KeyDown(sender As System.Object, e As System.Windows.Forms.KeyEventArgs) Handles lstManufacturing.KeyDown
+
+        If e.KeyCode = Keys.C AndAlso e.Control = True Then ' Copy
+            ' Find the bp record selected
+            Dim FoundItem As New ManufacturingItem
+            ' Find the item clicked in the list of items then just send those values over
+            ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
+            FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+
+            ' Copy the bp to the clipboard
+            CopyTextToClipboard(FoundItem.Blueprint.GetName)
+        End If
+
+    End Sub
+
     Private Sub btnCalcShowAssets_Click(sender As System.Object, e As System.EventArgs) Handles btnCalcShowAssets.Click
         ' Make sure it's not disposed
         If IsNothing(frmDefaultAssets) Then
@@ -15172,7 +15187,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub chkCalcDecryptor0_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcDecryptor0.Click
+    Private Sub chkCalcDecryptor0_Click(sender As System.Object, e As System.EventArgs) Handles chkCalcDecryptor0.Click
         ' Change the name based on the check state
         If chkCalcDecryptor0.CheckState = CheckState.Unchecked Then
             chkCalcDecryptor0.Text = "Optimal"
@@ -16612,6 +16627,38 @@ CheckTechs:
             chkCalcDecryptor7.Checked = .CheckDecryptor15
             chkCalcDecryptor8.Checked = .CheckDecryptor18
             chkCalcDecryptor9.Checked = .CheckDecryptor19
+
+            ' Change the name based on the check state
+            ' Change the name based on the check state
+            If chkCalcDecryptor0.CheckState = CheckState.Unchecked Then
+                chkCalcDecryptor0.Text = "Optimal"
+            ElseIf chkCalcDecryptor0.CheckState = CheckState.Checked Then
+                chkCalcDecryptor0.Text = "Optimal IPH"
+            ElseIf chkCalcDecryptor0.CheckState = CheckState.Indeterminate Then
+                chkCalcDecryptor0.Text = "Optimal Profit"
+            End If
+
+            If chkCalcDecryptor0.CheckState <> CheckState.Unchecked Then
+                chkCalcDecryptor1.Enabled = False
+                chkCalcDecryptor2.Enabled = False
+                chkCalcDecryptor3.Enabled = False
+                chkCalcDecryptor4.Enabled = False
+                chkCalcDecryptor5.Enabled = False
+                chkCalcDecryptor6.Enabled = False
+                chkCalcDecryptor7.Enabled = False
+                chkCalcDecryptor8.Enabled = False
+                chkCalcDecryptor9.Enabled = False
+            Else
+                chkCalcDecryptor1.Enabled = True
+                chkCalcDecryptor2.Enabled = True
+                chkCalcDecryptor3.Enabled = True
+                chkCalcDecryptor4.Enabled = True
+                chkCalcDecryptor5.Enabled = True
+                chkCalcDecryptor6.Enabled = True
+                chkCalcDecryptor7.Enabled = True
+                chkCalcDecryptor8.Enabled = True
+                chkCalcDecryptor9.Enabled = True
+            End If
 
             chkCalcDecryptorforT2.Checked = .CheckDecryptorUseforT2
             chkCalcDecryptorforT3.Checked = .CheckDecryptorUseforT3
@@ -19235,7 +19282,7 @@ ExitCalc:
             End If
         ElseIf UserInventedBPs.Contains(TempItem.BPID) Then
             ' It's an invented BP that we own the T1 BP for
-            CurrentRowFormat.BackColor = Brushes.LightSkyBlue
+            CurrentRowFormat.BackColor = Brushes.LightSteelBlue
         Else
             CurrentRowFormat.BackColor = Brushes.White
         End If
@@ -23148,6 +23195,20 @@ Leave:
         Call txtMineTotalJumpFuel.SelectAll()
     End Sub
 
+    Private Sub txtMineHaulerM3_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineHaulerM3.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtMineHaulerM3_LostFocus(sender As Object, e As System.EventArgs) Handles txtMineHaulerM3.LostFocus
+        txtMineHaulerM3.Text = FormatNumber(txtMineHaulerM3.Text, 1)
+    End Sub
+
     Private Sub txtMineRTMin_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineRTMin.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
@@ -24929,8 +24990,8 @@ Leave:
             LaserCount = 8
         ElseIf cmbMineOreType.Text = "Gas" Then
             MLUCount = 0
-            ' Update laser count based on skills - max of 5
-            If cmbMineShipType.Text = Venture Or cmbMineShipType.Text = Prospect And cmbMineOreType.Text <> "Gas" Then
+            ' Update laser count based on skills - max of 5 but no more than turrets 
+            If cmbMineShipType.Text = Venture Or cmbMineShipType.Text = Prospect Or cmbMineShipType.Text = Endurance Then
                 ' Update the laser count if it's less than the turrets on the venture/prospect
                 If CInt(cmbMineGasIceHarvesting.Text) < LaserCount Then
                     LaserCount = CInt(cmbMineGasIceHarvesting.Text)
@@ -25404,17 +25465,17 @@ Leave:
     ' Loads the cargo m3 for hauler if selected
     Private Sub RefreshHaulerM3()
         ' If the hauler is not checked and they don't have a m3 set, load the M3 of the ship selected
-        'If UserMiningTabSettings.Haulerm3 = DefaultSettings.DefaultMiningHaulerm3 Then
-        ' Load the ore hold of the ship selected
-        Select Case cmbMineShipType.Text
-            Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
-                txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text), 2)
-            Case Mackinaw, Retriever
-                txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text) * (1 + (CInt(cmbMineBaseShipSkill.Text) * 0.05)), 2)
-            Case Else
-                txtMineHaulerM3.Text = "0.00"
-        End Select
-        ' End If
+        If chkMineUseHauler.Checked Then
+            ' Load the ore hold of the ship selected
+            Select Case cmbMineShipType.Text
+                Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
+                    txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text), 2)
+                Case Mackinaw, Retriever
+                    txtMineHaulerM3.Text = FormatNumber(GetAttribute("specialOreHoldCapacity", cmbMineShipType.Text) * (1 + (CInt(cmbMineBaseShipSkill.Text) * 0.05)), 2)
+                Case Else
+                    txtMineHaulerM3.Text = "0.00"
+            End Select
+        End If
     End Sub
 
     ' Calculates the total mining amount per cycle for the ship set up (not including crystals)
@@ -25984,15 +26045,5 @@ Leave:
     End Class
 
 #End Region
-
-    Private Sub Button1_Click(sender As System.Object, e As System.EventArgs) Handles Button1.Click
-        ' Dim Mercoxit As List(Of Long)
-
-        ' Call CalcOreRequirement()
-    End Sub
-
-    Private Sub CalcOreRequirement(OrderofMinerals As List(Of Long))
-
-    End Sub
 
 End Class

@@ -1181,7 +1181,6 @@ NoBonus:
                                 Else
                                     SelectedIndyType = IndustryType.ComponentManufacturing
                                 End If
-                                SelectedIndyType = IndustryType.ComponentManufacturing
                             ElseIf NoPOSCategoryIDs.Contains(ItemCategoryID) Or ItemGroupID = StationEggGroupID Or ItemGroupID = StationPartsGroupID Then
                                 SelectedIndyType = IndustryType.NoPOSManufacturing
                             End If
@@ -2221,7 +2220,26 @@ NoBonus:
         Dim i As Integer = 0
 
         While rsLoader.Read
-            FacilityCombo.Items.Add(rsLoader.GetString(0))
+            If rsLoader.GetString(0).Contains("Thukker") Then
+                ' Need to make sure it's a low sec system selected
+                Dim rsCheck As SQLiteDataReader
+                SQL = "SELECT SECURITY FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(FacilitySystemCombo.Text.Substring(0, InStr(FacilitySystemCombo.Text, "(") - 2)) & "'"
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                If rsCheck.Read Then
+                    If rsCheck.GetDouble(0) < 0.45 Then
+                        ' Thukker is only low sec - no easy way to weed this out
+                        FacilityCombo.Items.Add(rsLoader.GetString(0))
+                    End If
+                Else
+                    ' Allow it
+                    FacilityCombo.Items.Add(rsLoader.GetString(0))
+                End If
+            Else
+                FacilityCombo.Items.Add(rsLoader.GetString(0))
+            End If
+
             i += 1 ' get the count
             ' Load the first one - auto choose subsystem array over advanced medium array unless already selected
             If AutoLoadName = "" Or (rsLoader.GetString(0) = "Subsystem Assembly Array" And OverrideFacilityName = "") Then
@@ -3735,8 +3753,7 @@ InvalidDate:
 
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
-                                 FacilityMEModifier As Double, _
-                                 FacilityType As String, _
+                                 ManufacturingFacilityMEModifier As Double, ManufacturingFacilityType As String, _
                                  IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean, _
                                  IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean, _
                                  Optional CopyInventionMatsOnly As Boolean = False)
@@ -3755,13 +3772,13 @@ InvalidDate:
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .FacilityType = FacilityType
-                    .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+                    .ManufacturingFacilityMEModifier = ManufacturingFacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
+                    .ManufacturingFacilityType = ManufacturingFacilityType
+                    .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    If FacilityType = POSFacility Then
-                        .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    If ManufacturingFacilityType = POSFacility Then
+                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
                     If BuildBuy Then
@@ -3785,6 +3802,7 @@ InvalidDate:
 
                     ' All blueprint build types we want to save the base materials to build the bp
                     ShoppingItem.BPMaterialList = CType(SentBlueprint.GetComponentMaterials.Clone, Materials)
+                    ShoppingItem.BPBuiltItems = CType(SentBlueprint.GetComponentsList.Clone, BuiltItemList)
 
                 End If
 
@@ -3797,12 +3815,13 @@ InvalidDate:
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .FacilityMEModifier = FacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .BuildLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+                    .ManufacturingFacilityMEModifier = ManufacturingFacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
+                    .ManufacturingFacilityType = ManufacturingFacilityType
+                    .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    If FacilityType = POSFacility Then
-                        .BuildLocation = .BuildLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    If ManufacturingFacilityType = POSFacility Then
+                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     End If
 
                     .BuildType = "Components"
@@ -3825,6 +3844,7 @@ InvalidDate:
 
                     ' All blueprint build types we want to save the base materials to build it, here we want just what's in the buy list since we aren't building
                     ShoppingItem.BPMaterialList = CType(ShoppingBuyList.Clone, Materials)
+                    ShoppingItem.BPBuiltItems = Nothing ' no building here
 
                 End If
             End If
