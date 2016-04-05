@@ -37,7 +37,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>..\Root Directory\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
@@ -122,7 +122,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite, Version=1.0.79.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Root Directory\System.Data.SQLite.dll</HintPath>
+      <HintPath>Dependencies\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />

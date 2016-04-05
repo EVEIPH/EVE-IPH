@@ -1622,6 +1622,8 @@ Public Class frmShoppingList
         Dim MatList() As String
         Dim BuildList() As String
         Dim ItemList() As String
+        Dim EveItemList AS BuiltItemList
+        Dim EveClipboardList AS String
 
         Dim i As Integer
 
@@ -1662,7 +1664,12 @@ Public Class frmShoppingList
         End If
 
         ' Paste to clipboard
-        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList))
+        If chkEveListFormat.Checked Then
+            Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, True))
+        Else 
+            Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, False))
+        End If
+        
 
     End Sub
 

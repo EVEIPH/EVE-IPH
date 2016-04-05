@@ -875,7 +875,7 @@ Public Class ShoppingList
     End Sub
 
     ' Exports the shoppinglist data in CSV format if true, ignores the price volume if true, and sorts the raw mats by the order given
-    Public Function GetClipboardList(ByVal ExportFormat As String, ByVal IgnorePriceVolume As Boolean, ByVal MaterialNamesSortOrder() As String, ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String) As String
+    Public Function GetClipboardList(ByVal ExportFormat As String, ByVal IgnorePriceVolume As Boolean, ByVal MaterialNamesSortOrder() As String, ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String, ByVal CopyEveListFormat As Boolean) As String
         Dim i As Integer
         Dim OutputText As String = ""
         Dim TempListText As String
@@ -896,6 +896,15 @@ Public Class ShoppingList
         FullBuildList = GetFullBuildMaterialList() ' GetFullBuildList uses BuildItem for built in pos, and Volume for the facility ME value
         FullBuyList = CType(TotalBuyList.Clone, Materials)
         FullItemList = GetFullItemList()
+
+        ' If using the Eve List Format this will create an output that
+        ' The EVE Client will handle for multi-buy functionality.
+        If CopyEveListFormat Then
+            For j = 0 To FullBuyList.GetMaterialList.Count - 1
+                OutputText += String.Format("{0} {1}{2}", FullBuyList.GetMaterialList(j).GetMaterialName(), FullBuyList.GetMaterialList(j).GetQuantity(), VbCrLf)
+            Next
+            Return OutputText
+        End If
 
         ' Add the Invention mats to buy
         InventionMatList = GetFullInventionList()
