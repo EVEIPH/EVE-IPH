@@ -1664,11 +1664,7 @@ Public Class frmShoppingList
         End If
 
         ' Paste to clipboard
-        If chkEveListFormat.Checked Then
-            Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, True))
-        Else 
-            Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, False))
-        End If
+        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, chkEveListFormat.Checked))
         
 
     End Sub
