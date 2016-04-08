@@ -6217,7 +6217,7 @@ Tabs:
         If SelectedBPText <> "" Then
             SQL = SQL & "'" & FormatDBString(SelectedBPText) & "'"
         Else
-            SQL = SQL & "'" & FormatDBString(cmbBPBlueprintSelection.Text) & "'"
+            SQL = SQL & "'" & FormatDBString(txtBPName.Text) & "'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -7246,7 +7246,31 @@ ExitForm:
         Return SelectedDecryptor
 
     End Function
+    Private Sub GetBPWithName(bpName As String) 
+        ' Query: SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%Repair%'
+        Dim readerBP AS SQLiteDataReader
+        Dim  query as string
 
+        lstBPList.Items.Clear()
+        lstBPList.Visible = True
+
+        query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & bpName & "%'"
+
+        DBCommand = New SQLIteCommand(query, EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+        lstBPList.BeginUpdate()
+
+        While readerBP.Read()
+            lstBPList.Items.Add(readerBP.GetString(0))
+            Application.DoEvents()
+        End While
+
+        readerBP.Close()
+        readerBP = nothing
+        lstBPList.EndUpdate()
+        Application.UseWaitCursor = False
+
+    End Sub
     ' Builds the query for the select combo
     Private Function BuildBPSelectQuery() As String
         Dim SQL As String = ""
@@ -26017,6 +26041,43 @@ Leave:
 
     End Function
 
+    
+
+    Private Sub txtBPName_TextChanged(sender As Object, e As EventArgs) Handles txtBPName.TextChanged
+        If (txtBPName.Text <> "")
+            GetBPWithName(txtBPName.Text)
+        End If
+        If (string.IsNullOrEmpty(txtBPName.Text))
+            lstBPList.Items.Clear()
+            lstBPList.Visible = False
+        End If
+    End Sub
+
+    Private Sub lstBPList_DoubleClick(sender As Object, e As EventArgs) Handles lstBPList.DoubleClick
+        txtBPName.Text = lstBPList.SelectedItem.ToString()
+        SelectBlueprint()
+        lstBPList.Visible = False
+    End Sub
+
+    Private Sub txtBPName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPName.KeyDown
+        Select Case (e.KeyCode)
+            case Keys.Down
+                If (lstBPList.SelectedIndex < lstBPList.Items.Count - 1)
+                    lstBPList.SelectedIndex = lstBPList.SelectedIndex + 1
+                End If
+            case Keys.Up
+                If (lstBPList.SelectedIndex > 0)
+                    lstBPList.SelectedIndex = lstBPList.SelectedIndex - 1
+                End If
+            case Keys.Enter
+                If (lstBPList.SelectedIndex > -1)
+                    txtBPName.Text = lstBPList.SelectedItem.ToString()
+                    SelectBlueprint()
+                    lstBPList.Visible = False
+                End If
+        End Select
+    End Sub
+
     ' The Ore structure to display in our grid for mining
     Public Structure MiningOre
         Dim OreID As Long
@@ -26043,6 +26104,7 @@ Leave:
         End Function
 
     End Class
+    
 
 #End Region
 
