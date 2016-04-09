@@ -1622,8 +1622,6 @@ Public Class frmShoppingList
         Dim MatList() As String
         Dim BuildList() As String
         Dim ItemList() As String
-        Dim EveItemList AS BuiltItemList
-        Dim EveClipboardList AS String
 
         Dim i As Integer
 
