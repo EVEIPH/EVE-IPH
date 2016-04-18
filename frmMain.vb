@@ -589,10 +589,6 @@ Public Class frmMain
             ttBP.SetToolTip(lblBPTotalItemPT, "Total time to build selected build components and this blueprint")
             ttBP.SetToolTip(lblBPComponentMats, "Total list of components, which can be built, and materials to build this blueprint")
             ttBP.SetToolTip(lblBPRawMats, "Total list of materials to build all components and base materials for this blueprint")
-            ttBP.SetToolTip(chkBPSmall, "'Small' or 'S' in Name or 5m3 (Light) Drones")
-            ttBP.SetToolTip(chkBPMedium, "'Medium' or 'M' in Name or 10m3 (Medium) Drones")
-            ttBP.SetToolTip(chkBPLarge, "'Large' or 'L' in Name or 25m3 (Heavy) Drones")
-            ttBP.SetToolTip(chkBPXL, "'Capital' or 'XL' in Name or 5000m3 (Fighters) Drones")
             ttBP.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
             ttBP.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
             ttBP.SetToolTip(lblBPRawProfit, "Double-Click to toggle value between Profit and Profit Percent")
@@ -1672,7 +1668,9 @@ Public Class frmMain
         readerBP = DBCommand.ExecuteReader
 
         readerBP.Read()
-        cmbBPBlueprintSelection.Text = readerBP.GetString(0)
+        RemoveHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
+        txtBPName.Text = readerBP.GetString(0)
+        RemoveHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
         BPTech = readerBP.GetInt32(1)
 
         If BPTech = BlueprintTechLevel.T2 Or BPTech = BlueprintTechLevel.T3 Then
@@ -4657,24 +4655,17 @@ Tabs:
 
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
         cmbBPsLoaded = False
-        cmbBPBlueprintSelection.Text = "Select Blueprint"
-        chkBPT1.Enabled = T1
-        chkBPT2.Enabled = T2
-        chkBPT3.Enabled = T3
-        chkBPNavyFaction.Enabled = NavyFaction
-        chkBPPirateFaction.Enabled = PirateFaction
-        chkBPStoryline.Enabled = Storyline
 
         ComboMenuDown = False
         MouseWheelSelection = False
         ComboBoxArrowKeys = False
 
         ' Make sure we have something checked
-        Call EnsureBPTechCheck()
+        'Call EnsureBPTechCheck()
         ' Load the new data
-        Call LoadBlueprintCombo()
+        'Call LoadBlueprintCombo()
 
-        cmbBPBlueprintSelection.Focus()
+        txtBPName.Focus()
 
     End Sub
 
@@ -4735,9 +4726,9 @@ Tabs:
         MouseWheelSelection = False
         ComboBoxArrowKeys = False
 
-        cmbBPBlueprintSelection.Text = "Select Blueprint"
-        cmbBPBlueprintSelection.Focus()
-        Call LoadBlueprintCombo()
+        'cmbBPBlueprintSelection.Text = "Select Blueprint"
+        txtBPName.Focus()
+        'Call LoadBlueprintCombo()
 
     End Sub
 
@@ -5193,10 +5184,10 @@ Tabs:
         AddlText = ")" & Environment.NewLine & Environment.NewLine
 
         If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
-            OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+            OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & txtBPName.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
             OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
         Else
-            OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+            OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & txtBPName.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
             OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
         End If
 
@@ -5220,153 +5211,153 @@ Tabs:
         e.Handled = True
     End Sub
 
-    Private Sub rbtnAllBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAllBlueprints.CheckedChanged
+    Private Sub rbtnAllBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
-    Private Sub rbBPOwned_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPOwnedBlueprints.CheckedChanged
+    Private Sub rbBPOwned_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
-    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
+    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
-    Private Sub rbtnShipBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPShipBlueprints.CheckedChanged
+    Private Sub rbtnShipBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, True, False, True, True)
     End Sub
 
-    Private Sub rbtnModuleBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPModuleBlueprints.CheckedChanged
+    Private Sub rbtnModuleBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, False, True, True, False)
     End Sub
 
-    Private Sub rbtnDroneBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPDroneBlueprints.CheckedChanged
+    Private Sub rbtnDroneBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, False, False, False, True)
     End Sub
 
-    Private Sub rbtnComponentBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPComponentBlueprints.CheckedChanged
+    Private Sub rbtnComponentBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
-    Private Sub rbtnSubsystemBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPSubsystemBlueprints.CheckedChanged
+    Private Sub rbtnSubsystemBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(False, False, True, False, False, False)
     End Sub
 
-    Private Sub rbtnToolBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPMiscBlueprints.CheckedChanged
+    Private Sub rbtnToolBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
-    Private Sub rbtnAmmoChargeBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAmmoChargeBlueprints.CheckedChanged
+    Private Sub rbtnAmmoChargeBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, False, False, False, False)
     End Sub
 
-    Private Sub rbtnRigBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPRigBlueprints.CheckedChanged
+    Private Sub rbtnRigBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, False, False, False, False)
     End Sub
 
-    Private Sub rbtnStructureBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPStructureBlueprints.CheckedChanged
+    Private Sub rbtnStructureBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, True)
     End Sub
 
-    Private Sub rbtnBoosterBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPBoosterBlueprints.CheckedChanged
+    Private Sub rbtnBoosterBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
-    Private Sub rbtnBPDeployableBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPDeployableBlueprints.CheckedChanged
+    Private Sub rbtnBPDeployableBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, False, False, False, False)
     End Sub
 
-    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStationPartsBlueprints.CheckedChanged
+    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
-    Private Sub rbtnBPCelestialBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPCelestialsBlueprints.CheckedChanged
+    Private Sub rbtnBPCelestialBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
-    Private Sub rbtnBPFavoriteBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPFavoriteBlueprints.CheckedChanged
+    Private Sub rbtnBPFavoriteBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         Call ResetBlueprintCombo(True, True, True, True, True, True)
     End Sub
 
-    Private Sub chkbpT1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPT1.CheckedChanged
+    Private Sub chkbpT1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkbpT2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPT2.CheckedChanged
+    Private Sub chkbpT2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkbpT3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPT3.CheckedChanged
+    Private Sub chkbpT3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkBPNavyFaction_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPNavyFaction.CheckedChanged
+    Private Sub chkBPNavyFaction_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkBPPirateFaction_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPPirateFaction.CheckedChanged
+    Private Sub chkBPPirateFaction_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkBPStoryline_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPStoryline.CheckedChanged
+    Private Sub chkBPStoryline_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub chkBPSmall_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPSmall.CheckedChanged
+    Private Sub chkBPSmall_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub CheckBox7_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPMedium.CheckedChanged
+    Private Sub CheckBox7_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub CheckBox8_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPLarge.CheckedChanged
+    Private Sub CheckBox8_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub CheckBox9_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPXL.CheckedChanged
+    Private Sub CheckBox9_CheckedChanged(sender As System.Object, e As System.EventArgs) 
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
         End If
     End Sub
 
-    Private Sub cmbBlueprintSelection_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbBPBlueprintSelection.GotFocus
-        Call cmbBPBlueprintSelection.SelectAll()
-    End Sub
+    'Private Sub cmbBlueprintSelection_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs) 
+    '    Call cmbBPBlueprintSelection.SelectAll()
+    'End Sub
 
-    Private Sub cmbBPBlueprintSelection_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDown
-        ' If you drop down, don't show the text window
-        cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.None
-        ComboMenuDown = True
-        ' if we drop down, we aren't using the arrow keys
-        ComboBoxArrowKeys = False
-    End Sub
+    'Private Sub cmbBPBlueprintSelection_DropDown(sender As Object, e As System.EventArgs) 
+    '    ' If you drop down, don't show the text window
+    '    cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.None
+    '    ComboMenuDown = True
+    '    ' if we drop down, we aren't using the arrow keys
+    '    ComboBoxArrowKeys = False
+    'End Sub
 
-    Private Sub cmbBPBlueprintSelection_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        ComboMenuDown = False
-    End Sub
+    'Private Sub cmbBPBlueprintSelection_DropDownClosed(sender As Object, e As System.EventArgs) 
+    '    ' If it closes up, re-enable autocomplete
+    '    cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+    '    ComboMenuDown = False
+    'End Sub
 
-    Private Sub cmbBPBlueprintSelection_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbBPBlueprintSelection.MouseWheel
+    Private Sub cmbBPBlueprintSelection_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) 
         ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
         If ComboMenuDown Then
             MouseWheelSelection = False
@@ -5376,7 +5367,7 @@ Tabs:
 
     End Sub
 
-    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
+    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) 
 
         ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
         If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
@@ -5393,7 +5384,7 @@ Tabs:
     End Sub
 
     ' Thrown when the user changes the value in the combo box
-    Private Sub cmbBPBlueprintSelection_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.SelectionChangeCommitted
+    Private Sub cmbBPBlueprintSelection_SelectionChangeCommitted(sender As Object, e As System.EventArgs) 
 
         If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
             Call LoadBPFromCombo()
@@ -5404,9 +5395,9 @@ Tabs:
     ' Loads a blueprint if selected in the combo box by different methods
     Private Sub LoadBPFromCombo()
 
-        If Not IsNothing(cmbBPBlueprintSelection.SelectedItem) Then
-            SelectedBPText = cmbBPBlueprintSelection.SelectedItem.ToString
-            cmbBPBlueprintSelection.Text = SelectedBPText
+        If Not IsNothing(txtBPName.Text) Then
+            'SelectedBPText = cmbBPBlueprintSelection.SelectedItem.ToString
+            'txtBPName.Text = SelectedBPText
             SentFromManufacturingTab = False
 
             Call SelectBlueprint()
@@ -5670,7 +5661,7 @@ Tabs:
         pictBP.BackgroundImage = Nothing
         pictBP.Update()
 
-        cmbBPBlueprintSelection.Text = "Select Blueprint"
+        'cmbBPBlueprintSelection.Text = "Select Blueprint"
 
         With UserBPTabSettings
             ' Exort type (might change with build buy selection
@@ -5729,54 +5720,7 @@ Tabs:
             lblBPCanMakeBPAll.Visible = False
 
             ' Saved settings
-            Select Case .BlueprintTypeSelection
-                Case rbtnBPAllBlueprints.Text
-                    rbtnBPAllBlueprints.Checked = True
-                Case rbtnBPOwnedBlueprints.Text
-                    rbtnBPOwnedBlueprints.Checked = True
-                Case rbtnBPFavoriteBlueprints.Text
-                    rbtnBPFavoriteBlueprints.Checked = True
-                Case rbtnBPShipBlueprints.Text
-                    rbtnBPShipBlueprints.Checked = True
-                Case rbtnBPDroneBlueprints.Text
-                    rbtnBPDroneBlueprints.Checked = True
-                Case rbtnBPAmmoChargeBlueprints.Text
-                    rbtnBPAmmoChargeBlueprints.Checked = True
-                Case rbtnBPModuleBlueprints.Text
-                    rbtnBPModuleBlueprints.Checked = True
-                Case rbtnBPComponentBlueprints.Text
-                    rbtnBPComponentBlueprints.Checked = True
-                Case rbtnBPStructureBlueprints.Text
-                    rbtnBPStructureBlueprints.Checked = True
-                Case rbtnBPSubsystemBlueprints.Text
-                    rbtnBPSubsystemBlueprints.Checked = True
-                Case rbtnBPRigBlueprints.Text
-                    rbtnBPRigBlueprints.Checked = True
-                Case rbtnBPBoosterBlueprints.Text
-                    rbtnBPBoosterBlueprints.Checked = True
-                Case rbtnBPMiscBlueprints.Text
-                    rbtnBPMiscBlueprints.Checked = True
-                Case rbtnBPDeployableBlueprints.Text
-                    rbtnBPDeployableBlueprints.Checked = True
-                Case rbtnBPCelestialsBlueprints.Text
-                    rbtnBPCelestialsBlueprints.Checked = True
-                Case rbtnBPStationPartsBlueprints.Text
-                    rbtnBPStationPartsBlueprints.Checked = True
-            End Select
-
-            chkBPT1.Checked = .Tech1Check
-            chkBPT2.Checked = .Tech2Check
-            chkBPT3.Checked = .Tech3Check
-            chkBPNavyFaction.Checked = .TechFactionCheck
-            chkBPStoryline.Checked = .TechStorylineCheck
-            chkBPPirateFaction.Checked = .TechPirateCheck
-
-            chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
-
-            chkBPSmall.Checked = .SmallCheck
-            chkBPMedium.Checked = .MediumCheck
-            chkBPLarge.Checked = .LargeCheck
-            chkBPXL.Checked = .XLCheck
+            
 
             SetTaxFeeChecks = False
             chkBPFacilityIncludeUsage.Checked = .IncludeUsage
@@ -5932,7 +5876,7 @@ Tabs:
         LoadingBPfromHistory = False
 
         ' Load the combo
-        Call LoadBlueprintCombo()
+        'Call LoadBlueprintCombo()
 
         ' BP History
         If ResetBPHistory Then
@@ -5981,39 +5925,7 @@ Tabs:
             .LaboratoryLines = CInt(txtBPInventionLines.Text)
             .T3Lines = CInt(txtBPRelicLines.Text)
 
-            If rbtnBPAllBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPAllBlueprints.Text
-            ElseIf rbtnBPOwnedBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPOwnedBlueprints.Text
-            ElseIf rbtnBPFavoriteBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPFavoriteBlueprints.Text
-            ElseIf rbtnBPShipBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPShipBlueprints.Text
-            ElseIf rbtnBPDroneBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPDroneBlueprints.Text
-            ElseIf rbtnBPAmmoChargeBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPAmmoChargeBlueprints.Text
-            ElseIf rbtnBPModuleBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPModuleBlueprints.Text
-            ElseIf rbtnBPComponentBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPComponentBlueprints.Text
-            ElseIf rbtnBPStructureBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPStructureBlueprints.Text
-            ElseIf rbtnBPSubsystemBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPSubsystemBlueprints.Text
-            ElseIf rbtnBPRigBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPRigBlueprints.Text
-            ElseIf rbtnBPBoosterBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPBoosterBlueprints.Text
-            ElseIf rbtnBPMiscBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPMiscBlueprints.Text
-            ElseIf rbtnBPCelestialsBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
-            ElseIf rbtnBPDeployableBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
-            ElseIf rbtnBPStationPartsBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
-            End If
+            
 
             If rbtnBPComponentCopy.Checked Then
                 .ExporttoShoppingListType = rbtnBPComponentCopy.Text
@@ -6023,19 +5935,7 @@ Tabs:
                 .ExporttoShoppingListType = rbtnBPCopyInvREMats.Text
             End If
 
-            .Tech1Check = chkBPT1.Checked
-            .Tech2Check = chkBPT2.Checked
-            .Tech3Check = chkBPT3.Checked
-            .TechStorylineCheck = chkBPStoryline.Checked
-            .TechFactionCheck = chkBPNavyFaction.Checked
-            .TechPirateCheck = chkBPPirateFaction.Checked
-
-            .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
-
-            .SmallCheck = chkBPSmall.Checked
-            .MediumCheck = chkBPMedium.Checked
-            .LargeCheck = chkBPLarge.Checked
-            .XLCheck = chkBPXL.Checked
+            
 
             .IncludeUsage = chkBPFacilityIncludeUsage.Checked
             .IncludeTaxes = chkBPTaxes.Checked
@@ -6430,7 +6330,7 @@ Tabs:
                             TempTech, ItemGroupID, ItemCategoryID, False, False, Nothing, gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade) ' Don't load activites again
         End If
 
-        cmbBPBlueprintSelection.Focus()
+        txtBPName.Focus()
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3
         If NewBP Then
@@ -7250,7 +7150,8 @@ ExitForm:
         ' Query: SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%Repair%'
         Dim readerBP AS SQLiteDataReader
         Dim  query as string
-
+        
+        txtBPName.Text = bpName
         lstBPList.Items.Clear()
         lstBPList.Visible = True
 
@@ -7269,221 +7170,6 @@ ExitForm:
         readerBP = nothing
         lstBPList.EndUpdate()
         Application.UseWaitCursor = False
-
-    End Sub
-    ' Builds the query for the select combo
-    Private Function BuildBPSelectQuery() As String
-        Dim SQL As String = ""
-        Dim SQLItemType As String = ""
-
-        ' Core Query ' Get rid of 's in blueprint name for sorting
-        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-        SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-
-        ' Find what type of blueprint we want
-        With Me
-            If .rbtnBPAmmoChargeBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Charge' "
-            ElseIf .rbtnBPDroneBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Drone' "
-            ElseIf .rbtnBPModuleBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
-            ElseIf .rbtnBPShipBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Ship' "
-            ElseIf .rbtnBPSubsystemBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Subsystem' "
-            ElseIf .rbtnBPBoosterBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Implant' "
-            ElseIf .rbtnBPComponentBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
-            ElseIf .rbtnBPMiscBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
-            ElseIf .rbtnBPDeployableBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Deployable' "
-            ElseIf .rbtnBPCelestialsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
-            ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Starbase' "
-            ElseIf .rbtnBPStationPartsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
-            ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL = SQL & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
-            ElseIf .rbtnBPOwnedBlueprints.Checked Then
-                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            End If
-        End With
-
-        ' Item Type Definitions - These are set by me based on existing data
-        ' 1, 2, 14 are T1, T2, T3
-        ' 3 is Storyline
-        ' 15 is Pirate Faction
-        ' 16 is Navy Faction
-
-        ' Check Tech version
-        If chkBPT1.Enabled Then
-            ' Only a Subsystem so T3
-            If chkBPT1.Checked Then
-                SQLItemType = SQLItemType & "1,"
-            End If
-        End If
-
-        If chkBPT2.Enabled Then
-            If chkBPT2.Checked Then
-                SQLItemType = SQLItemType & "2,"
-            End If
-        End If
-
-        If chkBPT3.Enabled Then
-            If chkBPT3.Checked Then
-                SQLItemType = SQLItemType & "14,"
-            End If
-        End If
-
-        If chkBPStoryline.Enabled Then
-            If chkBPStoryline.Checked Then
-                SQLItemType = SQLItemType & "3,"
-            End If
-        End If
-
-        If chkBPPirateFaction.Enabled Then
-            If chkBPPirateFaction.Checked Then
-                SQLItemType = SQLItemType & "15,"
-            End If
-        End If
-
-        If chkBPNavyFaction.Enabled Then
-            If chkBPNavyFaction.Checked Then
-                SQLItemType = SQLItemType & "16,"
-            End If
-        End If
-
-        ' Add Item Type
-        If SQLItemType <> "" Then
-            SQLItemType = " ALL_BLUEPRINTS.ITEM_TYPE IN (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
-        Else
-            ' They need to have at least one. If not, just return nothing
-            BuildBPSelectQuery = ""
-            Exit Function
-        End If
-
-        ' Add the item types
-        SQL = SQL & "AND" & SQLItemType
-
-        Dim SizesClause As String = ""
-
-        ' Finally add the sizes
-        If chkBPSmall.Checked Then ' Light
-            SizesClause = SizesClause & "'S',"
-        End If
-
-        If chkBPMedium.Checked Then ' Medium
-            SizesClause = SizesClause & "'M',"
-        End If
-
-        If chkBPLarge.Checked Then ' Heavy
-            SizesClause = SizesClause & "'L',"
-        End If
-
-        If chkBPXL.Checked Then ' Fighters
-            SizesClause = SizesClause & "'XL',"
-        End If
-
-        If SizesClause <> "" Then
-            SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
-        End If
-
-        SQL = SQL & SizesClause
-
-        ' Ignore flag
-        If chkBPIncludeIgnoredBPs.Checked = False Then
-            SQL = SQL & "AND IGNORE = 0 "
-        End If
-
-        SQL = SQL & " ORDER BY X"
-
-        BuildBPSelectQuery = SQL
-
-    End Function
-
-    ' Loads the blueprint combo based on what was selected
-    Private Sub LoadBlueprintCombo()
-        Dim readerBPs As SQLiteDataReader
-        Dim SQL As String
-
-        Application.UseWaitCursor = True
-        ' Clear anything that was there
-        cmbBPBlueprintSelection.Items.Clear()
-
-        SQL = BuildBPSelectQuery()
-
-        If SQL = "" Then
-            Exit Sub
-        End If
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerBPs = DBCommand.ExecuteReader
-        cmbBPBlueprintSelection.BeginUpdate()
-
-        While readerBPs.Read
-            ' Add the data to the array and combo
-            cmbBPBlueprintSelection.Items.Add(readerBPs.GetString(0))
-            Application.DoEvents()
-        End While
-
-        readerBPs.Close()
-
-        readerBPs = Nothing
-        DBCommand = Nothing
-
-        cmbBPBlueprintSelection.EndUpdate()
-        Application.UseWaitCursor = False
-
-    End Sub
-
-    ' Makes sure we have a tech checked for blueprints
-    Private Sub EnsureBPTechCheck()
-        If chkBPT1.Enabled And chkBPT1.Checked Then
-            Exit Sub
-        ElseIf chkBPT2.Enabled And chkBPT2.Checked Then
-            Exit Sub
-        ElseIf chkBPT3.Enabled And chkBPT3.Checked Then
-            Exit Sub
-        ElseIf chkBPNavyFaction.Enabled And chkBPNavyFaction.Checked Then
-            Exit Sub
-        ElseIf chkBPPirateFaction.Enabled And chkBPPirateFaction.Checked Then
-            Exit Sub
-        ElseIf chkBPStoryline.Enabled And chkBPStoryline.Checked Then
-            Exit Sub
-        End If
-
-        ' If here, then none are checked that are enabled, find the first one enabled and check it
-        If chkBPT1.Enabled Then
-            chkBPT1.Checked = True
-            Exit Sub
-        ElseIf chkBPT2.Enabled Then
-            chkBPT2.Checked = True
-            Exit Sub
-        ElseIf chkBPT3.Enabled Then
-            chkBPT3.Checked = True
-            Exit Sub
-        ElseIf chkBPNavyFaction.Enabled Then
-            chkBPNavyFaction.Checked = True
-            Exit Sub
-        ElseIf chkBPPirateFaction.Enabled Then
-            chkBPPirateFaction.Checked = True
-            Exit Sub
-        ElseIf chkBPStoryline.Enabled Then
-            chkBPStoryline.Checked = True
-            Exit Sub
-        End If
 
     End Sub
 
@@ -26104,7 +25790,23 @@ Leave:
         End Function
 
     End Class
-    
+
+    Private Sub btnBPListView_Click(sender As Object, e As EventArgs) Handles btnBPListView.Click
+        Dim frmBPList = new frmBlueprintList
+        AddHandler frmBPList.BPSelected, AddressOf UpdateSelectedBPText
+        frmBPList.Show()
+        
+    End Sub
+
+    Private Sub UpdateSelectedBPText(bpName As String)
+        If bpName.Contains("Blueprint") Then
+            RemoveHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
+            txtBPName.Text = bpName
+            AddHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
+            SelectBlueprint()    
+        End If
+        
+    End Sub
 
 #End Region
 

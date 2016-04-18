@@ -147,6 +147,12 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="frmBlueprintList.Designer.vb">
+      <DependentUpon>frmBlueprintList.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmBlueprintList.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="IPHIndustryFacility.Designer.vb">
       <DependentUpon>IPHIndustryFacility.vb</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -438,6 +444,9 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="frmBlueprintList.resx">
+      <DependentUpon>frmBlueprintList.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </EmbeddedResource>
