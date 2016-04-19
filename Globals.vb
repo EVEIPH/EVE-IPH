@@ -4135,7 +4135,7 @@ InvalidDate:
         ' 1 = Update Available, 0 No Update Available, -1 an error occured and msg box already shown
         UpdateCode = Updater.IsProgramUpdatable
 
-        Select Case Updater.IsProgramUpdatable
+        Select Case UpdateCode
             Case UpdateCheckResult.UpdateAvailable
 
                 Response = TopMostMessageBox.Show("Update Available - Do you want to update now?", Application.ProductName, MessageBoxButtons.YesNo, ProgramIcon)
