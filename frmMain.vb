@@ -4,7 +4,7 @@ Imports System.Globalization
 Imports System.Threading
 Imports System.IO
 Imports System.Net
-
+Imports MoreLinq.MoreEnumerable
 Imports System
 Imports System.Drawing
 Imports System.Collections
@@ -6764,23 +6764,26 @@ Tabs:
             ' Fill the Raw List
             lstBPRawMats.Items.Clear()
             lstBPRawMats.BeginUpdate()
-            For i = 0 To BPRawMats.Count - 1
-                rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
-                'The remaining columns are subitems  
-                rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
-                rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
-                TempPrice = BPRawMats(i).GetCostPerItem
-                ' If the price is zero, highlight text as red
-                If TempPrice = 0 Then
-                    rawlstViewRow.ForeColor = Color.Red
-                Else
-                    rawlstViewRow.ForeColor = Color.Black
-                End If
-                rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
-                rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
-                Call lstBPRawMats.Items.Add(rawlstViewRow)
-            Next
-
+            If (chkCompressedOre.Checked) Then
+                Call CalculateCompressedOres(BPRawMats)
+            Else
+                For i = 0 To BPRawMats.Count - 1
+                    rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
+                    'The remaining columns are subitems  
+                    rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
+                    rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
+                    TempPrice = BPRawMats(i).GetCostPerItem
+                    ' If the price is zero, highlight text as red
+                    If TempPrice = 0 Then
+                        rawlstViewRow.ForeColor = Color.Red
+                    Else
+                        rawlstViewRow.ForeColor = Color.Black
+                    End If
+                    rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
+                    rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
+                    Call lstBPRawMats.Items.Add(rawlstViewRow)
+                Next
+            End If
             ' Sort the raw mats list
             Dim TempSort As SortOrder
             If BPRawColumnSortType = SortOrder.Ascending Then
@@ -7035,6 +7038,64 @@ ExitForm:
         'gbBPTeam.Enabled = True
 
         Me.Cursor = Cursors.Default
+
+    End Sub
+
+    Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
+        Dim newList as new List(of OreMineral)
+        Dim qReader as SQLiteDataReader
+        Dim oreQuantityList as ListViewItem
+        Dim oreID As Integer
+
+        Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName FROM ORE_REFINE o " +
+                     "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
+                     "WHERE o.OreID = {0} " +
+                     "ORDER BY o.MineralQuantity ASC"
+
+        Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
+                         "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
+                         "WHERE i.typeName LIKE 'Compressed%' " +
+                         "AND o.MineralID = {0} " +
+                         "ORDER BY o.MineralQuantity DESC LIMIT 1"
+        
+
+        For i = 0 To bpMaterialList.Count - 1 Step 1
+            Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(i).GetMaterialTypeID()), EVEDB.DBREF)
+                oreID = CType(DBCommand.ExecuteScalar(), Integer)
+            End Using
+
+            ' The meat!
+            ' TODO : beef up the 'multiplier' code; need to create another method that will calculate reprocessing % for the Ore Type ID
+            ' TODO : should probably add that right above this.
+            ' TODO : add calculation to determine station %, char %, etc. then recalculate (don't forget to add up the already existing ore >_> )
+            Using DBCommand = New SQLIteCommand(string.Format(oreSQL, oreID), EVEDB.DBREf)
+                dim result = DBCommand.ExecuteReader()
+                while result.Read()
+                    newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = result.GetInt32(2), .OreMultiplier = 1, .OreName = result.GetString(3) })
+                End While
+
+                Dim mineralQuantity = newList.First(Function(x) x.MineralID = bpMaterialList(i).GetMaterialTypeID())
+                Dim multiplier = bpMaterialList(i).GetQuantity() / mineralQuantity.MineralQuantity
+
+                If (multiplier > 1)
+                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = mineralQuantity.OreID)
+                    For Each item As OreMineral In updateMultipliers
+                        item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
+                    Next
+                End If
+
+            End Using
+
+        Next
+        
+        'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
+        Dim oreList = newList.DistinctBy(Function(z) z.OreName)
+
+        For Each item As OreMineral in oreList
+            oreQuantityList = new ListViewItem(item.OreName)
+            oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
+            Call lstBPRawMats.Items.Add(oreQuantityList)
+        Next
 
     End Sub
 

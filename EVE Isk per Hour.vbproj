@@ -115,6 +115,10 @@
     <PlatformTarget>Itanium</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MoreLinq.Portable, Version=1.4.18916.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
+      <HintPath>packages\MoreLinq.Portable.1.4.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\MoreLinq.Portable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -147,6 +151,7 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="OreMineral.vb" />
     <Compile Include="frmBlueprintList.Designer.vb">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
     </Compile>
@@ -607,6 +612,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="packages.config" />
     <None Include="Resources\46_64_2.png" />
     <None Include="Resources\46_64_1.png" />
   </ItemGroup>
