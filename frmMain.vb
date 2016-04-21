@@ -7046,6 +7046,10 @@ ExitForm:
         Dim qReader as SQLiteDataReader
         Dim oreQuantityList as ListViewItem
         Dim oreID As Integer
+        Dim reproSkill As Integer
+        Dim reproEffSkill As Integer
+        Dim reproSpecOreSkill As Integer
+        Dim refinePercent As Double = 0.5 ' Start with 50% refining
 
         Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName FROM ORE_REFINE o " +
                      "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
@@ -7057,12 +7061,29 @@ ExitForm:
                          "WHERE i.typeName LIKE 'Compressed%' " +
                          "AND o.MineralID = {0} " +
                          "ORDER BY o.MineralQuantity DESC LIMIT 1"
-        
+
+        Dim reproSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = 3385"
+        Dim reproEffSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = 3389"
+        Dim reproSpecOreSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_NAME LIKE '{0}%"
+
 
         For i = 0 To bpMaterialList.Count - 1 Step 1
             Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(i).GetMaterialTypeID()), EVEDB.DBREF)
                 oreID = CType(DBCommand.ExecuteScalar(), Integer)
             End Using
+
+            Using DBCommand = New SQLiteCommand(reproSQL, EVEDB.DBREf)
+                reproSkill = CType(DBCommand.ExecuteScalar(), Integer)
+            End Using
+
+            Using DBCommand = New SQLiteCommand(reproEffSQL, EVEDB.DBREf)
+                reproEffSkill = CType(DBCommand.ExecuteScalar(), Integer)
+            End Using
+
+            ' Reprocessing = 3385 -> 0.03 => 0.15
+            ' Repro Efficiency = 3389 -> 0.02 => 0.10
+            ' Ore Special = 12180-12195 -> 0.02 => 0.10
+            ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
 
             ' The meat!
             ' TODO : beef up the 'multiplier' code; need to create another method that will calculate reprocessing % for the Ore Type ID
@@ -7075,9 +7096,12 @@ ExitForm:
                 End While
 
                 Dim mineralQuantity = newList.First(Function(x) x.MineralID = bpMaterialList(i).GetMaterialTypeID())
+
+                'Dim stationTax As Double = 0.05 ' Start with 5% station Tax
+
                 Dim multiplier = bpMaterialList(i).GetQuantity() / mineralQuantity.MineralQuantity
 
-                If (multiplier > 1)
+                If (multiplier > 1)Then
                     Dim updateMultipliers = newList.Where(Function(y) y.OreID = mineralQuantity.OreID)
                     For Each item As OreMineral In updateMultipliers
                         item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
