@@ -7046,13 +7046,35 @@ ExitForm:
         Dim qReader as SQLiteDataReader
         Dim oreQuantityList as ListViewItem
         Dim oreID As Integer
+        Dim oreSkillReproSkillID As Integer
         Dim reproSkill As Integer
         Dim reproEffSkill As Integer
         Dim reproSpecOreSkill As Integer
         Dim refinePercent As Double = 0.5 ' Start with 50% refining
+        Dim shouldAdd As Boolean
 
-        Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName FROM ORE_REFINE o " +
+        Dim skillDict As New Dictionary(Of String, Integer) From {
+                {"Arkonor", 12180},
+                {"Bistot", 12181},
+                {"Crokite", 12182},
+                {"Dark Ochre", 12183},
+                {"Gneiss", 12184},
+                {"Hedbergite", 12185},
+                {"Hemorphite", 12186},
+                {"Jaspet", 12187},
+                {"Kernite",12188},
+                {"Mercoxit", 12189},
+                {"Omber", 12190},
+                {"Plagioclase", 12191},
+                {"Pyroxeres", 12192},
+                {"Scordite", 12193},
+                {"Spodumain", 12194},
+                {"Veldspar", 12195}}
+
+
+        Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName, g.groupName FROM ORE_REFINE o " +
                      "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
+                     "JOIN INVENTORY_GROUPS g ON i.groupID = g.groupID " +
                      "WHERE o.OreID = {0} " +
                      "ORDER BY o.MineralQuantity ASC"
 
@@ -7061,23 +7083,13 @@ ExitForm:
                          "WHERE i.typeName LIKE 'Compressed%' " +
                          "AND o.MineralID = {0} " +
                          "ORDER BY o.MineralQuantity DESC LIMIT 1"
-
-        Dim reproSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = 3385"
-        Dim reproEffSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = 3389"
-        Dim reproSpecOreSQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_NAME LIKE '{0}%"
-
+        
+        reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
+        reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
 
         For i = 0 To bpMaterialList.Count - 1 Step 1
             Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(i).GetMaterialTypeID()), EVEDB.DBREF)
                 oreID = CType(DBCommand.ExecuteScalar(), Integer)
-            End Using
-
-            Using DBCommand = New SQLiteCommand(reproSQL, EVEDB.DBREf)
-                reproSkill = CType(DBCommand.ExecuteScalar(), Integer)
-            End Using
-
-            Using DBCommand = New SQLiteCommand(reproEffSQL, EVEDB.DBREf)
-                reproEffSkill = CType(DBCommand.ExecuteScalar(), Integer)
             End Using
 
             ' Reprocessing = 3385 -> 0.03 => 0.15
@@ -7092,17 +7104,29 @@ ExitForm:
             Using DBCommand = New SQLIteCommand(string.Format(oreSQL, oreID), EVEDB.DBREf)
                 dim result = DBCommand.ExecuteReader()
                 while result.Read()
-                    newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = result.GetInt32(2), .OreMultiplier = 1, .OreName = result.GetString(3) })
+                    skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
+                    reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
+
+                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02)
+
+                    Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
+
+                    Dim mineralList = newList.Where(Function(b) b.MineralID = bpMaterialList(i).GetMaterialTypeID())
+                    Dim mineralTotal = mineralList.Sum(Function (a) a.MineralQuantity * a.OreMultiplier)
+
+                    If mineralTotal < bpMaterialList(i).GetQuantity()
+                        newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = mineralQuantity, .OreMultiplier = 1, .OreName = result.GetString(3) })
+                    End If
                 End While
 
-                Dim mineralQuantity = newList.First(Function(x) x.MineralID = bpMaterialList(i).GetMaterialTypeID())
-
+                Dim currentMineral = newList.First(Function(x) x.MineralID = bpMaterialList(i).GetMaterialTypeID())
+                
                 'Dim stationTax As Double = 0.05 ' Start with 5% station Tax
 
-                Dim multiplier = bpMaterialList(i).GetQuantity() / mineralQuantity.MineralQuantity
+                Dim multiplier = bpMaterialList(i).GetQuantity() / currentMineral.MineralQuantity
 
-                If (multiplier > 1)Then
-                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = mineralQuantity.OreID)
+                If (multiplier > 1) Then
+                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID)
                     For Each item As OreMineral In updateMultipliers
                         item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
                     Next
