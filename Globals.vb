@@ -9,7 +9,7 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC-118-2_1.0_116998"
+    Public Const SDEVersion As String = "YC-118-3_1.0_117575"
     Public Const VersionNumber As String = "3.2.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -4135,7 +4135,7 @@ InvalidDate:
         ' 1 = Update Available, 0 No Update Available, -1 an error occured and msg box already shown
         UpdateCode = Updater.IsProgramUpdatable
 
-        Select Case Updater.IsProgramUpdatable
+        Select Case UpdateCode
             Case UpdateCheckResult.UpdateAvailable
 
                 Response = TopMostMessageBox.Show("Update Available - Do you want to update now?", Application.ProductName, MessageBoxButtons.YesNo, ProgramIcon)
