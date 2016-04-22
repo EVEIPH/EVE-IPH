@@ -7043,15 +7043,15 @@ ExitForm:
 
     Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
         Dim newList as new List(of OreMineral)
-        Dim qReader as SQLiteDataReader
         Dim oreQuantityList as ListViewItem
         Dim oreID As Integer
         Dim oreSkillReproSkillID As Integer
         Dim reproSkill As Integer
         Dim reproEffSkill As Integer
         Dim reproSpecOreSkill As Integer
-        Dim refinePercent As Double = 0.5 ' Start with 50% refining
-        Dim shouldAdd As Boolean
+        Dim refinePercent As Double ' Start with 50% refining
+        Dim stationTax As Double
+        Dim lockedList As New List(Of Integer)
 
         Dim skillDict As New Dictionary(Of String, Integer) From {
                 {"Arkonor", 12180},
@@ -7076,59 +7076,77 @@ ExitForm:
                      "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
                      "JOIN INVENTORY_GROUPS g ON i.groupID = g.groupID " +
                      "WHERE o.OreID = {0} " +
-                     "ORDER BY o.MineralQuantity ASC"
+                     "ORDER BY o.MineralQuantity DESC"
 
         Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
                          "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
                          "WHERE i.typeName LIKE 'Compressed%' " +
-                         "AND o.MineralID = {0} " +
+                         "AND o.MineralID = {0} AND o.OreID NOT IN ({1})" +
                          "ORDER BY o.MineralQuantity DESC LIMIT 1"
         
         reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
         reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
 
+        Dim stationName = cmbBPFacilityorArray.Text
+        If cmbBPFacilityType.Text = "Station"
+            Using DBCommand = New SQLiteCommand(string.Format("SELECT REPROCESSING_EFFICIENCY, REPROCESSING_TAX_RATE FROM STATIONS WHERE STATION_NAME = '{0}'", stationName), EVEDB.DBREF)
+                dim rates = DBCommand.ExecuteReader()
+                while rates.Read()
+                    refinePercent = rates.GetDouble(0)
+                    stationTax = rates.GetDouble(1)
+                End While
+            End Using
+        Else
+            stationTax = 0.0
+            refinePercent = 0.52
+        End If
+
         For i = 0 To bpMaterialList.Count - 1 Step 1
-            Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(i).GetMaterialTypeID()), EVEDB.DBREF)
+            Dim loopCounter = i
+            Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(loopCounter).GetMaterialTypeID(), String.Join(",", lockedList.Select(Function(itemID) itemID.ToString()).ToArray())), EVEDB.DBREF)
                 oreID = CType(DBCommand.ExecuteScalar(), Integer)
             End Using
-
+            
             ' Reprocessing = 3385 -> 0.03 => 0.15
             ' Repro Efficiency = 3389 -> 0.02 => 0.10
             ' Ore Special = 12180-12195 -> 0.02 => 0.10
             ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
-
-            ' The meat!
-            ' TODO : beef up the 'multiplier' code; need to create another method that will calculate reprocessing % for the Ore Type ID
-            ' TODO : should probably add that right above this.
-            ' TODO : add calculation to determine station %, char %, etc. then recalculate (don't forget to add up the already existing ore >_> )
+            ' Beancounter 27169, 27174, 27175 (2, 4, 1) 
+            
             Using DBCommand = New SQLIteCommand(string.Format(oreSQL, oreID), EVEDB.DBREf)
                 dim result = DBCommand.ExecuteReader()
                 while result.Read()
                     skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
                     reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
 
-                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02)
+                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 - stationTax) ' Add Implant here at some point.
 
                     Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
 
-                    Dim mineralList = newList.Where(Function(b) b.MineralID = bpMaterialList(i).GetMaterialTypeID())
+                    Dim mineralList = newList.Where(Function(b) b.MineralID = bpMaterialList(loopCounter).GetMaterialTypeID())
                     Dim mineralTotal = mineralList.Sum(Function (a) a.MineralQuantity * a.OreMultiplier)
 
-                    If mineralTotal < bpMaterialList(i).GetQuantity()
-                        newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = mineralQuantity, .OreMultiplier = 1, .OreName = result.GetString(3) })
+                    If mineralTotal < bpMaterialList(loopCounter).GetQuantity()
+                        newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = mineralQuantity, .OreMultiplier = 1, .OreName = result.GetString(3), .Locked = False })
                     End If
                 End While
 
-                Dim currentMineral = newList.First(Function(x) x.MineralID = bpMaterialList(i).GetMaterialTypeID())
-                
-                'Dim stationTax As Double = 0.05 ' Start with 5% station Tax
+                ' Make sure we're not grabbing the same Ore numerous times.
+                Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID AND x.MineralID = bpMaterialList(loopCounter).GetMaterialTypeID() AND x.Locked = False)
 
-                Dim multiplier = bpMaterialList(i).GetQuantity() / currentMineral.MineralQuantity
+                If currentMineral Is Nothing
+                    Continue For
+                End If
+
+                Dim multiplier = bpMaterialList(loopCounter).GetQuantity() / currentMineral.MineralQuantity
 
                 If (multiplier > 1) Then
                     Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID)
+                    lockedList.Add(oreID)
                     For Each item As OreMineral In updateMultipliers
                         item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
+                        ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
+                        item.Locked = True
                     Next
                 End If
 
@@ -7142,6 +7160,12 @@ ExitForm:
         For Each item As OreMineral in oreList
             oreQuantityList = new ListViewItem(item.OreName)
             oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
+            oreQuantityList.SubItems.Add("-")
+            Using DBCommand = New SQLiteCommand(string.Format("SELECT AVERAGE_PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREF)
+                Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
+                oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
+                oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
+            End Using
             Call lstBPRawMats.Items.Add(oreQuantityList)
         Next
 

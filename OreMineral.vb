@@ -5,4 +5,5 @@
     Public MineralQuantity As Double
     Public OreMultiplier As Integer
     Public OreName As String
+    Public Locked As Boolean
 End Class
