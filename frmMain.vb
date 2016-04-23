@@ -7052,6 +7052,7 @@ ExitForm:
         Dim refinePercent As Double ' Start with 50% refining
         Dim stationTax As Double
         Dim lockedList As New List(Of Integer)
+        Dim mineralTotal As Double
 
         Dim skillDict As New Dictionary(Of String, Integer) From {
                 {"Arkonor", 12180},
@@ -7081,9 +7082,9 @@ ExitForm:
         Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
                          "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
                          "WHERE i.typeName LIKE 'Compressed%' " +
-                         "AND o.MineralID = {0} AND o.OreID NOT IN ({1})" +
+                         "AND o.MineralID = {0} " +
                          "ORDER BY o.MineralQuantity DESC LIMIT 1"
-        
+
         reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
         reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
 
@@ -7103,16 +7104,22 @@ ExitForm:
 
         For i = 0 To bpMaterialList.Count - 1 Step 1
             Dim loopCounter = i
-            Using DBCommand = New SQLIteCommand(string.Format(mineralSQL, bpMaterialList(loopCounter).GetMaterialTypeID(), String.Join(",", lockedList.Select(Function(itemID) itemID.ToString()).ToArray())), EVEDB.DBREF)
+            Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
+
+            Using DBCommand = New SQLiteCommand(String.Format(mineralSQL, currentMineralID), EVEDB.DBREf)
                 oreID = CType(DBCommand.ExecuteScalar(), Integer)
             End Using
-            
+
+            If oreID = 28367 And currentMineralID = 36 Then
+                oreID = 28397
+            End If
+
             ' Reprocessing = 3385 -> 0.03 => 0.15
             ' Repro Efficiency = 3389 -> 0.02 => 0.10
             ' Ore Special = 12180-12195 -> 0.02 => 0.10
             ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
             ' Beancounter 27169, 27174, 27175 (2, 4, 1) 
-            
+
             Using DBCommand = New SQLIteCommand(string.Format(oreSQL, oreID), EVEDB.DBREf)
                 dim result = DBCommand.ExecuteReader()
                 while result.Read()
@@ -7123,25 +7130,45 @@ ExitForm:
 
                     Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
 
-                    Dim mineralList = newList.Where(Function(b) b.MineralID = bpMaterialList(loopCounter).GetMaterialTypeID())
-                    Dim mineralTotal = mineralList.Sum(Function (a) a.MineralQuantity * a.OreMultiplier)
+                    Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
 
-                    If mineralTotal < bpMaterialList(loopCounter).GetQuantity()
-                        newList.Add(new OreMineral with {.OreID = result.GetInt32(0), .MineralID = result.GetInt32(1), .MineralQuantity = mineralQuantity, .OreMultiplier = 1, .OreName = result.GetString(3), .Locked = False })
+                    Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
+
+                    If tempList.Count > 1 Then
+                        Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
+                        For Each item As OreMineral In tmpRange
+                            item.OreMultiplier = 0
+                        Next
+                    End If
+
+                    ' TODO : FIX THE MULTIPLIER
+                    mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
+
+                    If mineralTotal < bpMaterialList(loopCounter).GetQuantity() Or currentMineralID <> result.GetInt32(1) Then
+                        newList.Add(New OreMineral With {
+                                    .OreID = result.GetInt32(0),
+                                    .MineralID = result.GetInt32(1),
+                                    .MineralQuantity = mineralQuantity,
+                                    .OreMultiplier = 0,
+                                    .OreName = result.GetString(3),
+                                    .OreSelectedFor = currentMineralID})
                     End If
                 End While
 
                 ' Make sure we're not grabbing the same Ore numerous times.
-                Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID AND x.MineralID = bpMaterialList(loopCounter).GetMaterialTypeID() AND x.Locked = False)
+                Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID And x.MineralID = currentMineralID And x.Locked = False)
 
-                If currentMineral Is Nothing
+                If currentMineral Is Nothing Then
                     Continue For
                 End If
 
-                Dim multiplier = bpMaterialList(loopCounter).GetQuantity() / currentMineral.MineralQuantity
+                If currentMineralID = 35 And oreID = 28420 Then
+                    mineralTotal = 0
+                End If
+                Dim multiplier = (bpMaterialList(loopCounter).GetQuantity() - mineralTotal) / currentMineral.MineralQuantity
 
-                If (multiplier > 1) Then
-                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID)
+                If (multiplier > 0) Then
+                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID And y.OreSelectedFor = currentMineralID)
                     lockedList.Add(oreID)
                     For Each item As OreMineral In updateMultipliers
                         item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
@@ -7153,9 +7180,9 @@ ExitForm:
             End Using
 
         Next
-        
+
         'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
-        Dim oreList = newList.DistinctBy(Function(z) z.OreName)
+        Dim oreList = newList.Where(Function(x) x.OreMultiplier > 0).DistinctBy(Function(c) c.OreSelectedFor)
 
         For Each item As OreMineral in oreList
             oreQuantityList = new ListViewItem(item.OreName)
