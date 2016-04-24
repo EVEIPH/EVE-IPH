@@ -7053,6 +7053,7 @@ ExitForm:
         Dim stationTax As Double
         Dim lockedList As New List(Of Integer)
         Dim mineralTotal As Double
+        Dim oreCost As Double
 
         Dim skillDict As New Dictionary(Of String, Integer) From {
                 {"Arkonor", 12180},
@@ -7089,15 +7090,19 @@ ExitForm:
         reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
 
         Dim stationName = cmbBPFacilityorArray.Text
-        If cmbBPFacilityType.Text = "Station"
-            Using DBCommand = New SQLiteCommand(string.Format("SELECT REPROCESSING_EFFICIENCY, REPROCESSING_TAX_RATE FROM STATIONS WHERE STATION_NAME = '{0}'", stationName), EVEDB.DBREF)
-                dim rates = DBCommand.ExecuteReader()
-                while rates.Read()
+        If cmbBPFacilityType.Text = "Station" Then
+
+            Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY, REPROCESSING_TAX_RATE FROM STATIONS WHERE STATION_NAME = '{0}'", stationName), EVEDB.DBREF)
+                Dim rates = DBCommand.ExecuteReader()
+                While rates.Read()
                     refinePercent = rates.GetDouble(0)
                     stationTax = rates.GetDouble(1)
                 End While
             End Using
-        Else
+        ElseIf cmbBPFacilityType.Text = "Outpost" Then
+            stationTax = 0.0
+            refinePercent = 0.5
+        ElseIf cmbBPFacilityType.Text = "POS" Then
             stationTax = 0.0
             refinePercent = 0.52
         End If
@@ -7184,17 +7189,23 @@ ExitForm:
         'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
         Dim oreList = newList.Where(Function(x) x.OreMultiplier > 0).DistinctBy(Function(c) c.OreSelectedFor)
 
-        For Each item As OreMineral in oreList
-            oreQuantityList = new ListViewItem(item.OreName)
+        For Each item As OreMineral In oreList
+            oreQuantityList = New ListViewItem(item.OreName)
             oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
             oreQuantityList.SubItems.Add("-")
-            Using DBCommand = New SQLiteCommand(string.Format("SELECT AVERAGE_PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREF)
+            Using DBCommand = New SQLiteCommand(String.Format("SELECT AVERAGE_PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREF)
                 Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
                 oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
                 oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
+
+                oreCost += avgPrice * item.OreMultiplier
             End Using
             Call lstBPRawMats.Items.Add(oreQuantityList)
+
         Next
+
+        lblBPRawMatCost.Text = FormatNumber(oreCost, 2)
+
 
     End Sub
 
@@ -7359,7 +7370,10 @@ ExitForm:
         lblBPMarketCost.Text = FormatNumber(SelectedBlueprint.GetItemMarketPrice / DivideUnits, 2)
 
         ' Materials (bottom labels)
-        lblBPRawMatCost.Text = FormatNumber(SelectedBlueprint.GetRawMaterials.GetTotalMaterialsCost, 2)
+        If Not chkCompressedOre.Checked Then
+            lblBPRawMatCost.Text = FormatNumber(SelectedBlueprint.GetRawMaterials.GetTotalMaterialsCost, 2)
+        End If
+
         lblBPComponentMatCost.Text = FormatNumber(SelectedBlueprint.GetComponentMaterials.GetTotalMaterialsCost, 2)
 
         ' Taxes/Fees
