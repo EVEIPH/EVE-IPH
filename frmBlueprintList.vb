@@ -8,8 +8,12 @@ Public Class frmBlueprintList
         Dim itemCategoryNode as TreeNode
         Dim itemGroupNode as TreeNode
         Dim marketGroupNode as TreeNode
+        Dim techLevel as TreeNode
 
-        Dim sql = "SELECT b.ITEM_CATEGORY, b.ITEM_GROUP, b.MARKET_GROUP, b.BLUEPRINT_NAME FROM ALL_BLUEPRINTS b, INVENTORY_TYPES WHERE b.ITEM_ID = INVENTORY_TYPES.typeID AND MARKET_GROUP NOTNULL ORDER BY ITEM_CATEGORY, ITEM_GROUP, MARKET_GROUP"
+        Dim sql = "SELECT b.ITEM_CATEGORY, b.ITEM_GROUP, b.MARKET_GROUP, b.BLUEPRINT_NAME , b.TECH_LEVEL " +
+                  "FROM ALL_BLUEPRINTS b " +
+                  "JOIN INVENTORY_TYPES  i ON b.ITEM_ID = i.typeID " +
+                  "WHERE MARKET_GROUP NOTNULL ORDER BY ITEM_CATEGORY, ITEM_GROUP, MARKET_GROUP "
 
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
 

@@ -7091,13 +7091,8 @@ ExitForm:
 
         Dim stationName = cmbBPFacilityorArray.Text
         If cmbBPFacilityType.Text = "Station" Then
-
-            Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY, REPROCESSING_TAX_RATE FROM STATIONS WHERE STATION_NAME = '{0}'", stationName), EVEDB.DBREF)
-                Dim rates = DBCommand.ExecuteReader()
-                While rates.Read()
-                    refinePercent = rates.GetDouble(0)
-                    stationTax = rates.GetDouble(1)
-                End While
+            Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY FROM STATIONS WHERE STATION_NAME = '{0}'", stationName), EVEDB.DBREF)
+                refinePercent = CType(DBCommand.ExecuteScalar, Double)
             End Using
         ElseIf cmbBPFacilityType.Text = "Outpost" Then
             stationTax = 0.0
@@ -7131,7 +7126,7 @@ ExitForm:
                     skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
                     reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
 
-                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 - stationTax) ' Add Implant here at some point.
+                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) ' Add Implant here at some point.
 
                     Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
 
