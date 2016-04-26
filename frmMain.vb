@@ -17256,6 +17256,7 @@ CheckTechs:
 
     End Sub
 
+    ' Adding random Comment to update branch to an old revision
     ' Switches button to calculate
     Public Sub ResetRefresh()
         RefreshCalcData = False
