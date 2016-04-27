@@ -5392,7 +5392,7 @@ Tabs:
 
     ' Load the list box when the user types and don't use the drop down list
     Private Sub cmbBPBlueprintSelection_TextChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.TextChanged
-        If Not FirstLoad And Not BPSelected Then
+        If Not FirstLoad And Not BPSelected And Trim(cmbBPBlueprintSelection.Text) <> "Select Blueprint" Then
             If ComboBoxArrowKeys = False Then
                 If (cmbBPBlueprintSelection.Text <> "") Then
                     GetBPWithName(cmbBPBlueprintSelection.Text)
@@ -7473,17 +7473,21 @@ ExitForm:
     ' Loads the blueprint combo based on what was selected
     Private Sub LoadBlueprintCombo()
         Dim readerBPs As SQLiteDataReader
-        Dim SQL As String
+        Dim SQL As String = ""
 
         Application.UseWaitCursor = True
         ' Clear anything that was there
         cmbBPBlueprintSelection.Items.Clear()
 
         ' Core Query ' Get rid of 's in blueprint name for sorting
-        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-        SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-        SQL = SQL & BuildBPSelectQuery()
-        SQL = SQL & " ORDER BY X"
+        If Me.rbtnBPOwnedBlueprints.Checked Or Me.rbtnBPFavoriteBlueprints.Checked Then
+            SQL = BuildBPSelectQuery()
+        Else
+            SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
+            SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+            SQL = SQL & BuildBPSelectQuery()
+            SQL = SQL & " ORDER BY X"
+        End If
 
         If SQL = "" Then
             Exit Sub
