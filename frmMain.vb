@@ -104,6 +104,7 @@ Public Class frmMain
     Public ComboMenuDown As Boolean
     Public MouseWheelSelection As Boolean
     Public ComboBoxArrowKeys As Boolean
+    Public BPSelected As Boolean
 
     ' Relics
     Private LoadingRelics As Boolean
@@ -5376,30 +5377,204 @@ Tabs:
 
     End Sub
 
-    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
-
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the BP
-        If e.KeyValue = Keys.Enter Then
-            Call LoadBPFromCombo()
-        End If
-
-    End Sub
-
     ' Thrown when the user changes the value in the combo box
     Private Sub cmbBPBlueprintSelection_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.SelectionChangeCommitted
 
         If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
+            lstBPList.Visible = False ' We are loading the bp, so hide this
+            BPSelected = True
             Call LoadBPFromCombo()
         End If
 
+        BPSelected = False
+
     End Sub
+
+    ' Load the list box when the user types and don't use the drop down list
+    Private Sub cmbBPBlueprintSelection_TextChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.TextChanged
+        If Not FirstLoad And Not BPSelected Then
+            If ComboBoxArrowKeys = False Then
+                If (cmbBPBlueprintSelection.Text <> "") Then
+                    GetBPWithName(cmbBPBlueprintSelection.Text)
+                End If
+                If (String.IsNullOrEmpty(cmbBPBlueprintSelection.Text)) Then
+                    lstBPList.Items.Clear()
+                    lstBPList.Visible = False
+                End If
+            End If
+        End If
+    End Sub
+
+    Private Sub GetBPWithName(bpName As String)
+        ' Query: SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%Repair%'
+        Dim readerBP As SQLiteDataReader
+        Dim query As String
+
+        cmbBPBlueprintSelection.Text = bpName
+        lstBPList.Items.Clear()
+
+        ' Add limiting functions here based on radio buttons
+        ' Use replace to Get rid of 's in blueprint name for sorting
+        query = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
+        query = query & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+        query = query & BuildBPSelectQuery()
+        query = query & " AND ALL_BLUEPRINTS.BLUEPRINT_NAME LIKE '%" & FormatDBString(bpName) & "%'"
+        query = query & " ORDER BY X"
+
+        ' query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & bpName & "%'"
+
+        DBCommand = New SQLiteCommand(query, EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+        lstBPList.BeginUpdate()
+
+        While readerBP.Read()
+            lstBPList.Items.Add(readerBP.GetString(0))
+            Application.DoEvents()
+        End While
+
+        readerBP.Close()
+        readerBP = Nothing
+        lstBPList.EndUpdate()
+        lstBPList.Visible = True
+        Application.UseWaitCursor = False
+
+    End Sub
+
+    ' Builds the query for the select combo
+    Private Function BuildBPSelectQuery() As String
+        Dim SQL As String = ""
+        Dim SQLItemType As String = ""
+
+        ' Find what type of blueprint we want
+        With Me
+            If .rbtnBPAmmoChargeBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Charge' "
+            ElseIf .rbtnBPDroneBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Drone' "
+            ElseIf .rbtnBPModuleBlueprints.Checked Then
+                SQL = SQL & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
+            ElseIf .rbtnBPShipBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Ship' "
+            ElseIf .rbtnBPSubsystemBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Subsystem' "
+            ElseIf .rbtnBPBoosterBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Implant' "
+            ElseIf .rbtnBPComponentBlueprints.Checked Then
+                SQL = SQL & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
+            ElseIf .rbtnBPMiscBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
+            ElseIf .rbtnBPDeployableBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Deployable' "
+            ElseIf .rbtnBPCelestialsBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
+            ElseIf .rbtnBPStructureBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Starbase' "
+            ElseIf .rbtnBPStationPartsBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
+            ElseIf .rbtnBPRigBlueprints.Checked Then
+                SQL = SQL & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
+            ElseIf .rbtnBPOwnedBlueprints.Checked Then
+                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
+                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
+                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+            ElseIf .rbtnBPFavoriteBlueprints.Checked Then
+                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
+                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
+                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
+                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+            End If
+        End With
+
+        ' Item Type Definitions - These are set by me based on existing data
+        ' 1, 2, 14 are T1, T2, T3
+        ' 3 is Storyline
+        ' 15 is Pirate Faction
+        ' 16 is Navy Faction
+
+        ' Check Tech version
+        If chkBPT1.Enabled Then
+            ' Only a Subsystem so T3
+            If chkBPT1.Checked Then
+                SQLItemType = SQLItemType & "1,"
+            End If
+        End If
+
+        If chkBPT2.Enabled Then
+            If chkBPT2.Checked Then
+                SQLItemType = SQLItemType & "2,"
+            End If
+        End If
+
+        If chkBPT3.Enabled Then
+            If chkBPT3.Checked Then
+                SQLItemType = SQLItemType & "14,"
+            End If
+        End If
+
+        If chkBPStoryline.Enabled Then
+            If chkBPStoryline.Checked Then
+                SQLItemType = SQLItemType & "3,"
+            End If
+        End If
+
+        If chkBPPirateFaction.Enabled Then
+            If chkBPPirateFaction.Checked Then
+                SQLItemType = SQLItemType & "15,"
+            End If
+        End If
+
+        If chkBPNavyFaction.Enabled Then
+            If chkBPNavyFaction.Checked Then
+                SQLItemType = SQLItemType & "16,"
+            End If
+        End If
+
+        ' Add Item Type
+        If SQLItemType <> "" Then
+            SQLItemType = " ALL_BLUEPRINTS.ITEM_TYPE IN (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
+        Else
+            ' They need to have at least one. If not, just return nothing
+            BuildBPSelectQuery = ""
+            Exit Function
+        End If
+
+        ' Add the item types
+        SQL = SQL & "AND" & SQLItemType
+
+        Dim SizesClause As String = ""
+
+        ' Finally add the sizes
+        If chkBPSmall.Checked Then ' Light
+            SizesClause = SizesClause & "'S',"
+        End If
+
+        If chkBPMedium.Checked Then ' Medium
+            SizesClause = SizesClause & "'M',"
+        End If
+
+        If chkBPLarge.Checked Then ' Heavy
+            SizesClause = SizesClause & "'L',"
+        End If
+
+        If chkBPXL.Checked Then ' Fighters
+            SizesClause = SizesClause & "'XL',"
+        End If
+
+        If SizesClause <> "" Then
+            SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
+        End If
+
+        SQL = SQL & SizesClause
+
+        ' Ignore flag
+        If chkBPIncludeIgnoredBPs.Checked = False Then
+            SQL = SQL & "AND IGNORE = 0 "
+        End If
+
+        BuildBPSelectQuery = SQL
+
+    End Function
 
     ' Loads a blueprint if selected in the combo box by different methods
     Private Sub LoadBPFromCombo()
@@ -5416,6 +5591,54 @@ Tabs:
             ComboBoxArrowKeys = False
 
             SelectedBPText = ""
+        End If
+
+    End Sub
+
+    ' Load bp from list select
+    Private Sub lstBPList_Click(sender As Object, e As EventArgs) Handles lstBPList.Click
+        If lstBPList.SelectedItems.Count <> 0 Then
+            cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
+            lstBPList.Visible = False
+            Call SelectBlueprint()
+        End If
+    End Sub
+
+    ' Process keys for bp combo
+    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
+
+        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
+            ComboBoxArrowKeys = True
+        Else
+            ComboBoxArrowKeys = False
+        End If
+
+        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
+        If lstBPList.Visible = False Then
+            ' If they select enter, then load the BP
+            If e.KeyValue = Keys.Enter Then
+                Call LoadBPFromCombo()
+            End If
+        Else
+            ' They have the list down, so process up and down keys to work with selecting in the list
+            Select Case (e.KeyCode)
+                Case Keys.Down
+                    If (lstBPList.SelectedIndex < lstBPList.Items.Count - 1) Then
+                        lstBPList.SelectedIndex = lstBPList.SelectedIndex + 1
+                    End If
+                Case Keys.Up
+                    If (lstBPList.SelectedIndex > 0) Then
+                        lstBPList.SelectedIndex = lstBPList.SelectedIndex - 1
+                    End If
+                Case Keys.Enter
+                    If (lstBPList.SelectedIndex > -1) Then
+                        cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
+                        lstBPList.Visible = False
+                        BPSelected = True
+                        Call SelectBlueprint()
+                        BPSelected = False
+                    End If
+            End Select
         End If
 
     End Sub
@@ -7247,148 +7470,6 @@ ExitForm:
 
     End Function
 
-    ' Builds the query for the select combo
-    Private Function BuildBPSelectQuery() As String
-        Dim SQL As String = ""
-        Dim SQLItemType As String = ""
-
-        ' Core Query ' Get rid of 's in blueprint name for sorting
-        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-        SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-
-        ' Find what type of blueprint we want
-        With Me
-            If .rbtnBPAmmoChargeBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Charge' "
-            ElseIf .rbtnBPDroneBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Drone' "
-            ElseIf .rbtnBPModuleBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
-            ElseIf .rbtnBPShipBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Ship' "
-            ElseIf .rbtnBPSubsystemBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Subsystem' "
-            ElseIf .rbtnBPBoosterBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Implant' "
-            ElseIf .rbtnBPComponentBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
-            ElseIf .rbtnBPMiscBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
-            ElseIf .rbtnBPDeployableBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Deployable' "
-            ElseIf .rbtnBPCelestialsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
-            ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Starbase' "
-            ElseIf .rbtnBPStationPartsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
-            ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL = SQL & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
-            ElseIf .rbtnBPOwnedBlueprints.Checked Then
-                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(ALL_BLUEPRINTS.BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            End If
-        End With
-
-        ' Item Type Definitions - These are set by me based on existing data
-        ' 1, 2, 14 are T1, T2, T3
-        ' 3 is Storyline
-        ' 15 is Pirate Faction
-        ' 16 is Navy Faction
-
-        ' Check Tech version
-        If chkBPT1.Enabled Then
-            ' Only a Subsystem so T3
-            If chkBPT1.Checked Then
-                SQLItemType = SQLItemType & "1,"
-            End If
-        End If
-
-        If chkBPT2.Enabled Then
-            If chkBPT2.Checked Then
-                SQLItemType = SQLItemType & "2,"
-            End If
-        End If
-
-        If chkBPT3.Enabled Then
-            If chkBPT3.Checked Then
-                SQLItemType = SQLItemType & "14,"
-            End If
-        End If
-
-        If chkBPStoryline.Enabled Then
-            If chkBPStoryline.Checked Then
-                SQLItemType = SQLItemType & "3,"
-            End If
-        End If
-
-        If chkBPPirateFaction.Enabled Then
-            If chkBPPirateFaction.Checked Then
-                SQLItemType = SQLItemType & "15,"
-            End If
-        End If
-
-        If chkBPNavyFaction.Enabled Then
-            If chkBPNavyFaction.Checked Then
-                SQLItemType = SQLItemType & "16,"
-            End If
-        End If
-
-        ' Add Item Type
-        If SQLItemType <> "" Then
-            SQLItemType = " ALL_BLUEPRINTS.ITEM_TYPE IN (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
-        Else
-            ' They need to have at least one. If not, just return nothing
-            BuildBPSelectQuery = ""
-            Exit Function
-        End If
-
-        ' Add the item types
-        SQL = SQL & "AND" & SQLItemType
-
-        Dim SizesClause As String = ""
-
-        ' Finally add the sizes
-        If chkBPSmall.Checked Then ' Light
-            SizesClause = SizesClause & "'S',"
-        End If
-
-        If chkBPMedium.Checked Then ' Medium
-            SizesClause = SizesClause & "'M',"
-        End If
-
-        If chkBPLarge.Checked Then ' Heavy
-            SizesClause = SizesClause & "'L',"
-        End If
-
-        If chkBPXL.Checked Then ' Fighters
-            SizesClause = SizesClause & "'XL',"
-        End If
-
-        If SizesClause <> "" Then
-            SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
-        End If
-
-        SQL = SQL & SizesClause
-
-        ' Ignore flag
-        If chkBPIncludeIgnoredBPs.Checked = False Then
-            SQL = SQL & "AND IGNORE = 0 "
-        End If
-
-        SQL = SQL & " ORDER BY X"
-
-        BuildBPSelectQuery = SQL
-
-    End Function
-
     ' Loads the blueprint combo based on what was selected
     Private Sub LoadBlueprintCombo()
         Dim readerBPs As SQLiteDataReader
@@ -7398,7 +7479,11 @@ ExitForm:
         ' Clear anything that was there
         cmbBPBlueprintSelection.Items.Clear()
 
-        SQL = BuildBPSelectQuery()
+        ' Core Query ' Get rid of 's in blueprint name for sorting
+        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(BLUEPRINT_NAME,'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
+        SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+        SQL = SQL & BuildBPSelectQuery()
+        SQL = SQL & " ORDER BY X"
 
         If SQL = "" Then
             Exit Sub
@@ -14277,7 +14362,6 @@ ExitSub:
     Private Sub cmbCalcManufacturingTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.DropDown
         ' If you drop down, don't show the text window
         cmbCalcManufacturingTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbCalcManufacturingTeam.AutoCompleteSource = AutoCompleteSource.None
         ComboMenuDown = True
 
         If Not CalcManufacturingTeamComboLoaded Then
@@ -14293,7 +14377,6 @@ ExitSub:
         ' If it closes up, re-enable autocomplete
         Application.DoEvents()
         cmbCalcManufacturingTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbCalcManufacturingTeam.AutoCompleteSource = AutoCompleteSource.ListItems
         ComboMenuDown = False
     End Sub
 
