@@ -7321,7 +7321,7 @@ ExitForm:
         lstBPList.Items.Clear()
         lstBPList.Visible = True
 
-        query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & bpName & "%'"
+        query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & FormatDBString(bpName) & "%'"
 
         DBCommand = New SQLIteCommand(query, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
