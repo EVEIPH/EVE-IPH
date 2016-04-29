@@ -647,7 +647,7 @@ Public Class frmShoppingList
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
-            If readerAssets.GetInt32(1) = -4 Then
+            If (readerAssets.GetInt32(1) = -4 Or readerAssets.GetInt64(0) > 1000000000000) Then
                 ' If the flag is the base location, then we want all items at the location id
                 AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
             Else

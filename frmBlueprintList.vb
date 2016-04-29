@@ -113,11 +113,13 @@ Public Class frmBlueprintList
         ElseIf rbtnBPCelestialsBlueprints.Checked Then
             extraSql = "AND ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')"
         ElseIf rbtnBPStructureBlueprints.Checked Then
-            extraSql = "AND ITEM_CATEGORY = 'Starbase'"
+            extraSql = "AND ITEM_CATEGORY IN ('Starbase', 'Structure')"
         ElseIf rbtnBPStationPartsBlueprints.Checked Then
-            extraSql = "AND ITEM_CATEGORY = 'Station Components'"
+            extraSql = "AND ITEM_CATEGORY = 'Station Components'" ' Doesn't exist ?
         ElseIf rbtnBPRigBlueprints.Checked Then
-            extraSql = "AND ITEM_CATEGORY = 'Rig Blueprint'"
+            extraSql = "AND ITEM_GROUP LIKE 'Rig%'"
+        ElseIf rbtnBPStructureModuleBlueprints.Checked Then
+            extraSql = "AND ITEM_CATEGORY = 'Structure Module'"
         ElseIf rbtnBPOwnedBlueprints.Checked Then
             extraSql = "LEFT JOIN OWNED_BLUEPRINTS o ON b.BLUEPRINT_ID = o.BLUEPRINT_ID"
             extraWhere = "AND o.OWNED <> 0 AND o.USER_ID = " & SelectedCharacter.ID
@@ -180,7 +182,9 @@ Public Class frmBlueprintList
         return returnSql
     End Function
     Private Sub treBlueprintTreeView_DoubleClick(sender As Object, e As EventArgs) Handles treBlueprintTreeView.DoubleClick
-        RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
+        If (treBlueprintTreeView.SelectedNode.Text.Contains("Blueprint") And treBlueprintTreeView.SelectedNode IsNot Nothing) Then
+            RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
+        End If
     End Sub
 
     Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click

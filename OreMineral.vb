@@ -2,7 +2,7 @@
     Public OreID As Integer
     Public MineralID As Integer
     Public MineralQuantity As Double
-    Public OreMultiplier As Integer
+    Public OreMultiplier As Int64
     Public OreName As String
     Public OreSelectedFor As Integer
     Public Locked As Boolean

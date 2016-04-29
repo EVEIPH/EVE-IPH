@@ -9,8 +9,8 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC-118-3_1.0_117575"
-    Public Const VersionNumber As String = "3.2.*"
+    Public Const SDEVersion As String = "Citadel_1.0"
+    Public Const VersionNumber As String = "3.3.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -41,7 +41,7 @@ Public Module Public_Variables
 
     Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
     Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
-    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/view/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
+    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
@@ -522,7 +522,7 @@ Public Module Public_Variables
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 10% - Starting level with Accounting 0 is 1.5% tax 
-        Return (1.5 - (Accounting * 0.1 * 1.5)) / 100 * ItemMarketCost
+        Return (2.0 - (Accounting * 0.1 * 2.0)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -533,7 +533,10 @@ Public Module Public_Variables
         ' Old BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / e ^ (0.1000 × FactionStanding + 0.04000 × CorporationStanding)
         ' BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / 2 ^ (0.1400 × FactionStanding + 0.06000 × CorporationStanding) 
         'TempFee = ((1 - 0.05 * BrokerRelations) / Math.Exp(0.1 * UserApplicationSettings.BrokerFactionStanding + 0.04 * UserApplicationSettings.BrokerCorpStanding)) / 100 * ItemMarketCost
-        TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
+        'TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
+
+        Dim BrokerTax = 3.0 - (0.1 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+        TempFee = (BrokerTax / 100) * ItemMarketCost
 
         If TempFee < 100 Then
             Return 100

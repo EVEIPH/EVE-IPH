@@ -1737,7 +1737,9 @@ Public Class Blueprint
         AvgRunsforSuccess = 1 / InventionChance
 
         ' Set how many total invention runs we will need to do - take the number of bpc's we'll need and multiply by how many runs for a success - round up
-        NumInventionJobs = CInt(Math.Ceiling(AvgRunsforSuccess * Math.Ceiling(UserRuns / SingleInventedBPCRuns)))
+        If InventionChance <> 0 Then
+            NumInventionJobs = CInt(Math.Ceiling(AvgRunsforSuccess * Math.Ceiling(UserRuns / SingleInventedBPCRuns)))
+        End If
 
         ' Now set the total runs we will get from all jobs
         TotalInventedRuns = CInt(Math.Ceiling(UserRuns / SingleInventedBPCRuns) * SingleInventedBPCRuns)
@@ -1861,7 +1863,7 @@ Public Class Blueprint
         Dim SQL As String
 
         Dim EncryptionSkillLevel As Integer
-        Dim DatacoreSkillLevels(1) As Integer
+        Dim DatacoreSkillLevels(1) As Integer ' 
 
         ' Get the base invention chance from the activities for the T1 BPO
         SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
@@ -1888,7 +1890,8 @@ Public Class Blueprint
             ' Look up the level of the character's skills
             If CStr(readerLookup(0).ToString).Contains("Encryption") Then
                 EncryptionSkillLevel = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
-            Else ' A datacore skill
+            ElseIf (readerLookup(0).ToString <> "Capital Ship Construction") Then
+                ' A datacore skill
                 DatacoreSkillLevels(j) = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
                 j = j + 1
             End If

@@ -1670,7 +1670,7 @@ Public Class frmMain
         readerBP.Read()
         RemoveHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
         txtBPName.Text = readerBP.GetString(0)
-        RemoveHandler txtBPName.TextChanged, AddressOf txtBPName_textChanged
+        AddHandler txtBPName.TextChanged, AddressOf txtBPName_TextChanged
         BPTech = readerBP.GetInt32(1)
 
         If BPTech = BlueprintTechLevel.T2 Or BPTech = BlueprintTechLevel.T3 Then
@@ -7126,7 +7126,7 @@ ExitForm:
                     skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
                     reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
 
-                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) ' Add Implant here at some point.
+                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 + UserApplicationSettings.RefiningImplantValue)
 
                     Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
 
@@ -7171,7 +7171,7 @@ ExitForm:
                     Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID And y.OreSelectedFor = currentMineralID)
                     lockedList.Add(oreID)
                     For Each item As OreMineral In updateMultipliers
-                        item.OreMultiplier = CType(Math.Ceiling(multiplier), Integer)
+                        item.OreMultiplier = CType(Math.Ceiling(multiplier), Int64)
                         ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
                         item.Locked = True
                     Next
@@ -25975,6 +25975,10 @@ Leave:
             SelectBlueprint()    
         End If
         
+    End Sub
+
+    Private Sub txtBPName_DoubleClick(sender As Object, e As EventArgs) Handles txtBPName.DoubleClick
+        txtBPName.SelectAll()
     End Sub
 
 #End Region
