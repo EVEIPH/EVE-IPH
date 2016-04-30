@@ -25909,6 +25909,9 @@ Leave:
     End Sub
 
     Private Sub lstBPList_DoubleClick(sender As Object, e As EventArgs) Handles lstBPList.DoubleClick
+        If (lstBPList.SelectedItem Is Nothing) Then
+            Return
+        End If
         txtBPName.Text = lstBPList.SelectedItem.ToString()
         SelectBlueprint()
         lstBPList.Visible = False
