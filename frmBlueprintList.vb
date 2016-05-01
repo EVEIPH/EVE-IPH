@@ -114,7 +114,7 @@ WHERE MARKET_GROUP IS NOT NULL
 {GetSizeGroupFilter()}
 {GetItemTypesFilter()}
 {levelFilter}
-ORDER BY {displayLevel}
+ORDER BY b.{displayLevel}
 "
 
         Return query
@@ -154,7 +154,7 @@ ORDER BY {displayLevel}
 
     Private Function GetOwnedJoin() As String
         Dim ownedJoin = ""
-        Dim baseJoin = $"LEFT JOIN OWNED_BLUEPRINTS o ON b.BLUEPRINT_ID = o.BLUEPRINT_ID "
+        Dim baseJoin = $"JOIN OWNED_BLUEPRINTS o ON b.BLUEPRINT_ID = o.BLUEPRINT_ID "
         Dim ownedFilter = $" AND o.OWNED <> 0 AND o.USER_ID = {SelectedCharacter.ID}"
 
         If rbtnBPOwnedBlueprints.Checked Then
