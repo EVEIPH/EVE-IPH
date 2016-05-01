@@ -6,11 +6,12 @@ Public Class frmBlueprintList
 
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
 
-        CreateTopLevels()
+        SetTopNodes()
 
     End Sub
 
-    Private Sub CreateTopLevels()
+    ' I'd like to try and find some way of merging PopulateNode and SetTopNodes, but I don't think there's a simple way
+    Private Sub SetTopNodes()
         treBlueprintTreeView.Nodes.Clear()
         Using con = New SQLiteConnection(EVEDB.DBREf.ConnectionString)
             Dim com = con.CreateCommand()
@@ -33,31 +34,33 @@ Public Class frmBlueprintList
         PopulateNode(e.Node)
     End Sub
 
+    Private Function GetDisplayLevel(parentLevel As String) As String
+        Select Case parentLevel
+            Case "ITEM_CATEGORY"
+                Return "ITEM_GROUP"
+            Case "ITEM_GROUP"
+                Return "MARKET_GROUP"
+            Case "MARKET_GROUP"
+                Return "BLUEPRINT_NAME"
+            Case Else
+                Throw New ArgumentOutOfRangeException($"Value of {NameOf(parentLevel)} is invalid: {parentLevel}")
+        End Select
+    End Function
+
+    ' I'd like to try and find some way of merging PopulateNode and SetTopNodes, but I don't think there's a simple way
     Private Sub PopulateNode(thisNode As TreeNode)
         thisNode.Nodes.Clear()
         Dim filterLevel As String = CStr(thisNode.Tag)
-        Dim displayLevel As String
-
-        Select Case filterLevel
-            Case "ITEM_CATEGORY"
-                displayLevel = "ITEM_GROUP"
-            Case "ITEM_GROUP"
-                displayLevel = "MARKET_GROUP"
-            Case "MARKET_GROUP"
-                displayLevel = "BLUEPRINT_NAME"
-            Case Else
-                Throw New InvalidOperationException($"Node tag is invalid: {filterLevel}")
-        End Select
+        Dim displayLevel = GetDisplayLevel(filterLevel)
 
         Using con = New SQLiteConnection(EVEDB.DBREf.ConnectionString)
             Dim com = con.CreateCommand()
-            com.CommandText = BuildBPQuery(displayLevel, CStr(thisNode.Tag), thisNode.Text)
+            com.CommandText = BuildBPQuery(displayLevel, filterLevel, thisNode.Text)
 
             con.Open()
             Using reader = com.ExecuteReader()
                 While reader.Read
-                    Dim readCategory = reader(displayLevel).ToString
-                    Dim newNode = New TreeNode(readCategory)
+                    Dim newNode = New TreeNode(reader(displayLevel).ToString)
                     newNode.Tag = displayLevel
                     thisNode.Nodes.Add(newNode)
                     If displayLevel <> "BLUEPRINT_NAME" Then
@@ -274,8 +277,7 @@ ORDER BY {displayLevel}
     End Sub
 
     Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
-        treBlueprintTreeView.Nodes.Clear()
-        CreateTopLevels()
+        SetTopNodes()
     End Sub
 
 End Class
