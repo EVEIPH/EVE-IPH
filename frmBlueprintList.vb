@@ -15,7 +15,6 @@ Public Class frmBlueprintList
         Dim itemCategoryNode As TreeNode
         Dim itemGroupNode As TreeNode
         Dim marketGroupNode As TreeNode
-        Dim techLevel As TreeNode
 
         DBCommand = New SQLiteCommand(BuildBPQuery(), EVEDB.DBREf)
         readerBPs = DBCommand.ExecuteReader
@@ -74,6 +73,7 @@ Public Class frmBlueprintList
         marketGroupNode.Nodes.Add(bpName)
 
     End Sub
+
     Private Function BuildBPQuery() As String
         Dim sql = "SELECT b.ITEM_CATEGORY, b.ITEM_GROUP, b.MARKET_GROUP, b.BLUEPRINT_NAME , b.TECH_LEVEL " +
                   "FROM ALL_BLUEPRINTS b " +
@@ -87,9 +87,6 @@ Public Class frmBlueprintList
 
         Dim extraSql = ""
         Dim extraWhere = ""
-        Dim sizeSql = ""
-        Dim itemTypes = New List(Of ItemType)()
-        Dim sizeLimit = New List(Of String)()
 
         If rbtnAmmoChargeBlueprints.Checked Then
             extraSql = "And ITEM_CATEGORY = 'Charge'"
@@ -108,7 +105,7 @@ Public Class frmBlueprintList
         ElseIf rbtnBPMiscBlueprints.Checked Then
             extraSql = "AND ITEM_GROUP IN ('Tool', 'Data Interfaces', 'Cyberimplant', 'Fuel Block')"
         ElseIf rbtnBPDeployableBlueprints.Checked Then
-            extraSQL = "AND ITEM_CATEGORY = 'Deployable'"
+            extraSql = "AND ITEM_CATEGORY = 'Deployable'"
         ElseIf rbtnBPCelestialsBlueprints.Checked Then
             extraSql = "AND ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')"
         ElseIf rbtnBPStructureBlueprints.Checked Then
@@ -125,11 +122,40 @@ Public Class frmBlueprintList
             extraWhere = "AND o.OWNED <> 0 AND FAVORITE = 1 AND o.USER_ID = " & SelectedCharacter.ID
         End If
 
-        ' Item Type Definitions - These are set by me based on existing data
-        ' 1, 2, 14 are T1, T2, T3
-        ' 3 is Storyline
-        ' 15 is Pirate Faction
-        ' 16 is Navy Faction
+        Dim returnSql = String.Format(sql, extraSql, extraWhere, GetItemTypesFilter(), GetSizeGroupFilter())
+        Return returnSql
+    End Function
+
+    Private Function GetSizeGroupFilter() As String
+        Dim sizeGroupFilter = ""
+        Dim sizeLimit = New List(Of String)()
+
+        If chkBPSmall.Checked Then
+            sizeLimit.Add("S")
+        End If
+
+        If chkBPMedium.Checked Then
+            sizeLimit.Add("M")
+        End If
+
+        If chkBPLarge.Checked Then
+            sizeLimit.Add("L")
+        End If
+
+        If chkBPXLarge.Checked Then
+            sizeLimit.Add("XL")
+        End If
+
+        If sizeLimit.Count > 0 Then
+            Dim sizeGroupString = sizeLimit.Select(Function(x) $"'{x}'").Aggregate(Function(prev, this) $"{prev}, {this}")
+            sizeGroupFilter = $"AND b.SIZE_GROUP IN ({sizeGroupString})"
+        End If
+        Return sizeGroupFilter
+    End Function
+
+    Private Function GetItemTypesFilter() As String
+        Dim itemTypes = New List(Of ItemType)
+        Dim itemTypesFilter = "''"
 
         If chkBPTech1.Checked Then
             itemTypes.Add(ItemType.Tech1)
@@ -155,29 +181,13 @@ Public Class frmBlueprintList
             itemTypes.Add(ItemType.Navy)
         End If
 
-        If chkBPSmall.Checked Then
-            sizeLimit.Add("S")
+        If itemTypes.Count > 0 Then
+            itemTypesFilter = itemTypes.Select(Function(it) CInt(it).ToString).Aggregate(Function(prev, this) $"{prev}, {this}")
         End If
 
-        If chkBPMedium.Checked Then
-            sizeLimit.Add("M")
-        End If
-
-        If chkBPLarge.Checked Then
-            sizeLimit.Add("L")
-        End If
-
-        If chkBPXLarge.Checked Then
-            sizeLimit.Add("XL")
-        End If
-
-        If (sizeLimit.Count > 0) Then
-            sizeSQL = String.Format("AND b.SIZE_GROUP IN ({0})", String.Join(",", sizeLimit.Select(Function(x) String.Format("'{0}'", x)).ToArray()))
-        End If
-
-        Dim returnSql = String.Format(sql, extraSql, extraWhere, String.Join(",", itemTypes.Cast(Of Integer).ToArray()), sizeSql)
-        Return returnSql
+        Return itemTypesFilter
     End Function
+
     Private Sub treBlueprintTreeView_DoubleClick(sender As Object, e As EventArgs) Handles treBlueprintTreeView.DoubleClick
         RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
     End Sub
@@ -192,6 +202,10 @@ Public Class frmBlueprintList
     End Sub
 End Class
 
+
+''' <summary>
+''' Item Type Definitions - These are set by me based on existing data
+''' </summary>
 Enum ItemType
     Tech1 = 1
     Tech2 = 2
