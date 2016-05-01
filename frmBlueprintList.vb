@@ -1,29 +1,28 @@
 ﻿Imports System.Data.SQLite
-Imports System.Diagnostics.Eventing.Reader
 
 Public Class frmBlueprintList
     Public Event BPSelected(bpName As String)
     Private Sub frmBlueprintList_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        
+
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
 
         PopulateBPTree()
-        
+
     End Sub
 
     Private Sub PopulateBPTree()
         Dim readerBPs As SQLiteDataReader
-        Dim itemCategoryNode as TreeNode
-        Dim itemGroupNode as TreeNode
-        Dim marketGroupNode as TreeNode
-        Dim techLevel as TreeNode
+        Dim itemCategoryNode As TreeNode
+        Dim itemGroupNode As TreeNode
+        Dim marketGroupNode As TreeNode
+        Dim techLevel As TreeNode
 
         DBCommand = New SQLiteCommand(BuildBPQuery(), EVEDB.DBREf)
         readerBPs = DBCommand.ExecuteReader
         'treBlueprintTreeView.Nodes.Clear()
 
         While readerBPs.Read
-            if treBlueprintTreeView.Nodes.Find(readerBPs.GetString(0), True).Count = 0 Then
+            If treBlueprintTreeView.Nodes.Find(readerBPs.GetString(0), True).Count = 0 Then
                 itemCategoryNode = treBlueprintTreeView.Nodes.Add(readerBPs.GetString(0), readerBPs.GetString(0))
             Else
                 itemCategoryNode = treBlueprintTreeView.Nodes.Find(readerBPs.GetString(0), True)(0)
@@ -40,7 +39,7 @@ Public Class frmBlueprintList
             Else
                 marketGroupNode = itemGroupNode.Nodes.Find(readerBPs.GetString(2), True)(0)
             End If
-        
+
             marketGroupNode.Nodes.Add(readerBPs.GetString(3))
             'Application.DoEvents()
             'AddNode(readerBPs.GetString(0), readerBPs.GetString(1), readerBPs.GetString(2), readerBPs.GetString(3))
@@ -50,16 +49,16 @@ Public Class frmBlueprintList
     End Sub
 
     Private Sub AddNode(itemCategory As String, itemGroup As String, marketGroup As String, bpName As String)
-        Dim itemCategoryNode as TreeNode
-        Dim itemGroupNode as TreeNode
-        Dim marketGroupNode as TreeNode
+        Dim itemCategoryNode As TreeNode
+        Dim itemGroupNode As TreeNode
+        Dim marketGroupNode As TreeNode
 
-        if treBlueprintTreeView.Nodes.Find(itemCategory, True).Count = 0 Then
+        If treBlueprintTreeView.Nodes.Find(itemCategory, True).Count = 0 Then
             itemCategoryNode = treBlueprintTreeView.Nodes.Add(itemCategory, itemCategory)
-        Else 
+        Else
             itemCategoryNode = treBlueprintTreeView.Nodes.Find(itemCategory, True)(0)
         End If
-        
+
         If itemCategoryNode.Nodes.Find(itemGroup, True).Count = 0 Then
             itemGroupNode = itemCategoryNode.Nodes.Add(itemGroup, itemGroup)
         Else
@@ -71,7 +70,7 @@ Public Class frmBlueprintList
         Else
             marketGroupNode = itemGroupNode.Nodes.Find(marketGroup, True)(0)
         End If
-        
+
         marketGroupNode.Nodes.Add(bpName)
 
     End Sub
@@ -89,8 +88,8 @@ Public Class frmBlueprintList
         Dim extraSql = ""
         Dim extraWhere = ""
         Dim sizeSql = ""
-        Dim itemTypes = New List(Of Integer)()
-        Dim sizeLimit = new List(Of String)()
+        Dim itemTypes = New List(Of ItemType)()
+        Dim sizeLimit = New List(Of String)()
 
         If rbtnAmmoChargeBlueprints.Checked Then
             extraSql = "And ITEM_CATEGORY = 'Charge'"
@@ -132,28 +131,28 @@ Public Class frmBlueprintList
         ' 15 is Pirate Faction
         ' 16 is Navy Faction
 
-        if chkBPTech1.Checked Then
-            itemTypes.Add(1)
+        If chkBPTech1.Checked Then
+            itemTypes.Add(ItemType.Tech1)
         End If
 
         If chkBPTech2.Checked Then
-            itemTypes.Add(2)
+            itemTypes.Add(ItemType.Tech2)
         End If
 
-        if chkBPTech3.Checked Then
-            itemTypes.Add(14)
+        If chkBPTech3.Checked Then
+            itemTypes.Add(ItemType.Tech3)
         End If
 
-        if chkBPStory.Checked Then
-            itemTypes.Add(3)
+        If chkBPStory.Checked Then
+            itemTypes.Add(ItemType.Storyline)
         End If
 
         If chkBPPirate.Checked Then
-            itemTypes.Add(15)
+            itemTypes.Add(ItemType.Pirate)
         End If
 
-        if chkBPNavy.Checked Then
-            itemTypes.Add(16)
+        If chkBPNavy.Checked Then
+            itemTypes.Add(ItemType.Navy)
         End If
 
         If chkBPSmall.Checked Then
@@ -164,20 +163,20 @@ Public Class frmBlueprintList
             sizeLimit.Add("M")
         End If
 
-        if chkBPLarge.Checked Then
+        If chkBPLarge.Checked Then
             sizeLimit.Add("L")
         End If
 
-        if chkBPXLarge.Checked Then
+        If chkBPXLarge.Checked Then
             sizeLimit.Add("XL")
         End If
 
-        If (sizeLimit.Count > 0)
+        If (sizeLimit.Count > 0) Then
             sizeSQL = String.Format("AND b.SIZE_GROUP IN ({0})", String.Join(",", sizeLimit.Select(Function(x) String.Format("'{0}'", x)).ToArray()))
         End If
 
-        Dim returnSql = String.Format(sql, extraSql, extraWhere, String.Join(",", itemTypes.ToArray()), sizeSql)
-        return returnSql
+        Dim returnSql = String.Format(sql, extraSql, extraWhere, String.Join(",", itemTypes.Cast(Of Integer).ToArray()), sizeSql)
+        Return returnSql
     End Function
     Private Sub treBlueprintTreeView_DoubleClick(sender As Object, e As EventArgs) Handles treBlueprintTreeView.DoubleClick
         RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
@@ -192,3 +191,12 @@ Public Class frmBlueprintList
         PopulateBPTree()
     End Sub
 End Class
+
+Enum ItemType
+    Tech1 = 1
+    Tech2 = 2
+    Tech3 = 14
+    Storyline = 3
+    Pirate = 15
+    Navy = 16
+End Enum
