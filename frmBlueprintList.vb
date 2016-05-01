@@ -71,43 +71,6 @@ Public Class frmBlueprintList
         End Using
     End Sub
 
-    'Private Sub PopulateBPTree()
-    '    Dim readerBPs As SQLiteDataReader
-    '    Dim itemCategoryNode As TreeNode
-    '    Dim itemGroupNode As TreeNode
-    '    Dim marketGroupNode As TreeNode
-
-    '    DBCommand = New SQLiteCommand(BuildBPQuery(), EVEDB.DBREf)
-    '    readerBPs = DBCommand.ExecuteReader
-    '    'treBlueprintTreeView.Nodes.Clear()
-
-    '    While readerBPs.Read
-    '        If treBlueprintTreeView.Nodes.Find(readerBPs.GetString(0), True).Count = 0 Then
-    '            itemCategoryNode = treBlueprintTreeView.Nodes.Add(readerBPs.GetString(0), readerBPs.GetString(0))
-    '        Else
-    '            itemCategoryNode = treBlueprintTreeView.Nodes.Find(readerBPs.GetString(0), True)(0)
-    '        End If
-
-    '        If itemCategoryNode.Nodes.Find(readerBPs.GetString(1), True).Count = 0 Then
-    '            itemGroupNode = itemCategoryNode.Nodes.Add(readerBPs.GetString(1), readerBPs.GetString(1))
-    '        Else
-    '            itemGroupNode = itemCategoryNode.Nodes.Find(readerBPs.GetString(1), True)(0)
-    '        End If
-
-    '        If itemGroupNode.Nodes.Find(readerBPs.GetString(2), True).Count = 0 Then
-    '            marketGroupNode = itemGroupNode.Nodes.Add(readerBPs.GetString(2), readerBPs.GetString(2))
-    '        Else
-    '            marketGroupNode = itemGroupNode.Nodes.Find(readerBPs.GetString(2), True)(0)
-    '        End If
-
-    '        marketGroupNode.Nodes.Add(readerBPs.GetString(3))
-    '        'Application.DoEvents()
-    '        'AddNode(readerBPs.GetString(0), readerBPs.GetString(1), readerBPs.GetString(2), readerBPs.GetString(3))
-    '    End While
-
-    '    readerBPs.Close()
-    'End Sub
-
     Private Sub AddNode(itemCategory As String, itemGroup As String, marketGroup As String, bpName As String)
         Dim itemCategoryNode As TreeNode
         Dim itemGroupNode As TreeNode
