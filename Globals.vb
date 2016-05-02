@@ -1177,14 +1177,14 @@ NoBonus:
 
                             If ItemCategoryID = SubsystemCategoryID Then
                                 SelectedIndyType = IndustryType.SubsystemManufacturing
-                            ElseIf ItemCategoryID = ComponentCategoryID And ItemGroupID <> StationPartsGroupID Then
+                            ElseIf ItemCategoryID = ComponentCategoryID Then
                                 ' Add category for component
                                 If ItemGroupID = CapitalComponentGroupID Or ItemGroupID = AdvCapitalComponentGroupID Then
                                     SelectedIndyType = IndustryType.CapitalComponentManufacturing ' These all use cap components
                                 Else
                                     SelectedIndyType = IndustryType.ComponentManufacturing
                                 End If
-                            ElseIf NoPOSCategoryIDs.Contains(ItemCategoryID) Or ItemGroupID = StationEggGroupID Or ItemGroupID = StationPartsGroupID Then
+                            ElseIf NoPOSCategoryIDs.Contains(ItemCategoryID) Or ItemGroupID = StationEggGroupID Then
                                 SelectedIndyType = IndustryType.NoPOSManufacturing
                             End If
                     End Select
