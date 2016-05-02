@@ -1815,7 +1815,7 @@ Public Class frmShoppingList
         Dim rsBPLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(10).Text
+        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
         DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
