@@ -711,7 +711,7 @@ Public Class frmAssetsViewer
                     End If
 
                     If chkDrones.Checked Then
-                        SQL = SQL & "(ITEM_CATEGORY= 'Drone' AND " & TechSQL & ") OR "
+                        SQL = SQL & "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
                     End If
 
                     If chkModules.Checked Then ' Not rigs but Modules

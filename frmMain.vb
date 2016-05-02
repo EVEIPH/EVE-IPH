@@ -7044,6 +7044,8 @@ ExitForm:
     Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
         Dim newList as new List(of OreMineral)
         Dim oreQuantityList as ListViewItem
+        Dim materialQuantityList as ListViewItem
+        Dim materialList as New List(Of Material)
         Dim oreID As Integer
         Dim oreSkillReproSkillID As Integer
         Dim reproSkill As Integer
@@ -7105,6 +7107,11 @@ ExitForm:
         For i = 0 To bpMaterialList.Count - 1 Step 1
             Dim loopCounter = i
             Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
+
+            If (currentMineralID > 40) Then
+                materialList.Add(bpMaterialList(i))
+                Continue For
+            End If
 
             Using DBCommand = New SQLiteCommand(String.Format(mineralSQL, currentMineralID), EVEDB.DBREf)
                 oreID = CType(DBCommand.ExecuteScalar(), Integer)
@@ -7197,6 +7204,17 @@ ExitForm:
             End Using
             Call lstBPRawMats.Items.Add(oreQuantityList)
 
+        Next
+
+        For Each item As Material in materialList
+            materialQuantityList = New ListViewItem(item.GetMaterialName())
+            materialQuantityList.SubItems.Add(CType(item.GetQuantity(), String))
+            materialQuantityList.SubItems.Add("-")
+            materialQuantityList.SubItems.Add(FormatNumber(item.GetCostPerItem(), 2))
+            materialQuantityList.SubItems.Add(FormatNumber(item.GetTotalCost(), 2))
+            oreCost += item.GetTotalCost()
+
+            Call lstBPRawMats.Items.Add(materialQuantityList)
         Next
 
         lblBPRawMatCost.Text = FormatNumber(oreCost, 2)
@@ -10733,7 +10751,7 @@ ExitSub:
                     SQL = SQL & ") OR "
                 End If
                 If chkDrones.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Drone' AND " & TechSQL & ") OR "
+                    SQL = SQL & "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
                 End If
                 If chkModules.Checked Then ' Not rigs but Modules
                     SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
@@ -19454,7 +19472,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Charge' OR "
         End If
         If chkCalcDrones.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Drone' OR "
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Drone', 'Fighter') OR "
         End If
         If chkCalcModules.Checked Then
             ItemTypes = ItemTypes & "(X.ITEM_CATEGORY = 'Module' AND X.ITEM_GROUP NOT LIKE 'Rig%') OR "

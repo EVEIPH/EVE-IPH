@@ -831,7 +831,7 @@ Public Class frmBlueprintManagement
         If rbtnAmmoChargeBlueprints.Checked Then
             WhereClause = "WHERE ITEM_CATEGORY = 'Charge' "
         ElseIf rbtnDroneBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Drone' "
+            WhereClause = "WHERE ITEM_CATEGORY IN ('Drone', 'Fighter') "
         ElseIf rbtnModuleBlueprints.Checked Then
             WhereClause = "WHERE (ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
         ElseIf rbtnShipBlueprints.Checked Then
@@ -1058,7 +1058,7 @@ Public Class frmBlueprintManagement
             WhereClause = WhereClause & "ITEM_CATEGORY = 'Charge' OR "
         End If
         If rbtnDroneBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Drone' OR "
+            WhereClause = WhereClause & "ITEM_CATEGORY IN ('Drone', 'Fighter') OR "
         End If
         If rbtnModuleBlueprints.Checked Then
             WhereClause = WhereClause & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%') OR "
