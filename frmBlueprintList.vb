@@ -79,7 +79,7 @@ Public Class frmBlueprintList
         End If
 
         Dim query =
-$"SELECT DISTINCT b.{displayLevel}
+$"SELECT b.{displayLevel}, b.{ $"{displayLevel}_ID"}
 FROM ALL_BLUEPRINTS b
 JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
 {GetOwnedJoin()}
