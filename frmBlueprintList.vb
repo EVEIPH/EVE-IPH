@@ -71,33 +71,6 @@ Public Class frmBlueprintList
         End Using
     End Sub
 
-    Private Sub AddNode(itemCategory As String, itemGroup As String, marketGroup As String, bpName As String)
-        Dim itemCategoryNode As TreeNode
-        Dim itemGroupNode As TreeNode
-        Dim marketGroupNode As TreeNode
-
-        If treBlueprintTreeView.Nodes.Find(itemCategory, True).Count = 0 Then
-            itemCategoryNode = treBlueprintTreeView.Nodes.Add(itemCategory, itemCategory)
-        Else
-            itemCategoryNode = treBlueprintTreeView.Nodes.Find(itemCategory, True)(0)
-        End If
-
-        If itemCategoryNode.Nodes.Find(itemGroup, True).Count = 0 Then
-            itemGroupNode = itemCategoryNode.Nodes.Add(itemGroup, itemGroup)
-        Else
-            itemGroupNode = itemCategoryNode.Nodes.Find(itemGroup, True)(0)
-        End If
-
-        If itemGroupNode.Nodes.Find(marketGroup, True).Count = 0 Then
-            marketGroupNode = itemGroupNode.Nodes.Add(marketGroup, marketGroup)
-        Else
-            marketGroupNode = itemGroupNode.Nodes.Find(marketGroup, True)(0)
-        End If
-
-        marketGroupNode.Nodes.Add(bpName)
-
-    End Sub
-
     Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As String) As String
 
         Dim levelFilter = ""
