@@ -1,7 +1,19 @@
 ﻿Imports System.Data.SQLite
 
 Public Class frmBlueprintList
+
     Public Event BPSelected(bpName As String)
+
+    Private Class NodeTag
+        Public Property FilterField As String
+        Public Property FilterValue As Integer?
+        Public Sub New(field As String, value As Integer?)
+            FilterField = field
+            FilterValue = value
+        End Sub
+    End Class
+
+
     Private Sub frmBlueprintList_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
@@ -15,14 +27,14 @@ Public Class frmBlueprintList
         treBlueprintTreeView.Nodes.Clear()
         Using con = New SQLiteConnection(EVEDB.DBREf.ConnectionString)
             Dim com = con.CreateCommand()
-            com.CommandText = BuildBPQuery("ITEM_CATEGORY", "", "")
+            com.CommandText = BuildBPQuery("ITEM_CATEGORY", "", Nothing)
 
             con.Open()
             Using reader = com.ExecuteReader()
                 While reader.Read
                     Dim readCategory = reader("ITEM_CATEGORY").ToString
                     Dim newNode = New TreeNode(readCategory)
-                    newNode.Tag = "ITEM_CATEGORY"
+                    newNode.Tag = New NodeTag("ITEM_CATEGORY", CInt(reader("FilterID")))
                     treBlueprintTreeView.Nodes.Add(newNode)
                     newNode.Nodes.Add(New TreeNode) 'dummy node to show the + mark
                 End While
@@ -50,18 +62,18 @@ Public Class frmBlueprintList
     ' I'd like to try and find some way of merging PopulateNode and SetTopNodes, but I don't think there's a simple way
     Private Sub PopulateNode(thisNode As TreeNode)
         thisNode.Nodes.Clear()
-        Dim filterLevel As String = CStr(thisNode.Tag)
-        Dim displayLevel = GetDisplayLevel(filterLevel)
+        Dim filterLevel = CType(thisNode.Tag, NodeTag)
+        Dim displayLevel = GetDisplayLevel(filterLevel.FilterField)
 
         Using con = New SQLiteConnection(EVEDB.DBREf.ConnectionString)
             Dim com = con.CreateCommand()
-            com.CommandText = BuildBPQuery(displayLevel, filterLevel, thisNode.Text)
+            com.CommandText = BuildBPQuery(displayLevel, filterLevel.FilterField, filterLevel.FilterValue)
 
             con.Open()
             Using reader = com.ExecuteReader()
                 While reader.Read
                     Dim newNode = New TreeNode(reader(displayLevel).ToString)
-                    newNode.Tag = displayLevel
+                    newNode.Tag = New NodeTag(displayLevel, CInt(reader("FilterID")))
                     thisNode.Nodes.Add(newNode)
                     If displayLevel <> "BLUEPRINT_NAME" Then
                         newNode.Nodes.Add(New TreeNode) 'dummy node to show the + mark
@@ -71,15 +83,16 @@ Public Class frmBlueprintList
         End Using
     End Sub
 
-    Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As String) As String
+    Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As Integer?) As String
 
         Dim levelFilter = ""
-        If filterColumnName <> "" Then
-            levelFilter = $"And {filterColumnName} = '{filterColumnValue}'"
+        If filterColumnName <> "" And filterColumnValue.HasValue Then
+            levelFilter = $"And {filterColumnName}_ID = {filterColumnValue}"
         End If
 
+
         Dim query =
-$"SELECT b.{displayLevel}, b.{ $"{displayLevel}_ID"}
+$"SELECT b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
 FROM ALL_BLUEPRINTS b
 JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
 {GetOwnedJoin()}
@@ -87,6 +100,7 @@ WHERE MARKET_GROUP IS NOT NULL
 {GetSizeGroupFilter()}
 {GetItemTypesFilter()}
 {levelFilter}
+GROUP BY b.{displayLevel}, FilterID
 ORDER BY b.{displayLevel}
 "
 
