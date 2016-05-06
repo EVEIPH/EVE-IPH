@@ -274,7 +274,7 @@ Public Class Blueprint
 
         AdditionalCosts = UserAddlCosts
 
-        UserRuns = BPRuns
+        UserRuns = Cint(Math.Ceiling(BPRuns/PortionSize))
 
         BPCharacter = UserCharacter
 
@@ -807,7 +807,8 @@ Public Class Blueprint
         Dim CurrentMaterial As Material
         Dim CurrentMatQuantity As Long
         Dim CurrentMaterialCategory As String
-
+        Dim tempMatQuantity As Long
+        Dim fudgeRAM As Boolean
         ' Temp Materials for passing
         Dim TempMaterials As New Materials
 
@@ -845,7 +846,12 @@ Public Class Blueprint
 
                 If Not IsDBNull(readerBP.GetValue(11)) Then
                     ' Divide by the portion size if this item has one (component buildable)
+                    tempMatQuantity = CLng(CurrentMatQuantity)
                     CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / readerBP.GetInt64(11)))
+                    if (tempMatQuantity <> CurrentMatQuantity)
+                        fudgeRAM = True
+                    End If
+
                 End If
 
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
@@ -985,6 +991,10 @@ Public Class Blueprint
 
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
+
+                        If fudgeRAM Then
+                            CurrentMaterial.SetQuantity(tempMatQuantity)
+                        End If
 
                         ' Insert the existing component that we are using into the component list
                         ComponentMaterials.InsertMaterial(CurrentMaterial)

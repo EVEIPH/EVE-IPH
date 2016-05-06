@@ -6621,6 +6621,8 @@ Tabs:
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, SelectedBPManufacturingTeam, BlueprintBuildFacility, _
                                           SelectedBPComponentManufacturingTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
 
+        txtBPRuns.Text = CType(SelectedBlueprint.GetUserRuns(), String)
+
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BlueprintTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
 
