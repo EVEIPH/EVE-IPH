@@ -10332,7 +10332,7 @@ ExitSub:
                         RGN = "Structures"
                     ElseIf CN = "Charge" Then
                         RGN = "Charges"
-                    ElseIf CN = "Drone" Then
+                    ElseIf CN = "Drone" Or CN = "Fighter" Then
                         RGN = "Drones"
                     ElseIf CN = "Module" And Not GN.Contains("Rig") Then
                         RGN = "Modules"
