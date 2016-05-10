@@ -521,6 +521,9 @@ Public Class frmIndustryJobsViewer
             andClause = "AND API_TYPE NOT IN ('Old Key')"
             scanType = ScanType.Personal
         End If
+        If (Not _rbtnCorpJobs.Checked And Not _rbtnCorpJobs.Checked And Not _rbtnBothJobs.Checked) Then
+            whereClause = String.Format("WHERE CHARACTER_ID IN ({0})", GetCharIDs())
+        End If
 
         SQL = String.Format("SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK " +
                             "FROM API " +

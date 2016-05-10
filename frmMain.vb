@@ -1698,7 +1698,7 @@ Public Class frmMain
                 LoadingRelics = True
                 Dim TempRelic As String = ""
                 If InStr(Inputs, "|") <> 0 Then ' For T3
-                    TempRelic = Inputs.Substring(InStr(Inputs, "|") - 1)
+                    TempRelic = Inputs.Substring(InStr(Inputs, "|")) ' Removed the -1 in the substring it was including | in the SQL Query
                 ElseIf InStr(Inputs, " - ") <> 0 Then
                     TempRelic = Inputs.Substring(InStr(Inputs, "-") + 1)
                 End If
@@ -25036,6 +25036,9 @@ Leave:
                 Call EnableOreProcessingGroup(2, True)
                 Call EnableOreProcessingGroup(9, True)
                 Call EnableOreProcessingGroup(10, True)
+
+                ' Reprocessing 4 is needed for this instead of 5
+                cmbMineRefineryEff.Enabled = True
             End If
 
             If cmbMineRefining.Text = "5" Then
@@ -25045,7 +25048,7 @@ Leave:
                 Call EnableOreProcessingGroup(11, True)
                 Call EnableOreProcessingGroup(12, True)
 
-                cmbMineRefineryEff.Enabled = True
+
 
             End If
 
