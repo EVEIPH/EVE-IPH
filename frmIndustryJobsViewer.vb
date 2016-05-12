@@ -492,16 +492,14 @@ Public Class frmIndustryJobsViewer
         Dim TempJobs As EVEIndustryJobs
         Dim f1 As New frmCRESTStatus
         Dim SQL As String
-        Dim whereClause As String
-        Dim andClause As String
+        Dim whereClause As String = ""
+        Dim andClause As String = ""
         Dim scanType As ScanType
 
         f1.lblCRESTStatus.Text = "Updating Character API data..."
         f1.Show()
         Application.UseWaitCursor = True
         Application.DoEvents()
-
-
 
         'SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
         'SQL = SQL & "FROM API "
