@@ -10647,7 +10647,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkComponents.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Construction Components' OR "
+            SQL = SQL & "ITEM_GROUP IN ('Construction Components', 'Named Components') OR "
             ItemChecked = True
         End If
         If chkHybrid.Checked Then

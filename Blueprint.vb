@@ -274,7 +274,12 @@ Public Class Blueprint
 
         AdditionalCosts = UserAddlCosts
 
-        UserRuns = Cint(Math.Ceiling(BPRuns/PortionSize))
+        If TechLevel > 1 Then
+            UserRuns = Cint(Math.Ceiling(BPRuns/PortionSize))   
+        Else
+            UserRuns = BPRuns 
+        End If
+        
 
         BPCharacter = UserCharacter
 
