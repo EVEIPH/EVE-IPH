@@ -13,12 +13,132 @@ Public Class frmBlueprintList
         End Sub
     End Class
 
+    Private FirstFormLoad As Boolean
 
     Private Sub frmBlueprintList_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+        FirstFormLoad = True
+
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
 
-        SetTopNodes()
+        'SetTopNodes()
+        ' Load settings, which will fire handler to set top nodes for the saved options
+        Call InitForm()
+
+        FirstFormLoad = False
+
+    End Sub
+
+    ' Loads settings on the form
+    Private Sub InitForm()
+
+        With UserBPViewerSettings
+            ' Load saved settings
+            Select Case .BlueprintTypeSelection
+                Case rbtnBPAll.Text
+                    rbtnBPAll.Checked = True
+                Case rbtnBPOwnedBlueprints.Text
+                    rbtnBPOwnedBlueprints.Checked = True
+                Case rbtnBPFavoriteBlueprints.Text
+                    rbtnBPFavoriteBlueprints.Checked = True
+                Case rbtnBPShipBlueprints.Text
+                    rbtnBPShipBlueprints.Checked = True
+                Case rbtnBPDroneBlueprints.Text
+                    rbtnBPDroneBlueprints.Checked = True
+                Case rbtnBPAmmoChargeBlueprints.Text
+                    rbtnBPAmmoChargeBlueprints.Checked = True
+                Case rbtnBPModuleBlueprints.Text
+                    rbtnBPModuleBlueprints.Checked = True
+                Case rbtnBPComponentBlueprints.Text
+                    rbtnBPComponentBlueprints.Checked = True
+                Case rbtnBPStructureBlueprints.Text
+                    rbtnBPStructureBlueprints.Checked = True
+                Case rbtnBPSubsystemBlueprints.Text
+                    rbtnBPSubsystemBlueprints.Checked = True
+                Case rbtnBPRigBlueprints.Text
+                    rbtnBPRigBlueprints.Checked = True
+                Case rbtnBPBoosterBlueprints.Text
+                    rbtnBPBoosterBlueprints.Checked = True
+                Case rbtnBPMiscBlueprints.Text
+                    rbtnBPMiscBlueprints.Checked = True
+                Case rbtnBPDeployableBlueprints.Text
+                    rbtnBPDeployableBlueprints.Checked = True
+                Case rbtnBPCelestialsBlueprints.Text
+                    rbtnBPCelestialsBlueprints.Checked = True
+                Case rbtnBPStationPartsBlueprints.Text
+                    rbtnBPStationPartsBlueprints.Checked = True
+            End Select
+
+            chkBPTech1.Checked = .Tech1Check
+            chkBPTech2.Checked = .Tech2Check
+            chkBPTech3.Checked = .Tech3Check
+            chkBPNavy.Checked = .TechFactionCheck
+            chkBPStory.Checked = .TechStorylineCheck
+            chkBPPirate.Checked = .TechPirateCheck
+
+            chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
+
+            chkBPSmall.Checked = .SmallCheck
+            chkBPMedium.Checked = .MediumCheck
+            chkBPLarge.Checked = .LargeCheck
+            chkBPXLarge.Checked = .XLCheck
+
+        End With
+    End Sub
+
+    ' Saves settings for form to XML
+    Private Sub btnReactionsSaveSettings_Click(sender As Object, e As EventArgs) Handles btnReactionsSaveSettings.Click
+        Dim TempSettings As BPViewerSettings = Nothing
+
+        With TempSettings
+            If rbtnBPAll.Checked Then
+                .BlueprintTypeSelection = rbtnBPAll.Text
+            ElseIf rbtnBPOwnedBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPOwnedBlueprints.Text
+            ElseIf rbtnBPFavoriteBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPFavoriteBlueprints.Text
+            ElseIf rbtnBPShipBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPShipBlueprints.Text
+            ElseIf rbtnBPDroneBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPDroneBlueprints.Text
+            ElseIf rbtnBPAmmoChargeBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPAmmoChargeBlueprints.Text
+            ElseIf rbtnBPModuleBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPModuleBlueprints.Text
+            ElseIf rbtnBPComponentBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPComponentBlueprints.Text
+            ElseIf rbtnBPStructureBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStructureBlueprints.Text
+            ElseIf rbtnBPSubsystemBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPSubsystemBlueprints.Text
+            ElseIf rbtnBPRigBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPRigBlueprints.Text
+            ElseIf rbtnBPBoosterBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPBoosterBlueprints.Text
+            ElseIf rbtnBPMiscBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPMiscBlueprints.Text
+            ElseIf rbtnBPCelestialsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
+            ElseIf rbtnBPDeployableBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
+            ElseIf rbtnBPStationPartsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
+            End If
+
+            .Tech1Check = chkBPTech1.Checked
+            .Tech2Check = chkBPTech2.Checked
+            .Tech3Check = chkBPTech3.Checked
+            .TechStorylineCheck = chkBPStory.Checked
+            .TechFactionCheck = chkBPNavy.Checked
+            .TechPirateCheck = chkBPPirate.Checked
+
+            .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+
+            .SmallCheck = chkBPSmall.Checked
+            .MediumCheck = chkBPMedium.Checked
+            .LargeCheck = chkBPLarge.Checked
+            .XLCheck = chkBPXLarge.Checked
+        End With
 
     End Sub
 
@@ -40,6 +160,11 @@ Public Class frmBlueprintList
                 End While
             End Using
         End Using
+
+        ' If there is only one node, expand it to show the subnodes for usability
+        If treBlueprintTreeView.Nodes.Count = 1 Then
+            treBlueprintTreeView.Nodes(0).Expand()
+        End If
     End Sub
 
     Private Sub treBlueprintTreeView_BeforeExpand(sender As Object, e As TreeViewCancelEventArgs) Handles treBlueprintTreeView.BeforeExpand
@@ -87,28 +212,41 @@ Public Class frmBlueprintList
 
         Dim levelFilter = ""
         If filterColumnName <> "" And filterColumnValue.HasValue Then
-            levelFilter = $"And {filterColumnName}_ID = {filterColumnValue}"
+            levelFilter = $"AND {filterColumnName}_ID = {filterColumnValue}"
         End If
 
+        ' Ignore flag
+        Dim IgnoreFilter = ""
+        If chkBPIncludeIgnoredBPs.Checked = False Then
+            IgnoreFilter = " AND IGNORE = 0 "
+        End If
+
+        ' Text search
+        Dim TextFilter = ""
+        If Trim(txtBPItemFilter.Text) <> "" Then
+            TextFilter = " AND BLUEPRINT_NAME LIKE '%" & Trim(txtBPItemFilter.Text) & "%' "
+        End If
 
         Dim query =
-$"SELECT b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
-FROM ALL_BLUEPRINTS b
-JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
-{GetOwnedJoin()}
-WHERE MARKET_GROUP IS NOT NULL
-{GetSizeGroupFilter()}
-{GetItemTypesFilter()}
-{levelFilter}
-GROUP BY b.{displayLevel}, FilterID
-ORDER BY b.{displayLevel}
-"
+            $"SELECT b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
+            FROM ALL_BLUEPRINTS b
+            JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
+            {GetOwnedJoin()}
+            WHERE MARKET_GROUP IS NOT NULL
+            {GetSizeGroupFilter()}
+            {GetItemTypesFilter()}
+            {levelFilter}
+            {IgnoreFilter}
+            {TextFilter}
+            GROUP BY b.{displayLevel}, FilterID
+            ORDER BY b.{displayLevel}
+            "
 
         Return query
     End Function
 
     Private Function GetExtraJoinFilter() As String
-        If rbtnAmmoChargeBlueprints.Checked Then
+        If rbtnBPAmmoChargeBlueprints.Checked Then
             Return "And ITEM_CATEGORY = 'Charge'"
         ElseIf rbtnBPDroneBlueprints.Checked Then
             Return "AND ITEM_CATEGORY IN ('Drone', 'Fighter')"
@@ -129,11 +267,13 @@ ORDER BY b.{displayLevel}
         ElseIf rbtnBPCelestialsBlueprints.Checked Then
             Return "AND ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')"
         ElseIf rbtnBPStructureBlueprints.Checked Then
-            Return "AND ITEM_CATEGORY = 'Starbase'"
+            Return "AND ITEM_CATEGORY IN ('Starbase','Structure')"
         ElseIf rbtnBPStationPartsBlueprints.Checked Then
-            Return "AND ITEM_CATEGORY = 'Station Components'"
+            Return "AND ITEM_GROUP = 'Station Components'"
+        ElseIf rbtnBPStructureModuleBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Structure Module'"
         ElseIf rbtnBPRigBlueprints.Checked Then
-            Return "AND ITEM_CATEGORY = 'Rig Blueprint'"
+            Return "AND BLUEPRINT_GROUP = 'Rig Blueprint'"
         Else
             Return ""
         End If
@@ -147,7 +287,7 @@ ORDER BY b.{displayLevel}
         If rbtnBPOwnedBlueprints.Checked Then
             ownedJoin = $"{baseJoin} {ownedFilter}"
         ElseIf rbtnBPFavoriteBlueprints.Checked Then
-            ownedJoin = $"{baseJoin} {ownedFilter} FAVORITE = 1"
+            ownedJoin = $"{baseJoin} {ownedFilter} AND FAVORITE = 1"
         End If
 
         Return ownedJoin
@@ -218,20 +358,229 @@ ORDER BY b.{displayLevel}
         Return itemTypesFilter
     End Function
 
-    Private Sub treBlueprintTreeView_DoubleClick(sender As Object, e As EventArgs) Handles treBlueprintTreeView.DoubleClick
+    ' Changed to use after select to allow single click loading
+    'Private Sub treBlueprintTreeView_DoubleClick(sender As Object, e As EventArgs) Handles treBlueprintTreeView.DoubleClick
+    '    'If (treBlueprintTreeView.SelectedNode Is Nothing) Then
+    '    '    Return
+    '    'End If
+    '    '' Only load if the final node (bp) in the tree
+    '    'If treBlueprintTreeView.SelectedNode.Nodes.Count = 0 Then
+    '    '    RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
+    '    'End If
+    'End Sub
+
+    ' After select allows loading the bp selected after the event fires
+    Private Sub treBlueprintTreeView_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles treBlueprintTreeView.AfterSelect
         If (treBlueprintTreeView.SelectedNode Is Nothing) Then
             Return
         End If
-        RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
+        ' Only load if the final node (bp) in the tree
+        If treBlueprintTreeView.SelectedNode.Nodes.Count = 0 Then
+            RaiseEvent BPSelected(treBlueprintTreeView.SelectedNode.Text)
+        End If
     End Sub
 
     Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click
         Me.Close()
     End Sub
 
-    Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
-        SetTopNodes()
+    Private Sub ResetSelectors(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
+        chkBPTech1.Enabled = T1
+        chkBPTech2.Enabled = T2
+        chkBPTech3.Enabled = T3
+        chkBPNavy.Enabled = NavyFaction
+        chkBPPirate.Enabled = PirateFaction
+        chkBPStory.Enabled = Storyline
+
+        ' Make sure we have something checked
+        Call EnsureBPTechCheck()
+        ' Load the New data
+        Call SetTopNodes()
+
     End Sub
+
+    ' Makes sure we have a tech checked for blueprints
+    Private Sub EnsureBPTechCheck()
+        If chkBPTech1.Enabled And chkBPTech1.Checked Then
+            Exit Sub
+        ElseIf chkBPTech2.Enabled And chkBPTech2.Checked Then
+            Exit Sub
+        ElseIf chkBPTech3.Enabled And chkBPTech3.Checked Then
+            Exit Sub
+        ElseIf chkBPNavy.Enabled And chkBPNavy.Checked Then
+            Exit Sub
+        ElseIf chkBPPirate.Enabled And chkBPPirate.Checked Then
+            Exit Sub
+        ElseIf chkBPStory.Enabled And chkBPStory.Checked Then
+            Exit Sub
+        End If
+
+        ' If here, then none are checked that are enabled, find the first one enabled and check it
+        If chkBPTech1.Enabled Then
+            chkBPTech1.Checked = True
+            Exit Sub
+        ElseIf chkBPTech2.Enabled Then
+            chkBPTech2.Checked = True
+            Exit Sub
+        ElseIf chkBPTech3.Enabled Then
+            chkBPTech3.Checked = True
+            Exit Sub
+        ElseIf chkBPNavy.Enabled Then
+            chkBPNavy.Checked = True
+            Exit Sub
+        ElseIf chkBPPirate.Enabled Then
+            chkBPPirate.Checked = True
+            Exit Sub
+        ElseIf chkBPStory.Enabled Then
+            chkBPStory.Checked = True
+            Exit Sub
+        End If
+
+    End Sub
+
+#Region "Click Events"
+
+    Private Sub rbtnAll_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAll.CheckedChanged
+        Call ResetSelectors(True, True, True, True, True, True)
+    End Sub
+
+    Private Sub rbBPOwned_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPOwnedBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, True, True, True, True)
+    End Sub
+
+    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
+        Call ResetSelectors(True, True, True, True, True, True)
+    End Sub
+
+    Private Sub rbtnShipBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPShipBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, True, False, True, True)
+    End Sub
+
+    Private Sub rbtnModuleBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPModuleBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, False, True, True, False)
+    End Sub
+
+    Private Sub rbtnDroneBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPDroneBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, False, False, False, True)
+    End Sub
+
+    Private Sub rbtnComponentBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPComponentBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnSubsystemBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPSubsystemBlueprints.CheckedChanged
+        Call ResetSelectors(False, False, True, False, False, False)
+    End Sub
+
+    Private Sub rbtnToolBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPMiscBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnAmmoChargeBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAmmoChargeBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnRigBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPRigBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnStructureBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPStructureBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, True)
+    End Sub
+
+    Private Sub rbtnBoosterBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPBoosterBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnBPDeployableBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPDeployableBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStationPartsBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnBPStationModulesBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPStructureModuleBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnBPCelestialBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPCelestialsBlueprints.CheckedChanged
+        Call ResetSelectors(True, False, False, False, False, False)
+    End Sub
+
+    Private Sub rbtnBPFavoriteBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPFavoriteBlueprints.CheckedChanged
+        Call ResetSelectors(True, True, True, True, True, True)
+    End Sub
+
+    Private Sub chkbpTech1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech1.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkbpTech2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech2.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkbpTech3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech3.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPNavy_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPNavy.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPPirate_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPPirate.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPStory_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPStory.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPSmall_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPSmall.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPMedium_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPMedium.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPLarge_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPLarge.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub chkBPXLarge_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPXLarge.CheckedChanged
+        If Not FirstLoad Then
+            Call SetTopNodes()
+        End If
+    End Sub
+
+    Private Sub btnClearItemFilter_Click(sender As Object, e As EventArgs) Handles btnClearItemFilter.Click
+        txtBPItemFilter.Text = ""
+    End Sub
+
+    Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
+        Call SetTopNodes()
+    End Sub
+
+#End Region
 
 End Class
 

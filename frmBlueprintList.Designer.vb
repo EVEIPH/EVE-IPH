@@ -27,6 +27,8 @@ Partial Class frmBlueprintList
         Me.lblIntro = New System.Windows.Forms.Label()
         Me.btnClose = New System.Windows.Forms.Button()
         Me.grpBPType = New System.Windows.Forms.GroupBox()
+        Me.chkBPIncludeIgnoredBPs = New System.Windows.Forms.CheckBox()
+        Me.rbtnBPStructureModuleBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPFavoriteBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStationPartsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPMiscBlueprints = New System.Windows.Forms.RadioButton()
@@ -40,9 +42,9 @@ Partial Class frmBlueprintList
         Me.rbtnBPRigBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPDroneBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rbtnAmmoChargeBlueprints = New System.Windows.Forms.RadioButton()
+        Me.rbtnBPAmmoChargeBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPShipBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rdoAll = New System.Windows.Forms.RadioButton()
+        Me.rbtnBPAll = New System.Windows.Forms.RadioButton()
         Me.btnRefresh = New System.Windows.Forms.Button()
         Me.grpBPSize = New System.Windows.Forms.GroupBox()
         Me.chkBPXLarge = New System.Windows.Forms.CheckBox()
@@ -56,7 +58,10 @@ Partial Class frmBlueprintList
         Me.chkBPTech3 = New System.Windows.Forms.CheckBox()
         Me.chkBPTech2 = New System.Windows.Forms.CheckBox()
         Me.chkBPTech1 = New System.Windows.Forms.CheckBox()
-        Me.rbtnBPStructureModuleBlueprints = New System.Windows.Forms.RadioButton()
+        Me.btnReactionsSaveSettings = New System.Windows.Forms.Button()
+        Me.txtBPItemFilter = New System.Windows.Forms.TextBox()
+        Me.btnClearItemFilter = New System.Windows.Forms.Button()
+        Me.lblBPFilter = New System.Windows.Forms.Label()
         Me.grpBPType.SuspendLayout()
         Me.grpBPSize.SuspendLayout()
         Me.grpBPTechLevel.SuspendLayout()
@@ -66,7 +71,7 @@ Partial Class frmBlueprintList
         '
         Me.treBlueprintTreeView.Location = New System.Drawing.Point(12, 56)
         Me.treBlueprintTreeView.Name = "treBlueprintTreeView"
-        Me.treBlueprintTreeView.Size = New System.Drawing.Size(368, 298)
+        Me.treBlueprintTreeView.Size = New System.Drawing.Size(368, 372)
         Me.treBlueprintTreeView.TabIndex = 0
         '
         'lblIntro
@@ -79,15 +84,16 @@ Partial Class frmBlueprintList
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(310, 637)
+        Me.btnClose.Location = New System.Drawing.Point(242, 654)
         Me.btnClose.Name = "btnClose"
-        Me.btnClose.Size = New System.Drawing.Size(75, 23)
+        Me.btnClose.Size = New System.Drawing.Size(81, 27)
         Me.btnClose.TabIndex = 2
         Me.btnClose.Text = "Close"
         Me.btnClose.UseVisualStyleBackColor = True
         '
         'grpBPType
         '
+        Me.grpBPType.Controls.Add(Me.chkBPIncludeIgnoredBPs)
         Me.grpBPType.Controls.Add(Me.rbtnBPStructureModuleBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPFavoriteBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPStationPartsBlueprints)
@@ -102,20 +108,40 @@ Partial Class frmBlueprintList
         Me.grpBPType.Controls.Add(Me.rbtnBPRigBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPStructureBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPDroneBlueprints)
-        Me.grpBPType.Controls.Add(Me.rbtnAmmoChargeBlueprints)
+        Me.grpBPType.Controls.Add(Me.rbtnBPAmmoChargeBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPShipBlueprints)
-        Me.grpBPType.Controls.Add(Me.rdoAll)
-        Me.grpBPType.Location = New System.Drawing.Point(12, 360)
+        Me.grpBPType.Controls.Add(Me.rbtnBPAll)
+        Me.grpBPType.Location = New System.Drawing.Point(12, 434)
         Me.grpBPType.Name = "grpBPType"
-        Me.grpBPType.Size = New System.Drawing.Size(236, 237)
+        Me.grpBPType.Size = New System.Drawing.Size(236, 187)
         Me.grpBPType.TabIndex = 3
         Me.grpBPType.TabStop = False
         Me.grpBPType.Text = "Blueprint Type"
         '
+        'chkBPIncludeIgnoredBPs
+        '
+        Me.chkBPIncludeIgnoredBPs.AutoSize = True
+        Me.chkBPIncludeIgnoredBPs.Location = New System.Drawing.Point(145, 162)
+        Me.chkBPIncludeIgnoredBPs.Name = "chkBPIncludeIgnoredBPs"
+        Me.chkBPIncludeIgnoredBPs.Size = New System.Drawing.Size(84, 17)
+        Me.chkBPIncludeIgnoredBPs.TabIndex = 65
+        Me.chkBPIncludeIgnoredBPs.Text = "Ignored BPs"
+        Me.chkBPIncludeIgnoredBPs.UseVisualStyleBackColor = True
+        '
+        'rbtnBPStructureModuleBlueprints
+        '
+        Me.rbtnBPStructureModuleBlueprints.AutoSize = True
+        Me.rbtnBPStructureModuleBlueprints.Location = New System.Drawing.Point(15, 144)
+        Me.rbtnBPStructureModuleBlueprints.Name = "rbtnBPStructureModuleBlueprints"
+        Me.rbtnBPStructureModuleBlueprints.Size = New System.Drawing.Size(111, 17)
+        Me.rbtnBPStructureModuleBlueprints.TabIndex = 16
+        Me.rbtnBPStructureModuleBlueprints.Text = "Structure Modules"
+        Me.rbtnBPStructureModuleBlueprints.UseVisualStyleBackColor = True
+        '
         'rbtnBPFavoriteBlueprints
         '
         Me.rbtnBPFavoriteBlueprints.AutoSize = True
-        Me.rbtnBPFavoriteBlueprints.Location = New System.Drawing.Point(136, 185)
+        Me.rbtnBPFavoriteBlueprints.Location = New System.Drawing.Point(145, 144)
         Me.rbtnBPFavoriteBlueprints.Name = "rbtnBPFavoriteBlueprints"
         Me.rbtnBPFavoriteBlueprints.Size = New System.Drawing.Size(68, 17)
         Me.rbtnBPFavoriteBlueprints.TabIndex = 15
@@ -125,7 +151,7 @@ Partial Class frmBlueprintList
         'rbtnBPStationPartsBlueprints
         '
         Me.rbtnBPStationPartsBlueprints.AutoSize = True
-        Me.rbtnBPStationPartsBlueprints.Location = New System.Drawing.Point(7, 209)
+        Me.rbtnBPStationPartsBlueprints.Location = New System.Drawing.Point(15, 162)
         Me.rbtnBPStationPartsBlueprints.Name = "rbtnBPStationPartsBlueprints"
         Me.rbtnBPStationPartsBlueprints.Size = New System.Drawing.Size(85, 17)
         Me.rbtnBPStationPartsBlueprints.TabIndex = 14
@@ -136,7 +162,7 @@ Partial Class frmBlueprintList
         'rbtnBPMiscBlueprints
         '
         Me.rbtnBPMiscBlueprints.AutoSize = True
-        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(136, 161)
+        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(145, 126)
         Me.rbtnBPMiscBlueprints.Name = "rbtnBPMiscBlueprints"
         Me.rbtnBPMiscBlueprints.Size = New System.Drawing.Size(92, 17)
         Me.rbtnBPMiscBlueprints.TabIndex = 13
@@ -146,7 +172,7 @@ Partial Class frmBlueprintList
         'rbtnBPComponentBlueprints
         '
         Me.rbtnBPComponentBlueprints.AutoSize = True
-        Me.rbtnBPComponentBlueprints.Location = New System.Drawing.Point(7, 161)
+        Me.rbtnBPComponentBlueprints.Location = New System.Drawing.Point(15, 126)
         Me.rbtnBPComponentBlueprints.Name = "rbtnBPComponentBlueprints"
         Me.rbtnBPComponentBlueprints.Size = New System.Drawing.Size(84, 17)
         Me.rbtnBPComponentBlueprints.TabIndex = 12
@@ -156,7 +182,7 @@ Partial Class frmBlueprintList
         'rbtnBPDeployableBlueprints
         '
         Me.rbtnBPDeployableBlueprints.AutoSize = True
-        Me.rbtnBPDeployableBlueprints.Location = New System.Drawing.Point(136, 137)
+        Me.rbtnBPDeployableBlueprints.Location = New System.Drawing.Point(145, 108)
         Me.rbtnBPDeployableBlueprints.Name = "rbtnBPDeployableBlueprints"
         Me.rbtnBPDeployableBlueprints.Size = New System.Drawing.Size(78, 17)
         Me.rbtnBPDeployableBlueprints.TabIndex = 11
@@ -166,7 +192,7 @@ Partial Class frmBlueprintList
         'rbtnBPCelestialsBlueprints
         '
         Me.rbtnBPCelestialsBlueprints.AutoSize = True
-        Me.rbtnBPCelestialsBlueprints.Location = New System.Drawing.Point(6, 137)
+        Me.rbtnBPCelestialsBlueprints.Location = New System.Drawing.Point(15, 108)
         Me.rbtnBPCelestialsBlueprints.Name = "rbtnBPCelestialsBlueprints"
         Me.rbtnBPCelestialsBlueprints.Size = New System.Drawing.Size(69, 17)
         Me.rbtnBPCelestialsBlueprints.TabIndex = 10
@@ -176,7 +202,7 @@ Partial Class frmBlueprintList
         'rbtnBPOwnedBlueprints
         '
         Me.rbtnBPOwnedBlueprints.AutoSize = True
-        Me.rbtnBPOwnedBlueprints.Location = New System.Drawing.Point(137, 20)
+        Me.rbtnBPOwnedBlueprints.Location = New System.Drawing.Point(145, 18)
         Me.rbtnBPOwnedBlueprints.Name = "rbtnBPOwnedBlueprints"
         Me.rbtnBPOwnedBlueprints.Size = New System.Drawing.Size(59, 17)
         Me.rbtnBPOwnedBlueprints.TabIndex = 9
@@ -186,7 +212,7 @@ Partial Class frmBlueprintList
         'rbtnBPSubsystemBlueprints
         '
         Me.rbtnBPSubsystemBlueprints.AutoSize = True
-        Me.rbtnBPSubsystemBlueprints.Location = New System.Drawing.Point(137, 114)
+        Me.rbtnBPSubsystemBlueprints.Location = New System.Drawing.Point(145, 90)
         Me.rbtnBPSubsystemBlueprints.Name = "rbtnBPSubsystemBlueprints"
         Me.rbtnBPSubsystemBlueprints.Size = New System.Drawing.Size(81, 17)
         Me.rbtnBPSubsystemBlueprints.TabIndex = 8
@@ -196,7 +222,7 @@ Partial Class frmBlueprintList
         'rbtnBPBoosterBlueprints
         '
         Me.rbtnBPBoosterBlueprints.AutoSize = True
-        Me.rbtnBPBoosterBlueprints.Location = New System.Drawing.Point(6, 91)
+        Me.rbtnBPBoosterBlueprints.Location = New System.Drawing.Point(15, 72)
         Me.rbtnBPBoosterBlueprints.Name = "rbtnBPBoosterBlueprints"
         Me.rbtnBPBoosterBlueprints.Size = New System.Drawing.Size(66, 17)
         Me.rbtnBPBoosterBlueprints.TabIndex = 7
@@ -206,7 +232,7 @@ Partial Class frmBlueprintList
         'rbtnBPModuleBlueprints
         '
         Me.rbtnBPModuleBlueprints.AutoSize = True
-        Me.rbtnBPModuleBlueprints.Location = New System.Drawing.Point(137, 43)
+        Me.rbtnBPModuleBlueprints.Location = New System.Drawing.Point(145, 36)
         Me.rbtnBPModuleBlueprints.Name = "rbtnBPModuleBlueprints"
         Me.rbtnBPModuleBlueprints.Size = New System.Drawing.Size(65, 17)
         Me.rbtnBPModuleBlueprints.TabIndex = 6
@@ -216,7 +242,7 @@ Partial Class frmBlueprintList
         'rbtnBPRigBlueprints
         '
         Me.rbtnBPRigBlueprints.AutoSize = True
-        Me.rbtnBPRigBlueprints.Location = New System.Drawing.Point(136, 68)
+        Me.rbtnBPRigBlueprints.Location = New System.Drawing.Point(145, 54)
         Me.rbtnBPRigBlueprints.Name = "rbtnBPRigBlueprints"
         Me.rbtnBPRigBlueprints.Size = New System.Drawing.Size(46, 17)
         Me.rbtnBPRigBlueprints.TabIndex = 5
@@ -226,7 +252,7 @@ Partial Class frmBlueprintList
         'rbtnBPStructureBlueprints
         '
         Me.rbtnBPStructureBlueprints.AutoSize = True
-        Me.rbtnBPStructureBlueprints.Location = New System.Drawing.Point(6, 114)
+        Me.rbtnBPStructureBlueprints.Location = New System.Drawing.Point(15, 90)
         Me.rbtnBPStructureBlueprints.Name = "rbtnBPStructureBlueprints"
         Me.rbtnBPStructureBlueprints.Size = New System.Drawing.Size(73, 17)
         Me.rbtnBPStructureBlueprints.TabIndex = 4
@@ -236,50 +262,48 @@ Partial Class frmBlueprintList
         'rbtnBPDroneBlueprints
         '
         Me.rbtnBPDroneBlueprints.AutoSize = True
-        Me.rbtnBPDroneBlueprints.Location = New System.Drawing.Point(137, 91)
+        Me.rbtnBPDroneBlueprints.Location = New System.Drawing.Point(145, 72)
         Me.rbtnBPDroneBlueprints.Name = "rbtnBPDroneBlueprints"
         Me.rbtnBPDroneBlueprints.Size = New System.Drawing.Size(59, 17)
         Me.rbtnBPDroneBlueprints.TabIndex = 3
         Me.rbtnBPDroneBlueprints.Text = "Drones"
         Me.rbtnBPDroneBlueprints.UseVisualStyleBackColor = True
         '
-        'rbtnAmmoChargeBlueprints
+        'rbtnBPAmmoChargeBlueprints
         '
-        Me.rbtnAmmoChargeBlueprints.AutoSize = True
-        Me.rbtnAmmoChargeBlueprints.Location = New System.Drawing.Point(7, 68)
-        Me.rbtnAmmoChargeBlueprints.Name = "rbtnAmmoChargeBlueprints"
-        Me.rbtnAmmoChargeBlueprints.Size = New System.Drawing.Size(123, 17)
-        Me.rbtnAmmoChargeBlueprints.TabIndex = 2
-        Me.rbtnAmmoChargeBlueprints.Text = "Ammunition/Charges"
-        Me.rbtnAmmoChargeBlueprints.UseVisualStyleBackColor = True
+        Me.rbtnBPAmmoChargeBlueprints.AutoSize = True
+        Me.rbtnBPAmmoChargeBlueprints.Location = New System.Drawing.Point(15, 54)
+        Me.rbtnBPAmmoChargeBlueprints.Name = "rbtnBPAmmoChargeBlueprints"
+        Me.rbtnBPAmmoChargeBlueprints.Size = New System.Drawing.Size(123, 17)
+        Me.rbtnBPAmmoChargeBlueprints.TabIndex = 2
+        Me.rbtnBPAmmoChargeBlueprints.Text = "Ammunition/Charges"
+        Me.rbtnBPAmmoChargeBlueprints.UseVisualStyleBackColor = True
         '
         'rbtnBPShipBlueprints
         '
         Me.rbtnBPShipBlueprints.AutoSize = True
-        Me.rbtnBPShipBlueprints.Location = New System.Drawing.Point(6, 43)
+        Me.rbtnBPShipBlueprints.Location = New System.Drawing.Point(15, 36)
         Me.rbtnBPShipBlueprints.Name = "rbtnBPShipBlueprints"
         Me.rbtnBPShipBlueprints.Size = New System.Drawing.Size(51, 17)
         Me.rbtnBPShipBlueprints.TabIndex = 1
         Me.rbtnBPShipBlueprints.Text = "Ships"
         Me.rbtnBPShipBlueprints.UseVisualStyleBackColor = True
         '
-        'rdoAll
+        'rbtnBPAll
         '
-        Me.rdoAll.AutoSize = True
-        Me.rdoAll.Checked = True
-        Me.rdoAll.Location = New System.Drawing.Point(7, 20)
-        Me.rdoAll.Name = "rdoAll"
-        Me.rdoAll.Size = New System.Drawing.Size(36, 17)
-        Me.rdoAll.TabIndex = 0
-        Me.rdoAll.TabStop = True
-        Me.rdoAll.Text = "All"
-        Me.rdoAll.UseVisualStyleBackColor = True
+        Me.rbtnBPAll.AutoSize = True
+        Me.rbtnBPAll.Location = New System.Drawing.Point(15, 18)
+        Me.rbtnBPAll.Name = "rbtnBPAll"
+        Me.rbtnBPAll.Size = New System.Drawing.Size(36, 17)
+        Me.rbtnBPAll.TabIndex = 0
+        Me.rbtnBPAll.Text = "All"
+        Me.rbtnBPAll.UseVisualStyleBackColor = True
         '
         'btnRefresh
         '
-        Me.btnRefresh.Location = New System.Drawing.Point(229, 637)
+        Me.btnRefresh.Location = New System.Drawing.Point(156, 654)
         Me.btnRefresh.Name = "btnRefresh"
-        Me.btnRefresh.Size = New System.Drawing.Size(75, 23)
+        Me.btnRefresh.Size = New System.Drawing.Size(81, 27)
         Me.btnRefresh.TabIndex = 4
         Me.btnRefresh.Text = "Refresh"
         Me.btnRefresh.UseVisualStyleBackColor = True
@@ -290,9 +314,9 @@ Partial Class frmBlueprintList
         Me.grpBPSize.Controls.Add(Me.chkBPLarge)
         Me.grpBPSize.Controls.Add(Me.chkBPMedium)
         Me.grpBPSize.Controls.Add(Me.chkBPSmall)
-        Me.grpBPSize.Location = New System.Drawing.Point(255, 360)
+        Me.grpBPSize.Location = New System.Drawing.Point(255, 434)
         Me.grpBPSize.Name = "grpBPSize"
-        Me.grpBPSize.Size = New System.Drawing.Size(125, 72)
+        Me.grpBPSize.Size = New System.Drawing.Size(125, 55)
         Me.grpBPSize.TabIndex = 5
         Me.grpBPSize.TabStop = False
         Me.grpBPSize.Text = "Size Limit"
@@ -300,7 +324,7 @@ Partial Class frmBlueprintList
         'chkBPXLarge
         '
         Me.chkBPXLarge.AutoSize = True
-        Me.chkBPXLarge.Location = New System.Drawing.Point(55, 42)
+        Me.chkBPXLarge.Location = New System.Drawing.Point(68, 33)
         Me.chkBPXLarge.Name = "chkBPXLarge"
         Me.chkBPXLarge.Size = New System.Drawing.Size(39, 17)
         Me.chkBPXLarge.TabIndex = 3
@@ -310,7 +334,7 @@ Partial Class frmBlueprintList
         'chkBPLarge
         '
         Me.chkBPLarge.AutoSize = True
-        Me.chkBPLarge.Location = New System.Drawing.Point(56, 19)
+        Me.chkBPLarge.Location = New System.Drawing.Point(68, 15)
         Me.chkBPLarge.Name = "chkBPLarge"
         Me.chkBPLarge.Size = New System.Drawing.Size(32, 17)
         Me.chkBPLarge.TabIndex = 2
@@ -320,7 +344,7 @@ Partial Class frmBlueprintList
         'chkBPMedium
         '
         Me.chkBPMedium.AutoSize = True
-        Me.chkBPMedium.Location = New System.Drawing.Point(7, 43)
+        Me.chkBPMedium.Location = New System.Drawing.Point(19, 33)
         Me.chkBPMedium.Name = "chkBPMedium"
         Me.chkBPMedium.Size = New System.Drawing.Size(35, 17)
         Me.chkBPMedium.TabIndex = 1
@@ -330,7 +354,7 @@ Partial Class frmBlueprintList
         'chkBPSmall
         '
         Me.chkBPSmall.AutoSize = True
-        Me.chkBPSmall.Location = New System.Drawing.Point(7, 20)
+        Me.chkBPSmall.Location = New System.Drawing.Point(19, 15)
         Me.chkBPSmall.Name = "chkBPSmall"
         Me.chkBPSmall.Size = New System.Drawing.Size(33, 17)
         Me.chkBPSmall.TabIndex = 0
@@ -345,9 +369,9 @@ Partial Class frmBlueprintList
         Me.grpBPTechLevel.Controls.Add(Me.chkBPTech3)
         Me.grpBPTechLevel.Controls.Add(Me.chkBPTech2)
         Me.grpBPTechLevel.Controls.Add(Me.chkBPTech1)
-        Me.grpBPTechLevel.Location = New System.Drawing.Point(255, 439)
+        Me.grpBPTechLevel.Location = New System.Drawing.Point(255, 495)
         Me.grpBPTechLevel.Name = "grpBPTechLevel"
-        Me.grpBPTechLevel.Size = New System.Drawing.Size(125, 158)
+        Me.grpBPTechLevel.Size = New System.Drawing.Size(125, 126)
         Me.grpBPTechLevel.TabIndex = 6
         Me.grpBPTechLevel.TabStop = False
         Me.grpBPTechLevel.Text = "Tech Level"
@@ -357,7 +381,7 @@ Partial Class frmBlueprintList
         Me.chkBPPirate.AutoSize = True
         Me.chkBPPirate.Checked = True
         Me.chkBPPirate.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPPirate.Location = New System.Drawing.Point(7, 130)
+        Me.chkBPPirate.Location = New System.Drawing.Point(19, 105)
         Me.chkBPPirate.Name = "chkBPPirate"
         Me.chkBPPirate.Size = New System.Drawing.Size(53, 17)
         Me.chkBPPirate.TabIndex = 5
@@ -369,7 +393,7 @@ Partial Class frmBlueprintList
         Me.chkBPNavy.AutoSize = True
         Me.chkBPNavy.Checked = True
         Me.chkBPNavy.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPNavy.Location = New System.Drawing.Point(7, 106)
+        Me.chkBPNavy.Location = New System.Drawing.Point(19, 87)
         Me.chkBPNavy.Name = "chkBPNavy"
         Me.chkBPNavy.Size = New System.Drawing.Size(51, 17)
         Me.chkBPNavy.TabIndex = 4
@@ -381,7 +405,7 @@ Partial Class frmBlueprintList
         Me.chkBPStory.AutoSize = True
         Me.chkBPStory.Checked = True
         Me.chkBPStory.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPStory.Location = New System.Drawing.Point(7, 82)
+        Me.chkBPStory.Location = New System.Drawing.Point(19, 69)
         Me.chkBPStory.Name = "chkBPStory"
         Me.chkBPStory.Size = New System.Drawing.Size(66, 17)
         Me.chkBPStory.TabIndex = 3
@@ -393,7 +417,7 @@ Partial Class frmBlueprintList
         Me.chkBPTech3.AutoSize = True
         Me.chkBPTech3.Checked = True
         Me.chkBPTech3.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPTech3.Location = New System.Drawing.Point(7, 58)
+        Me.chkBPTech3.Location = New System.Drawing.Point(19, 51)
         Me.chkBPTech3.Name = "chkBPTech3"
         Me.chkBPTech3.Size = New System.Drawing.Size(60, 17)
         Me.chkBPTech3.TabIndex = 2
@@ -405,7 +429,7 @@ Partial Class frmBlueprintList
         Me.chkBPTech2.AutoSize = True
         Me.chkBPTech2.Checked = True
         Me.chkBPTech2.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPTech2.Location = New System.Drawing.Point(7, 35)
+        Me.chkBPTech2.Location = New System.Drawing.Point(19, 33)
         Me.chkBPTech2.Name = "chkBPTech2"
         Me.chkBPTech2.Size = New System.Drawing.Size(60, 17)
         Me.chkBPTech2.TabIndex = 1
@@ -416,29 +440,56 @@ Partial Class frmBlueprintList
         '
         Me.chkBPTech1.Checked = True
         Me.chkBPTech1.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPTech1.Location = New System.Drawing.Point(7, 13)
+        Me.chkBPTech1.Location = New System.Drawing.Point(19, 15)
         Me.chkBPTech1.Name = "chkBPTech1"
         Me.chkBPTech1.Size = New System.Drawing.Size(81, 17)
         Me.chkBPTech1.TabIndex = 0
         Me.chkBPTech1.Text = "Tech 1"
         Me.chkBPTech1.UseVisualStyleBackColor = True
         '
-        'rbtnBPStructureModuleBlueprints
+        'btnReactionsSaveSettings
         '
-        Me.rbtnBPStructureModuleBlueprints.AutoSize = True
-        Me.rbtnBPStructureModuleBlueprints.Location = New System.Drawing.Point(6, 184)
-        Me.rbtnBPStructureModuleBlueprints.Name = "rbtnBPStructureModuleBlueprints"
-        Me.rbtnBPStructureModuleBlueprints.Size = New System.Drawing.Size(111, 17)
-        Me.rbtnBPStructureModuleBlueprints.TabIndex = 16
-        Me.rbtnBPStructureModuleBlueprints.TabStop = True
-        Me.rbtnBPStructureModuleBlueprints.Text = "Structure Modules"
-        Me.rbtnBPStructureModuleBlueprints.UseVisualStyleBackColor = True
+        Me.btnReactionsSaveSettings.Location = New System.Drawing.Point(70, 654)
+        Me.btnReactionsSaveSettings.Name = "btnReactionsSaveSettings"
+        Me.btnReactionsSaveSettings.Size = New System.Drawing.Size(81, 27)
+        Me.btnReactionsSaveSettings.TabIndex = 17
+        Me.btnReactionsSaveSettings.Text = "Save Settings"
+        Me.btnReactionsSaveSettings.UseVisualStyleBackColor = True
+        '
+        'txtBPItemFilter
+        '
+        Me.txtBPItemFilter.Location = New System.Drawing.Point(70, 627)
+        Me.txtBPItemFilter.Name = "txtBPItemFilter"
+        Me.txtBPItemFilter.Size = New System.Drawing.Size(253, 20)
+        Me.txtBPItemFilter.TabIndex = 18
+        '
+        'btnClearItemFilter
+        '
+        Me.btnClearItemFilter.Location = New System.Drawing.Point(329, 627)
+        Me.btnClearItemFilter.Name = "btnClearItemFilter"
+        Me.btnClearItemFilter.Size = New System.Drawing.Size(51, 21)
+        Me.btnClearItemFilter.TabIndex = 19
+        Me.btnClearItemFilter.Text = "Clear"
+        Me.btnClearItemFilter.UseVisualStyleBackColor = True
+        '
+        'lblBPFilter
+        '
+        Me.lblBPFilter.AutoSize = True
+        Me.lblBPFilter.Location = New System.Drawing.Point(15, 630)
+        Me.lblBPFilter.Name = "lblBPFilter"
+        Me.lblBPFilter.Size = New System.Drawing.Size(49, 13)
+        Me.lblBPFilter.TabIndex = 20
+        Me.lblBPFilter.Text = "BP Filter:"
         '
         'frmBlueprintList
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6!, 13!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(392, 672)
+        Me.ClientSize = New System.Drawing.Size(392, 692)
+        Me.Controls.Add(Me.txtBPItemFilter)
+        Me.Controls.Add(Me.btnClearItemFilter)
+        Me.Controls.Add(Me.lblBPFilter)
+        Me.Controls.Add(Me.btnReactionsSaveSettings)
         Me.Controls.Add(Me.grpBPTechLevel)
         Me.Controls.Add(Me.grpBPSize)
         Me.Controls.Add(Me.btnRefresh)
@@ -446,7 +497,7 @@ Partial Class frmBlueprintList
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.lblIntro)
         Me.Controls.Add(Me.treBlueprintTreeView)
-        Me.Icon = CType(resources.GetObject("$this.Icon"),System.Drawing.Icon)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "frmBlueprintList"
         Me.Text = "Blueprint List"
         Me.grpBPType.ResumeLayout(false)
@@ -471,9 +522,9 @@ End Sub
     Friend WithEvents rbtnBPRigBlueprints As RadioButton
     Friend WithEvents rbtnBPStructureBlueprints As RadioButton
     Friend WithEvents rbtnBPDroneBlueprints As RadioButton
-    Friend WithEvents rbtnAmmoChargeBlueprints As RadioButton
+    Friend WithEvents rbtnBPAmmoChargeBlueprints As RadioButton
     Friend WithEvents rbtnBPShipBlueprints As RadioButton
-    Friend WithEvents rdoAll As RadioButton
+    Friend WithEvents rbtnBPAll As RadioButton
     Friend WithEvents btnRefresh As Button
     Friend WithEvents rbtnBPDeployableBlueprints As RadioButton
     Friend WithEvents rbtnBPCelestialsBlueprints As RadioButton
@@ -494,4 +545,9 @@ End Sub
     Friend WithEvents chkBPTech2 As CheckBox
     Friend WithEvents chkBPTech1 As CheckBox
     Friend WithEvents rbtnBPStructureModuleBlueprints As RadioButton
+    Friend WithEvents btnReactionsSaveSettings As Button
+    Friend WithEvents txtBPItemFilter As TextBox
+    Friend WithEvents btnClearItemFilter As Button
+    Friend WithEvents lblBPFilter As Label
+    Friend WithEvents chkBPIncludeIgnoredBPs As CheckBox
 End Class

@@ -46,6 +46,8 @@ Public Module SettingsVariables
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
     ' For LP store
     Public UserLPStoreSettings As LPStore
+    ' For the Blueprint List Viewer
+    Public UserBPViewerSettings As BPViewerSettings
 
 End Module
 
@@ -253,6 +255,7 @@ Public Class ProgramSettings
     Public DefaultRawColumnSortType As String = "Decending"
     Public DefaultRawProfitType As String = "Profit"
     Public DefaultCompProfitType As String = "Profit"
+    Public DefaultBPCompressedOre As Boolean = False
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = False
@@ -507,187 +510,187 @@ Public Class ProgramSettings
     Public Const JobTypeColumn As String = "Job Type"
 
     ' Manufacturing Tab column settings - index 0 is for hidden id column
-    Dim DefaultMTItemCategory As Integer = 3
-    Dim DefaultMTItemGroup As Integer = 0
-    Dim DefaultMTItemName As Integer = 4
-    Dim DefaultMTOwned As Integer = 5
-    Dim DefaultMTTech As Integer = 6
-    Dim DefaultMTBPME As Integer = 7
-    Dim DefaultMTBPTE As Integer = 8
-    Dim DefaultMTInputs As Integer = 9
-    Dim DefaultMTCompared As Integer = 10
-    Dim DefaultMTTotalRuns As Integer = 0
-    Dim DefaultMTSingleInventedBPCRuns As Integer = 0
-    Dim DefaultMTProductionLines As Integer = 0
-    Dim DefaultMTLaboratoryLines As Integer = 0
-    Dim DefaultMTTotalInventionCost As Integer = 0
-    Dim DefaultMTTotalCopyCost As Integer = 0
-    Dim DefaultMTTaxes As Integer = 0
-    Dim DefaultMTBrokerFees As Integer = 0
-    Dim DefaultMTBPProductionTime As Integer = 0
-    Dim DefaultMTTotalProductionTime As Integer = 0
-    Dim DefaultMTCopyTime As Integer = 0
-    Dim DefaultMTInventionTime As Integer = 0
-    Dim DefaultMTItemMarketPrice As Integer = 0
-    Dim DefaultMTProfit As Integer = 11
-    Dim DefaultMTProfitPercentage As Integer = 0
-    Dim DefaultMTIskperHour As Integer = 12
-    Dim DefaultMTSVR As Integer = 13
-    Dim DefaultMTSVRxIPH As Integer = 0
-    Dim DefaultMTPriceTrend As Integer = 0
-    Dim DefaultMTTotalItemsSold As Integer = 0
-    Dim DefaultMTTotalOrdersFilled As Integer = 0
-    Dim DefaultMTAvgItemsperOrder As Integer = 0
-    Dim DefaultMTCurrentSellOrders As Integer = 0
-    Dim DefaultMTCurrentBuyOrders As Integer = 0
-    Dim DefaultMTItemsinProduction As Integer = 0
-    Dim DefaultMTItemsinStock As Integer = 0
-    Dim DefaultMTTotalCost As Integer = 14
-    Dim DefaultMTBaseJobCost As Integer = 0
-    Dim DefaultMTNumBPs As Integer = 0
-    Dim DefaultMTInventionChance As Integer = 0
-    Dim DefaultMTBPType As Integer = 0
-    Dim DefaultMTRace As Integer = 0
-    Dim DefaultMTVolumeperItem As Integer = 0
-    Dim DefaultMTTotalVolume As Integer = 0
-    Dim DefaultMTPortionSize As Integer = 0
-    Dim DefaultMTManufacturingJobFee As Integer = 0
-    Dim DefaultMTManufacturingFacilityName As Integer = 0
-    Dim DefaultMTManufacturingFacilitySystem As Integer = 0
-    Dim DefaultMTManufacturingFacilityRegion As Integer = 0
-    Dim DefaultMTManufacturingFacilitySystemIndex As Integer = 0
-    Dim DefaultMTManufacturingFacilityTax As Integer = 0
-    Dim DefaultMTManufacturingFacilityMEBonus As Integer = 0
-    Dim DefaultMTManufacturingFacilityTEBonus As Integer = 0
-    Dim DefaultMTManufacturingFacilityUsage As Integer = 0
-    Dim DefaultMTManufacturingFacilityFWSystemLevel As Integer = 0
-    Dim DefaultMTComponentFacilityName As Integer = 0
-    Dim DefaultMTComponentFacilitySystem As Integer = 0
-    Dim DefaultMTComponentFacilityRegion As Integer = 0
-    Dim DefaultMTComponentFacilitySystemIndex As Integer = 0
-    Dim DefaultMTComponentFacilityTax As Integer = 0
-    Dim DefaultMTComponentFacilityMEBonus As Integer = 0
-    Dim DefaultMTComponentFacilityTEBonus As Integer = 0
-    Dim DefaultMTComponentFacilityUsage As Integer = 0
-    Dim DefaultMTComponentFacilityFWSystemLevel As Integer = 0
-    Dim DefaultMTCapComponentFacilityName As Integer = 0
-    Dim DefaultMTCapComponentFacilitySystem As Integer = 0
-    Dim DefaultMTCapComponentFacilityRegion As Integer = 0
-    Dim DefaultMTCapComponentFacilitySystemIndex As Integer = 0
-    Dim DefaultMTCapComponentFacilityTax As Integer = 0
-    Dim DefaultMTCapComponentFacilityMEBonus As Integer = 0
-    Dim DefaultMTCapComponentFacilityTEBonus As Integer = 0
-    Dim DefaultMTCapComponentFacilityUsage As Integer = 0
-    Dim DefaultMTCapComponentFacilityFWSystemLevel As Integer = 0
-    Dim DefaultMTCopyingFacilityName As Integer = 0
-    Dim DefaultMTCopyingFacilitySystem As Integer = 0
-    Dim DefaultMTCopyingFacilityRegion As Integer = 0
-    Dim DefaultMTCopyingFacilitySystemIndex As Integer = 0
-    Dim DefaultMTCopyingFacilityTax As Integer = 0
-    Dim DefaultMTCopyingFacilityMEBonus As Integer = 0
-    Dim DefaultMTCopyingFacilityTEBonus As Integer = 0
-    Dim DefaultMTCopyingFacilityUsage As Integer = 0
-    Dim DefaultMTCopyingFacilityFWSystemLevel As Integer = 0
-    Dim DefaultMTInventionFacilityName As Integer = 0
-    Dim DefaultMTInventionFacilitySystem As Integer = 0
-    Dim DefaultMTInventionFacilityRegion As Integer = 0
-    Dim DefaultMTInventionFacilitySystemIndex As Integer = 0
-    Dim DefaultMTInventionFacilityTax As Integer = 0
-    Dim DefaultMTInventionFacilityMEBonus As Integer = 0
-    Dim DefaultMTInventionFacilityTEBonus As Integer = 0
-    Dim DefaultMTInventionFacilityUsage As Integer = 0
-    Dim DefaultMTInventionFacilityFWSystemLevel As Integer = 0
+    Public DefaultMTItemCategory As Integer = 3
+    Public DefaultMTItemGroup As Integer = 0
+    Public DefaultMTItemName As Integer = 4
+    Public DefaultMTOwned As Integer = 5
+    Public DefaultMTTech As Integer = 6
+    Public DefaultMTBPME As Integer = 7
+    Public DefaultMTBPTE As Integer = 8
+    Public DefaultMTInputs As Integer = 9
+    Public DefaultMTCompared As Integer = 10
+    Public DefaultMTTotalRuns As Integer = 0
+    Public DefaultMTSingleInventedBPCRuns As Integer = 0
+    Public DefaultMTProductionLines As Integer = 0
+    Public DefaultMTLaboratoryLines As Integer = 0
+    Public DefaultMTTotalInventionCost As Integer = 0
+    Public DefaultMTTotalCopyCost As Integer = 0
+    Public DefaultMTTaxes As Integer = 0
+    Public DefaultMTBrokerFees As Integer = 0
+    Public DefaultMTBPProductionTime As Integer = 0
+    Public DefaultMTTotalProductionTime As Integer = 0
+    Public DefaultMTCopyTime As Integer = 0
+    Public DefaultMTInventionTime As Integer = 0
+    Public DefaultMTItemMarketPrice As Integer = 0
+    Public DefaultMTProfit As Integer = 11
+    Public DefaultMTProfitPercentage As Integer = 0
+    Public DefaultMTIskperHour As Integer = 12
+    Public DefaultMTSVR As Integer = 13
+    Public DefaultMTSVRxIPH As Integer = 0
+    Public DefaultMTPriceTrend As Integer = 0
+    Public DefaultMTTotalItemsSold As Integer = 0
+    Public DefaultMTTotalOrdersFilled As Integer = 0
+    Public DefaultMTAvgItemsperOrder As Integer = 0
+    Public DefaultMTCurrentSellOrders As Integer = 0
+    Public DefaultMTCurrentBuyOrders As Integer = 0
+    Public DefaultMTItemsinProduction As Integer = 0
+    Public DefaultMTItemsinStock As Integer = 0
+    Public DefaultMTTotalCost As Integer = 14
+    Public DefaultMTBaseJobCost As Integer = 0
+    Public DefaultMTNumBPs As Integer = 0
+    Public DefaultMTInventionChance As Integer = 0
+    Public DefaultMTBPType As Integer = 0
+    Public DefaultMTRace As Integer = 0
+    Public DefaultMTVolumeperItem As Integer = 0
+    Public DefaultMTTotalVolume As Integer = 0
+    Public DefaultMTPortionSize As Integer = 0
+    Public DefaultMTManufacturingJobFee As Integer = 0
+    Public DefaultMTManufacturingFacilityName As Integer = 0
+    Public DefaultMTManufacturingFacilitySystem As Integer = 0
+    Public DefaultMTManufacturingFacilityRegion As Integer = 0
+    Public DefaultMTManufacturingFacilitySystemIndex As Integer = 0
+    Public DefaultMTManufacturingFacilityTax As Integer = 0
+    Public DefaultMTManufacturingFacilityMEBonus As Integer = 0
+    Public DefaultMTManufacturingFacilityTEBonus As Integer = 0
+    Public DefaultMTManufacturingFacilityUsage As Integer = 0
+    Public DefaultMTManufacturingFacilityFWSystemLevel As Integer = 0
+    Public DefaultMTComponentFacilityName As Integer = 0
+    Public DefaultMTComponentFacilitySystem As Integer = 0
+    Public DefaultMTComponentFacilityRegion As Integer = 0
+    Public DefaultMTComponentFacilitySystemIndex As Integer = 0
+    Public DefaultMTComponentFacilityTax As Integer = 0
+    Public DefaultMTComponentFacilityMEBonus As Integer = 0
+    Public DefaultMTComponentFacilityTEBonus As Integer = 0
+    Public DefaultMTComponentFacilityUsage As Integer = 0
+    Public DefaultMTComponentFacilityFWSystemLevel As Integer = 0
+    Public DefaultMTCapComponentFacilityName As Integer = 0
+    Public DefaultMTCapComponentFacilitySystem As Integer = 0
+    Public DefaultMTCapComponentFacilityRegion As Integer = 0
+    Public DefaultMTCapComponentFacilitySystemIndex As Integer = 0
+    Public DefaultMTCapComponentFacilityTax As Integer = 0
+    Public DefaultMTCapComponentFacilityMEBonus As Integer = 0
+    Public DefaultMTCapComponentFacilityTEBonus As Integer = 0
+    Public DefaultMTCapComponentFacilityUsage As Integer = 0
+    Public DefaultMTCapComponentFacilityFWSystemLevel As Integer = 0
+    Public DefaultMTCopyingFacilityName As Integer = 0
+    Public DefaultMTCopyingFacilitySystem As Integer = 0
+    Public DefaultMTCopyingFacilityRegion As Integer = 0
+    Public DefaultMTCopyingFacilitySystemIndex As Integer = 0
+    Public DefaultMTCopyingFacilityTax As Integer = 0
+    Public DefaultMTCopyingFacilityMEBonus As Integer = 0
+    Public DefaultMTCopyingFacilityTEBonus As Integer = 0
+    Public DefaultMTCopyingFacilityUsage As Integer = 0
+    Public DefaultMTCopyingFacilityFWSystemLevel As Integer = 0
+    Public DefaultMTInventionFacilityName As Integer = 0
+    Public DefaultMTInventionFacilitySystem As Integer = 0
+    Public DefaultMTInventionFacilityRegion As Integer = 0
+    Public DefaultMTInventionFacilitySystemIndex As Integer = 0
+    Public DefaultMTInventionFacilityTax As Integer = 0
+    Public DefaultMTInventionFacilityMEBonus As Integer = 0
+    Public DefaultMTInventionFacilityTEBonus As Integer = 0
+    Public DefaultMTInventionFacilityUsage As Integer = 0
+    Public DefaultMTInventionFacilityFWSystemLevel As Integer = 0
 
-    Dim DefaultMTItemCategoryWidth As Integer = 100
-    Dim DefaultMTItemGroupWidth As Integer = 100
-    Dim DefaultMTItemNameWidth As Integer = 225
-    Dim DefaultMTOwnedWidth As Integer = 50
-    Dim DefaultMTTechWidth As Integer = 37
-    Dim DefaultMTBPMEWidth As Integer = 28
-    Dim DefaultMTBPTEWidth As Integer = 28
-    Dim DefaultMTInputsWidth As Integer = 150
-    Dim DefaultMTComparedWidth As Integer = 80
-    Dim DefaultMTTotalRunsWidth As Integer = 64
-    Dim DefaultMTSingleInventedBPCRunsWidth As Integer = 138
-    Dim DefaultMTProductionLinesWidth As Integer = 92
-    Dim DefaultMTLaboratoryLinesWidth As Integer = 92
-    Dim DefaultMTTotalInventionCostWidth As Integer = 107
-    Dim DefaultMTTotalCopyCostWidth As Integer = 88
-    Dim DefaultMTTaxesWidth As Integer = 91
-    Dim DefaultMTBrokerFeesWidth As Integer = 100
-    Dim DefaultMTBPProductionTimeWidth As Integer = 106
-    Dim DefaultMTTotalProductionTimeWidth As Integer = 116
-    Dim DefaultMTCopyTimeWidth As Integer = 100
-    Dim DefaultMTInventionTimeWidth As Integer = 100
-    Dim DefaultMTItemMarketPriceWidth As Integer = 100
-    Dim DefaultMTProfitWidth As Integer = 100
-    Dim DefaultMTProfitPercentageWidth As Integer = 100
-    Dim DefaultMTIskperHourWidth As Integer = 100
-    Dim DefaultMTSVRWidth As Integer = 100
-    Dim DefaultMTSVRxIPHWidth As Integer = 100
-    Dim DefaultMTPriceTrendWidth As Integer = 100
-    Dim DefaultMTTotalItemsSoldWidth As Integer = 100
-    Dim DefaultMTTotalOrdersFilledWidth As Integer = 100
-    Dim DefaultMTAvgItemsperOrderWidth As Integer = 100
-    Dim DefaultMTCurrentSellOrdersWidth As Integer = 100
-    Dim DefaultMTCurrentBuyOrdersWidth As Integer = 100
-    Dim DefaultMTItemsinProductionWidth As Integer = 100
-    Dim DefaultMTItemsinStockWidth As Integer = 100
-    Dim DefaultMTTotalCostWidth As Integer = 100
-    Dim DefaultMTBaseJobCostWidth As Integer = 100
-    Dim DefaultMTNumBPsWidth As Integer = 57
-    Dim DefaultMTInventionChanceWidth As Integer = 100
-    Dim DefaultMTBPTypeWidth As Integer = 54
-    Dim DefaultMTRaceWidth As Integer = 77
-    Dim DefaultMTVolumeperItemWidth As Integer = 89
-    Dim DefaultMTTotalVolumeWidth As Integer = 75
-    Dim DefaultMTPortionSizeWidth As Integer = 75
-    Dim DefaultMTManufacturingJobFeeWidth As Integer = 122
-    Dim DefaultMTManufacturingFacilityNameWidth As Integer = 150
-    Dim DefaultMTManufacturingFacilitySystemWidth As Integer = 152
-    Dim DefaultMTManufacturingFacilityRegionWidth As Integer = 154
-    Dim DefaultMTManufacturingFacilitySystemIndexWidth As Integer = 184
-    Dim DefaultMTManufacturingFacilityTaxWidth As Integer = 138
-    Dim DefaultMTManufacturingFacilityMEBonusWidth As Integer = 169
-    Dim DefaultMTManufacturingFacilityTEBonusWidth As Integer = 166
-    Dim DefaultMTManufacturingFacilityUsageWidth As Integer = 149
-    Dim DefaultMTManufacturingFacilityFWSystemLevelWidth As Integer = 150
-    Dim DefaultMTComponentFacilityNameWidth As Integer = 145
-    Dim DefaultMTComponentFacilitySystemWidth As Integer = 140
-    Dim DefaultMTComponentFacilityRegionWidth As Integer = 138
-    Dim DefaultMTComponentFacilitySystemIndexWidth As Integer = 168
-    Dim DefaultMTComponentFacilityTaxWidth As Integer = 122
-    Dim DefaultMTComponentFacilityMEBonusWidth As Integer = 153
-    Dim DefaultMTComponentFacilityTEBonusWidth As Integer = 153
-    Dim DefaultMTComponentFacilityUsageWidth As Integer = 136
-    Dim DefaultMTComponentFacilityFWSystemLevelWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityNameWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilitySystemWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityRegionWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilitySystemIndexWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityTaxWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityMEBonusWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityTEBonusWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityUsageWidth As Integer = 150
-    Dim DefaultMTCapComponentFacilityFWSystemLevelWidth As Integer = 150
-    Dim DefaultMTCopyingFacilityNameWidth As Integer = 116
-    Dim DefaultMTCopyingFacilitySystemWidth As Integer = 122
-    Dim DefaultMTCopyingFacilityRegionWidth As Integer = 122
-    Dim DefaultMTCopyingFacilitySystemIndexWidth As Integer = 153
-    Dim DefaultMTCopyingFacilityTaxWidth As Integer = 107
-    Dim DefaultMTCopyingFacilityMEBonusWidth As Integer = 137
-    Dim DefaultMTCopyingFacilityTEBonusWidth As Integer = 135
-    Dim DefaultMTCopyingFacilityUsageWidth As Integer = 121
-    Dim DefaultMTCopyingFacilityFWSystemLevelWidth As Integer = 150
-    Dim DefaultMTInventionFacilityNameWidth As Integer = 122
-    Dim DefaultMTInventionFacilitySystemWidth As Integer = 130
-    Dim DefaultMTInventionFacilityRegionWidth As Integer = 129
-    Dim DefaultMTInventionFacilitySystemIndexWidth As Integer = 156
-    Dim DefaultMTInventionFacilityTaxWidth As Integer = 112
-    Dim DefaultMTInventionFacilityMEBonusWidth As Integer = 144
-    Dim DefaultMTInventionFacilityTEBonusWidth As Integer = 141
-    Dim DefaultMTInventionFacilityUsageWidth As Integer = 127
-    Dim DefaultMTInventionFacilityFWSystemLevelWidth As Integer = 150
+    Public DefaultMTItemCategoryWidth As Integer = 100
+    Public DefaultMTItemGroupWidth As Integer = 100
+    Public DefaultMTItemNameWidth As Integer = 225
+    Public DefaultMTOwnedWidth As Integer = 50
+    Public DefaultMTTechWidth As Integer = 37
+    Public DefaultMTBPMEWidth As Integer = 28
+    Public DefaultMTBPTEWidth As Integer = 28
+    Public DefaultMTInputsWidth As Integer = 150
+    Public DefaultMTComparedWidth As Integer = 80
+    Public DefaultMTTotalRunsWidth As Integer = 64
+    Public DefaultMTSingleInventedBPCRunsWidth As Integer = 138
+    Public DefaultMTProductionLinesWidth As Integer = 92
+    Public DefaultMTLaboratoryLinesWidth As Integer = 92
+    Public DefaultMTTotalInventionCostWidth As Integer = 107
+    Public DefaultMTTotalCopyCostWidth As Integer = 88
+    Public DefaultMTTaxesWidth As Integer = 91
+    Public DefaultMTBrokerFeesWidth As Integer = 100
+    Public DefaultMTBPProductionTimeWidth As Integer = 106
+    Public DefaultMTTotalProductionTimeWidth As Integer = 116
+    Public DefaultMTCopyTimeWidth As Integer = 100
+    Public DefaultMTInventionTimeWidth As Integer = 100
+    Public DefaultMTItemMarketPriceWidth As Integer = 100
+    Public DefaultMTProfitWidth As Integer = 100
+    Public DefaultMTProfitPercentageWidth As Integer = 100
+    Public DefaultMTIskperHourWidth As Integer = 100
+    Public DefaultMTSVRWidth As Integer = 100
+    Public DefaultMTSVRxIPHWidth As Integer = 100
+    Public DefaultMTPriceTrendWidth As Integer = 100
+    Public DefaultMTTotalItemsSoldWidth As Integer = 100
+    Public DefaultMTTotalOrdersFilledWidth As Integer = 100
+    Public DefaultMTAvgItemsperOrderWidth As Integer = 100
+    Public DefaultMTCurrentSellOrdersWidth As Integer = 100
+    Public DefaultMTCurrentBuyOrdersWidth As Integer = 100
+    Public DefaultMTItemsinProductionWidth As Integer = 100
+    Public DefaultMTItemsinStockWidth As Integer = 100
+    Public DefaultMTTotalCostWidth As Integer = 100
+    Public DefaultMTBaseJobCostWidth As Integer = 100
+    Public DefaultMTNumBPsWidth As Integer = 57
+    Public DefaultMTInventionChanceWidth As Integer = 100
+    Public DefaultMTBPTypeWidth As Integer = 54
+    Public DefaultMTRaceWidth As Integer = 77
+    Public DefaultMTVolumeperItemWidth As Integer = 89
+    Public DefaultMTTotalVolumeWidth As Integer = 75
+    Public DefaultMTPortionSizeWidth As Integer = 75
+    Public DefaultMTManufacturingJobFeeWidth As Integer = 122
+    Public DefaultMTManufacturingFacilityNameWidth As Integer = 150
+    Public DefaultMTManufacturingFacilitySystemWidth As Integer = 152
+    Public DefaultMTManufacturingFacilityRegionWidth As Integer = 154
+    Public DefaultMTManufacturingFacilitySystemIndexWidth As Integer = 184
+    Public DefaultMTManufacturingFacilityTaxWidth As Integer = 138
+    Public DefaultMTManufacturingFacilityMEBonusWidth As Integer = 169
+    Public DefaultMTManufacturingFacilityTEBonusWidth As Integer = 166
+    Public DefaultMTManufacturingFacilityUsageWidth As Integer = 149
+    Public DefaultMTManufacturingFacilityFWSystemLevelWidth As Integer = 150
+    Public DefaultMTComponentFacilityNameWidth As Integer = 145
+    Public DefaultMTComponentFacilitySystemWidth As Integer = 140
+    Public DefaultMTComponentFacilityRegionWidth As Integer = 138
+    Public DefaultMTComponentFacilitySystemIndexWidth As Integer = 168
+    Public DefaultMTComponentFacilityTaxWidth As Integer = 122
+    Public DefaultMTComponentFacilityMEBonusWidth As Integer = 153
+    Public DefaultMTComponentFacilityTEBonusWidth As Integer = 153
+    Public DefaultMTComponentFacilityUsageWidth As Integer = 136
+    Public DefaultMTComponentFacilityFWSystemLevelWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityNameWidth As Integer = 150
+    Public DefaultMTCapComponentFacilitySystemWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityRegionWidth As Integer = 150
+    Public DefaultMTCapComponentFacilitySystemIndexWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityTaxWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityMEBonusWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityTEBonusWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityUsageWidth As Integer = 150
+    Public DefaultMTCapComponentFacilityFWSystemLevelWidth As Integer = 150
+    Public DefaultMTCopyingFacilityNameWidth As Integer = 116
+    Public DefaultMTCopyingFacilitySystemWidth As Integer = 122
+    Public DefaultMTCopyingFacilityRegionWidth As Integer = 122
+    Public DefaultMTCopyingFacilitySystemIndexWidth As Integer = 153
+    Public DefaultMTCopyingFacilityTaxWidth As Integer = 107
+    Public DefaultMTCopyingFacilityMEBonusWidth As Integer = 137
+    Public DefaultMTCopyingFacilityTEBonusWidth As Integer = 135
+    Public DefaultMTCopyingFacilityUsageWidth As Integer = 121
+    Public DefaultMTCopyingFacilityFWSystemLevelWidth As Integer = 150
+    Public DefaultMTInventionFacilityNameWidth As Integer = 122
+    Public DefaultMTInventionFacilitySystemWidth As Integer = 130
+    Public DefaultMTInventionFacilityRegionWidth As Integer = 129
+    Public DefaultMTInventionFacilitySystemIndexWidth As Integer = 156
+    Public DefaultMTInventionFacilityTaxWidth As Integer = 112
+    Public DefaultMTInventionFacilityMEBonusWidth As Integer = 144
+    Public DefaultMTInventionFacilityTEBonusWidth As Integer = 141
+    Public DefaultMTInventionFacilityUsageWidth As Integer = 127
+    Public DefaultMTInventionFacilityFWSystemLevelWidth As Integer = 150
 
     Public DefaultMTOrderType As String = "Ascending"
     Public DefaultMTOrderByColumn As Integer = 3
@@ -850,6 +853,8 @@ Public Class ProgramSettings
     Private DefaultFees As Boolean = True
     Private DefaultCalcBuyBuyOrder As Boolean = True
     Private DefaultUsage As Boolean = True
+    Private DefaultUseEveFormat As Boolean = True
+    Private DefaultReloadBPsFromFile As Boolean = True
 
     ' Default Market History Viewer Settings
     Private DefaultMHDatePreference As String = "By Days"
@@ -905,6 +910,7 @@ Public Class ProgramSettings
     Private IndustryTeamSettings As TeamSettings
     Private LPStoreSettings As LPStore
     Private MarketHistoryViewSettings As MarketHistoryViewerSettings
+    Private BPViewSettings As BPViewerSettings
 
     ' Facilities
     Private ManufacturingFacilitySettings As FacilitySettings
@@ -958,6 +964,7 @@ Public Class ProgramSettings
     Private Const ManufacturingTabColumnSettingsFileName As String = "ManufacturingTabColumnSettings"
     Private Const IndustryFlipBeltSettingsFileName As String = "IndustryFlipBeltSettings"
     Private Const ShoppingListSettingsFileName As String = "ShoppingListSettings"
+    Private Const BPViewerSettingsFileName As String = "BPViewerSettings"
 
     Private Const ManufacturingFacilitySettingsFileName As String = "ManufacturingFacilitySettings"
     Private Const ComponentsManufacturingFacilitySettingsFileName As String = "ComponentsManufacturingFacilitySettings"
@@ -985,6 +992,12 @@ Public Class ProgramSettings
     Private Const LPStoreSettingsFileName As String = "LPStoreSettings"
 
     Private Const MarketHistoryViewerSettingsSettingsFileName As String = "MarketHistoryViewerSettingsSettingsFileName"
+
+    ' For BP List Viewer
+    Public DefaultBPViewerTechChecks As Boolean = True
+    Public DefaultBPViewerSizeChecks As Boolean = False
+    Public DefaultBPViewerIgnoreBPsCheck As Boolean = False
+    Public DefaultBPViewerSelectionType As String = "All"
 
     ' 5 belts
     Private IndustryBeltOreChecksFileName As String = IndustryBeltOreChecksFileName
@@ -1311,6 +1324,8 @@ Public Class ProgramSettings
                     .Fees = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Fees", DefaultFees))
                     .CalcBuyBuyOrder = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "CalcBuyBuyOrder", DefaultCalcBuyBuyOrder))
                     .Usage = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Usage", DefaultUsage))
+                    .UseEveFormat = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "UseEveFormat", DefaultUseEveFormat))
+                    .ReloadBPsFromFile = CBool(GetSettingValue(ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "ReloadBPsFromFile", DefaultReloadBPsFromFile))
                 End With
 
             Else
@@ -1342,6 +1357,8 @@ Public Class ProgramSettings
         TempSettings.Fees = DefaultFees
         TempSettings.CalcBuyBuyOrder = DefaultCalcBuyBuyOrder
         TempSettings.Usage = DefaultUsage
+        TempSettings.UseEveFormat = DefaultUseEveFormat
+        TempSettings.ReloadBPsFromFile = DefaultReloadBPsFromFile
 
         ShoppingListTabSettings = TempSettings
 
@@ -1351,7 +1368,7 @@ Public Class ProgramSettings
 
     ' Saves the Shopping List Settings to XML
     Public Sub SaveShoppingListSettings(SentSettings As ShoppingListSettings)
-        Dim ShoppingListSettingsList(5) As Setting
+        Dim ShoppingListSettingsList(7) As Setting
 
         Try
             ShoppingListSettingsList(0) = New Setting("DataExportFormat", CStr(SentSettings.DataExportFormat))
@@ -1360,6 +1377,8 @@ Public Class ProgramSettings
             ShoppingListSettingsList(3) = New Setting("Fees", CStr(SentSettings.Fees))
             ShoppingListSettingsList(4) = New Setting("CalcBuyBuyOrder", CStr(SentSettings.CalcBuyBuyOrder))
             ShoppingListSettingsList(5) = New Setting("Usage", CStr(SentSettings.Usage))
+            ShoppingListSettingsList(6) = New Setting("UseEveFormat", CStr(SentSettings.UseEveFormat))
+            ShoppingListSettingsList(7) = New Setting("ReloadBPsFromFile", CStr(SentSettings.ReloadBPsFromFile))
 
             Call WriteSettingsToFile(ShoppingListSettingsFileName, ShoppingListSettingsList, ShoppingListSettingsFileName)
 
@@ -1416,7 +1435,7 @@ Public Class ProgramSettings
                     .IgnoreInvention = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreInvention", DefaultBPIgnoreInvention))
                     .IgnoreMinerals = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreMinerals", DefaultBPIgnoreMinerals))
                     .IgnoreT1Item = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreT1Item", DefaultBPIgnoreT1Item))
-                    .IncludeIgnoredBPs = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeIgnoredBPs", DefaultBPIgnoreT1Item))
+                    .IncludeIgnoredBPs = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeIgnoredBPs", DefaultBPIncludeIgnoredBPs))
                     .ExporttoShoppingListType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "ExporttoShoppingListType", DefaultBPShoppingListExportType))
                     .RawColumnSort = CInt(GetSettingValue(BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "RawColumnSort", DefaultRawColumnSort))
                     .RawColumnSortType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RawColumnSortType", DefaultRawColumnSortType))
@@ -1424,6 +1443,7 @@ Public Class ProgramSettings
                     .CompColumnSortType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "CompColumnSortType", DefaultCompColumnSortType))
                     .RawProfitType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RawProfitType", DefaultRawProfitType))
                     .CompProfitType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "CompProfitType", DefaultCompProfitType))
+                    .CompressedOre = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "CompressedOre", DefaultBPCompressedOre))
                 End With
 
             Else
@@ -1446,7 +1466,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(37) As Setting
+        Dim BPSettingsList(38) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1492,6 +1512,7 @@ Public Class ProgramSettings
 
             BPSettingsList(36) = New Setting("RawProfitType", CStr(SentSettings.RawProfitType))
             BPSettingsList(37) = New Setting("CompProfitType", CStr(SentSettings.CompProfitType))
+            BPSettingsList(38) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
 
             Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -1551,6 +1572,8 @@ Public Class ProgramSettings
 
             .RawProfitType = DefaultRawProfitType
             .CompProfitType = DefaultCompProfitType
+
+            .CompressedOre = DefaultBPCompressedOre
         End With
 
         ' Save locally
@@ -5297,6 +5320,107 @@ Public Class ProgramSettings
 
 #End Region
 
+#Region "BP Viewer Settings"
+
+    ' Loads the tab settings
+    Public Function LoadBPViewerSettings() As BPViewerSettings
+        Dim TempSettings As BPViewerSettings = Nothing
+
+        Try
+            If FileExists(BPViewerSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .BlueprintTypeSelection = CStr(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeString, BPViewerSettingsFileName, "BlueprintTypeSelection", DefaultBPViewerSelectionType))
+                    .Tech1Check = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "Tech1Check", DefaultBPViewerTechChecks))
+                    .Tech2Check = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "Tech2Check", DefaultBPViewerTechChecks))
+                    .Tech3Check = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "Tech3Check", DefaultBPViewerTechChecks))
+                    .TechStorylineCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "TechStorylineCheck", DefaultBPViewerTechChecks))
+                    .TechFactionCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "TechFactionCheck", DefaultBPViewerTechChecks))
+                    .TechPirateCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "TechPirateCheck", DefaultBPViewerTechChecks))
+                    .SmallCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
+                    .MediumCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
+                    .LargeCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
+                    .XLCheck = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
+                    .IncludeIgnoredBPs = CBool(GetSettingValue(BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "IncludeIgnoredBPs", DefaultBPViewerIgnoreBPsCheck))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultBPViewerSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading BP Viewer Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultBPViewerSettings()
+        End Try
+
+        ' Save them locally and then export
+        BPViewSettings = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveBPViewerSettings(SentSettings As BPViewerSettings)
+        Dim BPSettingsList(11) As Setting
+
+        Try
+            BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
+            BPSettingsList(1) = New Setting("Tech1Check", CStr(SentSettings.Tech1Check))
+            BPSettingsList(2) = New Setting("Tech2Check", CStr(SentSettings.Tech2Check))
+            BPSettingsList(3) = New Setting("Tech3Check", CStr(SentSettings.Tech3Check))
+            BPSettingsList(4) = New Setting("TechStorylineCheck", CStr(SentSettings.TechStorylineCheck))
+            BPSettingsList(5) = New Setting("TechFactionCheck", CStr(SentSettings.TechFactionCheck))
+            BPSettingsList(6) = New Setting("TechPirateCheck", CStr(SentSettings.TechPirateCheck))
+            BPSettingsList(7) = New Setting("SmallCheck", CStr(SentSettings.SmallCheck))
+            BPSettingsList(8) = New Setting("MediumCheck", CStr(SentSettings.MediumCheck))
+            BPSettingsList(9) = New Setting("LargeCheck", CStr(SentSettings.LargeCheck))
+            BPSettingsList(10) = New Setting("XLCheck", CStr(SentSettings.XLCheck))
+            BPSettingsList(11) = New Setting("IncludeIgnoredBPs", CStr(SentSettings.IncludeIgnoredBPs))
+
+            Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, BPSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving BP Viewer Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Loads the defaults
+    Public Function SetDefaultBPViewerSettings() As BPViewerSettings
+        Dim LocalSettings As BPViewerSettings
+
+        With LocalSettings
+            .BlueprintTypeSelection = DefaultBPViewerSelectionType
+            .Tech1Check = DefaultBPViewerTechChecks
+            .Tech2Check = DefaultBPViewerTechChecks
+            .Tech3Check = DefaultBPViewerTechChecks
+            .TechStorylineCheck = DefaultBPViewerTechChecks
+            .TechFactionCheck = DefaultBPViewerTechChecks
+            .TechPirateCheck = DefaultBPViewerTechChecks
+            .SmallCheck = DefaultBPViewerSizeChecks
+            .MediumCheck = DefaultBPViewerSizeChecks
+            .LargeCheck = DefaultBPViewerSizeChecks
+            .XLCheck = DefaultBPViewerSizeChecks
+            .IncludeIgnoredBPs = DefaultBPViewerIgnoreBPsCheck
+        End With
+
+        ' Save locally
+        BPViewSettings = LocalSettings
+
+        Return LocalSettings
+
+    End Function
+
+    ' Returns the tab settings
+    Public Function GetBPViewerSettings() As BPViewerSettings
+        Return BPViewSettings
+    End Function
+
+#End Region
+
 End Class
 
 ' For general program settings
@@ -5402,6 +5526,8 @@ Public Structure BPTabSettings
 
     Dim RawProfitType As String
     Dim CompProfitType As String
+
+    Dim CompressedOre As Boolean
 
 End Structure
 
@@ -6170,6 +6296,27 @@ Public Structure ShoppingListSettings
     Dim Fees As Boolean
     Dim CalcBuyBuyOrder As Boolean
     Dim Usage As Boolean
+    Dim UseEveFormat As Boolean
+    Dim ReloadBPsFromFile As Boolean
+End Structure
+
+' For the BP Viewer
+Public Structure BPViewerSettings
+    Dim BlueprintTypeSelection As String ' Saves the name of the radio button used
+
+    Dim Tech1Check As Boolean
+    Dim Tech2Check As Boolean
+    Dim Tech3Check As Boolean
+    Dim TechStorylineCheck As Boolean
+    Dim TechFactionCheck As Boolean
+    Dim TechPirateCheck As Boolean
+
+    Dim IncludeIgnoredBPs As Boolean
+
+    Dim SmallCheck As Boolean
+    Dim MediumCheck As Boolean
+    Dim LargeCheck As Boolean
+    Dim XLCheck As Boolean
 End Structure
 
 ' For all types of facilities
