@@ -274,6 +274,12 @@ Public Class Blueprint
         NumberofBlueprints = NumBlueprints
         AdditionalCosts = UserAddlCosts
 
+        'If TechLevel > 1 Then
+        '    UserRuns = CInt(Math.Ceiling(BPRuns / PortionSize))
+        'Else
+        UserRuns = BPRuns
+        'End If
+
         BPCharacter = UserCharacter
 
         ' Set the skills to use for this blueprint - changed to type ID's due to name changes (1/29/2014)
