@@ -1221,7 +1221,7 @@ NoBonus:
                 Case IndustryType.CapitalManufacturing
                     FacilityReference = SelectedBPCapitalManufacturingFacility
                 Case IndustryType.CapitalComponentManufacturing
-                    FacilityReference = SelectedBPComponentManufacturingFacility
+                    FacilityReference = SelectedBPCapitalComponentManufacturingFacility
                 Case IndustryType.ComponentManufacturing
                     FacilityReference = SelectedBPComponentManufacturingFacility
                 Case IndustryType.SubsystemManufacturing
@@ -1260,7 +1260,7 @@ NoBonus:
                 Case IndustryType.ComponentManufacturing
                     FacilityReference = SelectedCalcComponentManufacturingFacility
                 Case IndustryType.CapitalComponentManufacturing
-                    FacilityReference = SelectedCalcComponentManufacturingFacility
+                    FacilityReference = SelectedCalcCapitalComponentManufacturingFacility
                 Case IndustryType.SubsystemManufacturing
                     FacilityReference = SelectedCalcSubsystemManufacturingFacility
                 Case IndustryType.SuperManufacturing
@@ -3612,6 +3612,13 @@ InvalidDate:
         End Try
 
         Return CacheDate
+
+    End Function
+
+    ' Single function to build the where clause of a options selected for displaying BPs
+    Public Function BuildBPWhereClause() As String
+
+
 
     End Function
 

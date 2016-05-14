@@ -309,7 +309,7 @@ Public Class frmLPStore
         ElseIf rbtnDeployable.Checked Then
             SQL = SQL & "AND categoryName = 'Deployable' "
         ElseIf rbtnDrones.Checked Then
-            SQL = SQL & "AND categoryName = 'Drone' "
+            SQL = SQL & "AND categoryName IN ('Drone','Fighter') "
         ElseIf rbtnImplants.Checked Then
             SQL = SQL & "AND categoryName = 'Implant' "
         ElseIf rbtnModules.Checked Then

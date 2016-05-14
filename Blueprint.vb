@@ -86,11 +86,11 @@ Public Class Blueprint
     Private CanBuildAll As Boolean ' if the user can build this BP and all components
 
     ' Material lists
-    Private RawMaterials As Materials ' The list of All Raw materials for this item including the raw mats to make the buildable components in info list
-    Private ComponentMaterials As Materials ' List of all the required materials to make the item as shown in info list
+    Public RawMaterials As Materials ' The list of All Raw materials for this item including the raw mats to make the buildable components in info list
+    Public ComponentMaterials As Materials ' List of all the required materials to make the item as shown in info list
 
     ' Saving all the materials for each built component
-    Private BuiltComponentList As BuiltItemList
+    Public BuiltComponentList As BuiltItemList
 
     ' Saves all the raw materials on the bp that are not built
     Private BPRawMats As Materials
@@ -103,8 +103,8 @@ Public Class Blueprint
     Private MaxRunsPerBP As Integer ' The max runs for a copy or invented bpc. Zero is unlimited runs
     Private ReqInventionSkills As New EVESkillList ' For inventing this BP
     Private ReqCopySkills As New EVESkillList ' For copying the BPC
-    Private InventionMaterials As Materials
-    Private CopyMaterials As Materials ' Some copies require items
+    Public InventionMaterials As Materials
+    Public CopyMaterials As Materials ' Some copies require items
     Private InventionChance As Double
     Private InventionDecryptor As New Decryptor
     Private Relic As String ' Name of relic
@@ -270,16 +270,15 @@ Public Class Blueprint
             NumberofProductionLines = NumProductionLines
         End If
 
+        UserRuns = BPRuns
         NumberofBlueprints = NumBlueprints
-
         AdditionalCosts = UserAddlCosts
 
-        If TechLevel > 1 Then
-            UserRuns = Cint(Math.Ceiling(BPRuns/PortionSize))   
-        Else
-            UserRuns = BPRuns 
-        End If
-        
+        'If TechLevel > 1 Then
+        '    UserRuns = CInt(Math.Ceiling(BPRuns / PortionSize))
+        'Else
+        UserRuns = BPRuns
+        'End If
 
         BPCharacter = UserCharacter
 
