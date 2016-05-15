@@ -1886,7 +1886,7 @@ Public Class frmMain
                 ' Capital Component Facility Usage
                 Select Case SelectedBlueprint.GetItemGroupID
                     Case TitanGroupID, SupercarrierGroupID, CarrierGroupID, DreadnoughtGroupID,
-                        JumpFreighterGroupID, FreighterGroupID, IndustrialCommandShipGroupID, CapitalIndustrialShipGroupID
+                        JumpFreighterGroupID, FreighterGroupID, IndustrialCommandShipGroupID, CapitalIndustrialShipGroupID, FAXGroupID
                         ' Only add cap component usage for ships that use them
                         RawCostSplit.UsageName = "Capital Component Facility Usage"
                         RawCostSplit.UsageValue = SelectedBlueprint.GetCapComponentFacilityUsage
@@ -2017,7 +2017,7 @@ Public Class frmMain
                 ' Capital Component Facility Usage
                 Select Case SelectedBlueprint.GetItemGroupID
                     Case TitanGroupID, SupercarrierGroupID, CarrierGroupID, DreadnoughtGroupID,
-                        JumpFreighterGroupID, FreighterGroupID, IndustrialCommandShipGroupID, CapitalIndustrialShipGroupID
+                        JumpFreighterGroupID, FreighterGroupID, IndustrialCommandShipGroupID, CapitalIndustrialShipGroupID, FAXGroupID
                         ' Only add cap component usage for ships that use them
                         RawCostSplit.SplitName = "Capital Component Facility Usage"
                         RawCostSplit.SplitValue = SelectedBlueprint.GetCapComponentFacilityUsage
@@ -3224,7 +3224,11 @@ Public Class frmMain
                 ' First, see if we are updating an ME or a price, then deal with each separately
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
-                    SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
+                    SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
+                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE "
+                    SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
+                    SQL = SQL & "WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
+
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsData = DBCommand.ExecuteReader
                     rsData.Read()
@@ -3233,9 +3237,8 @@ Public Class frmMain
                     Dim TempBPType As BPType
                     Dim AdditionalCost As Double
 
-                    If (SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True) _
-                        Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T1 Then
-                        ' T2 BPO or T1 BPO
+                    If rsData.GetInt64(2) = BlueprintTechLevel.T1 Then
+                        ' T1 BPO
                         TempBPType = BPType.Original
                     Else
                         ' Remaining T2 and T3 must be invited
@@ -3249,7 +3252,7 @@ Public Class frmMain
                         AdditionalCost = 0
                     End If
 
-                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, 0, False, False, AdditionalCost)
+                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, 0, CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
@@ -4131,7 +4134,7 @@ Tabs:
         Select Case cmbBPFacilityActivities.Text
             Case ActivityManufacturing
                 Select Case BPGroupID
-                    Case SupercarrierGroupID, TitanGroupID
+                    Case SupercarrierGroupID, TitanGroupID, FAXGroupID
                         SelectedBPManufacturingFacility.IncludeActivityUsage = chkBPFacilityIncludeUsage.Checked
                         Call SelectedBPSuperManufacturingFacility.SaveFacility(BPTab)
                         Call UpdateMMTMTaxDataforOutpost(SelectedBPSuperManufacturingFacility, IndustryActivities.Manufacturing)
@@ -5644,6 +5647,12 @@ Tabs:
         cmbBPBlueprintSelection.SelectAll()
     End Sub
 
+    Private Sub cmbBPBlueprintSelection_LostFocus(sender As Object, e As EventArgs) Handles cmbBPBlueprintSelection.LostFocus
+        ' Close the list view when lost focus
+        Call lstBPList.Hide()
+        Call cmbBPBlueprintSelection.SelectAll()
+    End Sub
+
     ' Thrown when the user changes the value in the combo box
     Private Sub cmbBPBlueprintSelection_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.SelectionChangeCommitted
 
@@ -5731,6 +5740,12 @@ Tabs:
             cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString
             cmbBPBlueprintSelection.SelectAll()
         End If
+    End Sub
+
+    Private Sub lstBPList_LostFocus(sender As Object, e As EventArgs) Handles lstBPList.LostFocus
+        ' hide when losing focus
+        Call lstBPList.Hide()
+        Call cmbBPBlueprintSelection.SelectAll()
     End Sub
 
     ' Loads the blueprint combo based on what was selected
@@ -7441,7 +7456,8 @@ Tabs:
 
         If SelectedBlueprint.HasComponents Then
             Select Case BPGroupID
-                Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID
+                Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID,
+                     IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, FAXGroupID
                     If Not cmbBPFacilityActivities.Items.Contains(ActivityCapComponentManufacturing) Then
                         cmbBPFacilityActivities.Items.Add(ActivityCapComponentManufacturing)
                     End If
