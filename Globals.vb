@@ -170,6 +170,7 @@ Public Module Public_Variables
     Public Const IndustrialCommandShipGroupID As Integer = 941
     Public Const JumpFreighterGroupID As Integer = 902
     Public Const SupercarrierGroupID As Integer = 659
+    Public Const FAXGroupID As Integer = 1538
     Public Const TitanGroupID As Integer = 30
     Public Const BoosterGroupID As Integer = 303
 
@@ -1162,7 +1163,7 @@ NoBonus:
                 Case ActivityManufacturing
                     ' Need to load selected manufacturing facility
                     Select Case ItemGroupID
-                        Case SupercarrierGroupID, TitanGroupID
+                        Case SupercarrierGroupID, TitanGroupID, FAXGroupID
                             SelectedIndyType = IndustryType.SuperManufacturing
                         Case BoosterGroupID
                             SelectedIndyType = IndustryType.BoosterManufacturing
@@ -1746,7 +1747,8 @@ NoBonus:
         If Not IsNothing(SelectedBlueprint) And Not NewBP Then
             If SelectedBlueprint.HasComponents Then
                 Select Case BPGroupID
-                    Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID
+                    Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID,
+                         IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, FAXGroupID
                         FacilityActivitiesCombo.Items.Add(ActivityCapComponentManufacturing)
                         If BPGroupID = JumpFreighterGroupID Then
                             ' Need to add both cap and components
@@ -1932,7 +1934,7 @@ NoBonus:
                 SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
                     ' For caps, only show low sec
@@ -2066,7 +2068,7 @@ NoBonus:
                 End If
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
                     ' For caps, only show low sec
@@ -2192,9 +2194,9 @@ NoBonus:
                         SQL = SQL & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for component
                         Select Case ItemGroupID
-                            Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID, _
-                                CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, _
-                                AdvCapitalComponentGroupID, CapitalComponentGroupID
+                            Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID,
+                                CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID,
+                                AdvCapitalComponentGroupID, CapitalComponentGroupID, FAXGroupID
                                 SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, CapitalComponentGroupID, IndustryActivities.Manufacturing) ' These all use cap components
                             Case Else
                                 SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, ConstructionComponentsGroupID, IndustryActivities.Manufacturing)
@@ -2389,9 +2391,9 @@ NoBonus:
                     SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                     ' Add category for component
                     Select Case ItemGroupID
-                        Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID, _
-                            CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, _
-                                AdvCapitalComponentGroupID, CapitalComponentGroupID
+                        Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID,
+                            CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID,
+                                AdvCapitalComponentGroupID, CapitalComponentGroupID, FAXGroupID
                             SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, CapitalComponentGroupID, IndustryActivities.Manufacturing) ' These all use cap components
                         Case Else
                             SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, ConstructionComponentsGroupID, IndustryActivities.Manufacturing)

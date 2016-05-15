@@ -37,7 +37,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Root Directory\</OutputPath>
     <DocumentationFile>EVE Isk per Hour.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
