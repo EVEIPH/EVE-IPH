@@ -8,7 +8,7 @@ Imports System.Net
 ' Class for all CREST function calls, which will update tables in the DB if past cache time
 Public Class EVECREST
     'Private Const CRESTRootServerURL = "https://public-crest-sisi.testeveonline.com"
-    Private Const CRESTRootServerURL = "https://public-crest.eveonline.com"
+    Private Const CRESTRootServerURL = "https://crest-tq.eveonline.com"
 
     ' URL for each file
     Private Const CRESTIndustryTeamSpecialties = "/industry/specialities/"
