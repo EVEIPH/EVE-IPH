@@ -6650,7 +6650,7 @@ Tabs:
             readerBP.Close()
             SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED = 2 AND OWNED <> 0 "
+            SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED <> 0 AND OWNED <> 0 "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()

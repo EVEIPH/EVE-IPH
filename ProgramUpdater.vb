@@ -45,16 +45,26 @@ Public Class ProgramUpdater
 
     End Sub
 
+    Private Structure MD5FileInfo
+        Dim MD5 As String
+        Dim URL As String
+        Dim FileName As String
+    End Structure
+
     ' Checks the updater file to see if it needs to be updated, updates it if needed, then shells to the updater and closes this application
     Public Sub RunUpdate()
         Dim m_xmld As New XmlDocument
         Dim m_nodelist As XmlNodeList
         Dim m_node As XmlNode
 
+        Dim UpdateFiles As New List(Of MD5FileInfo)
+        Dim TempUpdateFile As New MD5FileInfo
+
         Dim UpdaterServerFileURL As String = ""
         Dim UpdaterServerFileMD5 As String = ""
-        Dim UpdaterLocalFileMD5 As String = ""
-        Dim UpdaterServerFilePath As String = ""
+
+        Dim IonicServerFileURL As String = ""
+        Dim IonicServierFileMD5 As String = ""
 
         Dim fi As FileInfo
 
@@ -67,40 +77,28 @@ Public Class ProgramUpdater
         m_xmld.Load(ServerXMLLastUpdatePath)
         m_nodelist = m_xmld.SelectNodes("/EVEIPH/result/rowset/row")
 
-        ' Loop through the nodes and find the MD5 and download URL for the updater
+        ' Loop through the nodes and find the MD5 and download URL for the updater and any other files necessary to load the updater
         For Each m_node In m_nodelist
             If m_node.Attributes.GetNamedItem("Name").Value = UpdaterFileName Then
-                UpdaterServerFileMD5 = m_node.Attributes.GetNamedItem("MD5").Value
-                UpdaterServerFileURL = m_node.Attributes.GetNamedItem("URL").Value
-                Exit For
+                TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
+                TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
+                TempUpdateFile.FileName = UpdaterFileName
+                UpdateFiles.Add(TempUpdateFile)
+            ElseIf m_node.Attributes.GetNamedItem("Name").Value = IonicZipFileName Then ' We need to download this in the main program because the update won't load without it
+                TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
+                TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
+                TempUpdateFile.FileName = IonicZipFileName
+                UpdateFiles.Add(TempUpdateFile)
             End If
         Next
 
-        ' Get the local updater MD5, if not found, we run update anyway
-        UpdaterLocalFileMD5 = MD5CalcFile(UserWorkingFolder & UpdaterFileName)
-
-        If UpdaterLocalFileMD5 <> UpdaterServerFileMD5 Then
-            ' Update the updater file, download the new file
-            UpdaterServerFilePath = DownloadFileFromServer(UpdaterServerFileURL, UpdaterFilePath & UpdaterFileName)
-
-            If MD5CalcFile(UpdaterServerFilePath) <> UpdaterServerFileMD5 Then
-                UpdaterServerFilePath = DownloadFileFromServer(UpdaterServerFileURL, UpdaterFilePath & UpdaterFileName)
-
-                If MD5CalcFile(UpdaterServerFilePath) <> UpdaterServerFileMD5 Or UpdaterServerFilePath = "" Then
-                    ' Download error, just leave because we want this update to go through before running
-                    GoTo DownloadError
-                End If
+        ' Download the two files if necessary
+        For Each UpdateFile In UpdateFiles
+            ' Download each file needed
+            If DownloadUpdatedFile(UpdateFile.MD5, UpdateFile.URL, UpdateFile.FileName) = "Download Error" Then
+                GoTo DownloadError
             End If
-
-            ' Delete the old updater file, rename the new
-            If File.Exists(UserWorkingFolder & UpdaterFileName) Then
-                File.Delete(UserWorkingFolder & UpdaterFileName)
-            End If
-
-            ' Move the downloaded file
-            fi = New FileInfo(UpdaterServerFilePath)
-            fi.MoveTo(UserWorkingFolder & UpdaterFileName)
-        End If
+        Next
 
         On Error Resume Next
 
@@ -114,12 +112,6 @@ Public Class ProgramUpdater
         ProcInfo.WindowStyle = ProcessWindowStyle.Normal
         ProcInfo.FileName = UpdaterFileName
         ProcInfo.Arguments = String.Empty
-        'ProcInfo.UseShellExecute = True
-
-        'ProcInfo.Arguments = "|" & EVEIPHEXEPath ' Add pipe to read the path in the updater
-
-        '' Shell the updater and send an argument to it on as the shell back to path
-        'Call Shell(UpdaterFileName)
         Process.Start(ProcInfo)
 
         ' Close this program
@@ -137,6 +129,42 @@ DownloadError:
         Exit Sub
 
     End Sub
+
+    Private Function DownloadUpdatedFile(ServerFileMD5 As String, ServerFileURL As String, Filename As String) As String
+        Dim LocalFileMD5 As String = ""
+        Dim ServerFilePath As String = ""
+        Dim fi As FileInfo
+
+        ' Get the local updater MD5, if not found, we run update anyway
+        LocalFileMD5 = MD5CalcFile(UserWorkingFolder & UpdaterFileName)
+
+        If LocalFileMD5 <> ServerFileMD5 Then
+            ' Update the updater file, download the new file
+            ServerFilePath = DownloadFileFromServer(ServerFileURL, UpdaterFilePath & Filename)
+
+            If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Then
+                ' Try again
+                ServerFilePath = DownloadFileFromServer(ServerFileURL, UpdaterFilePath & Filename)
+
+                If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Or ServerFilePath = "" Then
+                    ' Download error, just leave because we want this update to go through before running
+                    Return "Download Error"
+                End If
+            End If
+
+            ' Delete the old file, rename the new
+            If File.Exists(UserWorkingFolder & Filename) Then
+                File.Delete(UserWorkingFolder & Filename)
+            End If
+
+            ' Move the downloaded file
+            fi = New FileInfo(ServerFilePath)
+            fi.MoveTo(UserWorkingFolder & Filename)
+        End If
+
+        Return ""
+
+    End Function
 
     ' Function just takes the download date of the current XML file and compares to one on server. If date is newer, then runs update
     Public Function IsProgramUpdatable() As UpdateCheckResult

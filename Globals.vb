@@ -49,6 +49,7 @@ Public Module Public_Variables
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.s3db"
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
+    Public Const IonicZipFileName As String = "Ionic.Zip.dll"
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
 
@@ -3617,12 +3618,12 @@ InvalidDate:
 
     End Function
 
-    ' Single function to build the where clause of a options selected for displaying BPs
-    Public Function BuildBPWhereClause() As String
+    '' Single function to build the where clause of a options selected for displaying BPs
+    'Public Function BuildBPWhereClause() As String
 
 
 
-    End Function
+    'End Function
 
     ' Sorts the reference listview and column
     Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder)
@@ -4454,29 +4455,36 @@ InvalidDate:
             End If
         End If
 
+        EVEDB.BeginSQLiteTransaction()
+
         ' If they are setting to not owned, not updating the ME/TE and not saving favorite or ignore, then remove the bp
         If (UpdatedBPType = BPType.NotOwned And Favorite = False And Ignore = False) Or RemoveAll Then
 
             ' Look up the BP first to see if it is scanned
-            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID = " & CStr(BPID) & " AND SCANNED <> 0"
+            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS "
+            SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID) & " AND SCANNED <> 0"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
+            readerBP.Read()
 
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, Me = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
+                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "And BLUEPRINT_ID =" & CStr(BPID)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
-                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID=" & BPID
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " And BLUEPRINT_ID=" & BPID
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            SQL = "UPDATE ALL_BLUEPRINTS Set IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else
 
@@ -4501,10 +4509,12 @@ InvalidDate:
             End If
 
             ' See if the BP is in the DB
-            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
+            SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
+            readerBP.Read()
 
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
@@ -4512,25 +4522,28 @@ InvalidDate:
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                 SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
                 SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Else
-                ' Update it 
-                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
+                ' Update it - save the old TE
+                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(readerBP.GetInt32(0)) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
                 SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
-                SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
             SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If
 
         readerBP.Close()
         readerBP = Nothing
         DBCommand = Nothing
+
+        EVEDB.CommitSQLiteTransaction()
 
         Return UpdatedBPType
 
