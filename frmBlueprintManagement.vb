@@ -781,10 +781,12 @@ Public Class frmBlueprintManagement
 
             If ScannedValue = 0 Then
                 BPList.BackColor = Color.White
-            ElseIf ScannedValue = 1 Then
-                BPList.BackColor = Color.BlanchedAlmond
-            ElseIf ScannedValue = 2 Then
-                BPList.BackColor = Color.LightGreen
+            Else
+                If SelectedCharacter.ID = readerBP.GetInt32(11) Then
+                    BPList.BackColor = Color.BlanchedAlmond
+                Else ' must be corp
+                    BPList.BackColor = Color.LightGreen
+                End If
             End If
 
             BPList.SubItems.Add(CStr(If(readerBP.IsDBNull(15), 0, readerBP.GetInt32(15)))) ' Scanned
@@ -892,49 +894,57 @@ Public Class frmBlueprintManagement
             End If
         End With
 
+        Dim TempClause As String = ""
+
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
+            TempClause = "OWNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE OWNED <> 0 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND OWNED <> 0  "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include personal scanned
+            TempClause = "USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE SCANNED = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND SCANNED = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnScannedCorpBPs.Checked Then
             ' Include corp scanned
+            TempClause = "USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE SCANNED = 2 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND SCANNED = 2 "
+                WhereClause = WhereClause & " AND " & TempClause
             End If
         ElseIf rbtnFavorites.Checked Then
             ' Favorites for the user
+            TempClause = "FAVORITE = 1 "
             If WhereClause = "" Then
-                WhereClause = "WHERE FAVORITE = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND FAVORITE = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnIgnored.Checked Then
             ' All ignored
+            TempClause = "IGNORE = 1"
             If WhereClause = "" Then
-                WhereClause = "WHERE IGNORE = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND IGNORE = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
         ' Add not owned if checked
         If chkNotOwned.Checked Then
+            TempClause = "OWNED = 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE OWNED = 0 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND OWNED = 0 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
@@ -943,7 +953,7 @@ Public Class frmBlueprintManagement
             If WhereClause = "" Then
                 WhereClause = "WHERE IGNORE = 0 "
             Else
-                WhereClause = WhereClause & "AND IGNORE = 0 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
@@ -993,7 +1003,7 @@ Public Class frmBlueprintManagement
 
         ' Add Item Type
         If SQLItemType <> "" Then
-            SQLItemType = "ITEM_TYPE IN (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
+            SQLItemType = "ITEM_TYPE In (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
         Else
             ' They need to have at least one. If not, just return nothing
             BuildBPSelectQuery = ""
@@ -1022,7 +1032,7 @@ Public Class frmBlueprintManagement
 
         If TempRace <> "" Then
             TempRace = "(" & TempRace.Substring(0, Len(TempRace) - 1) & ")"
-            RaceClause = "AND (RACE_ID IN " & TempRace & ") "
+            RaceClause = "And (RACE_ID In " & TempRace & ") "
         Else
             ' They need to have at least one. If not, just return nothing
             BuildBPSelectQuery = ""
@@ -1031,12 +1041,12 @@ Public Class frmBlueprintManagement
 
         ' Finally add on text if they added it
         If Trim(txtBPSearch.Text) <> "" Then
-            TextClause = TextClause & "AND " & GetSearchText(txtBPSearch.Text, "BLUEPRINT_NAME", "BLUEPRINT_GROUP")
+            TextClause = TextClause & "And " & GetSearchText(txtBPSearch.Text, "BLUEPRINT_NAME", "BLUEPRINT_GROUP")
         End If
 
         ' If they select a type of item, set that
         If Trim(cmbBPTypeFilter.Text) <> SelectTypeText Then
-            ComboType = "AND ITEM_GROUP ='" & FormatDBString(Trim(cmbBPTypeFilter.Text)) & "' "
+            ComboType = "And ITEM_GROUP ='" & FormatDBString(Trim(cmbBPTypeFilter.Text)) & "' "
         End If
 
         ' See if they want BPOs, Copies, or Invented BPCs
@@ -1267,9 +1277,9 @@ Public Class frmBlueprintManagement
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
+                WhereClause = "WHERE (USER_ID =" & SelectedCharacter.ID & "OR USER_ID = " & SelectedCharacter.CharacterCorporation.CorporationID & ") AND OWNED <> 0  "
             Else
-                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
+                WhereClause = WhereClause & " AND USER_ID =" & SelectedCharacter.ID & " AND OWNED <> 0  "
             End If
 
             ' Set the correct ID
@@ -1278,9 +1288,9 @@ Public Class frmBlueprintManagement
         ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include all BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID = " & SelectedCharacter.ID & " AND SCANNED = 1 "
+                WhereClause = "WHERE USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             Else
-                WhereClause = WhereClause & " AND USER_ID = " & SelectedCharacter.ID & " AND SCANNED = 1 "
+                WhereClause = WhereClause & " AND USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             End If
 
             ' Set the correct ID
@@ -1289,9 +1299,9 @@ Public Class frmBlueprintManagement
         ElseIf rbtnScannedCorpBPs.Checked Then
             ' Include corp scanned
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID=" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED = 2 "
+                WhereClause = "WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             Else
-                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED = 2 "
+                WhereClause = WhereClause & " AND USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             End If
 
             ' Set the correct ID
