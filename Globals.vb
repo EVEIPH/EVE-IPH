@@ -532,8 +532,8 @@ Public Module Public_Variables
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
 
         Dim TempFee As Double
-        ' Old BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / e ^ (0.1000 × FactionStanding + 0.04000 × CorporationStanding)
-        ' BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / 2 ^ (0.1400 × FactionStanding + 0.06000 × CorporationStanding) 
+        ' Old BrokerFeeÂ % = (1.000Â % Â– 0.050Â % Ã— BrokerRelationsSkillLevel) / e ^ (0.1000 Ã— FactionStanding + 0.04000 Ã— CorporationStanding)
+        ' BrokerFee % = (1.000 % Â– 0.050 % Ã— BrokerRelationsSkillLevel) / 2 ^ (0.1400 Ã— FactionStanding + 0.06000 Ã— CorporationStanding) 
         'TempFee = ((1 - 0.05 * BrokerRelations) / Math.Exp(0.1 * UserApplicationSettings.BrokerFactionStanding + 0.04 * UserApplicationSettings.BrokerCorpStanding)) / 100 * ItemMarketCost
         'TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
 
@@ -4109,7 +4109,7 @@ InvalidDate:
             End If
 
             If ErrorText <> "" Then
-                fAccessError.ErrorLink = "http://support.eveonline.com/api/Key/CreatePredefined/589962/"
+                fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
                 fAccessError.ShowDialog()
             End If
 
