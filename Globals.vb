@@ -9,8 +9,8 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC-118-3_1.0_117575"
-    Public Const VersionNumber As String = "3.2.*"
+    Public Const SDEVersion As String = "Citadel_1.0"
+    Public Const VersionNumber As String = "3.3.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -41,7 +41,7 @@ Public Module Public_Variables
 
     Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
     Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
-    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/view/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
+    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
@@ -49,6 +49,7 @@ Public Module Public_Variables
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.s3db"
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
+    Public Const IonicZipFileName As String = "Ionic.Zip.dll"
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
 
@@ -170,6 +171,7 @@ Public Module Public_Variables
     Public Const IndustrialCommandShipGroupID As Integer = 941
     Public Const JumpFreighterGroupID As Integer = 902
     Public Const SupercarrierGroupID As Integer = 659
+    Public Const FAXGroupID As Integer = 1538
     Public Const TitanGroupID As Integer = 30
     Public Const BoosterGroupID As Integer = 303
 
@@ -522,7 +524,7 @@ Public Module Public_Variables
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 10% - Starting level with Accounting 0 is 1.5% tax 
-        Return (1.5 - (Accounting * 0.1 * 1.5)) / 100 * ItemMarketCost
+        Return (2.0 - (Accounting * 0.1 * 2.0)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -533,7 +535,10 @@ Public Module Public_Variables
         ' Old BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / e ^ (0.1000 × FactionStanding + 0.04000 × CorporationStanding)
         ' BrokerFee % = (1.000 % – 0.050 % × BrokerRelationsSkillLevel) / 2 ^ (0.1400 × FactionStanding + 0.06000 × CorporationStanding) 
         'TempFee = ((1 - 0.05 * BrokerRelations) / Math.Exp(0.1 * UserApplicationSettings.BrokerFactionStanding + 0.04 * UserApplicationSettings.BrokerCorpStanding)) / 100 * ItemMarketCost
-        TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
+        'TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
+
+        Dim BrokerTax = 3.0 - (0.1 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+        TempFee = (BrokerTax / 100) * ItemMarketCost
 
         If TempFee < 100 Then
             Return 100
@@ -1159,7 +1164,7 @@ NoBonus:
                 Case ActivityManufacturing
                     ' Need to load selected manufacturing facility
                     Select Case ItemGroupID
-                        Case SupercarrierGroupID, TitanGroupID
+                        Case SupercarrierGroupID, TitanGroupID, FAXGroupID
                             SelectedIndyType = IndustryType.SuperManufacturing
                         Case BoosterGroupID
                             SelectedIndyType = IndustryType.BoosterManufacturing
@@ -1174,14 +1179,14 @@ NoBonus:
 
                             If ItemCategoryID = SubsystemCategoryID Then
                                 SelectedIndyType = IndustryType.SubsystemManufacturing
-                            ElseIf ItemCategoryID = ComponentCategoryID And ItemGroupID <> StationPartsGroupID Then
+                            ElseIf ItemCategoryID = ComponentCategoryID Then
                                 ' Add category for component
                                 If ItemGroupID = CapitalComponentGroupID Or ItemGroupID = AdvCapitalComponentGroupID Then
                                     SelectedIndyType = IndustryType.CapitalComponentManufacturing ' These all use cap components
                                 Else
                                     SelectedIndyType = IndustryType.ComponentManufacturing
                                 End If
-                            ElseIf NoPOSCategoryIDs.Contains(ItemCategoryID) Or ItemGroupID = StationEggGroupID Or ItemGroupID = StationPartsGroupID Then
+                            ElseIf NoPOSCategoryIDs.Contains(ItemCategoryID) Or ItemGroupID = StationEggGroupID Then
                                 SelectedIndyType = IndustryType.NoPOSManufacturing
                             End If
                     End Select
@@ -1218,7 +1223,7 @@ NoBonus:
                 Case IndustryType.CapitalManufacturing
                     FacilityReference = SelectedBPCapitalManufacturingFacility
                 Case IndustryType.CapitalComponentManufacturing
-                    FacilityReference = SelectedBPComponentManufacturingFacility
+                    FacilityReference = SelectedBPCapitalComponentManufacturingFacility
                 Case IndustryType.ComponentManufacturing
                     FacilityReference = SelectedBPComponentManufacturingFacility
                 Case IndustryType.SubsystemManufacturing
@@ -1257,7 +1262,7 @@ NoBonus:
                 Case IndustryType.ComponentManufacturing
                     FacilityReference = SelectedCalcComponentManufacturingFacility
                 Case IndustryType.CapitalComponentManufacturing
-                    FacilityReference = SelectedCalcComponentManufacturingFacility
+                    FacilityReference = SelectedCalcCapitalComponentManufacturingFacility
                 Case IndustryType.SubsystemManufacturing
                     FacilityReference = SelectedCalcSubsystemManufacturingFacility
                 Case IndustryType.SuperManufacturing
@@ -1743,7 +1748,8 @@ NoBonus:
         If Not IsNothing(SelectedBlueprint) And Not NewBP Then
             If SelectedBlueprint.HasComponents Then
                 Select Case BPGroupID
-                    Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID
+                    Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID,
+                         IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, FAXGroupID
                         FacilityActivitiesCombo.Items.Add(ActivityCapComponentManufacturing)
                         If BPGroupID = JumpFreighterGroupID Then
                             ' Need to add both cap and components
@@ -1929,7 +1935,7 @@ NoBonus:
                 SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
                     ' For caps, only show low sec
@@ -2063,7 +2069,7 @@ NoBonus:
                 End If
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
                     ' For caps, only show low sec
@@ -2189,9 +2195,9 @@ NoBonus:
                         SQL = SQL & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for component
                         Select Case ItemGroupID
-                            Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID, _
-                                CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, _
-                                AdvCapitalComponentGroupID, CapitalComponentGroupID
+                            Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID,
+                                CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID,
+                                AdvCapitalComponentGroupID, CapitalComponentGroupID, FAXGroupID
                                 SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, CapitalComponentGroupID, IndustryActivities.Manufacturing) ' These all use cap components
                             Case Else
                                 SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, ConstructionComponentsGroupID, IndustryActivities.Manufacturing)
@@ -2386,9 +2392,9 @@ NoBonus:
                     SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                     ' Add category for component
                     Select Case ItemGroupID
-                        Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID, _
-                            CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, _
-                                AdvCapitalComponentGroupID, CapitalComponentGroupID
+                        Case TitanGroupID, SupercarrierGroupID, DreadnoughtGroupID, CarrierGroupID,
+                            CapitalIndustrialShipGroupID, IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID,
+                                AdvCapitalComponentGroupID, CapitalComponentGroupID, FAXGroupID
                             SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, CapitalComponentGroupID, IndustryActivities.Manufacturing) ' These all use cap components
                         Case Else
                             SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, ConstructionComponentsGroupID, IndustryActivities.Manufacturing)
@@ -3612,6 +3618,13 @@ InvalidDate:
 
     End Function
 
+    '' Single function to build the where clause of a options selected for displaying BPs
+    'Public Function BuildBPWhereClause() As String
+
+
+
+    'End Function
+
     ' Sorts the reference listview and column
     Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder)
         Dim SortType As SortOrder
@@ -4442,29 +4455,36 @@ InvalidDate:
             End If
         End If
 
+        EVEDB.BeginSQLiteTransaction()
+
         ' If they are setting to not owned, not updating the ME/TE and not saving favorite or ignore, then remove the bp
         If (UpdatedBPType = BPType.NotOwned And Favorite = False And Ignore = False) Or RemoveAll Then
 
             ' Look up the BP first to see if it is scanned
-            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID = " & CStr(BPID) & " AND SCANNED <> 0"
+            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS "
+            SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID) & " AND SCANNED <> 0"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
+            readerBP.Read()
 
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 WHERE USER_ID =" & SelectedCharacter.ID & " AND BLUEPRINT_ID =" & BPID
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, Me = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
+                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "And BLUEPRINT_ID =" & CStr(BPID)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
-                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " AND BLUEPRINT_ID=" & BPID
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " And BLUEPRINT_ID=" & BPID
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            SQL = "UPDATE ALL_BLUEPRINTS Set IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else
 
@@ -4489,10 +4509,12 @@ InvalidDate:
             End If
 
             ' See if the BP is in the DB
-            SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
+            SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
+            readerBP.Read()
 
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
@@ -4500,25 +4522,28 @@ InvalidDate:
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                 SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
                 SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Else
-                ' Update it 
-                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
+                ' Update it - save the old TE
+                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(readerBP.GetInt32(0)) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
                 SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
-                SQL = SQL & "WHERE USER_ID =" & CStr(SelectedCharacter.ID) & " AND BLUEPRINT_ID =" & CStr(BPID)
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
             SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If
 
         readerBP.Close()
         readerBP = Nothing
         DBCommand = Nothing
+
+        EVEDB.CommitSQLiteTransaction()
 
         Return UpdatedBPType
 

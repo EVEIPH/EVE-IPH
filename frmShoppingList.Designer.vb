@@ -51,6 +51,7 @@ Partial Class frmShoppingList
         Me.btnSaveListToFile = New System.Windows.Forms.Button()
         Me.btnLoadListFromFile = New System.Windows.Forms.Button()
         Me.gbOptions = New System.Windows.Forms.GroupBox()
+        Me.chkEveListFormat = New System.Windows.Forms.CheckBox()
         Me.chkBuyorBuyOrder = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysOnTop = New System.Windows.Forms.CheckBox()
         Me.lblUsage = New System.Windows.Forms.Label()
@@ -80,14 +81,14 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
-        Me.chkEveListFormat = New System.Windows.Forms.CheckBox()
-        Me.DeleteBuildStrip.SuspendLayout
-        Me.DeleteItemStrip.SuspendLayout
-        Me.DeleteMaterialStrip.SuspendLayout
-        Me.gbOptions.SuspendLayout
-        Me.gbUpdateList.SuspendLayout
-        Me.gbExportOptions.SuspendLayout
-        Me.SuspendLayout
+        Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
+        Me.DeleteBuildStrip.SuspendLayout()
+        Me.DeleteItemStrip.SuspendLayout()
+        Me.DeleteMaterialStrip.SuspendLayout()
+        Me.gbOptions.SuspendLayout()
+        Me.gbUpdateList.SuspendLayout()
+        Me.gbExportOptions.SuspendLayout()
+        Me.SuspendLayout()
         '
         'lblTotalCost
         '
@@ -100,7 +101,7 @@ Partial Class frmShoppingList
         '
         'lblTC
         '
-        Me.lblTC.AutoSize = true
+        Me.lblTC.AutoSize = True
         Me.lblTC.Location = New System.Drawing.Point(866, 549)
         Me.lblTC.Name = "lblTC"
         Me.lblTC.Size = New System.Drawing.Size(58, 13)
@@ -110,7 +111,7 @@ Partial Class frmShoppingList
         '
         'lblTV
         '
-        Me.lblTV.AutoSize = true
+        Me.lblTV.AutoSize = True
         Me.lblTV.Location = New System.Drawing.Point(852, 606)
         Me.lblTV.Name = "lblTV"
         Me.lblTV.Size = New System.Drawing.Size(72, 13)
@@ -134,7 +135,7 @@ Partial Class frmShoppingList
         Me.btnClose.Size = New System.Drawing.Size(94, 32)
         Me.btnClose.TabIndex = 7
         Me.btnClose.Text = "Exit"
-        Me.btnClose.UseVisualStyleBackColor = true
+        Me.btnClose.UseVisualStyleBackColor = True
         '
         'btnClear
         '
@@ -143,7 +144,7 @@ Partial Class frmShoppingList
         Me.btnClear.Size = New System.Drawing.Size(94, 32)
         Me.btnClear.TabIndex = 6
         Me.btnClear.Text = "Clear List"
-        Me.btnClear.UseVisualStyleBackColor = true
+        Me.btnClear.UseVisualStyleBackColor = True
         '
         'btnCopy
         '
@@ -152,35 +153,35 @@ Partial Class frmShoppingList
         Me.btnCopy.Size = New System.Drawing.Size(94, 32)
         Me.btnCopy.TabIndex = 0
         Me.btnCopy.Text = "Copy List"
-        Me.btnCopy.UseVisualStyleBackColor = true
+        Me.btnCopy.UseVisualStyleBackColor = True
         '
         'DeleteBuildStrip
         '
         Me.DeleteBuildStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DeleteBuildItem})
         Me.DeleteBuildStrip.Name = "ContextMenuStrip1"
-        Me.DeleteBuildStrip.Size = New System.Drawing.Size(156, 26)
+        Me.DeleteBuildStrip.Size = New System.Drawing.Size(165, 26)
         '
         'DeleteBuildItem
         '
         Me.DeleteBuildItem.Name = "DeleteBuildItem"
-        Me.DeleteBuildItem.Size = New System.Drawing.Size(155, 22)
+        Me.DeleteBuildItem.Size = New System.Drawing.Size(164, 22)
         Me.DeleteBuildItem.Text = "Delete Build Item"
         '
         'DeleteItemStrip
         '
         Me.DeleteItemStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DeleteItem})
         Me.DeleteItemStrip.Name = "ContextMenuStrip1"
-        Me.DeleteItemStrip.Size = New System.Drawing.Size(131, 26)
+        Me.DeleteItemStrip.Size = New System.Drawing.Size(135, 26)
         '
         'DeleteItem
         '
         Me.DeleteItem.Name = "DeleteItem"
-        Me.DeleteItem.Size = New System.Drawing.Size(130, 22)
+        Me.DeleteItem.Size = New System.Drawing.Size(134, 22)
         Me.DeleteItem.Text = "Delete Item"
         '
         'lblTotalProfit1
         '
-        Me.lblTotalProfit1.AutoSize = true
+        Me.lblTotalProfit1.AutoSize = True
         Me.lblTotalProfit1.Location = New System.Drawing.Point(824, 663)
         Me.lblTotalProfit1.Name = "lblTotalProfit1"
         Me.lblTotalProfit1.Size = New System.Drawing.Size(100, 13)
@@ -208,7 +209,7 @@ Partial Class frmShoppingList
         '
         'lblAvgIPH1
         '
-        Me.lblAvgIPH1.AutoSize = true
+        Me.lblAvgIPH1.AutoSize = True
         Me.lblAvgIPH1.Location = New System.Drawing.Point(832, 644)
         Me.lblAvgIPH1.Name = "lblAvgIPH1"
         Me.lblAvgIPH1.Size = New System.Drawing.Size(92, 13)
@@ -227,7 +228,7 @@ Partial Class frmShoppingList
         '
         'lblTotalBuiltVolume1
         '
-        Me.lblTotalBuiltVolume1.AutoSize = true
+        Me.lblTotalBuiltVolume1.AutoSize = True
         Me.lblTotalBuiltVolume1.Location = New System.Drawing.Point(795, 625)
         Me.lblTotalBuiltVolume1.Name = "lblTotalBuiltVolume1"
         Me.lblTotalBuiltVolume1.Size = New System.Drawing.Size(129, 13)
@@ -237,7 +238,7 @@ Partial Class frmShoppingList
         '
         'ttMain
         '
-        Me.ttMain.IsBalloon = true
+        Me.ttMain.IsBalloon = True
         '
         'btnUpdateListwithAssets
         '
@@ -246,7 +247,7 @@ Partial Class frmShoppingList
         Me.btnUpdateListwithAssets.Size = New System.Drawing.Size(116, 48)
         Me.btnUpdateListwithAssets.TabIndex = 19
         Me.btnUpdateListwithAssets.Text = "Update with Selected Assets"
-        Me.btnUpdateListwithAssets.UseVisualStyleBackColor = true
+        Me.btnUpdateListwithAssets.UseVisualStyleBackColor = True
         '
         'btnMineThis
         '
@@ -256,20 +257,20 @@ Partial Class frmShoppingList
         Me.btnMineThis.Size = New System.Drawing.Size(94, 32)
         Me.btnMineThis.TabIndex = 1
         Me.btnMineThis.Text = "Mine This!"
-        Me.btnMineThis.UseVisualStyleBackColor = true
-        Me.btnMineThis.Visible = false
+        Me.btnMineThis.UseVisualStyleBackColor = True
+        Me.btnMineThis.Visible = False
         '
         'chkUpdateAssetsWhenUsed
         '
-        Me.chkUpdateAssetsWhenUsed.AutoSize = true
-        Me.chkUpdateAssetsWhenUsed.Checked = true
+        Me.chkUpdateAssetsWhenUsed.AutoSize = True
+        Me.chkUpdateAssetsWhenUsed.Checked = True
         Me.chkUpdateAssetsWhenUsed.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkUpdateAssetsWhenUsed.Location = New System.Drawing.Point(6, 35)
         Me.chkUpdateAssetsWhenUsed.Name = "chkUpdateAssetsWhenUsed"
         Me.chkUpdateAssetsWhenUsed.Size = New System.Drawing.Size(155, 17)
         Me.chkUpdateAssetsWhenUsed.TabIndex = 10
         Me.chkUpdateAssetsWhenUsed.Text = "Update Assets When Used"
-        Me.chkUpdateAssetsWhenUsed.UseVisualStyleBackColor = true
+        Me.chkUpdateAssetsWhenUsed.UseVisualStyleBackColor = True
         '
         'txtListEdit
         '
@@ -277,19 +278,19 @@ Partial Class frmShoppingList
         Me.txtListEdit.Name = "txtListEdit"
         Me.txtListEdit.Size = New System.Drawing.Size(48, 20)
         Me.txtListEdit.TabIndex = 40
-        Me.txtListEdit.TabStop = false
-        Me.txtListEdit.Visible = false
+        Me.txtListEdit.TabStop = False
+        Me.txtListEdit.Visible = False
         '
         'DeleteMaterialStrip
         '
         Me.DeleteMaterialStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DeleteMaterial})
         Me.DeleteMaterialStrip.Name = "ContextMenuStrip1"
-        Me.DeleteMaterialStrip.Size = New System.Drawing.Size(147, 26)
+        Me.DeleteMaterialStrip.Size = New System.Drawing.Size(154, 26)
         '
         'DeleteMaterial
         '
         Me.DeleteMaterial.Name = "DeleteMaterial"
-        Me.DeleteMaterial.Size = New System.Drawing.Size(146, 22)
+        Me.DeleteMaterial.Size = New System.Drawing.Size(153, 22)
         Me.DeleteMaterial.Text = "Delete Material"
         '
         'btnSaveListToFile
@@ -300,7 +301,7 @@ Partial Class frmShoppingList
         Me.btnSaveListToFile.Size = New System.Drawing.Size(94, 32)
         Me.btnSaveListToFile.TabIndex = 2
         Me.btnSaveListToFile.Text = "Save List"
-        Me.btnSaveListToFile.UseVisualStyleBackColor = true
+        Me.btnSaveListToFile.UseVisualStyleBackColor = True
         '
         'btnLoadListFromFile
         '
@@ -310,10 +311,11 @@ Partial Class frmShoppingList
         Me.btnLoadListFromFile.Size = New System.Drawing.Size(94, 32)
         Me.btnLoadListFromFile.TabIndex = 4
         Me.btnLoadListFromFile.Text = "Load List"
-        Me.btnLoadListFromFile.UseVisualStyleBackColor = true
+        Me.btnLoadListFromFile.UseVisualStyleBackColor = True
         '
         'gbOptions
         '
+        Me.gbOptions.Controls.Add(Me.chkRebuildItemsfromList)
         Me.gbOptions.Controls.Add(Me.chkEveListFormat)
         Me.gbOptions.Controls.Add(Me.chkBuyorBuyOrder)
         Me.gbOptions.Controls.Add(Me.chkAlwaysOnTop)
@@ -326,32 +328,42 @@ Partial Class frmShoppingList
         Me.gbOptions.Controls.Add(Me.lblAddlCosts)
         Me.gbOptions.Location = New System.Drawing.Point(214, 538)
         Me.gbOptions.Name = "gbOptions"
-        Me.gbOptions.Size = New System.Drawing.Size(208, 141)
+        Me.gbOptions.Size = New System.Drawing.Size(321, 141)
         Me.gbOptions.TabIndex = 8
-        Me.gbOptions.TabStop = false
+        Me.gbOptions.TabStop = False
         Me.gbOptions.Text = "Options:"
+        '
+        'chkEveListFormat
+        '
+        Me.chkEveListFormat.AutoSize = True
+        Me.chkEveListFormat.Location = New System.Drawing.Point(182, 15)
+        Me.chkEveListFormat.Name = "chkEveListFormat"
+        Me.chkEveListFormat.Size = New System.Drawing.Size(139, 17)
+        Me.chkEveListFormat.TabIndex = 78
+        Me.chkEveListFormat.Text = "Copy in EVE List Format"
+        Me.chkEveListFormat.UseVisualStyleBackColor = True
         '
         'chkBuyorBuyOrder
         '
-        Me.chkBuyorBuyOrder.AutoSize = true
-        Me.chkBuyorBuyOrder.Checked = true
+        Me.chkBuyorBuyOrder.AutoSize = True
+        Me.chkBuyorBuyOrder.Checked = True
         Me.chkBuyorBuyOrder.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkBuyorBuyOrder.Location = New System.Drawing.Point(6, 75)
         Me.chkBuyorBuyOrder.Name = "chkBuyorBuyOrder"
         Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(147, 17)
         Me.chkBuyorBuyOrder.TabIndex = 13
         Me.chkBuyorBuyOrder.Text = "Calcuate Buy / Buy Order"
-        Me.chkBuyorBuyOrder.UseVisualStyleBackColor = true
+        Me.chkBuyorBuyOrder.UseVisualStyleBackColor = True
         '
         'chkAlwaysOnTop
         '
-        Me.chkAlwaysOnTop.AutoSize = true
+        Me.chkAlwaysOnTop.AutoSize = True
         Me.chkAlwaysOnTop.Location = New System.Drawing.Point(6, 15)
         Me.chkAlwaysOnTop.Name = "chkAlwaysOnTop"
         Me.chkAlwaysOnTop.Size = New System.Drawing.Size(96, 17)
         Me.chkAlwaysOnTop.TabIndex = 9
         Me.chkAlwaysOnTop.Text = "Always on Top"
-        Me.chkAlwaysOnTop.UseVisualStyleBackColor = true
+        Me.chkAlwaysOnTop.UseVisualStyleBackColor = True
         '
         'lblUsage
         '
@@ -365,15 +377,15 @@ Partial Class frmShoppingList
         '
         'chkUsage
         '
-        Me.chkUsage.AutoSize = true
-        Me.chkUsage.Checked = true
+        Me.chkUsage.AutoSize = True
+        Me.chkUsage.Checked = True
         Me.chkUsage.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkUsage.Location = New System.Drawing.Point(6, 95)
         Me.chkUsage.Name = "chkUsage"
         Me.chkUsage.Size = New System.Drawing.Size(60, 17)
         Me.chkUsage.TabIndex = 14
         Me.chkUsage.Text = "Usage:"
-        Me.chkUsage.UseVisualStyleBackColor = true
+        Me.chkUsage.UseVisualStyleBackColor = True
         '
         'lblFees
         '
@@ -397,19 +409,19 @@ Partial Class frmShoppingList
         '
         'chkFees
         '
-        Me.chkFees.AutoSize = true
-        Me.chkFees.Checked = true
+        Me.chkFees.AutoSize = True
+        Me.chkFees.Checked = True
         Me.chkFees.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkFees.Location = New System.Drawing.Point(6, 55)
         Me.chkFees.Name = "chkFees"
         Me.chkFees.Size = New System.Drawing.Size(52, 17)
         Me.chkFees.TabIndex = 11
         Me.chkFees.Text = "Fees:"
-        Me.chkFees.UseVisualStyleBackColor = true
+        Me.chkFees.UseVisualStyleBackColor = True
         '
         'lblAddlCosts
         '
-        Me.lblAddlCosts.AutoSize = true
+        Me.lblAddlCosts.AutoSize = True
         Me.lblAddlCosts.Location = New System.Drawing.Point(4, 119)
         Me.lblAddlCosts.Name = "lblAddlCosts"
         Me.lblAddlCosts.Size = New System.Drawing.Size(62, 13)
@@ -424,7 +436,7 @@ Partial Class frmShoppingList
         Me.btnSaveSettings.Size = New System.Drawing.Size(94, 32)
         Me.btnSaveSettings.TabIndex = 5
         Me.btnSaveSettings.Text = "Save Settings"
-        Me.btnSaveSettings.UseVisualStyleBackColor = true
+        Me.btnSaveSettings.UseVisualStyleBackColor = True
         '
         'OpenFileDialog
         '
@@ -464,27 +476,27 @@ Partial Class frmShoppingList
         Me.btnCopyPasteAssets.Size = New System.Drawing.Size(168, 28)
         Me.btnCopyPasteAssets.TabIndex = 21
         Me.btnCopyPasteAssets.Text = "Copy and Paste Assets"
-        Me.btnCopyPasteAssets.UseVisualStyleBackColor = true
+        Me.btnCopyPasteAssets.UseVisualStyleBackColor = True
         '
         'btnShowAssets
         '
-        Me.btnShowAssets.Image = CType(resources.GetObject("btnShowAssets.Image"),System.Drawing.Image)
+        Me.btnShowAssets.Image = CType(resources.GetObject("btnShowAssets.Image"), System.Drawing.Image)
         Me.btnShowAssets.Location = New System.Drawing.Point(128, 15)
         Me.btnShowAssets.Name = "btnShowAssets"
         Me.btnShowAssets.Size = New System.Drawing.Size(48, 48)
         Me.btnShowAssets.TabIndex = 20
-        Me.btnShowAssets.UseVisualStyleBackColor = true
+        Me.btnShowAssets.UseVisualStyleBackColor = True
         '
         'gbUpdateList
         '
         Me.gbUpdateList.Controls.Add(Me.btnCopyPasteAssets)
         Me.gbUpdateList.Controls.Add(Me.btnUpdateListwithAssets)
         Me.gbUpdateList.Controls.Add(Me.btnShowAssets)
-        Me.gbUpdateList.Location = New System.Drawing.Point(428, 540)
+        Me.gbUpdateList.Location = New System.Drawing.Point(541, 538)
         Me.gbUpdateList.Name = "gbUpdateList"
         Me.gbUpdateList.Size = New System.Drawing.Size(184, 99)
         Me.gbUpdateList.TabIndex = 18
-        Me.gbUpdateList.TabStop = false
+        Me.gbUpdateList.TabStop = False
         Me.gbUpdateList.Text = "Update List Options:"
         '
         'lblTotalInventionCost
@@ -510,49 +522,49 @@ Partial Class frmShoppingList
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(428, 640)
+        Me.gbExportOptions.Location = New System.Drawing.Point(540, 638)
         Me.gbExportOptions.Name = "gbExportOptions"
         Me.gbExportOptions.Size = New System.Drawing.Size(185, 41)
         Me.gbExportOptions.TabIndex = 74
-        Me.gbExportOptions.TabStop = false
+        Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
         '
         'rbtnExportSSV
         '
-        Me.rbtnExportSSV.AutoSize = true
+        Me.rbtnExportSSV.AutoSize = True
         Me.rbtnExportSSV.Location = New System.Drawing.Point(128, 17)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
-        Me.rbtnExportSSV.TabStop = true
+        Me.rbtnExportSSV.TabStop = True
         Me.rbtnExportSSV.Text = "SSV"
-        Me.rbtnExportSSV.UseVisualStyleBackColor = true
+        Me.rbtnExportSSV.UseVisualStyleBackColor = True
         '
         'rbtnExportCSV
         '
-        Me.rbtnExportCSV.AutoSize = true
+        Me.rbtnExportCSV.AutoSize = True
         Me.rbtnExportCSV.Location = New System.Drawing.Point(76, 17)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
-        Me.rbtnExportCSV.TabStop = true
+        Me.rbtnExportCSV.TabStop = True
         Me.rbtnExportCSV.Text = "CSV"
-        Me.rbtnExportCSV.UseVisualStyleBackColor = true
+        Me.rbtnExportCSV.UseVisualStyleBackColor = True
         '
         'rbtnExportDefault
         '
-        Me.rbtnExportDefault.AutoSize = true
+        Me.rbtnExportDefault.AutoSize = True
         Me.rbtnExportDefault.Location = New System.Drawing.Point(11, 17)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0
-        Me.rbtnExportDefault.TabStop = true
+        Me.rbtnExportDefault.TabStop = True
         Me.rbtnExportDefault.Text = "Default"
-        Me.rbtnExportDefault.UseVisualStyleBackColor = true
+        Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
         'lblTIC
         '
-        Me.lblTIC.AutoSize = true
+        Me.lblTIC.AutoSize = True
         Me.lblTIC.Location = New System.Drawing.Point(819, 568)
         Me.lblTIC.Name = "lblTIC"
         Me.lblTIC.Size = New System.Drawing.Size(105, 13)
@@ -562,7 +574,7 @@ Partial Class frmShoppingList
         '
         'lblTCC
         '
-        Me.lblTCC.AutoSize = true
+        Me.lblTCC.AutoSize = True
         Me.lblTCC.Location = New System.Drawing.Point(839, 587)
         Me.lblTCC.Name = "lblTCC"
         Me.lblTCC.Size = New System.Drawing.Size(85, 13)
@@ -583,50 +595,49 @@ Partial Class frmShoppingList
         'lstBuy
         '
         Me.lstBuy.ContextMenuStrip = Me.DeleteMaterialStrip
-        Me.lstBuy.FullRowSelect = true
-        Me.lstBuy.GridLines = true
+        Me.lstBuy.FullRowSelect = True
+        Me.lstBuy.GridLines = True
         Me.lstBuy.Location = New System.Drawing.Point(7, 20)
         Me.lstBuy.Name = "lstBuy"
         Me.lstBuy.Size = New System.Drawing.Size(1081, 300)
         Me.lstBuy.TabIndex = 37
-        Me.lstBuy.TabStop = false
-        Me.lstBuy.UseCompatibleStateImageBehavior = false
+        Me.lstBuy.TabStop = False
+        Me.lstBuy.UseCompatibleStateImageBehavior = False
         Me.lstBuy.View = System.Windows.Forms.View.Details
         '
         'lstItems
         '
         Me.lstItems.ContextMenuStrip = Me.DeleteItemStrip
-        Me.lstItems.FullRowSelect = true
+        Me.lstItems.FullRowSelect = True
         Me.lstItems.Location = New System.Drawing.Point(6, 339)
         Me.lstItems.Name = "lstItems"
         Me.lstItems.Size = New System.Drawing.Size(711, 198)
         Me.lstItems.TabIndex = 38
-        Me.lstItems.TabStop = false
-        Me.lstItems.UseCompatibleStateImageBehavior = false
+        Me.lstItems.TabStop = False
+        Me.lstItems.UseCompatibleStateImageBehavior = False
         Me.lstItems.View = System.Windows.Forms.View.Details
         '
         'lstBuild
         '
         Me.lstBuild.ContextMenuStrip = Me.DeleteBuildStrip
-        Me.lstBuild.FullRowSelect = true
+        Me.lstBuild.FullRowSelect = True
         Me.lstBuild.Location = New System.Drawing.Point(720, 339)
         Me.lstBuild.Name = "lstBuild"
         Me.lstBuild.Size = New System.Drawing.Size(368, 198)
         Me.lstBuild.TabIndex = 39
-        Me.lstBuild.TabStop = false
+        Me.lstBuild.TabStop = False
         Me.lstBuild.Tag = "20"
-        Me.lstBuild.UseCompatibleStateImageBehavior = false
+        Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
         '
-        'chkEveListFormat
+        'chkRebuildItemsfromList
         '
-        Me.chkEveListFormat.AutoSize = true
-        Me.chkEveListFormat.Location = New System.Drawing.Point(101, 15)
-        Me.chkEveListFormat.Name = "chkEveListFormat"
-        Me.chkEveListFormat.Size = New System.Drawing.Size(101, 17)
-        Me.chkEveListFormat.TabIndex = 78
-        Me.chkEveListFormat.Text = "EVE List Format"
-        Me.chkEveListFormat.UseVisualStyleBackColor = true
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(182, 35)
+        Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
+        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(123, 36)
+        Me.chkRebuildItemsfromList.TabIndex = 79
+        Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
+        Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
         '
         'frmShoppingList
         '
@@ -742,4 +753,5 @@ End Sub
     Friend WithEvents lblTCC As System.Windows.Forms.Label
     Friend WithEvents lblTotalItemsInList As System.Windows.Forms.Label
     Friend WithEvents chkEveListFormat As CheckBox
+    Friend WithEvents chkRebuildItemsfromList As CheckBox
 End Class

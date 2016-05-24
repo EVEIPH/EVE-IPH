@@ -308,6 +308,38 @@ Public Class frmBlueprintManagement
         End If
     End Sub
 
+    Private Sub rbtnStructureModulesBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnStructureModulesBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnStructureModulesBlueprints.Checked Then
+            cmbBPTypeFilterLoaded = False
+            cmbBPTypeFilter.Text = SelectTypeText
+            Call UpdateBlueprintGrid(True)
+        End If
+    End Sub
+
+    Private Sub rbtnCelestialBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCelestialsBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnCelestialsBlueprints.Checked Then
+            cmbBPTypeFilterLoaded = False
+            cmbBPTypeFilter.Text = SelectTypeText
+            Call UpdateBlueprintGrid(True)
+        End If
+    End Sub
+
+    Private Sub rbtnStationPartsBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnStationPartsBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnStationPartsBlueprints.Checked Then
+            cmbBPTypeFilterLoaded = False
+            cmbBPTypeFilter.Text = SelectTypeText
+            Call UpdateBlueprintGrid(True)
+        End If
+    End Sub
+
+    Private Sub rbtnDeployableBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnDeployableBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnDeployableBlueprints.Checked Then
+            cmbBPTypeFilterLoaded = False
+            cmbBPTypeFilter.Text = SelectTypeText
+            Call UpdateBlueprintGrid(True)
+        End If
+    End Sub
+
     Private Sub rbtnAllBPTypes_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnAllBPTypes.CheckedChanged
         If Not FirstLoad And rbtnAllBPTypes.Checked Then
             cmbBPTypeFilterLoaded = False
@@ -749,10 +781,12 @@ Public Class frmBlueprintManagement
 
             If ScannedValue = 0 Then
                 BPList.BackColor = Color.White
-            ElseIf ScannedValue = 1 Then
-                BPList.BackColor = Color.BlanchedAlmond
-            ElseIf ScannedValue = 2 Then
-                BPList.BackColor = Color.LightGreen
+            Else
+                If SelectedCharacter.ID = readerBP.GetInt32(11) Then
+                    BPList.BackColor = Color.BlanchedAlmond
+                Else ' must be corp
+                    BPList.BackColor = Color.LightGreen
+                End If
             End If
 
             BPList.SubItems.Add(CStr(If(readerBP.IsDBNull(15), 0, readerBP.GetInt32(15)))) ' Scanned
@@ -828,75 +862,89 @@ Public Class frmBlueprintManagement
         SQL = "SELECT * FROM " & USER_BLUEPRINTS
 
         ' Find what type of blueprint we want
-        If rbtnAmmoChargeBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Charge' "
-        ElseIf rbtnDroneBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Drone' "
-        ElseIf rbtnModuleBlueprints.Checked Then
-            WhereClause = "WHERE (ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
-        ElseIf rbtnShipBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Ship' "
-        ElseIf rbtnSubsystemBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Subsystem' "
-        ElseIf rbtnBoosterBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Implant' "
-        ElseIf rbtnComponentBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_GROUP LIKE '%Component%' "
-        ElseIf rbtnRigBlueprints.Checked Then
-            WhereClause = "WHERE BLUEPRINT_GROUP = 'Rig Blueprint' "
-        ElseIf rbtnStationPartsBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_GROUP = 'Station Components' "
-        ElseIf rbtnMiscBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
-        ElseIf rbtnDeployableBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Deployable' "
-        ElseIf rbtnStructureBlueprints.Checked Then
-            WhereClause = "WHERE ITEM_CATEGORY = 'Starbase' "
-        End If
+        With Me
+            If .rbtnAmmoChargeBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Charge' "
+            ElseIf .rbtnDroneBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY in ('Drone', 'Fighter') "
+            ElseIf .rbtnModuleBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
+            ElseIf .rbtnShipBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Ship' "
+            ElseIf .rbtnSubsystemBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Subsystem' "
+            ElseIf .rbtnBoosterBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Implant' "
+            ElseIf .rbtnComponentBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
+            ElseIf .rbtnMiscBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
+            ElseIf .rbtnDeployableBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Deployable' "
+            ElseIf .rbtnCelestialsBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
+            ElseIf .rbtnStructureBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY IN ('Starbase','Structure') "
+            ElseIf .rbtnStationPartsBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_GROUP = 'Station Components' "
+            ElseIf .rbtnStructureModulesBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Structure Module' "
+            ElseIf .rbtnRigBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE BLUEPRINT_GROUP = 'Rig Blueprint' "
+            End If
+        End With
+
+        Dim TempClause As String = ""
 
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
+            TempClause = "OWNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE OWNED <> 0 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND OWNED <> 0  "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include personal scanned
+            TempClause = "USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE SCANNED = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND SCANNED = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnScannedCorpBPs.Checked Then
             ' Include corp scanned
+            TempClause = "USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE SCANNED = 2 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND SCANNED = 2 "
+                WhereClause = WhereClause & " AND " & TempClause
             End If
         ElseIf rbtnFavorites.Checked Then
             ' Favorites for the user
+            TempClause = "FAVORITE = 1 "
             If WhereClause = "" Then
-                WhereClause = "WHERE FAVORITE = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND FAVORITE = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnIgnored.Checked Then
             ' All ignored
+            TempClause = "IGNORE = 1"
             If WhereClause = "" Then
-                WhereClause = "WHERE IGNORE = 1 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND IGNORE = 1 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
         ' Add not owned if checked
         If chkNotOwned.Checked Then
+            TempClause = "OWNED = 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE OWNED = 0 "
+                WhereClause = "WHERE " & TempClause
             Else
-                WhereClause = WhereClause & "AND OWNED = 0 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
@@ -905,7 +953,7 @@ Public Class frmBlueprintManagement
             If WhereClause = "" Then
                 WhereClause = "WHERE IGNORE = 0 "
             Else
-                WhereClause = WhereClause & "AND IGNORE = 0 "
+                WhereClause = WhereClause & "AND " & TempClause
             End If
         End If
 
@@ -955,7 +1003,7 @@ Public Class frmBlueprintManagement
 
         ' Add Item Type
         If SQLItemType <> "" Then
-            SQLItemType = "ITEM_TYPE IN (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
+            SQLItemType = "ITEM_TYPE In (" & SQLItemType.Substring(0, SQLItemType.Length - 1) & ") "
         Else
             ' They need to have at least one. If not, just return nothing
             BuildBPSelectQuery = ""
@@ -984,7 +1032,7 @@ Public Class frmBlueprintManagement
 
         If TempRace <> "" Then
             TempRace = "(" & TempRace.Substring(0, Len(TempRace) - 1) & ")"
-            RaceClause = "AND (RACE_ID IN " & TempRace & ") "
+            RaceClause = "And (RACE_ID In " & TempRace & ") "
         Else
             ' They need to have at least one. If not, just return nothing
             BuildBPSelectQuery = ""
@@ -993,12 +1041,12 @@ Public Class frmBlueprintManagement
 
         ' Finally add on text if they added it
         If Trim(txtBPSearch.Text) <> "" Then
-            TextClause = TextClause & "AND " & GetSearchText(txtBPSearch.Text, "BLUEPRINT_NAME", "BLUEPRINT_GROUP")
+            TextClause = TextClause & "And " & GetSearchText(txtBPSearch.Text, "BLUEPRINT_NAME", "BLUEPRINT_GROUP")
         End If
 
         ' If they select a type of item, set that
         If Trim(cmbBPTypeFilter.Text) <> SelectTypeText Then
-            ComboType = "AND ITEM_GROUP ='" & FormatDBString(Trim(cmbBPTypeFilter.Text)) & "' "
+            ComboType = "And ITEM_GROUP ='" & FormatDBString(Trim(cmbBPTypeFilter.Text)) & "' "
         End If
 
         ' See if they want BPOs, Copies, or Invented BPCs
@@ -1054,42 +1102,37 @@ Public Class frmBlueprintManagement
         Dim RaceClause As String = ""
         Dim SizesClause As String = ""
 
-        If rbtnAmmoChargeBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Charge' OR "
-        End If
-        If rbtnDroneBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Drone' OR "
-        End If
-        If rbtnModuleBlueprints.Checked Then
-            WhereClause = WhereClause & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%') OR "
-        End If
-        If rbtnShipBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Ship' OR "
-        End If
-        If rbtnSubsystemBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Subsystem' OR "
-        End If
-        If rbtnBoosterBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Implant' OR "
-        End If
-        If rbtnComponentBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_GROUP LIKE '%Component%' OR "
-        End If
-        If rbtnRigBlueprints.Checked Then
-            WhereClause = WhereClause & "BLUEPRINT_GROUP = 'Rig Blueprint' OR "
-        End If
-        If rbtnStationPartsBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_GROUP = 'Station Components' OR "
-        End If
-        If rbtnMiscBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') OR "
-        End If
-        If rbtnDeployableBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Deployable' OR "
-        End If
-        If rbtnStructureBlueprints.Checked Then
-            WhereClause = WhereClause & "ITEM_CATEGORY = 'Starbase' OR "
-        End If
+        With Me
+            If .rbtnAmmoChargeBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Charge' "
+            ElseIf .rbtnDroneBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
+            ElseIf .rbtnModuleBlueprints.Checked Then
+                WhereClause = WhereClause & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
+            ElseIf .rbtnShipBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Ship' "
+            ElseIf .rbtnSubsystemBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Subsystem' "
+            ElseIf .rbtnBoosterBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Implant' "
+            ElseIf .rbtnComponentBlueprints.Checked Then
+                WhereClause = WhereClause & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
+            ElseIf .rbtnMiscBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
+            ElseIf .rbtnDeployableBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Deployable' "
+            ElseIf .rbtnCelestialsBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
+            ElseIf .rbtnStructureBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY IN ('Starbase','Structure') "
+            ElseIf .rbtnStationPartsBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_GROUP = 'Station Components' "
+            ElseIf .rbtnStructureModulesBlueprints.Checked Then
+                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Structure Module' "
+            ElseIf .rbtnRigBlueprints.Checked Then
+                WhereClause = WhereClause & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
+            End If
+        End With
 
         ' Item Type Definitions - These are set by me based on existing data
         ' 1, 2, 14 are T1, T2, T3
@@ -1234,9 +1277,9 @@ Public Class frmBlueprintManagement
         If rbtnOwned.Checked Then
             ' Ignore scanned BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
+                WhereClause = "WHERE (USER_ID =" & SelectedCharacter.ID & "OR USER_ID = " & SelectedCharacter.CharacterCorporation.CorporationID & ") AND OWNED <> 0  "
             Else
-                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0  "
+                WhereClause = WhereClause & " AND USER_ID =" & SelectedCharacter.ID & " AND OWNED <> 0  "
             End If
 
             ' Set the correct ID
@@ -1245,9 +1288,9 @@ Public Class frmBlueprintManagement
         ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include all BP's
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID = " & SelectedCharacter.ID & " AND SCANNED = 1 "
+                WhereClause = "WHERE USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             Else
-                WhereClause = WhereClause & " AND USER_ID = " & SelectedCharacter.ID & " AND SCANNED = 1 "
+                WhereClause = WhereClause & " AND USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
             End If
 
             ' Set the correct ID
@@ -1256,9 +1299,9 @@ Public Class frmBlueprintManagement
         ElseIf rbtnScannedCorpBPs.Checked Then
             ' Include corp scanned
             If WhereClause = "" Then
-                WhereClause = "WHERE USER_ID=" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED = 2 "
+                WhereClause = "WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             Else
-                WhereClause = WhereClause & " AND USER_ID=" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED = 2 "
+                WhereClause = WhereClause & " AND USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & " AND SCANNED <> 0 "
             End If
 
             ' Set the correct ID

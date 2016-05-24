@@ -192,6 +192,8 @@ Public Class frmShoppingList
             ttMain.SetToolTip(btnShowAssets, "Open the Asset Viewer to set the default location(s) for materials to use for updating the Shopping List.")
             ttMain.SetToolTip(lblTIC, "Total of all invention materials in the buy list.")
             ttMain.SetToolTip(lblTCC, "Total of all the copy materials in the buy list.")
+            ttMain.SetToolTip(chkEveListFormat, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
+            ttMain.SetToolTip(chkRebuildItemsfromList, "When loading a saved shopping list, if checked IPH will rebuild all items with current prices and items. Otherwise it will load exactly what is in the list with current prices.")
         End If
 
         IgnoreFocusChange = False
@@ -228,6 +230,9 @@ Public Class frmShoppingList
         chkFees.Checked = UserShoppingListSettings.Fees
         chkAlwaysOnTop.Checked = UserShoppingListSettings.AlwaysonTop
         chkBuyorBuyOrder.Checked = UserShoppingListSettings.CalcBuyBuyOrder
+        chkEveListFormat.Checked = UserShoppingListSettings.UseEveFormat
+        chkRebuildItemsfromList.Checked = UserShoppingListSettings.ReloadBPsFromFile
+
         If rbtnExportCSV.Text = UserShoppingListSettings.DataExportFormat Then
             rbtnExportCSV.Checked = True
         ElseIf rbtnExportSSV.Text = UserShoppingListSettings.DataExportFormat Then
@@ -647,7 +652,7 @@ Public Class frmShoppingList
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
-            If readerAssets.GetInt32(1) = -4 Then
+            If (readerAssets.GetInt32(1) = -4 Or readerAssets.GetInt64(0) > 1000000000000) Then
                 ' If the flag is the base location, then we want all items at the location id
                 AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
             Else
@@ -957,6 +962,8 @@ Public Class frmShoppingList
         TempList.Usage = chkUsage.Checked
         TempList.Fees = chkFees.Checked
         TempList.CalcBuyBuyOrder = chkBuyorBuyOrder.Checked
+        TempList.UseEveFormat = chkEveListFormat.Checked
+        TempList.ReloadBPsFromFile = chkRebuildItemsfromList.Checked
 
         ' Save the data in the XML file
         Call TempSettings.SaveShoppingListSettings(TempList)
@@ -1399,7 +1406,8 @@ Public Class frmShoppingList
                     Dim TempBuildFacility As IndustryFacility
                     Dim TempIndyType As IndustryType
 
-                    ' Now that all the lists are loaded, we need to build the blueprints and adjust the final lists unless they want it to go right into as is
+
+                    ' We need to build the blueprints and adjust the final lists unless they want it to go right into as is
                     For i = 0 To ItemList.Count - 1
                         ' Get the decryptor
                         Dim TempDecryptor As New Decryptor
@@ -1416,7 +1424,7 @@ Public Class frmShoppingList
                         ' Determine the build facility 
                         If ItemList(i).BuildLocation <> "" Then
 
-                            Call TF.LoadFacility(GetFacilitySettings(ItemList(i).ItemName, ItemList(i).BuildLocation, ItemList(i).FacilityType, 1, _
+                            Call TF.LoadFacility(GetFacilitySettings(ItemList(i).ItemName, ItemList(i).BuildLocation, ItemList(i).FacilityType, 1,
                                                                 ItemList(i).IncludeActivityCost, ItemList(i).IncludeActivityTime, ItemList(i).IncludeActivityUsage), True)
                             TempBuildFacility = TF
 
@@ -1437,99 +1445,109 @@ Public Class frmShoppingList
                         readerBP.Read()
 
                         ' Build the Item - use everything we can from file import
-                        TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1, _
-                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, NoTeam, TempBuildFacility, _
+                        TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
+                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, NoTeam, TempBuildFacility,
                                                 NoTeam, TempCompFacility, TempCapCompFacility)
 
                         ' See if we invent, use selected BP facilities for invention
                         If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then
                             Dim MaximumLaboratoryLines As Integer = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
 
-                            TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility, SelectedBPInventionTeam, _
+                            TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility, SelectedBPInventionTeam,
                                                     SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(CLng(readerBP.GetValue(0)), ItemList(i).Relic))
                         End If
 
                         ' Build the item and get the list of materials
                         Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, frmMain.chkBPFacilityIncludeUsage.Checked, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 
+                        ' Now that all the lists are loaded, load what we need 
+                        If chkRebuildItemsfromList.Checked = False Then
+                            Dim NewBPRawMats As New Materials
+                            Dim NewBPComponentMats As New Materials
+                            Dim NewBPInventionMats As New Materials
+                            Dim NewBPCopyMats As New Materials
+                            Dim NewBPBuildList As New BuiltItemList
+
+                            ' Need to only load the items that were in the original list - adjust the mats in each bp list
+                            For j = 0 To BuyList.Count - 1
+                                ' See if the buy list items are in the list
+                                Dim FoundMat As Material = TempBP.GetRawMaterials.SearchListbyName(BuyList(j).ItemName)
+                                If Not IsNothing(FoundMat) Then
+                                    ' Found so add to temp lists
+                                    Call FoundMat.SetQuantity(BuyList(j).ItemQuantity)
+                                    NewBPRawMats.InsertMaterial(FoundMat)
+                                End If
+
+                                ' Component mats list
+                                FoundMat = TempBP.GetComponentMaterials.SearchListbyName(BuyList(j).ItemName)
+                                If Not IsNothing(FoundMat) Then
+                                    ' Found so add to temp lists
+                                    Call FoundMat.SetQuantity(BuyList(j).ItemQuantity)
+                                    NewBPComponentMats.InsertMaterial(FoundMat)
+                                End If
+
+                                ' Look at the Invention lists and copy lists
+                                FoundMat = TempBP.GetInventionMaterials.SearchListbyName(BuyList(j).ItemName)
+                                If Not IsNothing(FoundMat) Then
+                                    ' Found so add to temp lists
+                                    Call FoundMat.SetQuantity(BuyList(j).ItemQuantity)
+                                    NewBPInventionMats.InsertMaterial(FoundMat)
+                                End If
+
+                                FoundMat = TempBP.GetCopyMaterials.SearchListbyName(BuyList(j).ItemName)
+                                If Not IsNothing(FoundMat) Then
+                                    ' Found so add to temp lists
+                                    Call FoundMat.SetQuantity(BuyList(j).ItemQuantity)
+                                    NewBPCopyMats.InsertMaterial(FoundMat)
+                                End If
+                            Next
+
+                            ' Now look at the Build list
+                            For j = 0 To BuildList.Count - 1
+                                ' See if the buy list items are in the list
+                                Dim FoundItems As BuiltItemList = TempBP.GetComponentsList.FindBuiltItems(BuildList(j).ItemName)
+                                If Not IsNothing(FoundItems) Then
+                                    ' Found so add to temp lists
+                                    For k = 0 To FoundItems.GetBuiltItemList.Count - 1
+                                        FoundItems.GetBuiltItemList(k).ItemQuantity = BuildList(j).ItemQuantity
+                                        NewBPBuildList.AddBuiltItem(FoundItems.GetBuiltItemList(k))
+                                    Next
+
+                                End If
+                            Next
+
+                            ' Reset lists based on what was in the file before adding to shopping list
+                            With TempBP
+                                .RawMaterials = NewBPRawMats
+                                .ComponentMaterials = NewBPComponentMats
+                                .BuiltComponentList = NewBPBuildList
+                                .CopyMaterials = NewBPCopyMats
+                                .InventionMaterials = NewBPInventionMats
+                            End With
+
+                        End If
+
                         ' Add to shopping list but use BP tab settings
-                        Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked, _
-                                                TempBuildFacility.MaterialMultiplier, ItemList(i).FacilityType, ItemList(i).IgnoredInvention, _
-                                                ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem, _
-                                                TempBuildFacility.IncludeActivityCost, TempBuildFacility.IncludeActivityTime, _
-                                                TempBuildFacility.IncludeActivityUsage)
+                        Call AddToShoppingList(TempBP, BuildBuy, frmMain.rbtnBPRawmatCopy.Checked,
+                                                    TempBuildFacility.MaterialMultiplier, ItemList(i).FacilityType, ItemList(i).IgnoredInvention,
+                                                    ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem,
+                                                    TempBuildFacility.IncludeActivityCost, TempBuildFacility.IncludeActivityTime,
+                                                    TempBuildFacility.IncludeActivityUsage)
                         readerBP.Close()
 
                     Next
 
-                    ' *** I'm not sure why I put the below in here - loading a shopping list should rebuild everything if it's today. Don't get any fancier than that
-
-                    '' All the items have been built and added to shopping list, now update the materials and build lists with what the user adjusted in build and buy
-
-                    '' Check built items first, loop through all required components, if not there remove, if number is different, adjust
-                    'If Not IsNothing(TotalShoppingList.GetFullBuiltItemList.GetBuiltItemList) Then
-
-                    '    ' Clone this for updates
-                    '    ClonedBuildList = CType(TotalShoppingList.GetFullBuiltItemList.Clone, BuiltItemList)
-
-                    '    For i = 0 To ClonedBuildList.GetBuiltItemList.Count - 1
-                    '        Dim TempItemQuantity As BuildQuantity = Nothing
-                    '        Dim CurrentItem As BuiltItem = ClonedBuildList.GetBuiltItemList(i)
-
-                    '        ' Look it up in the imported list
-                    '        BuildQuantityToFind.ItemName = CurrentItem.ItemName
-                    '        TempItemQuantity = BuildList.Find(AddressOf FindBuildQuantity)
-
-                    '        If Not IsNothing(TempItemQuantity.ItemName) Then
-                    '            ' See what quantity is set and update if different
-                    '            If CurrentItem.ItemQuantity <> TempItemQuantity.ItemQuantity Then
-                    '                Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(CurrentItem, TempItemQuantity.ItemQuantity)
-                    '            End If
-                    '        Else
-                    '            ' Not found so we need to remove the total item - this is something they adjusted or deleted
-                    '            Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(CurrentItem, 0)
-                    '        End If
-
-                    '    Next
-                    'End If
-
-                    '' Now check all the materials
-                    'If Not IsNothing(TotalShoppingList.GetFullBuyList.GetMaterialList) Then
-
-                    '    ' Clone this for updates
-                    '    ClonedBuyList = CType(TotalShoppingList.GetFullBuyList.Clone, Materials)
-
-                    '    For i = 0 To ClonedBuyList.GetMaterialList.Count - 1
-                    '        Dim TempItemQuantity As ItemQuantity = Nothing
-                    '        Dim CurrentItem As Material = ClonedBuyList.GetMaterialList(i)
-
-                    '        ' Look it up in the imported list
-                    '        ItemQuantityToFind.ItemName = CurrentItem.GetMaterialName
-                    '        TempItemQuantity = BuyList.Find(AddressOf FindItemQuantity)
-
-                    '        If Not IsNothing(TempItemQuantity.ItemName) Then
-                    '            ' See what quantity is set and update if different
-                    '            If CurrentItem.GetQuantity <> TempItemQuantity.ItemQuantity Then
-                    '                Call TotalShoppingList.UpdateShoppingBuyQuantity(CurrentItem.GetMaterialName, TempItemQuantity.ItemQuantity)
-                    '            End If
-                    '        Else
-                    '            ' Not found so we need to remove the total item quantity - this is something they adjusted or deleted
-                    '            Call TotalShoppingList.UpdateShoppingBuyQuantity(CurrentItem.GetMaterialName, 0)
-                    '        End If
-                    '    Next
-                    'End If
-
                     Application.UseWaitCursor = False
-                    ' Now load all the lists
-                    Call RefreshLists()
+                        ' Now load all the lists
+                        Call RefreshLists()
 
-                    ' Mark as items in list
-                    frmMain.pnlShoppingList.Text = "Items in Shopping List"
-                    frmMain.pnlShoppingList.ForeColor = Color.Red
+                        ' Mark as items in list
+                        frmMain.pnlShoppingList.Text = "Items in Shopping List"
+                        frmMain.pnlShoppingList.ForeColor = Color.Red
 
-                    MsgBox("Shopping List Loaded", vbInformation, Application.ProductName)
+                        MsgBox("Shopping List Loaded", vbInformation, Application.ProductName)
 
-                End If
+                    End If
 
             Catch Ex As Exception
                 ' Error'd so restore old shopping list
@@ -1663,7 +1681,6 @@ Public Class frmShoppingList
 
         ' Paste to clipboard
         Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, chkEveListFormat.Checked))
-        
 
     End Sub
 
@@ -1815,7 +1832,7 @@ Public Class frmShoppingList
         Dim rsBPLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(10).Text
+        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
         DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
@@ -2338,6 +2355,7 @@ Public Class frmShoppingList
                     TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
                     TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
                     TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
+                    TempBuiltItem.FacilityLocation = CurrentRow.SubItems(5).Text
 
                     ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue

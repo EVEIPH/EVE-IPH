@@ -86,11 +86,11 @@ Public Class Blueprint
     Private CanBuildAll As Boolean ' if the user can build this BP and all components
 
     ' Material lists
-    Private RawMaterials As Materials ' The list of All Raw materials for this item including the raw mats to make the buildable components in info list
-    Private ComponentMaterials As Materials ' List of all the required materials to make the item as shown in info list
+    Public RawMaterials As Materials ' The list of All Raw materials for this item including the raw mats to make the buildable components in info list
+    Public ComponentMaterials As Materials ' List of all the required materials to make the item as shown in info list
 
     ' Saving all the materials for each built component
-    Private BuiltComponentList As BuiltItemList
+    Public BuiltComponentList As BuiltItemList
 
     ' Saves all the raw materials on the bp that are not built
     Private BPRawMats As Materials
@@ -103,8 +103,8 @@ Public Class Blueprint
     Private MaxRunsPerBP As Integer ' The max runs for a copy or invented bpc. Zero is unlimited runs
     Private ReqInventionSkills As New EVESkillList ' For inventing this BP
     Private ReqCopySkills As New EVESkillList ' For copying the BPC
-    Private InventionMaterials As Materials
-    Private CopyMaterials As Materials ' Some copies require items
+    Public InventionMaterials As Materials
+    Public CopyMaterials As Materials ' Some copies require items
     Private InventionChance As Double
     Private InventionDecryptor As New Decryptor
     Private Relic As String ' Name of relic
@@ -270,11 +270,15 @@ Public Class Blueprint
             NumberofProductionLines = NumProductionLines
         End If
 
+        UserRuns = BPRuns
         NumberofBlueprints = NumBlueprints
-
         AdditionalCosts = UserAddlCosts
 
+        'If TechLevel > 1 Then
+        '    UserRuns = CInt(Math.Ceiling(BPRuns / PortionSize))
+        'Else
         UserRuns = BPRuns
+        'End If
 
         BPCharacter = UserCharacter
 
@@ -807,7 +811,8 @@ Public Class Blueprint
         Dim CurrentMaterial As Material
         Dim CurrentMatQuantity As Long
         Dim CurrentMaterialCategory As String
-
+        Dim tempMatQuantity As Long
+        Dim fudgeRAM As Boolean
         ' Temp Materials for passing
         Dim TempMaterials As New Materials
 
@@ -845,7 +850,12 @@ Public Class Blueprint
 
                 If Not IsDBNull(readerBP.GetValue(11)) Then
                     ' Divide by the portion size if this item has one (component buildable)
+                    tempMatQuantity = CLng(CurrentMatQuantity)
                     CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / readerBP.GetInt64(11)))
+                    if (tempMatQuantity <> CurrentMatQuantity)
+                        fudgeRAM = True
+                    End If
+
                 End If
 
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
@@ -985,6 +995,10 @@ Public Class Blueprint
 
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
+
+                        If fudgeRAM Then
+                            CurrentMaterial.SetQuantity(tempMatQuantity)
+                        End If
 
                         ' Insert the existing component that we are using into the component list
                         ComponentMaterials.InsertMaterial(CurrentMaterial)
@@ -1737,7 +1751,9 @@ Public Class Blueprint
         AvgRunsforSuccess = 1 / InventionChance
 
         ' Set how many total invention runs we will need to do - take the number of bpc's we'll need and multiply by how many runs for a success - round up
-        NumInventionJobs = CInt(Math.Ceiling(AvgRunsforSuccess * Math.Ceiling(UserRuns / SingleInventedBPCRuns)))
+        If InventionChance <> 0 Then
+            NumInventionJobs = CInt(Math.Ceiling(AvgRunsforSuccess * Math.Ceiling(UserRuns / SingleInventedBPCRuns)))
+        End If
 
         ' Now set the total runs we will get from all jobs
         TotalInventedRuns = CInt(Math.Ceiling(UserRuns / SingleInventedBPCRuns) * SingleInventedBPCRuns)
@@ -1861,7 +1877,7 @@ Public Class Blueprint
         Dim SQL As String
 
         Dim EncryptionSkillLevel As Integer
-        Dim DatacoreSkillLevels(1) As Integer
+        Dim DatacoreSkillLevels(1) As Integer ' 
 
         ' Get the base invention chance from the activities for the T1 BPO
         SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
@@ -1888,7 +1904,8 @@ Public Class Blueprint
             ' Look up the level of the character's skills
             If CStr(readerLookup(0).ToString).Contains("Encryption") Then
                 EncryptionSkillLevel = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
-            Else ' A datacore skill
+            ElseIf (readerLookup(0).ToString <> "Capital Ship Construction") Then
+                ' A datacore skill
                 DatacoreSkillLevels(j) = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
                 j = j + 1
             End If

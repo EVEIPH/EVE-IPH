@@ -206,13 +206,13 @@ Public Class frmIndustryJobsViewer
         End If
 
         ' Add the charids
-        SQL = SQL & CHAR_ID_SQL
+        'SQL = SQL & CHAR_ID_SQL
 
         ' For both just ignore the selections
         If rbtnCorpJobs.Checked Then
             SQL = SQL & "AND JobType = " & CStr(ScanType.Corporation) & " "
         ElseIf rbtnPersonalJobs.Checked Then
-            SQL = SQL & "AND JobType = " & CStr(ScanType.Personal) & " "
+            SQL = SQL & CHAR_ID_SQL & "AND JobType = " & CStr(ScanType.Personal) & " "
         End If
 
         ' Add sorting options here
@@ -492,16 +492,41 @@ Public Class frmIndustryJobsViewer
         Dim TempJobs As EVEIndustryJobs
         Dim f1 As New frmCRESTStatus
         Dim SQL As String
+        Dim whereClause As String = ""
+        Dim andClause As String = ""
+        Dim scanType As ScanType
 
         f1.lblCRESTStatus.Text = "Updating Character API data..."
         f1.Show()
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
-        SQL = SQL & "FROM API "
-        SQL = SQL & "WHERE CHARACTER_ID IN (" & GetCharIDs() & ") "
-        SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
+        'SQL = "SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK "
+        'SQL = SQL & "FROM API "
+        'SQL = SQL & "WHERE CHARACTER_ID IN (" & GetCharIDs() & ") "
+        'SQL = SQL & "AND API_TYPE NOT IN ('Old Key','Corporation')"
+        If rbtnPersonalJobs.Checked Then
+            whereClause = String.Format("WHERE CHARACTER_ID IN ({0})", GetCharIDs())
+            andClause = String.Format("AND API_TYPE NOT IN ('Old Key', 'Corporation')")
+            scanType = ScanType.Personal
+        End If
+        If rbtnCorpJobs.Checked Then
+            whereClause = "WHERE API_TYPE = 'Corporation'"
+            scanType = ScanType.Corporation
+        End If
+        If _rbtnBothJobs.Checked Then
+            whereClause = String.Format("WHERE CHARACTER_ID IN ({0})", GetCharIDs())
+            andClause = "AND API_TYPE NOT IN ('Old Key')"
+            scanType = ScanType.Personal
+        End If
+        If (Not _rbtnCorpJobs.Checked And Not _rbtnCorpJobs.Checked And Not _rbtnBothJobs.Checked) Then
+            whereClause = String.Format("WHERE CHARACTER_ID IN ({0})", GetCharIDs())
+        End If
+
+        SQL = String.Format("SELECT KEY_ID, API_KEY, CHARACTER_ID, CACHED_UNTIL, ACCESS_MASK " +
+                            "FROM API " +
+                            "{0} " +
+                            "{1} ", whereClause, andClause)
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
@@ -526,12 +551,14 @@ Public Class frmIndustryJobsViewer
             CombinedKeyData.Access = APIAccess
             TempJobs = New EVEIndustryJobs(CombinedKeyData, 0)
             ' This will update all the jobs data
-            Call TempJobs.LoadIndustryJobs(ScanType.Personal, True)
+            Call TempJobs.LoadIndustryJobs(scanType, True)
 
             Application.DoEvents()
 
             ' Update the skills
-            Call UpdateCharacterSkills(CombinedKeyData, BitString, True)
+            If Not rbtnCorpJobs.Checked Then
+                Call UpdateCharacterSkills(CombinedKeyData, BitString, True)
+            End If
 
         End While
 

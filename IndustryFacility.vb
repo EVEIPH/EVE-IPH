@@ -276,7 +276,7 @@ Public Class IndustryFacility
                         Case IndustryType.CapitalManufacturing
                             SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ") "
                         Case IndustryType.SuperManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ", " & CStr(FAXGroupID) & ") "
                         Case IndustryType.BoosterManufacturing
                             SQL = SQL & "AND GROUP_ID = " & BoosterGroupID & " "
                         Case IndustryType.T3CruiserManufacturing
@@ -293,7 +293,7 @@ Public Class IndustryFacility
                         Case IndustryType.CapitalManufacturing
                             SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ") "
                         Case IndustryType.SuperManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ", " & CStr(FAXGroupID) & ") "
                         Case IndustryType.BoosterManufacturing
                             SQL = SQL & "AND GROUP_ID = " & BoosterGroupID & " "
                         Case IndustryType.T3CruiserManufacturing
