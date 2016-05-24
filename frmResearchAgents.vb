@@ -106,7 +106,7 @@ Public Class frmResearchAgents
             fAccessError.ErrorText = "This API did not allow research agents to be loaded for associated characters." & _
                 Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'Research' under the 'Science & Industry' section to include research agents and then reload the API."
             fAccessError.Text = "API: No Research Agents Loaded"
-            fAccessError.ErrorLink = "http://support.eveonline.com/api/Key/CreatePredefined/589962/"
+            fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
             fAccessError.ShowDialog()
             ' Disable the refresh button
             btnRefresh.Enabled = False
