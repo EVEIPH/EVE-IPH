@@ -1463,8 +1463,6 @@ Public Class frmBlueprintManagement
         ' Just work with the ones that are checked
         checkedItems = lstBPs.CheckedItems
 
-        Call EVEDB.BeginSQLiteTransaction()
-
         ' Update each item based on inputs
         For Each item In checkedItems
 
@@ -1499,13 +1497,11 @@ Public Class frmBlueprintManagement
                 TempTE = CInt(txtBPTE.Text)
             End If
 
-            Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), item.SubItems(2).Text, TempME, TempTE, TempBPType, _
-                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), 0, chkMarkasFavorite.Checked, _
+            Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), item.SubItems(2).Text, TempME, TempTE, TempBPType,
+                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), 0, chkMarkasFavorite.Checked,
                               chkMarkasIgnored.Checked, 0, rbtnRemoveAllSettings.Checked)
 
         Next
-
-        Call EVEDB.CommitSQLiteTransaction()
 
         ' Refresh grid
         Call UpdateBlueprintGrid(False)
