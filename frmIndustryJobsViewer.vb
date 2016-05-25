@@ -81,7 +81,7 @@ Public Class frmIndustryJobsViewer
         '        Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
         '    fAccessError.Text = "API: No Industry Jobs Loaded"
 
-        '    fAccessError.ErrorLink = "http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962/"
+        '    fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
         '    fAccessError.ShowDialog()
 
         '    gbInventionJobs.Enabled = False

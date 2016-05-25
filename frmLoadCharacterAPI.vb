@@ -366,7 +366,7 @@ Public Class frmLoadCharacterAPI
     End Sub
 
     Private Sub linklabelPredefined_LinkClicked(sender As System.Object, e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles linklabelPredefined.LinkClicked
-        System.Diagnostics.Process.Start("http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962/")
+        System.Diagnostics.Process.Start("https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962")
     End Sub
 
 End Class
