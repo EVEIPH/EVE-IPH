@@ -5716,6 +5716,8 @@ Tabs:
                         Call SelectBlueprint()
                         BPSelected = False
                     End If
+                Case Keys.Escape
+                    lstBPList.Visible = false
             End Select
         End If
 
