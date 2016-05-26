@@ -1164,11 +1164,11 @@ NoBonus:
                 Case ActivityManufacturing
                     ' Need to load selected manufacturing facility
                     Select Case ItemGroupID
-                        Case SupercarrierGroupID, TitanGroupID, FAXGroupID
+                        Case SupercarrierGroupID, TitanGroupID
                             SelectedIndyType = IndustryType.SuperManufacturing
                         Case BoosterGroupID
                             SelectedIndyType = IndustryType.BoosterManufacturing
-                        Case CarrierGroupID, DreadnoughtGroupID, CapitalIndustrialShipGroupID
+                        Case CarrierGroupID, DreadnoughtGroupID, CapitalIndustrialShipGroupID, FAXGroupID
                             SelectedIndyType = IndustryType.CapitalManufacturing
                         Case StrategicCruiserGroupID
                             SelectedIndyType = IndustryType.T3CruiserManufacturing
@@ -1935,9 +1935,9 @@ NoBonus:
                 SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
-                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
+                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Or ItemGroupID = FAXGroupID Then
                     ' For caps, only show low sec
                     SQL = SQL & " AND security < .45 "
                 End If
@@ -2069,9 +2069,9 @@ NoBonus:
                 End If
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
-                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Or ItemGroupID = FAXGroupID Then
+                If ItemGroupID = SupercarrierGroupID Or ItemGroupID = TitanGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
-                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Then
+                ElseIf ItemGroupID = DreadnoughtGroupID Or ItemGroupID = CarrierGroupID Or ItemGroupID = CapitalIndustrialShipGroupID Or ItemGroupID = FAXGroupID Then
                     ' For caps, only show low sec
                     SQL = SQL & " AND security < .45 "
                 End If
