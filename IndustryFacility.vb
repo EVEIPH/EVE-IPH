@@ -274,9 +274,9 @@ Public Class IndustryFacility
                 If .FacilityType = POSFacility Then
                     Select Case .ProductionType
                         Case IndustryType.CapitalManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ", " & CStr(FAXGroupID) & ") "
                         Case IndustryType.SuperManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ", " & CStr(FAXGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ") "
                         Case IndustryType.BoosterManufacturing
                             SQL = SQL & "AND GROUP_ID = " & BoosterGroupID & " "
                         Case IndustryType.T3CruiserManufacturing
@@ -291,9 +291,9 @@ Public Class IndustryFacility
                 Else ' Stations
                     Select Case .ProductionType
                         Case IndustryType.CapitalManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(CapitalIndustrialShipGroupID) & ", " & CStr(CarrierGroupID) & ", " & CStr(DreadnoughtGroupID) & ", " & CStr(FAXGroupID) & ") "
                         Case IndustryType.SuperManufacturing
-                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ", " & CStr(FAXGroupID) & ") "
+                            SQL = SQL & "AND GROUP_ID IN (" & CStr(TitanGroupID) & ", " & CStr(SupercarrierGroupID) & ") "
                         Case IndustryType.BoosterManufacturing
                             SQL = SQL & "AND GROUP_ID = " & BoosterGroupID & " "
                         Case IndustryType.T3CruiserManufacturing

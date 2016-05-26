@@ -4134,7 +4134,7 @@ Tabs:
         Select Case cmbBPFacilityActivities.Text
             Case ActivityManufacturing
                 Select Case BPGroupID
-                    Case SupercarrierGroupID, TitanGroupID, FAXGroupID
+                    Case SupercarrierGroupID, TitanGroupID
                         SelectedBPManufacturingFacility.IncludeActivityUsage = chkBPFacilityIncludeUsage.Checked
                         Call SelectedBPSuperManufacturingFacility.SaveFacility(BPTab)
                         Call UpdateMMTMTaxDataforOutpost(SelectedBPSuperManufacturingFacility, IndustryActivities.Manufacturing)
@@ -4144,7 +4144,7 @@ Tabs:
                         Call SelectedBPBoosterManufacturingFacility.SaveFacility(BPTab)
                         Call UpdateMMTMTaxDataforOutpost(SelectedBPBoosterManufacturingFacility, IndustryActivities.Manufacturing)
                         DefaultBPBoosterManufacturingFacility = CType(SelectedBPBoosterManufacturingFacility.Clone, IndustryFacility)
-                    Case CarrierGroupID, DreadnoughtGroupID, CapitalIndustrialShipGroupID
+                    Case CarrierGroupID, DreadnoughtGroupID, CapitalIndustrialShipGroupID, FAXGroupID
                         SelectedBPCapitalManufacturingFacility.IncludeActivityUsage = chkBPFacilityIncludeUsage.Checked
                         Call SelectedBPCapitalManufacturingFacility.SaveFacility(BPTab)
                         Call UpdateMMTMTaxDataforOutpost(SelectedBPCapitalManufacturingFacility, IndustryActivities.Manufacturing)
@@ -5717,7 +5717,7 @@ Tabs:
                         BPSelected = False
                     End If
                 Case Keys.Escape
-                    lstBPList.Visible = false
+                    lstBPList.Visible = False
             End Select
         End If
 
@@ -5803,11 +5803,15 @@ Tabs:
 
         ' Add limiting functions here based on radio buttons
         ' Use replace to Get rid of 's in blueprint name for sorting
-        query = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-        query = query & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-        query = query & BuildBPSelectQuery()
-        query = query & " AND ALL_BLUEPRINTS.BLUEPRINT_NAME LIKE '%" & FormatDBString(bpName) & "%'"
-        query = query & " ORDER BY X"
+        If Me.rbtnBPOwnedBlueprints.Checked Or Me.rbtnBPFavoriteBlueprints.Checked Then
+            query = BuildBPSelectQuery()
+        Else
+            query = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
+            query = query & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+            query = query & BuildBPSelectQuery()
+            query = query & " AND ALL_BLUEPRINTS.BLUEPRINT_NAME LIKE '%" & FormatDBString(bpName) & "%'"
+            query = query & " ORDER BY X"
+        End If
 
         ' query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & bpName & "%'"
 
@@ -18582,12 +18586,7 @@ CheckTechs:
                     End If
 
                     ' User can Invent
-                    If chkCalcCanInvent.Checked And Not ManufacturingBlueprint.UserCanInventRE And ManufacturingBlueprint.GetTechLevel = 2 Then
-                        AddItem = False
-                    End If
-
-                    ' User can T3 Invent
-                    If chkCalcCanInvent.Checked And Not ManufacturingBlueprint.UserCanInventRE And ManufacturingBlueprint.GetTechLevel = 3 Then
+                    If chkCalcCanInvent.Checked And chkCalcCanInvent.Enabled And Not ManufacturingBlueprint.UserCanInventRE And (ManufacturingBlueprint.GetTechLevel = 2 Or ManufacturingBlueprint.GetTechLevel = 3) Then
                         AddItem = False
                     End If
 
