@@ -486,10 +486,12 @@ Public Class EVEAPI
 
             'Create the XML Document
             m_xmld = QueryEVEAPI(EVEAPIQuery)
-
             ' Check data
             If IsNothing(m_xmld) Then
                 ' Had an error, return nothing
+                If APIError.ErrorText.Contains("403") Then
+                    APIError.ErrorText = NoStandingsLoaded
+                End If
                 GetCharacterStandings = Nothing
                 Exit Function
             End If

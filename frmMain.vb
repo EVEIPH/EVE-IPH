@@ -8418,10 +8418,11 @@ ExitForm:
             chkComponents.Checked = True
             chkHybrid.Checked = True
             chkFuelBlocks.Checked = True
-            chkStationComponents.Checked = True
+            chkStationParts.Checked = True
             chkCelestials.Checked = True
             chkDeployables.Checked = True
             chkImplants.Checked = True
+            chkStructureModules.Checked = True
         Else ' Turn off all item checks
             chkShips.Checked = False
             chkModules.Checked = False
@@ -8437,10 +8438,11 @@ ExitForm:
             chkComponents.Checked = False
             chkHybrid.Checked = False
             chkFuelBlocks.Checked = False
-            chkStationComponents.Checked = False
+            chkStationParts.Checked = False
             chkCelestials.Checked = False
             chkDeployables.Checked = False
             chkImplants.Checked = False
+            chkStructureModules.Checked = False
         End If
 
         RunUpdatePriceList = True
@@ -8899,11 +8901,15 @@ ExitForm:
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkStationComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStationComponents.CheckedChanged
+    Private Sub chkStationComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStationParts.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
     Private Sub chkDeployables_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkDeployables.CheckedChanged
+        Call UpdatePriceList()
+    End Sub
+
+    Private Sub chkStructureModules_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStructureModules.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -9731,7 +9737,8 @@ ExitForm:
             chkAncientRelics.Checked = .AncientRelics
             chkAncientSalvage.Checked = .AncientSalvage
             chkSalvage.Checked = .Salvage
-            chkStationComponents.Checked = .StationComponents
+            chkStationParts.Checked = .StationComponents
+            chkStructureModules.Checked = .StructureModules
             chkPlanetary.Checked = .Planetary
             chkDatacores.Checked = .Datacores
             chkDecryptors.Checked = .Decryptors
@@ -10083,7 +10090,8 @@ ExitForm:
             .AncientRelics = chkAncientRelics.Checked
             .AncientSalvage = chkAncientSalvage.Checked
             .Salvage = chkSalvage.Checked
-            .StationComponents = chkStationComponents.Checked
+            .StationComponents = chkStationParts.Checked
+            .StructureModules = chkStructureModules.Checked
             .Planetary = chkPlanetary.Checked
             .Datacores = chkDatacores.Checked
             .Decryptors = chkDecryptors.Checked
@@ -11108,7 +11116,7 @@ ExitSub:
             SQL = SQL & "ITEM_GROUP = 'Fuel Block' OR "
             ItemChecked = True
         End If
-        If chkStationComponents.Checked Then
+        If chkStationParts.Checked Then
             SQL = SQL & "ITEM_GROUP = 'Station Components' OR "
             ItemChecked = True
         End If
@@ -11120,8 +11128,12 @@ ExitSub:
             SQL = SQL & "ITEM_CATEGORY = 'Deployable' OR "
             ItemChecked = True
         End If
+        If chkStructureModules.Checked Then
+            SQL = SQL & "ITEM_CATEGORY = 'Structure Module' OR "
+            ItemChecked = True
+        End If
         If chkCelestials.Checked Then
-            SQL = SQL & "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station','Accessories', 'Infrastructure Upgrades') AND ITEM_GROUP <> 'Harvestable Cloud') OR "
+            SQL = SQL & "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
             ItemChecked = True
         End If
 
@@ -11188,7 +11200,7 @@ ExitSub:
 
                 ' Format TechSQL - Add on Meta codes - 21,22,23,24 are T3
                 If TechSQL <> "" Then
-                    TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & " OR ITEM_TYPE IN (21,22,23,24)) "
+                    TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
                 End If
 
                 ' Build Tech 1,2,3 Manufactured Items
@@ -11222,7 +11234,7 @@ ExitSub:
                     SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR "
                 End If
                 If chkStructures.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Starbase' AND " & TechSQL & ") OR "
+                    SQL = SQL & "(ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR "
                 End If
             Else
                 ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -15468,6 +15480,14 @@ CheckTechs:
         End If
     End Sub
 
+    Private Sub chkCalcStructureModules_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcStructureModules.CheckedChanged
+        If Not FirstManufacturingGridLoad Then
+            FirstLoadCalcBPTypes = True
+            cmbCalcBPTypeFilter.Text = "All Types"
+            Call ResetRefresh()
+        End If
+    End Sub
+
     Private Sub chkCalcDeployables_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcDeployables.CheckedChanged
         If Not FirstManufacturingGridLoad Then
             FirstLoadCalcBPTypes = True
@@ -16928,6 +16948,7 @@ CheckTechs:
             chkCalcMisc.Checked = .CheckBPTypeMisc
             chkCalcDeployables.Checked = .CheckBPTypeDeployables
             chkCalcCelestials.Checked = .CheckBPTypeCelestials
+            chkCalcStructureModules.Checked = .checkbptypestructuremodules
             chkCalcStationParts.Checked = .CheckBPTypeStationParts
 
             ' Tech
@@ -17450,6 +17471,7 @@ CheckTechs:
             .CheckBPTypeMisc = chkCalcMisc.Checked
             .CheckBPTypeDeployables = chkCalcDeployables.Checked
             .CheckBPTypeCelestials = chkCalcCelestials.Checked
+            .CheckBPTypeStructureModules = chkCalcStructureModules.Checked
             .CheckBPTypeStationParts = chkCalcStationParts.Checked
 
             .CheckTech1 = chkCalcT1.Checked
@@ -19942,6 +19964,9 @@ ExitCalc:
         If chkCalcCelestials.Checked Then
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories') OR "
         End If
+        If chkCalcStructureModules.Checked Then
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Structure Module' OR "
+        End If
         If chkCalcMisc.Checked Then
             ItemTypes = ItemTypes & "X.ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') OR "
         End If
@@ -19949,7 +19974,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Deployable' OR "
         End If
         If chkCalcStructures.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Starbase' OR "
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Starbase','Structure') OR "
         End If
 
         ' Take off last OR

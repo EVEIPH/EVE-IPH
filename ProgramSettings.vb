@@ -300,6 +300,7 @@ Public Class ProgramSettings
     Public DefaultCheckBPTypeBoosters As Boolean = True
     Public DefaultCheckBPTypeDeployables As Boolean = True
     Public DefaultCheckBPTypeCelestials As Boolean = True
+    Public DefaultCheckBPTypeStructureModules As Boolean = True
     Public DefaultCheckBPTypeStationParts As Boolean = True
     Public DefaultCheckDecryptorNone As Boolean = True
     Public DefaultCheckDecryptorOptimal As Integer = 0
@@ -1647,6 +1648,7 @@ Public Class ProgramSettings
                     .Faction = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Faction", DefaultPriceChecks))
                     .Pirate = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Pirate", DefaultPriceChecks))
                     .Storyline = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
+                    .StructureModules = CBool(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
 
                     Dim TempRegions As String = CStr(GetSettingValue(UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegions", DefaultPriceRegion))
                     Dim RegionList As New List(Of String)
@@ -1714,7 +1716,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(62) As Setting
+        Dim UpdatePricesSettingsList(63) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1800,6 +1802,8 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(61) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
             UpdatePricesSettingsList(62) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
+            UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
+
             Call WriteSettingsToFile(UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
         Catch ex As Exception
@@ -1867,6 +1871,7 @@ Public Class ProgramSettings
             .ItemsPriceModifier = DefaultItemsPriceModifier
             .UseCRESTData = DefaultUseCRESTData
             .UsePriceProfile = DefaultUsePriceProfile
+            .StructureModules = DefaultPriceChecks
 
             .PPItemsPriceType = DefaultPPItemsPriceType
             .PPItemsRegion = DefaultPPItemsRegion
@@ -1922,6 +1927,7 @@ Public Class ProgramSettings
                     .CheckBPTypeBoosters = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeBoosters", DefaultCheckBPTypeBoosters))
                     .CheckBPTypeDeployables = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeDeployables", DefaultCheckBPTypeDeployables))
                     .CheckBPTypeCelestials = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
+                    .CheckBPTypeStructureModules = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStructureModules", DefaultCheckBPTypeStructureModules))
                     .CheckBPTypeStationParts = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
                     .CheckDecryptorNone = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorNone", DefaultCheckDecryptorNone))
                     .CheckDecryptorOptimal = CInt(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "CheckDecryptorOptimal", DefaultCheckDecryptorOptimal))
@@ -2029,6 +2035,7 @@ Public Class ProgramSettings
             .CheckBPTypeSubsystems = DefaultCheckBPTypeSubsystems
             .CheckBPTypeBoosters = DefaultCheckBPTypeBoosters
             .CheckBPTypeCelestials = DefaultCheckBPTypeCelestials
+            .CheckBPTypeStructureModules = DefaultCheckBPTypeStructureModules
             .CheckBPTypeStationParts = DefaultCheckBPTypeStationParts
             .CheckBPTypeDeployables = DefaultCheckBPTypeDeployables
             .CheckDecryptorNone = DefaultCheckDecryptorNone
@@ -2103,7 +2110,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(82) As Setting
+        Dim ManufacturingSettingsList(83) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2189,6 +2196,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(80) = New Setting("VolumeThreshold", CStr(SentSettings.VolumeThreshold))
             ManufacturingSettingsList(81) = New Setting("VolumeThresholdCheck", CStr(SentSettings.VolumeThresholdCheck))
             ManufacturingSettingsList(82) = New Setting("CheckDecryptorOptimal", CStr(SentSettings.CheckDecryptorOptimal))
+            ManufacturingSettingsList(83) = New Setting("CheckBPTypeStructureModules", CStr(SentSettings.CheckBPTypeStructureModules))
 
             Call WriteSettingsToFile(ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -5580,6 +5588,7 @@ Public Structure UpdatePriceTabSettings
     Dim Structures As Boolean
     Dim Celestials As Boolean
     Dim StationComponents As Boolean
+    Dim StructureModules As Boolean
     Dim Tools As Boolean
     Dim FuelBlocks As Boolean
     Dim Implants As Boolean
@@ -5649,6 +5658,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckBPTypeBoosters As Boolean
     Dim CheckBPTypeDeployables As Boolean
     Dim CheckBPTypeCelestials As Boolean
+    Dim CheckBPTypeStructureModules As Boolean
     Dim CheckBPTypeStationParts As Boolean
 
     Dim CheckCapitalComponentsFacility As Boolean
