@@ -7612,16 +7612,9 @@ ExitForm:
 
                     Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
 
-                    Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
+                    'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
 
-                    Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
-
-                    If tempList.Count > 1 Then
-                        Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
-                        For Each item As OreMineral In tmpRange
-                            item.OreMultiplier = 0
-                        Next
-                    End If
+                    
 
                     ' TODO : FIX THE MULTIPLIER
                     mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
@@ -7656,6 +7649,19 @@ ExitForm:
                         item.OreMultiplier = CType(Math.Ceiling(multiplier), Int64)
                         ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
                         item.Locked = True
+                    Next
+                End If
+
+                ' Moved this down here because the Tritanium/Pyerite problem wasn't getting resolved if the item only required the two minerals.
+                ' This will fix the issue by forcing it to reset Spodumain properly.
+                Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
+
+                Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
+
+                If tempList.Count > 1 Then
+                    Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
+                    For Each item As OreMineral In tmpRange
+                        item.OreMultiplier = 0
                     Next
                 End If
 
