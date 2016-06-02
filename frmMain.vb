@@ -10324,6 +10324,7 @@ ExitForm:
 
         ' Build the list of types we want to update and include the type, region/system
         For i = 0 To lstPricesView.Items.Count - 1
+
             ' Only include items that are in the market (Market ID not null in Inventory Types)
             If lstPricesView.Items(i).SubItems(5).Text <> "" Then
                 TempItem = New PriceItem
@@ -10762,6 +10763,8 @@ ExitSub:
                     RGN = "Station Parts"
                 Case "Booster"
                     RGN = "Boosters"
+                Case "Citadel"
+                    RGN = "Structures"
                 Case Else
                     ' Do if checks or select on category
                     If GN.Contains("Decryptor") Then
@@ -10788,6 +10791,8 @@ ExitSub:
                         RGN = "Ships"
                     ElseIf CN = "Subsystem" Then
                         RGN = "Subsystems"
+                    ElseIf CN = "Structure Module" Then
+                        RGN = "Structure Modules"
                     ElseIf CN = "Starbase" Then
                         RGN = "Structures"
                     ElseIf CN = "Charge" Then
