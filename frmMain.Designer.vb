@@ -845,6 +845,7 @@ Partial Class frmMain
         Me.btnCalcResetTextSearch = New System.Windows.Forms.Button()
         Me.txtCalcItemFilter = New System.Windows.Forms.TextBox()
         Me.gbCalcBPType = New System.Windows.Forms.GroupBox()
+        Me.chkCalcStructureModules = New System.Windows.Forms.CheckBox()
         Me.chkCalcCelestials = New System.Windows.Forms.CheckBox()
         Me.chkCalcMisc = New System.Windows.Forms.CheckBox()
         Me.chkCalcSubsystems = New System.Windows.Forms.CheckBox()
@@ -1259,7 +1260,7 @@ Partial Class frmMain
         Me.ttPI = New System.Windows.Forms.ToolTip(Me.components)
         Me.CalcImageList = New System.Windows.Forms.ImageList(Me.components)
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
-        Me.chkCalcStructureModules = New System.Windows.Forms.CheckBox()
+        Me.lblMineDoubleClick = New System.Windows.Forms.Label()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.tabMining.SuspendLayout()
@@ -2387,6 +2388,7 @@ Partial Class frmMain
         '
         'gbMineBooster
         '
+        Me.gbMineBooster.Controls.Add(Me.lblMineDoubleClick)
         Me.gbMineBooster.Controls.Add(Me.pictMineLaserOptmize)
         Me.gbMineBooster.Controls.Add(Me.pictMineRangeLink)
         Me.gbMineBooster.Controls.Add(Me.pictMineFleetBoostShip)
@@ -9670,6 +9672,16 @@ Partial Class frmMain
         Me.gbCalcBPType.TabStop = False
         Me.gbCalcBPType.Text = "Blueprint Type:"
         '
+        'chkCalcStructureModules
+        '
+        Me.chkCalcStructureModules.AutoSize = True
+        Me.chkCalcStructureModules.Location = New System.Drawing.Point(9, 111)
+        Me.chkCalcStructureModules.Name = "chkCalcStructureModules"
+        Me.chkCalcStructureModules.Size = New System.Drawing.Size(112, 17)
+        Me.chkCalcStructureModules.TabIndex = 13
+        Me.chkCalcStructureModules.Text = "Structure Modules"
+        Me.chkCalcStructureModules.UseVisualStyleBackColor = True
+        '
         'chkCalcCelestials
         '
         Me.chkCalcCelestials.AutoSize = True
@@ -14106,15 +14118,15 @@ Partial Class frmMain
         Me.cmbEdit.TabStop = False
         Me.cmbEdit.Visible = False
         '
-        'chkCalcStructureModules
+        'lblMineDoubleClick
         '
-        Me.chkCalcStructureModules.AutoSize = True
-        Me.chkCalcStructureModules.Location = New System.Drawing.Point(9, 111)
-        Me.chkCalcStructureModules.Name = "chkCalcStructureModules"
-        Me.chkCalcStructureModules.Size = New System.Drawing.Size(112, 17)
-        Me.chkCalcStructureModules.TabIndex = 13
-        Me.chkCalcStructureModules.Text = "Structure Modules"
-        Me.chkCalcStructureModules.UseVisualStyleBackColor = True
+        Me.lblMineDoubleClick.AutoSize = True
+        Me.lblMineDoubleClick.Location = New System.Drawing.Point(408, 99)
+        Me.lblMineDoubleClick.Name = "lblMineDoubleClick"
+        Me.lblMineDoubleClick.Size = New System.Drawing.Size(118, 13)
+        Me.lblMineDoubleClick.TabIndex = 140
+        Me.lblMineDoubleClick.Text = "Click again for T2 Links"
+        Me.lblMineDoubleClick.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'frmMain
         '
@@ -15606,4 +15618,5 @@ End Sub
     Friend WithEvents rbtnBPStructureModulesBlueprints As RadioButton
     Friend WithEvents chkStructureModules As CheckBox
     Friend WithEvents chkCalcStructureModules As CheckBox
+    Friend WithEvents lblMineDoubleClick As Label
 End Class

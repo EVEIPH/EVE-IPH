@@ -17227,7 +17227,7 @@ CheckTechs:
 
         ' Hide array selection for non-pos, hide the other drop downs
         If cmbCalcBaseFacilityType.Text = POSFacility Then
-            Call SetPOSMultiUseArraysVisibility(True, False)
+            Call SetPOSMultiUseArraysVisibility(True, True)
         Else
             Call SetPOSMultiUseArraysVisibility(False, False)
         End If

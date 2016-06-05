@@ -2533,7 +2533,7 @@ NoBonus:
                 .IncludeActivityTime = False
             End If
 
-            If FacilityType <> None And .SolarSystemID <> 0 Then
+            If FacilityType <> None And .SolarSystemID = 0 Then
                 ' Quick look up for the solarsystemid and region id, Strip off the system index first
                 Dim SystemName As String = .SolarSystemName.Substring(0, InStr(.SolarSystemName, "(") - 2)
                 SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
