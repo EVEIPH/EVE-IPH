@@ -5946,7 +5946,7 @@ Tabs:
         End If
 
         ' Add the item types
-        SQL = SQL & "AND" & SQLItemType
+        SQL = SQL & " AND " & SQLItemType
 
         Dim SizesClause As String = ""
 
@@ -5975,7 +5975,7 @@ Tabs:
 
         ' Ignore flag
         If chkBPIncludeIgnoredBPs.Checked = False Then
-            SQL = SQL & "AND IGNORE = 0 "
+            SQL = SQL & " AND IGNORE = 0 "
         End If
 
         BuildBPSelectQuery = SQL
