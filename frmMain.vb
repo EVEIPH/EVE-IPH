@@ -5630,6 +5630,9 @@ Tabs:
         ' If it closes up, re-enable autocomplete
         'cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.SuggestAppend
         ComboMenuDown = False
+        lstBPList.Hide() ' This could show up if people type into the list when combo down
+        Call SelectBlueprint()
+        cmbBPBlueprintSelection.Focus()
     End Sub
 
     Private Sub cmbBPBlueprintSelection_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbBPBlueprintSelection.MouseWheel
@@ -5727,21 +5730,30 @@ Tabs:
         Call cmbBPBlueprintSelection.SelectAll()
     End Sub
 
-    ' Load bp from list select
-    Private Sub lstBPList_Click(sender As Object, e As EventArgs) Handles lstBPList.Click
-        If lstBPList.SelectedItems.Count <> 0 Then
-            cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
-            lstBPList.Visible = False
-            Call SelectBlueprint()
-        End If
-    End Sub
-
     ' Process up down arrows in bp list
     Private Sub lstBPList_SelectedValueChanged(sender As Object, e As EventArgs) Handles lstBPList.SelectedValueChanged
         If Not IsNothing(lstBPList.SelectedItem) Then
             cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString
             cmbBPBlueprintSelection.SelectAll()
         End If
+    End Sub
+
+    ' Loads the item by clicking on the item selected
+    Private Sub lstBPList_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPList.MouseDown
+        If lstBPList.SelectedItems.Count <> 0 Then
+            cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
+            lstBPList.Visible = False
+            Call SelectBlueprint()
+            cmbBPBlueprintSelection.Focus()
+        End If
+    End Sub
+
+    Private Sub lstBPList_MouseMove(sender As Object, e As MouseEventArgs) Handles lstBPList.MouseMove
+        Dim Index As Integer = lstBPList.IndexFromPoint(e.X, e.Y)
+
+        RemoveHandler lstBPList.SelectedValueChanged, AddressOf lstBPList_SelectedValueChanged
+        lstBPList.SelectedIndex = Index
+        AddHandler lstBPList.SelectedValueChanged, AddressOf lstBPList_SelectedValueChanged
     End Sub
 
     Private Sub lstBPList_LostFocus(sender As Object, e As EventArgs) Handles lstBPList.LostFocus
@@ -12157,7 +12169,7 @@ ExitSub:
     End Sub
 
     ' CalcComponentFacility functions
-    Private Sub chkCalcCapComponents_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcCapComponentsFacility.CheckedChanged
+    Private Sub chkCalcCapComponentsFacility_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcCapComponentsFacility.CheckedChanged
 
         LoadingFacilityActivities = True
         If chkCalcCapComponentsFacility.Checked Then
@@ -12177,6 +12189,8 @@ ExitSub:
                           CalcTab, chkCalcComponentFacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcComponentFacilityLoaded,
                           Nothing, 1, GetComponentsGroupID(chkCalcCapComponentsFacility.Checked), -1, False)
         Call SetComponentFacilityLoaded(chkCalcCapComponentsFacility.Checked, TempCalcComponentFacilityLoaded) ' Set if the facility loaded here
+        'reset the previous box when this is changed
+        PreviousCalcCapitalFacilitySystem = ""
         LoadingFacilityActivities = False
         CalcComponentFacilitiesLoaded = False ' Reset dropdowns
     End Sub
@@ -13929,6 +13943,7 @@ ExitSub:
                           CalcTab, chkCalcT3FacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcT3FacilityLoaded, Nothing,
                           1, GetT3ShipGroupID(chkCalcT3DestroyersFacility.Checked), -1, False)
         Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
+        PreviousCalcT3FacilitySystem = "" ' Reset this
         LoadingFacilityActivities = False
         CalcT3FacilitiesLoaded = False
     End Sub
