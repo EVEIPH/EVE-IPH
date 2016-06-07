@@ -7591,6 +7591,10 @@ ExitForm:
             refinePercent = 0.52
         End If
 
+        If refinePercent = 0 Then
+            refinePercent = 0.5 ' Setting the refine percent to 50 if it comes back as 0 for corrupt station data.
+        End If
+
         For i = 0 To bpMaterialList.Count - 1 Step 1
             Dim loopCounter = i
             Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
