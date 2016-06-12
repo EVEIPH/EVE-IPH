@@ -3225,7 +3225,7 @@ Public Class frmMain
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
-                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE "
+                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, TE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
                     SQL = SQL & "WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
 
@@ -3252,7 +3252,7 @@ Public Class frmMain
                         AdditionalCost = 0
                     End If
 
-                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), 0, TempBPType, CInt(MEValue), 0, 0, CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
+                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), rsData.GetInt32(5), TempBPType, CInt(MEValue), 0, 0, CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
