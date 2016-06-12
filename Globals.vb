@@ -4525,8 +4525,8 @@ InvalidDate:
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Else
-                ' Update it - save the old TE
-                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(readerBP.GetInt32(0)) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
+                ' Update it
+                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
                 SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
                 SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)

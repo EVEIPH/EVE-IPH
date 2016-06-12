@@ -1848,8 +1848,8 @@ Public Class EVECREST
             If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
                 Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") _
                 Or ex.Message.Contains("The operation has timed out") Or ex.Message.Contains("503") Then
-                ' Re-run this function - limit to 10 calls
-                If RecursiveCalls <= 10 Then
+                ' Re-run this function - limit to 10 calls if not part of the first load of the program
+                If RecursiveCalls <= 10 And Not FirstLoad Then
                     Dim NumCalls As Integer = RecursiveCalls + 1
                     Output = GetJSONFile(URL, CacheDate, UpdateType, IgnoreExceptions, NumCalls)
                 End If
