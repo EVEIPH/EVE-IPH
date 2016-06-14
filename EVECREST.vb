@@ -7,7 +7,7 @@ Imports System.Net
 
 ' Class for all CREST function calls, which will update tables in the DB if past cache time
 Public Class EVECREST
-    'Private Const CRESTRootServerURL = "https://public-crest-sisi.testeveonline.com"
+    'Private Const CRESTRootServerURL = "https://api-sisi.testeveonline.com"
     Private Const CRESTRootServerURL = "https://crest-tq.eveonline.com"
 
     ' URL for each file
@@ -144,7 +144,7 @@ Public Class EVECREST
 
                 ' Dump the file into the Specializations object
                 MarketOrdersOutput = JsonConvert.DeserializeObject(Of MarketOrders) _
-                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/orders/" & OrderType & "/?type=https://public-crest.eveonline.com/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
+                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/orders/" & OrderType & "/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
 
                 ' Read in the data
                 If Not IsNothing(MarketOrdersOutput) Then
@@ -298,7 +298,7 @@ Public Class EVECREST
                 Application.DoEvents()
                 ' Dump the file into the Specializations object
                 MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
+                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/inventory/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
 
                 ' Read in the data
                 If Not IsNothing(MarketPricesOutput) Then
@@ -1724,7 +1724,7 @@ Public Class EVECREST
 
     ' For Market Prices
     Private Class MarketPriceType
-        '"type": {"id_str": "32772", "href": "https://public-crest-sisi.testeveonline.com/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
+        '"type": {"id_str": "32772", "href": "https://public-crest-sisi.testeveonline.com/inventory/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
