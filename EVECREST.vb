@@ -89,15 +89,15 @@ Public Class EVECREST
     End Function
 
     ' Uses the type from a crest call - replace buy-sell with buy or sell
-    ' market/{region_id}/orders/buy-sell/?type=https://public-crest.eveonline.com/types/{type_id}/ (cache: x hours)
-    'https://public-crest.eveonline.com/market/10000002/orders/sell/?type=https://public-crest.eveonline.com/types/34/
+    ' market/{region_id}/orders/buy-sell/?type=https://crest-tq.eveonline.com/inventory/types/{type_id}/ (cache: x hours)
+    'https://crest-tq.eveonline.com/market/10000002/orders/sell/?type=https://crest-tq.eveonline.com/inventory/types/34/
     ' Provides the current buy or sell orders on the market region for the type id sent - same as in game view
 
     ' Gets the CREST file from CCP for the current Market orders (buy and sell) for the region_id and type_id sent
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long, _
-                                    Optional OpenTransaction As Boolean = True, _
+    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
+                                    Optional OpenTransaction As Boolean = True,
                                     Optional IgnoreCacheLookup As Boolean = False) As Boolean
         Dim MarketOrdersOutput As MarketOrders
         Dim SQL As String
@@ -224,7 +224,7 @@ Public Class EVECREST
     ' For Market Orders
     Private Class MarketOrder
         '{"volume_str": "838037", "buy": false, "issued": "2015-12-28T15:25:24", "price": 6.3, "volumeEntered": 1700062, "minVolume": 1, "volume": 838037, "range": "region", 
-        '"href": "https://public-crest.eveonline.com/market/10000002/orders/4379176393/", "duration_str": "7", "location": {}, 
+        '"href": "https://crest-tq.eveonline.com/market/10000002/orders/4379176393/", "duration_str": "7", "location": {}, 
         '"duration": 7, "minVolume_str": "1", "volumeEntered_str": "1700062", "type": {}, "id": 4379176393, "id_str": "4379176393"}
 
         <JsonProperty("volume_str")> Public volume_str As String
@@ -248,21 +248,21 @@ Public Class EVECREST
 
     ' For Market Orders
     Private Class MarketLocation
-        '"location": {"id_str": "60005596", "href": "https://public-crest.eveonline.com/universe/locations/60005596/", "id": 60005596, "name": "Itamo VIII - Moon 13 - Core Complexion Inc. Factory"},
+        '"location": {"id_str": "60005596", "href": "https://crest-tq.eveonline.com/universe/locations/60005596/", "id": 60005596, "name": "Itamo VIII - Moon 13 - Core Complexion Inc. Factory"},
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
         <JsonProperty("name")> Public name As String
     End Class
 
-    ' market/{region_id}/types/{type_id}/history/ (cache: 23 hours)
-    'https://public-crest.eveonline.com/market/10000002/types/34/history/
+    ' market/{region_id}/history/?type=https://crest-tq.eveonline.com/inventory/types/{typeID] (cache: 23 hours)
+    'https://crest-tq.eveonline.com/market/10000002/history/?type=https://crest-tq.eveonline.com/inventory/types/34/
     ' Provides per day summary of market activity for 13 months for the region_id and type_id sent.
 
     ' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long, _
+    Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
                                         Optional ByRef IgnoreCacheLookup As Boolean = False, Optional OpenTransaction As Boolean = False) As Boolean
         Dim MarketPricesOutput As MarketHistory
         Dim SQL As String = ""
@@ -298,7 +298,7 @@ Public Class EVECREST
                 Application.DoEvents()
                 ' Dump the file into the Specializations object
                 MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/inventory/types/" & CStr(TypeID) & "/history/", ReturnCacheDate, "Market History", True))
+                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/history/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
 
                 ' Read in the data
                 If Not IsNothing(MarketPricesOutput) Then
@@ -442,8 +442,8 @@ Public Class EVECREST
                     Call EVEDB.BeginSQLiteTransaction()
 
                     ' Delete the old records first
-                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_GROUP_SPECIALTIES")
-                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_CATEGORY_SPECIALTIES")
+                    Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_GROUP_SPECIALTIES")
+                    Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_CATEGORY_SPECIALTIES")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To TeamSpecialtiesOutput.totalCount - 1
@@ -464,13 +464,13 @@ Public Class EVECREST
                                 GroupID = TeamSpecialtiesOutput.items(i).groups(j).id
 
                                 SQL = "INSERT INTO INDUSTRY_GROUP_SPECIALTIES VALUES(" & GroupID & "," & SpecializationID & ",'" & SpecializationName & "')"
-                                Call evedb.ExecuteNonQuerySQL(SQL)
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             Next
                         Else
                             ' Insert the record with no groups - these are the category of the team, which then can do groups of items in that category
                             SQL = "INSERT INTO INDUSTRY_CATEGORY_SPECIALTIES VALUES(" & SpecializationID & ",'" & SpecializationName & "')"
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
                         End If
 
                         ' For each record, update the progress bar
@@ -480,7 +480,7 @@ Public Class EVECREST
                     Next
 
                     ' Rebuild indexes
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_CAT_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_CAT_ID")
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file
                     Call SetCRESTCacheDate(IndustryTeamSpecialtiesCacheDateField, CacheDate)
@@ -592,8 +592,8 @@ Public Class EVECREST
                     Call EVEDB.BeginSQLiteTransaction()
 
                     ' Delete the old records first
-                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS")
-                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_BONUSES")
+                    Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS")
+                    Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_BONUSES")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To IndustryTeamsOutput.totalCount - 1
@@ -625,7 +625,7 @@ Public Class EVECREST
                         SQL = SQL & Format(ExpiryTime, SQLiteDateFormat) & "',"
                         SQL = SQL & CStr(CategorySpecializationID) & ")"
 
-                        Call evedb.ExecuteNonQuerySQL(SQL)
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         ' Now loop through all the workers and input the bonus data
                         For j = 0 To IndustryTeamsOutput.items(i).workers.Count - 1
@@ -640,7 +640,7 @@ Public Class EVECREST
                             SQL = "INSERT INTO INDUSTRY_TEAMS_BONUSES VALUES (" & TeamID & ",'" & TeamName & "'," & CStr(BonusID) & ",'"
                             SQL = SQL & BonusType & "'," & CStr(-1 * BonusValue) & "," & CStr(GroupSpecializationID) & ")" ' make bonus value positive
 
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         Next
 
@@ -671,12 +671,12 @@ Public Class EVECREST
                             ' Update Teams first
                             SQL = "UPDATE INDUSTRY_TEAMS SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             ' Update Team Bonuses 
                             SQL = "UPDATE INDUSTRY_TEAMS_BONUSES SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             ' Increment
                             Sequence += 1
@@ -688,12 +688,12 @@ Public Class EVECREST
                     End While
 
                     ' Rebuild indexes on teams and bonuses
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_NAME")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_ACTIVITY_ID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_NAME")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_ACTIVITY_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_TEAMS_TEAM_ID")
 
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
 
                     rsCheck.Close()
                     DBCommand = Nothing
@@ -761,7 +761,7 @@ Public Class EVECREST
 
     ' For Industry Teams
     Private Class IndustryTeamsSpecialization
-        '"specialization": {"href": "https://public-crest-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
+        '"specialization": {"href": "https://crest-tq-sisi.testeveonline.com/industry/specialities/6/", "id": 6, "id_str": "6"},
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Integer
         <JsonProperty("id_str")> Public id_str As String
@@ -826,7 +826,7 @@ Public Class EVECREST
                     Application.DoEvents()
 
                     ' Delete the old records first
-                    Call evedb.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_AUCTIONS")
+                    Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_TEAMS_AUCTIONS")
 
                     ' Now read through all the output items and input them into the DB
                     For i = 0 To IndustryTeamAuctionsOutput.totalCount - 1
@@ -844,14 +844,14 @@ Public Class EVECREST
                             SQL = SQL & Format(CreationTime, SQLiteDateFormat) & "','" & Format(ExpiryTime, SQLiteDateFormat) & "',"
                             SQL = SQL & CStr(.specialization.id) & "," & AuctionID & ")"
 
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             For j = 0 To .workers.Count - 1
                                 ' Insert the workers for this team and link by team name (should be unique) - make bonus value negative
                                 SQL = "INSERT INTO INDUSTRY_TEAMS_BONUSES VALUES (" & TeamID & ",'" & TeamName & "'," & CStr(.workers(j).bonus.id) & ",'"
                                 SQL = SQL & .workers(j).bonus.bonusType & "'," & CStr(-1 * .workers(j).bonus.value) & "," & CStr(.workers(j).specialization.id) & ")"
 
-                                Call evedb.ExecuteNonQuerySQL(SQL)
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
                             Next
 
                             ' Insert the Bid data
@@ -868,7 +868,7 @@ Public Class EVECREST
                                     SQL = SQL & CStr(CInt(.solarSystemBids(j).characterBids(k).character.isNPC)) & ","
                                     SQL = SQL & CStr(.solarSystemBids(j).characterBids(k).bidAmount) & ")"
 
-                                    Call evedb.ExecuteNonQuerySQL(SQL)
+                                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                                 Next
                             Next
@@ -901,12 +901,12 @@ Public Class EVECREST
                             ' Update Teams first
                             SQL = "UPDATE INDUSTRY_TEAMS_AUCTIONS SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                             ' Update Team Bonuses 
                             SQL = "UPDATE INDUSTRY_TEAMS_BONUSES SET TEAM_NAME = '" & FormatDBString(rsCheck2.GetString(0) & " " & CStr(Sequence + 1)) & "' "
                             SQL = SQL & "WHERE TEAM_NAME = '" & rsCheck2.GetString(0) & "' AND TEAM_ID = " & rsCheck2.GetInt64(1)
-                            Call evedb.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
                             ' Increment
                             Sequence += 1
                         End While
@@ -917,14 +917,14 @@ Public Class EVECREST
                     End While
 
                     ' Rebuild indexes on auctions and bonuses
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_ID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_CTIVITY_ID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_NAME")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_AUCTION_ID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BIDS_AUCTION_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_CTIVITY_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_TEAM_NAME")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_AUCTIONS_AUCTION_ID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_BIDS_AUCTION_ID")
 
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_ID_GID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_BONUSES_NAME_GID")
 
                     rsCheck.Close()
                     DBCommand = Nothing
@@ -993,7 +993,7 @@ Public Class EVECREST
 
     ' For Industry Team Auctions
     Private Class IndustryTeamAuctionCharacter
-        ' "character": {"isNPC": false, "id": 94733327, "href": "https://public-crest-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
+        ' "character": {"isNPC": false, "id": 94733327, "href": "https://crest-tq-sisi.testeveonline.com/characters/94733327/", "name": "Aniv Omegadeleiv", "capsuleer": {"href": ""}
         <JsonProperty("isNPC")> Public isNPC As Boolean
         <JsonProperty("id")> Public CharacterID As Long
         <JsonProperty("href")> Public href As String
@@ -1006,7 +1006,7 @@ Public Class EVECREST
     ' This returns a list of all publicly accessible facilities, including player built outposts in nullsec.
 
     ' Gets the CREST file from CCP for current Industry Facilities and updates the EVEIPH DB with the values
-    Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing, _
+    Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing,
                                             Optional SplashVisible As Boolean = False) As Boolean
         Dim IndustryFacilitiesOutput As IndustryFacilities
         Dim SQL As String
@@ -1409,7 +1409,7 @@ Public Class EVECREST
             SQL = SQL & CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
             SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
             Application.DoEvents()
         End While
 
@@ -1550,7 +1550,7 @@ Public Class EVECREST
                                     SQL = SQL & CStr(.activityID) & ",'" & FormatDBString(.activityName) & "'," & CStr(.costIndex) & ")"
                                 End If
 
-                                Call evedb.ExecuteNonQuerySQL(SQL)
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
                             End With
                         Next
 
@@ -1562,7 +1562,7 @@ Public Class EVECREST
                     TempPB.Visible = False
 
                     ' Rebuild indexes
-                    Call evedb.ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
+                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
 
                     ' Set the Cache Date to now plus the length since it's not sent in the file
                     Call SetCRESTCacheDate(IndustrySystemsField, CacheDate)
@@ -1653,7 +1653,7 @@ Public Class EVECREST
                     Call EVEDB.BeginSQLiteTransaction()
 
                     ' Clear the old records first
-                    Call evedb.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+                    Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
 
                     TempLabel.Text = "Saving Adjusted Market Price Data..."
                     TempPB.Minimum = 0
@@ -1724,7 +1724,7 @@ Public Class EVECREST
 
     ' For Market Prices
     Private Class MarketPriceType
-        '"type": {"id_str": "32772", "href": "https://public-crest-sisi.testeveonline.com/inventory/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
+        '"type": {"id_str": "32772", "href": "https://crest-tq-sisi.testeveonline.com/inventory/types/32772/", "id": 32772, "name": "Medium Ancillary Shield Booster"}
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1735,7 +1735,7 @@ Public Class EVECREST
 
     ' For CREST Solar Systems
     Private Class SolarSystem
-        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
+        '{"id_str": "30001743", "href": "https://crest-tq-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "JUE-DX"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1744,7 +1744,7 @@ Public Class EVECREST
 
     ' For CREST Regions
     Private Class Region
-        '{"id_str": "30001743", "href": "https://public-crest-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
+        '{"id_str": "30001743", "href": "https://crest-tq-sisi.testeveonline.com/solarsystems/30001743/", "id": 30001743, "name": "The Forge"}, 
         <JsonProperty("id_str")> Public id_str As String
         <JsonProperty("href")> Public href As String
         <JsonProperty("id")> Public id As Long
@@ -1753,7 +1753,7 @@ Public Class EVECREST
 
     ' For all CREST where key is just a web link
     Private Class hrefKey
-        '"capsuleer": {"href": "https://public-crest-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
+        '"capsuleer": {"href": "https://crest-tq-sisi.testeveonline.com/characters/1047420507/capsuleer/"}
         <JsonProperty("href")> Public href As String
     End Class
 
@@ -1772,7 +1772,7 @@ Public Class EVECREST
         Try
             Dim Start As DateTime = Now
             Dim myUri As New Uri(URL)
-
+            '/market/<regionID:integerType>/history/
             ' Create the web request  
             request = DirectCast(WebRequest.Create(myUri), HttpWebRequest)
             ' Settings for speed
