@@ -9,7 +9,7 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "Citadel_20160531"
+    Public Const SDEVersion As String = "YC_118.6"
     Public Const VersionNumber As String = "3.3.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
