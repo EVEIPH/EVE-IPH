@@ -3765,10 +3765,10 @@ InvalidDate:
     End Function
 
     ' Imports sent blueprint to shopping list
-    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, _
-                                 ManufacturingFacilityMEModifier As Double, ManufacturingFacilityType As String, _
-                                 IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean, _
-                                 IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean, _
+    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean,
+                                 ManufacturingFacilityMEModifier As Double, ManufacturingFacilityType As String,
+                                 IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean,
+                                 IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean,
                                  Optional CopyInventionMatsOnly As Boolean = False)
         Dim TempMats As New Materials
         Dim ShoppingItem As New ShoppingListItem
@@ -3863,7 +3863,7 @@ InvalidDate:
             End If
 
             If SentBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SentBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
-                If UserApplicationSettings.ShopListIncludeInventMats = True Then
+                If UserApplicationSettings.ShopListIncludeInventMats = True Or CopyInventionMatsOnly Then
                     ' Save the list of invention materials
                     .InventionMaterials = CType(SentBlueprint.GetInventionMaterials.Clone, Materials)
 
@@ -3878,7 +3878,7 @@ InvalidDate:
 
                 End If
 
-                If UserApplicationSettings.ShopListIncludeCopyMats = True Then
+                If UserApplicationSettings.ShopListIncludeCopyMats = True Or CopyInventionMatsOnly Then
                     ' Save the list of copy materials
                     .CopyMaterials = CType(SentBlueprint.GetCopyMaterials.Clone, Materials)
 

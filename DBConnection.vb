@@ -1,5 +1,6 @@
 ﻿Imports System.Data.SQLite
 
+<CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")>
 Public Class DBConnection
 
     Private DB As SQLiteConnection
@@ -49,7 +50,4 @@ Public Class DBConnection
         Call ExecuteNonQuerySQL("ROLLBACK;")
     End Sub
 
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
 End Class

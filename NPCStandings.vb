@@ -15,10 +15,6 @@ Public Class NPCStandings
         NPCStandings = New List(Of NPCStanding)
     End Sub
 
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
-
     ' Returns the standing of a sent NPC ID
     Public Function GetStanding(ByVal NPCID As Long) As Double
 

@@ -21,11 +21,6 @@ Public Class Materials
         MaterialList = New List(Of Material)
     End Sub
 
-    ' Destructor
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
-
     ' For doing a deep copy of Materials
     Public Function Clone() As Object Implements ICloneable.Clone
         Dim CopyOfMe = New Materials

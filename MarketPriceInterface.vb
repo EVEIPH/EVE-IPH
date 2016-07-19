@@ -471,7 +471,7 @@ Public Class MarketPriceInterface
     End Function
 
     ' For use with threading to speed up the CREST calls for market orders
-    Private Sub UpdateMarketOrders(PairsList As Object, Optional PG As ToolStripProgressBar = Nothing)
+    Private Sub UpdateMarketOrders(PairsList As Object)
         Dim BatchStart As DateTime = Now
         Dim BatchCounter As Integer = 0
         Dim PricesUpdated As Boolean

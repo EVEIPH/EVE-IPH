@@ -776,12 +776,12 @@ Public Class Blueprint
                 End If
             Next
 
-            ' Update the bp production time to equal the longest runs per line times the number of batches - add in copy and invention time if we invented
-            BPProductionTime = (BPProductionTime + CopyTime + InventionTime) * Batches
+            ' Update the bp production time to equal the longest runs per line times the number of batches - add in copy and invention time if we invented (totaled up in invention function)
+            BPProductionTime = (BPProductionTime * Batches) + CopyTime + InventionTime
 
-            ' Set the total production time
+            ' Set the total production time by adding just the components (invention and copy already included in bp production time
             If Not IsNothing(ComponentProductionTimes) Then
-                TotalProductionTime = BPProductionTime + GetComponentProductionTime(ComponentProductionTimes) + CopyTime + InventionTime
+                TotalProductionTime = BPProductionTime + GetComponentProductionTime(ComponentProductionTimes)
             End If
 
             ' Finally recalculate our prices
@@ -811,8 +811,11 @@ Public Class Blueprint
         Dim CurrentMaterial As Material
         Dim CurrentMatQuantity As Long
         Dim CurrentMaterialCategory As String
-        Dim tempMatQuantity As Long
-        Dim fudgeRAM As Boolean
+
+        ' The quantity that we want to use to build this item (may be different than quantity need if portionsize <> runs)
+        Dim BuildQuantity As Long = 0
+        Dim ComponentBPPortionSize As Long = 1
+
         ' Temp Materials for passing
         Dim TempMaterials As New Materials
 
@@ -849,13 +852,12 @@ Public Class Blueprint
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
 
                 If Not IsDBNull(readerBP.GetValue(11)) Then
-                    ' Divide by the portion size if this item has one (component buildable)
-                    tempMatQuantity = CLng(CurrentMatQuantity)
-                    CurrentMatQuantity = CLng(Math.Ceiling(CurrentMatQuantity / readerBP.GetInt64(11)))
-                    if (tempMatQuantity <> CurrentMatQuantity)
-                        fudgeRAM = True
-                    End If
-
+                    ComponentBPPortionSize = readerBP.GetInt64(11)
+                    ' Divide by the portion size if this item has one (component buildable) for the build quantity
+                    BuildQuantity = CLng(Math.Ceiling(CurrentMatQuantity / ComponentBPPortionSize))
+                Else
+                    BuildQuantity = CurrentMatQuantity
+                    ComponentBPPortionSize = 1
                 End If
 
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
@@ -892,9 +894,9 @@ Public Class Blueprint
                     End If
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
-                    ComponentBlueprint = New Blueprint(readerME.GetInt64(0), CLng(CurrentMaterial.GetQuantity), TempME, TempTE, _
-                              1, 1, BPCharacter, BPUserSettings, BuildBuy, _
-                              0, ComponentManufacturingTeam, TempComponentFacility, _
+                    ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
+                              1, 1, BPCharacter, BPUserSettings, BuildBuy,
+                              0, ComponentManufacturingTeam, TempComponentFacility,
                               ComponentManufacturingTeam, ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     ' Set this blueprint with the quantity needed and get it's mats
@@ -902,10 +904,21 @@ Public Class Blueprint
 
                     ' Determine if the component should be bought, or we should build it and add to the correct list
                     If BuildBuy Then
+                        Dim CheapertoBuild As Boolean = False
+                        ' See if the costs to build are less than buy
+                        If ComponentBPPortionSize = 1 Then
+                            If CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost Then
+                                CheapertoBuild = True
+                            End If
+                        Else
+                            ' Need to calc the proper cost for each run 
+                            If CurrentMaterial.GetTotalCost > (ComponentBlueprint.GetTotalRawCost / ComponentBPPortionSize * CurrentMaterial.GetQuantity) Then
+                                CheapertoBuild = True
+                            End If
+                        End If
+
                         ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                        If CurrentMaterial.GetTotalCost = 0 Or (CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost _
-                                                                And ((BPUserSettings.SuggestBuildBPNotOwned) Or _
-                                                                     (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+                        If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
                             '*** BUILD ***
                             ' We want to build this item
                             CurrentMaterial.SetBuildItem(True)
@@ -931,7 +944,12 @@ Public Class Blueprint
                             ComponentTeamFee += ComponentBlueprint.GetManufacturingTeamFee
 
                             ' Since we are building this item, set the material cost to build cost per item, not buy
-                            CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / CurrentMaterial.GetQuantity)
+                            CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity)
+
+                            ' Adjust the material quantity if we are building and the buildquantity <> mat quantity
+                            If BuildQuantity <> CurrentMaterial.GetQuantity Then
+                                CurrentMaterial.SetQuantity(BuildQuantity)
+                            End If
 
                             ' Insert the raw mats of this blueprint
                             RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
@@ -941,7 +959,7 @@ Public Class Blueprint
                             TempBuiltItem.BPTypeID = readerME.GetInt64(0)
                             TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                             TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                            TempBuiltItem.ItemQuantity = CurrentMaterial.GetQuantity
+                            TempBuiltItem.ItemQuantity = BuildQuantity
                             TempBuiltItem.BuildME = TempME
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
@@ -996,10 +1014,6 @@ Public Class Blueprint
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
 
-                        If fudgeRAM Then
-                            CurrentMaterial.SetQuantity(tempMatQuantity)
-                        End If
-
                         ' Insert the existing component that we are using into the component list
                         ComponentMaterials.InsertMaterial(CurrentMaterial)
 
@@ -1008,7 +1022,7 @@ Public Class Blueprint
                         TempBuiltItem.BPTypeID = readerME.GetInt64(0)
                         TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                         TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                        TempBuiltItem.ItemQuantity = CurrentMaterial.GetQuantity
+                        TempBuiltItem.ItemQuantity = BuildQuantity
                         TempBuiltItem.BuildME = TempME
                         TempBuiltItem.BuildTE = TempTE
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume

@@ -3225,7 +3225,8 @@ Public Class frmMain
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
-                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, TE "
+                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, "
+                    SQL = sql & "CASE WHEN TE Is NULL THEN 0 ELSE TE END AS BP_TE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
                     SQL = SQL & "WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
 
@@ -3236,6 +3237,7 @@ Public Class frmMain
                     ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value, but set the type depending on the bp loaded
                     Dim TempBPType As BPType
                     Dim AdditionalCost As Double
+                    Dim TempTE As Integer = rsData.GetInt32(5)
 
                     If rsData.GetInt64(2) = BlueprintTechLevel.T1 Then
                         ' T1 BPO
@@ -3252,7 +3254,13 @@ Public Class frmMain
                         AdditionalCost = 0
                     End If
 
-                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), rsData.GetInt32(5), TempBPType, CInt(MEValue), 0, 0, CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
+                    ' If there is no TE for an invented BPC then set it to the base
+                    If TempBPType = BPType.InventedBPC And TempTE = 0 Then
+                        TempTE = BaseT2T3TE
+                    End If
+
+                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0, 0,
+                                      CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
                     CurrentRow.BackColor = Color.White
@@ -3980,6 +3988,9 @@ Tabs:
     End Sub
 
     Private Sub cmbBPFacilityRegion_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPFacilityRegion.DropDown
+        ' If you drop down, don't show the text window
+        cmbBPFacilityRegion.AutoCompleteMode = AutoCompleteMode.None
+
         If Not FirstLoad And Not BPFacilityRegionsLoaded Then
             PreviousFacilityRegion = cmbBPFacilityRegion.Text
             ' Save the current
@@ -3997,6 +4008,16 @@ Tabs:
                                      btnBPFacilitySave, lblBPFacilityTaxRate, BPTab,
                                      chkBPFacilityIncludeUsage, lblBPFacilityUsage, gbBPManualSystemCostIndex)
         End If
+    End Sub
+
+    Private Sub cmbBPFacilityRegion_GotFocus(sender As Object, e As EventArgs) Handles cmbBPFacilityRegion.GotFocus
+        Call cmbBPFacilityRegion.SelectAll()
+    End Sub
+
+    Private Sub cmbBPFacilityRegion_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilityRegion.DropDownClosed
+        ' If it closes up, re-enable autocomplete
+        cmbBPFacilityRegion.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        ComboMenuDown = False
     End Sub
 
     Private Sub cmbBPFacilityRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilityRegion.KeyPress
@@ -4019,11 +4040,10 @@ Tabs:
         End If
     End Sub
 
-    Private Sub cmbBPFacilitySystem_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilitySystem.KeyPress
-        e.Handled = True
-    End Sub
-
     Private Sub cmbBPFacilitySystem_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPFacilitySystem.DropDown
+        ' If you drop down, don't show the text window
+        cmbBPFacilitySystem.AutoCompleteMode = AutoCompleteMode.None
+
         If Not BPFacilitySystemsLoaded And Not FirstLoad Then
             PreviousFacilitySystem = cmbBPFacilitySystem.Text
             Call LoadFacilitySystems(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False,
@@ -4037,6 +4057,8 @@ Tabs:
     Private Sub cmbBPFacilitySystem_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPFacilitySystem.SelectedIndexChanged
         Dim OverrideFacilityName As String = ""
         Dim Autoload As Boolean = False
+
+                cmbBPFacilitySystem.SelectionLength = 0
 
         If Not IsNothing(SelectedBlueprint) Then
             If Not LoadingFacilitySystems And Not FirstLoad And PreviousFacilitySystem <> cmbBPFacilitySystem.Text Then
@@ -4077,11 +4099,28 @@ Tabs:
 
     End Sub
 
-    Private Sub cmbBPFacilityorArray_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilityorArray.KeyPress
+    Private Sub cmbBPFacilitySystem_GotFocus(sender As Object, e As EventArgs) Handles cmbBPFacilitySystem.GotFocus
+        Call cmbBPFacilitySystem.SelectAll()
+    End Sub
+
+    Private Sub cmbBPFacilitySystem_LostFocus(sender As Object, e As EventArgs) Handles cmbBPFacilitySystem.LostFocus
+        cmbBPFacilitySystem.SelectionLength = 0
+    End Sub
+
+    Private Sub cmbBPFacilitySystem_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilitySystem.KeyPress
         e.Handled = True
     End Sub
 
+    Private Sub cmbBPFacilitySystem_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilitySystem.DropDownClosed
+        ' If it closes up, re-enable autocomplete
+        cmbBPFacilitySystem.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        ComboMenuDown = False
+    End Sub
+
     Private Sub cmbBPFacilityorArray_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPFacilityorArray.DropDown
+        ' If you drop down, don't show the text window
+        cmbBPFacilityorArray.AutoCompleteMode = AutoCompleteMode.None
+
         If Not BPFacilitiesLoaded And Not FirstLoad Then
             PreviousFacilityEquipment = cmbBPFacilityorArray.Text
             Call LoadFacilities(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False,
@@ -4125,6 +4164,20 @@ Tabs:
                 Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
             End If
         End If
+    End Sub
+
+    Private Sub cmbBPFacilityorArray_GotFocus(sender As Object, e As EventArgs) Handles cmbBPFacilityorArray.GotFocus
+        Call cmbBPFacilityorArray.SelectAll()
+    End Sub
+
+    Private Sub cmbBPFacilityorArray_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilityorArray.KeyPress
+        e.Handled = True
+    End Sub
+
+    Private Sub cmbBPFacilityorArray_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilityorArray.DropDownClosed
+        ' If it closes up, re-enable autocomplete
+        cmbBPFacilityorArray.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        ComboMenuDown = False
     End Sub
 
     Private Sub btnBPFacilitySave_Click(sender As System.Object, e As System.EventArgs) Handles btnBPFacilitySave.Click
@@ -4889,7 +4942,10 @@ Tabs:
     End Sub
 
     Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
+        Call LoadBPInventionDecryptors()
+    End Sub
 
+    Private Sub LoadBPInventionDecryptors()
         If Not InventionDecryptorsLoaded Then
             ' Clear anything that was there
             cmbBPInventionDecryptor.Items.Clear()
@@ -4904,6 +4960,25 @@ Tabs:
             Next
 
             InventionDecryptorsLoaded = True
+
+        End If
+    End Sub
+
+    Private Sub LoadBPT3InventionDecryptors()
+        If Not T3DecryptorsLoaded Then
+            ' Clear anything that was there
+            cmbBPT3Decryptor.Items.Clear()
+
+            ' Add NONE
+            cmbBPT3Decryptor.Items.Add(None)
+
+            Dim Decryptors As New DecryptorList
+
+            For i = 0 To Decryptors.GetDecryptorList.Count - 1
+                cmbBPT3Decryptor.Items.Add(Decryptors.GetDecryptorList(i).Name)
+            Next
+
+            T3DecryptorsLoaded = True
 
         End If
     End Sub
@@ -4926,23 +5001,7 @@ Tabs:
     End Sub
 
     Private Sub cmbBPT3Decryptor_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPT3Decryptor.DropDown
-
-        If Not T3DecryptorsLoaded Then
-            ' Clear anything that was there
-            cmbBPT3Decryptor.Items.Clear()
-
-            ' Add NONE
-            cmbBPT3Decryptor.Items.Add(None)
-
-            Dim Decryptors As New DecryptorList
-
-            For i = 0 To Decryptors.GetDecryptorList.Count - 1
-                cmbBPT3Decryptor.Items.Add(Decryptors.GetDecryptorList(i).Name)
-            Next
-
-            T3DecryptorsLoaded = True
-
-        End If
+        Call LoadBPT3InventionDecryptors()
     End Sub
 
     Private Sub cmbBPREDecryptor_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPT3Decryptor.SelectedIndexChanged
@@ -5428,7 +5487,7 @@ Tabs:
     End Sub
 
     Private Sub cmbBPFacilitySystem_TextChanged(sender As Object, e As System.EventArgs) Handles cmbBPFacilitySystem.TextChanged
-        If cmbBPFacilitySystem.Text <> "Select System" Then
+        If cmbBPFacilitySystem.Text <> "Select System" And cmbBPFacilitySystem.Text.Length > 3 And cmbBPFacilitySystem.Text.Contains("(") Then
             lblBPFacilitySystemName.Text = cmbBPFacilitySystem.Text.Substring(0, InStr(cmbBPFacilitySystem.Text, "(") - 2)
             Dim Start As Integer = InStr(cmbBPFacilitySystem.Text, "(")
             Dim Length As Integer = InStr(cmbBPFacilitySystem.Text, ")") - 1 - Start
@@ -6860,19 +6919,19 @@ Tabs:
             End If
 
             ' Turn off the invention calcs if unknown
-            UpdatingInventionChecks = True
-            If TempDName = Unknown Then
-                chkBPIncludeCopyCosts.Checked = False
-                chkBPIncludeCopyTime.Checked = False
-                chkBPIncludeInventionCosts.Checked = False
-                chkBPIncludeInventionTime.Checked = False
-            Else
-                chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
-                chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
-                chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
-                chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
-            End If
-            UpdatingInventionChecks = False
+            'UpdatingInventionChecks = True
+            'If TempDName = Unknown Then
+            '    chkBPIncludeCopyCosts.Checked = False
+            '    chkBPIncludeCopyTime.Checked = False
+            '    chkBPIncludeInventionCosts.Checked = False
+            '    chkBPIncludeInventionTime.Checked = False
+            'Else
+            '    chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
+            '    chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
+            '    chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
+            '    chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
+            'End If
+            'UpdatingInventionChecks = False
 
         End If
 
@@ -6913,6 +6972,7 @@ Tabs:
 
         txtBPRuns.SelectAll()
         txtBPRuns.Focus()
+        cmbBPBlueprintSelection.SelectionLength = 0
 
     End Sub
 
@@ -7113,10 +7173,14 @@ Tabs:
                 ' Need to add the relic variant to the query for just one item
                 RelicName = cmbBPRelic.Text
                 InventionFacility = SelectedBPT3InventionFacility
+                ' Load the decryptor options
+                Call LoadBPT3InventionDecryptors()
             Else
                 ' T2 no relic 
                 RelicName = ""
                 InventionFacility = SelectedBPInventionFacility
+                ' Load the decryptor options
+                Call LoadBPInventionDecryptors()
             End If
 
             ' invent this bp
@@ -8701,7 +8765,7 @@ ExitForm:
     End Sub
 
     ' Clears all system's that may be checked including resetting the system combo
-    Private Sub ClearSystemChecks()
+    Private Sub ClearSystemChecks(Optional ResetSystemCombo As Boolean = True)
         Dim i As Integer
 
         If Not IgnoreSystemCheckUpdates Then
@@ -8709,7 +8773,9 @@ ExitForm:
                 SystemCheckBoxes(i).Checked = False
             Next
             ' Reset the system combo
-            cmbPriceSystems.Text = DefaultSystemPriceCombo
+            If ResetSystemCombo Then
+                cmbPriceSystems.Text = DefaultSystemPriceCombo
+            End If
         End If
     End Sub
 
@@ -9081,19 +9147,34 @@ ExitForm:
     End Sub
 
     Private Sub cmbPriceSystems_DropDown(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.DropDown
+        ' If you drop down, don't show the text window
+        cmbPriceSystems.AutoCompleteMode = AutoCompleteMode.None
+
         If FirstSolarSystemComboLoad Then
             Call LoadPriceSolarSystems()
             FirstSolarSystemComboLoad = False
         End If
     End Sub
 
-    Private Sub cmbPriceSystems_ForeColorChanged(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.ForeColorChanged
+    Private Sub cmbPriceSystems_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.DropDownClosed
+        ' If it closes up, re-enable autocomplete
+        cmbPriceSystems.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+    End Sub
+
+    Private Sub cmbPriceSystems_GotFocus(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.GotFocus
         cmbPriceSystems.SelectAll()
+    End Sub
+
+    Private Sub cmbPriceSystems_SelectionChangeCommitted(sender As Object, e As EventArgs) Handles cmbPriceSystems.SelectionChangeCommitted
+        If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
+            Call ClearSystemChecks(False)
+            Call ClearAllRegionChecks(0)
+        End If
     End Sub
 
     Private Sub cmbPriceSystems_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPriceSystems.SelectedIndexChanged
         If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
-            Call ClearSystemChecks()
+            Call ClearSystemChecks(False)
             Call ClearAllRegionChecks(0)
         End If
     End Sub
@@ -9738,7 +9819,6 @@ ExitForm:
         Dim i As Integer
         Dim TempRegion As String = ""
 
-        FirstSolarSystemComboLoad = True
         FirstPriceChargeTypesComboLoad = True
         FirstPriceShipTypesComboLoad = True
         RefreshList = False
@@ -9863,6 +9943,9 @@ ExitForm:
         ' Disable cancel
         btnCancelUpdate.Enabled = False
 
+        ' Preload the systems combo
+        Call LoadPriceSolarSystems()
+
         ' Set system/region 
         If UserUpdatePricesTabSettings.SelectedSystem <> "0" Then
             ' Check the preset systems fist
@@ -9878,8 +9961,6 @@ ExitForm:
                 Case "Hek"
                     chkSystems5.Checked = True
                 Case Else
-                    ' Preload the systems combo
-                    Call LoadPriceSolarSystems()
                     cmbPriceSystems.Text = UserUpdatePricesTabSettings.SelectedSystem
             End Select
 
@@ -11853,6 +11934,16 @@ ExitSub:
                                      lblCalcBaseFacilityManualTax, txtCalcBaseFacilityManualTax,
                                      btnCalcBaseFacilitySave, lblCalcBaseFacilityTaxRate, CalcTab, chkCalcBaseFacilityIncludeUsage)
         End If
+    End Sub
+
+    Private Sub cmbCalcBaseFacilityRegion_DropDownClosed(sender As Object, e As EventArgs) Handles cmbCalcBaseFacilityRegion.DropDownClosed
+        ' If it closes up, re-enable autocomplete
+        cmbCalcBaseFacilityRegion.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        ComboMenuDown = False
+    End Sub
+
+    Private Sub cmbCalcBaseFacilityRegion_GotFocus(sender As Object, e As EventArgs) Handles cmbCalcBaseFacilityRegion.GotFocus
+        Call cmbBPFacilityRegion.SelectAll()
     End Sub
 
     Private Sub cmbCalcBaseFacilityRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcBaseFacilityRegion.KeyPress
@@ -19296,6 +19387,7 @@ ExitCalc:
         pnlProgressBar.Value = 0
         pnlProgressBar.Visible = False
         pnlStatus.Text = ""
+        lstManufacturing.EndUpdate()
 
         ' Enable all the controls
         btnCalcPreview.Enabled = True
@@ -26442,6 +26534,10 @@ Leave:
         End Function
 
     End Class
+
+    Private Sub cmbBPFacilityActivities_KeyDown(sender As Object, e As KeyEventArgs) Handles cmbBPFacilityActivities.KeyDown
+
+    End Sub
 
 #End Region
 

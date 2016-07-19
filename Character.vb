@@ -460,6 +460,8 @@ Public Class Character
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
+        ErrorTracker = SQL
+
         While rsData.Read
             With rsData
                 HomeStationID = .GetInt64(0)
@@ -476,13 +478,13 @@ Public Class Character
                 FactionID = .GetInt32(11)
                 FreeSkillPoints = .GetInt32(12)
                 FreeRespecs = .GetInt32(13)
-                CloneJumpDate = CDate(.GetString(14))
-                LastRespecDate = CDate(.GetString(15))
-                LastTimedRespec = CDate(.GetString(16))
-                RemoteStationDate = CDate(.GetString(17))
-                JumpActivation = CDate(.GetString(18))
-                JumpFatigue = CDate(.GetString(19))
-                JumpLastUpdate = CDate(.GetString(20))
+                CloneJumpDate = CDate(If(.GetValue(14), NoDate))
+                LastRespecDate = CDate(If(.GetValue(15), NoDate))
+                LastTimedRespec = CDate(If(.GetValue(16), NoDate))
+                RemoteStationDate = CDate(If(.GetValue(17), NoDate))
+                JumpActivation = CDate(If(.GetValue(18), NoDate))
+                JumpFatigue = CDate(If(.GetValue(19), NoDate))
+                JumpLastUpdate = CDate(If(.GetValue(20), NoDate))
                 Balance = .GetDouble(21)
 
                 AttributeMemory = .GetInt32(22)
@@ -500,6 +502,8 @@ Public Class Character
         SQL = SQL & "FROM CHARACTER_JUMP_CLONES WHERE CHARACTER_ID = " & CStr(ID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
+
+        ErrorTracker = SQL
 
         While rsData.Read
             With rsData
@@ -521,6 +525,8 @@ Public Class Character
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
+        ErrorTracker = SQL
+
         While rsData.Read
             With rsData
                 Dim TempImplant As New Implant
@@ -540,6 +546,8 @@ Public Class Character
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
+        ErrorTracker = SQL
+
         While rsData.Read
             With rsData
                 Dim TempRole As New CorporationRole
@@ -558,6 +566,8 @@ Public Class Character
         SQL = SQL & "FROM CHARACTER_CORP_TitleS WHERE CHARACTER_ID = " & CStr(ID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
+
+        ErrorTracker = SQL
 
         While rsData.Read
             With rsData
@@ -588,6 +598,8 @@ Public Class Character
         End If
         SQL = SQL & "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
 
+        ErrorTracker = SQL
+
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
@@ -605,6 +617,7 @@ Public Class Character
         rsData.Close()
         rsData = Nothing
         DBCommand = Nothing
+        ErrorTracker = ""
 
     End Sub
 

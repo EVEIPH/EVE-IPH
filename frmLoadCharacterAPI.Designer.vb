@@ -213,10 +213,10 @@ Partial Class frmLoadCharacterAPI
         '
         'frmLoadCharacterAPI
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(538, 192)
-        Me.ControlBox = False
         Me.Controls.Add(Me.linklabelPredefined)
         Me.Controls.Add(Me.lblKeyType)
         Me.Controls.Add(Me.btnPrevious)

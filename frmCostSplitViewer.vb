@@ -70,10 +70,6 @@ Public Class frmCostSplitViewer
         Me.Dispose()
     End Sub
 
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
-
     Private Sub btnCopyMats_Click(sender As System.Object, e As System.EventArgs) Handles btnCopyMats.Click
         Dim Separator As String
         Dim ClipboardText As String = ""
