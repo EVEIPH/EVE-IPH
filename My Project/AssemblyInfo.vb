@@ -9,7 +9,7 @@ Imports System.Runtime.InteropServices
 ' Review the values of the assembly attributes
 
 <Assembly: AssemblyTitle("EVE Isk per Hour")>
-<Assembly: AssemblyDescription("Using CCP Data Export: " & SDEVersion & vbCrLf & vbCrLf & "If you would like to support this application, send ISK donations to 'Cwittofur Cesaille' in game or donate via paypal to Cwittofur@gmail.com" _
+<Assembly: AssemblyDescription("Using CCP Data Export: " & SDEVersion & vbCrLf & vbCrLf & "If you would like to support this application, send ISK donations to 'Cwittofur Cesaille' in game." _
                                 & vbCrLf & vbCrLf & "Underlying data and images in EVE IPH are owned by © 2016 CCP hf. All rights reserved. ""EVE"", ""EVE Online"", ""CCP"", and all related logos and images are trademarks or registered trademarks of CCP hf.")>
 <Assembly: AssemblyCompany("EVE IPH")> 
 <Assembly: AssemblyProduct("EVE Isk per Hour")> 

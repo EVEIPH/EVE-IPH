@@ -4014,12 +4014,6 @@ Tabs:
         Call cmbBPFacilityRegion.SelectAll()
     End Sub
 
-    Private Sub cmbBPFacilityRegion_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilityRegion.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbBPFacilityRegion.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        ComboMenuDown = False
-    End Sub
-
     Private Sub cmbBPFacilityRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilityRegion.KeyPress
         e.Handled = True
     End Sub
@@ -4111,12 +4105,6 @@ Tabs:
         e.Handled = True
     End Sub
 
-    Private Sub cmbBPFacilitySystem_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilitySystem.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbBPFacilitySystem.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        ComboMenuDown = False
-    End Sub
-
     Private Sub cmbBPFacilityorArray_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPFacilityorArray.DropDown
         ' If you drop down, don't show the text window
         cmbBPFacilityorArray.AutoCompleteMode = AutoCompleteMode.None
@@ -4172,12 +4160,6 @@ Tabs:
 
     Private Sub cmbBPFacilityorArray_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPFacilityorArray.KeyPress
         e.Handled = True
-    End Sub
-
-    Private Sub cmbBPFacilityorArray_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPFacilityorArray.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbBPFacilityorArray.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        ComboMenuDown = False
     End Sub
 
     Private Sub btnBPFacilitySave_Click(sender As System.Object, e As System.EventArgs) Handles btnBPFacilitySave.Click
@@ -17304,6 +17286,8 @@ CheckTechs:
 
             CalcHistoryRegionLoaded = False
 
+            AddToShoppingListToolStripMenuItem.Enabled = False ' Don't enable this until they calculate something
+
         End With
 
         Call ResetRefresh()
@@ -17822,6 +17806,9 @@ CheckTechs:
 
         ' For the optimal decryptor checking
         Dim OptimalDecryptorItems As New List(Of OptimalDecryptorItem)
+
+        ' Set this now and enable it if they calculate
+        AddToShoppingListToolStripMenuItem.Enabled = False
 
         ' If they entered an ME/TE value make sure it's ok
         If Not CorrectMETE(txtCalcTempME.Text, txtCalcTempTE.Text, txtCalcTempME, txtCalcTempTE) Then
@@ -19091,7 +19078,11 @@ CheckTechs:
                 'Me.Cursor = Cursors.Default
                 pnlStatus.Text = ""
 
+                ' BPs were calcualted so enable it
+                AddToShoppingListToolStripMenuItem.Enabled = True
+
             End If
+
         End If
 
         ' **********************************************************************
@@ -21095,11 +21086,16 @@ ExitCalc:
 
                     ' Get the BP variable and send the other settings to shopping list
                     With FoundItem
-                        Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
+                        If Not IsNothing(.Blueprint) Then
+                            Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
                                                .Blueprint.GetManufacturingFacility.FacilityType,
                                                chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked,
                                                .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime,
                                                .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
+                        Else
+                            MsgBox("You must calculate an item before adding it to the shopping list.", MsgBoxStyle.Information, Application.ProductName)
+                            Exit Sub
+                        End If
                     End With
                 End If
             Next
