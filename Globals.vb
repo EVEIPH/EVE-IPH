@@ -39,9 +39,12 @@ Public Module Public_Variables
     Public UserWorkingFolder As String = "" ' Where the DB and updater and anything that changes files will be
     Public UserImagePath As String = "" ' Where the images are kept
 
-    Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
-    Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
-    Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
+    'Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
+    'Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
+    'Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
+    Public Const PatchNotesURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/Patch%20Notes.txt"
+    Public Const XMLUpdateFileURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/LatestVersionIPH.xml"
+    Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
 
     Public Const AppDataPath As String = "EVEIPH\"
     Public Const BPImageFilePath As String = "EVEIPH Images\"
@@ -4551,7 +4554,7 @@ InvalidDate:
 
     ' Downloads the sent file from server and saves it to the root directory as the sent file name
     Public Function DownloadFileFromServer(ByVal DownloadURL As String, ByVal FileName As String) As String
-        'Creating the request and getting the response
+        ' Creating the request And getting the response
         Dim Response As HttpWebResponse
         Dim Request As HttpWebRequest
 
@@ -4588,6 +4591,14 @@ InvalidDate:
         'Close the streams
         Response.GetResponseStream.Close()
         writeStream.Close()
+
+        ' Finally, check if the file is xml or text and adjust the lf to crlf (git saves as unix or lf only)
+        If FileName.Contains(".txt") Then 'Or FileName.Contains(".xml") Then
+            Dim FileText As String = File.ReadAllText(FileName)
+            FileText = FileText.Replace(Chr(10), vbCrLf)
+            ' Write the file back out if it's been updated
+            File.WriteAllText(FileName, FileText)
+        End If
 
         Return FileName
 

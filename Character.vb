@@ -508,10 +508,10 @@ Public Class Character
         While rsData.Read
             With rsData
                 Dim TempJC As New JumpClone
-                TempJC.JumpCloneID = rsData.GetInt64(0)
-                TempJC.LocationID = rsData.GetInt64(1)
-                TempJC.TypeID = rsData.GetInt64(2)
-                TempJC.CloneName = rsData.GetString(3)
+                TempJC.JumpCloneID = CLng(rsData.GetValue(0))
+                TempJC.LocationID = CLng(rsData.GetValue(1))
+                TempJC.TypeID = CLng(rsData.GetValue(2))
+                TempJC.CloneName = CStr(rsData.GetValue(3))
 
                 JumpClones.Add(TempJC)
             End With

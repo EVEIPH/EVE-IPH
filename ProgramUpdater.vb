@@ -27,9 +27,9 @@ Public Class ProgramUpdater
 
         ' Get the newest updatefile from server
         If TestingVersion Then
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestServerURL, UpdaterFilePath & XMLLatestVersionTest)
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestFileURL, UpdaterFilePath & XMLLatestVersionTest)
         Else
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateServerURL, UpdaterFilePath & XMLLatestVersionFileName)
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateFileURL, UpdaterFilePath & XMLLatestVersionFileName)
         End If
 
     End Sub

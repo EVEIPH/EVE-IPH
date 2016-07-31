@@ -1733,11 +1733,10 @@ Public Class frmMain
         ' We are always going to load up manufacturing first
         cmbBPFacilityActivities.Text = ActivityManufacturing
 
-        If SentFrom = "Manufacturing Tab" Or SentFrom = "History" Then
+        If SentFrom = "Manufacturing Tab" Then ' Or SentFrom = "History" Then
             SentFromManufacturingTab = True
             SentFromShoppingList = False
 
-            ' Need to load the team and the facility used
             SelectedBPComponentManufacturingFacility = CType(ComponentFacility.Clone, IndustryFacility)
             SelectedBPCapitalComponentManufacturingFacility = CType(CapCompentFacility.Clone, IndustryFacility)
             If BPTech = 2 Then
@@ -1755,6 +1754,7 @@ Public Class frmMain
                 chkBPIncludeT3Costs.Checked = SelectedBPT3InventionFacility.IncludeActivityCost
                 chkBPIncludeT3Time.Checked = SelectedBPT3InventionFacility.IncludeActivityTime
             End If
+
 
             ' Reset the current bp selection to override what is there
             CurrentBPCategoryID = readerBP.GetInt32(3)
