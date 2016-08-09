@@ -1725,6 +1725,7 @@ NoBonus:
     Public Sub LoadFacilityActivities(BPTech As Integer, NewBP As Boolean, ByRef FacilityActivitiesCombo As ComboBox, BPGroupID As Long, BPCategoryID As Long)
 
         LoadingFacilityActivities = True
+        FacilityActivitiesCombo.BeginUpdate()
 
         Select Case BPTech
             Case BlueprintTechLevel.T1
@@ -1770,6 +1771,7 @@ NoBonus:
         BPFacilitySystemsLoaded = False
 
         LoadingFacilityActivities = False
+        FacilityActivitiesCombo.EndUpdate()
 
     End Sub
 

@@ -105,6 +105,7 @@ Public Class frmMain
     Public MouseWheelSelection As Boolean
     Public ComboBoxArrowKeys As Boolean
     Public BPSelected As Boolean
+    Public BPComboKeyDown As Boolean
 
     ' Relics
     Private LoadingRelics As Boolean
@@ -4750,6 +4751,7 @@ Tabs:
         ComboMenuDown = False
         MouseWheelSelection = False
         ComboBoxArrowKeys = False
+        BPComboKeyDown = False
 
         cmbBPBlueprintSelection.Text = "Select Blueprint"
         cmbBPBlueprintSelection.Focus()
@@ -5665,6 +5667,7 @@ Tabs:
         ComboMenuDown = True
         ' if we drop down, we aren't using the arrow keys
         ComboBoxArrowKeys = False
+        BPComboKeyDown = False
     End Sub
 
     Private Sub cmbBPBlueprintSelection_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDownClosed
@@ -5672,7 +5675,7 @@ Tabs:
         'cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.SuggestAppend
         ComboMenuDown = False
         lstBPList.Hide() ' This could show up if people type into the list when combo down
-        Call SelectBlueprint()
+        'Call SelectBlueprint() ' Loads in selectionchangecommitted
         cmbBPBlueprintSelection.Focus()
     End Sub
 
@@ -5712,7 +5715,7 @@ Tabs:
 
     ' Load the list box when the user types and don't use the drop down list
     Private Sub cmbBPBlueprintSelection_TextChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.TextChanged
-        If Not FirstLoad And Not BPSelected And Trim(cmbBPBlueprintSelection.Text) <> "Select Blueprint" Then
+        If Not FirstLoad And Not BPSelected And Trim(cmbBPBlueprintSelection.Text) <> "Select Blueprint" And BPComboKeyDown Then
             If ComboBoxArrowKeys = False Then
                 If (cmbBPBlueprintSelection.Text <> "") Then
                     GetBPWithName(cmbBPBlueprintSelection.Text)
@@ -5727,6 +5730,12 @@ Tabs:
 
     ' Process keys for bp combo
     Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
+
+        If cmbBPBlueprintSelection.DroppedDown = False Then
+            BPComboKeyDown = True
+        Else
+            BPComboKeyDown = False
+        End If
 
         If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
             ComboBoxArrowKeys = True
@@ -6036,6 +6045,7 @@ Tabs:
             ComboMenuDown = False
             MouseWheelSelection = False
             ComboBoxArrowKeys = False
+            BPComboKeyDown = False
 
             SelectedBPText = ""
         End If
@@ -6056,6 +6066,7 @@ Tabs:
         ComboMenuDown = False
         MouseWheelSelection = False
         ComboBoxArrowKeys = False
+        BPComboKeyDown = False
 
         ' Make sure we have something checked
         Call EnsureBPTechCheck()
@@ -6343,6 +6354,7 @@ Tabs:
         ComboMenuDown = False
         MouseWheelSelection = False
         ComboBoxArrowKeys = False
+        BPComboKeyDown = False
 
         ' Clear grids
         lstBPComponentMats.Items.Clear()
