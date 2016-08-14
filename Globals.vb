@@ -9,7 +9,7 @@ Imports System.Threading
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC_118.6"
+    Public Const SDEVersion As String = "YC_118.7"
     Public Const VersionNumber As String = "3.3.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -3809,10 +3809,19 @@ InvalidDate:
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
                         ShoppingBuildList = CType(SentBlueprint.GetComponentsList.Clone, BuiltItemList)
+                        '' If the Then built items have buildable components As well, we need To add those too since the raw mats will include them
+                        'For Each Item In SentBlueprint.BuiltComponentList.GetBuiltItemList
+                        '    If Item.HasBuildableComponents Then
+                        '        ' Add these to the shopping build list
+                        '        For Each component In Item.BuildComponents
+                        '            Call ShoppingBuildList.AddBuiltItem(CType(component.Clone, BuiltItem))
+                        '        Next
+                        '    End If
+                        'Next
                     End If
 
-                    ' Total up all usage
-                    .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetComponentFacilityUsage + SentBlueprint.GetCapComponentFacilityUsage _
+                        ' Total up all usage
+                        .TotalUsage = SentBlueprint.GetManufacturingFacilityUsage + SentBlueprint.GetComponentFacilityUsage + SentBlueprint.GetCapComponentFacilityUsage _
                         + SentBlueprint.GetInventionUsage + SentBlueprint.GetCopyUsage
 
                     ' Get the build time

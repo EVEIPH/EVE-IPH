@@ -720,6 +720,7 @@ Public Class Blueprint
 
                     ' Reset the component's material list for shopping list functionality
                     BuiltComponentList.GetBuiltItemList(i).BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
+
                     ' Set the variables
                     BuiltComponentList.GetBuiltItemList(i).FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
                     BuiltComponentList.GetBuiltItemList(i).FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
@@ -963,7 +964,7 @@ Public Class Blueprint
                             TempBuiltItem.BuildME = TempME
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
-                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
+
                             TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
                             TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
                             TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
@@ -976,6 +977,16 @@ Public Class Blueprint
                             Else
                                 TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
                             End If
+
+                            ' Add the raw mats to build the item
+                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
+
+                            '' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
+                            'If ComponentBlueprint.HasBuildableComponents Then
+                            '    ' Add the built components to the temp built item as well - one level down
+                            '    TempBuiltItem.HasBuildableComponents = True
+                            '    TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                            'End If
 
                             BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
@@ -1039,6 +1050,13 @@ Public Class Blueprint
                         Else
                             TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
                         End If
+
+                        '' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
+                        'If ComponentBlueprint.HasBuildableComponents Then
+                        '    ' Add the built components to the temp built item as well - one level down
+                        '    TempBuiltItem.HasBuildableComponents = True
+                        '    TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                        'End If
 
                         BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 

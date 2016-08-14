@@ -705,30 +705,34 @@ Public Module FacilityVariables
         FS.ActivityID = ActivityID
         FS.ActivityCostperSecond = 0
 
-        If FacilityName.Contains("(") And FacilityType <> OutpostFacility Then
+        If FacilityName.Contains("(") And FacilityType = OutpostFacility Then
+            ' Get name without (A), (G), etc.
             FS.Facility = FacilityName.Substring(0, InStr(FacilityName, "(") - 2)
+        ElseIf FacilityName.Contains("(") And FacilityType = POSFacility Then
+            FS.Facility = FacilityName.Substring(0, InStr(FacilityName, "(") - 2)
+            ' Get the Solar System name from the POS facility name
             TempSSName = FacilityName.Substring(InStr(FacilityName, "("))
             TempSSName = TempSSName.Substring(0, InStr(TempSSName, "(") - 2)
-            SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName,'" & FS.Facility & "' AS FACILITY_NAME "
-            SQL = SQL & "FROM SOLAR_SYSTEMS, REGIONS "
-            SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID AND solarSystemName = '" & FormatDBString(TempSSName) & "'"
         Else
-            If FacilityName.Contains("(") Then
-                FS.Facility = FacilityName.Substring(0, InStr(FacilityName, "(") - 2)
-            Else
-                FS.Facility = FacilityName
-            End If
+            FS.Facility = FacilityName
+        End If
 
+        If TempSSName = "" Then
             ' Need to look up system, region from station name
             SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName, STATION_NAME "
             SQL = SQL & "FROM SOLAR_SYSTEMS, REGIONS, STATIONS "
             SQL = SQL & "WHERE STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID AND SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+
             ' If it's an outpost, then there is only one per system...so only look for a like with the first three letters because people update the station names
             If FacilityType = OutpostFacility Then
                 SQL = SQL & "AND STATION_NAME LIKE '" & FormatDBString(FS.Facility.Substring(0, 3)) & "%'"
             Else
                 SQL = SQL & "AND STATION_NAME = '" & FormatDBString(FS.Facility) & "'"
             End If
+        Else ' Look up the info from the solar system name
+            SQL = "SELECT solarSystemID, solarSystemName, REGIONS.regionID, regionName,'" & FS.Facility & "' AS FACILITY_NAME "
+            SQL = SQL & "FROM SOLAR_SYSTEMS, REGIONS "
+            SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID AND solarSystemName = '" & FormatDBString(TempSSName) & "'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

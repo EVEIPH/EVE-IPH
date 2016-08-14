@@ -1804,13 +1804,17 @@ Public Class EVECREST
             ' These only change once per day. So for these cases set the cache date to take into account
             ' the next downtime or midnight. There could be a case where the servers are down for awhile and the CREST server is
             ' not updated, but it's past the cache time - in that case the users can reset the cache
-            Dim TempDate As Date = DateValue(response.Headers.Get("Date").Replace("GMT", "")) ' remove GMT or it will automatically switch to local
+            'Dim TempDate As Date = DateValue(response.Headers.Get("Date").Replace("GMT", "")) ' remove GMT or it will automatically switch to local
+
+            ' Temp fix, I dont' CCP is consistently returning the date/time right so I'll just use now GMT since I compare the cache date to now anyway, the local computer time should be ok
+            Dim Tempdate As Date = Now.ToUniversalTime.Date
+
             If URL.Contains("/history/") Then
                 ' Set this to midnight tomorrow GMT when the prices are updated in history - strip the date received from ccp and add midnight gmt, reparse to get local time
                 CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateTime.Parse(CStr(TempDate) & " 00:00:00 GMT"))))
             ElseIf URL.Contains("/market/prices/") Then
                 ' The header isn't correct and the cache of these prices is every 23 hours, so just adjust for this (the time sent is the current time)
-                CacheDate = DateAdd(DateInterval.Hour, 23, CDate(response.Headers.Get("Date")))
+                CacheDate = DateAdd(DateInterval.Hour, 23, Tempdate) ' CDate(response.Headers.Get("Date")))
             ElseIf URL.Contains("/industry/facilities/") Then
                 ' Industry changes can only occur once per day after downtime (new outposts) so at the morning restart
                 CacheDate = CDate(CStr(DateAdd(DateInterval.Day, 1, DateTime.Parse(CStr(TempDate) & " 12:00:00 GMT"))))
