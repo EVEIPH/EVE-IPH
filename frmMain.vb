@@ -11177,7 +11177,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkMatsandCompounds.Checked Then
-            SQL = SQL & "ITEM_GROUP IN ('Materials and Compounds', 'Artifacts and Prototypes') OR "
+            SQL = SQL & "ITEM_GROUP IN ('Materials and Compounds', 'Artifacts and Prototypes', 'Named Components') OR "
             ItemChecked = True
         End If
         If chkDroneComponents.Checked Then

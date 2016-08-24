@@ -705,12 +705,12 @@ Public Class Blueprint
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
 
-                    ' Adjust the runs by portion size
-                    Dim TempItemQuantity = CLng(Math.Ceiling(.ItemQuantity / PortionSize))
+                    '' Adjust the runs by portion size ** Change - the item quantity for the built item list is now the runs we need for the component, including portion size effects
+                    'Dim TempItemQuantity = CLng(Math.Ceiling(.ItemQuantity / PortionSize))
 
-                    ComponentBlueprint = New Blueprint(.BPTypeID, TempItemQuantity, .BuildME, .BuildTE, 1, _
-                                                   NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
-                                                   0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam, _
+                    ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
+                                                   NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
+                                                   0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam,
                                                    ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
@@ -1021,6 +1021,11 @@ Public Class Blueprint
 
                         ' Save the component team fees
                         ComponentTeamFee += ComponentBlueprint.GetManufacturingTeamFee
+
+                        ' Adjust the material quantity if we are building and the buildquantity <> mat quantity
+                        If BuildQuantity <> CurrentMaterial.GetQuantity Then
+                            CurrentMaterial.SetQuantity(BuildQuantity)
+                        End If
 
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
