@@ -1,9 +1,7 @@
 ﻿
 Imports System.Xml
 Imports System.IO
-Imports System.Xml.XPath
 Imports System.Text.RegularExpressions
-Imports System.Data.SQLite
 
 Public Module SettingsVariables
 

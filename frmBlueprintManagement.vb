@@ -930,7 +930,7 @@ Public Class frmBlueprintManagement
             End If
         ElseIf rbtnIgnored.Checked Then
             ' All ignored
-            TempClause = "IGNORE = 1"
+            TempClause = "IGNORE = 1 "
             If WhereClause = "" Then
                 WhereClause = "WHERE " & TempClause
             Else

@@ -981,12 +981,12 @@ Public Class Blueprint
                             ' Add the raw mats to build the item
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
 
-                            '' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
-                            'If ComponentBlueprint.HasBuildableComponents Then
-                            '    ' Add the built components to the temp built item as well - one level down
-                            '    TempBuiltItem.HasBuildableComponents = True
-                            '    TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
-                            'End If
+                            ' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
+                            If ComponentBlueprint.HasBuildableComponents Then
+                                ' Add the built components to the temp built item as well - one level down
+                                TempBuiltItem.HasBuildableComponents = True
+                                TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                            End If
 
                             BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
@@ -1056,12 +1056,12 @@ Public Class Blueprint
                             TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
                         End If
 
-                        '' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
-                        'If ComponentBlueprint.HasBuildableComponents Then
-                        '    ' Add the built components to the temp built item as well - one level down
-                        '    TempBuiltItem.HasBuildableComponents = True
-                        '    TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
-                        'End If
+                        ' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
+                        If ComponentBlueprint.HasBuildableComponents Then
+                            ' Add the built components to the temp built item as well - one level down
+                            TempBuiltItem.HasBuildableComponents = True
+                            TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                        End If
 
                         BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 

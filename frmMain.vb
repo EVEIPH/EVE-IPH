@@ -5071,8 +5071,8 @@ Tabs:
                 End If
             End If
 
-            ' In both cases, disable the num bps box
-            txtBPNumBPs.Enabled = False
+            '' In both cases, disable the num bps box
+            'txtBPNumBPs.Enabled = False
 
         Else ' Set it on the user settings
             If tabBPInventionEquip.Contains(tabInventionCalcs) Then
@@ -7180,10 +7180,10 @@ Tabs:
             ' invent this bp
             txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
                                   InventionFacility, SelectedBPInventionTeam, SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(BPID, RelicName)))
-            ' Disable the num bps box
-            txtBPNumBPs.Enabled = False
-        Else
-            txtBPNumBPs.Enabled = True
+            '    ' Disable the num bps box
+            '    txtBPNumBPs.Enabled = False
+            'Else
+            '    txtBPNumBPs.Enabled = True
         End If
 
         ' Build the item and get the list of materials
@@ -10421,46 +10421,52 @@ ExitForm:
                 TempItem = New PriceItem
                 TempItem.TypeID = CLng(lstPricesView.Items(i).SubItems(0).Text)
                 TempItem.GroupName = GetPriceGroupName(TempItem.TypeID)
-                TempItem.Manufacture = CBool(lstPricesView.Items(i).SubItems(4).Text)
-                TempItem.RegionIDList = New List(Of String)
 
-                If rbtnPriceSettingSingleSelect.Checked Then
-                    TempItem.RegionIDList = SearchRegions
-                    TempItem.SystemID = SearchSystem
-                    If TempItem.Manufacture Then
-                        TempItem.PriceType = cmbItemsSplitPrices.Text
-                        TempItem.PriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
-                    Else
-                        TempItem.PriceType = cmbRawMatsSplitPrices.Text
-                        TempItem.PriceModifier = CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100
-                    End If
-                Else
-                    ' Using price profiles, so look up all the data per group name
-                    Dim rsPP As SQLiteDataReader
-                    SQL = "SELECT PRICE_TYPE, regionID, SOLAR_SYSTEM_NAME, PRICE_MODIFIER FROM PRICE_PROFILES, REGIONS "
-                    SQL = SQL & "WHERE REGIONS.regionName = PRICE_PROFILES.REGION_NAME "
-                    SQL = SQL & "AND (ID = " & CStr(SelectedCharacter.ID) & " OR ID = 0) AND GROUP_NAME = '" & TempItem.GroupName & "' ORDER BY ID DESC"
+                ' If the group name exists, then look it up
+                If TempItem.GroupName <> "" Then
+                    TempItem.Manufacture = CBool(lstPricesView.Items(i).SubItems(4).Text)
+                    TempItem.RegionIDList = New List(Of String)
 
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsPP = DBCommand.ExecuteReader
-
-                    If rsPP.Read Then
-                        TempItem.PriceType = rsPP.GetString(0)
-                        If rsPP.GetString(2) = AllSystems Then
-                            ' Can only do one region for price profile
-                            TempItem.RegionIDList.Add(CStr(rsPP.GetInt64(1)))
-                            TempItem.SystemID = ""
+                    If rbtnPriceSettingSingleSelect.Checked Then
+                        TempItem.RegionIDList = SearchRegions
+                        TempItem.SystemID = SearchSystem
+                        If TempItem.Manufacture Then
+                            TempItem.PriceType = cmbItemsSplitPrices.Text
+                            TempItem.PriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
                         Else
-                            ' Look up the system name
-                            TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
+                            TempItem.PriceType = cmbRawMatsSplitPrices.Text
+                            TempItem.PriceModifier = CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100
                         End If
-                        TempItem.PriceModifier = rsPP.GetDouble(3)
-                    End If
-                End If
+                    Else
+                        ' Using price profiles, so look up all the data per group name
+                        Dim rsPP As SQLiteDataReader
+                        SQL = "SELECT PRICE_TYPE, regionID, SOLAR_SYSTEM_NAME, PRICE_MODIFIER FROM PRICE_PROFILES, REGIONS "
+                        SQL = SQL & "WHERE REGIONS.regionName = PRICE_PROFILES.REGION_NAME "
+                        SQL = SQL & "AND (ID = " & CStr(SelectedCharacter.ID) & " OR ID = 0) AND GROUP_NAME = '" & TempItem.GroupName & "' ORDER BY ID DESC"
 
-                ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
-                If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
-                    Items.Add(TempItem)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        rsPP = DBCommand.ExecuteReader
+
+                        If rsPP.Read Then
+                            TempItem.PriceType = rsPP.GetString(0)
+                            If rsPP.GetString(2) = AllSystems Then
+                                ' Can only do one region for price profile
+                                TempItem.RegionIDList.Add(CStr(rsPP.GetInt64(1)))
+                                TempItem.SystemID = ""
+                            Else
+                                ' Look up the system name
+                                TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
+                            End If
+                            TempItem.PriceModifier = rsPP.GetDouble(3)
+                        Else
+                            Application.DoEvents()
+                        End If
+                    End If
+
+                    ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
+                    If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
+                        Items.Add(TempItem)
+                    End If
                 End If
             End If
         Next
@@ -10834,7 +10840,7 @@ ExitSub:
                     RGN = "Processed Moon Materials"
                 Case "Composite"
                     RGN = "Advanced Moon Materials"
-                Case "Materials and Compounds", "Artifacts and Prototypes"
+                Case "Materials and Compounds", "Artifacts and Prototypes", "Named Components"
                     RGN = "Materials & Compounds"
                 Case "Biochemical Material"
                     RGN = "Booster Materials"
@@ -25287,8 +25293,8 @@ Leave:
         Select Case ShipName
             Case Hulk, Mackinaw, Skiff, Covetor, Retriever, Procurer
                 ' Get the numbers
-                'LaserCount = CInt(GetAttribute("High Slots", ShipName))
-                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
+                LaserCount = CInt(GetAttribute("High Slots", ShipName))
+                MLUCount = CInt(GetAttribute("Low Slots", ShipName))
                 Select Case ShipName
                     Case Hulk, Covetor
                         LaserCount = 3

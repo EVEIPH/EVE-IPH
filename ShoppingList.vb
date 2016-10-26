@@ -133,7 +133,7 @@ Public Class ShoppingList
                 End With
             End If
 
-            ' Now look at the materials
+            ' Now look at the raw materials
             If Not IsNothing(FoundItem.BPMaterialList) Then
                 With FoundItem.BPMaterialList
                     For i = 0 To .GetMaterialList.Count - 1
@@ -306,6 +306,7 @@ Public Class ShoppingList
                 ' Now update the components if they exist
                 If FoundItem.HasBuildableComponents Then
                     For Each component In FoundItem.BuildComponents
+                        Dim OrigVolume As Double = component.ItemVolume
                         ' Get the new quantity and update
                         ' use group name as facility location
                         With component
@@ -314,10 +315,11 @@ Public Class ShoppingList
                             UpdatedQuantity = GetUpdatedQuantity("Build", ShoppingItem, UpdateItemQuantity, TempMat, RefMatQuantity)
                         End With
 
-                        ' Update the quantity of the built item - by ref
+                        ' Update the quantity and volumne of the built item - by ref
+                        component.ItemVolume = OrigVolume / component.ItemQuantity * UpdatedQuantity
                         component.ItemQuantity = UpdatedQuantity
-                        ' Add to the items build list
-                        UpdateBuiltItemList.Add(CType(component.Clone, BuiltItem))
+                        ' Add it to the updated built item list for this component
+
                     Next
                     Application.DoEvents()
                 End If
@@ -342,7 +344,7 @@ Public Class ShoppingList
             ' Update the new built list material list, with updated quantities
             UpdateItem.BuildMaterials = UpdateItemMatList
             ' Update the built item list
-            UpdateItem.BuildComponents = UpdateBuiltItemList
+            UpdateItem.BuildComponents = FoundItem.BuildComponents
 
             ' Update the quantity of the build list item
             Call TotalBuildList.RemoveBuiltItem(FoundItem) ' Remove the old one
@@ -771,6 +773,7 @@ Public Class ShoppingList
                             InsertBuildItem.IncludeActivityCost = TempBP.GetManufacturingFacility.IncludeActivityCost
                             InsertBuildItem.IncludeActivityTime = TempBP.GetManufacturingFacility.IncludeActivityTime
                             InsertBuildItem.IncludeActivityUsage = TempBP.GetManufacturingFacility.IncludeActivityUsage
+                            InsertBuildItem.HasBuildableComponents = TempBP.HasComponents
 
                             ' See if we need to add the system on to the end of the build location for POS
                             If InsertBuildItem.FacilityType = POSFacility Then
@@ -1130,17 +1133,55 @@ Public Class ShoppingList
 
     End Function
 
+    ' Returns the full list of build items as built items
     Public Function GetFullBuildList() As BuiltItemList
-        ' Sort it first - quantity descending
-        TotalBuildList.GetBuiltItemList.Sort(Function(x, y) y.ItemQuantity.CompareTo(x.ItemQuantity))
+        Dim TempList As BuiltItemList = TotalBuildList
+        Dim AddList As New BuiltItemList
 
-        Return TotalBuildList
+        ' If any items have buildable items, add them to the temp list for display
+        For Each Item In TempList.GetBuiltItemList
+            If Item.HasBuildableComponents Then
+                For Each component In Item.BuildComponents
+                    AddList.AddBuiltItem(component)
+                Next
+            End If
+        Next
+
+        If AddList.GetBuiltItemList.Count <> 0 Then
+            For i = 0 To AddList.GetBuiltItemList.Count - 1
+                TempList.AddBuiltItem(AddList.GetBuiltItemList(i))
+            Next
+        End If
+
+        ' Sort it - quantity descending
+        TempList.GetBuiltItemList.Sort(Function(x, y) y.ItemQuantity.CompareTo(x.ItemQuantity))
+
+        Return TempList
 
     End Function
 
     ' Returns the full built item list as a built item
     Public Function GetFullBuiltItemList() As BuiltItemList
-        Return TotalBuildList
+        Dim TempList As BuiltItemList = TotalBuildList
+        Dim AddList As New BuiltItemList
+
+        ' If any items have buildable items, add them to the temp list for display
+        For Each Item In TempList.GetBuiltItemList
+            If Item.HasBuildableComponents Then
+                For Each component In Item.BuildComponents
+                    AddList.AddBuiltItem(component)
+                Next
+            End If
+        Next
+
+        If AddList.GetBuiltItemList.Count <> 0 Then
+            For i = 0 To AddList.GetBuiltItemList.Count - 1
+                TempList.AddBuiltItem(AddList.GetBuiltItemList(i))
+            Next
+        End If
+
+        Return TempList
+
     End Function
 
     ' Returns the list of buy materials
@@ -1182,8 +1223,6 @@ Public Class ShoppingList
         Return TempCopyMats
 
     End Function
-
-    ' Sets the sent list to the 
 
     ' Returns the full list of Items we want to build in the shopping list
     Public Function GetFullItemList() As Materials
@@ -1580,20 +1619,20 @@ Public Class BuiltItemList
             Call ItemList.Add(UpdateItem)
 
         Else
-            ' Now update the components if they exist
-            If AddItem.HasBuildableComponents Then
-                For Each component In AddItem.BuildComponents
-                    ItemToFind = component
-                    FoundItem2 = ItemList.Find(AddressOf FindBuiltItem)
+            '' Now update the components if they exist
+            'If AddItem.HasBuildableComponents Then
+            '    For Each component In AddItem.BuildComponents
+            '        ItemToFind = component
+            '        FoundItem2 = ItemList.Find(AddressOf FindBuiltItem)
 
-                    If FoundItem2 IsNot Nothing Then
-                        ItemList.Remove(FoundItem2)
-                    End If
-                    ' Add to the items build list
-                    ItemList.Add(CType(component.Clone, BuiltItem))
-                Next
-                Application.DoEvents()
-            End If
+            '        If FoundItem2 IsNot Nothing Then
+            '            ItemList.Remove(FoundItem2)
+            '        End If
+            '        ' Add to the items build list
+            '        ItemList.Add(CType(component.Clone, BuiltItem))
+            '    Next
+            '    Application.DoEvents()
+            'End If
 
             ' Add the item to the list
             Call ItemList.Add(AddItem)
