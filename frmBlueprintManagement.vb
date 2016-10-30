@@ -1104,33 +1104,33 @@ Public Class frmBlueprintManagement
 
         With Me
             If .rbtnAmmoChargeBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Charge' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Charge' "
             ElseIf .rbtnDroneBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
+                WhereClause = WhereClause & "ITEM_CATEGORY in ('Drone', 'Fighter') "
             ElseIf .rbtnModuleBlueprints.Checked Then
-                WhereClause = WhereClause & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
+                WhereClause = WhereClause & "(ITEM_CATEGORY ='Module' ITEM_GROUP NOT LIKE 'Rig%') "
             ElseIf .rbtnShipBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Ship' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Ship' "
             ElseIf .rbtnSubsystemBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Subsystem' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Subsystem' "
             ElseIf .rbtnBoosterBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Implant' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Implant' "
             ElseIf .rbtnComponentBlueprints.Checked Then
-                WhereClause = WhereClause & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
+                WhereClause = WhereClause & "(ITEM_GROUP LIKE '%Components%' ITEM_GROUP <> 'Station Components') "
             ElseIf .rbtnMiscBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
+                WhereClause = WhereClause & "ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
             ElseIf .rbtnDeployableBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Deployable' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Deployable' "
             ElseIf .rbtnCelestialsBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
+                WhereClause = WhereClause & "ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnStructureBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY IN ('Starbase','Structure') "
+                WhereClause = WhereClause & "ITEM_CATEGORY IN ('Starbase','Structure') "
             ElseIf .rbtnStationPartsBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_GROUP = 'Station Components' "
+                WhereClause = WhereClause & "ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
-                WhereClause = WhereClause & "AND ITEM_CATEGORY = 'Structure Module' "
+                WhereClause = WhereClause & "ITEM_CATEGORY = 'Structure Module' "
             ElseIf .rbtnRigBlueprints.Checked Then
-                WhereClause = WhereClause & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
+                WhereClause = WhereClause & "BLUEPRINT_GROUP = 'Rig Blueprint' "
             End If
         End With
 
@@ -1185,6 +1185,14 @@ Public Class frmBlueprintManagement
             Return ""
         End If
 
+        ' Adjust where clause
+        If WhereClause <> "" And SQLItemType <> "" Then
+            WhereClause = "WHERE (" & WhereClause & ") AND (" & SQLItemType & ")"
+        ElseIf SQLItemType <> "" Then
+            ' They want all items with these techs
+            WhereClause = "WHERE (" & SQLItemType & ")"
+        End If
+
         ' Determine what race we are looking at
         If chkRaceAmarr.Checked Then
             TempRace = TempRace & "4,"
@@ -1211,15 +1219,6 @@ Public Class frmBlueprintManagement
         Else
             ' They need to have at least one. If not, just return nothing
             Return ""
-        End If
-
-        If WhereClause <> "" And SQLItemType <> "" Then
-            ' Take off last OR
-            WhereClause = WhereClause.Substring(0, WhereClause.Count - 3)
-            WhereClause = "WHERE (" & WhereClause & ") AND (" & SQLItemType & ")"
-        ElseIf SQLItemType <> "" Then
-            ' They want all items with these techs
-            WhereClause = "WHERE (" & SQLItemType & ")"
         End If
 
         ' See if they want copies

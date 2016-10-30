@@ -23971,6 +23971,18 @@ Leave:
 
 #End Region
 
+    Private Const AstrogeologySkillTypeID As Integer = 3410
+    Private Const DeepCoreMiningSkillTypeID As Integer = 11395
+    Private Const ExhumersSkillTypeID As Integer = 22551
+    Private Const ExpeditionFrigatesSkillTypeID As Integer = 33856
+    Private Const GasCloudHarvestingSkillTypeID As Integer = 25544
+    Private Const IceHarvestingSkillTypeID As Integer = 16281
+    Private Const MiningSkillTypeID As Integer = 3386
+    Private Const MiningBargeSkillTypeID As Integer = 17940
+    Private Const MiningFrigateSkillTypeID As Integer = 32918
+    Private Const ReprocessingSkillTypeID As Integer = 3385
+    Private Const ReprocessingEfficiencySkillTypeID As Integer = 3389
+
     Private Enum MiningShipTypeID
         'Bantam = 582
         'Tormentor = 591
@@ -24164,30 +24176,38 @@ Leave:
             If .OreType = "Ore" Then
                 cmbMineShipType.Text = .OreMiningShip
                 cmbMineMiningLaser.Text = .OreStrip
-                cmbMineMiningUpgrade.Text = .OreUpgrade
-                cmbMineNumLasers.Text = CStr(.NumOreMiners)
-                cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
-                rbtnMineMercoxitRig.Enabled = True
-                rbtnMineIceRig.Enabled = False
-                If .MercoxitMiningRig Then
-                    rbtnMineMercoxitRig.Checked = True
+                If cmbMineMiningUpgrade.Items.Contains(.OreUpgrade) Then
+                    cmbMineMiningUpgrade.Text = .OreUpgrade
                 Else
-                    rbtnMineNoRigs.Checked = True
+                    cmbMineMiningUpgrade.Text = None
                 End If
-            ElseIf .OreType = "Ice" Then
-                cmbMineShipType.Text = .IceMiningShip
-                cmbMineMiningLaser.Text = .IceStrip
-                cmbMineMiningUpgrade.Text = .IceUpgrade
+                cmbMineNumLasers.Text = CStr(.NumOreMiners)
+                    cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
+                    rbtnMineMercoxitRig.Enabled = True
+                    rbtnMineIceRig.Enabled = False
+                    If .MercoxitMiningRig Then
+                        rbtnMineMercoxitRig.Checked = True
+                    Else
+                        rbtnMineNoRigs.Checked = True
+                    End If
+                ElseIf .OreType = "Ice" Then
+                    cmbMineShipType.Text = .IceMiningShip
+                    cmbMineMiningLaser.Text = .IceStrip
+                If cmbMineMiningUpgrade.Items.Contains(.IceUpgrade) Then
+                    cmbMineMiningUpgrade.Text = .IceUpgrade
+                Else
+                    cmbMineMiningUpgrade.Text = None
+                End If
                 cmbMineNumLasers.Text = CStr(.NumIceMiners)
                 cmbMineNumMiningUpgrades.Text = CStr(.NumIceUpgrades)
-                rbtnMineMercoxitRig.Enabled = False
-                rbtnMineIceRig.Enabled = True
-                If .IceMiningRig Then
-                    rbtnMineIceRig.Checked = True
-                Else
-                    rbtnMineIceRig.Checked = True
-                End If
-            ElseIf .OreType = "Gas" Then
+                    rbtnMineMercoxitRig.Enabled = False
+                    rbtnMineIceRig.Enabled = True
+                    If .IceMiningRig Then
+                        rbtnMineIceRig.Checked = True
+                    Else
+                        rbtnMineIceRig.Checked = True
+                    End If
+                ElseIf .OreType = "Gas" Then
                 cmbMineShipType.Text = .GasMiningShip
                 cmbMineMiningLaser.Text = .GasHarvester
                 cmbMineMiningUpgrade.Text = .GasUpgrade
@@ -24679,33 +24699,33 @@ Leave:
     Public Sub LoadCharacterMiningSkills()
 
         ' Load the Mining Skills for this character
-        cmbMineDeepCore.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(11395))
-        cmbMineAstrogeology.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3410))
-        cmbMineSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3386))
-        cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3389))
-        cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3385))
+        cmbMineDeepCore.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(DeepCoreMiningSkillTypeID))
+        cmbMineAstrogeology.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(AstrogeologySkillTypeID))
+        cmbMineSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(MiningSkillTypeID))
+        cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingEfficiencySkillTypeID))
+        cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingSkillTypeID))
         If cmbMineOreType.Text = "Gas" Then
-            If SelectedCharacter.Skills.GetSkillLevel(25544) = 0 Then
+            If SelectedCharacter.Skills.GetSkillLevel(GasCloudHarvestingSkillTypeID) = 0 Then
                 ' Set it to base 1 - even though if they don't have this skill they can't fit a gas harvester
                 cmbMineGasIceHarvesting.Text = "1"
             Else
-                cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(25544))
+                cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(GasCloudHarvestingSkillTypeID))
             End If
         ElseIf cmbMineOreType.Text = "Ice" Then
-            cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(16281))
+            cmbMineGasIceHarvesting.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(IceHarvestingSkillTypeID))
         Else
             cmbMineGasIceHarvesting.Text = "0"
         End If
 
         If cmbMineOreType.Text <> "Gas" Then
-            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(22551))
+            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ExhumersSkillTypeID))
         Else
             ' Load the Expedition frigate skill for the prospect
-            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(33856))
+            cmbMineExhumers.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ExpeditionFrigatesSkillTypeID))
         End If
 
-        Dim MiningBarge As Integer = SelectedCharacter.Skills.GetSkillLevel(17940)
-        Dim MiningFrigate As Integer = SelectedCharacter.Skills.GetSkillLevel(32918)
+        Dim MiningBarge As Integer = SelectedCharacter.Skills.GetSkillLevel(MiningBargeSkillTypeID)
+        Dim MiningFrigate As Integer = SelectedCharacter.Skills.GetSkillLevel(MiningFrigateSkillTypeID)
 
         If MiningBarge = 0 Then
             ' Look up Mining Frigate skill
@@ -25282,8 +25302,18 @@ Leave:
         Dim MLUCount As Integer = 0
         Dim i As Integer
         Dim MaxStrip As String = ""
+        Dim T1Module As String = ""
         Dim ShipName As String
         Dim DeepCoreLoaded As Boolean = False
+
+        Dim SQL As String
+        Dim rsMiners As SQLiteDataReader
+
+        ' Load up the main mining laser query - set groupID for search in processing
+        SQL = "SELECT typeName, CASE WHEN metaGroupID IS NULL THEN 1 ELSE metaGroupID END AS TECH "
+        SQL &= "FROM INVENTORY_TYPES "
+        SQL &= "LEFT JOIN META_TYPES ON INVENTORY_TYPES.typeID = META_TYPES.typeID "
+        SQL &= "WHERE published <> 0 "
 
         ' Clear miners
         cmbMineMiningLaser.Items.Clear()
@@ -25295,66 +25325,72 @@ Leave:
                 ' Get the numbers
                 LaserCount = CInt(GetAttribute("High Slots", ShipName))
                 MLUCount = CInt(GetAttribute("Low Slots", ShipName))
-                Select Case ShipName
-                    Case Hulk, Covetor
-                        LaserCount = 3
-                        MLUCount = 2
-                    Case Mackinaw, Retriever
-                        LaserCount = 2
-                        MLUCount = 3
-                    Case Skiff
-                        LaserCount = 1
-                        MLUCount = 3
-                    Case Procurer
-                        LaserCount = 1
-                        MLUCount = 2
-                End Select
 
                 ' Now load the strips
                 If cmbMineOreType.Text = "Ore" Then
                     ' Mining Skill
                     ' Mining 4 for T1 Strips
                     ' Mining 5 for T2 Strips
-
-                    If CInt(cmbMineSkill.Text) >= 4 Then
-                        cmbMineMiningLaser.Items.Add("Strip Miner I")
-                        cmbMineMiningLaser.Items.Add("ORE Strip Miner")
-                        MaxStrip = "Strip Miner I"
+                    SQL &= "AND INVENTORY_TYPES.groupID IN (464, 483) AND typeName NOT LIKE '%Ice%' "
+                    If CInt(cmbMineSkill.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 AND typeName NOT LIKE '%Deep Core%' " ' Don't load the deep core or tech 2
                         rbtnMineT1Crystals.Enabled = False
                         rbtnMineT2Crystals.Enabled = False
-                    End If
-
-                    If CInt(cmbMineSkill.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Modulated Strip Miner II")
-                        MaxStrip = "Modulated Strip Miner II"
+                    ElseIf CInt(cmbMineSkill.Text) = 5 And cmbMineDeepCore.Enabled = False Then
+                        SQL &= " AND typeName NOT LIKE '%Deep Core%' " ' Don't load the deep core
+                        rbtnMineT1Crystals.Enabled = True
+                        rbtnMineT2Crystals.Enabled = True
+                    ElseIf CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
+                        ' Load them all
                         rbtnMineT1Crystals.Enabled = True
                         rbtnMineT2Crystals.Enabled = True
                     End If
+                    SQL &= "ORDER BY typeName"
 
-                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Strip Miner II")
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
+
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
                     End If
 
                 Else
                     ' Ice harvesting skill
                     ' 1 for T1 strip
                     ' 5 for T2 strips
-
-                    If CInt(cmbMineGasIceHarvesting.Text) >= 1 Then
-                        cmbMineMiningLaser.Items.Add("Ice Harvester I")
-                        cmbMineMiningLaser.Items.Add("ORE Ice Harvester")
-                        MaxStrip = "Ice Harvester I"
+                    SQL &= "AND INVENTORY_TYPES.groupID IN (464, 483) AND typeName LIKE '%Ice%' "
+                    If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 " ' Don't load tech 2
                     End If
+                    SQL &= "ORDER BY typeName"
 
-                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Ice Harvester II")
-                        MaxStrip = "Ice Harvester II"
-                    End If
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
+
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
 
                     rbtnMineT1Crystals.Enabled = False
                     rbtnMineT2Crystals.Enabled = False
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
+                    End If
 
                 End If
 
@@ -25363,20 +25399,8 @@ Leave:
                 cmbMineNumLasers.Enabled = True
 
             Case Else ' Other ships that are not mining barges
-
-                'LaserCount = CInt(GetAttribute("Turret hardpoints", ShipName)) ' Use turret hardpoints for this
-                'MLUCount = CInt(GetAttribute("Low Slots", ShipName))
-                Select Case ShipName
-                    Case Prospect
-                        LaserCount = 2
-                        MLUCount = 4
-                    Case Venture
-                        LaserCount = 2
-                        MLUCount = 1
-                    Case Endurance
-                        LaserCount = 1
-                        MLUCount = 3
-                End Select
+                LaserCount = CInt(GetAttribute("High Slots", ShipName)) ' Use turret hardpoints for this
+                MLUCount = CInt(GetAttribute("Low Slots", ShipName))
 
                 ' For Other Ships
                 lblMineLaserNumber.Visible = True
@@ -25387,91 +25411,82 @@ Leave:
                     rbtnMineT2Crystals.Enabled = False
 
                     ' Add all the basic mining lasers
-                    cmbMineMiningLaser.Items.Clear()
-                    cmbMineMiningLaser.Items.Add("Miner I")
-
-                    If CInt(cmbMineSkill.Text) >= 4 Then
-                        cmbMineMiningLaser.Items.Add("Miner II")
-                        MaxStrip = "Miner II"
-                    End If
-
-                    cmbMineMiningLaser.Items.Add("Civilian Miner")
-                    cmbMineMiningLaser.Items.Add("EP-S Gaussian Scoped Mining Laser")
-                    cmbMineMiningLaser.Items.Add("Particle Bore Compact Mining Laser")
-                    cmbMineMiningLaser.Items.Add("Gallente Mining Laser")
-                    cmbMineMiningLaser.Items.Add("ORE Miner")
-                    cmbMineMiningLaser.Items.Add("Single Diode Basic Mining Laser")
-
-                    Select Case UserMiningTabSettings.OreStrip
-                        Case "Civilian Miner"
-                            MaxStrip = "Civilian Miner"
-                        Case "EP-S Gaussian Scoped Mining Laser"
-                            MaxStrip = "EP-S Gaussian Scoped Mining Laser"
-                        Case "Particle Bore Compact Mining Laser"
-                            MaxStrip = "Particle Bore Compact Mining Laser"
-                        Case "Gallente Mining Laser"
-                            MaxStrip = "Gallente Mining Laser"
-                        Case "ORE Miner"
-                            MaxStrip = "ORE Miner"
-                        Case "Single Diode Basic Mining Laserr"
-                            MaxStrip = "Single Diode Basic Mining Laser"
-                        Case Else
-                            MaxStrip = "Miner I"
-                    End Select
-
-                    ' Deep core (Mercoxit)
-                    If CInt(cmbMineDeepCore.Text) >= 1 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Deep Core Mining Laser I")
-                        cmbMineMiningLaser.Items.Add("ORE Deep Core Mining Laser")
-                    End If
-
-                    If CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
-                        cmbMineMiningLaser.Items.Add("Modulated Deep Core Miner II")
-                        ' Uses crystals
+                    SQL &= "AND INVENTORY_TYPES.groupID = 54 AND typeName NOT LIKE '%Ice%' "
+                    If CInt(cmbMineSkill.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 AND typeName NOT LIKE '%Deep Core%'" ' Don't load the deep core or tech 2
+                    ElseIf CInt(cmbMineSkill.Text) = 5 And cmbMineDeepCore.Enabled = False Then
+                        SQL &= " AND typeName NOT LIKE '%Deep Core%'" ' Don't load the deep core
+                    ElseIf CInt(cmbMineDeepCore.Text) >= 1 And cmbMineDeepCore.Enabled = True Then
+                        SQL &= " AND typeName NOT LIKE '%Modulated Deep Core%'" ' Don't load the modulated deep core
+                    ElseIf CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
                         rbtnMineT1Crystals.Enabled = True
                         rbtnMineT2Crystals.Enabled = True
                     End If
+                    SQL &= "ORDER BY typeName"
+
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
+
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
+                    End If
 
                 ElseIf cmbMineOreType.Text = "Gas" Then
-                    ' Only venture and other
-                    cmbMineMiningLaser.Items.Add("'Crop' Gas Cloud Harvester")
-                    cmbMineMiningLaser.Items.Add("Gas Cloud Harvester I")
-                    cmbMineMiningLaser.Items.Add("'Plow' Gas Cloud Harvester")
-                    cmbMineMiningLaser.Items.Add("Syndicate Gas Cloud Harvester")
+                    ' Only venture and other ships
+                    SQL &= "AND INVENTORY_TYPES.groupID = 737 " ' Gas harvesters
+                    If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 " ' Don't load the tech 2
+                    End If
+                    SQL &= "ORDER BY typeName"
 
-                    Select Case UserMiningTabSettings.OreStrip
-                        Case "'Crop' Gas Cloud Harvester"
-                            MaxStrip = "'Crop' Gas Cloud Harvester"
-                        Case "Gas Cloud Harvester I"
-                            MaxStrip = "Gas Cloud Harvester I"
-                        Case "'Plow' Gas Cloud Harvester"
-                            MaxStrip = "'Plow' Gas Cloud Harvester"
-                        Case "Syndicate Gas Cloud Harvester"
-                            MaxStrip = "Syndicate Gas Cloud Harvester"
-                        Case Else
-                            MaxStrip = "Gas Cloud Harvester I"
-                    End Select
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
 
-                    If CInt(cmbMineGasIceHarvesting.Text) = 5 Then
-                        cmbMineMiningLaser.Items.Add("Gas Cloud Harvester II")
-                        MaxStrip = "Gas Cloud Harvester II"
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
                     End If
 
                 ElseIf cmbMineOreType.Text = "Ice" And (ShipName = Endurance Or ShipName = Prospect) Then
-                    cmbMineMiningLaser.Items.Add("Ice Mining Laser I")
-                    cmbMineMiningLaser.Items.Add("Ice Mining Laser II")
-                    cmbMineMiningLaser.Items.Add("ORE Ice Mining Laser")
+                    SQL &= "AND INVENTORY_TYPES.groupID = 54 AND typeName LIKE '%Ice%' "
+                    If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 " ' Don't load tech 2
+                    End If
+                    SQL &= "ORDER BY typeName"
 
-                    Select Case UserMiningTabSettings.OreStrip
-                        Case "Ice Mining Laser I"
-                            MaxStrip = "Ice Mining Laser I"
-                        Case "Ice Mining Laser II"
-                            MaxStrip = "Ice Mining Laser II"
-                        Case "ORE Ice Mining Laser"
-                            MaxStrip = "ORE Ice Mining Laser"
-                        Case Else
-                            MaxStrip = "Ice Mining Laser I"
-                    End Select
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
+
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
+                    End If
+
                 End If
 
         End Select
@@ -25928,7 +25943,7 @@ Leave:
         ' See if they have T1 or T2 - and use T1 if they select T2 but can't use them
         If (OreProcessingSkill >= 3 And rbtnMineT1Crystals.Checked And rbtnMineT1Crystals.Enabled = True) _
             Or (rbtnMineT2Crystals.Checked And OreProcessingSkill = 3 And rbtnMineT2Crystals.Enabled = True) Then
-            ' Use T1 bonus
+            ' Use T1 bonus - TODO Look up values
             If OreName.Contains("Mercoxit") Then
                 BonusValue = 1.25
             Else
@@ -25944,13 +25959,6 @@ Leave:
             End If
             TempCrystalType = "T2"
         End If
-
-        '' Finally see if they are using a skiff
-        '' Skiff => Exhumers Skill Bonus:  60% bonus to Mercoxit Mining Crystal yield multiplier per level
-        'If cmbMineShipType.Text = Skiff And OreName.Contains("Mercoxit") Then
-        '    ' Just multiply the bonus by the exhumers skill (plus 1 for initial bonus)
-        '    BonusValue = BonusValue * ((0.6 * CInt(cmbMineExhumers.Text)) + 1)
-        'End If
 
         ' Add rig value for mercoxit
         If rbtnMineMercoxitRig.Checked And OreName.Contains("Mercoxit") Then
@@ -26018,6 +26026,26 @@ Leave:
                 MichiImplant = 0
             End If
 
+            ' Yield
+            If cmbMineShipType.Enabled = True Then
+                ' Can't look up the bonuses easily
+                Select Case cmbMineShipType.Text
+                    Case Venture, Prospect
+                        ' 5% per level plus 100% role bonus
+                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
+                        RoleBonus = 2
+                    Case Endurance
+                        ' 5% per level plus 300% role bonus
+                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
+                        RoleBonus = 4
+                    Case Else
+                        BaseShipBonus = 0
+                        RoleBonus = 1
+                End Select
+            Else
+                BaseShipBonus = 0
+            End If
+
             ' Look up each based on bonus
             If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
                 ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
@@ -26032,34 +26060,6 @@ Leave:
                 HighwallImplant = GetAttribute(MiningAmountBonus, "Inherent Implants 'Highwall' Mining " & cmbMineImplant.Text.Substring(11))
             Else
                 HighwallImplant = 0
-            End If
-
-            ' Normalize Default role
-            RoleBonus = 1
-
-            ' Yield
-            If cmbMineShipType.Enabled = True Then
-                ' Can't look up the bonuses easily
-                Select Case cmbMineShipType.Text
-                    Case Procurer, Skiff
-                        ' Role Bonus 150%
-                        RoleBonus = 2.5
-                    Case Retriever, Mackinaw
-                        ' Role bonus 25% 
-                        RoleBonus = 1.25
-                    Case Venture, Prospect
-                        ' 5% per level plus 100% role bonus
-                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
-                        RoleBonus = 2
-                    Case Endurance
-                        ' 5% per level plus 300% role bonus
-                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
-                        RoleBonus = 4
-                    Case Else
-                        BaseShipBonus = 0
-                End Select
-            Else
-                BaseShipBonus = 0
             End If
 
             If cmbMineExhumers.Enabled = True Then
@@ -26248,91 +26248,67 @@ Leave:
         ' Get the adjusted time with ganglinks etc
         TempCycleTime = BaseCycleTime * (1 - GangLinkBonus)
 
-        If cmbMineOreType.Text = "Ore" Then ' Changed with Kronos
-
-            Select Case cmbMineShipType.Text
-                Case Procurer
-                    ' 2% reduction per level
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-                Case Retriever
-                    ' 2% reduction per level
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-                Case Covetor
-                    ' 4% reduction
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.04))
-                Case Skiff
-                    ' 2% reduction per level for barges and 2% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
-                Case Mackinaw
-                    ' 2% reduction per level for barges and 2% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
-                Case Hulk
-                    ' 4% reduction for mining barges and 3% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.04)) * (1 - (CDec(cmbMineExhumers.Text) * 0.03))
-            End Select
-
-        ElseIf cmbMineOreType.Text = "Ice" Then
-            ' For Ice, check for duration reduction bonus, implant, and upgrades
-            Select Case cmbMineShipType.Text
-                Case Procurer
-                    ' 2% reduction per level
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-                    ' Role: 60% reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.6)
-                Case Retriever
-                    ' 2% reduction per level
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-                    ' Role: 20% reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.2)
-                Case Covetor
-                    ' 4% reduction
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.04))
-                Case Skiff
-                    ' 2% reduction per level for barges and 2% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
-                    ' Role: 60% reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.6)
-                Case Mackinaw
-                    ' 2% reduction per level for barges and 2% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
-                    ' Role: 20% reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.2)
-                Case Hulk
-                    ' 4% reduction for mining barges and 3% reduction for exhumers
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.04)) * (1 - (CDec(cmbMineExhumers.Text) * 0.03))
-                Case Endurance
-                    ' 5% reduction for Expedition Frigate level and 5% for mining frigate level plus 50% role bonus
+        ' Changed with YC.118.9.1 - 9/2016
+        Select Case cmbMineShipType.Text
+            Case Procurer
+                ' 2% reduction per level
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
+            Case Retriever
+                ' 2% reduction per level
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
+            Case Covetor
+                ' 2% reduction
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
+                TempCycleTime = TempCycleTime * (1 - 0.25) ' 25% role bonus
+            Case Skiff
+                ' 2% reduction per level for barges and 2% reduction for exhumers
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
+            Case Mackinaw
+                ' 2% reduction per level for barges and 2% reduction for exhumers
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.02))
+            Case Hulk
+                ' 2% reduction for mining barges and 3% reduction for exhumers
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineExhumers.Text) * 0.03))
+                TempCycleTime = TempCycleTime * (1 - 0.25) ' 25% role bonus
+            Case Endurance
+                ' 5% reduction for Expedition Frigate level and 5% for mining frigate level plus 50% role bonus
+                If cmbMineOreType.Text = "Ice" Then
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05)) * (1 - (CDec(cmbMineExhumers.Text) * 0.05)) * (1 - 0.5)
-            End Select
+                Else
+                    TempCycleTime = 1
+                End If
+        End Select
 
-            If cmbMineGasIceHarvesting.Enabled Then
-                ' Apply the ice harvesting bonus
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
-            End If
+        If cmbMineOreType.Text = "Ice" Then
+                ' For Ice, check for duration reduction bonus, implant, and upgrades
+                If cmbMineGasIceHarvesting.Enabled Then
+                    ' Apply the ice harvesting bonus
+                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
+                End If
 
-            ' Apply the upgrades
-            If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
-                ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-            End If
+                ' Apply the upgrades
+                If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
+                    ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
+                    Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
+                    TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+                End If
 
-            ' Finally include the implant value
-            If cmbMineImplant.Text <> None Then
-                'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-                TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
-            End If
+                ' Finally include the implant value
+                If cmbMineImplant.Text <> None Then
+                    'Inherent Implants 'Yeti' Ice Harvesting IH-1001
+                    TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
+                End If
 
-            ' Apply the rig bonus if selected
-            If rbtnMineIceRig.Checked = True Then
-                ' 12% cycle reduction
-                TempCycleTime = TempCycleTime * (1 - 0.12)
-            End If
+                ' Apply the rig bonus if selected
+                If rbtnMineIceRig.Checked = True Then
+                    ' 12% cycle reduction
+                    TempCycleTime = TempCycleTime * (1 - 0.12)
+                End If
 
-        ElseIf cmbMineOreType.Text = "Gas" Then
-            ' Gas, look for venture ship and implant
+            ElseIf cmbMineOreType.Text = "Gas" Then
+                ' Gas, look for venture ship and implant
 
-            Select Case cmbMineShipType.Text
+                Select Case cmbMineShipType.Text
                 Case Prospect, Venture, Endurance
                     ' 5% reduction to gas cloud harvesting duration per level
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))
@@ -26489,7 +26465,7 @@ Leave:
 
     End Sub
 
-    ' Calculates the cost for one hour of heavy water for boosting with a Rorqual 
+    ' Calculates the cost for one hour of heavy water for boosting with a Rorqual - TODO new rorq changes?
     Private Function CalculateRorqDeployedCost(IndustrialReconfigSkill As Integer, CapIndustrialShipSkill As Integer) As Double
         Dim SQL As String
         Dim readerHW As SQLiteDataReader
