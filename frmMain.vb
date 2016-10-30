@@ -594,6 +594,7 @@ Public Class frmMain
             ttBP.SetToolTip(lblBPRawMats, "Total list of materials to build all components and base materials for this blueprint")
             ttBP.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
             ttBP.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
+            ttBP.SetToolTip(lblBPSimpleCopy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
             ttBP.SetToolTip(lblBPRawProfit, "Double-Click to toggle value between Profit and Profit Percent")
             ttBP.SetToolTip(lblBPCompProfit, "Double-Click to toggle value between Profit and Profit Percent")
         End If
@@ -5197,38 +5198,61 @@ Tabs:
         Dim RelicText As String = ""
         Dim AddlText As String = ""
 
-        If cmbBPInventionDecryptor.Text <> None Then
-            DecryptorText = "Decryptor: " & cmbBPInventionDecryptor.Text
-        End If
-
-        If cmbBPRelic.Text <> None Then
-            RelicText = "Relic: " & cmbBPRelic.Text
-        End If
-
-        If RelicText <> "" Then
-            AddlText = ", " & RelicText
-        Else
-            ' Decryptor
-            If DecryptorText <> "" Then
-                AddlText = ", " & DecryptorText
+        If chkBPSimpleCopy.Checked = False Then
+            If cmbBPInventionDecryptor.Text <> None Then
+                DecryptorText = "Decryptor: " & cmbBPInventionDecryptor.Text
             End If
-        End If
 
-        AddlText = ")" & Environment.NewLine & Environment.NewLine
-
-        If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
-            OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-            OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-        Else
-            OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-            OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-        End If
-
-        If UserApplicationSettings.ShopListIncludeInventMats Then
-            If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
-                OutputText = OutputText & Environment.NewLine & Environment.NewLine & "Invention Materials" & Environment.NewLine & Environment.NewLine
-                OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+            If cmbBPRelic.Text <> None Then
+                RelicText = "Relic: " & cmbBPRelic.Text
             End If
+
+            If RelicText <> "" Then
+                AddlText = ", " & RelicText
+            Else
+                ' Decryptor
+                If DecryptorText <> "" Then
+                    AddlText = ", " & DecryptorText
+                End If
+            End If
+
+            AddlText = ")" & Environment.NewLine & Environment.NewLine
+
+            If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
+                OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+                OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+            Else
+                OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+                OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+            End If
+
+            If UserApplicationSettings.ShopListIncludeInventMats Then
+                If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
+                    OutputText = OutputText & Environment.NewLine & Environment.NewLine & "Invention Materials" & Environment.NewLine & Environment.NewLine
+                    OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+                End If
+            End If
+        Else
+            ' Just copy the materials for use in evepraisal etc.
+            OutputText = ""
+            If (chkBPBuildBuy.Checked And rbtnBPCopyInvREMats.Checked = False) Or rbtnBPRawmatCopy.Checked Then
+                For i = 0 To SelectedBlueprint.GetRawMaterials.GetMaterialList.Count - 1
+                    OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetRawMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetRawMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
+                Next
+            ElseIf rbtnBPComponentCopy.Checked And rbtnBPCopyInvREMats.Checked = False Then
+                For i = 0 To SelectedBlueprint.GetComponentMaterials.GetMaterialList.Count - 1
+                    OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetComponentMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetComponentMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
+                Next
+            End If
+
+            If UserApplicationSettings.ShopListIncludeInventMats Or rbtnBPCopyInvREMats.Checked Then
+                If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
+                    For i = 0 To SelectedBlueprint.GetInventionMaterials.GetMaterialList.Count - 1
+                        OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetInventionMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetInventionMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
+                    Next
+                End If
+            End If
+
         End If
 
         ' Paste to clipboard
@@ -6205,6 +6229,7 @@ Tabs:
             chkBPPirateFaction.Checked = .TechPirateCheck
 
             chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
+            chkBPSimpleCopy.Checked = .SimpleCopyCheck
 
             chkBPSmall.Checked = .SmallCheck
             chkBPMedium.Checked = .MediumCheck
@@ -6329,6 +6354,7 @@ Tabs:
         btnBPRefreshBP.Enabled = False
         btnBPCopyMatstoClip.Enabled = False
         btnBPAddBPMatstoShoppingList.Enabled = False
+        chkBPSimpleCopy.Enabled = False
         txtBPME.Enabled = False
         txtBPTE.Enabled = False
         txtBPRuns.Enabled = False
@@ -6465,6 +6491,7 @@ Tabs:
             .TechPirateCheck = chkBPPirateFaction.Checked
 
             .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+            .SimpleCopyCheck = chkBPSimpleCopy.Checked
 
             .SmallCheck = chkBPSmall.Checked
             .MediumCheck = chkBPMedium.Checked
@@ -6934,6 +6961,7 @@ Tabs:
             btnBPRefreshBP.Enabled = True
             btnBPCopyMatstoClip.Enabled = True
             btnBPAddBPMatstoShoppingList.Enabled = True
+            chkBPSimpleCopy.Enabled = True
             txtBPRuns.Enabled = True
             txtBPAddlCosts.Enabled = True
             chkBPBuildBuy.Enabled = True

@@ -236,6 +236,7 @@ Public Class ProgramSettings
     Public DefaultBPIncludecopyCost As Boolean = True
     Public DefaultBPIncludeT3Cost As Boolean = False
     Public DefaultBPIncludeT3Time As Boolean = False
+    Public DefaultBPSimpleCopyCheck As Boolean = False
     Public DefaultBPProductionLines As Integer = 1
     Public DefaultBPLaboratoryLines As Integer = 1
     Public DefaultBPRELines As Integer = 1
@@ -1443,6 +1444,7 @@ Public Class ProgramSettings
                     .RawProfitType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RawProfitType", DefaultRawProfitType))
                     .CompProfitType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "CompProfitType", DefaultCompProfitType))
                     .CompressedOre = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "CompressedOre", DefaultBPCompressedOre))
+                    .SimpleCopyCheck = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SimpleCopyCheck", DefaultBPSimpleCopyCheck))
                 End With
 
             Else
@@ -1513,6 +1515,8 @@ Public Class ProgramSettings
             BPSettingsList(37) = New Setting("CompProfitType", CStr(SentSettings.CompProfitType))
             BPSettingsList(38) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
 
+            BPSettingsList(39) = New Setting("SimpleCopyCheck", CStr(SentSettings.SimpleCopyCheck))
+
             Call WriteSettingsToFile(BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
@@ -1544,6 +1548,7 @@ Public Class ProgramSettings
             .MediumCheck = DefaultSizeChecks
             .LargeCheck = DefaultSizeChecks
             .XLCheck = DefaultSizeChecks
+            .SimpleCopyCheck = DefaultBPSimpleCopyCheck
 
             .IncludeInventionCost = DefaultBPIncludeInventionCost
             .IncludeInventionTime = DefaultBPIncludeInventionTime
@@ -2583,14 +2588,11 @@ Public Class ProgramSettings
                     .CheckSovC5 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC5", DefaultMiningCheckSovC5))
                     .CheckSovC6 = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC6", DefaultMiningCheckSovC6))
                     .NumberofMiners = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumberofMiners", DefaultMiningNumberofMiners))
-
                     .RefiningEfficiency = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
                     .RefineCorpStanding = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
                     .RefiningTax = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
-
                     .ColumnSort = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ColumnSort", DefaultMiningColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ColumnSortType", DefaultMiningColumnSortType))
-
                 End With
 
             Else
@@ -5500,6 +5502,8 @@ Public Structure BPTabSettings
     Dim IncludeT3Time As Boolean
 
     Dim PricePerUnit As Boolean
+
+    Dim SimpleCopyCheck As Boolean
 
     Dim ProductionLines As Integer
     Dim LaboratoryLines As Integer

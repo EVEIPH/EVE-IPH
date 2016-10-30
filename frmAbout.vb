@@ -17,7 +17,7 @@
         Me.LabelProductName.Text = My.Application.Info.ProductName
         Me.LabelVersion.Text = String.Format("Version {0}", My.Application.Info.Version.ToString)
         Me.LabelCopyright.Text = My.Application.Info.Copyright
-        Me.LabelCompanyName.Text = "Created by: Zifrian; Maintained by: Cwittofur Cesaille"
+        Me.LabelCompanyName.Text = "Created by: Zifrian"
         Me.TextBoxDescription.Text = My.Application.Info.Description
     End Sub
 
