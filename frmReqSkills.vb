@@ -62,7 +62,7 @@ Public Class frmReqSkills
                     CurrentNode = SkillTree.Nodes.Add("Components Required Manufacturing Skills")
                     DisplaySkills = SelectedBlueprint.GetReqComponentSkills
                 End If
-            Case SkillType.InventionReqSkills
+            Case SkillType.InventionReqSkills, SkillType.REReqSkills
                 CurrentNode = SkillTree.Nodes.Add("Required Invention / RE Skills")
                 DisplaySkills = SelectedBlueprint.GetReqInventionSkills
         End Select

@@ -10,6 +10,7 @@ Public Class DBConnection
         DB = New SQLiteConnection
         DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
         DB.Open()
+
         Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = TRUNCATE; PRAGMA count_changes = OFF")
         Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL;") ' Keep the DB small
 
@@ -17,6 +18,7 @@ Public Class DBConnection
 
     Public Sub CloseDB()
         DB.Close()
+        DB.Dispose()
     End Sub
 
     Public Function DBREf() As SQLiteConnection

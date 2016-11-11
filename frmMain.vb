@@ -587,6 +587,7 @@ Public Class frmMain
             ttBP.SetToolTip(lblBPCanMakeBP, "Double-Click here to see required skills to make this BP")
             ttBP.SetToolTip(lblBPCanMakeBPAll, "Double-Click here to see required skills to make all the items for this BP")
             ttBP.SetToolTip(lblBPT2InventStatus, "Double-Click here to see required skills to invent this BP")
+            ttBP.SetToolTip(lblT3InventStatus, "Double-Click here to see required skills to invent this BP")
             ttBP.SetToolTip(chkBPPricePerUnit, "Show Price per Unit - All price data in this frame will be updated to show the prices for 1 unit")
             ttBP.SetToolTip(lblBPProductionTime, "Total time to build this blueprint with listed components")
             ttBP.SetToolTip(lblBPTotalItemPT, "Total time to build selected build components and this blueprint")
@@ -1698,6 +1699,7 @@ Public Class frmMain
                 LoadingT3Decryptors = True
                 cmbBPT3Decryptor.Text = BPDecryptor.Name
                 LoadingT3Decryptors = False
+
                 ' Also load the relic
                 LoadingRelics = True
                 Dim TempRelic As String = ""
@@ -1706,8 +1708,9 @@ Public Class frmMain
                 ElseIf InStr(Inputs, " - ") <> 0 Then
                     TempRelic = Inputs.Substring(InStr(Inputs, "-") + 1)
                 End If
+
                 SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
-                SQL = SQL & "and typeID = blueprintTypeID AND typeName LIKE '%" & TempRelic & "%'"
+                SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8 AND typeName LIKE '%" & TempRelic & "%'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerRelic = DBCommand.ExecuteReader
@@ -5151,7 +5154,7 @@ Tabs:
         LoadingRelics = True
 
         SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
-        SQL = SQL & "AND typeID = blueprintTypeID"
+        SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRelic = DBCommand.ExecuteReader
@@ -25286,6 +25289,7 @@ Leave:
 
         If cmbMineOreType.Text = "Ice" And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineExhumers.Text) >= 1 Then
             ' Add the prospect and endurance
+            cmbMineShipType.Items.Add(Venture)
             cmbMineShipType.Items.Add(Endurance)
             cmbMineShipType.Items.Add(Prospect)
             MaxShipName = Endurance
@@ -25427,7 +25431,7 @@ Leave:
                 cmbMineNumLasers.Enabled = True
 
             Case Else ' Other ships that are not mining barges
-                LaserCount = CInt(GetAttribute("High Slots", ShipName)) ' Use turret hardpoints for this
+                LaserCount = CInt(GetAttribute("Turret Hardpoints", ShipName)) ' Use turret hardpoints for this
                 MLUCount = CInt(GetAttribute("Low Slots", ShipName))
 
                 ' For Other Ships
@@ -25492,7 +25496,7 @@ Leave:
                         MaxStrip = T1Module
                     End If
 
-                ElseIf cmbMineOreType.Text = "Ice" And (ShipName = Endurance Or ShipName = Prospect) Then
+                ElseIf cmbMineOreType.Text = "Ice" And (ShipName = Endurance Or ShipName = Prospect Or ShipName = Venture) Then
                     SQL &= "AND INVENTORY_TYPES.groupID = 54 AND typeName LIKE '%Ice%' "
                     If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
                         SQL &= "AND TECH <> 2 " ' Don't load tech 2
@@ -26302,8 +26306,6 @@ Leave:
                 ' 5% reduction for Expedition Frigate level and 5% for mining frigate level plus 50% role bonus
                 If cmbMineOreType.Text = "Ice" Then
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05)) * (1 - (CDec(cmbMineExhumers.Text) * 0.05)) * (1 - 0.5)
-                Else
-                    TempCycleTime = 1
                 End If
         End Select
 

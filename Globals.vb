@@ -4318,7 +4318,7 @@ InvalidDate:
 
         ' What is the item we are using to invent?
         SQL = "SELECT blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
-        SQL = SQL & "AND typeID = blueprintTypeID "
+        SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8"
 
         If RelicName <> "" Then
             ' Need to add the relic variant to the query for just one item
@@ -4633,7 +4633,7 @@ InvalidDate:
         Dim ReturnString As String
 
         SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-        SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
+        SQL = SQL & "WHERE typeID = blueprintTypeID AND activityID = 8 AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
