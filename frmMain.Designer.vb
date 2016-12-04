@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmMain
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class frmMain
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
@@ -55,6 +55,7 @@ Partial Class frmMain
         Me.ToolStripSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuResetAllData = New System.Windows.Forms.ToolStripMenuItem()
         Me.ViewToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuViewAssets = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectionShoppingList = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCharacterSkills = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCharacterStandings = New System.Windows.Forms.ToolStripMenuItem()
@@ -168,8 +169,6 @@ Partial Class frmMain
         Me.btnBPForward = New System.Windows.Forms.Button()
         Me.btnBPBack = New System.Windows.Forms.Button()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
-        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
-        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
         Me.txtBPMarketPriceEdit = New System.Windows.Forms.TextBox()
         Me.lblBPProductionTime = New System.Windows.Forms.Label()
@@ -313,7 +312,6 @@ Partial Class frmMain
         Me.tabUpdatePrices = New System.Windows.Forms.TabPage()
         Me.btnLoadPricesfromFile = New System.Windows.Forms.Button()
         Me.btnSavePricestoFile = New System.Windows.Forms.Button()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
         Me.txtItemsPriceModifier = New System.Windows.Forms.TextBox()
@@ -484,7 +482,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtRawMaterialsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblRawMaterialsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.tabPriceProfileManufactured = New System.Windows.Forms.TabPage()
         Me.ItemsDefaults = New System.Windows.Forms.GroupBox()
         Me.btnItemsDefaults = New System.Windows.Forms.Button()
@@ -496,7 +493,6 @@ Partial Class frmMain
         Me.lblItemsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtItemsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblItemsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
         Me.tabCalcTeams = New System.Windows.Forms.TabControl()
         Me.tabCalcTeamManufacturing = New System.Windows.Forms.TabPage()
@@ -519,7 +515,6 @@ Partial Class frmMain
         Me.cmbCalcCopyTeam = New System.Windows.Forms.ComboBox()
         Me.lblCalcCopyTeamDefault = New System.Windows.Forms.Label()
         Me.txtCalcCopyTeamBonus = New System.Windows.Forms.TextBox()
-        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
         Me.btnCalcShowAssets = New System.Windows.Forms.Button()
         Me.gbIncludeItems = New System.Windows.Forms.GroupBox()
@@ -529,9 +524,7 @@ Partial Class frmMain
         Me.txtCalcProfitThreshold = New System.Windows.Forms.TextBox()
         Me.chkCalcProfitThreshold = New System.Windows.Forms.CheckBox()
         Me.chkCalcVolumeThreshold = New System.Windows.Forms.CheckBox()
-        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.txtCalcSVRThreshold = New System.Windows.Forms.TextBox()
-        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.chkCalcMaxBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.chkCalcMinBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.cmbCalcPriceTrend = New System.Windows.Forms.ComboBox()
@@ -1246,7 +1239,6 @@ Partial Class frmMain
         Me.chkMineAmarr = New System.Windows.Forms.CheckBox()
         Me.lstMineGrid = New System.Windows.Forms.ListView()
         Me.tabPI = New System.Windows.Forms.TabPage()
-        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
         Me.chkPILava = New System.Windows.Forms.CheckBox()
@@ -1258,11 +1250,21 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
+        Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
+        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
+        Me.btnBPFacilityFitting = New System.Windows.Forms.Button()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1581,10 +1583,16 @@ Partial Class frmMain
         '
         'ViewToolStripMenuItem
         '
-        Me.ViewToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuSelectionShoppingList, Me.mnuCharacterSkills, Me.mnuCharacterStandings, Me.ToolStripSeparator5, Me.mnuCurrentResearchAgents, Me.mnuCurrentIndustryJobs})
+        Me.ViewToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuViewAssets, Me.mnuSelectionShoppingList, Me.mnuCharacterSkills, Me.mnuCharacterStandings, Me.ToolStripSeparator5, Me.mnuCurrentResearchAgents, Me.mnuCurrentIndustryJobs})
         Me.ViewToolStripMenuItem.Name = "ViewToolStripMenuItem"
         Me.ViewToolStripMenuItem.Size = New System.Drawing.Size(44, 20)
         Me.ViewToolStripMenuItem.Text = "View"
+        '
+        'mnuViewAssets
+        '
+        Me.mnuViewAssets.Name = "mnuViewAssets"
+        Me.mnuViewAssets.Size = New System.Drawing.Size(204, 22)
+        Me.mnuViewAssets.Text = "Assets"
         '
         'mnuSelectionShoppingList
         '
@@ -2499,34 +2507,6 @@ Partial Class frmMain
         Me.lblBPSelectBlueprint.TabIndex = 0
         Me.lblBPSelectBlueprint.Text = "Selected Blueprint"
         '
-        'lstBPComponentMats
-        '
-        Me.lstBPComponentMats.FullRowSelect = True
-        Me.lstBPComponentMats.GridLines = True
-        Me.lstBPComponentMats.HideSelection = False
-        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
-        Me.lstBPComponentMats.MultiSelect = False
-        Me.lstBPComponentMats.Name = "lstBPComponentMats"
-        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPComponentMats.TabIndex = 35
-        Me.lstBPComponentMats.TabStop = False
-        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = False
-        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
-        '
-        'lstBPRawMats
-        '
-        Me.lstBPRawMats.FullRowSelect = True
-        Me.lstBPRawMats.GridLines = True
-        Me.lstBPRawMats.HideSelection = False
-        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
-        Me.lstBPRawMats.MultiSelect = False
-        Me.lstBPRawMats.Name = "lstBPRawMats"
-        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
-        Me.lstBPRawMats.TabIndex = 34
-        Me.lstBPRawMats.TabStop = False
-        Me.lstBPRawMats.UseCompatibleStateImageBehavior = False
-        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
-        '
         'gbBPInventionStats
         '
         Me.gbBPInventionStats.BackColor = System.Drawing.Color.Transparent
@@ -2948,6 +2928,7 @@ Partial Class frmMain
         Me.tabFacility.Controls.Add(Me.lblBPFacilityActivity)
         Me.tabFacility.Controls.Add(Me.cmbBPFacilityActivities)
         Me.tabFacility.Controls.Add(Me.btnBPFacilitySave)
+        Me.tabFacility.Controls.Add(Me.btnBPFacilityFitting)
         Me.tabFacility.Controls.Add(Me.lblBPFacilityTaxRate)
         Me.tabFacility.Controls.Add(Me.cmbBPFacilityorArray)
         Me.tabFacility.Controls.Add(Me.lblBPFacilityUsage)
@@ -2971,7 +2952,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualTax
         '
-        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(181, 111)
+        Me.txtBPFacilityManualTax.Location = New System.Drawing.Point(152, 112)
         Me.txtBPFacilityManualTax.MaxLength = 5
         Me.txtBPFacilityManualTax.Name = "txtBPFacilityManualTax"
         Me.txtBPFacilityManualTax.Size = New System.Drawing.Size(35, 20)
@@ -2982,7 +2963,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualTE
         '
-        Me.txtBPFacilityManualTE.Location = New System.Drawing.Point(100, 111)
+        Me.txtBPFacilityManualTE.Location = New System.Drawing.Point(90, 112)
         Me.txtBPFacilityManualTE.MaxLength = 5
         Me.txtBPFacilityManualTE.Name = "txtBPFacilityManualTE"
         Me.txtBPFacilityManualTE.Size = New System.Drawing.Size(35, 20)
@@ -2993,7 +2974,7 @@ Partial Class frmMain
         '
         'txtBPFacilityManualME
         '
-        Me.txtBPFacilityManualME.Location = New System.Drawing.Point(39, 111)
+        Me.txtBPFacilityManualME.Location = New System.Drawing.Point(32, 112)
         Me.txtBPFacilityManualME.MaxLength = 5
         Me.txtBPFacilityManualME.Name = "txtBPFacilityManualME"
         Me.txtBPFacilityManualME.Size = New System.Drawing.Size(35, 20)
@@ -3005,7 +2986,7 @@ Partial Class frmMain
         'lblBPFacilityManualTax
         '
         Me.lblBPFacilityManualTax.AutoSize = True
-        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(152, 114)
+        Me.lblBPFacilityManualTax.Location = New System.Drawing.Point(126, 116)
         Me.lblBPFacilityManualTax.Name = "lblBPFacilityManualTax"
         Me.lblBPFacilityManualTax.Size = New System.Drawing.Size(28, 13)
         Me.lblBPFacilityManualTax.TabIndex = 18
@@ -3017,7 +2998,7 @@ Partial Class frmMain
         Me.cmbBPFacilityType.Enabled = False
         Me.cmbBPFacilityType.FormattingEnabled = True
         Me.cmbBPFacilityType.ItemHeight = 13
-        Me.cmbBPFacilityType.Items.AddRange(New Object() {"NPC Station", "Outpost", "POS"})
+        Me.cmbBPFacilityType.Items.AddRange(New Object() {"NPC Station", "Outpost", "POS", "Citadel"})
         Me.cmbBPFacilityType.Location = New System.Drawing.Point(177, 19)
         Me.cmbBPFacilityType.Name = "cmbBPFacilityType"
         Me.cmbBPFacilityType.Size = New System.Drawing.Size(62, 21)
@@ -3056,9 +3037,9 @@ Partial Class frmMain
         'btnBPFacilitySave
         '
         Me.btnBPFacilitySave.Enabled = False
-        Me.btnBPFacilitySave.Location = New System.Drawing.Point(222, 110)
+        Me.btnBPFacilitySave.Location = New System.Drawing.Point(233, 111)
         Me.btnBPFacilitySave.Name = "btnBPFacilitySave"
-        Me.btnBPFacilitySave.Size = New System.Drawing.Size(56, 22)
+        Me.btnBPFacilitySave.Size = New System.Drawing.Size(45, 22)
         Me.btnBPFacilitySave.TabIndex = 20
         Me.btnBPFacilitySave.Text = "Save"
         Me.btnBPFacilitySave.UseVisualStyleBackColor = True
@@ -3066,7 +3047,7 @@ Partial Class frmMain
         'lblBPFacilityTaxRate
         '
         Me.lblBPFacilityTaxRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPFacilityTaxRate.Location = New System.Drawing.Point(158, 111)
+        Me.lblBPFacilityTaxRate.Location = New System.Drawing.Point(125, 112)
         Me.lblBPFacilityTaxRate.Name = "lblBPFacilityTaxRate"
         Me.lblBPFacilityTaxRate.Size = New System.Drawing.Size(62, 20)
         Me.lblBPFacilityTaxRate.TabIndex = 17
@@ -3115,7 +3096,7 @@ Partial Class frmMain
         'lblBPFacilityManualTE
         '
         Me.lblBPFacilityManualTE.AutoSize = True
-        Me.lblBPFacilityManualTE.Location = New System.Drawing.Point(77, 114)
+        Me.lblBPFacilityManualTE.Location = New System.Drawing.Point(68, 116)
         Me.lblBPFacilityManualTE.Name = "lblBPFacilityManualTE"
         Me.lblBPFacilityManualTE.Size = New System.Drawing.Size(24, 13)
         Me.lblBPFacilityManualTE.TabIndex = 15
@@ -3156,7 +3137,7 @@ Partial Class frmMain
         'lblBPFacilityManualME
         '
         Me.lblBPFacilityManualME.AutoSize = True
-        Me.lblBPFacilityManualME.Location = New System.Drawing.Point(14, 114)
+        Me.lblBPFacilityManualME.Location = New System.Drawing.Point(7, 116)
         Me.lblBPFacilityManualME.Name = "lblBPFacilityManualME"
         Me.lblBPFacilityManualME.Size = New System.Drawing.Size(26, 13)
         Me.lblBPFacilityManualME.TabIndex = 13
@@ -3166,11 +3147,11 @@ Partial Class frmMain
         'lblBPFacilityBonus
         '
         Me.lblBPFacilityBonus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPFacilityBonus.Location = New System.Drawing.Point(6, 111)
+        Me.lblBPFacilityBonus.Location = New System.Drawing.Point(6, 112)
         Me.lblBPFacilityBonus.Name = "lblBPFacilityBonus"
-        Me.lblBPFacilityBonus.Size = New System.Drawing.Size(150, 20)
+        Me.lblBPFacilityBonus.Size = New System.Drawing.Size(114, 20)
         Me.lblBPFacilityBonus.TabIndex = 12
-        Me.lblBPFacilityBonus.Text = " Bonus: -20% ME; -20% TE"
+        Me.lblBPFacilityBonus.Text = "ME: -20% TE: -20%"
         Me.lblBPFacilityBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         Me.lblBPFacilityBonus.Visible = False
         '
@@ -4051,19 +4032,6 @@ Partial Class frmMain
         Me.btnSavePricestoFile.TabIndex = 41
         Me.btnSavePricestoFile.Text = "Save Prices"
         Me.btnSavePricestoFile.UseVisualStyleBackColor = True
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = True
-        Me.lstPricesView.GridLines = True
-        Me.lstPricesView.HideSelection = False
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = False
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = False
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
         'txtPriceItemFilter
         '
@@ -5883,19 +5851,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsPriceMod.TabIndex = 44
         Me.lblRawMaterialsDefaultsPriceMod.Text = "Price Modifier:"
         '
-        'lstRawPriceProfile
-        '
-        Me.lstRawPriceProfile.FullRowSelect = True
-        Me.lstRawPriceProfile.GridLines = True
-        Me.lstRawPriceProfile.HideSelection = False
-        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstRawPriceProfile.MultiSelect = False
-        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
-        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstRawPriceProfile.TabIndex = 1
-        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
-        '
         'tabPriceProfileManufactured
         '
         Me.tabPriceProfileManufactured.Controls.Add(Me.ItemsDefaults)
@@ -6007,19 +5962,6 @@ Partial Class frmMain
         Me.lblItemsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
         Me.lblItemsDefaultsPriceMod.TabIndex = 44
         Me.lblItemsDefaultsPriceMod.Text = "Price Modifier:"
-        '
-        'lstManufacturedPriceProfile
-        '
-        Me.lstManufacturedPriceProfile.FullRowSelect = True
-        Me.lstManufacturedPriceProfile.GridLines = True
-        Me.lstManufacturedPriceProfile.HideSelection = False
-        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstManufacturedPriceProfile.MultiSelect = False
-        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
-        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstManufacturedPriceProfile.TabIndex = 2
-        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
         '
         'tabManufacturing
         '
@@ -6257,20 +6199,6 @@ Partial Class frmMain
         Me.txtCalcCopyTeamBonus.TabIndex = 18
         Me.txtCalcCopyTeamBonus.Text = "Team Bonus"
         '
-        'lstManufacturing
-        '
-        Me.lstManufacturing.AllowColumnReorder = True
-        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
-        Me.lstManufacturing.FullRowSelect = True
-        Me.lstManufacturing.GridLines = True
-        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
-        Me.lstManufacturing.Name = "lstManufacturing"
-        Me.lstManufacturing.OwnerDraw = True
-        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
-        Me.lstManufacturing.TabIndex = 1
-        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturing.View = System.Windows.Forms.View.Details
-        '
         'gbCalcBPSelectOptions
         '
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcShowAssets)
@@ -6409,15 +6337,6 @@ Partial Class frmMain
         Me.chkCalcVolumeThreshold.Text = "Vol. Threshold:"
         Me.chkCalcVolumeThreshold.UseVisualStyleBackColor = True
         '
-        'tpMaxBuildTimeFilter
-        '
-        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMaxBuildTimeFilter.Enabled = False
-        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 40)
-        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
-        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMaxBuildTimeFilter.TabIndex = 70
-        '
         'txtCalcSVRThreshold
         '
         Me.txtCalcSVRThreshold.Location = New System.Drawing.Point(65, 41)
@@ -6426,15 +6345,6 @@ Partial Class frmMain
         Me.txtCalcSVRThreshold.Size = New System.Drawing.Size(60, 20)
         Me.txtCalcSVRThreshold.TabIndex = 1
         Me.txtCalcSVRThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'tpMinBuildTimeFilter
-        '
-        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMinBuildTimeFilter.Enabled = False
-        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
-        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
-        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMinBuildTimeFilter.TabIndex = 69
         '
         'chkCalcMaxBuildTimeFilter
         '
@@ -12503,14 +12413,14 @@ Partial Class frmMain
         Me.lblMineDoubleClick.AutoSize = True
         Me.lblMineDoubleClick.Location = New System.Drawing.Point(408, 99)
         Me.lblMineDoubleClick.Name = "lblMineDoubleClick"
-        Me.lblMineDoubleClick.Size = New System.Drawing.Size(118, 13)
+        Me.lblMineDoubleClick.Size = New System.Drawing.Size(126, 13)
         Me.lblMineDoubleClick.TabIndex = 140
-        Me.lblMineDoubleClick.Text = "Click again for T2 Links"
+        Me.lblMineDoubleClick.Text = "Check again for T2 Links"
         Me.lblMineDoubleClick.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'pictMineLaserOptmize
         '
-        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(525, 64)
+        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(528, 64)
         Me.pictMineLaserOptmize.Name = "pictMineLaserOptmize"
         Me.pictMineLaserOptmize.Size = New System.Drawing.Size(32, 32)
         Me.pictMineLaserOptmize.TabIndex = 139
@@ -12518,7 +12428,7 @@ Partial Class frmMain
         '
         'pictMineRangeLink
         '
-        Me.pictMineRangeLink.Location = New System.Drawing.Point(525, 24)
+        Me.pictMineRangeLink.Location = New System.Drawing.Point(528, 24)
         Me.pictMineRangeLink.Name = "pictMineRangeLink"
         Me.pictMineRangeLink.Size = New System.Drawing.Size(32, 32)
         Me.pictMineRangeLink.TabIndex = 138
@@ -12528,7 +12438,7 @@ Partial Class frmMain
         '
         Me.pictMineFleetBoostShip.BackColor = System.Drawing.Color.White
         Me.pictMineFleetBoostShip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.pictMineFleetBoostShip.Location = New System.Drawing.Point(179, 17)
+        Me.pictMineFleetBoostShip.Location = New System.Drawing.Point(170, 17)
         Me.pictMineFleetBoostShip.Name = "pictMineFleetBoostShip"
         Me.pictMineFleetBoostShip.Size = New System.Drawing.Size(68, 69)
         Me.pictMineFleetBoostShip.TabIndex = 137
@@ -12536,11 +12446,11 @@ Partial Class frmMain
         '
         'chkMineForemanLaserRangeBoost
         '
-        Me.chkMineForemanLaserRangeBoost.Location = New System.Drawing.Point(394, 18)
+        Me.chkMineForemanLaserRangeBoost.Location = New System.Drawing.Point(370, 18)
         Me.chkMineForemanLaserRangeBoost.Name = "chkMineForemanLaserRangeBoost"
-        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(132, 44)
+        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(160, 45)
         Me.chkMineForemanLaserRangeBoost.TabIndex = 9
-        Me.chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement "
+        Me.chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
         Me.chkMineForemanLaserRangeBoost.ThreeState = True
         Me.chkMineForemanLaserRangeBoost.UseVisualStyleBackColor = True
         '
@@ -12549,7 +12459,7 @@ Partial Class frmMain
         Me.cmbMineIndustReconfig.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineIndustReconfig.FormattingEnabled = True
         Me.cmbMineIndustReconfig.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineIndustReconfig.Location = New System.Drawing.Point(342, 87)
+        Me.cmbMineIndustReconfig.Location = New System.Drawing.Point(326, 87)
         Me.cmbMineIndustReconfig.Name = "cmbMineIndustReconfig"
         Me.cmbMineIndustReconfig.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineIndustReconfig.TabIndex = 8
@@ -12557,7 +12467,7 @@ Partial Class frmMain
         'lblMineIndustrialReconfig
         '
         Me.lblMineIndustrialReconfig.AutoSize = True
-        Me.lblMineIndustrialReconfig.Location = New System.Drawing.Point(211, 90)
+        Me.lblMineIndustrialReconfig.Location = New System.Drawing.Point(195, 90)
         Me.lblMineIndustrialReconfig.Name = "lblMineIndustrialReconfig"
         Me.lblMineIndustrialReconfig.Size = New System.Drawing.Size(130, 13)
         Me.lblMineIndustrialReconfig.TabIndex = 135
@@ -12569,9 +12479,10 @@ Partial Class frmMain
         Me.chkMineRorqDeployedMode.AutoSize = True
         Me.chkMineRorqDeployedMode.Location = New System.Drawing.Point(18, 87)
         Me.chkMineRorqDeployedMode.Name = "chkMineRorqDeployedMode"
-        Me.chkMineRorqDeployedMode.Size = New System.Drawing.Size(152, 17)
+        Me.chkMineRorqDeployedMode.Size = New System.Drawing.Size(134, 17)
         Me.chkMineRorqDeployedMode.TabIndex = 4
-        Me.chkMineRorqDeployedMode.Text = "Rorqual in Deployed Mode"
+        Me.chkMineRorqDeployedMode.Text = "Industrial Core Inactive"
+        Me.chkMineRorqDeployedMode.ThreeState = True
         Me.chkMineRorqDeployedMode.UseVisualStyleBackColor = True
         '
         'cmbMineWarfareLinkSpec
@@ -12579,14 +12490,14 @@ Partial Class frmMain
         Me.cmbMineWarfareLinkSpec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineWarfareLinkSpec.FormattingEnabled = True
         Me.cmbMineWarfareLinkSpec.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineWarfareLinkSpec.Location = New System.Drawing.Point(342, 64)
+        Me.cmbMineWarfareLinkSpec.Location = New System.Drawing.Point(326, 64)
         Me.cmbMineWarfareLinkSpec.Name = "cmbMineWarfareLinkSpec"
         Me.cmbMineWarfareLinkSpec.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineWarfareLinkSpec.TabIndex = 7
         '
         'lblMineWarfareLinkSpec
         '
-        Me.lblMineWarfareLinkSpec.Location = New System.Drawing.Point(255, 67)
+        Me.lblMineWarfareLinkSpec.Location = New System.Drawing.Point(239, 67)
         Me.lblMineWarfareLinkSpec.Name = "lblMineWarfareLinkSpec"
         Me.lblMineWarfareLinkSpec.Size = New System.Drawing.Size(86, 13)
         Me.lblMineWarfareLinkSpec.TabIndex = 132
@@ -12628,24 +12539,24 @@ Partial Class frmMain
         Me.cmbMineMiningDirector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineMiningDirector.FormattingEnabled = True
         Me.cmbMineMiningDirector.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineMiningDirector.Location = New System.Drawing.Point(342, 41)
+        Me.cmbMineMiningDirector.Location = New System.Drawing.Point(326, 41)
         Me.cmbMineMiningDirector.Name = "cmbMineMiningDirector"
         Me.cmbMineMiningDirector.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineMiningDirector.TabIndex = 6
         '
         'chkMineForemanLaserOpBoost
         '
-        Me.chkMineForemanLaserOpBoost.Location = New System.Drawing.Point(394, 60)
+        Me.chkMineForemanLaserOpBoost.Location = New System.Drawing.Point(370, 60)
         Me.chkMineForemanLaserOpBoost.Name = "chkMineForemanLaserOpBoost"
-        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(132, 40)
+        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(160, 40)
         Me.chkMineForemanLaserOpBoost.TabIndex = 10
-        Me.chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization"
+        Me.chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
         Me.chkMineForemanLaserOpBoost.ThreeState = True
         Me.chkMineForemanLaserOpBoost.UseVisualStyleBackColor = True
         '
         'lblMineMiningDirector
         '
-        Me.lblMineMiningDirector.Location = New System.Drawing.Point(255, 44)
+        Me.lblMineMiningDirector.Location = New System.Drawing.Point(239, 44)
         Me.lblMineMiningDirector.Name = "lblMineMiningDirector"
         Me.lblMineMiningDirector.Size = New System.Drawing.Size(86, 13)
         Me.lblMineMiningDirector.TabIndex = 115
@@ -12657,7 +12568,7 @@ Partial Class frmMain
         Me.cmbMineMiningForeman.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineMiningForeman.FormattingEnabled = True
         Me.cmbMineMiningForeman.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineMiningForeman.Location = New System.Drawing.Point(342, 18)
+        Me.cmbMineMiningForeman.Location = New System.Drawing.Point(326, 18)
         Me.cmbMineMiningForeman.Name = "cmbMineMiningForeman"
         Me.cmbMineMiningForeman.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineMiningForeman.TabIndex = 5
@@ -12673,7 +12584,7 @@ Partial Class frmMain
         '
         'lblMineMiningForeman
         '
-        Me.lblMineMiningForeman.Location = New System.Drawing.Point(255, 21)
+        Me.lblMineMiningForeman.Location = New System.Drawing.Point(239, 21)
         Me.lblMineMiningForeman.Name = "lblMineMiningForeman"
         Me.lblMineMiningForeman.Size = New System.Drawing.Size(86, 13)
         Me.lblMineMiningForeman.TabIndex = 113
@@ -13954,20 +13865,6 @@ Partial Class frmMain
         Me.tabPI.Text = "Planetary Interaction"
         Me.tabPI.UseVisualStyleBackColor = True
         '
-        'MyListView6
-        '
-        Me.MyListView6.FullRowSelect = True
-        Me.MyListView6.GridLines = True
-        Me.MyListView6.HideSelection = False
-        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = False
-        Me.MyListView6.Name = "MyListView6"
-        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
-        Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = False
-        Me.MyListView6.UseCompatibleStateImageBehavior = False
-        Me.MyListView6.View = System.Windows.Forms.View.Details
-        '
         'btnPISaveSettings
         '
         Me.btnPISaveSettings.Location = New System.Drawing.Point(315, 47)
@@ -14083,6 +13980,119 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = True
         '
+        'lstBPComponentMats
+        '
+        Me.lstBPComponentMats.FullRowSelect = True
+        Me.lstBPComponentMats.GridLines = True
+        Me.lstBPComponentMats.HideSelection = False
+        Me.lstBPComponentMats.Location = New System.Drawing.Point(4, 258)
+        Me.lstBPComponentMats.MultiSelect = False
+        Me.lstBPComponentMats.Name = "lstBPComponentMats"
+        Me.lstBPComponentMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPComponentMats.TabIndex = 35
+        Me.lstBPComponentMats.TabStop = False
+        Me.lstBPComponentMats.UseCompatibleStateImageBehavior = False
+        Me.lstBPComponentMats.View = System.Windows.Forms.View.Details
+        '
+        'lstBPRawMats
+        '
+        Me.lstBPRawMats.FullRowSelect = True
+        Me.lstBPRawMats.GridLines = True
+        Me.lstBPRawMats.HideSelection = False
+        Me.lstBPRawMats.Location = New System.Drawing.Point(569, 258)
+        Me.lstBPRawMats.MultiSelect = False
+        Me.lstBPRawMats.Name = "lstBPRawMats"
+        Me.lstBPRawMats.Size = New System.Drawing.Size(562, 329)
+        Me.lstBPRawMats.TabIndex = 34
+        Me.lstBPRawMats.TabStop = False
+        Me.lstBPRawMats.UseCompatibleStateImageBehavior = False
+        Me.lstBPRawMats.View = System.Windows.Forms.View.Details
+        '
+        'lstPricesView
+        '
+        Me.lstPricesView.FullRowSelect = True
+        Me.lstPricesView.GridLines = True
+        Me.lstPricesView.HideSelection = False
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = False
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = False
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
+        'lstRawPriceProfile
+        '
+        Me.lstRawPriceProfile.FullRowSelect = True
+        Me.lstRawPriceProfile.GridLines = True
+        Me.lstRawPriceProfile.HideSelection = False
+        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstRawPriceProfile.MultiSelect = False
+        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
+        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstRawPriceProfile.TabIndex = 1
+        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturedPriceProfile
+        '
+        Me.lstManufacturedPriceProfile.FullRowSelect = True
+        Me.lstManufacturedPriceProfile.GridLines = True
+        Me.lstManufacturedPriceProfile.HideSelection = False
+        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstManufacturedPriceProfile.MultiSelect = False
+        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
+        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstManufacturedPriceProfile.TabIndex = 2
+        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturing
+        '
+        Me.lstManufacturing.AllowColumnReorder = True
+        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
+        Me.lstManufacturing.FullRowSelect = True
+        Me.lstManufacturing.GridLines = True
+        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
+        Me.lstManufacturing.Name = "lstManufacturing"
+        Me.lstManufacturing.OwnerDraw = True
+        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
+        Me.lstManufacturing.TabIndex = 1
+        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturing.View = System.Windows.Forms.View.Details
+        '
+        'tpMaxBuildTimeFilter
+        '
+        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMaxBuildTimeFilter.Enabled = False
+        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 40)
+        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
+        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMaxBuildTimeFilter.TabIndex = 70
+        '
+        'tpMinBuildTimeFilter
+        '
+        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMinBuildTimeFilter.Enabled = False
+        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
+        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
+        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMinBuildTimeFilter.TabIndex = 69
+        '
+        'MyListView6
+        '
+        Me.MyListView6.FullRowSelect = True
+        Me.MyListView6.GridLines = True
+        Me.MyListView6.HideSelection = False
+        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
+        Me.MyListView6.MultiSelect = False
+        Me.MyListView6.Name = "MyListView6"
+        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
+        Me.MyListView6.TabIndex = 75
+        Me.MyListView6.TabStop = False
+        Me.MyListView6.UseCompatibleStateImageBehavior = False
+        Me.MyListView6.View = System.Windows.Forms.View.Details
+        '
         'MyListView5
         '
         Me.MyListView5.FullRowSelect = True
@@ -14152,6 +14162,16 @@ Partial Class frmMain
         Me.MyListView1.TabStop = False
         Me.MyListView1.UseCompatibleStateImageBehavior = False
         Me.MyListView1.View = System.Windows.Forms.View.Details
+        '
+        'btnBPFacilityFitting
+        '
+        Me.btnBPFacilityFitting.Enabled = False
+        Me.btnBPFacilityFitting.Location = New System.Drawing.Point(189, 111)
+        Me.btnBPFacilityFitting.Name = "btnBPFacilityFitting"
+        Me.btnBPFacilityFitting.Size = New System.Drawing.Size(43, 22)
+        Me.btnBPFacilityFitting.TabIndex = 83
+        Me.btnBPFacilityFitting.Text = "Fitting"
+        Me.btnBPFacilityFitting.UseVisualStyleBackColor = True
         '
         'frmMain
         '
@@ -14400,13 +14420,13 @@ Partial Class frmMain
         Me.gbMineOreLocSov.PerformLayout()
         Me.gbMineWHSpace.ResumeLayout(False)
         Me.gbMineWHSpace.PerformLayout()
-        Me.tabPI.ResumeLayout(false)
-        Me.gbPIPlanets.ResumeLayout(false)
-        Me.gbPIPlanets.PerformLayout
-        Me.ResumeLayout(false)
-        Me.PerformLayout
+        Me.tabPI.ResumeLayout(False)
+        Me.gbPIPlanets.ResumeLayout(False)
+        Me.gbPIPlanets.PerformLayout()
+        Me.ResumeLayout(False)
+        Me.PerformLayout()
 
-End Sub
+    End Sub
     Friend WithEvents mnuStripMain As System.Windows.Forms.MenuStrip
     Friend WithEvents mnuFile As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuSelectionExit As System.Windows.Forms.ToolStripMenuItem
@@ -15646,4 +15666,6 @@ End Sub
     Friend WithEvents lblMineDoubleClick As Label
     Friend WithEvents chkBPSimpleCopy As CheckBox
     Friend WithEvents lblBPSimpleCopy As Label
+    Friend WithEvents mnuViewAssets As ToolStripMenuItem
+    Friend WithEvents btnBPFacilityFitting As Button
 End Class

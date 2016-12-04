@@ -473,6 +473,7 @@ Public Class frmMain
 
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
+        UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
         SelectedTower = AllSettings.LoadPOSSettings
 
@@ -2582,6 +2583,25 @@ Public Class frmMain
         Call ShowShoppingList()
     End Sub
 
+    Private Sub mnuViewAssets_Click(sender As Object, e As EventArgs) Handles mnuViewAssets.Click
+        ' Make sure it's not disposed
+        If IsNothing(frmDefaultAssets) Then
+            ' Make new form
+            frmDefaultAssets = New frmAssetsViewer(AssetWindow.DefaultView)
+        Else
+            If frmDefaultAssets.IsDisposed Then
+                ' Make new form
+                frmDefaultAssets = New frmAssetsViewer(AssetWindow.DefaultView)
+            End If
+        End If
+
+        ' Now open the Asset List
+        frmDefaultAssets.Show()
+        frmDefaultAssets.Focus()
+
+        Application.DoEvents()
+    End Sub
+
     Private Sub mnuManageBlueprintsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuManageBlueprintsToolStripMenuItem.Click
         Dim f1 = New frmBlueprintManagement
         f1.Show()
@@ -4126,7 +4146,7 @@ Tabs:
         End If
     End Sub
 
-    Private Sub cmbBPFacilityArrayName_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPFacilityorArray.SelectedIndexChanged
+    Private Sub cmbBPFacilityorArray_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPFacilityorArray.SelectedIndexChanged
 
         If Not LoadingFacilities And Not FirstLoad And PreviousFacilityEquipment <> cmbBPFacilityorArray.Text Then
             ' We won't have any MM or TM to send, so just do default
@@ -4342,6 +4362,14 @@ Tabs:
                               BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False, Nothing,
                               gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade)
             LoadingFacilityActivities = False
+        End If
+    End Sub
+
+    Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
+        If cmbBPFacilityType.Text = CitadelFacility Then
+            Dim BPEC As New EngineeringComplex(cmbBPFacilityorArray.Text)
+            Dim f1 As New frmFacilityFitting(BPEC)
+            f1.Show()
         End If
     End Sub
 
@@ -4757,9 +4785,10 @@ Tabs:
         ComboBoxArrowKeys = False
         BPComboKeyDown = False
 
+        Call LoadBlueprintCombo()
+
         cmbBPBlueprintSelection.Text = "Select Blueprint"
         cmbBPBlueprintSelection.Focus()
-        Call LoadBlueprintCombo()
 
     End Sub
 
@@ -5272,75 +5301,111 @@ Tabs:
     End Sub
 
     Private Sub rbtnAllBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAllBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, True, True, True)
+        If rbtnBPAllBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, True, True, True, True)
+        End If
     End Sub
 
-    Private Sub rbBPOwned_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPOwnedBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, True, True, True)
+    Private Sub rbtnBPOwnedBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPOwnedBlueprints.CheckedChanged
+        If rbtnBPOwnedBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, True, True, True, True)
+        End If
     End Sub
 
     Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, True, True, True)
+        If chkBPIncludeIgnoredBPs.Checked Then
+            Call ResetBlueprintCombo(True, True, True, True, True, True)
+        End If
     End Sub
 
     Private Sub rbtnShipBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPShipBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, False, True, True)
+        If rbtnBPShipBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, True, False, True, True)
+        End If
     End Sub
 
     Private Sub rbtnModuleBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPModuleBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, False, True, True, False)
+        If rbtnBPModuleBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, False, True, True, False)
+        End If
     End Sub
 
     Private Sub rbtnDroneBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPDroneBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, False, False, False, True)
+        If rbtnBPDroneBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, False, False, False, True)
+        End If
     End Sub
 
     Private Sub rbtnComponentBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPComponentBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPComponentBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnSubsystemBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPSubsystemBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(False, False, True, False, False, False)
+        If rbtnBPSubsystemBlueprints.Checked Then
+            Call ResetBlueprintCombo(False, False, True, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnToolBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPMiscBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPMiscBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnAmmoChargeBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPAmmoChargeBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, False, False, False, False)
+        If rbtnBPAmmoChargeBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnRigBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPRigBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, False, False, False, False)
+        If rbtnBPRigBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnStructureBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPStructureBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, True)
+        If rbtnBPStructureBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, True)
+        End If
     End Sub
 
     Private Sub rbtnBoosterBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPBoosterBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPBoosterBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnBPDeployableBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPDeployableBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, False, False, False, False)
+        If rbtnBPDeployableBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStationPartsBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPStationPartsBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnBPStationModulesBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPStructureModulesBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPStructureModulesBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnBPCelestialBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPCelestialsBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, False, False, False, False, False)
+        If rbtnBPCelestialsBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, False, False, False, False, False)
+        End If
     End Sub
 
     Private Sub rbtnBPFavoriteBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPFavoriteBlueprints.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, True, True, True)
+        If rbtnBPFavoriteBlueprints.Checked Then
+            Call ResetBlueprintCombo(True, True, True, True, True, True)
+        End If
     End Sub
 
     Private Sub chkbpT1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPT1.CheckedChanged
@@ -5845,39 +5910,46 @@ Tabs:
         Dim SQL As String = ""
 
         Application.UseWaitCursor = True
-        ' Clear anything that was there
-        cmbBPBlueprintSelection.Items.Clear()
-        cmbBPBlueprintSelection.BeginUpdate()
+        If Not cmbBPsLoaded Then
+            ' Clear anything that was there
+            cmbBPBlueprintSelection.Items.Clear()
+            cmbBPBlueprintSelection.BeginUpdate()
 
-        ' Core Query ' Get rid of 's in blueprint name for sorting
-        If Me.rbtnBPOwnedBlueprints.Checked Or Me.rbtnBPFavoriteBlueprints.Checked Then
-            SQL = BuildBPSelectQuery()
-        Else
-            SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-            SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            SQL = SQL & BuildBPSelectQuery()
+            ' Core Query ' Get rid of 's in blueprint name for sorting
+            If Me.rbtnBPOwnedBlueprints.Checked Or Me.rbtnBPFavoriteBlueprints.Checked Then
+                SQL = BuildBPSelectQuery()
+            Else
+                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
+                SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+                SQL = SQL & BuildBPSelectQuery()
+            End If
+
+            If SQL = "" Then
+                Application.UseWaitCursor = False
+                Exit Sub
+            End If
+
             SQL = SQL & " ORDER BY X"
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerBPs = DBCommand.ExecuteReader
+
+            While readerBPs.Read
+                ' Add the data to the array and combo
+                cmbBPBlueprintSelection.Items.Add(Trim(readerBPs.GetString(0)))
+                Application.DoEvents()
+            End While
+
+            readerBPs.Close()
+
+            readerBPs = Nothing
+            DBCommand = Nothing
+
+            cmbBPBlueprintSelection.EndUpdate()
+
+            cmbBPsLoaded = True
+
         End If
-
-        If SQL = "" Then
-            Exit Sub
-        End If
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerBPs = DBCommand.ExecuteReader
-
-        While readerBPs.Read
-            ' Add the data to the array and combo
-            cmbBPBlueprintSelection.Items.Add(Trim(readerBPs.GetString(0)))
-            Application.DoEvents()
-        End While
-
-        readerBPs.Close()
-
-        readerBPs = Nothing
-        DBCommand = Nothing
-
-        cmbBPBlueprintSelection.EndUpdate()
         Application.UseWaitCursor = False
 
     End Sub
@@ -6082,7 +6154,6 @@ Tabs:
     ' Reloads the BP combo when run
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
         cmbBPsLoaded = False
-        cmbBPBlueprintSelection.Text = "Select Blueprint"
         chkBPT1.Enabled = T1
         chkBPT2.Enabled = T2
         chkBPT3.Enabled = T3
@@ -6100,6 +6171,7 @@ Tabs:
         ' Load the New data
         Call LoadBlueprintCombo()
 
+        cmbBPBlueprintSelection.Text = "Select Blueprint"
         cmbBPBlueprintSelection.Focus()
 
     End Sub
@@ -11967,12 +12039,6 @@ ExitSub:
         End If
     End Sub
 
-    Private Sub cmbCalcBaseFacilityRegion_DropDownClosed(sender As Object, e As EventArgs) Handles cmbCalcBaseFacilityRegion.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbCalcBaseFacilityRegion.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        ComboMenuDown = False
-    End Sub
-
     Private Sub cmbCalcBaseFacilityRegion_GotFocus(sender As Object, e As EventArgs) Handles cmbCalcBaseFacilityRegion.GotFocus
         Call cmbBPFacilityRegion.SelectAll()
     End Sub
@@ -12218,10 +12284,10 @@ ExitSub:
             DefaultCalcPOSModuleFacility = CType(SelectedCalcPOSModuleFacility.Clone, IndustryFacility)
         End If
 
-        lblCalcBaseFacilityDefault.ForeColor = SystemColors.Highlight
         Call ResetToolTipforDefaultFacilityLabel(lblCalcBaseFacilityDefault, False, ttBP)
 
         ' They just saved it
+        lblCalcBaseFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcBaseFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -12493,6 +12559,7 @@ ExitSub:
 
         lblCalcComponentFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcComponentFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcComponentFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -12743,10 +12810,10 @@ ExitSub:
 
         lblCalcInventionFacilityDefault.Visible = True
 
-        lblCalcInventionFacilityDefault.ForeColor = SystemColors.Highlight
         Call ResetToolTipforDefaultFacilityLabel(lblCalcInventionFacilityDefault, False, ttBP)
 
         ' They just saved it
+        lblCalcInventionFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcInventionFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -13022,10 +13089,10 @@ ExitSub:
 
         lblCalcT3InventionFacilityDefault.Visible = True
 
-        lblCalcT3InventionFacilityDefault.ForeColor = SystemColors.Highlight
         Call ResetToolTipforDefaultFacilityLabel(lblCalcT3InventionFacilityDefault, False, ttBP)
 
         ' They just saved it
+        lblCalcT3InventionFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcT3InventionFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -13302,10 +13369,10 @@ ExitSub:
 
         lblCalcCopyFacilityDefault.Visible = True
 
-        lblCalcCopyFacilityDefault.ForeColor = SystemColors.Highlight
         Call ResetToolTipforDefaultFacilityLabel(lblCalcCopyFacilityDefault, False, ttBP)
 
         ' They just saved it
+        lblCalcCopyFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcCopyFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -13553,6 +13620,7 @@ ExitSub:
 
         lblCalcNoPOSFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcNoPOSFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcNoPOSFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -13775,6 +13843,7 @@ ExitSub:
 
         lblCalcSuperFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcSuperFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcSuperFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -13996,6 +14065,7 @@ ExitSub:
 
         lblCalcCapitalFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcCapitalFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcCapitalFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -14249,6 +14319,7 @@ ExitSub:
 
         lblCalcT3FacilityDefault.Visible = True
         ' They just saved it
+        lblCalcT3FacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcT3FacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -14498,6 +14569,7 @@ ExitSub:
 
         lblCalcSubsystemFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcSubsystemFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcSubsystemFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -14719,6 +14791,7 @@ ExitSub:
 
         lblCalcBoosterFacilityDefault.Visible = True
         ' They just saved it
+        lblCalcBoosterFacilityDefault.ForeColor = SystemColors.Highlight
         btnCalcBoosterFacilitySave.Enabled = False
 
         MsgBox("Default Facility Saved", vbInformation, Application.ProductName)
@@ -17505,12 +17578,12 @@ CheckTechs:
         ' Based on the settings, load either the T3 Cruiser or Destroyer facility
         LoadingFacilityActivities = True
         Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, False)
-        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
-            chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3DestroyerManufacturingFacility.IncludeActivityUsage
+        If chkCalcT3DestroyersFacility.Checked Then
+            chkCalcT3FacilityIncludeUsage.Checked = DefaultCalcT3DestroyerManufacturingFacility.IncludeActivityUsage
         Else
-            chkCalcCapitalFacilityIncludeUsage.Checked = DefaultCalcT3CruiserManufacturingFacility.IncludeActivityUsage
+            chkCalcT3FacilityIncludeUsage.Checked = DefaultCalcT3CruiserManufacturingFacility.IncludeActivityUsage
         End If
-        Call LoadFacility(GetT3ShipIndustryType(UserManufacturingTabSettings.CheckT3DestroyerFacility), True, False,
+        Call LoadFacility(GetT3ShipIndustryType(chkCalcT3DestroyersFacility.Checked), True, False,
                           ActivityManufacturing, cmbCalcT3FacilityType, cmbCalcT3FacilityRegion, cmbCalcT3FacilitySystem, cmbCalcT3FacilityorArray,
                           lblCalcT3FacilityBonus, lblCalcT3FacilityDefault,
                           lblCalcT3FacilityManualME, txtCalcT3FacilityManualME,
@@ -17518,7 +17591,7 @@ CheckTechs:
                           lblCalcT3FacilityManualTax, txtCalcT3FacilityManualTax,
                           btnCalcT3FacilitySave, lblCalcT3FacilityTaxRate,
                           CalcTab, chkCalcT3FacilityIncludeUsage, Nothing, Nothing, Nothing, TempCalcT3FacilityLoaded, Nothing,
-                          1, GetT3ShipGroupID(UserManufacturingTabSettings.CheckT3DestroyerFacility), -1, False)
+                          1, GetT3ShipGroupID(chkCalcT3DestroyersFacility.Checked), -1, False)
         Call SetT3FacilityLoaded(chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
         ' Need to set the other facility as loaded to ensure it doesn't get reloaded on tab, if any changes are made it will reload
         Call SetComponentFacilityLoaded(Not chkCalcT3DestroyersFacility.Checked, TempCalcT3FacilityLoaded)
@@ -23384,16 +23457,6 @@ Leave:
         Call ListClicked(lstMineGrid, sender, e)
     End Sub
 
-    Private Sub chkMineRorqDeployedMode_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineRorqDeployedMode.CheckedChanged
-        If chkMineRorqDeployedMode.Checked = True Then
-            lblMineIndustrialReconfig.Enabled = True
-            cmbMineIndustReconfig.Enabled = True
-        Else
-            lblMineIndustrialReconfig.Enabled = False
-            cmbMineIndustReconfig.Enabled = False
-        End If
-    End Sub
-
     Private Sub chkOreProcessing1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged
         Call UpdateProcessingSkillBoxes(1, chkOreProcessing1.Checked)
     End Sub
@@ -23885,6 +23948,10 @@ Leave:
         Call UpdateMiningBoosterObjects()
     End Sub
 
+    Private Sub chkMineRorqDeployedMode_Click(sender As Object, e As EventArgs) Handles chkMineRorqDeployedMode.Click
+        Call UpdateIndustrialCoreCheck()
+    End Sub
+
     Private Function GetMiningShipImage(ShipName As String) As String
         Dim ImageFile As Long
         Dim BPImage As String
@@ -23909,6 +23976,8 @@ Leave:
                 ImageFile = MiningShipTypeID.Rorqual
             Case Orca
                 ImageFile = MiningShipTypeID.Orca
+            Case Porpoise
+                ImageFile = MiningShipTypeID.Porpoise
             Case Drake
                 ImageFile = MiningShipTypeID.Drake
             Case Rokh
@@ -24029,6 +24098,7 @@ Leave:
         Mackinaw = 22548
         Rorqual = 28352
         Orca = 28606
+        Porpoise = 42244
         Procurer = 17480
         Drake = 24698
         Rokh = 24688
@@ -24097,38 +24167,34 @@ Leave:
             cmbMineBoosterShipSkill.Text = CStr(.BoosterShipSkill)
             cmbMineWarfareLinkSpec.Text = CStr(.WarfareLinkSpecSkill)
             chkMineForemanMindlink.Checked = .CheckMiningForemanMindLink
-            chkMineRorqDeployedMode.Checked = .CheckRorqDeployed
             cmbMineIndustReconfig.Text = CStr(.IndustrialReconfig)
 
-            If chkMineRorqDeployedMode.Checked Then
-                cmbMineIndustReconfig.Enabled = True
-                lblMineIndustrialReconfig.Enabled = True
-            Else
-                cmbMineIndustReconfig.Enabled = False
-                lblMineIndustrialReconfig.Enabled = False
-            End If
+            Select Case .CheckRorqDeployed
+                Case 2
+                    chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate
+                Case 1
+                    chkMineRorqDeployedMode.Checked = True
+                Case 0
+                    chkMineRorqDeployedMode.Checked = False
+            End Select
+
+            Call UpdateIndustrialCoreCheck()
 
             Select Case .CheckMineForemanLaserOpBoost
                 Case 2
-                    chkMineForemanLaserOpBoost.ThreeState = True
                     chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate
                 Case 1
-                    chkMineForemanLaserOpBoost.ThreeState = False
                     chkMineForemanLaserOpBoost.Checked = True
                 Case 0
-                    chkMineForemanLaserOpBoost.ThreeState = False
                     chkMineForemanLaserOpBoost.Checked = False
             End Select
 
             Select Case .CheckMineForemanLaserRangeBoost
                 Case 2
-                    chkMineForemanLaserRangeBoost.ThreeState = True
                     chkMineForemanLaserRangeBoost.CheckState = CheckState.Indeterminate
                 Case 1
-                    chkMineForemanLaserRangeBoost.ThreeState = False
                     chkMineForemanLaserRangeBoost.Checked = True
                 Case 0
-                    chkMineForemanLaserRangeBoost.ThreeState = False
                     chkMineForemanLaserRangeBoost.Checked = False
             End Select
 
@@ -24473,7 +24539,7 @@ Leave:
         BaseCycleTime = CalculateMiningCycleTime(GetAttribute("duration", cmbMineMiningLaser.Text) / 1000)
 
         ' Get Heavy Water costs
-        If chkMineRorqDeployedMode.Checked And CInt(cmbMineIndustReconfig.Text) <> 0 Then
+        If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
             ' Add (subtract from total isk) the heavy water cost
             HeavyWaterCost = CalculateRorqDeployedCost(CInt(cmbMineIndustReconfig.Text), CInt(cmbMineBoosterShipSkill.Text))
         End If
@@ -24595,7 +24661,7 @@ Leave:
                 TempOre.RefineYield = RefineryYield
 
                 TempOre.IPH = RefinedMaterials.GetTotalMaterialsCost - GetJumpCosts(RefinedMaterials, TempOre, TempOre.UnitsPerHour)
-                If chkMineRorqDeployedMode.Checked And CInt(cmbMineIndustReconfig.Text) <> 0 Then
+                If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
                     ' Add (subtract from total isk) the heavy water cost
                     TempOre.IPH = TempOre.IPH - HeavyWaterCost
                 End If
@@ -24735,6 +24801,7 @@ Leave:
         cmbMineSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(MiningSkillTypeID))
         cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingEfficiencySkillTypeID))
         cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingSkillTypeID))
+
         If cmbMineOreType.Text = "Gas" Then
             If SelectedCharacter.Skills.GetSkillLevel(GasCloudHarvestingSkillTypeID) = 0 Then
                 ' Set it to base 1 - even though if they don't have this skill they can't fit a gas harvester
@@ -24899,8 +24966,15 @@ Leave:
             .BoosterShipSkill = CInt(cmbMineBoosterShipSkill.Text)
             .WarfareLinkSpecSkill = CInt(cmbMineWarfareLinkSpec.Text)
             .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
-            .CheckRorqDeployed = chkMineRorqDeployedMode.Checked
             .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
+
+            If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+                .CheckRorqDeployed = 2
+            ElseIf chkMineRorqDeployedMode.Checked = True Then
+                .CheckRorqDeployed = 1
+            Else
+                .CheckRorqDeployed = 0
+            End If
 
             If chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate Then
                 .CheckMineForemanLaserOpBoost = 2
@@ -25443,14 +25517,18 @@ Leave:
                     rbtnMineT2Crystals.Enabled = False
 
                     ' Add all the basic mining lasers
-                    SQL &= "AND INVENTORY_TYPES.groupID = 54 AND typeName NOT LIKE '%Ice%' "
-                    If CInt(cmbMineSkill.Text) < 5 Then
-                        SQL &= "AND TECH <> 2 AND typeName NOT LIKE '%Deep Core%'" ' Don't load the deep core or tech 2
-                    ElseIf CInt(cmbMineSkill.Text) = 5 And cmbMineDeepCore.Enabled = False Then
-                        SQL &= " AND typeName NOT LIKE '%Deep Core%'" ' Don't load the deep core
-                    ElseIf CInt(cmbMineDeepCore.Text) >= 1 And cmbMineDeepCore.Enabled = True Then
+                    SQL &= "AND (INVENTORY_TYPES.groupID = 54 OR (INVENTORY_TYPES.groupID = 483 AND typeName NOT LIKE '%Strip%')) AND typeName NOT LIKE '%Ice%' "
+
+                    If CInt(cmbMineSkill.Text) < 4 Then
+                        SQL &= "AND TECH <> 2 AND typeName NOT LIKE '%Deep Core%' " ' Don't load T2 or any others
+                    ElseIf CInt(cmbMineSkill.Text) < 5 Then
+                        SQL &= "AND typeName NOT LIKE '%Deep Core%' " ' No deep core if not 5
+                    ElseIf cmbMineDeepCore.Enabled = False Or CInt(cmbMineDeepCore.Text) = 0 Then
+                        SQL &= " AND typeName NOT LIKE '%Deep Core%'" ' Don't load the deep core if not enabled
+                    ElseIf CInt(cmbMineDeepCore.Text) >= 1 And CInt(cmbMineDeepCore.Text) <= 2 And cmbMineDeepCore.Enabled = True Then
                         SQL &= " AND typeName NOT LIKE '%Modulated Deep Core%'" ' Don't load the modulated deep core
                     ElseIf CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
+                        ' Deep core is fine
                         rbtnMineT1Crystals.Enabled = True
                         rbtnMineT2Crystals.Enabled = True
                     End If
@@ -25752,12 +25830,12 @@ Leave:
     Private Sub UpdateBoosterSkills()
         Dim CurrentShip As String
 
-        ' Industrial command ships = orca. Need Mining director 1
+        ' Industrial command ships = Orca/Porpoise. Need Mining director 1
         ' Capital industrial = rorq, need nothing
 
         ' Mining director needs mining foreman 5
         ' Mindlink (implant) needs mining director 5 
-        ' Mining gang link needs mining director 1
+        ' Mining gang link I needs mining director 1
         ' Mining gang link II needs mining director 5 (three way check box)
         If chkMineUseFleetBooster.Checked Then
             cmbMineBoosterShip.Enabled = True
@@ -25799,6 +25877,7 @@ Leave:
 
             cmbMineBoosterShip.Items.Add(Rorqual)
             cmbMineBoosterShip.Items.Add(Orca)
+            cmbMineBoosterShip.Items.Add(Porpoise)
             cmbMineBoosterShip.Items.Add("Battlecruiser")
             cmbMineBoosterShip.Items.Add("Other")
 
@@ -25816,7 +25895,7 @@ Leave:
                 chkMineForemanLaserRangeBoost.Enabled = False
             End If
 
-            If cmbMineBoosterShip.Text = Orca Or cmbMineBoosterShip.Text = Rorqual Then
+            If cmbMineBoosterShip.Text = Orca Or cmbMineBoosterShip.Text = Rorqual Or cmbMineBoosterShip.Text = Porpoise Then
                 cmbMineBoosterShipSkill.Enabled = True
             Else
                 cmbMineBoosterShipSkill.Enabled = False
@@ -26156,58 +26235,69 @@ Leave:
 
     End Function
 
+    ' Calculates the total burst bonus from ships and charges
+    Private Function CalculateBurstBonus(BurstType As String, BoostCheckRef As CheckBox) As Double
+        Dim GangBurstBonus As Double
+        Dim MindLinkBonus As Double
+        Dim BaseChargeBonus As Double
+
+        If chkMineForemanMindlink.Checked = True And chkMineForemanMindlink.Enabled = True Then
+            MindLinkBonus = 1.25
+        Else
+            MindLinkBonus = 1
+        End If
+
+        If BurstType = "Range" Then
+            BaseChargeBonus = 0.3
+        Else
+            BaseChargeBonus = 0.15
+        End If
+
+        ' Mining Foreman Link bonus
+        If cmbMineMiningDirector.Enabled = True And BoostCheckRef.Enabled Then
+            If BoostCheckRef.Checked And BoostCheckRef.CheckState = CheckState.Indeterminate Then
+                ' Checked T2 - T2 gives 25% bonus to charges
+                GangBurstBonus = (BaseChargeBonus * 1.25) * (1 + (CInt(cmbMineMiningDirector.Text) * 0.1)) * MindLinkBonus
+            ElseIf BoostCheckRef.Checked Then
+                ' Checked T1
+                GangBurstBonus = BaseChargeBonus * (1 + (CInt(cmbMineMiningDirector.Text) * 0.1)) * MindLinkBonus
+            Else
+                GangBurstBonus = 0
+            End If
+        Else
+            GangBurstBonus = 0
+        End If
+
+        ' Ship boost to bursts
+        Select Case cmbMineBoosterShip.Text
+            Case Porpoise
+                GangBurstBonus = GangBurstBonus * (1 + (0.02 * CInt(cmbMineBoosterShipSkill.Text)))
+            Case Orca
+                GangBurstBonus = GangBurstBonus * (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
+            Case Rorqual
+                ' Rorq bonus applies only if deployed with core on
+                If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And chkMineRorqDeployedMode.Enabled Then
+                    If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+                        GangBurstBonus = GangBurstBonus * (1 + (0.3 * CInt(cmbMineBoosterShipSkill.Text))) ' 30% max for Industrial core II
+                    Else ' T1
+                        GangBurstBonus = GangBurstBonus * (1 + (0.25 * CInt(cmbMineBoosterShipSkill.Text))) ' 25% max for Industrial core I
+                    End If
+                Else
+                    GangBurstBonus = GangBurstBonus * (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% without core
+                End If
+        End Select
+
+        Return GangBurstBonus
+
+    End Function
+
     ' Calculates the range for the miner selected and boosts applied
     Private Function CalculateMiningRange(BaseRange As Double) As Double
-        Dim GangLinkBonus As Double
-        Dim MindLinkBonus As Double
-        Dim WarLinkBonus As Double
-
         Dim CalculatedRange As Double
 
-        ' Range links changed in Odyssey 1.1 - 9/3/2013
-        ' Mining Director skill = 20% bonus to effectiveness of Mining Foreman link modules per level
-        ' Mining Foreman Link T1 - Increases range by 13.6% old: 4.5%
-        ' Mining Foreman Link T2 - Increases range by 17% old: 5.625%
-        ' Mining Foreman Mindlink (implant)	Increases link effectiveness by 25% 
-        ' Warfare Link Specialist 	Increases link effectiveness by 10%/level 
-
+        ' Calc range with bursts
         If chkMineUseFleetBooster.Checked Then
-
-            WarLinkBonus = 1 + (CInt(cmbMineWarfareLinkSpec.Text) * 0.1)
-
-            If chkMineForemanMindlink.Checked = True And chkMineForemanMindlink.Enabled = True Then
-                MindLinkBonus = 1.25
-            Else
-                MindLinkBonus = 1
-            End If
-
-            ' Mining Foreman Link bonus
-            If cmbMineMiningDirector.Enabled = True And chkMineForemanLaserRangeBoost.Enabled Then
-                If chkMineForemanLaserRangeBoost.Checked And chkMineForemanLaserRangeBoost.CheckState = CheckState.Indeterminate Then
-                    ' Checked T2
-                    GangLinkBonus = 0.17 * (1 + (CInt(cmbMineMiningDirector.Text) * 0.2)) * MindLinkBonus * WarLinkBonus
-                ElseIf chkMineForemanLaserRangeBoost.Checked Then
-                    ' Checked T1
-                    GangLinkBonus = 0.136 * (1 + (CInt(cmbMineMiningDirector.Text) * 0.2)) * MindLinkBonus * WarLinkBonus
-                Else
-                    GangLinkBonus = 0
-                End If
-            Else
-                GangLinkBonus = 0
-            End If
-
-            ' Ship boost to ganglinks
-            If cmbMineBoosterShip.Text = Orca Then
-                GangLinkBonus = GangLinkBonus * (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
-            ElseIf cmbMineBoosterShip.Text = Rorqual Then
-                ' Rorq bonus applies only if deployed with core on
-                If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.Enabled Then
-                    GangLinkBonus = GangLinkBonus * (1 + (0.1 * CInt(cmbMineBoosterShipSkill.Text)))
-                End If
-            End If
-
-            CalculatedRange = BaseRange * (1 + GangLinkBonus)
-
+            CalculatedRange = BaseRange * (1 + CalculateBurstBonus("Range", chkMineForemanLaserRangeBoost))
         Else
             CalculatedRange = BaseRange
         End If
@@ -26224,61 +26314,18 @@ Leave:
 
     ' Returns the cycle time of the mining laser cycle time sent
     Private Function CalculateMiningCycleTime(ByVal BaseCycleTime As Double) As Double
-        Dim GangLinkBonus As Double
-        Dim MindLinkBonus As Double
-        Dim WarLinkBonus As Double
-
+        Dim GangBurstBonus As Double
         Dim TempCycleTime As Double
 
-        ' Range links changed in Odyssey 1.1 - 9/3/2013
-        ' Mining Director skill = 20% bonus to effectiveness of Mining Foreman link modules per level after level 2 is trained.
-        ' Mining Foreman Link T1 - Decreases mining lasers/ gas harvester and ice harvester duration by 6%
-        ' Mining Foreman Link T2 - Decreases mining lasers/ gas harvester and ice harvester duration by 7.5%
-        ' Mining Foreman Mindlink (implant)	Increases link effectiveness by 25% 
-        ' Warfare Link Specialist 	Increases link effectiveness by 10%/level 
-
+        ' Boosters use one module and charges for boosting - Ascension
         If chkMineUseFleetBooster.Checked Then
-            If chkMineForemanMindlink.Checked = True And chkMineForemanMindlink.Enabled = True Then
-                MindLinkBonus = 1.25 ' Changed to 25% with Odyssey 1.1
-            Else
-                MindLinkBonus = 1
-            End If
-
-            WarLinkBonus = 1 + (CInt(cmbMineWarfareLinkSpec.Text) * 0.1)
-
-            ' Mining Foreman Link bonus
-            If cmbMineMiningDirector.Enabled = True And chkMineForemanLaserRangeBoost.Enabled Then
-                If chkMineForemanLaserOpBoost.Checked And chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate Then
-                    ' Checked T2
-                    GangLinkBonus = 0.075 * (1 + (CInt(cmbMineMiningDirector.Text) * 0.2)) * MindLinkBonus * WarLinkBonus
-                ElseIf chkMineForemanLaserOpBoost.Checked Then
-                    ' Checked T1
-                    GangLinkBonus = 0.06 * (1 + (CInt(cmbMineMiningDirector.Text) * 0.2)) * MindLinkBonus * WarLinkBonus
-                Else
-                    GangLinkBonus = 0
-                End If
-            Else
-                GangLinkBonus = 0
-            End If
-
-            ' Ship type - Orca: 3% bonus to effectiveness of mining foreman gang links per level
-            ' Ship type - Rorq: 10% bonus to effectiveness of mining foreman gang links per level when in deployed mode
-
-            ' Ship boost to ganglinks
-            If cmbMineBoosterShip.Text = Orca Then
-                GangLinkBonus = GangLinkBonus * (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
-            ElseIf cmbMineBoosterShip.Text = Rorqual Then
-                ' Rorq bonus applies only if deployed with core on
-                If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.Enabled Then
-                    GangLinkBonus = GangLinkBonus * (1 + (0.1 * CInt(cmbMineBoosterShipSkill.Text)))
-                End If
-            End If
+            GangBurstBonus = CalculateBurstBonus("Cycle", chkMineForemanLaserOpBoost)
         Else
-            GangLinkBonus = 0
+            GangBurstBonus = 0
         End If
 
         ' Get the adjusted time with ganglinks etc
-        TempCycleTime = BaseCycleTime * (1 - GangLinkBonus)
+        TempCycleTime = BaseCycleTime * (1 - GangBurstBonus)
 
         ' Changed with YC.118.9.1 - 9/2016
         Select Case cmbMineShipType.Text
@@ -26441,12 +26488,12 @@ Leave:
 
     End Function
 
-    ' Updates the booster section 
+    ' Updates the booster checks 
     Public Sub UpdateMiningBoosterObjects()
 
         ' Laser Op
         If chkMineForemanLaserOpBoost.Checked And chkMineForemanLaserOpBoost.CheckState = CheckState.Indeterminate Then ' Show T2
-            chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization T2"
+            chkMineForemanLaserOpBoost.Text = "Mining Foreman Link T2 - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.DarkOrange
 
             If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
@@ -26458,7 +26505,7 @@ Leave:
             pictMineLaserOptmize.Update()
 
         Else
-            chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization"
+            chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.Black
 
             If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
@@ -26472,7 +26519,7 @@ Leave:
 
         ' Range 
         If chkMineForemanLaserRangeBoost.Checked And chkMineForemanLaserRangeBoost.CheckState = CheckState.Indeterminate Then ' Show T2
-            chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement T2"
+            chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link T2 - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.DarkOrange
 
             If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
@@ -26481,7 +26528,7 @@ Leave:
                 pictMineRangeLink.Image = Nothing
             End If
         Else
-            chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement"
+            chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.Black
 
             If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
@@ -26495,11 +26542,54 @@ Leave:
 
     End Sub
 
+    ' Processes the industrial core checks
+    Private Sub UpdateIndustrialCoreCheck()
+
+        If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then ' Show T2
+            chkMineRorqDeployedMode.Text = "Industrial Core II Active"
+            chkMineRorqDeployedMode.ForeColor = Color.DarkOrange
+        ElseIf chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Checked Then ' Show T1 
+            chkMineRorqDeployedMode.Text = "Industrial Core I Active"
+            chkMineRorqDeployedMode.ForeColor = Color.Black
+        Else
+            ' Inactive
+            chkMineRorqDeployedMode.Text = "Industrial Core Inctive"
+            chkMineRorqDeployedMode.ForeColor = Color.Black
+        End If
+
+        If chkMineRorqDeployedMode.Checked = True Then
+            lblMineIndustrialReconfig.Enabled = True
+            cmbMineIndustReconfig.Enabled = True
+        Else
+            lblMineIndustrialReconfig.Enabled = False
+            cmbMineIndustReconfig.Enabled = False
+        End If
+
+    End Sub
+
     ' Calculates the cost for one hour of heavy water for boosting with a Rorqual - TODO new rorq changes?
     Private Function CalculateRorqDeployedCost(IndustrialReconfigSkill As Integer, CapIndustrialShipSkill As Integer) As Double
         Dim SQL As String
         Dim readerHW As SQLiteDataReader
-        Dim HWUsage As Double = 1000 ' 1000 base use for core
+
+        Const T1CoreHWUsage As Double = 1000 ' 1000 base use for T1 Core
+        Const T2CoreHWUsage As Double = 1500 ' 1500 base use for T1 Core
+
+        Dim HWUsage As Double = 0
+
+        If chkMineRorqDeployedMode.Enabled = True Then
+            If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+                ' Checked T2
+                HWUsage = T2CoreHWUsage
+            ElseIf chkMineRorqDeployedMode.Checked Then
+                ' Checked T1
+                HWUsage = T1CoreHWUsage
+            Else
+                HWUsage = 0
+            End If
+        Else
+            HWUsage = 0
+        End If
 
         ' Users can set Industrial Reconfig to 0 - this is 0 cost or not calculating cost
         If IndustrialReconfigSkill = 0 Then
@@ -26554,10 +26644,6 @@ Leave:
         End Function
 
     End Class
-
-    Private Sub cmbBPFacilityActivities_KeyDown(sender As Object, e As KeyEventArgs) Handles cmbBPFacilityActivities.KeyDown
-
-    End Sub
 
 #End Region
 

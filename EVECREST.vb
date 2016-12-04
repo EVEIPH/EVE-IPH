@@ -1757,6 +1757,45 @@ Public Class EVECREST
         <JsonProperty("href")> Public href As String
     End Class
 
+    ' Downloads citadel data for the ID sent
+    Public Function GetCitadelName(ByVal ID As String) As String
+        Dim CitadelOutput As New Dictionary(Of String, Citadel)
+
+        ' Dump the file into the Specializations object
+        CitadelOutput = JsonConvert.DeserializeObject(Of Dictionary(Of String, Citadel)) _
+            (GetJSONFile("https://stop.hammerti.me.uk/api/citadel/" & ID, Nothing, "Citadel Information"))
+
+        ' Read in the data
+        If CitadelOutput.Count > 0 Then
+            Return CitadelOutput(ID).name
+        Else
+            Return ""
+        End If
+
+    End Function
+
+    ' For Citadel Lookup
+    Private Class Citadel
+        <JsonProperty("typeId")> Public typeId As Integer
+        <JsonProperty("regionId")> Public regionId As Integer
+        <JsonProperty("typeName")> Public typeName As String
+        <JsonProperty("lastSeen")> Public lastSeen As Date
+        <JsonProperty("firstSeen")> Public firstSeen As Date
+        <JsonProperty("regionName")> Public regionName As String
+        <JsonProperty("name")> Public name As String
+        <JsonProperty("systemId")> Public systemId As Integer
+        <JsonProperty("location")> Public location As Location
+        <JsonProperty("systemName")> Public systemName As String
+        <JsonProperty("public")> Public IsPublic As Boolean
+    End Class
+
+    ' For Citadel Lookup
+    Private Class Location
+        <JsonProperty("y")> Public y As Double
+        <JsonProperty("x")> Public x As Double
+        <JsonProperty("z")> Public z As Double
+    End Class
+
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
     ' Note Cache Date is returned in local time, not GMT
     Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, _

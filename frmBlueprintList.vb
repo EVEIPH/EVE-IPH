@@ -224,7 +224,7 @@ Public Class frmBlueprintList
         ' Text search
         Dim TextFilter = ""
         If Trim(txtBPItemFilter.Text) <> "" Then
-            TextFilter = " AND BLUEPRINT_NAME LIKE '%" & Trim(txtBPItemFilter.Text) & "%' "
+            TextFilter = " AND BLUEPRINT_NAME LIKE '%" & FormatDBString(Trim(txtBPItemFilter.Text)) & "%' "
         End If
 
         Dim query =

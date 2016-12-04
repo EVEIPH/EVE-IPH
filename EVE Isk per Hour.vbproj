@@ -159,6 +159,18 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="EngineeringCitadel.vb" />
+    <Compile Include="frmFacilityFitting.Designer.vb">
+      <DependentUpon>frmFacilityFitting.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmFacilityFitting.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="OreMineral.vb" />
     <Compile Include="frmBlueprintList.Designer.vb">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
@@ -173,11 +185,6 @@
     <Compile Include="IPHIndustryFacility.vb">
       <SubType>UserControl</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="My Project\Resources.Designer.vb">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="MyDomainUpDown.Designer.vb">
       <DependentUpon>MyDomainUpDown.vb</DependentUpon>
@@ -460,6 +467,9 @@
     <EmbeddedResource Include="frmBlueprintList.resx">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmFacilityFitting.resx">
+      <DependentUpon>frmFacilityFitting.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </EmbeddedResource>
@@ -620,9 +630,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
-    <None Include="packages.config" />
-    <None Include="Resources\46_64_2.png" />
     <None Include="Resources\46_64_1.png" />
+    <None Include="Resources\46_64_2.png" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

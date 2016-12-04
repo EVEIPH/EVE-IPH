@@ -16,6 +16,7 @@ Public Class EVEAssets
 
     Private Const IgnoreFlag As String = None
     Private Const ShipHangar As String = "Ship Hangar"
+    Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
     Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
 
@@ -87,7 +88,7 @@ Public Class EVEAssets
             If TempAsset.LocationID <> 0 Then
 
                 ' See if it's a station
-                If CStr(TempAsset.LocationID).Substring(0, 1) = "6" Then
+                If TempAsset.LocationID >= 60000000 And TempAsset.LocationID < 67000000 Then
 
                     SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(TempAsset.LocationID)
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -98,11 +99,10 @@ Public Class EVEAssets
                         TempAsset.LocationName = readerData.GetString(0)
                     Else
                         ' Unknown
-                        TempAsset.LocationName = "Unknown Location"
+                        TempAsset.LocationName = UnknownLocation
                     End If
                     readerData.Close()
-
-                ElseIf CStr(TempAsset.LocationID).Substring(0, 1) = "3" Then ' See if it's a solar system
+                ElseIf TempAsset.LocationID >= 30000000 And TempAsset.LocationID < 40000000 Then ' See if it's a solar system
                     SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(TempAsset.LocationID)
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -113,7 +113,7 @@ Public Class EVEAssets
                         TempAsset.LocationName = readerData.GetString(0)
                     Else
                         ' Unknown
-                        TempAsset.LocationName = "Unknown Location"
+                        TempAsset.LocationName = UnknownLocation
                     End If
 
                     ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
@@ -123,10 +123,10 @@ Public Class EVEAssets
 
                     readerData.Close()
                 Else
-                    TempAsset.LocationName = "Unknown Location"
+                    TempAsset.LocationName = UnknownLocation
                 End If
             Else
-                TempAsset.LocationName = "Unknown Location"
+                TempAsset.LocationName = UnknownLocation
             End If
 
             ' Look up the flag text
@@ -165,6 +165,10 @@ Public Class EVEAssets
             End If
 
             readerData.Close()
+
+            If TempAsset.ItemID = 1021378161010 Then
+                Application.DoEvents()
+            End If
 
             ' Insert asset
             Assets.Add(TempAsset)
@@ -217,7 +221,7 @@ Public Class EVEAssets
                 SQL = SQL & " AND API_TYPE = 'Corporation'"
             End If
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Set the ID - Corp or Personal ID number
             If AssetType = ScanType.Personal Then
@@ -229,20 +233,25 @@ Public Class EVEAssets
             ' Clear the current assets in the database
             SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ScanID)
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Insert the records into the DB
             For i = 0 To Assets.Count - 1
 
                 ' Insert it
-                SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, Singleton, RawQuantity) VALUES "
-                SQL = SQL & "(" & CStr(ScanID) & "," & CStr(Assets(i).ItemID) & "," & CStr(Assets(i).LocationID) & ","
-                SQL = SQL & CStr(Assets(i).TypeID) & "," & CStr(Assets(i).Quantity) & "," & CStr(Assets(i).FlagID) & "," & CStr(Assets(i).Singleton) & ","
-                SQL = SQL & CStr(Assets(i).RawQuantity) & ")"
+                If Assets(i).LocationID <> ScanID Then ' Don't add assets that are on the character
+                    SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, Singleton, RawQuantity) VALUES "
+                    SQL = SQL & "(" & CStr(ScanID) & "," & CStr(Assets(i).ItemID) & "," & CStr(Assets(i).LocationID) & ","
+                    SQL = SQL & CStr(Assets(i).TypeID) & "," & CStr(Assets(i).Quantity) & "," & CStr(Assets(i).FlagID) & "," & CStr(Assets(i).Singleton) & ","
+                    SQL = SQL & CStr(Assets(i).RawQuantity) & ")"
 
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
+                End If
             Next
+
+            ' By using a flat xml file, need to update the flags to set them negative if they are base nodes
+            Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET FLAG = (-1 * FLAG) WHERE LocationID IN (SELECT ItemID FROM ASSETS)")
 
             Call EVEDB.CommitSQLiteTransaction()
 
@@ -261,7 +270,7 @@ Public Class EVEAssets
     End Property
 
     ' Gets the Tree base node for all assets - the list of checked nodes passed
-    Public Function GetAssetTreeAnchorNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long, _
+    Public Function GetAssetTreeAnchorNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
                                            SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
         Dim Tree As New TreeView
         Dim AnchorNode As New TreeNode
@@ -326,12 +335,24 @@ Public Class EVEAssets
                 LocationName = TempAsset.LocationName
             End If
 
+            ' If it's unknown, try and look it up as a citadel
+            If LocationName = UnknownLocation Then
+                Dim CitadelLookup As New EVECREST
+
+                LocationName = CitadelLookup.GetCitadelName(CStr(TempAsset.LocationID))
+
+                If LocationName <> "" Then
+                    LocationName = LocationName
+                Else
+                    LocationName = UnknownLocation
+                End If
+            End If
+
             ' See if we have added the location
             If Not LocationList.Contains(TempAsset.LocationID) Then
-                LocationName = LocationName
+
                 ' Add the location to the list
                 LocationList.Add(TempAsset.LocationID)
-
                 BaseLocationNode = AnchorNode.Nodes.Add(LocationName)
                 BaseLocationNode.Name = LocationName
 

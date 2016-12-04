@@ -813,9 +813,9 @@ Public Class EVEAPI
         If SentKey.Access Then
             ' Set up query string
             If ScanType = ScanType.Personal Then
-                EVEAPIQuery = APIURL & CharacterAssets & "?keyID=" & CStr(SentKey.KeyID) & "&vCode=" & SentKey.APIKey & "&characterID=" & CStr(SentKey.ID)
+                EVEAPIQuery = APIURL & CharacterAssets & "?keyID=" & CStr(SentKey.KeyID) & "&vCode=" & SentKey.APIKey & "&characterID=" & CStr(SentKey.ID) & "&flat=1"
             Else ' Corp
-                EVEAPIQuery = APIURL & CorporationAssets & "?keyID=" & CStr(SentKey.KeyID) & "&vCode=" & SentKey.APIKey
+                EVEAPIQuery = APIURL & CorporationAssets & "?keyID=" & CStr(SentKey.KeyID) & "&vCode=" & SentKey.APIKey & "&flat=1"
             End If
 
             'Create the XML Document
@@ -884,26 +884,27 @@ Public Class EVEAPI
                 ' Add the node asset if it is in the columns
                 If ColumnString.Contains("itemID") Then
                     InsertAsset.ItemID = CLng(m_node.Attributes.GetNamedItem("itemID").Value)
+                    If InsertAsset.ItemID = 1005774900252 Then
+                        Application.DoEvents()
+                    End If
                 Else
                     InsertAsset.ItemID = 0
                 End If
 
                 If ColumnString.Contains("locationID") Then
                     InsertAsset.LocationID = CLng(m_node.Attributes.GetNamedItem("locationID").Value)
+
+                    ' Special processing for offices in stations or outposts
+                    ' To convert locationIDs greater than or equal to 66000000 and less than 67000000 to stationIDs from staStations subtract 6000001 from the locationID. 
+                    ' To convert locationIDs greater than or equal to 67000000 and less than 68000000 to stationIDs from ConquerableStationList subtract 6000000 from the locationID.
+                    If InsertAsset.LocationID >= 66000000 And InsertAsset.LocationID < 67000000 Then
+                        InsertAsset.LocationID = InsertAsset.LocationID - 6000000
+                    ElseIf InsertAsset.LocationID >= 67000000 And InsertAsset.LocationID < 68000000 Then
+                        InsertAsset.LocationID = InsertAsset.LocationID - 6000000
+                    End If
+
                 Else
                     InsertAsset.LocationID = 0
-                End If
-
-                ' Special processing for offices in stations or outposts
-                ' To convert locationIDs greater than or equal to 66000000 and less than 67000000 to stationIDs from staStations subtract 6000001 from the locationID. 
-                ' To convert locationIDs greater than or equal to 67000000 and less than 68000000 to stationIDs from ConquerableStationList subtract 6000000 from the locationID.
-                If InsertAsset.LocationID >= 66000000 And InsertAsset.LocationID < 67000000 Then
-                    InsertAsset.LocationID = InsertAsset.LocationID - 6000001
-                ElseIf InsertAsset.LocationID >= 67000000 And InsertAsset.LocationID < 68000000 Then
-                    InsertAsset.LocationID = InsertAsset.LocationID - 6000000
-                End If
-
-                If InsertAsset.LocationID = 0 Then
                     ' Set it to the parent ItemID
                     InsertAsset.LocationID = ParentItemID
                 End If
@@ -951,6 +952,7 @@ Public Class EVEAPI
                 InsertAsset.TypeCategory = ""
 
                 ReturnAssets.Add(InsertAsset)
+
             End If
         Next
 

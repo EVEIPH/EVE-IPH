@@ -40,6 +40,7 @@ Public Module SettingsVariables
     Public UserIndustryFlipBeltOreCheckSettings4 As IndustryBeltOreChecks
     Public UserIndustryFlipBeltOreCheckSettings5 As IndustryBeltOreChecks
     ' Asset windows - multiple
+    Public UserAssetWindowDefaultSettings As AssetWindowSettings
     Public UserAssetWindowManufacturingTabSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
     ' For LP store
@@ -450,7 +451,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckMineForemanLaserOpBoost As Integer = 0
     Public DefaultMiningCheckMiningForemanMindLink As Boolean = False
     Public DefaultMiningRefineCorpTax As Double = 0.05
-    Public DefaultMiningRorqDeployed As Boolean = True
+    Public DefaultMiningRorqDeployed As Integer = 0
     Public DefaultMiningDroneM3perHour As Double = 0.0
     Public DefaultMiningRefinedOre As Boolean = True
     Public DefaultMiningCompressedOre As Boolean = False
@@ -1008,6 +1009,7 @@ Public Class ProgramSettings
     Private Const IndustryBeltOreChecksFileName5 As String = "5"
 
     ' Multiple asset windows
+    Private Const AssetWindowFileNameDefault As String = "AssetWindowSettingsDefault"
     Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
 
@@ -2572,7 +2574,7 @@ Public Class ProgramSettings
                     .CheckMineForemanLaserOpBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserOpBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
-                    .CheckRorqDeployed = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
+                    .CheckRorqDeployed = CInt(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
                     .MiningDroneM3perHour = CDbl(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "MiningDroneM3perHour", DefaultMiningDroneM3perHour))
                     .RefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
                     .UnrefinedOre = CBool(GetSettingValue(MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
@@ -3987,6 +3989,8 @@ Public Class ProgramSettings
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
+            Case AssetWindow.DefaultView
+                AssetWindowFileName = AssetWindowFileNameDefault
             Case AssetWindow.ManufacturingTab
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
@@ -4085,6 +4089,8 @@ Public Class ProgramSettings
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
+            Case AssetWindow.DefaultView
+                AssetWindowFileName = AssetWindowFileNameDefault
             Case AssetWindow.ManufacturingTab
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
@@ -5864,7 +5870,7 @@ Public Structure MiningTabSettings
     Dim CheckMineForemanLaserRangeBoost As Integer '0,1,2
     Dim CheckMiningForemanMindLink As Boolean
 
-    Dim CheckRorqDeployed As Boolean
+    Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer
 
     Dim MiningDroneM3perHour As Double

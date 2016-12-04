@@ -49,8 +49,10 @@ Public Module Public_Variables
     Public Const UpdatePath As String = "Updates\"
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.s3db"
+
+    ' For updates
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
-    Public Const IonicZipFileName As String = "Ionic.Zip.dll"
+    Public Const XMLUpdaterFileName As String = "EVEIPH_Updater.exe" ' For use in the XML files to remove spaces from row names
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
 
@@ -205,6 +207,7 @@ Public Module Public_Variables
     Public Const POSFacility As String = "POS"
     Public Const StationFacility As String = "Station"
     Public Const OutpostFacility As String = "Outpost"
+    Public Const CitadelFacility As String = "Citadel"
 
     Public Const BPO As String = "BPO"
     Public Const BPC As String = "BPC"
@@ -244,6 +247,7 @@ Public Module Public_Variables
     Public Const Prospect As String = "Prospect"
     Public Const Endurance As String = "Endurance"
     Public Const Rorqual As String = "Rorqual"
+    Public Const Porpoise As String = "Porpoise"
     Public Const Orca As String = "Orca"
     Public Const Drake As String = "Drake"
     Public Const Rokh As String = "Rokh"
@@ -409,10 +413,11 @@ Public Module Public_Variables
 
     ' Types of Asset windows
     Public Enum AssetWindow
-        ManufacturingTab = 0
-        ShoppingList = 1
-        RefiningOre = 2
-        RefiningItems = 3
+        DefaultView = 0
+        ManufacturingTab = 1
+        ShoppingList = 2
+        RefiningOre = 3
+        RefiningItems = 4
     End Enum
 
     ' For scanning assets
@@ -1801,10 +1806,12 @@ NoBonus:
                         ' Can be invented in outposts and POS
                         FacilityTypeCombo.Items.Add(OutpostFacility)
                         FacilityTypeCombo.Items.Add(POSFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                         FacilityTypeCombo.Items.Add(None)
                     Case Else
                         FacilityTypeCombo.Items.Add(StationFacility)
                         FacilityTypeCombo.Items.Add(OutpostFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                         FacilityTypeCombo.Items.Add(POSFacility)
                         FacilityTypeCombo.Items.Add(None)
                 End Select
@@ -1813,25 +1820,30 @@ NoBonus:
                     Case IndustryType.SuperManufacturing
                         ' Check types, supers can only be built in a pos
                         FacilityTypeCombo.Items.Add(POSFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                     Case IndustryType.BoosterManufacturing, IndustryType.SubsystemManufacturing, IndustryType.T3CruiserManufacturing, IndustryType.T3DestroyerManufacturing
                         ' Can be built in outposts and POS
                         FacilityTypeCombo.Items.Add(OutpostFacility)
                         FacilityTypeCombo.Items.Add(POSFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                     Case IndustryType.NoPOSManufacturing
                         ' No POS for stuff like infrastructure hubs
                         FacilityTypeCombo.Items.Add(StationFacility)
                         FacilityTypeCombo.Items.Add(OutpostFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                     Case Else
                         ' Add all
                         FacilityTypeCombo.Items.Add(StationFacility)
                         FacilityTypeCombo.Items.Add(OutpostFacility)
                         FacilityTypeCombo.Items.Add(POSFacility)
+                        'FacilityTypeCombo.Items.Add(CitadelFacility)
                 End Select
             Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
                 ' Can do these anywhere
                 FacilityTypeCombo.Items.Add(StationFacility)
                 FacilityTypeCombo.Items.Add(OutpostFacility)
                 FacilityTypeCombo.Items.Add(POSFacility)
+                'FacilityTypeCombo.Items.Add(CitadelFacility)
         End Select
 
         ' Only reset if they changed it
@@ -4566,7 +4578,7 @@ InvalidDate:
 
         Try 'Checks if the file exist
             Request = DirectCast(HttpWebRequest.Create(DownloadURL), HttpWebRequest)
-            Request.Proxy = GetProxyData()
+            'Request.Proxy = GetProxyData()
             Request.Credentials = CredentialCache.DefaultCredentials ' Added 9/27 to attempt to fix error: (407) Proxy Authentication Required.
             Request.Timeout = 50000
             Response = CType(Request.GetResponse, HttpWebResponse)

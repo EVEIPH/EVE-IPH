@@ -63,9 +63,6 @@ Public Class ProgramUpdater
         Dim UpdaterServerFileURL As String = ""
         Dim UpdaterServerFileMD5 As String = ""
 
-        Dim IonicServerFileURL As String = ""
-        Dim IonicServierFileMD5 As String = ""
-
         Dim fi As FileInfo
 
         On Error GoTo DownloadError
@@ -83,11 +80,6 @@ Public Class ProgramUpdater
                 TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
                 TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
                 TempUpdateFile.FileName = UpdaterFileName
-                UpdateFiles.Add(TempUpdateFile)
-            ElseIf m_node.Attributes.GetNamedItem("Name").Value = IonicZipFileName Then ' We need to download this in the main program because the update won't load without it
-                TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
-                TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
-                TempUpdateFile.FileName = IonicZipFileName
                 UpdateFiles.Add(TempUpdateFile)
             End If
         Next
@@ -118,6 +110,8 @@ Public Class ProgramUpdater
         End
 
 DownloadError:
+
+        Call WriteMsgToLog(Err.Description)
 
         ' Some sort of problem, we will just update the whole thing and download the new XML file
         If Err.Description <> "" Then

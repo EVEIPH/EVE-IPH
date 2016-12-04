@@ -65,7 +65,7 @@ Namespace My.Resources
         '''</summary>
         Friend ReadOnly Property _46_64_1() As System.Drawing.Bitmap
             Get
-                Dim obj As Object = ResourceManager.GetObject("46_64_1", resourceCulture)
+                Dim obj As Object = ResourceManager.GetObject("_46_64_1", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
@@ -75,7 +75,7 @@ Namespace My.Resources
         '''</summary>
         Friend ReadOnly Property _46_64_2() As System.Drawing.Bitmap
             Get
-                Dim obj As Object = ResourceManager.GetObject("46_64_2", resourceCulture)
+                Dim obj As Object = ResourceManager.GetObject("_46_64_2", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
