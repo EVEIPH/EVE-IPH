@@ -101,6 +101,7 @@ Public Class ShoppingList
                                 TempBuiltItem.ItemTypeID = .ItemTypeID
                                 TempBuiltItem.ItemName = .ItemName
                                 TempBuiltItem.ItemQuantity = .ItemQuantity
+                                TempBuiltItem.UsedQuantity = .UsedQuantity
                                 TempBuiltItem.ItemVolume = .ItemVolume
                                 TempBuiltItem.FacilityMEModifier = .FacilityMEModifier
                                 TempBuiltItem.FacilityLocation = .FacilityLocation
@@ -305,19 +306,19 @@ Public Class ShoppingList
 
                 ' Now update the components if they exist
                 If FoundItem.HasBuildableComponents Then
-                    For Each component In FoundItem.BuildComponents
-                        Dim OrigVolume As Double = component.ItemVolume
+                    For Each Component In FoundItem.BuildComponents
+                        Dim OrigVolume As Double = Component.ItemVolume
                         ' Get the new quantity and update
                         ' use group name as facility location
-                        With component
+                        With Component
                             Dim TempMat As New Material(.ItemTypeID, .ItemName, .FacilityLocation, .ItemQuantity, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE), True)
 
                             UpdatedQuantity = GetUpdatedQuantity("Build", ShoppingItem, UpdateItemQuantity, TempMat, RefMatQuantity)
                         End With
 
                         ' Update the quantity and volumne of the built item - by ref
-                        component.ItemVolume = OrigVolume / component.ItemQuantity * UpdatedQuantity
-                        component.ItemQuantity = UpdatedQuantity
+                        Component.ItemVolume = OrigVolume / Component.ItemQuantity * UpdatedQuantity
+                        Component.ItemQuantity = UpdatedQuantity
                         ' Add it to the updated built item list for this component
 
                     Next
@@ -1606,8 +1607,9 @@ Public Class BuiltItemList
             CombinedMaterials.InsertMaterialList(AddItem.BuildMaterials.GetMaterialList)
             UpdateItem.BuildMaterials = CType(CombinedMaterials.Clone, Materials)
 
-            ' Update the quantity
+            ' Update the quantities
             UpdateItem.ItemQuantity = AddItem.ItemQuantity + FoundItem.ItemQuantity
+            UpdateItem.UsedQuantity = AddItem.UsedQuantity + FoundItem.UsedQuantity
 
             ' Need to add the built components if they exist and increment what is there now based on quantity
             UpdateItem.BuildComponents = AddItem.BuildComponents
@@ -1748,6 +1750,7 @@ Public Class BuiltItem
     Public ItemTypeID As Long
     Public ItemName As String
     Public ItemQuantity As Long
+    Public UsedQuantity As Double ' For stuff with portion sizes
     Public ItemVolume As Double
     Public BuildME As Integer
     Public BuildTE As Integer
@@ -1768,6 +1771,7 @@ Public Class BuiltItem
         ItemTypeID = 0
         ItemName = ""
         ItemQuantity = 0
+        UsedQuantity = 0
         ItemVolume = 0
         BuildME = 0
         BuildMaterials = New Materials
@@ -1791,6 +1795,7 @@ Public Class BuiltItem
         CopyOfMe.ItemTypeID = Me.ItemTypeID
         CopyOfMe.ItemName = Me.ItemName
         CopyOfMe.ItemQuantity = Me.ItemQuantity
+        CopyOfMe.UsedQuantity = Me.UsedQuantity
         CopyOfMe.ItemVolume = Me.ItemVolume
         CopyOfMe.BuildME = Me.BuildME
         CopyOfMe.BuildTE = Me.BuildTE

@@ -888,9 +888,9 @@ Public Class frmBlueprintManagement
             ElseIf .rbtnStationPartsBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
-                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Structure Module' "
+                WhereClause = WhereClause & "WHERE (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
             ElseIf .rbtnRigBlueprints.Checked Then
-                WhereClause = WhereClause & "WHERE BLUEPRINT_GROUP = 'Rig Blueprint' "
+                WhereClause = WhereClause & "WHERE (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
             End If
         End With
 
@@ -1128,9 +1128,9 @@ Public Class frmBlueprintManagement
             ElseIf .rbtnStationPartsBlueprints.Checked Then
                 WhereClause = WhereClause & "ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
-                WhereClause = WhereClause & "ITEM_CATEGORY = 'Structure Module' "
+                WhereClause = WhereClause & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
             ElseIf .rbtnRigBlueprints.Checked Then
-                WhereClause = WhereClause & "BLUEPRINT_GROUP = 'Rig Blueprint' "
+                WhereClause = WhereClause & "(BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
             End If
         End With
 

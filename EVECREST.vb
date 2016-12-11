@@ -1767,6 +1767,8 @@ Public Class EVECREST
 
         ' Read in the data
         If CitadelOutput.Count > 0 Then
+            ' Save the data
+
             Return CitadelOutput(ID).name
         Else
             Return ""

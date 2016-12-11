@@ -656,6 +656,7 @@ Partial Class frmSettings
         Me.gbProxySettings.Controls.Add(Me.lblProxyAddress)
         Me.gbProxySettings.Controls.Add(Me.txtProxyPort)
         Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
+        Me.gbProxySettings.Enabled = False
         Me.gbProxySettings.Location = New System.Drawing.Point(349, 270)
         Me.gbProxySettings.Name = "gbProxySettings"
         Me.gbProxySettings.Size = New System.Drawing.Size(311, 55)

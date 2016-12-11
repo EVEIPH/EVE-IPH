@@ -705,8 +705,11 @@ Public Class Blueprint
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
 
-                    '' Adjust the runs by portion size ** Change - the item quantity for the built item list is now the runs we need for the component, including portion size effects
-                    'Dim TempItemQuantity = CLng(Math.Ceiling(.ItemQuantity / PortionSize))
+                    ' Adjust quantity - only build items will be in build/buy that need adjustment
+                    If BuildBuy Then
+                        ' Adjust the runs/quantity to use the quantity used (i.e. 1 ram has 100 runs in it)
+                        .ItemQuantity = CInt(Math.Round(.UsedQuantity))
+                    End If
 
                     ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
@@ -738,6 +741,7 @@ Public Class Blueprint
                     Dim ItemPrice As Double = 0
 
                     Dim OwnedBP As Boolean
+
                     Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
 
                     If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
@@ -913,13 +917,15 @@ Public Class Blueprint
                             End If
                         Else
                             ' Need to calc the proper cost for each run 
-                            If CurrentMaterial.GetTotalCost > (ComponentBlueprint.GetTotalRawCost / ComponentBPPortionSize * CurrentMaterial.GetQuantity) Then
+                            If CurrentMaterial.GetTotalCost > ((ComponentBlueprint.GetTotalRawCost / (ComponentBPPortionSize * BuildQuantity)) * CurrentMaterial.GetQuantity) Then
                                 CheapertoBuild = True
                             End If
                         End If
 
                         ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                        If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+                        If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or
+                            (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+
                             '*** BUILD ***
                             ' We want to build this item
                             CurrentMaterial.SetBuildItem(True)
@@ -947,7 +953,7 @@ Public Class Blueprint
                             ' Since we are building this item, set the material cost to build cost per item, not buy
                             CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity)
 
-                            ' Adjust the material quantity if we are building and the buildquantity <> mat quantity
+                            ' Adjust the material quantity if we are building and the build quantity <> mat quantity
                             If BuildQuantity <> CurrentMaterial.GetQuantity Then
                                 CurrentMaterial.SetQuantity(BuildQuantity)
                             End If
@@ -961,6 +967,7 @@ Public Class Blueprint
                             TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                             TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
                             TempBuiltItem.ItemQuantity = BuildQuantity
+                            TempBuiltItem.UsedQuantity = CurrentMatQuantity / ComponentBPPortionSize
                             TempBuiltItem.BuildME = TempME
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
@@ -1022,23 +1029,24 @@ Public Class Blueprint
                         ' Save the component team fees
                         ComponentTeamFee += ComponentBlueprint.GetManufacturingTeamFee
 
-                        ' Adjust the material quantity if we are building and the buildquantity <> mat quantity
-                        If BuildQuantity <> CurrentMaterial.GetQuantity Then
-                            CurrentMaterial.SetQuantity(BuildQuantity)
-                        End If
+                        ' Insert the existing component that we are using into the component list as set in the original BP
+                        ComponentMaterials.InsertMaterial(CurrentMaterial)
+
+                        '' Adjust the material quantity if we are building and the buildquantity <> mat quantity
+                        'If BuildQuantity <> CurrentMaterial.GetQuantity Then
+                        '    CurrentMaterial.SetQuantity(BuildQuantity)
+                        'End If
 
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
-
-                        ' Insert the existing component that we are using into the component list
-                        ComponentMaterials.InsertMaterial(CurrentMaterial)
 
                         ' Save the item built, it's ME and the materials it used
                         Dim TempBuiltItem As New BuiltItem
                         TempBuiltItem.BPTypeID = readerME.GetInt64(0)
                         TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                         TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                        TempBuiltItem.ItemQuantity = BuildQuantity
+                        TempBuiltItem.ItemQuantity = CurrentMaterial.GetQuantity
+                        TempBuiltItem.UsedQuantity = CurrentMatQuantity / ComponentBPPortionSize
                         TempBuiltItem.BuildME = TempME
                         TempBuiltItem.BuildTE = TempTE
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume

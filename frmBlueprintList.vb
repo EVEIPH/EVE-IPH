@@ -271,9 +271,9 @@ Public Class frmBlueprintList
         ElseIf rbtnBPStationPartsBlueprints.Checked Then
             Return "AND ITEM_GROUP = 'Station Components'"
         ElseIf rbtnBPStructureModuleBlueprints.Checked Then
-            Return "AND ITEM_CATEGORY = 'Structure Module'"
+            Return "AND (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
         ElseIf rbtnBPRigBlueprints.Checked Then
-            Return "AND BLUEPRINT_GROUP = 'Rig Blueprint'"
+            Return "AND (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
         Else
             Return ""
         End If

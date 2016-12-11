@@ -6025,9 +6025,9 @@ Tabs:
             ElseIf .rbtnBPStationPartsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
             ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Structure Module' "
-            ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL = SQL & "AND BLUEPRINT_GROUP = 'Rig Blueprint' "
+                SQL = SQL & "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
+            ElseIf .rbtnbpRigBlueprints.Checked Then
+                SQL = SQL & "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
             ElseIf .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
                 SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
@@ -6153,27 +6153,28 @@ Tabs:
 
     ' Reloads the BP combo when run
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
-        cmbBPsLoaded = False
-        chkBPT1.Enabled = T1
-        chkBPT2.Enabled = T2
-        chkBPT3.Enabled = T3
-        chkBPNavyFaction.Enabled = NavyFaction
-        chkBPPirateFaction.Enabled = PirateFaction
-        chkBPStoryline.Enabled = Storyline
+        If Not FirstLoad Then
+            cmbBPsLoaded = False
+            chkBPT1.Enabled = T1
+            chkBPT2.Enabled = T2
+            chkBPT3.Enabled = T3
+            chkBPNavyFaction.Enabled = NavyFaction
+            chkBPPirateFaction.Enabled = PirateFaction
+            chkBPStoryline.Enabled = Storyline
 
-        ComboMenuDown = False
-        MouseWheelSelection = False
-        ComboBoxArrowKeys = False
-        BPComboKeyDown = False
+            ComboMenuDown = False
+            MouseWheelSelection = False
+            ComboBoxArrowKeys = False
+            BPComboKeyDown = False
 
-        ' Make sure we have something checked
-        Call EnsureBPTechCheck()
-        ' Load the New data
-        Call LoadBlueprintCombo()
+            ' Make sure we have something checked
+            Call EnsureBPTechCheck()
+            ' Load the New data
+            Call LoadBlueprintCombo()
 
-        cmbBPBlueprintSelection.Text = "Select Blueprint"
-        cmbBPBlueprintSelection.Focus()
-
+            cmbBPBlueprintSelection.Text = "Select Blueprint"
+            cmbBPBlueprintSelection.Focus()
+        End If
     End Sub
 
     Private Sub UpdateSelectedBPText(bpName As String)
@@ -11340,7 +11341,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkStructureModules.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Structure Module' OR "
+            SQL = SQL & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') OR "
             ItemChecked = True
         End If
         If chkCelestials.Checked Then
@@ -11442,7 +11443,7 @@ ExitSub:
                     SQL = SQL & "(ITEM_GROUP = 'Booster' AND " & TechSQL & ") OR "
                 End If
                 If chkRigs.Checked Then ' Rigs
-                    SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR "
+                    SQL = SQL & "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
                 End If
                 If chkStructures.Checked Then
                     SQL = SQL & "(ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR "
@@ -20191,7 +20192,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "(X.ITEM_GROUP LIKE '%Components%' AND X.ITEM_GROUP <> 'Station Components') OR "
         End If
         If chkCalcRigs.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_GROUP LIKE 'Rig%' OR "
+            ItemTypes = ItemTypes & "(X.BLUEPRINT_GROUP = 'Rig Blueprint' OR (X.ITEM_CATEGORY = 'Structure Module' AND X.ITEM_GROUP LIKE '%Rig%')) OR "
         End If
         If chkCalcStationParts.Checked Then
             ItemTypes = ItemTypes & "X.ITEM_GROUP = 'Station Components' OR "
@@ -20200,7 +20201,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories') OR "
         End If
         If chkCalcStructureModules.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Structure Module' OR "
+            ItemTypes = ItemTypes & "(X.ITEM_CATEGORY = 'Structure Module' AND X.ITEM_GROUP NOT LIKE '%Rig%') OR "
         End If
         If chkCalcMisc.Checked Then
             ItemTypes = ItemTypes & "X.ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') OR "
