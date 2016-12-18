@@ -19655,7 +19655,7 @@ ExitCalc:
         ' Build the where clause to look up data
         Dim AssetLocationFlagList As New List(Of String)
         ' First look up the location and flagID pairs - unique ID of asset locations
-        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = 0 AND ID IN (" & IDString & ")" ' Enum type 0 is manufacturing tab
+        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ManufacturingTab) & " AND ID IN (" & IDString & ")"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 

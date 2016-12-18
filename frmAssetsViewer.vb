@@ -409,18 +409,12 @@ Public Class frmAssetsViewer
         End If
 
         ' Get the base node of the full tree (may want to save these options globally so we don't need to load them every time)
-        If rbtnPersonalAssets.Checked Then
+        If rbtnPersonalAssets.Checked Or rbtnAllAssets.Checked Then
             BaseNode = SelectedCharacter.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Personal Assets", SelectedCharacter.ID, SavedLocationIDs, OnlyBPCs)
             ' Need to add it to the tree but as a clone
             AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
-        ElseIf rbtnCorpAssets.Checked Then
-            BaseNode = SelectedCharacter.CharacterCorporation.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Corporation Assets", SelectedCharacter.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
-            ' Need to add it to the tree but as a clone
-            AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
-        ElseIf rbtnAllAssets.Checked Then
-            BaseNode = SelectedCharacter.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Personal Assets", SelectedCharacter.ID, SavedLocationIDs, OnlyBPCs)
-            ' Need to add it to the tree but as a clone
-            AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
+        End If
+        If rbtnCorpAssets.Checked Or rbtnAllAssets.Checked Then
             BaseNode = SelectedCharacter.CharacterCorporation.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Corporation Assets", SelectedCharacter.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
             ' Need to add it to the tree but as a clone
             AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))

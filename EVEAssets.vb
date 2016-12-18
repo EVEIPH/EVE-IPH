@@ -14,8 +14,9 @@ Public Class EVEAssets
 
     Protected LocationToFind As LocationInfo
 
-    Private CitadelNames As List(Of CitadelName)
-    Private CitadelIDToFind As Long
+    Private LocationNames As List(Of LocationName)
+    Private UnknownLocationCounter As Integer
+    Private LocationIDToFind As Long
 
     Private Const IgnoreFlag As String = None
     Private Const ShipHangar As String = "Ship Hangar"
@@ -23,7 +24,7 @@ Public Class EVEAssets
     Private Const QuantitySpacer As String = " - "
     Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
 
-    Public Class CitadelName
+    Public Class LocationName
         Public ID As Long
         Public Name As String
     End Class
@@ -71,6 +72,9 @@ Public Class EVEAssets
             ScanID = CorpID
         End If
 
+        LocationNames = New List(Of LocationName)
+        UnknownLocationCounter = 0
+
         ' Store the cache date
         ' Load the assets - corp or personal
         ' Look up the asset cache date first, if past the date, update the database
@@ -92,65 +96,8 @@ Public Class EVEAssets
             TempAsset.Singleton = readerAssets.GetInt32(6)
             TempAsset.RawQuantity = readerAssets.GetInt32(7)
 
-            ' Look up the location name...first start with stations, then systems
-            If TempAsset.LocationID <> 0 Then
-
-                ' See if it's a station
-                If TempAsset.LocationID >= 60000000 And TempAsset.LocationID < 67000000 Then
-
-                    SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(TempAsset.LocationID)
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    readerData = DBCommand.ExecuteReader
-
-                    If readerData.Read Then
-                        ' Found it
-                        TempAsset.LocationName = readerData.GetString(0)
-                    Else
-                        ' Unknown
-                        TempAsset.LocationName = UnknownLocation
-                    End If
-                    readerData.Close()
-                ElseIf TempAsset.LocationID >= 30000000 And TempAsset.LocationID < 40000000 Then ' See if it's a solar system
-                    SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(TempAsset.LocationID)
-
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    readerData = DBCommand.ExecuteReader
-
-                    If readerData.Read Then
-                        ' Found it
-                        TempAsset.LocationName = readerData.GetString(0)
-                    Else
-                        ' Unknown
-                        TempAsset.LocationName = UnknownLocation
-                    End If
-
-                    ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
-                    If TempAsset.FlagID = 0 Then
-                        TempAsset.FlagID = -1 * SpaceFlagCode 'negative for base item
-                    End If
-
-                    readerData.Close()
-                Else
-                    TempAsset.LocationName = UnknownLocation
-                End If
-            Else
-                TempAsset.LocationName = UnknownLocation
-            End If
-
-            ' Look up the flag text
-            SQL = "SELECT FlagText FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(TempAsset.FlagID)) ' FlagID can be negative
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerData = DBCommand.ExecuteReader
-
-            If readerData.Read Then
-                ' Found it
-                TempAsset.FlagText = readerData.GetString(0)
-            Else
-                TempAsset.FlagText = "Unknown"
-            End If
-
-            readerData.Close()
+            ' Get the location name, update flagID (ref) and set flag text (ref)
+            TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText)
 
             ' Look up the type name
             SQL = "SELECT typeName, groupName, categoryName "
@@ -173,10 +120,6 @@ Public Class EVEAssets
             End If
 
             readerData.Close()
-
-            If TempAsset.ItemID = 1021378161010 Then
-                Application.DoEvents()
-            End If
 
             ' Insert asset
             Assets.Add(TempAsset)
@@ -258,9 +201,6 @@ Public Class EVEAssets
                 End If
             Next
 
-            ' By using a flat xml file, need to update the flags to set them negative if they are base nodes
-            Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET FLAG = (-1 * FLAG) WHERE LocationID IN (SELECT ItemID FROM ASSETS)")
-
             Call EVEDB.CommitSQLiteTransaction()
 
         End If
@@ -277,6 +217,117 @@ Public Class EVEAssets
         End Get
     End Property
 
+    Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String) As String
+        Dim SQL As String
+        Dim readerData As SQLiteDataReader
+        Dim LocationName As String = ""
+
+        ' Look up the location name, first start with stations, then systems
+        If LocationID <> 0 Then
+
+            ' See if it's a station
+            If LocationID >= 60000000 And LocationID < 67000000 Then
+
+                SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(LocationID)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerData = DBCommand.ExecuteReader
+
+                If readerData.Read Then
+                    ' Found it
+                    LocationName = readerData.GetString(0)
+                Else
+                    ' Unknown
+                    LocationName = UnknownLocation
+                End If
+                readerData.Close()
+            ElseIf LocationID >= 30000000 And LocationID < 40000000 Then ' See if it's a solar system
+                SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(LocationID)
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerData = DBCommand.ExecuteReader
+
+                If readerData.Read Then
+                    ' Found it
+                    LocationName = readerData.GetString(0)
+                Else
+                    ' Unknown
+                    LocationName = UnknownLocation
+                End If
+
+                ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
+                If FlagID = 0 Then
+                    FlagID = -1 * SpaceFlagCode 'negative for base item
+                End If
+
+                readerData.Close()
+            Else
+
+                ' See if it's connected to another record, which will have a name look up
+                SQL = "SELECT locationID FROM ASSETS WHERE itemID = " & CStr(LocationID)
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerData = DBCommand.ExecuteReader
+
+                If readerData.Read Then
+                    LocationName = UnknownLocation
+                    readerData.Close()
+                Else
+                    ' See if it's a Citadel
+                    Dim FoundLocation As LocationName
+                    ' See if we looked it up first before downloading
+                    LocationIDToFind = LocationID
+                    FoundLocation = LocationNames.Find(AddressOf FindLocation)
+
+                    If FoundLocation IsNot Nothing Then
+                        LocationName = FoundLocation.Name
+                    Else
+                        ' Look up the Citadel name from 3rd party
+                        Dim CitadelLookup As New EVECREST
+                        LocationName = CitadelLookup.GetCitadelName(CStr(LocationID))
+
+                        If LocationName = "" Then
+                            UnknownLocationCounter += 1
+                            ' Not found, so add a counter to it to deliniate unknown locations
+                            LocationName = UnknownLocation & " " & CStr(UnknownLocationCounter)
+                        End If
+
+                        ' Insert location into our list
+                        Dim CN As New LocationName
+                        CN.ID = LocationID
+                        CN.Name = LocationName
+                        LocationNames.Add(CN)
+
+                    End If
+                End If
+
+            End If
+        Else
+            LocationName = UnknownLocation
+        End If
+
+        ' Look up the flag text
+        SQL = "SELECT FlagText FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(FlagID)) ' FlagID can be negative
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerData = DBCommand.ExecuteReader
+
+        If readerData.Read Then
+            ' Found it
+            FlagText = readerData.GetString(0)
+        Else
+            FlagText = "Unknown"
+        End If
+
+        readerData.Close()
+
+        If FlagText = "Space" Or FlagText = "Ship Offline" Then
+            LocationName = LocationName & " (In Solar System)"
+        End If
+
+        Return LocationName
+
+    End Function
+
     ' Gets the Tree base node for all assets - the list of checked nodes passed
     Public Function GetAssetTreeAnchorNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
                                            SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
@@ -287,8 +338,6 @@ Public Class EVEAssets
         Dim FlagSubNode As New TreeNode
         Dim TempNode As New TreeNode
         Dim TempNodeName As String
-        Dim LocationName As String
-        Dim UnknownLocationCounter As Integer
 
         Dim SelectedItems As Boolean
         Dim TempLocationInfo As LocationInfo
@@ -306,9 +355,6 @@ Public Class EVEAssets
             Tree.EndUpdate()
             Return AnchorNode
         End If
-
-        CitadelNames = New List(Of CitadelName)
-        UnknownLocationCounter = 0
 
         ' Add the base node
         AnchorNode = Tree.Nodes.Add(NodeName)
@@ -341,114 +387,81 @@ Public Class EVEAssets
         ' Loop through each base node and add all the items in it
         For Each TempAsset In BaseAssets
 
-            If TempAsset.FlagText = "Space" Or TempAsset.FlagText = "Ship Offline" Then
-                LocationName = TempAsset.LocationName & " (In Solar System)"
-            Else
-                LocationName = TempAsset.LocationName
-            End If
+            If TempAsset.LocationName <> UnknownLocation Then
+                ' See if we have added the location
+                If Not LocationList.Contains(TempAsset.LocationID) Then
 
-            ' If it's unknown, try and look it up as a citadel
-            If LocationName = UnknownLocation Then
-                Dim FoundCitadel As CitadelName
-                ' See if we looked it up first before downloading
-                CitadelIDToFind = TempAsset.LocationID
-                FoundCitadel = CitadelNames.Find(AddressOf FindCitadel)
+                    ' Add the location to the list
+                    LocationList.Add(TempAsset.LocationID)
+                    BaseLocationNode = AnchorNode.Nodes.Add(TempAsset.LocationName)
+                    BaseLocationNode.Name = TempAsset.LocationName
 
-                If FoundCitadel IsNot Nothing Then
-                    LocationName = FoundCitadel.Name
-                Else
-                    ' Look up the name from 3rd party
-                    Dim CitadelLookup As New EVECREST
-                    LocationName = CitadelLookup.GetCitadelName(CStr(TempAsset.LocationID))
-
-                    If LocationName = "" Then
-                        UnknownLocationCounter += 1
-                        LocationName = UnknownLocation & " " & CStr(UnknownLocationCounter)
-                    End If
-
-                    ' Insert into our list
-                    Dim CN As New CitadelName
-                    CN.ID = TempAsset.LocationID
-                    CN.Name = LocationName
-                    CitadelNames.Add(CN)
-
-                End If
-            End If
-
-            ' See if we have added the location
-            If Not LocationList.Contains(TempAsset.LocationID) Then
-
-                ' Add the location to the list
-                LocationList.Add(TempAsset.LocationID)
-                BaseLocationNode = AnchorNode.Nodes.Add(LocationName)
-                BaseLocationNode.Name = LocationName
-
-                ' Also save the LocationID in the tag of the node for use searching later
-                TempLocationInfo = New LocationInfo
-                TempLocationInfo.AccountID = AccountID
-                TempLocationInfo.LocationID = TempAsset.LocationID
-                TempLocationInfo.FlagID = TempAsset.FlagID
-                BaseLocationNode.Tag = TempLocationInfo
-
-                BaseLocationNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-
-            End If
-
-            ' Find the first node that is the same as the location added above - make sure we are adding to the right node
-            BaseLocationNode = AnchorNode.Nodes.Find(LocationName, True)(0)
-
-            ' Add the subnode to the tree without the name yet, wait for the search for children before marking
-            If (TempAsset.TypeCategory = "Ship" And CorpID = 0 And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
-
-                ' Check corp deliveries first since a ship coul d be a delivery
-                If TempAsset.FlagText = CorpDelivery Then
-                    TempNodeName = CorpDelivery
-                Else
-                    TempNodeName = ShipHangar
-                End If
-
-                ' Add a new sub node if not in the tree
-                If BaseLocationNode.Nodes.Find(TempNodeName, True).Count = 0 Then
-                    TempNode = BaseLocationNode.Nodes.Add(TempNodeName)
-                    TempNode.Name = TempNodeName
-                    ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
-                    ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
+                    ' Also save the LocationID in the tag of the node for use searching later
                     TempLocationInfo = New LocationInfo
                     TempLocationInfo.AccountID = AccountID
-                    TempLocationInfo.LocationID = -1 * TempAsset.LocationID
+                    TempLocationInfo.LocationID = TempAsset.LocationID
                     TempLocationInfo.FlagID = TempAsset.FlagID
-                    TempNode.Tag = TempLocationInfo
-                    TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
+                    BaseLocationNode.Tag = TempLocationInfo
+
+                    BaseLocationNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
+
                 End If
 
-                ' Find the ship hanger node to add to
-                TempNode = BaseLocationNode.Nodes.Find(TempNodeName, True)(0)
-                SubNode = TempNode.Nodes.Add("")
+                ' Find the first node that is the same as the location added above - make sure we are adding to the right node
+                BaseLocationNode = AnchorNode.Nodes.Find(TempAsset.LocationName, True)(0)
 
-            Else
-                SubNode = BaseLocationNode.Nodes.Add("")
+                ' Add the subnode to the tree without the name yet, wait for the search for children before marking
+                If (TempAsset.TypeCategory = "Ship" And CorpID = 0 And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
+
+                    ' Check corp deliveries first since a ship coul d be a delivery
+                    If TempAsset.FlagText = CorpDelivery Then
+                        TempNodeName = CorpDelivery
+                    Else
+                        TempNodeName = ShipHangar
+                    End If
+
+                    ' Add a new sub node if not in the tree
+                    If BaseLocationNode.Nodes.Find(TempNodeName, True).Count = 0 Then
+                        TempNode = BaseLocationNode.Nodes.Add(TempNodeName)
+                        TempNode.Name = TempNodeName
+                        ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
+                        ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
+                        TempLocationInfo = New LocationInfo
+                        TempLocationInfo.AccountID = AccountID
+                        TempLocationInfo.LocationID = -1 * TempAsset.LocationID
+                        TempLocationInfo.FlagID = TempAsset.FlagID
+                        TempNode.Tag = TempLocationInfo
+                        TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
+                    End If
+
+                    ' Find the ship hanger node to add to
+                    TempNode = BaseLocationNode.Nodes.Find(TempNodeName, True)(0)
+                    SubNode = TempNode.Nodes.Add("")
+
+                Else
+                    SubNode = BaseLocationNode.Nodes.Add("")
+                End If
+
+                ' The location of the subnode is in the asset we are looking at
+                TempLocationInfo = New LocationInfo
+                TempLocationInfo.AccountID = AccountID
+                TempLocationInfo.LocationID = TempAsset.ItemID
+                TempLocationInfo.FlagID = TempAsset.FlagID
+                SubNode.Tag = TempLocationInfo
+                SubNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
+                SubNode.ImageIndex = Math.Abs(TempAsset.FlagID)
+
+                ' See if the node has children and add
+                Call GetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
+
+                ' Update the Node Text
+                If SubNode.GetNodeCount(True) <> 0 Then
+                    ' Has children so don't display the quantity
+                    SubNode.Text = GetItemNodeText(TempAsset, True)
+                Else
+                    SubNode.Text = GetItemNodeText(TempAsset, False)
+                End If
             End If
-
-            ' The location of the subnode is in the asset we are looking at
-            TempLocationInfo = New LocationInfo
-            TempLocationInfo.AccountID = AccountID
-            TempLocationInfo.LocationID = TempAsset.ItemID
-            TempLocationInfo.FlagID = TempAsset.FlagID
-            SubNode.Tag = TempLocationInfo
-            SubNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-            SubNode.ImageIndex = Math.Abs(TempAsset.FlagID)
-
-            ' See if the node has children and add
-            Call GetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
-
-            ' Update the Node Text
-            If SubNode.GetNodeCount(True) <> 0 Then
-                ' Has children so don't display the quantity
-                SubNode.Text = GetItemNodeText(TempAsset, True)
-            Else
-                SubNode.Text = GetItemNodeText(TempAsset, False)
-            End If
-
         Next
 
         ' Finally sort the tree
@@ -905,9 +918,9 @@ Public Class EVEAssets
         Return AssetList.Count
     End Function
 
-    ' Predicate for finding an citadel
-    Private Function FindCitadel(ByVal Item As CitadelName) As Boolean
-        If Item.ID = CitadelIDToFind Then
+    ' Predicate for finding an local location name
+    Private Function FindLocation(ByVal Item As LocationName) As Boolean
+        If Item.ID = LocationIDToFind Then
             Return True
         Else
             Return False
