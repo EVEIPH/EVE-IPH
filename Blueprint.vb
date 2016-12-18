@@ -708,7 +708,7 @@ Public Class Blueprint
                     ' Adjust quantity - only build items will be in build/buy that need adjustment
                     If BuildBuy Then
                         ' Adjust the runs/quantity to use the quantity used (i.e. 1 ram has 100 runs in it)
-                        .ItemQuantity = CInt(Math.Round(.UsedQuantity))
+                        .ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
                     End If
 
                     ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
@@ -744,19 +744,19 @@ Public Class Blueprint
 
                     Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
 
-                    If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
-                        And (BPUserSettings.SuggestBuildBPNotOwned)) _
-                        Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
-                        Or MarketPrice = 0) Then
-                        ' Market cost is greater than build cost, so set the mat cost to the build cost
-                        ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
-                    Else
-                        ItemPrice = MarketPrice
-                    End If
+                    'If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
+                    '    And (BPUserSettings.SuggestBuildBPNotOwned)) _
+                    '    Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
+                    '    Or MarketPrice = 0) Then
+                    ' Market cost is greater than build cost, so set the mat cost to the build cost
+                    ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
+                    'Else
+                    '    ItemPrice = MarketPrice
+                    'End If
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material
-                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume, _
-                                                ItemPrice, CStr(.BuildME), CStr(.BuildTE), True)
+                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume,
+                                            ItemPrice, CStr(.BuildME), CStr(.BuildTE), True)
 
                     ComponentMaterials.InsertMaterial(TempMat)
 
@@ -967,7 +967,7 @@ Public Class Blueprint
                             TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                             TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
                             TempBuiltItem.ItemQuantity = BuildQuantity
-                            TempBuiltItem.UsedQuantity = CurrentMatQuantity / ComponentBPPortionSize
+                            TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize)
                             TempBuiltItem.BuildME = TempME
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
@@ -1046,7 +1046,7 @@ Public Class Blueprint
                         TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                         TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
                         TempBuiltItem.ItemQuantity = CurrentMaterial.GetQuantity
-                        TempBuiltItem.UsedQuantity = CurrentMatQuantity / ComponentBPPortionSize
+                        TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize)
                         TempBuiltItem.BuildME = TempME
                         TempBuiltItem.BuildTE = TempTE
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume

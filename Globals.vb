@@ -201,7 +201,7 @@ Public Module Public_Variables
 
     ' Categories (has multiple groups)
     Public Const StationEggGroupID As Integer = 307 ' This is for loading No POS build items
-    Public Const SovStructureCategoryID As Integer = 40
+    Public Const SovStructureCategoryID As Integer = 3 ' For stations - I don't think this is used anymore (everything can be built at a pos?)
     Public Const StationPartsGroupID As Integer = 536
 
     Public Const POSFacility As String = "POS"

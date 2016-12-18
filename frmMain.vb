@@ -1552,7 +1552,7 @@ Public Class frmMain
     ' Sets the categories that must be made in a station/outpost
     Private Sub SetNoPOSGroupIDs()
         Dim SQL As String
-        Dim rsCheck As SQLite.SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
 
         NoPOSCategoryIDs = New List(Of Long)
 
@@ -1761,7 +1761,6 @@ Public Class frmMain
                 chkBPIncludeT3Time.Checked = SelectedBPT3InventionFacility.IncludeActivityTime
             End If
 
-
             ' Reset the current bp selection to override what is there
             CurrentBPCategoryID = readerBP.GetInt32(3)
             CurrentBPGroupID = readerBP.GetInt32(2)
@@ -1788,6 +1787,8 @@ Public Class frmMain
                     SelectedBPSuperManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
                 Case IndustryType.T3CruiserManufacturing
                     SelectedBPT3CruiserManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
+                Case IndustryType.T3DestroyerManufacturing
+                    SelectedBPT3DestroyerManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
                 Case IndustryType.SubsystemManufacturing
                     SelectedBPSubsystemManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
                 Case IndustryType.ComponentManufacturing
@@ -4342,24 +4343,27 @@ Tabs:
 
             Dim SetActivity As IndustryType
 
-            Select Case cmbBPFacilityActivities.Text
-                Case ActivityManufacturing
-                    SetActivity = IndustryType.Manufacturing
-                Case ActivityCapComponentManufacturing
-                    SetActivity = IndustryType.CapitalComponentManufacturing
-                Case ActivityComponentManufacturing
-                    SetActivity = IndustryType.ComponentManufacturing
-                Case ActivityCopying
-                    SetActivity = IndustryType.Copying
-                Case ActivityInvention
-                    SetActivity = IndustryType.Invention
-            End Select
+            SetActivity = GetProductionType(cmbBPFacilityActivities.Text, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, cmbBPFacilityType.Text)
+
+            'Select Case cmbBPFacilityActivities.Text
+            '    Case ActivityManufacturing
+            '        SetActivity = IndustryType.Manufacturing
+            '    Case ActivityCapComponentManufacturing
+            '        SetActivity = IndustryType.CapitalComponentManufacturing
+            '    Case ActivityComponentManufacturing
+            '        SetActivity = IndustryType.ComponentManufacturing
+            '    Case ActivityCopying
+            '        SetActivity = IndustryType.Copying
+            '    Case ActivityInvention
+            '        SetActivity = IndustryType.Invention
+            'End Select
 
             Call LoadFacility(SetActivity, True, False,
                               cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray,
                               lblBPFacilityBonus, lblBPFacilityDefault, lblBPFacilityManualME, txtBPFacilityManualME,
                               lblBPFacilityManualTE, txtBPFacilityManualTE, lblBPFacilityManualTax, txtBPFacilityManualTax, btnBPFacilitySave, lblBPFacilityTaxRate,
-                              BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False, Nothing,
+                              BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities,
+                              SelectedBlueprint.GetTechLevel, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, True, False, Nothing,
                               gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade)
             LoadingFacilityActivities = False
         End If
@@ -6030,12 +6034,14 @@ Tabs:
                 SQL = SQL & "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
             ElseIf .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
+                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
+                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
                 SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED_BLUEPRINTS.USER_ID=" & SelectedCharacter.ID & " AND OWNED <> 0 "
+                SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
+                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
+                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
                 SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
             End If
@@ -7261,8 +7267,6 @@ Tabs:
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, SelectedBPManufacturingTeam, BlueprintBuildFacility,
                                           SelectedBPComponentManufacturingTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-
-        ' txtBPRuns.Text = CType(SelectedBlueprint.GetUserRuns(), String)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BlueprintTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -10423,11 +10427,13 @@ ExitForm:
         ' Progress Bar Init
         pnlProgressBar.Value = 0
 
+        Dim RegionSelectedCount As Integer = 0
+
         ' Make sure they have at least one region checked first
         For i = 1 To RegionCheckBoxes.Length - 1
             If RegionCheckBoxes(i).Checked = True Then
                 RegionChecked = True
-                Exit For
+                RegionSelectedCount += 1
             End If
         Next i
 
@@ -10459,6 +10465,11 @@ ExitForm:
 
         If Not ItemsSelected() Then
             MsgBox("Must Choose at least one Item type", MsgBoxStyle.Exclamation, Me.Name)
+            GoTo ExitSub
+        End If
+
+        If rbtnPriceSourceCCPData.Checked And RegionSelectedCount > 1 Then
+            MsgBox("You cannot choose more than one region when downloading CCP Data", MsgBoxStyle.Exclamation, Me.Name)
             GoTo ExitSub
         End If
 
@@ -18521,7 +18532,7 @@ CheckTechs:
                         readerArray.Close()
                     Else
                         ' Load the NO POS facility
-                        InsertItem.ManufacturingFacility = GetManufacturingFacility(SelectedIndyType, CalcTab)
+                        InsertItem.ManufacturingFacility = GetManufacturingFacility(IndustryType.NoPOSManufacturing, CalcTab)
                     End If
                 Else
                     ' Nothing special, just set it to the current selected facility for this type

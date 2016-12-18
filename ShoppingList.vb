@@ -1750,7 +1750,7 @@ Public Class BuiltItem
     Public ItemTypeID As Long
     Public ItemName As String
     Public ItemQuantity As Long
-    Public UsedQuantity As Double ' For stuff with portion sizes
+    Public UsedQuantity As Decimal ' For stuff with portion sizes
     Public ItemVolume As Double
     Public BuildME As Integer
     Public BuildTE As Integer

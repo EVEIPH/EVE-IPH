@@ -1767,9 +1767,7 @@ Public Class EVECREST
 
         ' Read in the data
         If CitadelOutput.Count > 0 Then
-            ' Save the data
-
-            Return CitadelOutput(ID).name
+            Return CStr(CitadelOutput(ID).name)
         Else
             Return ""
         End If
@@ -1778,24 +1776,24 @@ Public Class EVECREST
 
     ' For Citadel Lookup
     Private Class Citadel
-        <JsonProperty("typeId")> Public typeId As Integer
-        <JsonProperty("regionId")> Public regionId As Integer
-        <JsonProperty("typeName")> Public typeName As String
-        <JsonProperty("lastSeen")> Public lastSeen As Date
-        <JsonProperty("firstSeen")> Public firstSeen As Date
-        <JsonProperty("regionName")> Public regionName As String
-        <JsonProperty("name")> Public name As String
-        <JsonProperty("systemId")> Public systemId As Integer
+        <JsonProperty("typeId")> Public typeId As Object
+        <JsonProperty("regionId")> Public regionId As Object
+        <JsonProperty("typeName")> Public typeName As Object
+        <JsonProperty("lastSeen")> Public lastSeen As Object
+        <JsonProperty("firstSeen")> Public firstSeen As Object
+        <JsonProperty("regionName")> Public regionName As Object
+        <JsonProperty("name")> Public name As Object
+        <JsonProperty("systemId")> Public systemId As Object
         <JsonProperty("location")> Public location As Location
-        <JsonProperty("systemName")> Public systemName As String
-        <JsonProperty("public")> Public IsPublic As Boolean
+        <JsonProperty("systemName")> Public systemName As Object
+        <JsonProperty("public")> Public IsPublic As Object
     End Class
 
     ' For Citadel Lookup
     Private Class Location
-        <JsonProperty("y")> Public y As Double
-        <JsonProperty("x")> Public x As Double
-        <JsonProperty("z")> Public z As Double
+        <JsonProperty("y")> Public y As Object
+        <JsonProperty("x")> Public x As Object
+        <JsonProperty("z")> Public z As Object
     End Class
 
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return

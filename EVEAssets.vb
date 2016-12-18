@@ -14,11 +14,19 @@ Public Class EVEAssets
 
     Protected LocationToFind As LocationInfo
 
+    Private CitadelNames As List(Of CitadelName)
+    Private CitadelIDToFind As Long
+
     Private Const IgnoreFlag As String = None
     Private Const ShipHangar As String = "Ship Hangar"
     Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
     Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
+
+    Public Class CitadelName
+        Public ID As Long
+        Public Name As String
+    End Class
 
     Public Sub New(Optional ByVal Key As APIKeyData = Nothing, Optional ByVal CorporationID As Long = 0)
 
@@ -280,6 +288,7 @@ Public Class EVEAssets
         Dim TempNode As New TreeNode
         Dim TempNodeName As String
         Dim LocationName As String
+        Dim UnknownLocationCounter As Integer
 
         Dim SelectedItems As Boolean
         Dim TempLocationInfo As LocationInfo
@@ -297,6 +306,9 @@ Public Class EVEAssets
             Tree.EndUpdate()
             Return AnchorNode
         End If
+
+        CitadelNames = New List(Of CitadelName)
+        UnknownLocationCounter = 0
 
         ' Add the base node
         AnchorNode = Tree.Nodes.Add(NodeName)
@@ -337,14 +349,29 @@ Public Class EVEAssets
 
             ' If it's unknown, try and look it up as a citadel
             If LocationName = UnknownLocation Then
-                Dim CitadelLookup As New EVECREST
+                Dim FoundCitadel As CitadelName
+                ' See if we looked it up first before downloading
+                CitadelIDToFind = TempAsset.LocationID
+                FoundCitadel = CitadelNames.Find(AddressOf FindCitadel)
 
-                LocationName = CitadelLookup.GetCitadelName(CStr(TempAsset.LocationID))
-
-                If LocationName <> "" Then
-                    LocationName = LocationName
+                If FoundCitadel IsNot Nothing Then
+                    LocationName = FoundCitadel.Name
                 Else
-                    LocationName = UnknownLocation
+                    ' Look up the name from 3rd party
+                    Dim CitadelLookup As New EVECREST
+                    LocationName = CitadelLookup.GetCitadelName(CStr(TempAsset.LocationID))
+
+                    If LocationName = "" Then
+                        UnknownLocationCounter += 1
+                        LocationName = UnknownLocation & " " & CStr(UnknownLocationCounter)
+                    End If
+
+                    ' Insert into our list
+                    Dim CN As New CitadelName
+                    CN.ID = TempAsset.LocationID
+                    CN.Name = LocationName
+                    CitadelNames.Add(CN)
+
                 End If
             End If
 
@@ -876,6 +903,15 @@ Public Class EVEAssets
 
     Public Function GetAssetCount() As Long
         Return AssetList.Count
+    End Function
+
+    ' Predicate for finding an citadel
+    Private Function FindCitadel(ByVal Item As CitadelName) As Boolean
+        If Item.ID = CitadelIDToFind Then
+            Return True
+        Else
+            Return False
+        End If
     End Function
 
 End Class
