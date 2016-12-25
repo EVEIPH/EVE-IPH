@@ -56,16 +56,9 @@ Public Class ProgramSettings
     Public Const DefaultTowerName As String = None
     Public Const DefaultTowerRaceID As Integer = 0
     Public Const DefaultCostperHour As Integer = 0
-    Public Const DefaultMECostperSecond As Integer = 0
-    Public Const DefaultTECostperSecond As Integer = 0
-    Public Const DefaultInventionCostperSecond As Integer = 0
-    Public Const DefaultCopyCostperSecond As Integer = 0
     Public Const DefaultTowerType As String = "Standard"
     Public Const DefaultTowerSize As String = "Large"
     Public Const DefaultFuelBlockBuild As Boolean = False
-    Public Const DefaultNumAdvLabs As Integer = 0
-    Public Const DefaultNumMobileLabs As Integer = 0
-    Public Const DefaultNumHyasyodaLabs As Integer = 0
     Public Const DefaultCharterCost As Double = 2500.0
 
     ' Application Setting Defaults
@@ -4258,16 +4251,9 @@ Public Class ProgramSettings
                     .TowerRaceID = CInt(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "TowerRaceID", DefaultTowerRaceID))
                     .TowerName = CStr(GetSettingValue(POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerName", DefaultTowerName))
                     .CostperHour = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "CostperHour", DefaultCostperHour))
-                    .MECostperSecond = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "MECostperSecond", DefaultMECostperSecond))
-                    .TECostperSecond = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "TECostperSecond", DefaultTECostperSecond))
-                    .InventionCostperSecond = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "InventionCostperSecond", DefaultInventionCostperSecond))
-                    .CopyCostperSecond = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "CopyCostperSecond", DefaultCopyCostperSecond))
                     .TowerType = CStr(GetSettingValue(POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerType", DefaultTowerType))
                     .TowerSize = CStr(GetSettingValue(POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerSize", DefaultTowerSize))
                     .FuelBlockBuild = CBool(GetSettingValue(POSSettingsFileName, SettingTypes.TypeBoolean, POSSettingsFileName, "FuelBlockBuild", DefaultFuelBlockBuild))
-                    .NumAdvLabs = CInt(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "NumAdvLabs", DefaultNumAdvLabs))
-                    .NumMobileLabs = CInt(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "NumMobileLabs", DefaultNumMobileLabs))
-                    .NumHyasyodaLabs = CInt(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "NumHyasyodaLabs", DefaultNumHyasyodaLabs))
                     .CharterCost = CDbl(GetSettingValue(POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "CharterCost", DefaultCharterCost))
                 End With
 
@@ -4296,16 +4282,9 @@ Public Class ProgramSettings
         TempSettings.TowerRaceID = DefaultTowerRaceID
         TempSettings.TowerName = DefaultTowerName
         TempSettings.CostperHour = DefaultCostperHour
-        TempSettings.MECostperSecond = DefaultMECostperSecond
-        TempSettings.TECostperSecond = DefaultTECostperSecond
-        TempSettings.InventionCostperSecond = DefaultInventionCostperSecond
-        TempSettings.CopyCostperSecond = DefaultCopyCostperSecond
         TempSettings.TowerType = DefaultTowerType
         TempSettings.TowerSize = DefaultTowerSize
         TempSettings.FuelBlockBuild = DefaultFuelBlockBuild
-        TempSettings.NumAdvLabs = DefaultNumAdvLabs
-        TempSettings.NumMobileLabs = DefaultNumMobileLabs
-        TempSettings.NumHyasyodaLabs = DefaultNumHyasyodaLabs
         TempSettings.CharterCost = DefaultCharterCost
 
         POSSettings = TempSettings
@@ -4315,23 +4294,16 @@ Public Class ProgramSettings
 
     ' Saves the POS Settings to XML
     Public Sub SavePOSSettings(SentSettings As PlayerOwnedStationSettings)
-        Dim POSSettingsList(13) As Setting
+        Dim POSSettingsList(6) As Setting
 
         Try
             POSSettingsList(0) = New Setting("TowerRaceID", CStr(SentSettings.TowerRaceID))
             POSSettingsList(1) = New Setting("TowerName", CStr(SentSettings.TowerName))
             POSSettingsList(2) = New Setting("CostperHour", CStr(SentSettings.CostperHour))
-            POSSettingsList(3) = New Setting("MECostperSecond", CStr(SentSettings.MECostperSecond))
-            POSSettingsList(4) = New Setting("TECostperSecond", CStr(SentSettings.TECostperSecond))
-            POSSettingsList(5) = New Setting("InventionCostperSecond", CStr(SentSettings.InventionCostperSecond))
-            POSSettingsList(6) = New Setting("CopyCostperSecond", CStr(SentSettings.CopyCostperSecond))
-            POSSettingsList(7) = New Setting("TowerType", CStr(SentSettings.TowerType))
-            POSSettingsList(8) = New Setting("TowerSize", CStr(SentSettings.TowerSize))
-            POSSettingsList(9) = New Setting("FuelBlockBuild", CStr(SentSettings.FuelBlockBuild))
-            POSSettingsList(10) = New Setting("NumAdvLabs", CStr(SentSettings.NumAdvLabs))
-            POSSettingsList(11) = New Setting("NumMobileLabs", CStr(SentSettings.NumMobileLabs))
-            POSSettingsList(12) = New Setting("NumHyasyodaLabs", CStr(SentSettings.NumHyasyodaLabs))
-            POSSettingsList(13) = New Setting("CharterCost", CStr(SentSettings.CharterCost))
+            POSSettingsList(3) = New Setting("TowerType", CStr(SentSettings.TowerType))
+            POSSettingsList(4) = New Setting("TowerSize", CStr(SentSettings.TowerSize))
+            POSSettingsList(5) = New Setting("FuelBlockBuild", CStr(SentSettings.FuelBlockBuild))
+            POSSettingsList(6) = New Setting("CharterCost", CStr(SentSettings.CharterCost))
 
             Call WriteSettingsToFile(POSSettingsFileName, POSSettingsList, POSSettingsFileName)
 
@@ -5902,18 +5874,6 @@ Public Structure PlayerOwnedStationSettings
     Dim TowerSize As String
 
     Dim FuelBlockBuild As Boolean
-
-    ' Lab numbers
-    Dim NumAdvLabs As Integer
-    Dim NumMobileLabs As Integer
-    Dim NumHyasyodaLabs As Integer
-
-    ' Lab stuff
-    Dim MECostperSecond As Double
-    Dim TECostperSecond As Double
-    Dim InventionCostperSecond As Double
-    Dim CopyCostperSecond As Double
-
     Dim CharterCost As Double
 
 End Structure

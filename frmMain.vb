@@ -334,6 +334,12 @@ Public Class frmMain
         ' This call is required by the designer.
         InitializeComponent()
 
+        If Developer Then
+            btnBPFacilityFitting.Visible = True
+        Else
+            btnBPFacilityFitting.Visible = False
+        End If
+
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
         ' Sets the CurrentCulture 
@@ -4370,11 +4376,8 @@ Tabs:
     End Sub
 
     Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
-        If cmbBPFacilityType.Text = CitadelFacility Then
-            Dim BPEC As New EngineeringComplex(cmbBPFacilityorArray.Text)
-            Dim f1 As New frmFacilityFitting(BPEC)
-            f1.Show()
-        End If
+        Dim f1 As New frmFacilityFitting()
+        f1.Show()
     End Sub
 
     ' For outposts, save the ME/TE/Tax data since this is specific to the user's input

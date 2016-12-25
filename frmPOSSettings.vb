@@ -171,24 +171,6 @@ Public Class frmPOSSettings
         Call LoadPOSDataTab()
     End Sub
 
-    Private Sub cmbPOSAdvLabs_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPOSAdvLabs.SelectedIndexChanged
-        If Not LoadingTab Then
-            Call UpdatePOSData()
-        End If
-    End Sub
-
-    Private Sub cmbPOSMobileLabs_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPOSMobileLabs.SelectedIndexChanged
-        If Not LoadingTab Then
-            Call UpdatePOSData()
-        End If
-    End Sub
-
-    Private Sub cmbPOSHyasyoda_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPOSHyasyoda.SelectedIndexChanged
-        If Not LoadingTab Then
-            Call UpdatePOSData()
-        End If
-    End Sub
-
     Private Sub rbtnPOSSizeLarge_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnPOSSizeLarge.CheckedChanged
         If Not LoadingTab Then
             cmbPOSTower.Text = None
@@ -308,23 +290,9 @@ Public Class frmPOSSettings
         cmbPOSTower.Text = SelectedTower.TowerName
         SelectedTowerRaceID = SelectedTower.TowerRaceID
 
-        If SelectedTower.TowerName <> None Then
-            cmbPOSAdvLabs.Text = CStr(SelectedTower.NumAdvLabs)
-            cmbPOSMobileLabs.Text = CStr(SelectedTower.NumMobileLabs)
-            cmbPOSHyasyoda.Text = CStr(SelectedTower.NumHyasyodaLabs)
-            cmbPOSAdvLabs.Enabled = True
-            cmbPOSMobileLabs.Enabled = True
-            cmbPOSHyasyoda.Enabled = True
-        Else
-            cmbPOSAdvLabs.Text = CStr(ProgramSettings.DefaultNumAdvLabs)
-            cmbPOSMobileLabs.Text = CStr(ProgramSettings.DefaultNumMobileLabs)
-            cmbPOSHyasyoda.Text = CStr(ProgramSettings.DefaultNumHyasyodaLabs)
-            cmbPOSAdvLabs.Enabled = False
-            cmbPOSMobileLabs.Enabled = False
-            cmbPOSHyasyoda.Enabled = False
-            rbtnPOSNPCTowers.Checked = True
-            rbtnPOSSizeLarge.Checked = True
-        End If
+
+        rbtnPOSNPCTowers.Checked = True
+        rbtnPOSSizeLarge.Checked = True
 
         ' Building
         If SelectedTower.FuelBlockBuild Then
@@ -364,21 +332,10 @@ Public Class frmPOSSettings
                 rbtnPOSSizeLarge.Checked = True
         End Select
 
-        lblPOSPGMax.Text = "0"
-        lblPOSCPUMax.Text = "0"
-        lblPOSPGRemain.Text = "0"
-        lblPOSPGRemain.ForeColor = Color.Black
-        lblPOSCPURemain.Text = "0"
-        lblPOSCPURemain.ForeColor = Color.Black
 
         lblPOSCostperHour.Text = FormatNumber(SelectedTower.CostperHour, 2)
         lblPOSCostperDay.Text = FormatNumber(SelectedTower.CostperHour * 24, 2)
         lblPOSCostperMonth.Text = FormatNumber(SelectedTower.CostperHour * 24 * 30, 2)
-
-        lblPOSMECost.Text = FormatNumber(SelectedTower.MECostperSecond * 3600, 2) ' Per hour
-        lblPOSTECost.Text = FormatNumber(SelectedTower.TECostperSecond * 3600, 2) ' Per hour
-        lblPOSCopyCost.Text = FormatNumber(SelectedTower.CopyCostperSecond * 3600, 2) ' Per hour
-        lblPOSInventionCost.Text = FormatNumber(SelectedTower.InventionCostperSecond * 3600, 2) ' Per hour
 
         txtCharters.Text = FormatNumber(SelectedTower.CharterCost, 2)
 
@@ -390,11 +347,6 @@ Public Class frmPOSSettings
         If cmbPOSTower.Text <> None Then
             ' Have a pos selected so load the data
             Call LoadPOSData()
-        Else ' Set the labels to 0
-            lblPOSMESlots.Text = "0"
-            lblPOSPESlots.Text = "0"
-            lblPOSInventionSlots.Text = "0"
-            lblPOSCopySlots.Text = "0"
         End If
 
         cmbPOSTower.Focus()
@@ -406,15 +358,7 @@ Public Class frmPOSSettings
         ' Load the block data
         Call UpdateFuelBlockData(cmbPOSTower.Text, True)
         Call LoadPOSFuelBlockPrice()
-
-        lblPOSPGMax.Text = FormatNumber(GetAttribute("powerOutput", cmbPOSTower.Text), 0)
-        lblPOSCPUMax.Text = FormatNumber(GetAttribute("cpuOutput", cmbPOSTower.Text), 0)
-
-        cmbPOSAdvLabs.Enabled = True
-        cmbPOSMobileLabs.Enabled = True
-        cmbPOSHyasyoda.Enabled = True
-
-        Call UpdatePOSData()
+        Call UpdateCosts()
 
     End Sub
 
@@ -423,9 +367,9 @@ Public Class frmPOSSettings
         Dim readerPOS As SQLiteDataReader
         Dim FuelBlock As String = ""
 
-        Sql = "SELECT raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
+        SQL = "SELECT raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
 
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
 
         If readerPOS.Read Then
@@ -517,7 +461,7 @@ Public Class frmPOSSettings
             ' Update all the prices
             For i = 1 To POSTextBoxes.Count - 1
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & POSLabels(i).Text & "'"
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -587,7 +531,7 @@ Public Class frmPOSSettings
 
             ' Update the prices
             SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtPOSFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlock.Text & " Fuel Block'"
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
             Me.Cursor = Cursors.Default
@@ -645,62 +589,6 @@ Public Class frmPOSSettings
 
     End Sub
 
-    Private Sub UpdatePOSData()
-        Dim CPU As Long
-        Dim Power As Long
-        Dim CPURemain As Long
-        Dim PowerRemain As Long
-
-        ' Get lab power requirements and set the values of the remaining
-        Power = (CLng(GetAttribute("power", "Advanced Mobile Laboratory")) * CInt(cmbPOSAdvLabs.Text)) + CLng(GetAttribute("power", "Mobile Laboratory") * CInt(cmbPOSMobileLabs.Text) + CLng(GetAttribute("power", "Hyasyoda Mobile Laboratory") * CInt(cmbPOSHyasyoda.Text)))
-        CPU = (CLng(GetAttribute("cpu", "Advanced Mobile Laboratory")) * CInt(cmbPOSAdvLabs.Text)) + CLng(GetAttribute("cpu", "Mobile Laboratory") * CInt(cmbPOSMobileLabs.Text) + CLng(GetAttribute("cpu", "Hyasyoda Mobile Laboratory") * CInt(cmbPOSHyasyoda.Text)))
-
-        PowerRemain = CLng(lblPOSPGMax.Text) - Power
-        CPURemain = CLng(lblPOSCPUMax.Text) - CPU
-
-        lblPOSPGRemain.Text = FormatNumber(PowerRemain, 0)
-        lblPOSCPURemain.Text = FormatNumber(CPURemain, 0)
-
-        ' If negative, show red
-        If PowerRemain < 0 Then
-            lblPOSPGRemain.ForeColor = Color.Red
-        Else
-            lblPOSPGRemain.ForeColor = Color.Black
-        End If
-
-        If CPURemain < 0 Then
-            lblPOSCPURemain.ForeColor = Color.Red
-        Else
-            lblPOSCPURemain.ForeColor = Color.Black
-        End If
-
-        ' Design Laboratory (was Adv. Lab)
-        ' 3 copy slots (0.60 job time bonus)
-        ' 2 ME slots (0.75 job time bonus)
-        ' 2 Invention slots (0.5 job time bonus)
-
-        ' Research Laboratory (was Mobile)
-        ' 1 copy slot (0.75 job time bonus)
-        ' 3 ME slots (0.70 job time bonus)
-        ' 3 TE slots (0.70 job time bonus)
-        ' 5 Invention slots (0.5 job time bonus)
-
-        ' Hyasyoda Laboratory
-        ' 4 ME slots (0.65 job time bonus)
-        ' 4 TE slots (0.65 job time bonus)
-        ' 6 Invention slots (0.5 job time bonus)
-
-        ' Get the slot data (hardcode) Advanced + Mobile + Hyasyoda
-        lblPOSCopySlots.Text = FormatNumber((3 * CInt(cmbPOSAdvLabs.Text)) + (1 * CInt(cmbPOSMobileLabs.Text)) + (0 * CInt(cmbPOSHyasyoda.Text)), 0)
-        lblPOSMESlots.Text = FormatNumber((2 * CInt(cmbPOSAdvLabs.Text)) + (3 * CInt(cmbPOSMobileLabs.Text)) + (4 * CInt(cmbPOSHyasyoda.Text)), 0)
-        lblPOSPESlots.Text = FormatNumber((0 * CInt(cmbPOSAdvLabs.Text)) + (3 * CInt(cmbPOSMobileLabs.Text)) + (4 * CInt(cmbPOSHyasyoda.Text)), 0)
-        lblPOSInventionSlots.Text = FormatNumber((2 * CInt(cmbPOSAdvLabs.Text)) + (5 * CInt(cmbPOSMobileLabs.Text)) + (6 * CInt(cmbPOSHyasyoda.Text)), 0)
-
-        ' Finally update all the price data
-        Call UpdateCosts()
-
-    End Sub
-
     Private Sub UpdateCosts()
         Dim CostperBlock As Double
         Dim CostperHour As Double
@@ -736,34 +624,6 @@ Public Class frmPOSSettings
         lblPOSCostperHour.Text = FormatNumber(CostperHour, 2)
         lblPOSCostperDay.Text = FormatNumber(CostperHour * 24, 2)
         lblPOSCostperMonth.Text = FormatNumber(CostperHour * 24 * 30, 2)
-
-        ' ME
-        If CInt(lblPOSMESlots.Text) <> 0 Then
-            lblPOSMECost.Text = FormatNumber(CostperHour / CInt(lblPOSMESlots.Text))
-        Else
-            lblPOSMECost.Text = NotApplicable
-        End If
-
-        ' TE
-        If CInt(lblPOSPESlots.Text) <> 0 Then
-            lblPOSTECost.Text = FormatNumber(CostperHour / CInt(lblPOSPESlots.Text))
-        Else
-            lblPOSTECost.Text = NotApplicable
-        End If
-
-        ' Invention
-        If CInt(lblPOSInventionSlots.Text) <> 0 Then
-            lblPOSInventionCost.Text = FormatNumber(CostperHour / CInt(lblPOSInventionSlots.Text))
-        Else
-            lblPOSInventionCost.Text = NotApplicable
-        End If
-
-        ' Copy
-        If CInt(lblPOSCopySlots.Text) <> 0 Then
-            lblPOSCopyCost.Text = FormatNumber(CostperHour / CInt(lblPOSCopySlots.Text))
-        Else
-            lblPOSCopyCost.Text = NotApplicable
-        End If
 
     End Sub
 
@@ -811,7 +671,7 @@ Public Class frmPOSSettings
 
         If readerPOS.Read Then
             ' Build T1 BP for the block, standard settings - CHECK
-            Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam, _
+            Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
                                         SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
             Call BlockBP.BuildItems(False, False, False, False, False)
             Return BlockBP.GetRawItemUnitPrice
@@ -843,35 +703,6 @@ Public Class frmPOSSettings
         TempTower.TowerRaceID = SelectedTowerRaceID
         TempTower.TowerName = cmbPOSTower.Text
         TempTower.CostperHour = CDbl(lblPOSCostperHour.Text)
-
-        If lblPOSMECost.Text <> NotApplicable Then
-            TempTower.MECostperSecond = CDbl(lblPOSMECost.Text) / 3600
-        Else
-            TempTower.MECostperSecond = 0
-        End If
-
-        If lblPOSTECost.Text <> NotApplicable Then
-            TempTower.TECostperSecond = CDbl(lblPOSTECost.Text) / 3600
-        Else
-            TempTower.TECostperSecond = 0
-        End If
-
-        If lblPOSInventionCost.Text <> NotApplicable Then
-            TempTower.InventionCostperSecond = CDbl(lblPOSInventionCost.Text) / 3600
-        Else
-            TempTower.InventionCostperSecond = 0
-        End If
-
-        If lblPOSCopyCost.Text <> NotApplicable Then
-            TempTower.CopyCostperSecond = CDbl(lblPOSCopyCost.Text) / 3600
-        Else
-            TempTower.CopyCostperSecond = 0
-        End If
-
-        ' Lab numbers
-        TempTower.NumAdvLabs = CInt(cmbPOSAdvLabs.Text)
-        TempTower.NumMobileLabs = CInt(cmbPOSMobileLabs.Text)
-        TempTower.NumHyasyodaLabs = CInt(cmbPOSHyasyoda.Text)
 
         ' Tower type
         If rbtnPOSNPCTowers.Checked Then
@@ -908,4 +739,11 @@ Public Class frmPOSSettings
 
     End Sub
 
+    Private Sub gbPOSFuelPrices_Enter(sender As Object, e As EventArgs) Handles gbPOSFuelPrices.Enter
+
+    End Sub
+
+    Private Sub gbPOSFuelBlocks_Enter(sender As Object, e As EventArgs) Handles gbPOSFuelBlocks.Enter
+
+    End Sub
 End Class
