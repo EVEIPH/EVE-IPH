@@ -1009,6 +1009,7 @@ Public Class EVECREST
     Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing,
                                             Optional SplashVisible As Boolean = False) As Boolean
         Dim IndustryFacilitiesOutput As IndustryFacilities
+        Dim FacilitiesList As New List(Of Station)
         Dim SQL As String
         Dim CacheDate As Date
         Dim rsLookup As SQLiteDataReader
@@ -1024,6 +1025,8 @@ Public Class EVECREST
         Dim TempPB As ProgressBar
 
         Dim FacilityName As String
+
+        Dim TempOutpost As Station
 
         If IsNothing(UpdateLabel) Then
             TempLabel = New Label
@@ -1055,235 +1058,302 @@ Public Class EVECREST
 
             Application.DoEvents()
 
-            ' Dump the file into the Specializations object
+            ' Dump the file into the Specializations object - ignore exceptions and process the outpost api if it errors
             IndustryFacilitiesOutput = JsonConvert.DeserializeObject(Of IndustryFacilities) _
-                (GetJSONFile(CRESTRootServerURL & CRESTIndustryFacilities, CacheDate, "Industry Facilities"))
+                (GetJSONFile(CRESTRootServerURL & CRESTIndustryFacilities, CacheDate, "Industry Facilities", True))
 
             ' Read in the data
             If Not IsNothing(IndustryFacilitiesOutput) Then
-                If IndustryFacilitiesOutput.items.Count > 0 Then
+                ' Save this as a list of stations for processing
+                For Each Facility In IndustryFacilitiesOutput.items
+                    TempOutpost.corporationID = Facility.owner.id
+                    TempOutpost.corporationName = ""
+                    TempOutpost.regionID = Facility.region.id
+                    TempOutpost.solarSystemID = Facility.solarSystem.id
+                    TempOutpost.stationID = Facility.facilityID
+                    TempOutpost.stationName = Facility.name
+                    TempOutpost.stationTypeID = Facility.type.id
+                    TempOutpost.tax = Facility.tax
 
-                    Call EVEDB.BeginSQLiteTransaction()
+                    ' Add to facilities list
+                    FacilitiesList.Add(TempOutpost)
 
-                    StatusText = "Saving Industry Facilities Data..."
-                    If SplashVisible Then
-                        Call SetProgress(StatusText)
+                Next
+            Else
+                ' Json file didn't download - try updating the station list (outposts really) through the API
+                Dim API As New EVEAPI
+                Dim readerRegion As SQLiteDataReader
+
+                FacilitiesList = API.GetOutpostList(CacheDate)
+
+                ' Update region and tax
+                For i = 0 To FacilitiesList.Count - 1
+                    TempOutpost = FacilitiesList(i)
+
+                    ' Get the region ID
+                    DBCommand = New SQLiteCommand("SELECT DISTINCT regionID FROM SOLAR_SYSTEMS WHERE solarSystemID =" & CStr(TempOutpost.solarSystemID), EVEDB.DBREf)
+                    readerRegion = DBCommand.ExecuteReader
+
+                    If readerRegion.Read Then
+                        TempOutpost.regionID = readerRegion.GetInt64(0)
                     Else
-                        TempLabel.Text = StatusText
+                        TempOutpost.regionID = 0
                     End If
-                    TempPB.Minimum = 0
-                    TempPB.Value = 0
-                    TempPB.Maximum = IndustryFacilitiesOutput.totalCount - 1
-                    TempPB.Visible = True
-                    Application.DoEvents()
 
-                    ' Now read through all the output items and input them into the DB
-                    For i = 0 To IndustryFacilitiesOutput.totalCount - 1
-                        With IndustryFacilitiesOutput.items(i)
-                            ' See if this is an outpost or not and add the tag for type to the name
-                            Select Case .type.id
+                    TempOutpost.tax = 0 ' Outposts have always a 0 tax
+
+                    FacilitiesList(i) = TempOutpost
+
+                    readerRegion.Close()
+                    DBCommand = Nothing
+                Next
+
+            End If
+
+            If FacilitiesList.Count > 0 Then
+
+                Call EVEDB.BeginSQLiteTransaction()
+
+                StatusText = "Saving Industry Facilities Data..."
+                If SplashVisible Then
+                    Call SetProgress(StatusText)
+                Else
+                    TempLabel.Text = StatusText
+                End If
+                TempPB.Minimum = 0
+                TempPB.Value = 0
+                TempPB.Maximum = FacilitiesList.Count - 1
+                TempPB.Visible = True
+                Application.DoEvents()
+
+                ' Now read through all the output items and input them into the DB
+                For i = 0 To FacilitiesList.Count - 1
+                    With FacilitiesList(i)
+                        ' See if this is an outpost or not and add the tag for type to the name
+                        Select Case .stationTypeID
                                 ' FACILITY_TYPE_ID	FACILITY_TYPE
                                 ' 21644	Amarr Factory Outpost
                                 ' 21645	Gallente Administrative Outpost
                                 ' 21646	Minmatar Service Outpost
                                 ' 21642	Caldari Research Outpost
-                                Case 21644
-                                    FacilityName = Format(.name) & " (A)"
-                                Case 21645
-                                    FacilityName = Format(.name) & " (G)"
-                                Case 21646
-                                    FacilityName = Format(.name) & " (M)"
-                                Case 21642
-                                    FacilityName = Format(.name) & " (C)"
-                                Case Else
-                                    FacilityName = Format(.name)
-                            End Select
+                                ' 12294, 12242, 12295 conquerable stations
+                            Case 21644
+                                FacilityName = Format(.stationName) & " (A)"
+                            Case 21645
+                                FacilityName = Format(.stationName) & " (G)"
+                            Case 21646
+                                FacilityName = Format(.stationName) & " (M)"
+                            Case 21642
+                                FacilityName = Format(.stationName) & " (C)"
+                            Case 12294, 12242, 12295
+                                FacilityName = Format(.stationName) & " (CS)" ' conquerable 
 
-                            ' Look up each facility and if found, update it. If not, insert - this way if the CREST is having issues, we won't delete all the station data (which doesn't change much)
-                            SQL = "SELECT 'X' FROM INDUSTRY_FACILITIES WHERE FACILITY_ID = " & CStr(.facilityID)
+                                ' Also, process this by adding a record to the ram_assembly_line_stations table so we can look them up later
+                                SQL = "SELECT 'X' FROM RAM_ASSEMBLY_LINE_STATIONS WHERE stationID = " & CStr(.stationID)
 
-                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                            rsLookup = DBCommand.ExecuteReader
+                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                                rsLookup = DBCommand.ExecuteReader
 
-                            If rsLookup.Read() Then
-                                SQL = "UPDATE INDUSTRY_FACILITIES "
-                                SQL = SQL & "SET FACILITY_NAME = '" & FormatDBString(FacilityName) & "',"
-                                SQL = SQL & "FACILITY_TYPE_ID = " & CStr(.type.id) & ","
-                                SQL = SQL & "FACILITY_TAX = " & CStr(.tax) & ","
-                                SQL = SQL & "SOLAR_SYSTEM_ID = " & CStr(.solarSystem.id) & ","
-                                SQL = SQL & "REGION_ID = " & CStr(.region.id) & ","
-                                SQL = SQL & "OWNER_ID = " & CStr(.owner.id) & " "
-                                SQL = SQL & "WHERE FACILITY_ID = " & CStr(.facilityID)
-                                ErrorTracker = SQL
-                            Else ' New record, insert
-                                SQL = "INSERT INTO INDUSTRY_FACILITIES VALUES ("
-                                SQL = SQL & CStr(.facilityID) & ",'"
-                                SQL = SQL & FormatDBString(FacilityName) & "',"
-                                SQL = SQL & CStr(.type.id) & ","
-                                SQL = SQL & CStr(.tax) & ","
-                                SQL = SQL & CStr(.solarSystem.id) & ","
-                                SQL = SQL & CStr(.region.id) & ","
-                                SQL = SQL & CStr(.owner.id) & ")"
-                                ErrorTracker = SQL
-                            End If
+                                If Not rsLookup.Read Then
+                                    ' Not in there, add the records for the five different assembly line types - copied data from other station type ids like this
+                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},5,10,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
+                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},6,50,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
+                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},7,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
+                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},8,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
+                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},38,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
+                                End If
 
-                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                rsLookup.Close()
+                            Case Else
+                                FacilityName = Format(.stationName)
+                        End Select
 
-                            rsLookup.Close()
-                            DBCommand = Nothing
+                        ' Look up each facility and if found, update it. If not, insert - this way if the CREST is having issues, we won't delete all the station data (which doesn't change much)
+                        SQL = "SELECT 'X' FROM INDUSTRY_FACILITIES WHERE FACILITY_ID = " & CStr(.stationID)
 
-                        End With
-
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
-                        Application.DoEvents()
-                    Next
-
-                    ' Now that everything is inserted update the master station table that we can query for anything
-                    StatusText = "Updating Stations Data..."
-                    If SplashVisible Then
-                        Call SetProgress(StatusText)
-                    Else
-                        TempLabel.Text = StatusText
-                    End If
-                    StartTime = Now
-                    TimeCounter = 0
-                    Application.DoEvents()
-
-                    ' Find all facilities not already in the stations table and loop through to add them
-                    SQL = "SELECT DISTINCT FACILITY_ID FROM INDUSTRY_FACILITIES WHERE FACILITY_ID NOT IN (SELECT DISTINCT FACILITY_ID FROM STATION_FACILITIES) "
-                    SQL = SQL & "AND (FACILITY_ID IN (SELECT stationID FROM RAM_ASSEMBLY_LINE_STATIONS) " ' Stations with assembly lines
-                    SQL = SQL & "OR FACILITY_TYPE_ID IN (21642,21644,21645,21646)) " ' Outpost types
-
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsLookup = DBCommand.ExecuteReader
-
-                    While rsLookup.Read
-
-                        Call SetStationFacilityData(rsLookup.GetInt64(0))
-
-                        ' Add some updates to the splash screen if it takes longer than 30 seconds to update
-                        ' After the first time, this all should be relatively fast to update
-                        If DateDiff("s", StartTime, Now) >= 30 Then
-                            StartTime = Now ' reset the time for another 30 seconds
-                            Select Case TimeCounter
-                                Case 0 ' 30 seconds
-                                    StatusText = "Still Updating Stations Data..."
-                                Case 1 ' 60 seconds
-                                    StatusText = "Still working..."
-                                Case 2 ' 1 min 30 seconds
-                                    StatusText = "Don't leave, almost done..."
-                                Case 3 ' 2 min 
-                                    StatusText = "I promise..."
-                                Case 4 ' 2 min 30 seconds
-                                    StatusText = "OK, I also hope it finishes soon..."
-                                Case 5 ' 3 min
-                                    StatusText = "Hearding Llamas?"
-                                Case Else
-                                    StatusText = "Yeah, this is taking too long - email Zifrian..."
-                            End Select
-                            ' Update the window
-                            If SplashVisible Then
-                                Call SetProgress(StatusText)
-                            Else
-                                TempLabel.Text = StatusText
-                            End If
-                            TimeCounter += 1 ' increment
-                            Application.DoEvents()
-                        End If
-                    End While
-
-                    rsLookup.Close()
-                    DBCommand = Nothing
-
-                    '' Update Tax rates - ignore this until they actually change, NPC is set by CCP and outposts don't get sent through CREST
-                    'SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TAX FROM STATION_FACILITIES WHERE OUTPOST = 0
-                    'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    'rsLookup = DBCommand.ExecuteReader
-
-                    'While rsLookup.Read
-                    '    SQL = "UPDATE STATION_FACILITIES SET FACILITY_TAX = " & CStr(rsLookup.GetDouble(1)) & " WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(0))
-                    '    Call evedb.ExecuteNonQuerySQL(SQL)
-                    'End While
-
-                    'rsLookup.Close()
-                    'DBCommand = Nothing
-
-                    StatusText = "Refreshing Station Data..."
-                    If SplashVisible Then
-                        Call SetProgress(StatusText)
-                    Else
-                        TempLabel.Text = StatusText
-                    End If
-
-                    ' Update the outposts names, which can change and do
-                    SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM INDUSTRY_FACILITIES "
-                    SQL = SQL & "WHERE FACILITY_TYPE_ID IN (21642,21644,21645,21646) " ' Outpost types
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsLookup = DBCommand.ExecuteReader
-
-                    While rsLookup.Read
-                        SQL = "UPDATE STATION_FACILITIES SET FACILITY_NAME = '" & FormatDBString(rsLookup.GetString(0)) & "' WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(1))
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    End While
-
-                    rsLookup.Close()
-                    DBCommand = Nothing
-
-                    ' Clear out all the outposts from STATIONS to get the most updated data
-                    SQL = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN (21642,21644,21645,21646) " ' Outpost types
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-
-                    ' Now insert non-SDE stations (Outposts) into the stations table for easy look ups in assets
-                    SQL = "SELECT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
-                    SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsLookup = DBCommand.ExecuteReader
-
-                    ' Insert the new data
-                    While rsLookup.Read()
-                        SQL = "INSERT INTO STATIONS VALUES (" & CStr(rsLookup.GetInt64(0)) & ","
-                        SQL = SQL & "'" & FormatDBString(rsLookup.GetString(1)) & "',"
-                        SQL = SQL & CStr(rsLookup.GetInt64(2)) & ","
-                        SQL = SQL & CStr(rsLookup.GetInt64(3)) & ","
-                        SQL = SQL & CStr(rsLookup.GetFloat(4)) & ","
-                        SQL = SQL & CStr(rsLookup.GetInt64(5)) & ",0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
-                        ErrorTracker = SQL
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    End While
-
-                    ' Set the Cache Date to now plus the length since it's not sent in the file 
-                    ' for industry facilities though, this only needs to be run once a day - after downtime
-                    Call SetCRESTCacheDate(IndustryFacilitiesField, CacheDate)
-
-                    Call EVEDB.CommitSQLiteTransaction()
-                    ErrorTracker = ""
-
-                    ' Finally, Update the cost indicies for the solar system of the stations every time we update the system indicies (above)
-                    If SystemIndiciesUpdated Then
-                        Call EVEDB.BeginSQLiteTransaction()
-                        SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsLookup = DBCommand.ExecuteReader
 
-                        While rsLookup.Read
-                            SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
-                            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
-                            Call EVEDB.ExecuteNonQuerySQL(SQL)
-                        End While
+                        If rsLookup.Read() Then
+                            SQL = "UPDATE INDUSTRY_FACILITIES "
+                            SQL = SQL & "SET FACILITY_NAME = '" & FormatDBString(FacilityName) & "',"
+                            SQL = SQL & "FACILITY_TYPE_ID = " & CStr(.stationTypeID) & ","
+                            SQL = SQL & "FACILITY_TAX = " & CStr(.tax) & ","
+                            SQL = SQL & "SOLAR_SYSTEM_ID = " & CStr(.solarSystemID) & ","
+                            SQL = SQL & "REGION_ID = " & CStr(.regionID) & ","
+                            SQL = SQL & "OWNER_ID = " & CStr(.corporationID) & " "
+                            SQL = SQL & "WHERE FACILITY_ID = " & CStr(.stationID)
+                            ErrorTracker = SQL
+                        Else ' New record, insert
+                            SQL = "INSERT INTO INDUSTRY_FACILITIES VALUES ("
+                            SQL = SQL & CStr(.stationID) & ",'"
+                            SQL = SQL & FormatDBString(FacilityName) & "',"
+                            SQL = SQL & CStr(.stationTypeID) & ","
+                            SQL = SQL & CStr(.tax) & ","
+                            SQL = SQL & CStr(.solarSystemID) & ","
+                            SQL = SQL & CStr(.regionID) & ","
+                            SQL = SQL & CStr(.corporationID) & ")"
+                            ErrorTracker = SQL
+                        End If
+
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         rsLookup.Close()
                         DBCommand = Nothing
 
-                        Call EVEDB.CommitSQLiteTransaction()
-                    End If
+                    End With
 
-                    Return True
+                    ' For each record, update the progress bar
+                    Call IncrementProgressBar(TempPB)
+                    Application.DoEvents()
+                Next
 
+                ' Now that everything is inserted, update the master station table that we can query for anything
+                StatusText = "Updating Stations Data..."
+                If SplashVisible Then
+                    Call SetProgress(StatusText)
+                Else
+                    TempLabel.Text = StatusText
                 End If
+                StartTime = Now
+                TimeCounter = 0
+                Application.DoEvents()
+
+                ' Find all facilities not already in the stations table and loop through to add them
+                SQL = "SELECT DISTINCT FACILITY_ID FROM INDUSTRY_FACILITIES WHERE FACILITY_ID NOT IN (SELECT DISTINCT FACILITY_ID FROM STATION_FACILITIES) "
+                SQL = SQL & "AND (FACILITY_ID IN (SELECT stationID FROM RAM_ASSEMBLY_LINE_STATIONS) " ' Stations with assembly lines
+                SQL = SQL & "OR FACILITY_TYPE_ID IN (21642,21644,21645,21646,12242,12294,12295)) " ' Outpost types
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+
+                While rsLookup.Read
+
+                    Call SetStationFacilityData(rsLookup.GetInt64(0))
+
+                    ' Add some updates to the splash screen if it takes longer than 30 seconds to update
+                    ' After the first time, this all should be relatively fast to update
+                    If DateDiff("s", StartTime, Now) >= 30 Then
+                        StartTime = Now ' reset the time for another 30 seconds
+                        Select Case TimeCounter
+                            Case 0 ' 30 seconds
+                                StatusText = "Still Updating Stations Data..."
+                            Case 1 ' 60 seconds
+                                StatusText = "Still working..."
+                            Case 2 ' 1 min 30 seconds
+                                StatusText = "Don't leave, almost done..."
+                            Case 3 ' 2 min 
+                                StatusText = "I promise..."
+                            Case 4 ' 2 min 30 seconds
+                                StatusText = "OK, I also hope it finishes soon..."
+                            Case 5 ' 3 min
+                                StatusText = "Hearding Llamas?"
+                            Case Else
+                                StatusText = "Yeah, this is taking too long - email Zifrian..."
+                        End Select
+                        ' Update the window
+                        If SplashVisible Then
+                            Call SetProgress(StatusText)
+                        Else
+                            TempLabel.Text = StatusText
+                        End If
+                        TimeCounter += 1 ' increment
+                        Application.DoEvents()
+                    End If
+                End While
+
+                rsLookup.Close()
+                DBCommand = Nothing
+
+                '' Update Tax rates - ignore this until they actually change, NPC is set by CCP and outposts don't get sent through CREST
+                'SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TAX FROM INDUSTRY_FACILITIES WHERE OUTPOST = 0"
+                'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                'rsLookup = DBCommand.ExecuteReader
+
+                'While rsLookup.Read
+                '    SQL = "UPDATE STATION_FACILITIES Set FACILITY_TAX = " & CStr(rsLookup.GetDouble(1)) & " WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(0))
+                '    Call evedb.ExecuteNonQuerySQL(SQL)
+                'End While
+
+                'rsLookup.Close()
+                'DBCommand = Nothing
+
+                StatusText = "Refreshing Station Data..."
+                If SplashVisible Then
+                    Call SetProgress(StatusText)
+                Else
+                    TempLabel.Text = StatusText
+                End If
+
+                ' Update the outposts names, which can change and do
+                SQL = "Select DISTINCT FACILITY_NAME, FACILITY_ID FROM INDUSTRY_FACILITIES "
+                SQL = SQL & "WHERE FACILITY_TYPE_ID In (21642,21644,21645,21646,12242,12294,12295) " ' Outpost types
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+
+                While rsLookup.Read
+                    SQL = "UPDATE STATION_FACILITIES Set FACILITY_NAME = '" & FormatDBString(rsLookup.GetString(0)) & "' WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(1))
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End While
+
+                rsLookup.Close()
+                DBCommand = Nothing
+
+                ' Clear out all the outposts from STATIONS to get the most updated data
+                SQL = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN (21642,21644,21645,21646,12242,12294,12295) " ' Outpost types
+                EVEDB.ExecuteNonQuerySQL(SQL)
+
+                ' Now insert non-SDE stations (Outposts) into the stations table for easy look ups in assets
+                SQL = "SELECT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
+                SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+
+                ' Insert the new data
+                While rsLookup.Read()
+                    SQL = "INSERT INTO STATIONS VALUES (" & CStr(rsLookup.GetInt64(0)) & ","
+                    SQL = SQL & "'" & FormatDBString(rsLookup.GetString(1)) & "',"
+                    SQL = SQL & CStr(rsLookup.GetInt64(2)) & ","
+                    SQL = SQL & CStr(rsLookup.GetInt64(3)) & ","
+                    SQL = SQL & CStr(rsLookup.GetFloat(4)) & ","
+                    SQL = SQL & CStr(rsLookup.GetInt64(5)) & ",0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
+                    ErrorTracker = SQL
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End While
+
+                Call EVEDB.CommitSQLiteTransaction()
+
+                ' Set the Cache Date to now plus the length since it's not sent in the file 
+                ' for industry facilities though, this only needs to be run once a day - after downtime
+                Call SetCRESTCacheDate(IndustryFacilitiesField, CacheDate)
+
+                ErrorTracker = ""
+
+                ' Finally, Update the cost indicies for the solar system of the stations every time we update the system indicies (above)
+                If SystemIndiciesUpdated Then
+                    Call EVEDB.BeginSQLiteTransaction()
+                    SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsLookup = DBCommand.ExecuteReader
+
+                    While rsLookup.Read
+                        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
+                        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+                    End While
+
+                    rsLookup.Close()
+                    DBCommand = Nothing
+
+                    Call EVEDB.CommitSQLiteTransaction()
+                End If
+
+                Return True
+
             End If
-            ' Json file didn't download
+
             Return False
+
         End If
 
         Return True
@@ -1407,7 +1477,12 @@ Public Class EVECREST
             SQL = SQL & CStr(rsFacility.GetInt64(14)) & ", " ' Group ID
             SQL = SQL & CStr(rsFacility.GetInt64(15)) & ", " ' Category ID
             SQL = SQL & CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
-            SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
+            Select Case rsFacility.GetInt64(7)
+                Case 12242, 12294, 12295
+                    SQL = SQL & "1)" ' Outpost for conquerable
+                Case Else
+                    SQL = SQL & CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
+            End Select
 
             Call EVEDB.ExecuteNonQuerySQL(SQL)
             Application.DoEvents()
@@ -1759,18 +1834,23 @@ Public Class EVECREST
 
     ' Downloads citadel data for the ID sent
     Public Function GetCitadelName(ByVal ID As String) As String
-        Dim CitadelOutput As New Dictionary(Of String, Citadel)
 
-        ' Dump the file into the Specializations object
-        CitadelOutput = JsonConvert.DeserializeObject(Of Dictionary(Of String, Citadel)) _
-            (GetJSONFile("https://stop.hammerti.me.uk/api/citadel/" & ID, Nothing, "Citadel Information"))
+        Try
+            Dim CitadelOutput As New Dictionary(Of String, Citadel)
 
-        ' Read in the data
-        If CitadelOutput.Count > 0 Then
-            Return CStr(CitadelOutput(ID).name)
-        Else
+            ' Dump the file into the Specializations object
+            CitadelOutput = JsonConvert.DeserializeObject(Of Dictionary(Of String, Citadel)) _
+                (GetJSONFile("https://stop.hammerti.me.uk/api/citadel/" & ID, Nothing, "Citadel Information"))
+
+            ' Read in the data
+            If CitadelOutput.Count > 0 Then
+                Return CStr(CitadelOutput(ID).name)
+            Else
+                Return ""
+            End If
+        Catch ex As Exception
             Return ""
-        End If
+        End Try
 
     End Function
 

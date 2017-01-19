@@ -918,7 +918,8 @@ Public Class ShoppingList
 
     ' Exports the shoppinglist data in CSV format if true, ignores the price volume if true, and sorts the raw mats by the order given
     Public Function GetClipboardList(ByVal ExportFormat As String, ByVal IgnorePriceVolume As Boolean, ByVal MaterialNamesSortOrder() As String,
-                                     ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String, ByVal CopyEveListFormat As Boolean) As String
+                                     ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String, ByVal CopyEveListFormat As Boolean,
+                                     ByVal IncludeLinks As Boolean) As String
         Dim i As Integer
         Dim OutputText As String = ""
         Dim TempListText As String

@@ -744,15 +744,15 @@ Public Class Blueprint
 
                     Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
 
-                    'If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
-                    '    And (BPUserSettings.SuggestBuildBPNotOwned)) _
-                    '    Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
-                    '    Or MarketPrice = 0) Then
-                    ' Market cost is greater than build cost, so set the mat cost to the build cost
-                    ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
-                    'Else
-                    '    ItemPrice = MarketPrice
-                    'End If
+                    If BuildBuy And ((MarketPrice * .ItemQuantity > ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost _
+                        And (BPUserSettings.SuggestBuildBPNotOwned)) _
+                        Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
+                        Or MarketPrice = 0) Then
+                        ' Market cost Is greater than build cost, so set the mat cost to the build cost
+                        ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
+                    Else
+                        ItemPrice = MarketPrice
+                    End If
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume,

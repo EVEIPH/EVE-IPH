@@ -1002,6 +1002,7 @@ Public Class EVEAPI
                 TempStation.stationName = .GetNamedItem("stationName").Value
                 TempStation.stationTypeID = CLng(.GetNamedItem("stationTypeID").Value)
                 TempStation.solarSystemID = CLng(.GetNamedItem("solarSystemID").Value)
+                TempStation.regionID = 0
                 TempStation.corporationID = CLng(.GetNamedItem("corporationID").Value)
                 TempStation.corporationName = .GetNamedItem("corporationName").Value
             End With
@@ -1255,8 +1256,10 @@ Public Structure Station
     Dim stationName As String
     Dim stationTypeID As Long
     Dim solarSystemID As Long
+    Dim regionID As Long
     Dim corporationID As Long
     Dim corporationName As String
+    Dim tax As Double
 End Structure
 
 ' Character sheet

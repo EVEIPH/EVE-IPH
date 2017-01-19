@@ -3068,7 +3068,7 @@ Public Class frmMain
                 Call RefreshBP(True)
             End If
 
-            MsgBox("Industry System Indicies Updated", vbInformation, Application.ProductName)
+            MsgBox("Industry System Indicies and Facilities Updated", vbInformation, Application.ProductName)
         End If
 
         f1.Dispose()
@@ -4376,7 +4376,7 @@ Tabs:
     End Sub
 
     Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
-        Dim f1 As New frmFacilityFitting()
+        Dim f1 As New frmCitadelFitting()
         f1.Show()
     End Sub
 
@@ -6856,7 +6856,6 @@ Tabs:
         Else ' If sent from manufacturing tab, use the values set from there
             OwnedBP = False
             OwnedBPRuns = 1
-
             If TempTech = 1 Then ' All T1
                 If Not SentFromManufacturingTab Then
                     txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
@@ -18353,6 +18352,7 @@ CheckTechs:
                 InsertItem.ItemCategory = readerBPs.GetString(6)
                 InsertItem.ItemTypeID = CLng(readerBPs.GetValue(7))
                 InsertItem.ItemName = readerBPs.GetString(8)
+                InsertItem.AddlCosts = readerBPs.GetDouble(21)
 
                 ' 1, 2, 14 are T1, T2, T3
                 ' 3 is Storyline
@@ -18816,7 +18816,7 @@ CheckTechs:
                     ' Construct the BP
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                    NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                   UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, 0, InsertItem.ManufacturingTeam, InsertItem.ManufacturingFacility,
+                                   UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingTeam, InsertItem.ManufacturingFacility,
                                    InsertItem.ComponentTeam, InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
                     ' Set the T2 and T3 inputs if necessary
@@ -19017,7 +19017,7 @@ CheckTechs:
                             ' Construct the BP
                             ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                            NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                           UserApplicationSettings, True, 0, InsertItem.ManufacturingTeam,
+                                           UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingTeam,
                                            InsertItem.ManufacturingFacility, InsertItem.ComponentTeam,
                                            InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
@@ -20682,7 +20682,7 @@ ExitCalc:
                                            .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility, .InventionFacility, .CopyFacility,
                                            chkCalcTaxes.Checked, chkCalcFees.Checked,
                                            CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
-                                           txtCalcNumBPs.Text, "0.00", chkCalcPPU.Checked, CompareType)
+                                           txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType)
             End With
         End If
 
@@ -20709,6 +20709,7 @@ ExitCalc:
         Public BPME As Integer
         Public BPTE As Integer
         Public Inputs As String
+        Public AddlCosts As Double
         Public Profit As Double
         Public ProfitPercent As Double
         Public IPH As Double
@@ -20807,6 +20808,7 @@ ExitCalc:
             CopyofMe.BPME = BPME
             CopyofMe.BPTE = BPTE
             CopyofMe.Inputs = Inputs
+            CopyofMe.AddlCosts = AddlCosts
             CopyofMe.Profit = Profit
             CopyofMe.ProfitPercent = ProfitPercent
             CopyofMe.IPH = IPH

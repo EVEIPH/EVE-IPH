@@ -775,7 +775,7 @@ Public Class frmBlueprintManagement
 
             ' For now, quantity is 1 until I can do multi-bp processing where we would group common ME/TE Bps
             'BPList.SubItems.Add("1")
-            BPList.SubItems.Add(CStr(readerBP.GetDouble(21))) ' Additional Costs
+            BPList.SubItems.Add(FormatNumber(readerBP.GetDouble(21), 2)) ' Additional Costs
 
             ScannedValue = readerBP.GetInt32(15)
 

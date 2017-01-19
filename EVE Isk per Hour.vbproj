@@ -160,6 +160,12 @@
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="EngineeringCitadel.vb" />
+    <Compile Include="frmCitadelFitting.designer.vb">
+      <DependentUpon>frmCitadelFitting.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCitadelFitting.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -461,6 +467,9 @@
     <EmbeddedResource Include="frmBlueprintList.resx">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmCitadelFitting.resx">
+      <DependentUpon>frmCitadelFitting.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </EmbeddedResource>
@@ -621,6 +630,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="Resources\SotiyoRender.png" />
+    <None Include="Resources\RaitaruRender.png" />
+    <None Include="Resources\AzbelRender.png" />
     <None Include="Resources\46_64_1.png" />
     <None Include="Resources\46_64_2.png" />
     <None Include="packages.config" />

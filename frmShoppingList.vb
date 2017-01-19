@@ -1680,7 +1680,7 @@ Public Class frmShoppingList
         End If
 
         ' Paste to clipboard
-        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, chkEveListFormat.Checked))
+        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, chkEveListFormat.Checked, UserApplicationSettings.IncludeInGameLinksinCopyText))
 
     End Sub
 
