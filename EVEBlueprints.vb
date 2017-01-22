@@ -148,7 +148,7 @@ Public Class EVEBlueprints
 
             IndyBlueprints = API.GetBlueprints(KeyData, BlueprintType, CacheDate)
 
-            If Not NoAPIError(API.GetErrorText, "Character") Then
+            If Not NoAPIError(API.GetErrorText, "Blueprints") Then
                 ' Errored, exit
                 Exit Sub
             End If

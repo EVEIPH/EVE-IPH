@@ -112,7 +112,7 @@ Public Class CorporationFacilities
 
             Facilities = API.GetCorpFacilities(KeyData, CacheDate)
 
-            If Not NoAPIError(API.GetErrorText, "Corporation") Then
+            If Not NoAPIError(API.GetErrorText, "Corporation Facilities") Then
                 ' Errored, exit
                 Exit Sub
             End If

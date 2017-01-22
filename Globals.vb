@@ -4699,12 +4699,12 @@ InvalidDate:
                 NotSearchItemList = Trim(SearchText)
             Else
                 ' split and Strip off the NOT at the beginning 
-                SearchItemList = Trim(SearchText.Substring(0, NotLocation - 1))
-                NotSearchItemList = Trim(SearchText.Substring(NotLocation + 3))
+                SearchItemList = FormatDBString(SearchText.Substring(0, NotLocation - 1))
+                NotSearchItemList = FormatDBString(SearchText.Substring(NotLocation + 3))
             End If
         Else
             ' Just search for the terms
-            SearchItemList = Trim(SearchText)
+            SearchItemList = FormatDBString(SearchText)
             SplitPhrase = False
         End If
 

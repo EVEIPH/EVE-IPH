@@ -826,7 +826,7 @@ Public Class Character
         ' Get standings
         TempStandings = API.GetCharacterStandings(CombinedKeyData)
 
-        If Not NoAPIError(API.GetErrorText, "Character") Then
+        If Not NoAPIError(API.GetErrorText, "Character Standings") Then
             ' Errored, exit
             Exit Sub
         End If

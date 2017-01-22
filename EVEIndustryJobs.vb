@@ -141,7 +141,7 @@ Public Class EVEIndustryJobs
 
             IndyJobs = API.GetIndustryJobs(KeyData, JobType, CacheDate)
 
-            If Not NoAPIError(API.GetErrorText, "Character") Then
+            If Not NoAPIError(API.GetErrorText, "Industry Jobs") Then
                 ' Errored, exit
                 Exit Sub
             End If

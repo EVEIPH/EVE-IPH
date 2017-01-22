@@ -118,7 +118,7 @@ Public Class ResearchAgents
 
             CurrentAgents = API.GetCurrentResearchAgents(KeyData, CacheDate)
 
-            If Not NoAPIError(API.GetErrorText, "Character") Then
+            If Not NoAPIError(API.GetErrorText, "Research Agents") Then
                 ' Errored, exit
                 Call EVEDB.RollbackSQLiteTransaction()
                 Exit Sub

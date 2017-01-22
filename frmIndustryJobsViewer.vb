@@ -610,7 +610,7 @@ Public Class frmIndustryJobsViewer
         ' Get skill data from API
         TempSkills = API.GetCharacterSheet(CombinedKeyData).CharacterSkills
 
-        If Not NoAPIError(API.GetErrorText, "Character") Then
+        If Not NoAPIError(API.GetErrorText, "Character Skills") Then
             ' Errored, exit
             Exit Sub
         End If
