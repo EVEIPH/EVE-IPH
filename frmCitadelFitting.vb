@@ -15,6 +15,8 @@ Public Class frmCitadelFitting
         ' This call is required by the designer.
         InitializeComponent()
 
+        EVEDB = New DBConnection(SQLiteDBFileName)
+
         ' Put all the slot images into an array
         With SlotPictureBoxList
             .Add(HighSlot1)
@@ -146,7 +148,7 @@ Public Class frmCitadelFitting
     ' Clear and Set the slots to match the citadel we are using
     Private Sub InitializeCitadelSlots(CitadelID As CitadelImageRender)
         Dim SQL As String = ""
-        Dim rsReader As SQLite.SQLiteDataReader
+        Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
         ' Query all the stats for the selected Citadel and process slots
