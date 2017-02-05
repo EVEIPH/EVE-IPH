@@ -160,6 +160,7 @@
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="EngineeringCitadel.vb" />
+    <Compile Include="EVEAttributes.vb" />
     <Compile Include="frmCitadelFitting.designer.vb">
       <DependentUpon>frmCitadelFitting.vb</DependentUpon>
     </Compile>

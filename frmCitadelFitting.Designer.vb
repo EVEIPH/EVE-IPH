@@ -23,13 +23,13 @@ Partial Class frmCitadelFitting
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim ListViewGroup1 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup2 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup3 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Medium Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup4 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup5 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup6 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup7 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup8 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup9 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup10 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup11 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup12 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup13 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup14 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCitadelFitting))
         Me.FittingImages = New System.Windows.Forms.ImageList(Me.components)
         Me.ServiceModuleListView = New System.Windows.Forms.ListView()
@@ -140,12 +140,12 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeHigh = New System.Windows.Forms.CheckBox()
         Me.chkItemViewTypeServices = New System.Windows.Forms.CheckBox()
         Me.GBStats = New System.Windows.Forms.GroupBox()
-        Me.CapacitorValues = New System.Windows.Forms.Label()
-        Me.CapacitorLabel = New System.Windows.Forms.Label()
-        Me.Calibration = New System.Windows.Forms.Label()
+        Me.lblCapacitorValues = New System.Windows.Forms.Label()
+        Me.lblCapacitorLabel = New System.Windows.Forms.Label()
+        Me.lblCalibration = New System.Windows.Forms.Label()
         Me.Calibration1 = New System.Windows.Forms.Label()
-        Me.CPU = New System.Windows.Forms.Label()
-        Me.PowerGrid = New System.Windows.Forms.Label()
+        Me.lblCPU = New System.Windows.Forms.Label()
+        Me.lblPowerGrid = New System.Windows.Forms.Label()
         Me.CPU1 = New System.Windows.Forms.Label()
         Me.PowerGrid1 = New System.Windows.Forms.Label()
         Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
@@ -223,28 +223,28 @@ Partial Class frmCitadelFitting
         Me.ServiceModuleListView.Activation = System.Windows.Forms.ItemActivation.OneClick
         Me.ServiceModuleListView.AllowDrop = True
         Me.ServiceModuleListView.AutoArrange = False
-        ListViewGroup1.Header = "Services"
-        ListViewGroup1.Name = "ServiceSlots"
-        ListViewGroup1.Tag = "ServiceSlot"
-        ListViewGroup2.Header = "High Slots"
-        ListViewGroup2.Name = "HighSlots"
-        ListViewGroup2.Tag = "HighSlot"
-        ListViewGroup3.Header = "Medium Slots"
-        ListViewGroup3.Name = "MediumSlots"
-        ListViewGroup3.Tag = "MediumSlot"
-        ListViewGroup4.Header = "Low Slots"
-        ListViewGroup4.Name = "LowSlots"
-        ListViewGroup4.Tag = "LowSlot"
-        ListViewGroup5.Header = "Combat Rigs"
-        ListViewGroup5.Name = "CombatRigs"
-        ListViewGroup5.Tag = "RigSlot"
-        ListViewGroup6.Header = "Reprocessing Rigs"
-        ListViewGroup6.Name = "ReprocessingRigs"
-        ListViewGroup6.Tag = "RigSlot"
-        ListViewGroup7.Header = "Engineering Rigs"
-        ListViewGroup7.Name = "EngineeringRigs"
-        ListViewGroup7.Tag = "RigSlot"
-        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7})
+        ListViewGroup8.Header = "Services"
+        ListViewGroup8.Name = "ServiceSlots"
+        ListViewGroup8.Tag = "ServiceSlot"
+        ListViewGroup9.Header = "High Slots"
+        ListViewGroup9.Name = "HighSlots"
+        ListViewGroup9.Tag = "HighSlot"
+        ListViewGroup10.Header = "Mid Slots"
+        ListViewGroup10.Name = "MidSlots"
+        ListViewGroup10.Tag = "MidSlots"
+        ListViewGroup11.Header = "Low Slots"
+        ListViewGroup11.Name = "LowSlots"
+        ListViewGroup11.Tag = "LowSlot"
+        ListViewGroup12.Header = "Combat Rigs"
+        ListViewGroup12.Name = "CombatRigs"
+        ListViewGroup12.Tag = "RigSlot"
+        ListViewGroup13.Header = "Reprocessing Rigs"
+        ListViewGroup13.Name = "ReprocessingRigs"
+        ListViewGroup13.Tag = "RigSlot"
+        ListViewGroup14.Header = "Engineering Rigs"
+        ListViewGroup14.Name = "EngineeringRigs"
+        ListViewGroup14.Tag = "RigSlot"
+        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup8, ListViewGroup9, ListViewGroup10, ListViewGroup11, ListViewGroup12, ListViewGroup13, ListViewGroup14})
         Me.ServiceModuleListView.HoverSelection = True
         Me.ServiceModuleListView.LargeImageList = Me.FittingImages
         Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 148)
@@ -877,7 +877,7 @@ Partial Class frmCitadelFitting
         Me.btnPOSUpdateFuelPrices.Name = "btnPOSUpdateFuelPrices"
         Me.btnPOSUpdateFuelPrices.Size = New System.Drawing.Size(124, 34)
         Me.btnPOSUpdateFuelPrices.TabIndex = 226
-        Me.btnPOSUpdateFuelPrices.Text = "Update Fuel Prices"
+        Me.btnPOSUpdateFuelPrices.Text = "Update Prices"
         Me.btnPOSUpdateFuelPrices.UseVisualStyleBackColor = True
         '
         'picPOSCharters
@@ -1471,12 +1471,12 @@ Partial Class frmCitadelFitting
         '
         'GBStats
         '
-        Me.GBStats.Controls.Add(Me.CapacitorValues)
-        Me.GBStats.Controls.Add(Me.CapacitorLabel)
-        Me.GBStats.Controls.Add(Me.Calibration)
+        Me.GBStats.Controls.Add(Me.lblCapacitorValues)
+        Me.GBStats.Controls.Add(Me.lblCapacitorLabel)
+        Me.GBStats.Controls.Add(Me.lblCalibration)
         Me.GBStats.Controls.Add(Me.Calibration1)
-        Me.GBStats.Controls.Add(Me.CPU)
-        Me.GBStats.Controls.Add(Me.PowerGrid)
+        Me.GBStats.Controls.Add(Me.lblCPU)
+        Me.GBStats.Controls.Add(Me.lblPowerGrid)
         Me.GBStats.Controls.Add(Me.CPU1)
         Me.GBStats.Controls.Add(Me.PowerGrid1)
         Me.GBStats.Location = New System.Drawing.Point(959, 18)
@@ -1485,34 +1485,34 @@ Partial Class frmCitadelFitting
         Me.GBStats.TabIndex = 59
         Me.GBStats.TabStop = False
         '
-        'CapacitorValues
+        'lblCapacitorValues
         '
-        Me.CapacitorValues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.CapacitorValues.Location = New System.Drawing.Point(6, 213)
-        Me.CapacitorValues.Name = "CapacitorValues"
-        Me.CapacitorValues.Size = New System.Drawing.Size(155, 16)
-        Me.CapacitorValues.TabIndex = 67
-        Me.CapacitorValues.Text = "400 / 400"
-        Me.CapacitorValues.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblCapacitorValues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCapacitorValues.Location = New System.Drawing.Point(6, 153)
+        Me.lblCapacitorValues.Name = "lblCapacitorValues"
+        Me.lblCapacitorValues.Size = New System.Drawing.Size(155, 16)
+        Me.lblCapacitorValues.TabIndex = 67
+        Me.lblCapacitorValues.Text = "400 / 400"
+        Me.lblCapacitorValues.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'CapacitorLabel
+        'lblCapacitorLabel
         '
-        Me.CapacitorLabel.Location = New System.Drawing.Point(6, 197)
-        Me.CapacitorLabel.Name = "CapacitorLabel"
-        Me.CapacitorLabel.Size = New System.Drawing.Size(155, 16)
-        Me.CapacitorLabel.TabIndex = 66
-        Me.CapacitorLabel.Text = "Capacitor: Stable - 47%"
-        Me.CapacitorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.lblCapacitorLabel.Location = New System.Drawing.Point(6, 137)
+        Me.lblCapacitorLabel.Name = "lblCapacitorLabel"
+        Me.lblCapacitorLabel.Size = New System.Drawing.Size(155, 16)
+        Me.lblCapacitorLabel.TabIndex = 66
+        Me.lblCapacitorLabel.Text = "Capacitor:"
+        Me.lblCapacitorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'Calibration
+        'lblCalibration
         '
-        Me.Calibration.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Calibration.Location = New System.Drawing.Point(6, 114)
-        Me.Calibration.Name = "Calibration"
-        Me.Calibration.Size = New System.Drawing.Size(155, 16)
-        Me.Calibration.TabIndex = 65
-        Me.Calibration.Text = "400 / 400"
-        Me.Calibration.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblCalibration.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCalibration.Location = New System.Drawing.Point(6, 114)
+        Me.lblCalibration.Name = "lblCalibration"
+        Me.lblCalibration.Size = New System.Drawing.Size(155, 16)
+        Me.lblCalibration.TabIndex = 65
+        Me.lblCalibration.Text = "400 / 400"
+        Me.lblCalibration.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'Calibration1
         '
@@ -1523,25 +1523,25 @@ Partial Class frmCitadelFitting
         Me.Calibration1.TabIndex = 64
         Me.Calibration1.Text = "Calibration:"
         '
-        'CPU
+        'lblCPU
         '
-        Me.CPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.CPU.Location = New System.Drawing.Point(6, 76)
-        Me.CPU.Name = "CPU"
-        Me.CPU.Size = New System.Drawing.Size(155, 16)
-        Me.CPU.TabIndex = 63
-        Me.CPU.Text = "15,000,000 / 15,000,000"
-        Me.CPU.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblCPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCPU.Location = New System.Drawing.Point(6, 76)
+        Me.lblCPU.Name = "lblCPU"
+        Me.lblCPU.Size = New System.Drawing.Size(155, 16)
+        Me.lblCPU.TabIndex = 63
+        Me.lblCPU.Text = "15,000,000 / 15,000,000"
+        Me.lblCPU.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'PowerGrid
+        'lblPowerGrid
         '
-        Me.PowerGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.PowerGrid.Location = New System.Drawing.Point(6, 38)
-        Me.PowerGrid.Name = "PowerGrid"
-        Me.PowerGrid.Size = New System.Drawing.Size(155, 16)
-        Me.PowerGrid.TabIndex = 62
-        Me.PowerGrid.Text = "15,000,000 / 15,000,000"
-        Me.PowerGrid.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblPowerGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblPowerGrid.Location = New System.Drawing.Point(6, 38)
+        Me.lblPowerGrid.Name = "lblPowerGrid"
+        Me.lblPowerGrid.Size = New System.Drawing.Size(155, 16)
+        Me.lblPowerGrid.TabIndex = 62
+        Me.lblPowerGrid.Text = "15,000,000 / 15,000,000"
+        Me.lblPowerGrid.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'CPU1
         '
@@ -1786,14 +1786,14 @@ Partial Class frmCitadelFitting
     Friend WithEvents chkItemViewTypeHigh As CheckBox
     Friend WithEvents chkItemViewTypeServices As CheckBox
     Friend WithEvents GBStats As GroupBox
-    Friend WithEvents CPU As Label
-    Friend WithEvents PowerGrid As Label
+    Friend WithEvents lblCPU As Label
+    Friend WithEvents lblPowerGrid As Label
     Friend WithEvents CPU1 As Label
     Friend WithEvents PowerGrid1 As Label
-    Friend WithEvents Calibration As Label
+    Friend WithEvents lblCalibration As Label
     Friend WithEvents Calibration1 As Label
-    Friend WithEvents CapacitorValues As Label
-    Friend WithEvents CapacitorLabel As Label
+    Friend WithEvents lblCapacitorValues As Label
+    Friend WithEvents lblCapacitorLabel As Label
     Friend WithEvents btnSaveUpdatePrices As Button
     Friend WithEvents Button1 As Button
     Friend WithEvents chkRigTypeViewCombat As CheckBox

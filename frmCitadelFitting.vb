@@ -11,6 +11,10 @@ Public Class frmCitadelFitting
 
     Public CurrentCitadel As String
 
+    Private Attributes As New EVEAttributes
+    ' Stores all the stats for the selected citadel
+    Private CitadelStats As New CitadelAttributes
+
     Public Raitaru As String = "Raitaru"
     Public Azbel As String = "Azbel"
     Public Sotiyo As String = "Sotiyo"
@@ -20,74 +24,20 @@ Public Class frmCitadelFitting
         HighSlot = 12
     End Enum
 
-    Private Enum StructureAttributes
-        hp = 9
-        powerOutput = 11
-        lowSlots = 12
-        medSlots = 13
-        hiSlots = 14
-        cpuOutput = 48
-        rechargeRate = 55
-        maxTargetRange = 76
-        launcherSlotsLeft = 101
-        kineticDamageResonance = 109
-        thermalDamageResonance = 110
-        explosiveDamageResonance = 111
-        emDamageResonance = 113
-        uniformity = 136
-        maxLockedTargets = 192
-        scanRadarStrength = 208
-        scanLadarStrength = 209
-        scanMagnetometricStrength = 210
-        scanGravimetricStrength = 211
-        shieldCapacity = 263
-        armorHP = 265
-        armorEmDamageResonance = 267
-        armorExplosiveDamageResonance = 268
-        armorKineticDamageResonance = 269
-        armorThermalDamageResonance = 270
-        shieldEmDamageResonance = 271
-        shieldExplosiveDamageResonance = 272
-        shieldKineticDamageResonance = 273
-        shieldThermalDamageResonance = 274
-        droneCapacity = 283
-        shieldRechargeRate = 479
-        capacitorCapacity = 482
-        shieldUniformity = 484
-        armorUniformity = 524
-        signatureRadius = 552
-        scanResolution = 564
-        upgradeCapacity = 1132
-        rigSlots = 1137
-        upgradeSlotsLeft = 1154
-        heatCapacityHi = 1178
-        heatCapacityMed = 1199
-        heatCapacityLow = 1200
-        heatAttenuationHi = 1259
-        heatAttenuationMed = 1261
-        heatAttenuationLow = 1262
-        droneBandwidth = 1271
-        rigSize = 1547
-        shieldDamageLimit = 2034
-        armorDamageLimit = 2035
-        structureDamageLimit = 2036
-        energyWarfareResistance = 2045
-        serviceSlots = 2056
-        vulnerabilityRequired = 2111
-        sensorDampenerResistance = 2112
-        weaponDisruptionResistance = 2113
-        targetPainterResistance = 2114
-        stasisWebifierResistance = 2115
-        remoteRepairImpedance = 2116
-        remoteAssistanceImpedance = 2135
-        fighterAbilityAntiCapitalMissileResistance = 2244
-        ECMResistance = 2253
-        tetheringRange = 2268
-        structureServiceRoleBonus = 2339
-        strEngMatBonus = 2600
-        strEngCostBonus = 2601
-        strEngTimeBonus = 2602
-    End Enum
+    ' For saving and updating the selected citadel
+    Private Structure CitadelAttributes
+        Dim CPU As Double
+        Dim MaxCPU As Double
+        Dim PG As Double
+        Dim MaxPG As Double
+        Dim Calibration As Double
+        Dim MaxCalibration As Double
+        Dim Capacitor As Double
+        Dim MaxCapacitor As Double
+        Dim CapacitorRechargeRate As Double
+        Dim BaseCapRechargeRate As Double
+
+    End Structure
 
     Public Sub New()
 
@@ -156,6 +106,7 @@ Public Class frmCitadelFitting
     Private Sub ServiceModuleListView_MouseDown(sender As Object, e As MouseEventArgs) Handles ServiceModuleListView.MouseDown
         ' Make sure we select the image
         Dim Selection As ListViewItem = ServiceModuleListView.GetItemAt(e.X, e.Y)
+        Dim ModuleTypeID As String = Selection.ImageKey
 
         If Not IsNothing(Selection) Then
             pbFloat.Image = FittingImages.Images(Selection.ImageKey)
@@ -192,13 +143,46 @@ Public Class frmCitadelFitting
                 Dim FloatSlot As String = CStr(pbFloat.Tag)
                 If FloatSlot.Contains(Slot.Name.Substring(0, Len(Slot.Name) - 1)) Then
                     ' Only drop if over the right slot
+                    If RigFound(ModuleTypeID) Then
+                        ' They already used this rig, so don't allow
+                        Exit Sub
+                    End If
+                    ' Set the image info
                     Slot.Image = pbFloat.Image
+                    Slot.Image.Tag = ModuleTypeID
+
+                    ' Update the slot stats
+                    Call UpdateCitadelStats()
+
+                    ' Done updating
                     Exit For
                 End If
             End If
         Next
 
     End Sub
+
+    ' Sees if the rig is already used or not
+    Private Function RigFound(TypeID As String) As Boolean
+        Dim CurrentRigTypes As New List(Of String)
+
+        If Not IsNothing(RigSlot1.Image) Then
+            CurrentRigTypes.Add(CStr(RigSlot1.Image.Tag))
+        End If
+        If Not IsNothing(RigSlot2.Image) Then
+            CurrentRigTypes.Add(CStr(RigSlot2.Image.Tag))
+        End If
+        If Not IsNothing(RigSlot3.Image) Then
+            CurrentRigTypes.Add(CStr(RigSlot3.Image.Tag))
+        End If
+
+        If CurrentRigTypes.Contains(TypeID) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
 
     Private Sub InitCitadel()
         ' Load the image
@@ -207,6 +191,53 @@ Public Class frmCitadelFitting
         Call UpdateFittingImages()
         ' Set the slots
         Call UpdateCitadelSlots()
+        ' Set the stats
+        Call LoadCitadelStats()
+
+    End Sub
+
+    Private Sub StripFitting()
+
+        HighSlot1.Image = Nothing
+        HighSlot2.Image = Nothing
+        HighSlot3.Image = Nothing
+        HighSlot4.Image = Nothing
+        HighSlot5.Image = Nothing
+        HighSlot6.Image = Nothing
+        HighSlot7.Image = Nothing
+        HighSlot8.Image = Nothing
+
+        MidSlot1.Image = Nothing
+        MidSlot2.Image = Nothing
+        MidSlot3.Image = Nothing
+        MidSlot4.Image = Nothing
+        MidSlot5.Image = Nothing
+        MidSlot6.Image = Nothing
+        MidSlot7.Image = Nothing
+        MidSlot8.Image = Nothing
+
+        LowSlot1.Image = Nothing
+        LowSlot2.Image = Nothing
+        LowSlot3.Image = Nothing
+        LowSlot4.Image = Nothing
+        LowSlot5.Image = Nothing
+        LowSlot6.Image = Nothing
+        LowSlot7.Image = Nothing
+        LowSlot8.Image = Nothing
+
+        ServiceSlot1.Image = Nothing
+        ServiceSlot2.Image = Nothing
+        ServiceSlot3.Image = Nothing
+        ServiceSlot4.Image = Nothing
+        ServiceSlot5.Image = Nothing
+        ServiceSlot6.Image = Nothing
+
+        RigSlot1.Image = Nothing
+        RigSlot2.Image = Nothing
+        RigSlot3.Image = Nothing
+
+        ' init the citadel stats
+        Call LoadCitadelStats()
 
     End Sub
 
@@ -237,7 +268,7 @@ Public Class frmCitadelFitting
         ' Query all the stats for the selected Citadel and process slots
         SQL = "SELECT attributeID, COALESCE(valueint, valuefloat) AS Value "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
-        SQL &= "WHERE attributeID IN (" & StructureAttributes.hiSlots & "," & StructureAttributes.medSlots & "," & StructureAttributes.lowSlots & "," & StructureAttributes.serviceSlots & "," & StructureAttributes.rigSlots & ") "
+        SQL &= "WHERE attributeID IN (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
         SQL &= "AND INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID AND typeName = '" & cmbCitadelName.Text & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -245,15 +276,15 @@ Public Class frmCitadelFitting
 
         While rsReader.Read()
             AID = rsReader.GetInt32(0)
-            If AID = StructureAttributes.hiSlots Then
+            If AID = ItemAttributes.hiSlots Then
                 Call SetHighSlots(CInt(rsReader.GetValue(1)))
-            ElseIf AID = StructureAttributes.medSlots Then
+            ElseIf AID = ItemAttributes.medSlots Then
                 Call SetMidSlots(CInt(rsReader.GetValue(1)))
-            ElseIf AID = StructureAttributes.lowSlots Then
+            ElseIf AID = ItemAttributes.lowSlots Then
                 Call SetLowSlots(CInt(rsReader.GetValue(1)))
-            ElseIf AID = StructureAttributes.rigSlots Then
+            ElseIf AID = ItemAttributes.rigSlots Then
                 Call SetRigSlots(CInt(rsReader.GetValue(1)))
-            ElseIf AID = StructureAttributes.serviceSlots Then
+            ElseIf AID = ItemAttributes.serviceSlots Then
                 Call SetServiceSlots(CInt(rsReader.GetValue(1)))
             End If
         End While
@@ -261,6 +292,225 @@ Public Class frmCitadelFitting
         rsReader.Close()
 
     End Sub
+
+    ' Updates the stats after a module is chosen
+    Private Sub LoadCitadelStats(Optional IgnoreLabelUpdate As Boolean = False)
+        Dim Stats As New List(Of AttributeRecord)
+        Dim AttributesLookup As New EVEAttributes
+
+        ' Get all the stats for the citadel 
+        Stats = AttributesLookup.GetAttributes(cmbCitadelName.Text)
+
+        ' Loop through and get the stuff we want, save it locally for update
+        For Each Stat In Stats
+            Select Case Stat.ID
+                Case ItemAttributes.cpuOutput
+                    CitadelStats.MaxCPU = Stat.Value
+                    CitadelStats.CPU = 0
+                Case ItemAttributes.powerOutput
+                    CitadelStats.MaxPG = Stat.Value
+                    CitadelStats.PG = 0
+                Case ItemAttributes.upgradeCapacity ' Calibration
+                    CitadelStats.MaxCalibration = Stat.Value
+                    CitadelStats.Calibration = 0
+                Case ItemAttributes.capacitorCapacity
+                    CitadelStats.Capacitor = 0
+                    CitadelStats.MaxCapacitor = Stat.Value
+                Case ItemAttributes.rechargeRate
+                    CitadelStats.CapacitorRechargeRate = 100
+                    CitadelStats.BaseCapRechargeRate = Stat.Value
+            End Select
+        Next
+
+        ' Update the stats
+        If Not IgnoreLabelUpdate Then
+            Call UpdateCitadelStatLabels()
+        End If
+
+    End Sub
+
+    ' Updates the label stats of the citadel to include any items selected and installed
+    Private Sub UpdateCitadelStatLabels()
+
+        ' Update the labels
+        lblCPU.Text = FormatNumber(CitadelStats.CPU) & " / " & FormatNumber(CitadelStats.MaxCPU)
+        If CitadelStats.CPU > CitadelStats.MaxCPU Then
+            lblCPU.ForeColor = Color.Red
+        Else
+            lblCPU.ForeColor = Color.Black
+        End If
+
+        lblPowerGrid.Text = FormatNumber(CitadelStats.PG) & " / " & FormatNumber(CitadelStats.MaxPG)
+        If CitadelStats.PG > CitadelStats.MaxPG Then
+            lblPowerGrid.ForeColor = Color.Red
+        Else
+            lblPowerGrid.ForeColor = Color.Black
+        End If
+
+        lblCalibration.Text = FormatNumber(CitadelStats.Calibration) & " / " & FormatNumber(CitadelStats.MaxCalibration)
+        If CitadelStats.Calibration > CitadelStats.MaxCalibration Then
+            lblCalibration.ForeColor = Color.Red
+        Else
+            lblCalibration.ForeColor = Color.Black
+        End If
+
+        lblCapacitorValues.Text = FormatNumber(CitadelStats.Capacitor) & " / " & FormatNumber(CitadelStats.MaxCapacitor)
+        If CitadelStats.Capacitor > CitadelStats.MaxCapacitor Then
+            lblCapacitorValues.ForeColor = Color.Red
+        Else
+            lblCapacitorValues.ForeColor = Color.Black
+        End If
+
+    End Sub
+
+    Private Sub UpdateCitadelStats()
+        Dim InstalledSlots As New List(Of Integer)
+        Dim Attributes As New List(Of AttributeRecord)
+        Dim AttribLookup As New EVEAttributes
+
+        InstalledSlots = GetInstalledSlots()
+
+        ' Reset the totals each time before updating
+        Call LoadCitadelStats(True)
+
+        For Each Item In InstalledSlots
+            ' Look up the attributes for each slot and update the stats we want
+            Attributes = AttribLookup.GetAttributes(Item)
+
+            For Each Attribute In Attributes
+                Select Case Attribute.ID
+                    Case ItemAttributes.power
+                        CitadelStats.PG += Attribute.Value
+                    Case ItemAttributes.cpu
+                        CitadelStats.CPU += Attribute.Value
+                    Case ItemAttributes.capacitorNeed
+                        CitadelStats.Capacitor += Attribute.Value
+                    Case ItemAttributes.upgradeCost ' Calibration
+                        CitadelStats.Calibration += Attribute.Value
+                    Case ItemAttributes.cpuMultiplier
+                        CitadelStats.MaxCPU = CitadelStats.MaxCPU * Attribute.Value
+                    Case ItemAttributes.powerOutputMultiplier
+                        CitadelStats.MaxPG = CitadelStats.MaxPG * Attribute.Value
+                End Select
+            Next
+        Next
+
+        ' Update the stats
+        Call UpdateCitadelStatLabels()
+
+    End Sub
+
+    Private Function GetInstalledSlots() As List(Of Integer)
+        Dim ReturnItems As New List(Of Integer)
+
+        ' Go through all slots and return the typeIDs (saved in tag of image) for each installed item
+        If Not IsNothing(HighSlot1.Image) Then
+            ReturnItems.Add(CInt(HighSlot1.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot2.Image) Then
+            ReturnItems.Add(CInt(HighSlot2.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot3.Image) Then
+            ReturnItems.Add(CInt(HighSlot3.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot4.Image) Then
+            ReturnItems.Add(CInt(HighSlot4.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot5.Image) Then
+            ReturnItems.Add(CInt(HighSlot5.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot6.Image) Then
+            ReturnItems.Add(CInt(HighSlot6.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot7.Image) Then
+            ReturnItems.Add(CInt(HighSlot7.Image.Tag))
+        End If
+        If Not IsNothing(HighSlot8.Image) Then
+            ReturnItems.Add(CInt(HighSlot1.Image.Tag))
+        End If
+
+        If Not IsNothing(MidSlot1.Image) Then
+            ReturnItems.Add(CInt(MidSlot1.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot2.Image) Then
+            ReturnItems.Add(CInt(MidSlot2.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot3.Image) Then
+            ReturnItems.Add(CInt(MidSlot3.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot4.Image) Then
+            ReturnItems.Add(CInt(MidSlot4.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot5.Image) Then
+            ReturnItems.Add(CInt(MidSlot5.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot6.Image) Then
+            ReturnItems.Add(CInt(MidSlot6.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot7.Image) Then
+            ReturnItems.Add(CInt(MidSlot7.Image.Tag))
+        End If
+        If Not IsNothing(MidSlot8.Image) Then
+            ReturnItems.Add(CInt(MidSlot1.Image.Tag))
+        End If
+
+        If Not IsNothing(LowSlot1.Image) Then
+            ReturnItems.Add(CInt(LowSlot1.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot2.Image) Then
+            ReturnItems.Add(CInt(LowSlot2.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot3.Image) Then
+            ReturnItems.Add(CInt(LowSlot3.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot4.Image) Then
+            ReturnItems.Add(CInt(LowSlot4.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot5.Image) Then
+            ReturnItems.Add(CInt(LowSlot5.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot6.Image) Then
+            ReturnItems.Add(CInt(LowSlot6.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot7.Image) Then
+            ReturnItems.Add(CInt(LowSlot7.Image.Tag))
+        End If
+        If Not IsNothing(LowSlot8.Image) Then
+            ReturnItems.Add(CInt(LowSlot1.Image.Tag))
+        End If
+
+        If Not IsNothing(RigSlot1.Image) Then
+            ReturnItems.Add(CInt(RigSlot1.Image.Tag))
+        End If
+        If Not IsNothing(RigSlot2.Image) Then
+            ReturnItems.Add(CInt(RigSlot2.Image.Tag))
+        End If
+        If Not IsNothing(RigSlot3.Image) Then
+            ReturnItems.Add(CInt(RigSlot3.Image.Tag))
+        End If
+
+        If Not IsNothing(ServiceSlot1.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot1.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot2.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot2.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot3.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot3.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot4.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot4.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot5.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot5.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot6.Image) Then
+            ReturnItems.Add(CInt(ServiceSlot6.Image.Tag))
+        End If
+
+        Return ReturnItems
+
+    End Function
 
     ' Loads the images for fittings in the image lists
     Private Sub LoadFittingImages()
@@ -390,11 +640,11 @@ Public Class frmCitadelFitting
                     LVI.Group = ServiceModuleListView.Groups(3) ' 3 is low
                 Else
                     ' Rigs
-                    If rsReader.GetString(4).Contains("Combat Rig") Then
+                    If rsReader.GetString(4).Contains("Combat") Then
                         LVI.Group = ServiceModuleListView.Groups(4) ' 4 is Combat rigs
-                    ElseIf rsReader.GetString(4).Contains("Reprocessing Rig") Then
+                    ElseIf rsReader.GetString(4).Contains("Reprocessing") Then
                         LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
-                    ElseIf rsReader.GetString(4).Contains("Engineering Rig") Then
+                    ElseIf rsReader.GetString(4).Contains("Engineering") Then
                         LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
                     End If
                 End If
@@ -610,6 +860,7 @@ Public Class frmCitadelFitting
         Next
     End Sub
 
+
 #Region "Click Events"
     Private Sub cmbCitadelName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbCitadelName.SelectedIndexChanged
         Call InitCitadel()
@@ -651,15 +902,175 @@ Public Class frmCitadelFitting
         e.Handled = True
     End Sub
 
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-
+    Private Sub MidSlot1_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot1.DoubleClick
+        MidSlot1.Image = Nothing
+        Call UpdateCitadelStats()
     End Sub
 
-    Private Sub btnSaveUpdatePrices_Click(sender As Object, e As EventArgs) Handles btnSaveUpdatePrices.Click
+    Private Sub MidSlot2_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot2.DoubleClick
+        MidSlot2.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
 
+    Private Sub MidSlot3_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot3.DoubleClick
+        MidSlot3.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub MidSlot4_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot4.DoubleClick
+        MidSlot4.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub MidSlot5_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot5.DoubleClick
+        MidSlot5.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub MidSlot6_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot6.DoubleClick
+        MidSlot6.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub MidSlot7_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot7.DoubleClick
+        MidSlot7.Image = Nothing
+    End Sub
+
+    Private Sub MidSlot8_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot8.DoubleClick
+        MidSlot8.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot1_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot1.DoubleClick
+        HighSlot1.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot2_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot2.DoubleClick
+        HighSlot2.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot3_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot3.DoubleClick
+        HighSlot3.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot5_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot5.DoubleClick
+        HighSlot5.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot7_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot7.DoubleClick
+        HighSlot7.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot4_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot4.DoubleClick
+        HighSlot4.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot6_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot6.DoubleClick
+        HighSlot6.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub HighSlot8_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot8.DoubleClick
+        HighSlot8.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub RigSlot3_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot3.DoubleClick
+        RigSlot3.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub RigSlot2_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot2.DoubleClick
+        RigSlot2.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub RigSlot1_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot1.DoubleClick
+        RigSlot1.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot1_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot1.DoubleClick
+        LowSlot1.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot2_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot2.DoubleClick
+        LowSlot2.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot3_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot3.DoubleClick
+        LowSlot3.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot4_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot4.DoubleClick
+        LowSlot4.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot5_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot5.DoubleClick
+        LowSlot5.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot6_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot6.DoubleClick
+        LowSlot6.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot7_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot7.DoubleClick
+        LowSlot7.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub LowSlot8_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot8.DoubleClick
+        LowSlot8.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot5_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot5.DoubleClick
+        ServiceSlot5.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot3_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot3.DoubleClick
+        ServiceSlot3.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot1_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot1.DoubleClick
+        ServiceSlot1.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot2_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot2.DoubleClick
+        ServiceSlot2.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot4_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot4.DoubleClick
+        ServiceSlot4.Image = Nothing
+        Call UpdateCitadelStats()
+    End Sub
+
+    Private Sub ServiceSlot6_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot6.DoubleClick
+        ServiceSlot6.Image = Nothing
+        Call UpdateCitadelStats()
     End Sub
 
     Private Sub btnToggleAllPriceItems_Click(sender As Object, e As EventArgs) Handles btnToggleAllPriceItems.Click
+        Call StripFitting()
+    End Sub
+
+    Private Sub btnRefreshBlockData_Click(sender As Object, e As EventArgs) Handles btnRefreshBlockData.Click
 
     End Sub
 
