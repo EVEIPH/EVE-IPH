@@ -630,6 +630,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="Resources\no.png" />
     <None Include="Resources\SotiyoRender.png" />
     <None Include="Resources\RaitaruRender.png" />
     <None Include="Resources\AzbelRender.png" />

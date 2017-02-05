@@ -4377,6 +4377,7 @@ Tabs:
 
     Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
         Dim f1 As New frmCitadelFitting()
+        f1.CurrentCitadel = f1.Azbel
         f1.Show()
     End Sub
 
