@@ -5,12 +5,6 @@ Imports System.Threading
 Imports System.IO
 Imports System.Net
 Imports MoreLinq.MoreEnumerable
-Imports System
-Imports System.Drawing
-Imports System.Collections
-Imports System.ComponentModel
-Imports System.Windows.Forms
-Imports System.Data
 
 Public Class frmMain
     Inherits System.Windows.Forms.Form
@@ -4377,7 +4371,6 @@ Tabs:
 
     Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
         Dim f1 As New frmCitadelFitting()
-        f1.CurrentCitadel = f1.Azbel
         f1.Show()
     End Sub
 

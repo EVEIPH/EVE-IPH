@@ -9,20 +9,30 @@ Public Class frmCitadelFitting
     Private SlotPictureBoxList As New List(Of PictureBox)
     Private FirstLoad As Boolean
 
-    Public CurrentCitadel As String
+    'Public CurrentCitadelName As String
+    'Public CitadelSystemName As String
+    'Public CitadelRegionName As String
+    'Public CitadelSystemSecurity As Double
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
     Private CitadelStats As New CitadelAttributes
+    ' Save the selected Citadel so we don't need to look it up
+    Private SelectedCitadel As CitadelDBData
 
-    Public Raitaru As String = "Raitaru"
-    Public Azbel As String = "Azbel"
-    Public Sotiyo As String = "Sotiyo"
+    Private StructureDBDataList As New List(Of CitadelDBData) ' For storing all the types of citadel structures
+
     Private Enum SlotSizes
         LowSlot = 11
         MediumSlot = 13
         HighSlot = 12
     End Enum
+
+    Private Structure CitadelDBData
+        Dim Name As String
+        Dim TypeID As Integer
+        Dim GroupID As Integer
+    End Structure
 
     ' For saving and updating the selected citadel
     Private Structure CitadelAttributes
@@ -36,6 +46,7 @@ Public Class frmCitadelFitting
         Dim MaxCapacitor As Double
         Dim CapacitorRechargeRate As Double
         Dim BaseCapRechargeRate As Double
+        Dim ServiceModuleFuelBPH As Integer ' blocks per hour
 
     End Structure
 
@@ -46,7 +57,6 @@ Public Class frmCitadelFitting
         FirstLoad = True
 
         'Temp stuff
-        CurrentCitadel = Azbel
         EVEDB = New DBConnection(SQLiteDBFileName)
 
         ' Put all the slot images into an array
@@ -90,16 +100,47 @@ Public Class frmCitadelFitting
             .Add(RigSlot3)
         End With
 
-        ' Set the combo text
-        cmbCitadelName.Text = CurrentCitadel
+        ' Get all data on structures for DB look ups first
+        Call LoadCitadelDBData()
 
         ' Add all the images to the image list
         Call LoadFittingImages()
 
         ' Load the citadel
-        Call InitCitadel()
+        Call LoadCitadel("Azbel")
 
         FirstLoad = False
+
+    End Sub
+
+    Private Sub LoadCitadelDBData()
+        Dim SQL As String = ""
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
+
+        SQL = "SELECT typeID, typeName, groupID FROM INVENTORY_TYPES WHERE groupID IN (1404, 1657)"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsReader = DBCommand.ExecuteReader
+
+        ' Clear the combo
+        Call cmbCitadelName.Items.Clear()
+
+        While rsReader.Read()
+            Dim TempData As CitadelDBData
+
+            TempData.TypeID = rsReader.GetInt32(0)
+            TempData.Name = rsReader.GetString(1)
+            TempData.GroupID = rsReader.GetInt32(2)
+
+            Call StructureDBDataList.Add(TempData)
+
+            ' Also add each to the combo box
+            Call cmbCitadelName.Items.Add(TempData.Name)
+
+        End While
+
+        rsReader.Close()
 
     End Sub
 
@@ -184,7 +225,11 @@ Public Class frmCitadelFitting
 
     End Function
 
-    Private Sub InitCitadel()
+    Private Sub LoadCitadel(ByVal SentCitadelName As String)
+        ' First get the data to use
+        SelectedCitadel = GetCitadelData(SentCitadelName)
+        ' Set the combo text
+        cmbCitadelName.Text = SelectedCitadel.Name
         ' Load the image
         Call LoadCitadelRenderImage()
         ' Refresh the items list
@@ -244,19 +289,46 @@ Public Class frmCitadelFitting
     ' Load the image into the background
     Private Sub LoadCitadelRenderImage()
 
-        Select Case cmbCitadelName.Text
-            Case Azbel
-                StructurePicture.Image = My.Resources.AzbelRender
-            Case Raitaru
-                StructurePicture.Image = My.Resources.RaitaruRender
-            Case Sotiyo
-                StructurePicture.Image = My.Resources.SotiyoRender
-        End Select
+        For Each Citadel In StructureDBDataList
+            ' Look for the name and then load the render image from the typeID (should be in images folder)
+            If Citadel.Name = cmbCitadelName.Text Then
+                StructurePicture.Image = Image.FromFile(BPImageFilePath & Citadel.TypeID & ".png")
+                Exit For
+            End If
+        Next
 
         StructurePicture.Refresh()
         Application.DoEvents()
 
     End Sub
+
+    ' Gets and returns the citadel data
+    Private Function GetCitadelData(ByVal LookupName As String) As CitadelDBData
+        Dim SQL As String = ""
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
+
+        SQL = "SELECT typeID, groupID FROM INVENTORY_TYPES "
+        SQL &= "WHERE INVENTORY_TYPES.published <> 0 AND typeName = '" & LookupName & "'"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsReader = DBCommand.ExecuteReader
+
+        If rsReader.Read() Then
+            Dim TempData As CitadelDBData
+
+            TempData.TypeID = rsReader.GetInt32(0)
+            TempData.Name = LookupName
+            TempData.GroupID = rsReader.GetInt32(1)
+            rsReader.Close()
+
+            Return TempData
+
+        Else
+            Return Nothing
+        End If
+
+    End Function
 
     ' Clear and Set the slots to match the citadel we are using
     Private Sub UpdateCitadelSlots()
@@ -266,10 +338,10 @@ Public Class frmCitadelFitting
         Dim AID As Integer
 
         ' Query all the stats for the selected Citadel and process slots
-        SQL = "SELECT attributeID, COALESCE(valueint, valuefloat) AS Value "
+        SQL = "Select attributeID, COALESCE(valueint, valuefloat) As Value "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
-        SQL &= "WHERE attributeID IN (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
-        SQL &= "AND INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID AND typeName = '" & cmbCitadelName.Text & "'"
+        SQL &= "WHERE attributeID In (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
+        SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & cmbCitadelName.Text & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader
@@ -299,7 +371,7 @@ Public Class frmCitadelFitting
         Dim AttributesLookup As New EVEAttributes
 
         ' Get all the stats for the citadel 
-        Stats = AttributesLookup.GetAttributes(cmbCitadelName.Text)
+        Stats = AttributesLookup.GetAttributes(SelectedCitadel.Name)
 
         ' Loop through and get the stuff we want, save it locally for update
         For Each Stat In Stats
@@ -321,6 +393,9 @@ Public Class frmCitadelFitting
                     CitadelStats.BaseCapRechargeRate = Stat.Value
             End Select
         Next
+
+        ' Fuel is always 0 to start with no limit
+        CitadelStats.ServiceModuleFuelBPH = 0
 
         ' Update the stats
         If Not IgnoreLabelUpdate Then
@@ -361,6 +436,9 @@ Public Class frmCitadelFitting
             lblCapacitorValues.ForeColor = Color.Black
         End If
 
+        ' Update the fuel costs label
+        Call UpdateFuelCostLabels()
+
     End Sub
 
     Private Sub UpdateCitadelStats()
@@ -391,6 +469,8 @@ Public Class frmCitadelFitting
                         CitadelStats.MaxCPU = CitadelStats.MaxCPU * Attribute.Value
                     Case ItemAttributes.powerOutputMultiplier
                         CitadelStats.MaxPG = CitadelStats.MaxPG * Attribute.Value
+                    Case ItemAttributes.serviceModuleFuelAmount
+                        CitadelStats.ServiceModuleFuelBPH += CInt(Attribute.Value)
                 End Select
             Next
         Next
@@ -512,6 +592,21 @@ Public Class frmCitadelFitting
 
     End Function
 
+    Private Function GetFuelCost(ByVal NumBlocks As Integer) As String
+
+    End Function
+
+    Private Sub UpdateFuelCostLabels()
+        ' If they want fuel cost
+        If chkIncludeFuelCosts.Checked Then
+            lblServiceModuleBPH.Text = FormatNumber(CitadelStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
+            lblServiceModuleFCPH.Text = GetFuelCost(CitadelStats.ServiceModuleFuelBPH)
+        Else
+            lblServiceModuleBPH.Text = "-"
+            lblServiceModuleFCPH.Text = "-"
+        End If
+    End Sub
+
     ' Loads the images for fittings in the image lists
     Private Sub LoadFittingImages()
         Dim SQL As String = ""
@@ -554,7 +649,6 @@ Public Class frmCitadelFitting
             Dim SQL As String = ""
             Dim RigString As String = ""
             Dim SlotString As String = ""
-            Dim ServicesString As String = ""
             Dim SQLList As New List(Of String)
             Dim rsReader As SQLiteDataReader
             Dim DBCommand As SQLiteCommand
@@ -566,15 +660,8 @@ Public Class frmCitadelFitting
             SQL &= "AND INVENTORY_TYPES.published <> 0 "
 
             If chkItemViewTypeServices.Checked Then
-                ServicesString &= "(INVENTORY_TYPES.groupID IN (1321, 1322, 1415, 1717) "
-                If cmbCitadelName.Text = Azbel Then
-                    ' Azbel can't use cap or super capital arrays
-                    ServicesString &= "AND INVENTORY_TYPES.typeID NOT IN (35881,35877))"
-                Else
-                    ServicesString &= ")"
-                End If
                 ' Add the sql
-                Call SQLList.Add(ServicesString)
+                Call SQLList.Add("(INVENTORY_TYPES.groupID IN (1321, 1322, 1415, 1717)) ")
             End If
 
             ' Process high, medium, and low slots together
@@ -598,15 +685,15 @@ Public Class frmCitadelFitting
             End If
 
             If chkRigTypeViewCombat.Checked Then
-                Call SQLList.Add("(groupName Like 'Structure Combat Rig " & GetRigSize() & "%')")
+                Call SQLList.Add("(groupName Like 'Structure Combat Rig%')")
             End If
 
             If chkRigTypeViewEngineering.Checked Then
-                Call SQLList.Add("(groupName LIKE 'Structure Engineering Rig " & GetRigSize() & "%')")
+                Call SQLList.Add("(groupName LIKE 'Structure Engineering Rig%')")
             End If
 
             If chkRigTypeViewReprocessing.Checked Then
-                Call SQLList.Add("(groupName LIKE 'Structure Resource Rig " & GetRigSize() & "%')")
+                Call SQLList.Add("(groupName LIKE 'Structure Resource Rig%')")
             End If
 
             ' Set the SQL
@@ -630,29 +717,32 @@ Public Class frmCitadelFitting
                 Dim EID As Integer = rsReader.GetInt32(3)
                 Dim LVI As New ListViewItem
 
-                If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Then
-                    LVI.Group = ServiceModuleListView.Groups(0) ' 0 is services
-                ElseIf EID = SlotSizes.HighSlot Then
-                    LVI.Group = ServiceModuleListView.Groups(1) ' 1 is high
-                ElseIf EID = SlotSizes.MediumSlot Then
-                    LVI.Group = ServiceModuleListView.Groups(2) ' 2 is medium
-                ElseIf EID = SlotSizes.LowSlot Then
-                    LVI.Group = ServiceModuleListView.Groups(3) ' 3 is low
-                Else
-                    ' Rigs
-                    If rsReader.GetString(4).Contains("Combat") Then
-                        LVI.Group = ServiceModuleListView.Groups(4) ' 4 is Combat rigs
-                    ElseIf rsReader.GetString(4).Contains("Reprocessing") Then
-                        LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
-                    ElseIf rsReader.GetString(4).Contains("Engineering") Then
-                        LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
+                ' Only add if it can be fit to the selected citadel
+                If CitadelCanFitItem(SelectedCitadel.TypeID, SelectedCitadel.GroupID, rsReader.GetInt32(0)) Then
+                    If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Then
+                        LVI.Group = ServiceModuleListView.Groups(0) ' 0 is services
+                    ElseIf EID = SlotSizes.HighSlot Then
+                        LVI.Group = ServiceModuleListView.Groups(1) ' 1 is high
+                    ElseIf EID = SlotSizes.MediumSlot Then
+                        LVI.Group = ServiceModuleListView.Groups(2) ' 2 is medium
+                    ElseIf EID = SlotSizes.LowSlot Then
+                        LVI.Group = ServiceModuleListView.Groups(3) ' 3 is low
+                    Else
+                        ' Rigs
+                        If rsReader.GetString(4).Contains("Combat") Then
+                            LVI.Group = ServiceModuleListView.Groups(4) ' 4 is Combat rigs
+                        ElseIf rsReader.GetString(4).Contains("Reprocessing") Then
+                            LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
+                        ElseIf rsReader.GetString(4).Contains("Engineering") Then
+                            LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
+                        End If
                     End If
-                End If
 
-                ' add the image
-                LVI.ImageKey = CStr(rsReader.GetInt32(0))
-                LVI.Text = rsReader.GetString(2)
-                ServiceModuleListView.Items.Add(LVI)
+                    ' add the image
+                    LVI.ImageKey = CStr(rsReader.GetInt32(0))
+                    LVI.Text = rsReader.GetString(2)
+                    ServiceModuleListView.Items.Add(LVI)
+                End If
 
             End While
 
@@ -660,17 +750,31 @@ Public Class frmCitadelFitting
 
     End Sub
 
-    Private Function GetRigSize() As String
-        Select Case cmbCitadelName.Text
-            Case Azbel ' Medium
-                Return "M"
-            Case Raitaru ' Large
-                Return "L"
-            Case Sotiyo ' Extra large
-                Return "XL"
-            Case Else
-                Return ""
-        End Select
+    ' Reads the attributes to see if the itemID sent can be fit to the citadelID sent
+    Private Function CitadelCanFitItem(ByVal CitadelTypeID As Integer, ByVal CitadelGroupID As Integer, ByVal ItemTypeID As Integer) As Boolean
+        Dim SQL As String = ""
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
+
+        SQL = "SELECT COALESCE(valuefloat, valueint) AS CitadelID FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+        SQL &= "WHERE TYPE_ATTRIBUTES.typeID = {0} AND ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
+        SQL &= "AND (attributeName LIKE 'canFitShipType%' OR attributeName LIKE 'canFitShipGroup%')"
+        ' Add typeid to look up
+        SQL = String.Format(SQL, ItemTypeID)
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsReader = DBCommand.ExecuteReader
+
+        While rsReader.Read()
+            Dim IDtoCheck As Integer = CInt(rsReader.GetValue(0))
+            If IDtoCheck = CitadelTypeID Or IDtoCheck = CitadelGroupID Then
+                Return True
+            End If
+        End While
+
+        ' Not found
+        Return False
+
     End Function
 
     Private Sub SetHighSlots(Slots As Integer)
@@ -860,10 +964,9 @@ Public Class frmCitadelFitting
         Next
     End Sub
 
-
 #Region "Click Events"
     Private Sub cmbCitadelName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbCitadelName.SelectedIndexChanged
-        Call InitCitadel()
+        Call LoadCitadel(cmbCitadelName.Text)
     End Sub
 
     Private Sub chkItemViewTypeAll_CheckedChanged(sender As Object, e As EventArgs)
@@ -1074,12 +1177,10 @@ Public Class frmCitadelFitting
 
     End Sub
 
+    Private Sub chkIncludeFuelCosts_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeFuelCosts.CheckedChanged
+        Call UpdateFuelCostLabels()
+    End Sub
+
 #End Region
 
 End Class
-
-Public Enum CitadelImageRender
-    Raitaru = 35825
-    Azbel = 32826
-    Sotiyo = 35827
-End Enum

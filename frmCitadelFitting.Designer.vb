@@ -23,17 +23,17 @@ Partial Class frmCitadelFitting
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim ListViewGroup8 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup9 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup10 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup11 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup12 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup13 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup14 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup1 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup2 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup3 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup4 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup5 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup6 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup7 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCitadelFitting))
         Me.FittingImages = New System.Windows.Forms.ImageList(Me.components)
         Me.ServiceModuleListView = New System.Windows.Forms.ListView()
-        Me.SelectedCitadel = New System.Windows.Forms.Label()
+        Me.lblSelectedCitadel = New System.Windows.Forms.Label()
         Me.cmbCitadelName = New System.Windows.Forms.ComboBox()
         Me.chkIncludeFuelCosts = New System.Windows.Forms.CheckBox()
         Me.btnToggleAllPriceItems = New System.Windows.Forms.Button()
@@ -116,6 +116,7 @@ Partial Class frmCitadelFitting
         Me.txtPOS3 = New System.Windows.Forms.TextBox()
         Me.txtPOS9 = New System.Windows.Forms.TextBox()
         Me.gbPOSFuelBlocks = New System.Windows.Forms.GroupBox()
+        Me.chkAutoUpdateFuelPrice = New System.Windows.Forms.CheckBox()
         Me.lblPOSFuelBlockBuild = New System.Windows.Forms.Label()
         Me.txtPOSFuelBlockBuy = New System.Windows.Forms.TextBox()
         Me.lblPOSBlockBuild2 = New System.Windows.Forms.Label()
@@ -140,6 +141,10 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeHigh = New System.Windows.Forms.CheckBox()
         Me.chkItemViewTypeServices = New System.Windows.Forms.CheckBox()
         Me.GBStats = New System.Windows.Forms.GroupBox()
+        Me.lblServiceModuleFCPH = New System.Windows.Forms.Label()
+        Me.lblFuelCost = New System.Windows.Forms.Label()
+        Me.lblServiceModuleBPH = New System.Windows.Forms.Label()
+        Me.lblFuelBPH = New System.Windows.Forms.Label()
         Me.lblCapacitorValues = New System.Windows.Forms.Label()
         Me.lblCapacitorLabel = New System.Windows.Forms.Label()
         Me.lblCalibration = New System.Windows.Forms.Label()
@@ -151,6 +156,7 @@ Partial Class frmCitadelFitting
         Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
+        Me.btnLoadFitting = New System.Windows.Forms.Button()
         Me.tabCitadel.SuspendLayout()
         Me.tabFitting.SuspendLayout()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -223,28 +229,28 @@ Partial Class frmCitadelFitting
         Me.ServiceModuleListView.Activation = System.Windows.Forms.ItemActivation.OneClick
         Me.ServiceModuleListView.AllowDrop = True
         Me.ServiceModuleListView.AutoArrange = False
-        ListViewGroup8.Header = "Services"
-        ListViewGroup8.Name = "ServiceSlots"
-        ListViewGroup8.Tag = "ServiceSlot"
-        ListViewGroup9.Header = "High Slots"
-        ListViewGroup9.Name = "HighSlots"
-        ListViewGroup9.Tag = "HighSlot"
-        ListViewGroup10.Header = "Mid Slots"
-        ListViewGroup10.Name = "MidSlots"
-        ListViewGroup10.Tag = "MidSlots"
-        ListViewGroup11.Header = "Low Slots"
-        ListViewGroup11.Name = "LowSlots"
-        ListViewGroup11.Tag = "LowSlot"
-        ListViewGroup12.Header = "Combat Rigs"
-        ListViewGroup12.Name = "CombatRigs"
-        ListViewGroup12.Tag = "RigSlot"
-        ListViewGroup13.Header = "Reprocessing Rigs"
-        ListViewGroup13.Name = "ReprocessingRigs"
-        ListViewGroup13.Tag = "RigSlot"
-        ListViewGroup14.Header = "Engineering Rigs"
-        ListViewGroup14.Name = "EngineeringRigs"
-        ListViewGroup14.Tag = "RigSlot"
-        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup8, ListViewGroup9, ListViewGroup10, ListViewGroup11, ListViewGroup12, ListViewGroup13, ListViewGroup14})
+        ListViewGroup1.Header = "Services"
+        ListViewGroup1.Name = "ServiceSlots"
+        ListViewGroup1.Tag = "ServiceSlot"
+        ListViewGroup2.Header = "High Slots"
+        ListViewGroup2.Name = "HighSlots"
+        ListViewGroup2.Tag = "HighSlot"
+        ListViewGroup3.Header = "Mid Slots"
+        ListViewGroup3.Name = "MidSlots"
+        ListViewGroup3.Tag = "MidSlots"
+        ListViewGroup4.Header = "Low Slots"
+        ListViewGroup4.Name = "LowSlots"
+        ListViewGroup4.Tag = "LowSlot"
+        ListViewGroup5.Header = "Combat Rigs"
+        ListViewGroup5.Name = "CombatRigs"
+        ListViewGroup5.Tag = "RigSlot"
+        ListViewGroup6.Header = "Reprocessing Rigs"
+        ListViewGroup6.Name = "ReprocessingRigs"
+        ListViewGroup6.Tag = "RigSlot"
+        ListViewGroup7.Header = "Engineering Rigs"
+        ListViewGroup7.Name = "EngineeringRigs"
+        ListViewGroup7.Tag = "RigSlot"
+        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7})
         Me.ServiceModuleListView.HoverSelection = True
         Me.ServiceModuleListView.LargeImageList = Me.FittingImages
         Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 148)
@@ -254,29 +260,29 @@ Partial Class frmCitadelFitting
         Me.ServiceModuleListView.TabIndex = 8
         Me.ServiceModuleListView.UseCompatibleStateImageBehavior = False
         '
-        'SelectedCitadel
+        'lblSelectedCitadel
         '
-        Me.SelectedCitadel.AutoSize = True
-        Me.SelectedCitadel.Location = New System.Drawing.Point(6, 12)
-        Me.SelectedCitadel.Name = "SelectedCitadel"
-        Me.SelectedCitadel.Size = New System.Drawing.Size(109, 13)
-        Me.SelectedCitadel.TabIndex = 42
-        Me.SelectedCitadel.Text = "Engineering Complex:"
+        Me.lblSelectedCitadel.AutoSize = True
+        Me.lblSelectedCitadel.Location = New System.Drawing.Point(6, 12)
+        Me.lblSelectedCitadel.Name = "lblSelectedCitadel"
+        Me.lblSelectedCitadel.Size = New System.Drawing.Size(87, 13)
+        Me.lblSelectedCitadel.TabIndex = 42
+        Me.lblSelectedCitadel.Text = "Selected Citadel:"
         '
         'cmbCitadelName
         '
         Me.cmbCitadelName.FormattingEnabled = True
-        Me.cmbCitadelName.Items.AddRange(New Object() {"Azbel", "Raitaru", "Sotiyo"})
-        Me.cmbCitadelName.Location = New System.Drawing.Point(121, 8)
+        Me.cmbCitadelName.Location = New System.Drawing.Point(99, 8)
         Me.cmbCitadelName.Name = "cmbCitadelName"
-        Me.cmbCitadelName.Size = New System.Drawing.Size(227, 21)
+        Me.cmbCitadelName.Size = New System.Drawing.Size(249, 21)
         Me.cmbCitadelName.TabIndex = 43
         '
         'chkIncludeFuelCosts
         '
-        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(268, 35)
+        Me.chkIncludeFuelCosts.AutoSize = True
+        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(27, 258)
         Me.chkIncludeFuelCosts.Name = "chkIncludeFuelCosts"
-        Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(89, 33)
+        Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(113, 17)
         Me.chkIncludeFuelCosts.TabIndex = 44
         Me.chkIncludeFuelCosts.Text = "Include Fuel Costs"
         Me.chkIncludeFuelCosts.UseVisualStyleBackColor = True
@@ -1216,6 +1222,7 @@ Partial Class frmCitadelFitting
         '
         'gbPOSFuelBlocks
         '
+        Me.gbPOSFuelBlocks.Controls.Add(Me.chkAutoUpdateFuelPrice)
         Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockBuild)
         Me.gbPOSFuelBlocks.Controls.Add(Me.txtPOSFuelBlockBuy)
         Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSBlockBuild2)
@@ -1237,6 +1244,16 @@ Partial Class frmCitadelFitting
         Me.gbPOSFuelBlocks.TabIndex = 227
         Me.gbPOSFuelBlocks.TabStop = False
         Me.gbPOSFuelBlocks.Text = "Fuel Blocks"
+        '
+        'chkAutoUpdateFuelPrice
+        '
+        Me.chkAutoUpdateFuelPrice.AutoSize = True
+        Me.chkAutoUpdateFuelPrice.Location = New System.Drawing.Point(192, 77)
+        Me.chkAutoUpdateFuelPrice.Name = "chkAutoUpdateFuelPrice"
+        Me.chkAutoUpdateFuelPrice.Size = New System.Drawing.Size(86, 17)
+        Me.chkAutoUpdateFuelPrice.TabIndex = 62
+        Me.chkAutoUpdateFuelPrice.Text = "Auto Update"
+        Me.chkAutoUpdateFuelPrice.UseVisualStyleBackColor = True
         '
         'lblPOSFuelBlockBuild
         '
@@ -1471,9 +1488,14 @@ Partial Class frmCitadelFitting
         '
         'GBStats
         '
+        Me.GBStats.Controls.Add(Me.lblServiceModuleFCPH)
+        Me.GBStats.Controls.Add(Me.lblFuelCost)
+        Me.GBStats.Controls.Add(Me.lblServiceModuleBPH)
+        Me.GBStats.Controls.Add(Me.lblFuelBPH)
         Me.GBStats.Controls.Add(Me.lblCapacitorValues)
         Me.GBStats.Controls.Add(Me.lblCapacitorLabel)
         Me.GBStats.Controls.Add(Me.lblCalibration)
+        Me.GBStats.Controls.Add(Me.chkIncludeFuelCosts)
         Me.GBStats.Controls.Add(Me.Calibration1)
         Me.GBStats.Controls.Add(Me.lblCPU)
         Me.GBStats.Controls.Add(Me.lblPowerGrid)
@@ -1485,6 +1507,42 @@ Partial Class frmCitadelFitting
         Me.GBStats.TabIndex = 59
         Me.GBStats.TabStop = False
         '
+        'lblServiceModuleFCPH
+        '
+        Me.lblServiceModuleFCPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(6, 239)
+        Me.lblServiceModuleFCPH.Name = "lblServiceModuleFCPH"
+        Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblServiceModuleFCPH.TabIndex = 71
+        Me.lblServiceModuleFCPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblFuelCost
+        '
+        Me.lblFuelCost.Location = New System.Drawing.Point(6, 223)
+        Me.lblFuelCost.Name = "lblFuelCost"
+        Me.lblFuelCost.Size = New System.Drawing.Size(155, 16)
+        Me.lblFuelCost.TabIndex = 70
+        Me.lblFuelCost.Text = "Fuel Cost per Hour"
+        Me.lblFuelCost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblServiceModuleBPH
+        '
+        Me.lblServiceModuleBPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(6, 196)
+        Me.lblServiceModuleBPH.Name = "lblServiceModuleBPH"
+        Me.lblServiceModuleBPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblServiceModuleBPH.TabIndex = 69
+        Me.lblServiceModuleBPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblFuelBPH
+        '
+        Me.lblFuelBPH.Location = New System.Drawing.Point(6, 180)
+        Me.lblFuelBPH.Name = "lblFuelBPH"
+        Me.lblFuelBPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblFuelBPH.TabIndex = 68
+        Me.lblFuelBPH.Text = "Fuel Blocks per Hour"
+        Me.lblFuelBPH.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'lblCapacitorValues
         '
         Me.lblCapacitorValues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
@@ -1492,7 +1550,6 @@ Partial Class frmCitadelFitting
         Me.lblCapacitorValues.Name = "lblCapacitorValues"
         Me.lblCapacitorValues.Size = New System.Drawing.Size(155, 16)
         Me.lblCapacitorValues.TabIndex = 67
-        Me.lblCapacitorValues.Text = "400 / 400"
         Me.lblCapacitorValues.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblCapacitorLabel
@@ -1563,7 +1620,7 @@ Partial Class frmCitadelFitting
         '
         'btnSaveUpdatePrices
         '
-        Me.btnSaveUpdatePrices.Location = New System.Drawing.Point(89, 35)
+        Me.btnSaveUpdatePrices.Location = New System.Drawing.Point(93, 35)
         Me.btnSaveUpdatePrices.Name = "btnSaveUpdatePrices"
         Me.btnSaveUpdatePrices.Size = New System.Drawing.Size(81, 30)
         Me.btnSaveUpdatePrices.TabIndex = 48
@@ -1572,7 +1629,7 @@ Partial Class frmCitadelFitting
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(172, 35)
+        Me.Button1.Location = New System.Drawing.Point(267, 35)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(81, 30)
         Me.Button1.TabIndex = 60
@@ -1591,12 +1648,22 @@ Partial Class frmCitadelFitting
         Me.pbFloat.TabStop = False
         Me.pbFloat.Visible = False
         '
+        'btnLoadFitting
+        '
+        Me.btnLoadFitting.Location = New System.Drawing.Point(180, 35)
+        Me.btnLoadFitting.Name = "btnLoadFitting"
+        Me.btnLoadFitting.Size = New System.Drawing.Size(81, 30)
+        Me.btnLoadFitting.TabIndex = 61
+        Me.btnLoadFitting.Text = "Load Fitting"
+        Me.btnLoadFitting.UseVisualStyleBackColor = True
+        '
         'frmCitadelFitting
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(1129, 611)
+        Me.Controls.Add(Me.btnLoadFitting)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.pbFloat)
         Me.Controls.Add(Me.GBStats)
@@ -1604,14 +1671,13 @@ Partial Class frmCitadelFitting
         Me.Controls.Add(Me.tabCitadel)
         Me.Controls.Add(Me.btnSaveUpdatePrices)
         Me.Controls.Add(Me.btnToggleAllPriceItems)
-        Me.Controls.Add(Me.chkIncludeFuelCosts)
         Me.Controls.Add(Me.cmbCitadelName)
-        Me.Controls.Add(Me.SelectedCitadel)
+        Me.Controls.Add(Me.lblSelectedCitadel)
         Me.Controls.Add(Me.ServiceModuleListView)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "frmCitadelFitting"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Engineering Complex Fitting"
+        Me.Text = "Citadel Fitting"
         Me.tabCitadel.ResumeLayout(False)
         Me.tabFitting.ResumeLayout(False)
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1716,7 +1782,7 @@ Partial Class frmCitadelFitting
     Friend WithEvents MidSlot4 As PictureBox
     Friend WithEvents MidSlot3 As PictureBox
     Friend WithEvents pbFloat As PictureBox
-    Friend WithEvents SelectedCitadel As Label
+    Friend WithEvents lblSelectedCitadel As Label
     Friend WithEvents cmbCitadelName As ComboBox
     Friend WithEvents chkIncludeFuelCosts As CheckBox
     Friend WithEvents btnToggleAllPriceItems As Button
@@ -1799,4 +1865,10 @@ Partial Class frmCitadelFitting
     Friend WithEvents chkRigTypeViewCombat As CheckBox
     Friend WithEvents chkRigTypeViewReprocessing As CheckBox
     Friend WithEvents chkRigTypeViewEngineering As CheckBox
+    Friend WithEvents lblServiceModuleFCPH As Label
+    Friend WithEvents lblFuelCost As Label
+    Friend WithEvents lblServiceModuleBPH As Label
+    Friend WithEvents lblFuelBPH As Label
+    Friend WithEvents chkAutoUpdateFuelPrice As CheckBox
+    Friend WithEvents btnLoadFitting As Button
 End Class
