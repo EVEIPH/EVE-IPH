@@ -141,6 +141,7 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeHigh = New System.Windows.Forms.CheckBox()
         Me.chkItemViewTypeServices = New System.Windows.Forms.CheckBox()
         Me.GBStats = New System.Windows.Forms.GroupBox()
+        Me.lblOnlineAmt = New System.Windows.Forms.Label()
         Me.lblServiceModuleFCPH = New System.Windows.Forms.Label()
         Me.lblFuelCost = New System.Windows.Forms.Label()
         Me.lblServiceModuleBPH = New System.Windows.Forms.Label()
@@ -157,6 +158,12 @@ Partial Class frmCitadelFitting
         Me.Button1 = New System.Windows.Forms.Button()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
         Me.btnLoadFitting = New System.Windows.Forms.Button()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.lblServiceModuleOnlineAmt = New System.Windows.Forms.Label()
+        Me.rbtnAmarrFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnCaldariFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnGallenteFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnMinmatarFuelBlock = New System.Windows.Forms.RadioButton()
         Me.tabCitadel.SuspendLayout()
         Me.tabFitting.SuspendLayout()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -216,6 +223,7 @@ Partial Class frmCitadelFitting
         Me.GroupBox1.SuspendLayout()
         Me.GBStats.SuspendLayout()
         CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
         '
         'FittingImages
@@ -280,7 +288,7 @@ Partial Class frmCitadelFitting
         'chkIncludeFuelCosts
         '
         Me.chkIncludeFuelCosts.AutoSize = True
-        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(27, 258)
+        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(4, 0)
         Me.chkIncludeFuelCosts.Name = "chkIncludeFuelCosts"
         Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(113, 17)
         Me.chkIncludeFuelCosts.TabIndex = 44
@@ -1488,14 +1496,10 @@ Partial Class frmCitadelFitting
         '
         'GBStats
         '
-        Me.GBStats.Controls.Add(Me.lblServiceModuleFCPH)
-        Me.GBStats.Controls.Add(Me.lblFuelCost)
-        Me.GBStats.Controls.Add(Me.lblServiceModuleBPH)
-        Me.GBStats.Controls.Add(Me.lblFuelBPH)
+        Me.GBStats.Controls.Add(Me.GroupBox2)
         Me.GBStats.Controls.Add(Me.lblCapacitorValues)
         Me.GBStats.Controls.Add(Me.lblCapacitorLabel)
         Me.GBStats.Controls.Add(Me.lblCalibration)
-        Me.GBStats.Controls.Add(Me.chkIncludeFuelCosts)
         Me.GBStats.Controls.Add(Me.Calibration1)
         Me.GBStats.Controls.Add(Me.lblCPU)
         Me.GBStats.Controls.Add(Me.lblPowerGrid)
@@ -1503,24 +1507,33 @@ Partial Class frmCitadelFitting
         Me.GBStats.Controls.Add(Me.PowerGrid1)
         Me.GBStats.Location = New System.Drawing.Point(959, 18)
         Me.GBStats.Name = "GBStats"
-        Me.GBStats.Size = New System.Drawing.Size(167, 589)
+        Me.GBStats.Size = New System.Drawing.Size(158, 589)
         Me.GBStats.TabIndex = 59
         Me.GBStats.TabStop = False
+        '
+        'lblOnlineAmt
+        '
+        Me.lblOnlineAmt.Location = New System.Drawing.Point(6, 86)
+        Me.lblOnlineAmt.Name = "lblOnlineAmt"
+        Me.lblOnlineAmt.Size = New System.Drawing.Size(140, 16)
+        Me.lblOnlineAmt.TabIndex = 72
+        Me.lblOnlineAmt.Text = "Online Fuel Amount"
+        Me.lblOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'lblServiceModuleFCPH
         '
         Me.lblServiceModuleFCPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(6, 239)
+        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(6, 70)
         Me.lblServiceModuleFCPH.Name = "lblServiceModuleFCPH"
-        Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(140, 16)
         Me.lblServiceModuleFCPH.TabIndex = 71
         Me.lblServiceModuleFCPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblFuelCost
         '
-        Me.lblFuelCost.Location = New System.Drawing.Point(6, 223)
+        Me.lblFuelCost.Location = New System.Drawing.Point(6, 54)
         Me.lblFuelCost.Name = "lblFuelCost"
-        Me.lblFuelCost.Size = New System.Drawing.Size(155, 16)
+        Me.lblFuelCost.Size = New System.Drawing.Size(140, 16)
         Me.lblFuelCost.TabIndex = 70
         Me.lblFuelCost.Text = "Fuel Cost per Hour"
         Me.lblFuelCost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -1528,17 +1541,17 @@ Partial Class frmCitadelFitting
         'lblServiceModuleBPH
         '
         Me.lblServiceModuleBPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(6, 196)
+        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(6, 38)
         Me.lblServiceModuleBPH.Name = "lblServiceModuleBPH"
-        Me.lblServiceModuleBPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblServiceModuleBPH.Size = New System.Drawing.Size(140, 16)
         Me.lblServiceModuleBPH.TabIndex = 69
         Me.lblServiceModuleBPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblFuelBPH
         '
-        Me.lblFuelBPH.Location = New System.Drawing.Point(6, 180)
+        Me.lblFuelBPH.Location = New System.Drawing.Point(6, 22)
         Me.lblFuelBPH.Name = "lblFuelBPH"
-        Me.lblFuelBPH.Size = New System.Drawing.Size(155, 16)
+        Me.lblFuelBPH.Size = New System.Drawing.Size(140, 16)
         Me.lblFuelBPH.TabIndex = 68
         Me.lblFuelBPH.Text = "Fuel Blocks per Hour"
         Me.lblFuelBPH.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -1657,6 +1670,78 @@ Partial Class frmCitadelFitting
         Me.btnLoadFitting.Text = "Load Fitting"
         Me.btnLoadFitting.UseVisualStyleBackColor = True
         '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.rbtnMinmatarFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnGallenteFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnCaldariFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnAmarrFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleOnlineAmt)
+        Me.GroupBox2.Controls.Add(Me.lblOnlineAmt)
+        Me.GroupBox2.Controls.Add(Me.lblFuelBPH)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleBPH)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleFCPH)
+        Me.GroupBox2.Controls.Add(Me.lblFuelCost)
+        Me.GroupBox2.Controls.Add(Me.chkIncludeFuelCosts)
+        Me.GroupBox2.Location = New System.Drawing.Point(6, 187)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Size = New System.Drawing.Size(159, 204)
+        Me.GroupBox2.TabIndex = 73
+        Me.GroupBox2.TabStop = False
+        '
+        'lblServiceModuleOnlineAmt
+        '
+        Me.lblServiceModuleOnlineAmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(6, 102)
+        Me.lblServiceModuleOnlineAmt.Name = "lblServiceModuleOnlineAmt"
+        Me.lblServiceModuleOnlineAmt.Size = New System.Drawing.Size(140, 16)
+        Me.lblServiceModuleOnlineAmt.TabIndex = 73
+        Me.lblServiceModuleOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'rbtnAmarrFuelBlock
+        '
+        Me.rbtnAmarrFuelBlock.AutoSize = True
+        Me.rbtnAmarrFuelBlock.Location = New System.Drawing.Point(9, 124)
+        Me.rbtnAmarrFuelBlock.Name = "rbtnAmarrFuelBlock"
+        Me.rbtnAmarrFuelBlock.Size = New System.Drawing.Size(105, 17)
+        Me.rbtnAmarrFuelBlock.TabIndex = 74
+        Me.rbtnAmarrFuelBlock.TabStop = True
+        Me.rbtnAmarrFuelBlock.Text = "Amarr Fuel Block"
+        Me.rbtnAmarrFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnCaldariFuelBlock
+        '
+        Me.rbtnCaldariFuelBlock.AutoSize = True
+        Me.rbtnCaldariFuelBlock.Location = New System.Drawing.Point(9, 143)
+        Me.rbtnCaldariFuelBlock.Name = "rbtnCaldariFuelBlock"
+        Me.rbtnCaldariFuelBlock.Size = New System.Drawing.Size(110, 17)
+        Me.rbtnCaldariFuelBlock.TabIndex = 75
+        Me.rbtnCaldariFuelBlock.TabStop = True
+        Me.rbtnCaldariFuelBlock.Text = "Caldari Fuel Block"
+        Me.rbtnCaldariFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnGallenteFuelBlock
+        '
+        Me.rbtnGallenteFuelBlock.AutoSize = True
+        Me.rbtnGallenteFuelBlock.Location = New System.Drawing.Point(9, 162)
+        Me.rbtnGallenteFuelBlock.Name = "rbtnGallenteFuelBlock"
+        Me.rbtnGallenteFuelBlock.Size = New System.Drawing.Size(117, 17)
+        Me.rbtnGallenteFuelBlock.TabIndex = 76
+        Me.rbtnGallenteFuelBlock.TabStop = True
+        Me.rbtnGallenteFuelBlock.Text = "Gallente Fuel Block"
+        Me.rbtnGallenteFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnMinmatarFuelBlock
+        '
+        Me.rbtnMinmatarFuelBlock.AutoSize = True
+        Me.rbtnMinmatarFuelBlock.Location = New System.Drawing.Point(9, 181)
+        Me.rbtnMinmatarFuelBlock.Name = "rbtnMinmatarFuelBlock"
+        Me.rbtnMinmatarFuelBlock.Size = New System.Drawing.Size(121, 17)
+        Me.rbtnMinmatarFuelBlock.TabIndex = 77
+        Me.rbtnMinmatarFuelBlock.TabStop = True
+        Me.rbtnMinmatarFuelBlock.Text = "Minmatar Fuel Block"
+        Me.rbtnMinmatarFuelBlock.UseVisualStyleBackColor = True
+        '
         'frmCitadelFitting
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1741,6 +1826,8 @@ Partial Class frmCitadelFitting
         Me.GBStats.ResumeLayout(False)
         Me.GBStats.PerformLayout()
         CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1871,4 +1958,11 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblFuelBPH As Label
     Friend WithEvents chkAutoUpdateFuelPrice As CheckBox
     Friend WithEvents btnLoadFitting As Button
+    Friend WithEvents lblOnlineAmt As Label
+    Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents lblServiceModuleOnlineAmt As Label
+    Friend WithEvents rbtnMinmatarFuelBlock As RadioButton
+    Friend WithEvents rbtnGallenteFuelBlock As RadioButton
+    Friend WithEvents rbtnCaldariFuelBlock As RadioButton
+    Friend WithEvents rbtnAmarrFuelBlock As RadioButton
 End Class

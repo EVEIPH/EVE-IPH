@@ -15,6 +15,7 @@ Public Class EVEAssets
     Protected LocationToFind As LocationInfo
 
     Private LocationNames As List(Of LocationName)
+    Private AddedNodes As List(Of String)
     Private UnknownLocationCounter As Integer
     Private LocationIDToFind As Long
 
@@ -23,7 +24,6 @@ Public Class EVEAssets
     Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
     Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
-
     Public Class LocationName
         Public ID As Long
         Public Name As String
@@ -188,7 +188,6 @@ Public Class EVEAssets
 
             ' Insert the records into the DB
             For i = 0 To Assets.Count - 1
-
                 ' Insert it
                 If Assets(i).LocationID <> ScanID Then ' Don't add assets that are on the character
                     SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, Singleton, RawQuantity) VALUES "
@@ -200,6 +199,10 @@ Public Class EVEAssets
 
                 End If
             Next
+
+            ' Finally, update all the asset flags to negative values if they are base nodes
+            SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ScanID)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Call EVEDB.CommitSQLiteTransaction()
 
@@ -269,7 +272,8 @@ Public Class EVEAssets
                 readerData = DBCommand.ExecuteReader
 
                 If readerData.Read Then
-                    LocationName = UnknownLocation
+                    ' Call this function again to get the location name
+                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt32(0), FlagID, FlagText)
                     readerData.Close()
                 Else
                     ' See if it's a Citadel
@@ -344,7 +348,7 @@ Public Class EVEAssets
 
         Dim TempAsset As New EVEAsset
         Dim BaseAssets As New List(Of EVEAsset)
-        Dim LocationList As New List(Of Double)
+        Dim LocationList As New List(Of String)
 
         Tree.Update()
         Tree.Nodes.Clear()
@@ -355,9 +359,10 @@ Public Class EVEAssets
             Tree.EndUpdate()
             Return AnchorNode
         End If
-
+        AddedNodes = New List(Of String)
         ' Add the base node
         AnchorNode = Tree.Nodes.Add(NodeName)
+        AddedNodes.Add(NodeName)
         TempLocationInfo = New LocationInfo
         TempLocationInfo.AccountID = AccountID
         TempLocationInfo.LocationID = -1
@@ -384,16 +389,18 @@ Public Class EVEAssets
             BaseAssets = AssetList.FindAll(AddressOf FindBaseAsset)
         End If
 
-        ' Loop through each base node and add all the items in it
+        ' Loop through each node and add all the items in it
         For Each TempAsset In BaseAssets
+            ' If we know the location and the node is a base node, then process
+            If TempAsset.LocationName <> UnknownLocation And TempAsset.FlagID <= 0 Then
 
-            If TempAsset.LocationName <> UnknownLocation Then
                 ' See if we have added the location
-                If Not LocationList.Contains(TempAsset.LocationID) Then
+                If Not LocationList.Contains(TempAsset.LocationName) Then
 
-                    ' Add the location to the list
-                    LocationList.Add(TempAsset.LocationID)
+                    ' Add the base location to the list
+                    LocationList.Add(TempAsset.LocationName)
                     BaseLocationNode = AnchorNode.Nodes.Add(TempAsset.LocationName)
+                    AddedNodes.Add(TempAsset.LocationName)
                     BaseLocationNode.Name = TempAsset.LocationName
 
                     ' Also save the LocationID in the tag of the node for use searching later
@@ -413,7 +420,7 @@ Public Class EVEAssets
                 ' Add the subnode to the tree without the name yet, wait for the search for children before marking
                 If (TempAsset.TypeCategory = "Ship" And CorpID = 0 And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
 
-                    ' Check corp deliveries first since a ship coul d be a delivery
+                    ' Check corp deliveries first since a ship could be a delivery
                     If TempAsset.FlagText = CorpDelivery Then
                         TempNodeName = CorpDelivery
                     Else
@@ -423,6 +430,7 @@ Public Class EVEAssets
                     ' Add a new sub node if not in the tree
                     If BaseLocationNode.Nodes.Find(TempNodeName, True).Count = 0 Then
                         TempNode = BaseLocationNode.Nodes.Add(TempNodeName)
+                        AddedNodes.Add(TempNodeName)
                         TempNode.Name = TempNodeName
                         ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
                         ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
@@ -434,7 +442,7 @@ Public Class EVEAssets
                         TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
                     End If
 
-                    ' Find the ship hanger node to add to
+                    ' Find the corp delivery or ship hanger node to add to
                     TempNode = BaseLocationNode.Nodes.Find(TempNodeName, True)(0)
                     SubNode = TempNode.Nodes.Add("")
 
@@ -452,7 +460,7 @@ Public Class EVEAssets
                 SubNode.ImageIndex = Math.Abs(TempAsset.FlagID)
 
                 ' See if the node has children and add
-                Call GetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
+                Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
 
                 ' Update the Node Text
                 If SubNode.GetNodeCount(True) <> 0 Then
@@ -461,6 +469,7 @@ Public Class EVEAssets
                 Else
                     SubNode.Text = GetItemNodeText(TempAsset, False)
                 End If
+                AddedNodes.Add(SubNode.Text)
             End If
         Next
 
@@ -480,7 +489,7 @@ Public Class EVEAssets
     End Function
 
     ' Gets subnodes of the Parent ID
-    Private Sub GetSubTreeNode(ByRef BaseNode As TreeNode, ParentAsset As EVEAsset, SortOption As SortType, SelectedItems As Boolean, AccountID As Long, _
+    Private Sub SetSubTreeNode(ByRef BaseNode As TreeNode, ParentAsset As EVEAsset, SortOption As SortType, SelectedItems As Boolean, AccountID As Long,
                                SavedLocations As List(Of LocationInfo))
         Dim CategoryNode As New TreeNode
         Dim SubNode As New TreeNode
@@ -522,6 +531,7 @@ Public Class EVEAssets
 
                         ' Add the flag as a base node
                         CategoryNode = BaseNode.Nodes.Add(CategoryFlagName)
+                        AddedNodes.Add(CategoryFlagName)
                         CategoryNode.Name = CategoryFlagName
                         ' Save the location this node is part
                         TempLocationInfo = New LocationInfo
@@ -539,7 +549,7 @@ Public Class EVEAssets
                     SubNode = CategoryNode.Nodes.Add("")
 
                     ' Check for sub nodes of the found asset
-                    Call GetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
+                    Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
 
                     ' Add the item at this base location (ie mineral in hanger)
                     If CategoryFlagName.Contains("power slot") Then
@@ -552,14 +562,14 @@ Public Class EVEAssets
                         ' Base items
                         SubNode.Text = GetItemNodeText(TempAsset, False)
                     End If
-
+                    AddedNodes.Add(SubNode.Text)
                 Else
 
                     ' Add the item at this base location (ie mineral in hanger)
                     SubNode = BaseNode.Nodes.Add(GetItemNodeText(TempAsset, False))
-
+                    AddedNodes.Add(GetItemNodeText(TempAsset, False))
                     ' Check for sub nodes of the found asset
-                    Call GetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
+                    Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
                 End If
 
                 ' Location of the subnode is under the category node

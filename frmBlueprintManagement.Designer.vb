@@ -67,14 +67,15 @@ Partial Class frmBlueprintManagement
         Me.cmbBPTypeFilter = New System.Windows.Forms.ComboBox()
         Me.lblBPCombo = New System.Windows.Forms.Label()
         Me.gbBlueprintType = New System.Windows.Forms.GroupBox()
+        Me.rbtnStructureBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnCelestialsBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rbtnStationPartsBlueprints = New System.Windows.Forms.RadioButton()
+        Me.rbtnStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
+        Me.rbtnStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnAmmoChargeBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnDeployableBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnAllBPTypes = New System.Windows.Forms.RadioButton()
         Me.rbtnRigBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBoosterBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rbtnStructureBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnSubsystemBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnModuleBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnMiscBlueprints = New System.Windows.Forms.RadioButton()
@@ -110,7 +111,6 @@ Partial Class frmBlueprintManagement
         Me.SaveFileDialog = New System.Windows.Forms.SaveFileDialog()
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
-        Me.rbtnStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
         Me.lstBPs = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPFilter.SuspendLayout()
         Me.gbBlueprintTech.SuspendLayout()
@@ -575,7 +575,6 @@ Partial Class frmBlueprintManagement
         Me.gbBlueprintType.Controls.Add(Me.rbtnStructureBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnCelestialsBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnStructureModulesBlueprints)
-        Me.gbBlueprintType.Controls.Add(Me.rbtnStationPartsBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnAmmoChargeBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnDeployableBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnAllBPTypes)
@@ -587,6 +586,7 @@ Partial Class frmBlueprintManagement
         Me.gbBlueprintType.Controls.Add(Me.rbtnDroneBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnComponentBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnShipBlueprints)
+        Me.gbBlueprintType.Controls.Add(Me.rbtnStructureRigsBlueprints)
         Me.gbBlueprintType.Location = New System.Drawing.Point(6, 107)
         Me.gbBlueprintType.Name = "gbBlueprintType"
         Me.gbBlueprintType.Size = New System.Drawing.Size(321, 126)
@@ -594,10 +594,21 @@ Partial Class frmBlueprintManagement
         Me.gbBlueprintType.TabStop = False
         Me.gbBlueprintType.Text = "Item Type:"
         '
+        'rbtnStructureBlueprints
+        '
+        Me.rbtnStructureBlueprints.AutoSize = True
+        Me.rbtnStructureBlueprints.Location = New System.Drawing.Point(6, 103)
+        Me.rbtnStructureBlueprints.Name = "rbtnStructureBlueprints"
+        Me.rbtnStructureBlueprints.Size = New System.Drawing.Size(73, 17)
+        Me.rbtnStructureBlueprints.TabIndex = 14
+        Me.rbtnStructureBlueprints.TabStop = True
+        Me.rbtnStructureBlueprints.Text = "Structures"
+        Me.rbtnStructureBlueprints.UseVisualStyleBackColor = True
+        '
         'rbtnCelestialsBlueprints
         '
         Me.rbtnCelestialsBlueprints.AutoSize = True
-        Me.rbtnCelestialsBlueprints.Location = New System.Drawing.Point(230, 82)
+        Me.rbtnCelestialsBlueprints.Location = New System.Drawing.Point(227, 82)
         Me.rbtnCelestialsBlueprints.Name = "rbtnCelestialsBlueprints"
         Me.rbtnCelestialsBlueprints.Size = New System.Drawing.Size(64, 17)
         Me.rbtnCelestialsBlueprints.TabIndex = 19
@@ -605,16 +616,27 @@ Partial Class frmBlueprintManagement
         Me.rbtnCelestialsBlueprints.Text = "Celestial"
         Me.rbtnCelestialsBlueprints.UseVisualStyleBackColor = True
         '
-        'rbtnStationPartsBlueprints
+        'rbtnStructureModulesBlueprints
         '
-        Me.rbtnStationPartsBlueprints.AutoSize = True
-        Me.rbtnStationPartsBlueprints.Location = New System.Drawing.Point(230, 103)
-        Me.rbtnStationPartsBlueprints.Name = "rbtnStationPartsBlueprints"
-        Me.rbtnStationPartsBlueprints.Size = New System.Drawing.Size(85, 17)
-        Me.rbtnStationPartsBlueprints.TabIndex = 18
-        Me.rbtnStationPartsBlueprints.TabStop = True
-        Me.rbtnStationPartsBlueprints.Text = "Station Parts"
-        Me.rbtnStationPartsBlueprints.UseVisualStyleBackColor = True
+        Me.rbtnStructureModulesBlueprints.AutoSize = True
+        Me.rbtnStructureModulesBlueprints.Location = New System.Drawing.Point(116, 103)
+        Me.rbtnStructureModulesBlueprints.Name = "rbtnStructureModulesBlueprints"
+        Me.rbtnStructureModulesBlueprints.Size = New System.Drawing.Size(111, 17)
+        Me.rbtnStructureModulesBlueprints.TabIndex = 66
+        Me.rbtnStructureModulesBlueprints.TabStop = True
+        Me.rbtnStructureModulesBlueprints.Text = "Structure Modules"
+        Me.rbtnStructureModulesBlueprints.UseVisualStyleBackColor = True
+        '
+        'rbtnStructureRigsBlueprints
+        '
+        Me.rbtnStructureRigsBlueprints.AutoSize = True
+        Me.rbtnStructureRigsBlueprints.Location = New System.Drawing.Point(227, 103)
+        Me.rbtnStructureRigsBlueprints.Name = "rbtnStructureRigsBlueprints"
+        Me.rbtnStructureRigsBlueprints.Size = New System.Drawing.Size(92, 17)
+        Me.rbtnStructureRigsBlueprints.TabIndex = 18
+        Me.rbtnStructureRigsBlueprints.TabStop = True
+        Me.rbtnStructureRigsBlueprints.Text = "Structure Rigs"
+        Me.rbtnStructureRigsBlueprints.UseVisualStyleBackColor = True
         '
         'rbtnAmmoChargeBlueprints
         '
@@ -652,7 +674,7 @@ Partial Class frmBlueprintManagement
         'rbtnRigBlueprints
         '
         Me.rbtnRigBlueprints.AutoSize = True
-        Me.rbtnRigBlueprints.Location = New System.Drawing.Point(230, 40)
+        Me.rbtnRigBlueprints.Location = New System.Drawing.Point(227, 40)
         Me.rbtnRigBlueprints.Name = "rbtnRigBlueprints"
         Me.rbtnRigBlueprints.Size = New System.Drawing.Size(46, 17)
         Me.rbtnRigBlueprints.TabIndex = 10
@@ -671,17 +693,6 @@ Partial Class frmBlueprintManagement
         Me.rbtnBoosterBlueprints.Text = "Boosters"
         Me.rbtnBoosterBlueprints.UseVisualStyleBackColor = True
         '
-        'rbtnStructureBlueprints
-        '
-        Me.rbtnStructureBlueprints.AutoSize = True
-        Me.rbtnStructureBlueprints.Location = New System.Drawing.Point(6, 103)
-        Me.rbtnStructureBlueprints.Name = "rbtnStructureBlueprints"
-        Me.rbtnStructureBlueprints.Size = New System.Drawing.Size(73, 17)
-        Me.rbtnStructureBlueprints.TabIndex = 14
-        Me.rbtnStructureBlueprints.TabStop = True
-        Me.rbtnStructureBlueprints.Text = "Structures"
-        Me.rbtnStructureBlueprints.UseVisualStyleBackColor = True
-        '
         'rbtnSubsystemBlueprints
         '
         Me.rbtnSubsystemBlueprints.AutoSize = True
@@ -696,7 +707,7 @@ Partial Class frmBlueprintManagement
         'rbtnModuleBlueprints
         '
         Me.rbtnModuleBlueprints.AutoSize = True
-        Me.rbtnModuleBlueprints.Location = New System.Drawing.Point(230, 19)
+        Me.rbtnModuleBlueprints.Location = New System.Drawing.Point(227, 19)
         Me.rbtnModuleBlueprints.Name = "rbtnModuleBlueprints"
         Me.rbtnModuleBlueprints.Size = New System.Drawing.Size(65, 17)
         Me.rbtnModuleBlueprints.TabIndex = 8
@@ -729,7 +740,7 @@ Partial Class frmBlueprintManagement
         'rbtnComponentBlueprints
         '
         Me.rbtnComponentBlueprints.AutoSize = True
-        Me.rbtnComponentBlueprints.Location = New System.Drawing.Point(230, 61)
+        Me.rbtnComponentBlueprints.Location = New System.Drawing.Point(227, 61)
         Me.rbtnComponentBlueprints.Name = "rbtnComponentBlueprints"
         Me.rbtnComponentBlueprints.Size = New System.Drawing.Size(84, 17)
         Me.rbtnComponentBlueprints.TabIndex = 12
@@ -1039,17 +1050,6 @@ Partial Class frmBlueprintManagement
         Me.cmbEdit.TabIndex = 61
         Me.cmbEdit.TabStop = False
         '
-        'rbtnStructureModulesBlueprints
-        '
-        Me.rbtnStructureModulesBlueprints.AutoSize = True
-        Me.rbtnStructureModulesBlueprints.Location = New System.Drawing.Point(116, 103)
-        Me.rbtnStructureModulesBlueprints.Name = "rbtnStructureModulesBlueprints"
-        Me.rbtnStructureModulesBlueprints.Size = New System.Drawing.Size(111, 17)
-        Me.rbtnStructureModulesBlueprints.TabIndex = 66
-        Me.rbtnStructureModulesBlueprints.TabStop = True
-        Me.rbtnStructureModulesBlueprints.Text = "Structure Modules"
-        Me.rbtnStructureModulesBlueprints.UseVisualStyleBackColor = True
-        '
         'lstBPs
         '
         Me.lstBPs.CheckBoxes = True
@@ -1184,7 +1184,7 @@ Partial Class frmBlueprintManagement
     Friend WithEvents chkBPMedium As System.Windows.Forms.CheckBox
     Friend WithEvents chkBPSmall As System.Windows.Forms.CheckBox
     Friend WithEvents rbtnCelestialsBlueprints As System.Windows.Forms.RadioButton
-    Friend WithEvents rbtnStationPartsBlueprints As System.Windows.Forms.RadioButton
+    Friend WithEvents rbtnStructureRigsBlueprints As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnDeployableBlueprints As System.Windows.Forms.RadioButton
     Friend WithEvents chkEnableMETE As System.Windows.Forms.CheckBox
     Friend WithEvents gbBackup As System.Windows.Forms.GroupBox

@@ -20,6 +20,8 @@ Public Class frmCitadelFitting
     ' Save the selected Citadel so we don't need to look it up
     Private SelectedCitadel As CitadelDBData
 
+    Private POSFuelPricesUpdated As Boolean
+
     Private StructureDBDataList As New List(Of CitadelDBData) ' For storing all the types of citadel structures
 
     Private Enum SlotSizes
@@ -685,15 +687,15 @@ Public Class frmCitadelFitting
             End If
 
             If chkRigTypeViewCombat.Checked Then
-                Call SQLList.Add("(groupName Like 'Structure Combat Rig%')")
+                Call SQLList.Add("(groupName Like '%Combat Rig%')")
             End If
 
             If chkRigTypeViewEngineering.Checked Then
-                Call SQLList.Add("(groupName LIKE 'Structure Engineering Rig%')")
+                Call SQLList.Add("(groupName LIKE '%Engineering Rig%')")
             End If
 
             If chkRigTypeViewReprocessing.Checked Then
-                Call SQLList.Add("(groupName LIKE 'Structure Resource Rig%')")
+                Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
             End If
 
             ' Set the SQL
@@ -964,6 +966,344 @@ Public Class frmCitadelFitting
         Next
     End Sub
 
+#Region "Fuel Settings"
+    Private Sub LoadPOSDataTab()
+
+        txtPOSFuelBlockBPME.Text = "0"
+
+        ' Building
+        If SelectedTower.FuelBlockBuild Then
+            rbtnPOSBuildBlocks.Checked = True
+            gbPOSFuelPrices.Enabled = True
+            btnPOSUpdateBlockPrice.Enabled = False
+            btnPOSUpdateFuelPrices.Enabled = True
+            btnRefreshBlockData.Enabled = True
+            txtPOSFuelBlockBPME.Enabled = True
+            lblPOSFuelBlockBPME.Enabled = True
+            txtPOSFuelBlockBuy.Enabled = False
+        Else ' Buying
+            rbtnPOSBuyBlocks.Checked = True
+            gbPOSFuelPrices.Enabled = False
+            btnPOSUpdateBlockPrice.Enabled = True
+            btnPOSUpdateFuelPrices.Enabled = False
+            btnRefreshBlockData.Enabled = False
+            txtPOSFuelBlockBPME.Enabled = False
+            lblPOSFuelBlockBPME.Enabled = False
+            txtPOSFuelBlockBuy.Enabled = True
+        End If
+
+        txtCharters.Text = FormatNumber(SelectedTower.CharterCost, 2)
+
+        Call LoadPOSFuelPrices()
+        ' Load both the block build and buy prices
+        Call LoadPOSFuelBlockPrice()
+        Call SetFuelBlockBuildcost()
+
+
+    End Sub
+
+    Private Sub UpdateFuelBlockData(ByVal TowerName As String, ReloadME As Boolean)
+        Dim SQL As String
+        Dim readerPOS As SQLiteDataReader
+        Dim FuelBlock As String = ""
+        Dim SelectedTowerRaceID As Integer
+
+        SQL = "SELECT raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPOS = DBCommand.ExecuteReader()
+
+        If readerPOS.Read Then
+            SelectedTowerRaceID = readerPOS.GetInt32(0)
+        Else
+            MsgBox("Unknown Tower. Cannot calculate.", vbExclamation, Application.ProductName)
+            Exit Sub
+        End If
+
+        picPOSAmarrFuelBlock.Visible = False
+        picPOSCaldariFuelBlock.Visible = False
+        picPOSGallenteFuelBlock.Visible = False
+        picPOSMinmatarFuelBlock.Visible = False
+
+        ' Based on the race of the tower, choose the type of fuel block it will use
+        Select Case SelectedTowerRaceID
+            Case 1
+                FuelBlock = "Caldari Fuel Block"
+                lblPOSFuelBlock.Text = "Caldari"
+                picPOSCaldariFuelBlock.Visible = True
+            Case 2
+                FuelBlock = "Minmatar Fuel Block"
+                lblPOSFuelBlock.Text = "Minmatar"
+                picPOSMinmatarFuelBlock.Visible = True
+            Case 4
+                FuelBlock = "Amarr Fuel Block"
+                lblPOSFuelBlock.Text = "Amarr"
+                picPOSAmarrFuelBlock.Visible = True
+            Case 8
+                FuelBlock = "Gallente Fuel Block"
+                lblPOSFuelBlock.Text = "Gallente"
+                picPOSGallenteFuelBlock.Visible = True
+        End Select
+
+        ' Reload the ME if we need too
+        If ReloadME Then
+            Call LoadBlockBPME(FuelBlock)
+        End If
+
+        ' Build the block value if we are building
+        If rbtnPOSBuildBlocks.Checked Then
+            Call SetFuelBlockBuildcost()
+        End If
+
+    End Sub
+
+    Private Sub LoadBlockBPME(FuelBlockName As String)
+        ' Load the ME for the type of block that we are using for this tower
+        Dim SQL As String
+        Dim readerPOS As SQLiteDataReader
+
+        SQL = "SELECT ME FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
+        SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPOS = DBCommand.ExecuteReader()
+
+        If readerPOS.Read Then
+            ' Owned and they have it
+            txtPOSFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
+        Else
+            txtPOSFuelBlockBPME.Text = "0"
+        End If
+
+    End Sub
+
+    Private Sub UpdatePOSFuelPrices()
+        Dim SQL As String
+        Dim i As Integer
+        Dim Prices() As Double
+
+        If POSFuelPricesUpdated Then
+            'Me.Cursor = Cursors.WaitCursor
+
+            'ReDim Prices(POSTextBoxes.Count - 1)
+
+            '' Check the prices first
+            'For i = 1 To POSTextBoxes.Count - 1
+            '    If Not IsNumeric(POSTextBoxes(i).Text) Then
+            '        MsgBox("Invalid " & POSLabels(i).Text & " Price", vbExclamation, Me.Text)
+            '        POSTextBoxes(i).Focus()
+            '        Me.Cursor = Cursors.Default
+            '        Exit Sub
+            '    Else
+            '        Prices(i) = CDbl(POSTextBoxes(i).Text)
+            '    End If
+            'Next
+
+            '' Update all the prices
+            'For i = 1 To POSTextBoxes.Count - 1
+            '    SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & POSLabels(i).Text & "'"
+            '    Call EVEDB.ExecuteNonQuerySQL(SQL)
+            'Next
+
+            'MsgBox("Prices Updated", vbInformation, Me.Text)
+            'Me.Cursor = Cursors.Default
+
+            '' Update the block data
+            Call SetFuelBlockBuildcost()
+        Else
+            MsgBox("No Prices were Updated", vbInformation, Me.Text)
+        End If
+
+        ' Refresh the prices
+        Call LoadPOSFuelPrices()
+
+    End Sub
+
+    Private Sub LoadPOSFuelPrices()
+        Dim SQL As String
+        Dim readerPOS As SQLiteDataReader
+
+        Me.Cursor = Cursors.WaitCursor
+
+        SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
+        SQL = SQL & "FROM ITEM_PRICES "
+        SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME IN "
+        SQL = SQL & "('Hydrogen Isotopes','Oxygen Isotopes','Nitrogen Isotopes','Helium Isotopes','Strontium Clathrates',"
+        SQL = SQL & "'Heavy Water','Liquid Ozone','Robotics','Oxygen','Mechanical Parts','Coolant','Enriched Uranium')"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPOS = DBCommand.ExecuteReader()
+
+        While readerPOS.Read
+            ' Update the textboxes and images
+            'For i = 1 To POSTextBoxes.Count - 1
+            '    If POSLabels(i).Text = readerPOS.GetString(0) Then
+            '        POSTextBoxes(i).Text = FormatNumber(readerPOS.GetDouble(1), 2) ' Price
+            '    End If
+            'Next
+            Application.DoEvents()
+        End While
+
+        Me.Cursor = Cursors.Default
+        txtPOS1.Focus()
+
+        readerPOS.Close()
+        readerPOS = Nothing
+        DBCommand = Nothing
+
+        POSFuelPricesUpdated = False
+
+    End Sub
+
+    Private Sub UpdatePOSFuelBlockPrices()
+        Dim SQL As String
+        Dim posfuelblockpricesupdated As Boolean
+
+        If POSFuelBlockPricesUpdated Then
+            Me.Cursor = Cursors.WaitCursor
+
+            ' Check the prices first
+
+            If Not IsNumeric(txtPOSFuelBlockBuy.Text) Then
+                MsgBox("Invalid Fuel Block Price", vbExclamation, Application.ProductName)
+                txtPOSFuelBlockBuy.Focus()
+                Me.Cursor = Cursors.Default
+                Exit Sub
+            End If
+
+            ' Update the prices
+            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtPOSFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlock.Text & " Fuel Block'"
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+            MsgBox("Prices Updated", vbInformation, Me.Text)
+            Me.Cursor = Cursors.Default
+        Else
+            MsgBox("No Prices were Updated", vbInformation, Me.Text)
+        End If
+
+        ' Refresh the prices
+        Call LoadPOSFuelBlockPrice()
+
+    End Sub
+
+    Private Sub LoadPOSFuelBlockPrice()
+        Dim SQL As String
+        Dim readerPOS As SQLiteDataReader
+        Dim selectedtowerraceid As Integer
+
+        Me.Cursor = Cursors.WaitCursor
+
+        readerPOS = Nothing
+        DBCommand = Nothing
+
+        If cmbCitadelName.Text <> None Then
+            ' Load the fuel block price
+            SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
+            SQL = SQL & "FROM ITEM_PRICES, INVENTORY_TYPES "
+            SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME = "
+            Select Case selectedtowerraceid
+                Case 1
+                    SQL = SQL & "'Caldari Fuel Block' "
+                Case 2
+                    SQL = SQL & "'Minmatar Fuel Block' "
+                Case 4
+                    SQL = SQL & "'Amarr Fuel Block' "
+                Case 8
+                    SQL = SQL & "'Gallente Fuel Block' "
+            End Select
+            SQL = SQL & "AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerPOS = DBCommand.ExecuteReader()
+            readerPOS.Read()
+
+            txtPOSFuelBlockBuy.Text = FormatNumber(readerPOS.GetValue(1))
+            readerPOS.Close()
+        Else
+            txtPOSFuelBlockBuy.Text = "0.00"
+        End If
+
+        Me.Cursor = Cursors.Default
+
+        readerPOS = Nothing
+        DBCommand = Nothing
+
+    End Sub
+
+    Private Sub UpdateCosts()
+        Dim CostperBlock As Double
+        Dim CostperHour As Double
+        Dim Multiplier As Integer
+
+        ' Get the block we are using
+        If rbtnPOSBuildBlocks.Checked Then
+            CostperBlock = CDbl(lblPOSFuelBlockBuild.Text)
+        Else
+            CostperBlock = CDbl(txtPOSFuelBlockBuy.Text)
+        End If
+
+        CostperHour = CostperBlock * Multiplier
+        'lblPOSCostperHour.Text = FormatNumber(CostperHour, 2)
+        'lblPOSCostperDay.Text = FormatNumber(CostperHour * 24, 2)
+        'lblPOSCostperMonth.Text = FormatNumber(CostperHour * 24 * 30, 2)
+
+    End Sub
+
+    Private Sub SetFuelBlockBuildcost()
+
+        ' Make sure it's valid
+        If Not IsNumeric(txtPOSFuelBlockBPME.Text) Then
+            MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
+            txtPOSFuelBlockBPME.Focus()
+            Exit Sub
+        End If
+
+        If Trim(txtCharters.Text) = "" Or Not IsNumeric(txtCharters.Text) Then
+            MsgBox("Invalid Charter Cost", vbExclamation, Application.ProductName)
+            txtCharters.Focus()
+            Exit Sub
+        End If
+
+        ' First set all to 0 so we only build for the tower we are using
+        lblPOSFuelBlockBuild.Text = "0.00"
+
+        ' Get cost for building 1 block and add charter cost (divide by 40 since that's the number of blocks that is made for 1 charter)
+        If rbtnCaldariFuelBlock.Checked Then
+            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnMinmatarFuelBlock.Checked Then
+            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnAmarrFuelBlock.Checked Then
+            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnGallenteFuelBlock.Checked Then
+            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        End If
+
+    End Sub
+
+    Private Function GetFuelBlockBuildCost(FuelBlock As String, bpME As Integer) As Double
+        Dim SQL As String
+        Dim readerPOS As SQLiteDataReader
+
+
+        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FuelBlock & "'"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPOS = DBCommand.ExecuteReader()
+
+        If readerPOS.Read Then
+            ' Build T1 BP for the block, standard settings - CHECK
+            Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
+                                        SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+            Call BlockBP.BuildItems(False, False, False, False, False)
+            Return BlockBP.GetRawItemUnitPrice
+        Else
+            Return 0
+        End If
+
+    End Function
+
+#End Region
+
 #Region "Click Events"
     Private Sub cmbCitadelName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbCitadelName.SelectedIndexChanged
         Call LoadCitadel(cmbCitadelName.Text)
@@ -1182,5 +1522,6 @@ Public Class frmCitadelFitting
     End Sub
 
 #End Region
+
 
 End Class

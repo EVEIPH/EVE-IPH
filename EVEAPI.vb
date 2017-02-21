@@ -884,9 +884,6 @@ Public Class EVEAPI
                 ' Add the node asset if it is in the columns
                 If ColumnString.Contains("itemID") Then
                     InsertAsset.ItemID = CLng(m_node.Attributes.GetNamedItem("itemID").Value)
-                    If InsertAsset.ItemID = 1005774900252 Then
-                        Application.DoEvents()
-                    End If
                 Else
                     InsertAsset.ItemID = 0
                 End If
@@ -898,7 +895,7 @@ Public Class EVEAPI
                     ' To convert locationIDs greater than or equal to 66000000 and less than 67000000 to stationIDs from staStations subtract 6000001 from the locationID. 
                     ' To convert locationIDs greater than or equal to 67000000 and less than 68000000 to stationIDs from ConquerableStationList subtract 6000000 from the locationID.
                     If InsertAsset.LocationID >= 66000000 And InsertAsset.LocationID < 67000000 Then
-                        InsertAsset.LocationID = InsertAsset.LocationID - 6000000
+                        InsertAsset.LocationID = InsertAsset.LocationID - 6000001
                     ElseIf InsertAsset.LocationID >= 67000000 And InsertAsset.LocationID < 68000000 Then
                         InsertAsset.LocationID = InsertAsset.LocationID - 6000000
                     End If
@@ -921,16 +918,16 @@ Public Class EVEAPI
                     InsertAsset.Quantity = 0
                 End If
 
-                If ParentItemID = 0 Then
-                    ' This is a base node, so set the flag to negative to signify
-                    InsertAsset.FlagID = -1 * CInt(m_node.Attributes.GetNamedItem("flag").Value)
-                Else ' Regular subnode
-                    If ColumnString.Contains("flag") Then
-                        InsertAsset.FlagID = CInt(m_node.Attributes.GetNamedItem("flag").Value)
-                    Else
-                        InsertAsset.FlagID = 0
-                    End If
+                'If ParentItemID = 0 Then
+                '    ' This is a base node, so set the flag to negative to signify
+                '    InsertAsset.FlagID = -1 * CInt(m_node.Attributes.GetNamedItem("flag").Value)
+                'Else ' Regular subnode
+                If ColumnString.Contains("flag") Then
+                    InsertAsset.FlagID = CInt(m_node.Attributes.GetNamedItem("flag").Value)
+                Else
+                    InsertAsset.FlagID = 0
                 End If
+                'End If
 
                 If ColumnString.Contains("singleton") Then
                     InsertAsset.Singleton = CInt(m_node.Attributes.GetNamedItem("singleton").Value)

@@ -30,7 +30,7 @@ Partial Class frmBlueprintList
         Me.chkBPIncludeIgnoredBPs = New System.Windows.Forms.CheckBox()
         Me.rbtnBPStructureModuleBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPFavoriteBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rbtnBPStationPartsBlueprints = New System.Windows.Forms.RadioButton()
+        Me.rbtnBPStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPMiscBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPComponentBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPDeployableBlueprints = New System.Windows.Forms.RadioButton()
@@ -96,7 +96,7 @@ Partial Class frmBlueprintList
         Me.grpBPType.Controls.Add(Me.chkBPIncludeIgnoredBPs)
         Me.grpBPType.Controls.Add(Me.rbtnBPStructureModuleBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPFavoriteBlueprints)
-        Me.grpBPType.Controls.Add(Me.rbtnBPStationPartsBlueprints)
+        Me.grpBPType.Controls.Add(Me.rbtnBPStructureRigsBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPMiscBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPComponentBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPDeployableBlueprints)
@@ -148,16 +148,15 @@ Partial Class frmBlueprintList
         Me.rbtnBPFavoriteBlueprints.Text = "Favorites"
         Me.rbtnBPFavoriteBlueprints.UseVisualStyleBackColor = True
         '
-        'rbtnBPStationPartsBlueprints
+        'rbtnBPStructureRigsBlueprints
         '
-        Me.rbtnBPStationPartsBlueprints.AutoSize = True
-        Me.rbtnBPStationPartsBlueprints.Location = New System.Drawing.Point(15, 162)
-        Me.rbtnBPStationPartsBlueprints.Name = "rbtnBPStationPartsBlueprints"
-        Me.rbtnBPStationPartsBlueprints.Size = New System.Drawing.Size(85, 17)
-        Me.rbtnBPStationPartsBlueprints.TabIndex = 14
-        Me.rbtnBPStationPartsBlueprints.Text = "Station Parts"
-        Me.rbtnBPStationPartsBlueprints.UseVisualStyleBackColor = True
-        Me.rbtnBPStationPartsBlueprints.Visible = False
+        Me.rbtnBPStructureRigsBlueprints.AutoSize = True
+        Me.rbtnBPStructureRigsBlueprints.Location = New System.Drawing.Point(15, 162)
+        Me.rbtnBPStructureRigsBlueprints.Name = "rbtnBPStructureRigsBlueprints"
+        Me.rbtnBPStructureRigsBlueprints.Size = New System.Drawing.Size(92, 17)
+        Me.rbtnBPStructureRigsBlueprints.TabIndex = 14
+        Me.rbtnBPStructureRigsBlueprints.Text = "Structure Rigs"
+        Me.rbtnBPStructureRigsBlueprints.UseVisualStyleBackColor = True
         '
         'rbtnBPMiscBlueprints
         '
@@ -530,7 +529,7 @@ End Sub
     Friend WithEvents rbtnBPCelestialsBlueprints As RadioButton
     Friend WithEvents rbtnBPMiscBlueprints As RadioButton
     Friend WithEvents rbtnBPComponentBlueprints As RadioButton
-    Friend WithEvents rbtnBPStationPartsBlueprints As RadioButton
+    Friend WithEvents rbtnBPStructureRigsBlueprints As RadioButton
     Friend WithEvents rbtnBPFavoriteBlueprints As RadioButton
     Friend WithEvents grpBPSize As GroupBox
     Friend WithEvents chkBPXLarge As CheckBox

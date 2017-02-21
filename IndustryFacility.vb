@@ -75,10 +75,10 @@ Public Class IndustryFacility
 
             End If
 
-            If SearchFacilitySettings.Facility = "" Or _
-                (SearchFacilitySettings.FacilityType = None And _
-                 SearchFacilitySettings.ProductionType <> IndustryType.Copying And _
-                 SearchFacilitySettings.ProductionType <> IndustryType.Invention And _
+            If SearchFacilitySettings.Facility = "" Or
+                (SearchFacilitySettings.FacilityType = None And
+                 SearchFacilitySettings.ProductionType <> IndustryType.Copying And
+                 SearchFacilitySettings.ProductionType <> IndustryType.Invention And
                  SearchFacilitySettings.ProductionType <> IndustryType.T3Invention) Then
 
                 ' Set it to default for the production type, use BP settings

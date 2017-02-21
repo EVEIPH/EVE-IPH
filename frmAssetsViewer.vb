@@ -237,7 +237,8 @@ Public Class frmAssetsViewer
             chkCelestials.Checked = .Celestials
             chkDeployables.Checked = .Deployables
             chkImplants.Checked = .Implants
-            chkStationComponents.Checked = .StationComponents
+            chkStructureRigs.Checked = .StructureRigs
+            chkStructureModules.Checked = .StructureModules
             chkDataInterfaces.Checked = .DataInterfaces
             chkCapT2Components.Checked = .CapT2Components
             chkCapitalComponents.Checked = .CapitalComponents
@@ -281,7 +282,7 @@ Public Class frmAssetsViewer
             Return True
         ElseIf chkSalvage.Checked Then
             Return True
-        ElseIf chkStationComponents.Checked Then
+        ElseIf chkStructureRigs.Checked Then
             Return True
         ElseIf chkPlanetary.Checked Then
             Return True
@@ -335,7 +336,7 @@ Public Class frmAssetsViewer
             Return True
         ElseIf chkFuelBlocks.Checked Then
             Return True
-        ElseIf chkStationComponents.Checked Then
+        ElseIf chkStructureRigs.Checked Then
             Return True
         ElseIf chkCelestials.Checked Then
             Return True
@@ -581,8 +582,12 @@ Public Class frmAssetsViewer
                 SQL = SQL & "ITEM_GROUP = 'Biochemical Material' OR "
                 ItemChecked = True
             End If
-            If chkStationComponents.Checked Then
-                SQL = SQL & "ITEM_GROUP = 'Station Components' OR "
+            If chkStructureModules.Checked Then
+                SQL = SQL & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') OR "
+                ItemChecked = True
+            End If
+            If chkStructureRigs.Checked Then
+                SQL = SQL & "ITEM_CATEGORY = 'Structure Rigs' OR "
                 ItemChecked = True
             End If
             If chkAsteroids.Checked Then
@@ -736,7 +741,7 @@ Public Class frmAssetsViewer
                     End If
 
                     If chkStructures.Checked Then
-                        SQL = SQL & "(ITEM_CATEGORY IN ('Starbase', 'Structure Module') AND " & TechSQL & ") OR "
+                        SQL = SQL & "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
                     End If
                 Else
                     ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -956,7 +961,8 @@ Public Class frmAssetsViewer
             .AncientRelics = chkAncientRelics.Checked
             .AncientSalvage = chkAncientSalvage.Checked
             .Salvage = chkSalvage.Checked
-            .StationComponents = chkStationComponents.Checked
+            .StructureRigs = chkStructureRigs.Checked
+            .StructureModules = chkStructureModules.Checked
             .Planetary = chkPlanetary.Checked
             .Datacores = chkDatacores.Checked
             .Decryptors = chkDecryptors.Checked
@@ -1003,12 +1009,12 @@ Public Class frmAssetsViewer
             ' First clear out any records in there for both the account and corp assets on the account
             SQL = "DELETE FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(WindowForm)
             SQL = SQL & " AND ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID) & ")"
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             For i = 0 To SavedLocationIDs.Count - 1
                 SQL = "INSERT INTO ASSET_LOCATIONS (EnumAssetType, ID, LocationID, FlagID) VALUES "
                 SQL = SQL & "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
             Call EVEDB.CommitSQLiteTransaction()
@@ -1236,7 +1242,7 @@ Public Class frmAssetsViewer
             chkHybrid.Checked = True
             chkFuelBlocks.Checked = True
             chkCelestials.Checked = True
-            chkStationComponents.Checked = True
+            chkStructureRigs.Checked = True
             chkDeployables.Checked = True
             chkImplants.Checked = True
         Else ' Turn off all item checks
@@ -1256,7 +1262,7 @@ Public Class frmAssetsViewer
             chkHybrid.Checked = False
             chkFuelBlocks.Checked = False
             chkCelestials.Checked = False
-            chkStationComponents.Checked = False
+            chkStructureRigs.Checked = False
             chkDeployables.Checked = False
             chkImplants.Checked = False
         End If
