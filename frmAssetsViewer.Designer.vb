@@ -83,7 +83,7 @@ Partial Class frmAssetsViewer
         Me.chkComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapitalComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapT2Components = New System.Windows.Forms.CheckBox()
-        Me.chkStationComponents = New System.Windows.Forms.CheckBox()
+        Me.chkStructureRigs = New System.Windows.Forms.CheckBox()
         Me.gbRawMaterials = New System.Windows.Forms.GroupBox()
         Me.chkBPCs = New System.Windows.Forms.CheckBox()
         Me.chkMisc = New System.Windows.Forms.CheckBox()
@@ -112,6 +112,7 @@ Partial Class frmAssetsViewer
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.AssetTree = New System.Windows.Forms.TreeView()
+        Me.chkStructureModules = New System.Windows.Forms.CheckBox()
         Me.gbSortOptions.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
         Me.tabMain.SuspendLayout()
@@ -423,10 +424,12 @@ Partial Class frmAssetsViewer
         '
         'gbItems
         '
+        Me.gbItems.Controls.Add(Me.chkStructureModules)
         Me.gbItems.Controls.Add(Me.chkImplants)
         Me.gbItems.Controls.Add(Me.chkCelestials)
         Me.gbItems.Controls.Add(Me.chkTools)
         Me.gbItems.Controls.Add(Me.chkFuelBlocks)
+        Me.gbItems.Controls.Add(Me.chkStructureRigs)
         Me.gbItems.Controls.Add(Me.cmbPriceChargeTypes)
         Me.gbItems.Controls.Add(Me.chkDataInterfaces)
         Me.gbItems.Controls.Add(Me.chkCharges)
@@ -613,7 +616,7 @@ Partial Class frmAssetsViewer
         Me.gbPricesTech.Controls.Add(Me.chkItemsT3)
         Me.gbPricesTech.Controls.Add(Me.chkItemsT2)
         Me.gbPricesTech.Controls.Add(Me.chkItemsT1)
-        Me.gbPricesTech.Location = New System.Drawing.Point(44, 133)
+        Me.gbPricesTech.Location = New System.Drawing.Point(9, 132)
         Me.gbPricesTech.Name = "gbPricesTech"
         Me.gbPricesTech.Size = New System.Drawing.Size(166, 62)
         Me.gbPricesTech.TabIndex = 0
@@ -705,7 +708,6 @@ Partial Class frmAssetsViewer
         Me.gbComponents.Controls.Add(Me.chkComponents)
         Me.gbComponents.Controls.Add(Me.chkCapitalComponents)
         Me.gbComponents.Controls.Add(Me.chkCapT2Components)
-        Me.gbComponents.Controls.Add(Me.chkStationComponents)
         Me.gbComponents.Location = New System.Drawing.Point(7, 215)
         Me.gbComponents.Name = "gbComponents"
         Me.gbComponents.Size = New System.Drawing.Size(256, 88)
@@ -753,15 +755,14 @@ Partial Class frmAssetsViewer
         Me.chkCapT2Components.Text = "Adv. Capital Construction Components"
         Me.chkCapT2Components.UseVisualStyleBackColor = True
         '
-        'chkStationComponents
+        'chkStructureRigs
         '
-        Me.chkStationComponents.AutoSize = True
-        Me.chkStationComponents.Location = New System.Drawing.Point(162, 65)
-        Me.chkStationComponents.Name = "chkStationComponents"
-        Me.chkStationComponents.Size = New System.Drawing.Size(86, 17)
-        Me.chkStationComponents.TabIndex = 16
-        Me.chkStationComponents.Text = "Station Parts"
-        Me.chkStationComponents.UseVisualStyleBackColor = True
+        Me.chkStructureRigs.Location = New System.Drawing.Point(179, 163)
+        Me.chkStructureRigs.Name = "chkStructureRigs"
+        Me.chkStructureRigs.Size = New System.Drawing.Size(69, 34)
+        Me.chkStructureRigs.TabIndex = 16
+        Me.chkStructureRigs.Text = "Structure Rigs"
+        Me.chkStructureRigs.UseVisualStyleBackColor = True
         '
         'gbRawMaterials
         '
@@ -1059,6 +1060,15 @@ Partial Class frmAssetsViewer
         Me.AssetTree.Size = New System.Drawing.Size(346, 662)
         Me.AssetTree.TabIndex = 250
         '
+        'chkStructureModules
+        '
+        Me.chkStructureModules.Location = New System.Drawing.Point(179, 132)
+        Me.chkStructureModules.Name = "chkStructureModules"
+        Me.chkStructureModules.Size = New System.Drawing.Size(69, 34)
+        Me.chkStructureModules.TabIndex = 254
+        Me.chkStructureModules.Text = "Structure Modules"
+        Me.chkStructureModules.UseVisualStyleBackColor = True
+        '
         'frmAssetsViewer
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -1149,7 +1159,7 @@ Partial Class frmAssetsViewer
     Friend WithEvents chkAsteroids As System.Windows.Forms.CheckBox
     Friend WithEvents chkRawMaterialItems As System.Windows.Forms.CheckBox
     Friend WithEvents chkPlanetary As System.Windows.Forms.CheckBox
-    Friend WithEvents chkStationComponents As System.Windows.Forms.CheckBox
+    Friend WithEvents chkStructureRigs As System.Windows.Forms.CheckBox
     Friend WithEvents chkBoosterMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkDroneComponents As System.Windows.Forms.CheckBox
     Friend WithEvents chkMatsandCompounds As System.Windows.Forms.CheckBox
@@ -1191,4 +1201,5 @@ Partial Class frmAssetsViewer
     Friend WithEvents chkCelestials As System.Windows.Forms.CheckBox
     Friend WithEvents chkDeployables As System.Windows.Forms.CheckBox
     Friend WithEvents chkBPCs As System.Windows.Forms.CheckBox
+    Friend WithEvents chkStructureModules As CheckBox
 End Class

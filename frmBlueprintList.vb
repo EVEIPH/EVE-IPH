@@ -65,8 +65,8 @@ Public Class frmBlueprintList
                     rbtnBPDeployableBlueprints.Checked = True
                 Case rbtnBPCelestialsBlueprints.Text
                     rbtnBPCelestialsBlueprints.Checked = True
-                Case rbtnBPStationPartsBlueprints.Text
-                    rbtnBPStationPartsBlueprints.Checked = True
+                Case rbtnBPStructureRigsBlueprints.Text
+                    rbtnBPStructureRigsBlueprints.Checked = True
             End Select
 
             chkBPTech1.Checked = .Tech1Check
@@ -121,8 +121,8 @@ Public Class frmBlueprintList
                 .BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
             ElseIf rbtnBPDeployableBlueprints.Checked Then
                 .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
-            ElseIf rbtnBPStationPartsBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
+            ElseIf rbtnBPStructureRigsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStructureRigsBlueprints.Text
             End If
 
             .Tech1Check = chkBPTech1.Checked
@@ -267,11 +267,11 @@ Public Class frmBlueprintList
         ElseIf rbtnBPCelestialsBlueprints.Checked Then
             Return "AND ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')"
         ElseIf rbtnBPStructureBlueprints.Checked Then
-            Return "AND ITEM_CATEGORY IN ('Starbase','Structure')"
-        ElseIf rbtnBPStationPartsBlueprints.Checked Then
-            Return "AND ITEM_GROUP = 'Station Components'"
+            Return "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
+        ElseIf rbtnBPStructureRigsBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Structure Rigs'"
         ElseIf rbtnBPStructureModuleBlueprints.Checked Then
-            Return "AND (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
+            Return " And (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
         ElseIf rbtnBPRigBlueprints.Checked Then
             Return "AND (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
         Else
@@ -496,7 +496,7 @@ Public Class frmBlueprintList
         Call ResetSelectors(True, True, False, False, False, False)
     End Sub
 
-    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStationPartsBlueprints.CheckedChanged
+    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStructureRigsBlueprints.CheckedChanged
         Call ResetSelectors(True, False, False, False, False, False)
     End Sub
 

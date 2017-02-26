@@ -324,8 +324,8 @@ Public Class frmBlueprintManagement
         End If
     End Sub
 
-    Private Sub rbtnStationPartsBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnStationPartsBlueprints.CheckedChanged
-        If Not FirstLoad And rbtnStationPartsBlueprints.Checked Then
+    Private Sub rbtnStationPartsBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnStructureRigsBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnStructureRigsBlueprints.Checked Then
             cmbBPTypeFilterLoaded = False
             cmbBPTypeFilter.Text = SelectTypeText
             Call UpdateBlueprintGrid(True)
@@ -884,9 +884,9 @@ Public Class frmBlueprintManagement
             ElseIf .rbtnCelestialsBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnStructureBlueprints.Checked Then
-                WhereClause = WhereClause & "WHERE ITEM_CATEGORY IN ('Starbase','Structure') "
-            ElseIf .rbtnStationPartsBlueprints.Checked Then
-                WhereClause = WhereClause & "WHERE ITEM_GROUP = 'Station Components' "
+                WhereClause = WhereClause & "WHERE (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
+            ElseIf .rbtnStructureRigsBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Structure Rigs' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
             ElseIf .rbtnRigBlueprints.Checked Then
@@ -1124,9 +1124,9 @@ Public Class frmBlueprintManagement
             ElseIf .rbtnCelestialsBlueprints.Checked Then
                 WhereClause = WhereClause & "ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnStructureBlueprints.Checked Then
-                WhereClause = WhereClause & "ITEM_CATEGORY IN ('Starbase','Structure') "
-            ElseIf .rbtnStationPartsBlueprints.Checked Then
-                WhereClause = WhereClause & "ITEM_GROUP = 'Station Components' "
+                WhereClause = WhereClause & "WHERE (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
+            ElseIf .rbtnStructureRigsBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Stucture Rigs' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
                 WhereClause = WhereClause & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
             ElseIf .rbtnRigBlueprints.Checked Then

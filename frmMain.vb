@@ -5,12 +5,6 @@ Imports System.Threading
 Imports System.IO
 Imports System.Net
 Imports MoreLinq.MoreEnumerable
-Imports System
-Imports System.Drawing
-Imports System.Collections
-Imports System.ComponentModel
-Imports System.Windows.Forms
-Imports System.Data
 
 Public Class frmMain
     Inherits System.Windows.Forms.Form
@@ -5391,8 +5385,8 @@ Tabs:
         End If
     End Sub
 
-    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStationPartsBlueprints.CheckedChanged
-        If rbtnBPStationPartsBlueprints.Checked Then
+    Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStructureRigsBlueprints.CheckedChanged
+        If rbtnBPStructureRigsBlueprints.Checked Then
             Call ResetBlueprintCombo(True, False, False, False, False, False)
         End If
     End Sub
@@ -6028,9 +6022,9 @@ Tabs:
             ElseIf .rbtnBPCelestialsBlueprints.Checked Then
                 SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY IN ('Starbase','Structure') "
-            ElseIf .rbtnBPStationPartsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP = 'Station Components' "
+                SQL = SQL & "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components') "
+            ElseIf .rbtnBPStructureRigsBlueprints.Checked Then
+                SQL = SQL & "AND ITEM_CATEGORY = 'Structure Rigs' "
             ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
                 SQL = SQL & "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
             ElseIf .rbtnbpRigBlueprints.Checked Then
@@ -6302,8 +6296,8 @@ Tabs:
                     rbtnBPDeployableBlueprints.Checked = True
                 Case rbtnBPCelestialsBlueprints.Text
                     rbtnBPCelestialsBlueprints.Checked = True
-                Case rbtnBPStationPartsBlueprints.Text
-                    rbtnBPStationPartsBlueprints.Checked = True
+                Case rbtnBPStructureRigsBlueprints.Text
+                    rbtnBPStructureRigsBlueprints.Checked = True
             End Select
 
             chkBPT1.Checked = .Tech1Check
@@ -6556,8 +6550,8 @@ Tabs:
                 .BlueprintTypeSelection = rbtnBPCelestialsBlueprints.Text
             ElseIf rbtnBPDeployableBlueprints.Checked Then
                 .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
-            ElseIf rbtnBPStationPartsBlueprints.Checked Then
-                .BlueprintTypeSelection = rbtnBPStationPartsBlueprints.Text
+            ElseIf rbtnBPStructureRigsBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPStructureRigsBlueprints.Text
             End If
 
             If rbtnBPComponentCopy.Checked Then
@@ -8608,7 +8602,7 @@ ExitForm:
             chkComponents.Checked = True
             chkHybrid.Checked = True
             chkFuelBlocks.Checked = True
-            chkStationParts.Checked = True
+            chkStructureRigs.Checked = True
             chkCelestials.Checked = True
             chkDeployables.Checked = True
             chkImplants.Checked = True
@@ -8628,7 +8622,7 @@ ExitForm:
             chkComponents.Checked = False
             chkHybrid.Checked = False
             chkFuelBlocks.Checked = False
-            chkStationParts.Checked = False
+            chkStructureRigs.Checked = False
             chkCelestials.Checked = False
             chkDeployables.Checked = False
             chkImplants.Checked = False
@@ -9093,8 +9087,11 @@ ExitForm:
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkStationComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStationParts.CheckedChanged
+    Private Sub chkStructureRigs_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStructureRigs.CheckedChanged
+        RefreshList = False
+        Call UpdateTechChecks()
         Call UpdatePriceList()
+        RefreshList = True
     End Sub
 
     Private Sub chkDeployables_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkDeployables.CheckedChanged
@@ -9943,7 +9940,7 @@ ExitForm:
             chkAncientRelics.Checked = .AncientRelics
             chkAncientSalvage.Checked = .AncientSalvage
             chkSalvage.Checked = .Salvage
-            chkStationParts.Checked = .StationComponents
+            chkStructureRigs.Checked = .StationComponents
             chkStructureModules.Checked = .StructureModules
             chkPlanetary.Checked = .Planetary
             chkDatacores.Checked = .Datacores
@@ -10297,7 +10294,7 @@ ExitForm:
             .AncientRelics = chkAncientRelics.Checked
             .AncientSalvage = chkAncientSalvage.Checked
             .Salvage = chkSalvage.Checked
-            .StationComponents = chkStationParts.Checked
+            .StationComponents = chkStructureRigs.Checked
             .StructureModules = chkStructureModules.Checked
             .Planetary = chkPlanetary.Checked
             .Datacores = chkDatacores.Checked
@@ -11341,8 +11338,8 @@ ExitSub:
             SQL = SQL & "ITEM_GROUP = 'Fuel Block' OR "
             ItemChecked = True
         End If
-        If chkStationParts.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Station Components' OR "
+        If chkStructureRigs.Checked Then
+            SQL = SQL & "ITEM_CATEGORY = 'Structure Rigs' OR "
             ItemChecked = True
         End If
         If chkImplants.Checked Then
@@ -11363,7 +11360,7 @@ ExitSub:
         End If
 
         ' Manufactured Items
-        If chkShips.Checked Or chkModules.Checked Or chkDrones.Checked Or chkBoosters.Checked Or chkRigs.Checked Or chkSubsystems.Checked Or chkStructures.Checked Or chkCharges.Checked Then
+        If chkShips.Checked Or chkModules.Checked Or chkDrones.Checked Or chkBoosters.Checked Or chkRigs.Checked Or chkSubsystems.Checked Or chkStructures.Checked Or chkCharges.Checked Or chkStructureRigs.Checked Then
 
             ' Make sure we have at least one tech checked that is enabled
             TechChecked = CheckTechChecks()
@@ -11459,7 +11456,7 @@ ExitSub:
                     SQL = SQL & "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
                 End If
                 If chkStructures.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR "
+                    SQL = SQL & "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
                 End If
             Else
                 ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -15671,7 +15668,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub chkCalcStationParts_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcStationParts.CheckedChanged
+    Private Sub chkCalcStationParts_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcStructureRigs.CheckedChanged
         If Not FirstManufacturingGridLoad Then
             FirstLoadCalcBPTypes = True
             cmbCalcBPTypeFilter.Text = "All Types"
@@ -17188,7 +17185,7 @@ CheckTechs:
             chkCalcDeployables.Checked = .CheckBPTypeDeployables
             chkCalcCelestials.Checked = .CheckBPTypeCelestials
             chkCalcStructureModules.Checked = .checkbptypestructuremodules
-            chkCalcStationParts.Checked = .CheckBPTypeStationParts
+            chkCalcStructureRigs.Checked = .CheckBPTypeStationParts
 
             ' Tech
             chkCalcT1.Checked = .CheckTech1
@@ -17713,7 +17710,7 @@ CheckTechs:
             .CheckBPTypeDeployables = chkCalcDeployables.Checked
             .CheckBPTypeCelestials = chkCalcCelestials.Checked
             .CheckBPTypeStructureModules = chkCalcStructureModules.Checked
-            .CheckBPTypeStationParts = chkCalcStationParts.Checked
+            .CheckBPTypeStationParts = chkCalcStructureRigs.Checked
 
             .CheckTech1 = chkCalcT1.Checked
             .CheckTech2 = chkCalcT2.Checked
@@ -18323,7 +18320,6 @@ CheckTechs:
             ListRowFormats = New List(Of RowFormat)
 
             pnlStatus.Text = "Building List..."
-            lstManufacturing.BeginUpdate()
 
             ' Add the data to the final list, then display into the grid
             While readerBPs.Read
@@ -19267,6 +19263,7 @@ DisplayResults:
         pnlProgressBar.Visible = True
 
         lstManufacturing.Items.Clear()
+        lstManufacturing.BeginUpdate()
         ' Disable sorting because it will crawl after we update if there are too many records
         lstManufacturing.ListViewItemSorter = Nothing
         lstManufacturing.SmallImageList = CalcImageList
@@ -20208,8 +20205,8 @@ ExitCalc:
         If chkCalcRigs.Checked Then
             ItemTypes = ItemTypes & "(X.BLUEPRINT_GROUP = 'Rig Blueprint' OR (X.ITEM_CATEGORY = 'Structure Module' AND X.ITEM_GROUP LIKE '%Rig%')) OR "
         End If
-        If chkCalcStationParts.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_GROUP = 'Station Components' OR "
+        If chkCalcStructureRigs.Checked Then
+            ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Structure Rigs' OR "
         End If
         If chkCalcCelestials.Checked Then
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories') OR "
@@ -20224,7 +20221,7 @@ ExitCalc:
             ItemTypes = ItemTypes & "X.ITEM_CATEGORY = 'Deployable' OR "
         End If
         If chkCalcStructures.Checked Then
-            ItemTypes = ItemTypes & "X.ITEM_CATEGORY IN ('Starbase','Structure') OR "
+            ItemTypes = ItemTypes & "(X.ITEM_CATEGORY IN ('Starbase','Structure') OR X.ITEM_GROUP = 'Station Components')  OR "
         End If
 
         ' Take off last OR
@@ -25852,8 +25849,8 @@ Leave:
 
         ' Mining director needs mining foreman 5
         ' Mindlink (implant) needs mining director 5 
-        ' Mining gang link I needs mining director 1
-        ' Mining gang link II needs mining director 5 (three way check box)
+        ' Mining Foreman Link 1 needs mining foreman 5
+        ' Mining Foreman Link 2 needs mining director 1
         If chkMineUseFleetBooster.Checked Then
             cmbMineBoosterShip.Enabled = True
             cmbMineMiningForeman.Enabled = True
@@ -25865,7 +25862,7 @@ Leave:
             If cmbMineMiningForeman.Text = "5" Then
                 cmbMineMiningDirector.Enabled = True
 
-                If cmbMineMiningDirector.Text = "5" Then
+                If cmbMineMiningDirector.Text = "1" Then
                     chkMineForemanMindlink.Enabled = True ' Implant
                     chkMineForemanLaserOpBoost.ThreeState = True ' Allow for t2 mindlink
                     chkMineForemanLaserOpBoost.Enabled = True

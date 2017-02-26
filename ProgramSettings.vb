@@ -4011,7 +4011,8 @@ Public Class ProgramSettings
                     .AncientRelics = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientRelics", DefaultAssetItemChecks))
                     .AncientSalvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientSalvage", DefaultAssetItemChecks))
                     .Salvage = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
-                    .StationComponents = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StationComponents", DefaultAssetItemChecks))
+                    .StructureRigs = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureRigs", DefaultAssetItemChecks))
+                    .StructureModules = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureModules", DefaultAssetItemChecks))
                     .Planetary = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
                     .Datacores = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Datacores", DefaultAssetItemChecks))
                     .Decryptors = CBool(GetSettingValue(AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Decryptors", DefaultAssetItemChecks))
@@ -4078,7 +4079,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(49) As Setting
+        Dim AssetWindowSettingsList(50) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4098,7 +4099,7 @@ Public Class ProgramSettings
             AssetWindowSettingsList(4) = New Setting("AncientRelics", CStr(ItemsSelected.AncientRelics))
             AssetWindowSettingsList(5) = New Setting("AncientSalvage", CStr(ItemsSelected.AncientSalvage))
             AssetWindowSettingsList(6) = New Setting("Salvage", CStr(ItemsSelected.Salvage))
-            AssetWindowSettingsList(7) = New Setting("StationComponents", CStr(ItemsSelected.StationComponents))
+            AssetWindowSettingsList(7) = New Setting("StructureRigs", CStr(ItemsSelected.StructureRigs))
             AssetWindowSettingsList(8) = New Setting("Planetary", CStr(ItemsSelected.Planetary))
             AssetWindowSettingsList(9) = New Setting("Datacores", CStr(ItemsSelected.Datacores))
             AssetWindowSettingsList(10) = New Setting("Decryptors", CStr(ItemsSelected.Decryptors))
@@ -4144,6 +4145,7 @@ Public Class ProgramSettings
             AssetWindowSettingsList(47) = New Setting("Deployables", CStr(ItemsSelected.Deployables))
             AssetWindowSettingsList(48) = New Setting("Implants", CStr(ItemsSelected.Implants))
             AssetWindowSettingsList(49) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
+            AssetWindowSettingsList(50) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
 
             Call WriteSettingsToFile(AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4185,7 +4187,8 @@ Public Class ProgramSettings
             .AncientRelics = DefaultAssetItemChecks
             .AncientSalvage = DefaultAssetItemChecks
             .Salvage = DefaultAssetItemChecks
-            .StationComponents = DefaultAssetItemChecks
+            .StructureRigs = DefaultAssetItemChecks
+            .StructureModules = DefaultAssetItemChecks
             .Planetary = DefaultAssetItemChecks
             .Datacores = DefaultAssetItemChecks
             .Decryptors = DefaultAssetItemChecks
@@ -6242,7 +6245,8 @@ Public Structure AssetWindowSettings
     Dim Components As Boolean
     Dim Hybrid As Boolean
     Dim FuelBlocks As Boolean
-    Dim StationComponents As Boolean
+    Dim StructureRigs As Boolean
+    Dim StructureModules As Boolean
     Dim Celestials As Boolean
     Dim Deployables As Boolean
     Dim Implants As Boolean

@@ -739,11 +739,4 @@ Public Class frmPOSSettings
 
     End Sub
 
-    Private Sub gbPOSFuelPrices_Enter(sender As Object, e As EventArgs) Handles gbPOSFuelPrices.Enter
-
-    End Sub
-
-    Private Sub gbPOSFuelBlocks_Enter(sender As Object, e As EventArgs) Handles gbPOSFuelBlocks.Enter
-
-    End Sub
 End Class

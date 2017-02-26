@@ -160,6 +160,7 @@
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="EngineeringCitadel.vb" />
+    <Compile Include="EVEAttributes.vb" />
     <Compile Include="frmCitadelFitting.designer.vb">
       <DependentUpon>frmCitadelFitting.vb</DependentUpon>
     </Compile>
@@ -630,6 +631,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="Resources\no.png" />
     <None Include="Resources\SotiyoRender.png" />
     <None Include="Resources\RaitaruRender.png" />
     <None Include="Resources\AzbelRender.png" />

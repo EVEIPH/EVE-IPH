@@ -23,90 +23,22 @@ Partial Class frmCitadelFitting
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCitadelFitting))
         Dim ListViewGroup1 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
         Dim ListViewGroup2 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup3 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Medium Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup3 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
         Dim ListViewGroup4 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup5 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewItem1 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("Armor", 4)
-        Dim ListViewItem2 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("Armor 2", 2)
-        Dim ListViewItem3 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("Standup Missile Guidance Enhancer I", 1)
-        Dim ListViewItem4 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("Standup M-Set Basic Capital Component Manufacturing Material Efficiency I", 0)
-        Dim ListViewItem5 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("", 5)
-        Dim ListViewItem6 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("", 6)
-        Dim ListViewItem7 As System.Windows.Forms.ListViewItem = New System.Windows.Forms.ListViewItem("", 10)
-        Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
+        Dim ListViewGroup5 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup6 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup7 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCitadelFitting))
+        Me.FittingImages = New System.Windows.Forms.ImageList(Me.components)
         Me.ServiceModuleListView = New System.Windows.Forms.ListView()
-        Me.SelectedCitadel = New System.Windows.Forms.Label()
+        Me.lblSelectedCitadel = New System.Windows.Forms.Label()
         Me.cmbCitadelName = New System.Windows.Forms.ComboBox()
         Me.chkIncludeFuelCosts = New System.Windows.Forms.CheckBox()
-        Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
         Me.btnToggleAllPriceItems = New System.Windows.Forms.Button()
         Me.tabCitadel = New System.Windows.Forms.TabControl()
         Me.tabFitting = New System.Windows.Forms.TabPage()
-        Me.tabFuel = New System.Windows.Forms.TabPage()
-        Me.gbPOSFuelPrices = New System.Windows.Forms.GroupBox()
-        Me.txtCharters = New System.Windows.Forms.TextBox()
-        Me.lblCharters = New System.Windows.Forms.Label()
-        Me.btnPOSUpdateFuelPrices = New System.Windows.Forms.Button()
-        Me.txtPOS1 = New System.Windows.Forms.TextBox()
-        Me.txtPOS12 = New System.Windows.Forms.TextBox()
-        Me.lblPOS12 = New System.Windows.Forms.Label()
-        Me.txtPOS8 = New System.Windows.Forms.TextBox()
-        Me.lblPOS8 = New System.Windows.Forms.Label()
-        Me.txtPOS4 = New System.Windows.Forms.TextBox()
-        Me.txtPOS2 = New System.Windows.Forms.TextBox()
-        Me.lblPOS4 = New System.Windows.Forms.Label()
-        Me.lblPOS1 = New System.Windows.Forms.Label()
-        Me.lblPOS2 = New System.Windows.Forms.Label()
-        Me.lblPOS3 = New System.Windows.Forms.Label()
-        Me.lblPOS9 = New System.Windows.Forms.Label()
-        Me.lblPOS6 = New System.Windows.Forms.Label()
-        Me.txtPOS5 = New System.Windows.Forms.TextBox()
-        Me.lblPOS10 = New System.Windows.Forms.Label()
-        Me.txtPOS7 = New System.Windows.Forms.TextBox()
-        Me.lblPOS11 = New System.Windows.Forms.Label()
-        Me.txtPOS11 = New System.Windows.Forms.TextBox()
-        Me.lblPOS7 = New System.Windows.Forms.Label()
-        Me.txtPOS10 = New System.Windows.Forms.TextBox()
-        Me.lblPOS5 = New System.Windows.Forms.Label()
-        Me.txtPOS6 = New System.Windows.Forms.TextBox()
-        Me.txtPOS3 = New System.Windows.Forms.TextBox()
-        Me.txtPOS9 = New System.Windows.Forms.TextBox()
-        Me.gbPOSFuelBlocks = New System.Windows.Forms.GroupBox()
-        Me.lblPOSFuelBlockBuild = New System.Windows.Forms.Label()
-        Me.txtPOSFuelBlockBuy = New System.Windows.Forms.TextBox()
-        Me.lblPOSBlockBuild2 = New System.Windows.Forms.Label()
-        Me.lblPOSBlockBuy2 = New System.Windows.Forms.Label()
-        Me.txtPOSFuelBlockBPME = New System.Windows.Forms.TextBox()
-        Me.btnPOSUpdateBlockPrice = New System.Windows.Forms.Button()
-        Me.btnRefreshBlockData = New System.Windows.Forms.Button()
-        Me.lblPOSFuelBlockBPME = New System.Windows.Forms.Label()
-        Me.lblPOSFuelBlock = New System.Windows.Forms.Label()
-        Me.rbtnPOSBuildBlocks = New System.Windows.Forms.RadioButton()
-        Me.rbtnPOSBuyBlocks = New System.Windows.Forms.RadioButton()
-        Me.chkItemViewTypeAll = New System.Windows.Forms.CheckBox()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.chkItemViewTypeRigs = New System.Windows.Forms.CheckBox()
-        Me.chkItemViewTypeLow = New System.Windows.Forms.CheckBox()
-        Me.chkItemViewTypeMedium = New System.Windows.Forms.CheckBox()
-        Me.chkItemViewTypeHigh = New System.Windows.Forms.CheckBox()
-        Me.chkItemViewTypeServices = New System.Windows.Forms.CheckBox()
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
-        Me.chkRigTypeViewCombat = New System.Windows.Forms.CheckBox()
-        Me.chkRigTypeViewReprocessing = New System.Windows.Forms.CheckBox()
-        Me.chkRigTypeViewEngineering = New System.Windows.Forms.CheckBox()
-        Me.GBStats = New System.Windows.Forms.GroupBox()
-        Me.CapacitorValues = New System.Windows.Forms.Label()
-        Me.CapacitorLabel = New System.Windows.Forms.Label()
-        Me.Calibration = New System.Windows.Forms.Label()
-        Me.Calibration1 = New System.Windows.Forms.Label()
-        Me.CPU = New System.Windows.Forms.Label()
-        Me.PowerGrid = New System.Windows.Forms.Label()
-        Me.CPU1 = New System.Windows.Forms.Label()
-        Me.PowerGrid1 = New System.Windows.Forms.Label()
-        Me.pbFloat = New System.Windows.Forms.PictureBox()
         Me.LowSlot3 = New System.Windows.Forms.PictureBox()
         Me.RigSlot2 = New System.Windows.Forms.PictureBox()
         Me.LowSlot6 = New System.Windows.Forms.PictureBox()
@@ -141,32 +73,99 @@ Partial Class frmCitadelFitting
         Me.MidSlot6 = New System.Windows.Forms.PictureBox()
         Me.MidSlot7 = New System.Windows.Forms.PictureBox()
         Me.StructurePicture = New System.Windows.Forms.PictureBox()
+        Me.tabFuel = New System.Windows.Forms.TabPage()
+        Me.gbPOSFuelPrices = New System.Windows.Forms.GroupBox()
+        Me.txtCharters = New System.Windows.Forms.TextBox()
+        Me.lblCharters = New System.Windows.Forms.Label()
+        Me.btnPOSUpdateFuelPrices = New System.Windows.Forms.Button()
         Me.picPOSCharters = New System.Windows.Forms.PictureBox()
+        Me.txtPOS1 = New System.Windows.Forms.TextBox()
+        Me.txtPOS12 = New System.Windows.Forms.TextBox()
         Me.pictPOS1 = New System.Windows.Forms.PictureBox()
+        Me.lblPOS12 = New System.Windows.Forms.Label()
         Me.pictPOS10 = New System.Windows.Forms.PictureBox()
         Me.pictPOS12 = New System.Windows.Forms.PictureBox()
         Me.pictPOS3 = New System.Windows.Forms.PictureBox()
+        Me.txtPOS8 = New System.Windows.Forms.TextBox()
         Me.pictPOS11 = New System.Windows.Forms.PictureBox()
+        Me.lblPOS8 = New System.Windows.Forms.Label()
         Me.pictPOS9 = New System.Windows.Forms.PictureBox()
         Me.pictPOS8 = New System.Windows.Forms.PictureBox()
         Me.pictPOS7 = New System.Windows.Forms.PictureBox()
+        Me.txtPOS4 = New System.Windows.Forms.TextBox()
         Me.pictPOS6 = New System.Windows.Forms.PictureBox()
+        Me.txtPOS2 = New System.Windows.Forms.TextBox()
         Me.pictPOS5 = New System.Windows.Forms.PictureBox()
+        Me.lblPOS4 = New System.Windows.Forms.Label()
+        Me.lblPOS1 = New System.Windows.Forms.Label()
+        Me.lblPOS2 = New System.Windows.Forms.Label()
+        Me.lblPOS3 = New System.Windows.Forms.Label()
         Me.pictPOS4 = New System.Windows.Forms.PictureBox()
+        Me.lblPOS9 = New System.Windows.Forms.Label()
         Me.pictPOS2 = New System.Windows.Forms.PictureBox()
+        Me.lblPOS6 = New System.Windows.Forms.Label()
+        Me.txtPOS5 = New System.Windows.Forms.TextBox()
+        Me.lblPOS10 = New System.Windows.Forms.Label()
+        Me.txtPOS7 = New System.Windows.Forms.TextBox()
+        Me.lblPOS11 = New System.Windows.Forms.Label()
+        Me.txtPOS11 = New System.Windows.Forms.TextBox()
+        Me.lblPOS7 = New System.Windows.Forms.Label()
+        Me.txtPOS10 = New System.Windows.Forms.TextBox()
+        Me.lblPOS5 = New System.Windows.Forms.Label()
+        Me.txtPOS6 = New System.Windows.Forms.TextBox()
+        Me.txtPOS3 = New System.Windows.Forms.TextBox()
+        Me.txtPOS9 = New System.Windows.Forms.TextBox()
+        Me.gbPOSFuelBlocks = New System.Windows.Forms.GroupBox()
+        Me.chkAutoUpdateFuelPrice = New System.Windows.Forms.CheckBox()
+        Me.lblPOSFuelBlockBuild = New System.Windows.Forms.Label()
+        Me.txtPOSFuelBlockBuy = New System.Windows.Forms.TextBox()
+        Me.lblPOSBlockBuild2 = New System.Windows.Forms.Label()
+        Me.lblPOSBlockBuy2 = New System.Windows.Forms.Label()
+        Me.txtPOSFuelBlockBPME = New System.Windows.Forms.TextBox()
+        Me.btnPOSUpdateBlockPrice = New System.Windows.Forms.Button()
+        Me.btnRefreshBlockData = New System.Windows.Forms.Button()
         Me.picPOSAmarrFuelBlock = New System.Windows.Forms.PictureBox()
         Me.picPOSCaldariFuelBlock = New System.Windows.Forms.PictureBox()
+        Me.lblPOSFuelBlockBPME = New System.Windows.Forms.Label()
+        Me.lblPOSFuelBlock = New System.Windows.Forms.Label()
         Me.picPOSMinmatarFuelBlock = New System.Windows.Forms.PictureBox()
         Me.picPOSGallenteFuelBlock = New System.Windows.Forms.PictureBox()
+        Me.rbtnPOSBuildBlocks = New System.Windows.Forms.RadioButton()
+        Me.rbtnPOSBuyBlocks = New System.Windows.Forms.RadioButton()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.chkRigTypeViewCombat = New System.Windows.Forms.CheckBox()
+        Me.chkRigTypeViewReprocessing = New System.Windows.Forms.CheckBox()
+        Me.chkRigTypeViewEngineering = New System.Windows.Forms.CheckBox()
+        Me.chkItemViewTypeLow = New System.Windows.Forms.CheckBox()
+        Me.chkItemViewTypeMedium = New System.Windows.Forms.CheckBox()
+        Me.chkItemViewTypeHigh = New System.Windows.Forms.CheckBox()
+        Me.chkItemViewTypeServices = New System.Windows.Forms.CheckBox()
+        Me.GBStats = New System.Windows.Forms.GroupBox()
+        Me.lblOnlineAmt = New System.Windows.Forms.Label()
+        Me.lblServiceModuleFCPH = New System.Windows.Forms.Label()
+        Me.lblFuelCost = New System.Windows.Forms.Label()
+        Me.lblServiceModuleBPH = New System.Windows.Forms.Label()
+        Me.lblFuelBPH = New System.Windows.Forms.Label()
+        Me.lblCapacitorValues = New System.Windows.Forms.Label()
+        Me.lblCapacitorLabel = New System.Windows.Forms.Label()
+        Me.lblCalibration = New System.Windows.Forms.Label()
+        Me.Calibration1 = New System.Windows.Forms.Label()
+        Me.lblCPU = New System.Windows.Forms.Label()
+        Me.lblPowerGrid = New System.Windows.Forms.Label()
+        Me.CPU1 = New System.Windows.Forms.Label()
+        Me.PowerGrid1 = New System.Windows.Forms.Label()
+        Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.pbFloat = New System.Windows.Forms.PictureBox()
+        Me.btnLoadFitting = New System.Windows.Forms.Button()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.lblServiceModuleOnlineAmt = New System.Windows.Forms.Label()
+        Me.rbtnAmarrFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnCaldariFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnGallenteFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnMinmatarFuelBlock = New System.Windows.Forms.RadioButton()
         Me.tabCitadel.SuspendLayout()
         Me.tabFitting.SuspendLayout()
-        Me.tabFuel.SuspendLayout()
-        Me.gbPOSFuelPrices.SuspendLayout()
-        Me.gbPOSFuelBlocks.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
-        Me.GroupBox2.SuspendLayout()
-        Me.GBStats.SuspendLayout()
-        CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.RigSlot2, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.LowSlot6, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -201,6 +200,8 @@ Partial Class frmCitadelFitting
         CType(Me.MidSlot6, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.MidSlot7, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.StructurePicture, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.tabFuel.SuspendLayout()
+        Me.gbPOSFuelPrices.SuspendLayout()
         CType(Me.picPOSCharters, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pictPOS1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pictPOS10, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -214,37 +215,22 @@ Partial Class frmCitadelFitting
         CType(Me.pictPOS5, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pictPOS4, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pictPOS2, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.gbPOSFuelBlocks.SuspendLayout()
         CType(Me.picPOSAmarrFuelBlock, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picPOSCaldariFuelBlock, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picPOSMinmatarFuelBlock, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picPOSGallenteFuelBlock, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox1.SuspendLayout()
+        Me.GBStats.SuspendLayout()
+        CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
         '
-        'ImageList1
+        'FittingImages
         '
-        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"), System.Windows.Forms.ImageListStreamer)
-        Me.ImageList1.TransparentColor = System.Drawing.Color.Transparent
-        Me.ImageList1.Images.SetKeyName(0, "1_64_7.png")
-        Me.ImageList1.Images.SetKeyName(1, "1_64_8.png")
-        Me.ImageList1.Images.SetKeyName(2, "1_64_9.png")
-        Me.ImageList1.Images.SetKeyName(3, "1_64_10.png")
-        Me.ImageList1.Images.SetKeyName(4, "1_64_11.png")
-        Me.ImageList1.Images.SetKeyName(5, "1_64_12.png")
-        Me.ImageList1.Images.SetKeyName(6, "1_64_13.png")
-        Me.ImageList1.Images.SetKeyName(7, "1_64_14.png")
-        Me.ImageList1.Images.SetKeyName(8, "1_64_15.png")
-        Me.ImageList1.Images.SetKeyName(9, "1_64_16.png")
-        Me.ImageList1.Images.SetKeyName(10, "2_64_1.png")
-        Me.ImageList1.Images.SetKeyName(11, "2_64_2.png")
-        Me.ImageList1.Images.SetKeyName(12, "2_64_3.png")
-        Me.ImageList1.Images.SetKeyName(13, "2_64_4.png")
-        Me.ImageList1.Images.SetKeyName(14, "2_64_5.png")
-        Me.ImageList1.Images.SetKeyName(15, "2_64_6.png")
-        Me.ImageList1.Images.SetKeyName(16, "2_64_7.png")
-        Me.ImageList1.Images.SetKeyName(17, "2_64_8.png")
-        Me.ImageList1.Images.SetKeyName(18, "2_64_9.png")
-        Me.ImageList1.Images.SetKeyName(19, "2_64_10.png")
-        Me.ImageList1.Images.SetKeyName(20, "2_64_11.png")
+        Me.FittingImages.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit
+        Me.FittingImages.ImageSize = New System.Drawing.Size(64, 64)
+        Me.FittingImages.TransparentColor = System.Drawing.Color.Transparent
         '
         'ServiceModuleListView
         '
@@ -252,75 +238,68 @@ Partial Class frmCitadelFitting
         Me.ServiceModuleListView.AllowDrop = True
         Me.ServiceModuleListView.AutoArrange = False
         ListViewGroup1.Header = "Services"
-        ListViewGroup1.Name = "CitadelServices"
+        ListViewGroup1.Name = "ServiceSlots"
+        ListViewGroup1.Tag = "ServiceSlot"
         ListViewGroup2.Header = "High Slots"
-        ListViewGroup2.Name = "CitadelHighSlots"
-        ListViewGroup3.Header = "Medium Slots"
-        ListViewGroup3.Name = "CitadelMediumSlots"
+        ListViewGroup2.Name = "HighSlots"
+        ListViewGroup2.Tag = "HighSlot"
+        ListViewGroup3.Header = "Mid Slots"
+        ListViewGroup3.Name = "MidSlots"
+        ListViewGroup3.Tag = "MidSlots"
         ListViewGroup4.Header = "Low Slots"
-        ListViewGroup4.Name = "CitadelLowSlots"
-        ListViewGroup5.Header = "Rigs"
-        ListViewGroup5.Name = "CitadelRigs"
-        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5})
+        ListViewGroup4.Name = "LowSlots"
+        ListViewGroup4.Tag = "LowSlot"
+        ListViewGroup5.Header = "Combat Rigs"
+        ListViewGroup5.Name = "CombatRigs"
+        ListViewGroup5.Tag = "RigSlot"
+        ListViewGroup6.Header = "Reprocessing Rigs"
+        ListViewGroup6.Name = "ReprocessingRigs"
+        ListViewGroup6.Tag = "RigSlot"
+        ListViewGroup7.Header = "Engineering Rigs"
+        ListViewGroup7.Name = "EngineeringRigs"
+        ListViewGroup7.Tag = "RigSlot"
+        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7})
         Me.ServiceModuleListView.HoverSelection = True
-        ListViewItem1.Group = ListViewGroup4
-        ListViewItem2.Group = ListViewGroup2
-        ListViewItem3.Group = ListViewGroup1
-        ListViewItem4.Group = ListViewGroup1
-        ListViewItem5.Group = ListViewGroup1
-        ListViewItem6.Group = ListViewGroup5
-        ListViewItem7.Group = ListViewGroup3
-        Me.ServiceModuleListView.Items.AddRange(New System.Windows.Forms.ListViewItem() {ListViewItem1, ListViewItem2, ListViewItem3, ListViewItem4, ListViewItem5, ListViewItem6, ListViewItem7})
-        Me.ServiceModuleListView.LargeImageList = Me.ImageList1
-        Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 145)
+        Me.ServiceModuleListView.LargeImageList = Me.FittingImages
+        Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 148)
         Me.ServiceModuleListView.MultiSelect = False
         Me.ServiceModuleListView.Name = "ServiceModuleListView"
-        Me.ServiceModuleListView.Size = New System.Drawing.Size(342, 462)
+        Me.ServiceModuleListView.Size = New System.Drawing.Size(342, 459)
         Me.ServiceModuleListView.TabIndex = 8
         Me.ServiceModuleListView.UseCompatibleStateImageBehavior = False
         '
-        'SelectedCitadel
+        'lblSelectedCitadel
         '
-        Me.SelectedCitadel.AutoSize = True
-        Me.SelectedCitadel.Location = New System.Drawing.Point(6, 12)
-        Me.SelectedCitadel.Name = "SelectedCitadel"
-        Me.SelectedCitadel.Size = New System.Drawing.Size(109, 13)
-        Me.SelectedCitadel.TabIndex = 42
-        Me.SelectedCitadel.Text = "Engineering Complex:"
+        Me.lblSelectedCitadel.AutoSize = True
+        Me.lblSelectedCitadel.Location = New System.Drawing.Point(6, 12)
+        Me.lblSelectedCitadel.Name = "lblSelectedCitadel"
+        Me.lblSelectedCitadel.Size = New System.Drawing.Size(87, 13)
+        Me.lblSelectedCitadel.TabIndex = 42
+        Me.lblSelectedCitadel.Text = "Selected Citadel:"
         '
         'cmbCitadelName
         '
         Me.cmbCitadelName.FormattingEnabled = True
-        Me.cmbCitadelName.Items.AddRange(New Object() {"Azbel", "Raitaru", "Sotiyo"})
-        Me.cmbCitadelName.Location = New System.Drawing.Point(121, 8)
+        Me.cmbCitadelName.Location = New System.Drawing.Point(99, 8)
         Me.cmbCitadelName.Name = "cmbCitadelName"
-        Me.cmbCitadelName.Size = New System.Drawing.Size(227, 21)
+        Me.cmbCitadelName.Size = New System.Drawing.Size(249, 21)
         Me.cmbCitadelName.TabIndex = 43
         '
         'chkIncludeFuelCosts
         '
         Me.chkIncludeFuelCosts.AutoSize = True
-        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(9, 44)
+        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(4, 0)
         Me.chkIncludeFuelCosts.Name = "chkIncludeFuelCosts"
         Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(113, 17)
         Me.chkIncludeFuelCosts.TabIndex = 44
         Me.chkIncludeFuelCosts.Text = "Include Fuel Costs"
         Me.chkIncludeFuelCosts.UseVisualStyleBackColor = True
         '
-        'btnSaveUpdatePrices
-        '
-        Me.btnSaveUpdatePrices.Location = New System.Drawing.Point(238, 36)
-        Me.btnSaveUpdatePrices.Name = "btnSaveUpdatePrices"
-        Me.btnSaveUpdatePrices.Size = New System.Drawing.Size(80, 30)
-        Me.btnSaveUpdatePrices.TabIndex = 48
-        Me.btnSaveUpdatePrices.Text = "Save Fitting"
-        Me.btnSaveUpdatePrices.UseVisualStyleBackColor = True
-        '
         'btnToggleAllPriceItems
         '
-        Me.btnToggleAllPriceItems.Location = New System.Drawing.Point(139, 36)
+        Me.btnToggleAllPriceItems.Location = New System.Drawing.Point(6, 35)
         Me.btnToggleAllPriceItems.Name = "btnToggleAllPriceItems"
-        Me.btnToggleAllPriceItems.Size = New System.Drawing.Size(80, 30)
+        Me.btnToggleAllPriceItems.Size = New System.Drawing.Size(81, 30)
         Me.btnToggleAllPriceItems.TabIndex = 46
         Me.btnToggleAllPriceItems.Text = "Strip Fitting"
         Me.btnToggleAllPriceItems.UseVisualStyleBackColor = True
@@ -378,647 +357,6 @@ Partial Class frmCitadelFitting
         Me.tabFitting.TabIndex = 0
         Me.tabFitting.Text = "Fitting"
         Me.tabFitting.UseVisualStyleBackColor = True
-        '
-        'tabFuel
-        '
-        Me.tabFuel.Controls.Add(Me.gbPOSFuelPrices)
-        Me.tabFuel.Controls.Add(Me.gbPOSFuelBlocks)
-        Me.tabFuel.Location = New System.Drawing.Point(4, 22)
-        Me.tabFuel.Name = "tabFuel"
-        Me.tabFuel.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabFuel.Size = New System.Drawing.Size(595, 577)
-        Me.tabFuel.TabIndex = 1
-        Me.tabFuel.Text = "Fuel Settings"
-        Me.tabFuel.UseVisualStyleBackColor = True
-        '
-        'gbPOSFuelPrices
-        '
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtCharters)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblCharters)
-        Me.gbPOSFuelPrices.Controls.Add(Me.btnPOSUpdateFuelPrices)
-        Me.gbPOSFuelPrices.Controls.Add(Me.picPOSCharters)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS1)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS12)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS1)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS12)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS10)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS12)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS3)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS8)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS11)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS8)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS9)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS8)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS7)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS4)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS6)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS2)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS5)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS4)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS1)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS2)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS3)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS4)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS9)
-        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS2)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS6)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS5)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS10)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS7)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS11)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS11)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS7)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS10)
-        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS5)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS6)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS3)
-        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS9)
-        Me.gbPOSFuelPrices.Location = New System.Drawing.Point(294, 15)
-        Me.gbPOSFuelPrices.Name = "gbPOSFuelPrices"
-        Me.gbPOSFuelPrices.Size = New System.Drawing.Size(322, 294)
-        Me.gbPOSFuelPrices.TabIndex = 225
-        Me.gbPOSFuelPrices.TabStop = False
-        Me.gbPOSFuelPrices.Text = "Fuel Block Material Prices"
-        '
-        'txtCharters
-        '
-        Me.txtCharters.Location = New System.Drawing.Point(49, 264)
-        Me.txtCharters.Name = "txtCharters"
-        Me.txtCharters.Size = New System.Drawing.Size(101, 20)
-        Me.txtCharters.TabIndex = 223
-        Me.txtCharters.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblCharters
-        '
-        Me.lblCharters.Location = New System.Drawing.Point(49, 248)
-        Me.lblCharters.Name = "lblCharters"
-        Me.lblCharters.Size = New System.Drawing.Size(101, 13)
-        Me.lblCharters.TabIndex = 225
-        Me.lblCharters.Text = "Charters"
-        Me.lblCharters.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'btnPOSUpdateFuelPrices
-        '
-        Me.btnPOSUpdateFuelPrices.Location = New System.Drawing.Point(180, 250)
-        Me.btnPOSUpdateFuelPrices.Name = "btnPOSUpdateFuelPrices"
-        Me.btnPOSUpdateFuelPrices.Size = New System.Drawing.Size(124, 34)
-        Me.btnPOSUpdateFuelPrices.TabIndex = 226
-        Me.btnPOSUpdateFuelPrices.Text = "Update Fuel Prices"
-        Me.btnPOSUpdateFuelPrices.UseVisualStyleBackColor = True
-        '
-        'txtPOS1
-        '
-        Me.txtPOS1.Location = New System.Drawing.Point(49, 33)
-        Me.txtPOS1.Name = "txtPOS1"
-        Me.txtPOS1.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS1.TabIndex = 187
-        Me.txtPOS1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtPOS12
-        '
-        Me.txtPOS12.Location = New System.Drawing.Point(210, 218)
-        Me.txtPOS12.Name = "txtPOS12"
-        Me.txtPOS12.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS12.TabIndex = 220
-        Me.txtPOS12.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS12
-        '
-        Me.lblPOS12.Location = New System.Drawing.Point(210, 202)
-        Me.lblPOS12.Name = "lblPOS12"
-        Me.lblPOS12.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS12.TabIndex = 222
-        Me.lblPOS12.Text = "Oxygen"
-        Me.lblPOS12.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS8
-        '
-        Me.txtPOS8.Location = New System.Drawing.Point(210, 144)
-        Me.txtPOS8.Name = "txtPOS8"
-        Me.txtPOS8.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS8.TabIndex = 194
-        Me.txtPOS8.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS8
-        '
-        Me.lblPOS8.Location = New System.Drawing.Point(210, 128)
-        Me.lblPOS8.Name = "lblPOS8"
-        Me.lblPOS8.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS8.TabIndex = 219
-        Me.lblPOS8.Text = "Robotics"
-        Me.lblPOS8.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS4
-        '
-        Me.txtPOS4.Location = New System.Drawing.Point(210, 70)
-        Me.txtPOS4.Name = "txtPOS4"
-        Me.txtPOS4.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS4.TabIndex = 190
-        Me.txtPOS4.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtPOS2
-        '
-        Me.txtPOS2.Location = New System.Drawing.Point(210, 33)
-        Me.txtPOS2.Name = "txtPOS2"
-        Me.txtPOS2.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS2.TabIndex = 188
-        Me.txtPOS2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS4
-        '
-        Me.lblPOS4.Location = New System.Drawing.Point(210, 54)
-        Me.lblPOS4.Name = "lblPOS4"
-        Me.lblPOS4.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS4.TabIndex = 217
-        Me.lblPOS4.Text = "Oxygen Isotopes"
-        Me.lblPOS4.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOS1
-        '
-        Me.lblPOS1.Location = New System.Drawing.Point(49, 17)
-        Me.lblPOS1.Name = "lblPOS1"
-        Me.lblPOS1.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS1.TabIndex = 206
-        Me.lblPOS1.Text = "Helium Isotopes"
-        Me.lblPOS1.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOS2
-        '
-        Me.lblPOS2.Location = New System.Drawing.Point(210, 17)
-        Me.lblPOS2.Name = "lblPOS2"
-        Me.lblPOS2.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS2.TabIndex = 216
-        Me.lblPOS2.Text = "Hydrogen Isotopes"
-        Me.lblPOS2.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOS3
-        '
-        Me.lblPOS3.Location = New System.Drawing.Point(49, 54)
-        Me.lblPOS3.Name = "lblPOS3"
-        Me.lblPOS3.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS3.TabIndex = 207
-        Me.lblPOS3.Text = "Nitrogen Isotopes"
-        Me.lblPOS3.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOS9
-        '
-        Me.lblPOS9.Location = New System.Drawing.Point(49, 165)
-        Me.lblPOS9.Name = "lblPOS9"
-        Me.lblPOS9.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS9.TabIndex = 208
-        Me.lblPOS9.Text = "Mechanical Parts"
-        Me.lblPOS9.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOS6
-        '
-        Me.lblPOS6.Location = New System.Drawing.Point(210, 91)
-        Me.lblPOS6.Name = "lblPOS6"
-        Me.lblPOS6.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS6.TabIndex = 209
-        Me.lblPOS6.Text = "Liquid Ozone"
-        Me.lblPOS6.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS5
-        '
-        Me.txtPOS5.Location = New System.Drawing.Point(49, 107)
-        Me.txtPOS5.Name = "txtPOS5"
-        Me.txtPOS5.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS5.TabIndex = 191
-        Me.txtPOS5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS10
-        '
-        Me.lblPOS10.Location = New System.Drawing.Point(210, 165)
-        Me.lblPOS10.Name = "lblPOS10"
-        Me.lblPOS10.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS10.TabIndex = 210
-        Me.lblPOS10.Text = "Coolant"
-        Me.lblPOS10.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS7
-        '
-        Me.txtPOS7.Location = New System.Drawing.Point(49, 144)
-        Me.txtPOS7.Name = "txtPOS7"
-        Me.txtPOS7.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS7.TabIndex = 193
-        Me.txtPOS7.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS11
-        '
-        Me.lblPOS11.Location = New System.Drawing.Point(49, 202)
-        Me.lblPOS11.Name = "lblPOS11"
-        Me.lblPOS11.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS11.TabIndex = 211
-        Me.lblPOS11.Text = "Enriched Uranium"
-        Me.lblPOS11.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS11
-        '
-        Me.txtPOS11.Location = New System.Drawing.Point(49, 218)
-        Me.txtPOS11.Name = "txtPOS11"
-        Me.txtPOS11.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS11.TabIndex = 197
-        Me.txtPOS11.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS7
-        '
-        Me.lblPOS7.Location = New System.Drawing.Point(49, 128)
-        Me.lblPOS7.Name = "lblPOS7"
-        Me.lblPOS7.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS7.TabIndex = 212
-        Me.lblPOS7.Text = "Strontium Clathrates"
-        Me.lblPOS7.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS10
-        '
-        Me.txtPOS10.Location = New System.Drawing.Point(210, 181)
-        Me.txtPOS10.Name = "txtPOS10"
-        Me.txtPOS10.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS10.TabIndex = 196
-        Me.txtPOS10.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOS5
-        '
-        Me.lblPOS5.Location = New System.Drawing.Point(49, 91)
-        Me.lblPOS5.Name = "lblPOS5"
-        Me.lblPOS5.Size = New System.Drawing.Size(101, 13)
-        Me.lblPOS5.TabIndex = 213
-        Me.lblPOS5.Text = "Heavy Water"
-        Me.lblPOS5.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOS6
-        '
-        Me.txtPOS6.Location = New System.Drawing.Point(210, 107)
-        Me.txtPOS6.Name = "txtPOS6"
-        Me.txtPOS6.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS6.TabIndex = 192
-        Me.txtPOS6.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtPOS3
-        '
-        Me.txtPOS3.Location = New System.Drawing.Point(49, 70)
-        Me.txtPOS3.Name = "txtPOS3"
-        Me.txtPOS3.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS3.TabIndex = 189
-        Me.txtPOS3.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtPOS9
-        '
-        Me.txtPOS9.Location = New System.Drawing.Point(49, 181)
-        Me.txtPOS9.Name = "txtPOS9"
-        Me.txtPOS9.Size = New System.Drawing.Size(101, 20)
-        Me.txtPOS9.TabIndex = 195
-        Me.txtPOS9.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'gbPOSFuelBlocks
-        '
-        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockBuild)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.txtPOSFuelBlockBuy)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSBlockBuild2)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSBlockBuy2)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.txtPOSFuelBlockBPME)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.btnPOSUpdateBlockPrice)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.btnRefreshBlockData)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSAmarrFuelBlock)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSCaldariFuelBlock)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockBPME)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlock)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSMinmatarFuelBlock)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSGallenteFuelBlock)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.rbtnPOSBuildBlocks)
-        Me.gbPOSFuelBlocks.Controls.Add(Me.rbtnPOSBuyBlocks)
-        Me.gbPOSFuelBlocks.Location = New System.Drawing.Point(16, 15)
-        Me.gbPOSFuelBlocks.Name = "gbPOSFuelBlocks"
-        Me.gbPOSFuelBlocks.Size = New System.Drawing.Size(263, 149)
-        Me.gbPOSFuelBlocks.TabIndex = 227
-        Me.gbPOSFuelBlocks.TabStop = False
-        Me.gbPOSFuelBlocks.Text = "Fuel Blocks"
-        '
-        'lblPOSFuelBlockBuild
-        '
-        Me.lblPOSFuelBlockBuild.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblPOSFuelBlockBuild.Location = New System.Drawing.Point(82, 51)
-        Me.lblPOSFuelBlockBuild.Name = "lblPOSFuelBlockBuild"
-        Me.lblPOSFuelBlockBuild.Size = New System.Drawing.Size(76, 16)
-        Me.lblPOSFuelBlockBuild.TabIndex = 243
-        Me.lblPOSFuelBlockBuild.Text = "0.00"
-        Me.lblPOSFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.MiddleRight
-        '
-        'txtPOSFuelBlockBuy
-        '
-        Me.txtPOSFuelBlockBuy.Location = New System.Drawing.Point(82, 28)
-        Me.txtPOSFuelBlockBuy.Name = "txtPOSFuelBlockBuy"
-        Me.txtPOSFuelBlockBuy.Size = New System.Drawing.Size(76, 20)
-        Me.txtPOSFuelBlockBuy.TabIndex = 220
-        Me.txtPOSFuelBlockBuy.Text = "0.00"
-        Me.txtPOSFuelBlockBuy.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblPOSBlockBuild2
-        '
-        Me.lblPOSBlockBuild2.AutoSize = True
-        Me.lblPOSBlockBuild2.Location = New System.Drawing.Point(50, 53)
-        Me.lblPOSBlockBuild2.Name = "lblPOSBlockBuild2"
-        Me.lblPOSBlockBuild2.Size = New System.Drawing.Size(33, 13)
-        Me.lblPOSBlockBuild2.TabIndex = 245
-        Me.lblPOSBlockBuild2.Text = "Build:"
-        Me.lblPOSBlockBuild2.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblPOSBlockBuy2
-        '
-        Me.lblPOSBlockBuy2.AutoSize = True
-        Me.lblPOSBlockBuy2.Location = New System.Drawing.Point(55, 32)
-        Me.lblPOSBlockBuy2.Name = "lblPOSBlockBuy2"
-        Me.lblPOSBlockBuy2.Size = New System.Drawing.Size(28, 13)
-        Me.lblPOSBlockBuy2.TabIndex = 244
-        Me.lblPOSBlockBuy2.Text = "Buy:"
-        Me.lblPOSBlockBuy2.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'txtPOSFuelBlockBPME
-        '
-        Me.txtPOSFuelBlockBPME.Location = New System.Drawing.Point(182, 76)
-        Me.txtPOSFuelBlockBPME.Name = "txtPOSFuelBlockBPME"
-        Me.txtPOSFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
-        Me.txtPOSFuelBlockBPME.TabIndex = 230
-        Me.txtPOSFuelBlockBPME.Text = "0"
-        Me.txtPOSFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'btnPOSUpdateBlockPrice
-        '
-        Me.btnPOSUpdateBlockPrice.Location = New System.Drawing.Point(133, 103)
-        Me.btnPOSUpdateBlockPrice.Name = "btnPOSUpdateBlockPrice"
-        Me.btnPOSUpdateBlockPrice.Size = New System.Drawing.Size(124, 34)
-        Me.btnPOSUpdateBlockPrice.TabIndex = 233
-        Me.btnPOSUpdateBlockPrice.Text = "Update Block Price"
-        Me.btnPOSUpdateBlockPrice.UseVisualStyleBackColor = True
-        '
-        'btnRefreshBlockData
-        '
-        Me.btnRefreshBlockData.Location = New System.Drawing.Point(6, 103)
-        Me.btnRefreshBlockData.Name = "btnRefreshBlockData"
-        Me.btnRefreshBlockData.Size = New System.Drawing.Size(124, 34)
-        Me.btnRefreshBlockData.TabIndex = 232
-        Me.btnRefreshBlockData.Text = "Refresh"
-        Me.btnRefreshBlockData.UseVisualStyleBackColor = True
-        '
-        'lblPOSFuelBlockBPME
-        '
-        Me.lblPOSFuelBlockBPME.Location = New System.Drawing.Point(79, 79)
-        Me.lblPOSFuelBlockBPME.Name = "lblPOSFuelBlockBPME"
-        Me.lblPOSFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
-        Me.lblPOSFuelBlockBPME.TabIndex = 231
-        Me.lblPOSFuelBlockBPME.Text = "Fuel Block BP ME:"
-        '
-        'lblPOSFuelBlock
-        '
-        Me.lblPOSFuelBlock.Location = New System.Drawing.Point(82, 14)
-        Me.lblPOSFuelBlock.Name = "lblPOSFuelBlock"
-        Me.lblPOSFuelBlock.Size = New System.Drawing.Size(76, 13)
-        Me.lblPOSFuelBlock.TabIndex = 225
-        Me.lblPOSFuelBlock.Text = "Caldari"
-        Me.lblPOSFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'rbtnPOSBuildBlocks
-        '
-        Me.rbtnPOSBuildBlocks.AutoSize = True
-        Me.rbtnPOSBuildBlocks.Location = New System.Drawing.Point(170, 51)
-        Me.rbtnPOSBuildBlocks.Name = "rbtnPOSBuildBlocks"
-        Me.rbtnPOSBuildBlocks.Size = New System.Drawing.Size(83, 17)
-        Me.rbtnPOSBuildBlocks.TabIndex = 128
-        Me.rbtnPOSBuildBlocks.TabStop = True
-        Me.rbtnPOSBuildBlocks.Text = "Build Blocks"
-        Me.rbtnPOSBuildBlocks.UseVisualStyleBackColor = True
-        '
-        'rbtnPOSBuyBlocks
-        '
-        Me.rbtnPOSBuyBlocks.AutoSize = True
-        Me.rbtnPOSBuyBlocks.Location = New System.Drawing.Point(170, 28)
-        Me.rbtnPOSBuyBlocks.Name = "rbtnPOSBuyBlocks"
-        Me.rbtnPOSBuyBlocks.Size = New System.Drawing.Size(78, 17)
-        Me.rbtnPOSBuyBlocks.TabIndex = 127
-        Me.rbtnPOSBuyBlocks.TabStop = True
-        Me.rbtnPOSBuyBlocks.Text = "Buy Blocks"
-        Me.rbtnPOSBuyBlocks.UseVisualStyleBackColor = True
-        '
-        'chkItemViewTypeAll
-        '
-        Me.chkItemViewTypeAll.AutoSize = True
-        Me.chkItemViewTypeAll.Location = New System.Drawing.Point(19, 19)
-        Me.chkItemViewTypeAll.Name = "chkItemViewTypeAll"
-        Me.chkItemViewTypeAll.Size = New System.Drawing.Size(37, 17)
-        Me.chkItemViewTypeAll.TabIndex = 50
-        Me.chkItemViewTypeAll.Text = "All"
-        Me.chkItemViewTypeAll.UseVisualStyleBackColor = True
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeRigs)
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeLow)
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeMedium)
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeHigh)
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeServices)
-        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeAll)
-        Me.GroupBox1.Location = New System.Drawing.Point(6, 72)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(232, 67)
-        Me.GroupBox1.TabIndex = 51
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Item View Type:"
-        '
-        'chkItemViewTypeRigs
-        '
-        Me.chkItemViewTypeRigs.AutoSize = True
-        Me.chkItemViewTypeRigs.Location = New System.Drawing.Point(19, 42)
-        Me.chkItemViewTypeRigs.Name = "chkItemViewTypeRigs"
-        Me.chkItemViewTypeRigs.Size = New System.Drawing.Size(47, 17)
-        Me.chkItemViewTypeRigs.TabIndex = 55
-        Me.chkItemViewTypeRigs.Text = "Rigs"
-        Me.chkItemViewTypeRigs.UseVisualStyleBackColor = True
-        '
-        'chkItemViewTypeLow
-        '
-        Me.chkItemViewTypeLow.AutoSize = True
-        Me.chkItemViewTypeLow.Location = New System.Drawing.Point(159, 19)
-        Me.chkItemViewTypeLow.Name = "chkItemViewTypeLow"
-        Me.chkItemViewTypeLow.Size = New System.Drawing.Size(72, 17)
-        Me.chkItemViewTypeLow.TabIndex = 54
-        Me.chkItemViewTypeLow.Text = "Low Slots"
-        Me.chkItemViewTypeLow.UseVisualStyleBackColor = True
-        '
-        'chkItemViewTypeMedium
-        '
-        Me.chkItemViewTypeMedium.AutoSize = True
-        Me.chkItemViewTypeMedium.Location = New System.Drawing.Point(69, 42)
-        Me.chkItemViewTypeMedium.Name = "chkItemViewTypeMedium"
-        Me.chkItemViewTypeMedium.Size = New System.Drawing.Size(89, 17)
-        Me.chkItemViewTypeMedium.TabIndex = 53
-        Me.chkItemViewTypeMedium.Text = "Medium Slots"
-        Me.chkItemViewTypeMedium.UseVisualStyleBackColor = True
-        '
-        'chkItemViewTypeHigh
-        '
-        Me.chkItemViewTypeHigh.AutoSize = True
-        Me.chkItemViewTypeHigh.Location = New System.Drawing.Point(69, 19)
-        Me.chkItemViewTypeHigh.Name = "chkItemViewTypeHigh"
-        Me.chkItemViewTypeHigh.Size = New System.Drawing.Size(74, 17)
-        Me.chkItemViewTypeHigh.TabIndex = 52
-        Me.chkItemViewTypeHigh.Text = "High Slots"
-        Me.chkItemViewTypeHigh.UseVisualStyleBackColor = True
-        '
-        'chkItemViewTypeServices
-        '
-        Me.chkItemViewTypeServices.AutoSize = True
-        Me.chkItemViewTypeServices.Location = New System.Drawing.Point(159, 42)
-        Me.chkItemViewTypeServices.Name = "chkItemViewTypeServices"
-        Me.chkItemViewTypeServices.Size = New System.Drawing.Size(67, 17)
-        Me.chkItemViewTypeServices.TabIndex = 51
-        Me.chkItemViewTypeServices.Text = "Services"
-        Me.chkItemViewTypeServices.UseVisualStyleBackColor = True
-        '
-        'GroupBox2
-        '
-        Me.GroupBox2.Controls.Add(Me.chkRigTypeViewCombat)
-        Me.GroupBox2.Controls.Add(Me.chkRigTypeViewReprocessing)
-        Me.GroupBox2.Controls.Add(Me.chkRigTypeViewEngineering)
-        Me.GroupBox2.Location = New System.Drawing.Point(244, 72)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(104, 67)
-        Me.GroupBox2.TabIndex = 52
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Rig Type"
-        '
-        'chkRigTypeViewCombat
-        '
-        Me.chkRigTypeViewCombat.AutoSize = True
-        Me.chkRigTypeViewCombat.Location = New System.Drawing.Point(6, 15)
-        Me.chkRigTypeViewCombat.Name = "chkRigTypeViewCombat"
-        Me.chkRigTypeViewCombat.Size = New System.Drawing.Size(62, 17)
-        Me.chkRigTypeViewCombat.TabIndex = 58
-        Me.chkRigTypeViewCombat.Text = "Combat"
-        Me.chkRigTypeViewCombat.UseVisualStyleBackColor = True
-        '
-        'chkRigTypeViewReprocessing
-        '
-        Me.chkRigTypeViewReprocessing.AutoSize = True
-        Me.chkRigTypeViewReprocessing.Location = New System.Drawing.Point(6, 47)
-        Me.chkRigTypeViewReprocessing.Name = "chkRigTypeViewReprocessing"
-        Me.chkRigTypeViewReprocessing.Size = New System.Drawing.Size(91, 17)
-        Me.chkRigTypeViewReprocessing.TabIndex = 57
-        Me.chkRigTypeViewReprocessing.Text = "Reprocessing"
-        Me.chkRigTypeViewReprocessing.UseVisualStyleBackColor = True
-        '
-        'chkRigTypeViewEngineering
-        '
-        Me.chkRigTypeViewEngineering.AutoSize = True
-        Me.chkRigTypeViewEngineering.Location = New System.Drawing.Point(6, 31)
-        Me.chkRigTypeViewEngineering.Name = "chkRigTypeViewEngineering"
-        Me.chkRigTypeViewEngineering.Size = New System.Drawing.Size(82, 17)
-        Me.chkRigTypeViewEngineering.TabIndex = 56
-        Me.chkRigTypeViewEngineering.Text = "Engineering"
-        Me.chkRigTypeViewEngineering.UseVisualStyleBackColor = True
-        '
-        'GBStats
-        '
-        Me.GBStats.Controls.Add(Me.CapacitorValues)
-        Me.GBStats.Controls.Add(Me.CapacitorLabel)
-        Me.GBStats.Controls.Add(Me.Calibration)
-        Me.GBStats.Controls.Add(Me.Calibration1)
-        Me.GBStats.Controls.Add(Me.CPU)
-        Me.GBStats.Controls.Add(Me.PowerGrid)
-        Me.GBStats.Controls.Add(Me.CPU1)
-        Me.GBStats.Controls.Add(Me.PowerGrid1)
-        Me.GBStats.Location = New System.Drawing.Point(959, 18)
-        Me.GBStats.Name = "GBStats"
-        Me.GBStats.Size = New System.Drawing.Size(167, 589)
-        Me.GBStats.TabIndex = 59
-        Me.GBStats.TabStop = False
-        '
-        'CapacitorValues
-        '
-        Me.CapacitorValues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.CapacitorValues.Location = New System.Drawing.Point(6, 213)
-        Me.CapacitorValues.Name = "CapacitorValues"
-        Me.CapacitorValues.Size = New System.Drawing.Size(155, 16)
-        Me.CapacitorValues.TabIndex = 67
-        Me.CapacitorValues.Text = "400 / 400"
-        Me.CapacitorValues.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'CapacitorLabel
-        '
-        Me.CapacitorLabel.Location = New System.Drawing.Point(6, 197)
-        Me.CapacitorLabel.Name = "CapacitorLabel"
-        Me.CapacitorLabel.Size = New System.Drawing.Size(155, 16)
-        Me.CapacitorLabel.TabIndex = 66
-        Me.CapacitorLabel.Text = "Capacitor: Stable - 47%"
-        Me.CapacitorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'Calibration
-        '
-        Me.Calibration.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Calibration.Location = New System.Drawing.Point(6, 114)
-        Me.Calibration.Name = "Calibration"
-        Me.Calibration.Size = New System.Drawing.Size(155, 16)
-        Me.Calibration.TabIndex = 65
-        Me.Calibration.Text = "400 / 400"
-        Me.Calibration.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'Calibration1
-        '
-        Me.Calibration1.AutoSize = True
-        Me.Calibration1.Location = New System.Drawing.Point(3, 100)
-        Me.Calibration1.Name = "Calibration1"
-        Me.Calibration1.Size = New System.Drawing.Size(59, 13)
-        Me.Calibration1.TabIndex = 64
-        Me.Calibration1.Text = "Calibration:"
-        '
-        'CPU
-        '
-        Me.CPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.CPU.Location = New System.Drawing.Point(6, 76)
-        Me.CPU.Name = "CPU"
-        Me.CPU.Size = New System.Drawing.Size(155, 16)
-        Me.CPU.TabIndex = 63
-        Me.CPU.Text = "15,000,000 / 15,000,000"
-        Me.CPU.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'PowerGrid
-        '
-        Me.PowerGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.PowerGrid.Location = New System.Drawing.Point(6, 38)
-        Me.PowerGrid.Name = "PowerGrid"
-        Me.PowerGrid.Size = New System.Drawing.Size(155, 16)
-        Me.PowerGrid.TabIndex = 62
-        Me.PowerGrid.Text = "15,000,000 / 15,000,000"
-        Me.PowerGrid.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'CPU1
-        '
-        Me.CPU1.AutoSize = True
-        Me.CPU1.Location = New System.Drawing.Point(3, 62)
-        Me.CPU1.Name = "CPU1"
-        Me.CPU1.Size = New System.Drawing.Size(32, 13)
-        Me.CPU1.TabIndex = 61
-        Me.CPU1.Text = "CPU:"
-        '
-        'PowerGrid1
-        '
-        Me.PowerGrid1.AutoSize = True
-        Me.PowerGrid1.Location = New System.Drawing.Point(3, 24)
-        Me.PowerGrid1.Name = "PowerGrid1"
-        Me.PowerGrid1.Size = New System.Drawing.Size(62, 13)
-        Me.PowerGrid1.TabIndex = 60
-        Me.PowerGrid1.Text = "Power Grid:"
-        '
-        'pbFloat
-        '
-        Me.pbFloat.BackColor = System.Drawing.Color.White
-        Me.pbFloat.InitialImage = Nothing
-        Me.pbFloat.Location = New System.Drawing.Point(254, 531)
-        Me.pbFloat.Name = "pbFloat"
-        Me.pbFloat.Size = New System.Drawing.Size(64, 64)
-        Me.pbFloat.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
-        Me.pbFloat.TabIndex = 7
-        Me.pbFloat.TabStop = False
-        Me.pbFloat.Visible = False
         '
         'LowSlot3
         '
@@ -1117,7 +455,7 @@ Partial Class frmCitadelFitting
         Me.ServiceSlot1.BackgroundImage = CType(resources.GetObject("ServiceSlot1.BackgroundImage"), System.Drawing.Image)
         Me.ServiceSlot1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ServiceSlot1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ServiceSlot1.Location = New System.Drawing.Point(92, 501)
+        Me.ServiceSlot1.Location = New System.Drawing.Point(232, 501)
         Me.ServiceSlot1.Name = "ServiceSlot1"
         Me.ServiceSlot1.Size = New System.Drawing.Size(64, 64)
         Me.ServiceSlot1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1143,7 +481,7 @@ Partial Class frmCitadelFitting
         Me.ServiceSlot2.BackgroundImage = CType(resources.GetObject("ServiceSlot2.BackgroundImage"), System.Drawing.Image)
         Me.ServiceSlot2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ServiceSlot2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ServiceSlot2.Location = New System.Drawing.Point(162, 501)
+        Me.ServiceSlot2.Location = New System.Drawing.Point(302, 501)
         Me.ServiceSlot2.Name = "ServiceSlot2"
         Me.ServiceSlot2.Size = New System.Drawing.Size(64, 64)
         Me.ServiceSlot2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1169,7 +507,7 @@ Partial Class frmCitadelFitting
         Me.ServiceSlot3.BackgroundImage = CType(resources.GetObject("ServiceSlot3.BackgroundImage"), System.Drawing.Image)
         Me.ServiceSlot3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ServiceSlot3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ServiceSlot3.Location = New System.Drawing.Point(232, 501)
+        Me.ServiceSlot3.Location = New System.Drawing.Point(162, 501)
         Me.ServiceSlot3.Name = "ServiceSlot3"
         Me.ServiceSlot3.Size = New System.Drawing.Size(64, 64)
         Me.ServiceSlot3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1195,7 +533,7 @@ Partial Class frmCitadelFitting
         Me.ServiceSlot4.BackgroundImage = CType(resources.GetObject("ServiceSlot4.BackgroundImage"), System.Drawing.Image)
         Me.ServiceSlot4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ServiceSlot4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ServiceSlot4.Location = New System.Drawing.Point(302, 501)
+        Me.ServiceSlot4.Location = New System.Drawing.Point(372, 501)
         Me.ServiceSlot4.Name = "ServiceSlot4"
         Me.ServiceSlot4.Size = New System.Drawing.Size(64, 64)
         Me.ServiceSlot4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1235,7 +573,7 @@ Partial Class frmCitadelFitting
         Me.ServiceSlot5.BackgroundImage = CType(resources.GetObject("ServiceSlot5.BackgroundImage"), System.Drawing.Image)
         Me.ServiceSlot5.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ServiceSlot5.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ServiceSlot5.Location = New System.Drawing.Point(372, 501)
+        Me.ServiceSlot5.Location = New System.Drawing.Point(92, 501)
         Me.ServiceSlot5.Name = "ServiceSlot5"
         Me.ServiceSlot5.Size = New System.Drawing.Size(64, 64)
         Me.ServiceSlot5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1249,7 +587,7 @@ Partial Class frmCitadelFitting
         Me.HighSlot5.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.HighSlot5.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.HighSlot5.InitialImage = CType(resources.GetObject("HighSlot5.InitialImage"), System.Drawing.Image)
-        Me.HighSlot5.Location = New System.Drawing.Point(372, 11)
+        Me.HighSlot5.Location = New System.Drawing.Point(92, 11)
         Me.HighSlot5.Name = "HighSlot5"
         Me.HighSlot5.Size = New System.Drawing.Size(64, 64)
         Me.HighSlot5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1303,7 +641,7 @@ Partial Class frmCitadelFitting
         Me.HighSlot4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.HighSlot4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.HighSlot4.InitialImage = CType(resources.GetObject("HighSlot4.InitialImage"), System.Drawing.Image)
-        Me.HighSlot4.Location = New System.Drawing.Point(302, 11)
+        Me.HighSlot4.Location = New System.Drawing.Point(372, 11)
         Me.HighSlot4.Name = "HighSlot4"
         Me.HighSlot4.Size = New System.Drawing.Size(64, 64)
         Me.HighSlot4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1330,7 +668,7 @@ Partial Class frmCitadelFitting
         Me.HighSlot2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.HighSlot2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.HighSlot2.InitialImage = CType(resources.GetObject("HighSlot2.InitialImage"), System.Drawing.Image)
-        Me.HighSlot2.Location = New System.Drawing.Point(162, 11)
+        Me.HighSlot2.Location = New System.Drawing.Point(302, 11)
         Me.HighSlot2.Name = "HighSlot2"
         Me.HighSlot2.Size = New System.Drawing.Size(64, 64)
         Me.HighSlot2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1357,7 +695,7 @@ Partial Class frmCitadelFitting
         Me.HighSlot3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.HighSlot3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.HighSlot3.InitialImage = CType(resources.GetObject("HighSlot3.InitialImage"), System.Drawing.Image)
-        Me.HighSlot3.Location = New System.Drawing.Point(232, 11)
+        Me.HighSlot3.Location = New System.Drawing.Point(162, 11)
         Me.HighSlot3.Name = "HighSlot3"
         Me.HighSlot3.Size = New System.Drawing.Size(64, 64)
         Me.HighSlot3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1424,7 +762,7 @@ Partial Class frmCitadelFitting
         Me.HighSlot1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.HighSlot1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.HighSlot1.InitialImage = CType(resources.GetObject("HighSlot1.InitialImage"), System.Drawing.Image)
-        Me.HighSlot1.Location = New System.Drawing.Point(92, 11)
+        Me.HighSlot1.Location = New System.Drawing.Point(232, 11)
         Me.HighSlot1.Name = "HighSlot1"
         Me.HighSlot1.Size = New System.Drawing.Size(64, 64)
         Me.HighSlot1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -1469,15 +807,118 @@ Partial Class frmCitadelFitting
         Me.StructurePicture.TabIndex = 9
         Me.StructurePicture.TabStop = False
         '
+        'tabFuel
+        '
+        Me.tabFuel.Controls.Add(Me.gbPOSFuelPrices)
+        Me.tabFuel.Controls.Add(Me.gbPOSFuelBlocks)
+        Me.tabFuel.Location = New System.Drawing.Point(4, 22)
+        Me.tabFuel.Name = "tabFuel"
+        Me.tabFuel.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabFuel.Size = New System.Drawing.Size(595, 577)
+        Me.tabFuel.TabIndex = 1
+        Me.tabFuel.Text = "Fuel Settings"
+        Me.tabFuel.UseVisualStyleBackColor = True
+        '
+        'gbPOSFuelPrices
+        '
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtCharters)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblCharters)
+        Me.gbPOSFuelPrices.Controls.Add(Me.btnPOSUpdateFuelPrices)
+        Me.gbPOSFuelPrices.Controls.Add(Me.picPOSCharters)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS1)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS12)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS1)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS12)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS10)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS12)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS3)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS8)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS11)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS8)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS9)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS8)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS7)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS4)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS6)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS2)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS5)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS4)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS1)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS2)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS3)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS4)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS9)
+        Me.gbPOSFuelPrices.Controls.Add(Me.pictPOS2)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS6)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS5)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS10)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS7)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS11)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS11)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS7)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS10)
+        Me.gbPOSFuelPrices.Controls.Add(Me.lblPOS5)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS6)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS3)
+        Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS9)
+        Me.gbPOSFuelPrices.Location = New System.Drawing.Point(16, 170)
+        Me.gbPOSFuelPrices.Name = "gbPOSFuelPrices"
+        Me.gbPOSFuelPrices.Size = New System.Drawing.Size(322, 294)
+        Me.gbPOSFuelPrices.TabIndex = 225
+        Me.gbPOSFuelPrices.TabStop = False
+        Me.gbPOSFuelPrices.Text = "Fuel Block Material Prices"
+        '
+        'txtCharters
+        '
+        Me.txtCharters.Location = New System.Drawing.Point(49, 254)
+        Me.txtCharters.Name = "txtCharters"
+        Me.txtCharters.Size = New System.Drawing.Size(101, 20)
+        Me.txtCharters.TabIndex = 223
+        Me.txtCharters.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblCharters
+        '
+        Me.lblCharters.Location = New System.Drawing.Point(49, 239)
+        Me.lblCharters.Name = "lblCharters"
+        Me.lblCharters.Size = New System.Drawing.Size(101, 13)
+        Me.lblCharters.TabIndex = 225
+        Me.lblCharters.Text = "Charters"
+        Me.lblCharters.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'btnPOSUpdateFuelPrices
+        '
+        Me.btnPOSUpdateFuelPrices.Location = New System.Drawing.Point(180, 250)
+        Me.btnPOSUpdateFuelPrices.Name = "btnPOSUpdateFuelPrices"
+        Me.btnPOSUpdateFuelPrices.Size = New System.Drawing.Size(124, 34)
+        Me.btnPOSUpdateFuelPrices.TabIndex = 226
+        Me.btnPOSUpdateFuelPrices.Text = "Update Prices"
+        Me.btnPOSUpdateFuelPrices.UseVisualStyleBackColor = True
+        '
         'picPOSCharters
         '
         Me.picPOSCharters.BackColor = System.Drawing.Color.Transparent
         Me.picPOSCharters.Image = CType(resources.GetObject("picPOSCharters.Image"), System.Drawing.Image)
-        Me.picPOSCharters.Location = New System.Drawing.Point(11, 256)
+        Me.picPOSCharters.Location = New System.Drawing.Point(11, 248)
         Me.picPOSCharters.Name = "picPOSCharters"
         Me.picPOSCharters.Size = New System.Drawing.Size(32, 32)
         Me.picPOSCharters.TabIndex = 224
         Me.picPOSCharters.TabStop = False
+        '
+        'txtPOS1
+        '
+        Me.txtPOS1.Location = New System.Drawing.Point(49, 32)
+        Me.txtPOS1.Name = "txtPOS1"
+        Me.txtPOS1.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS1.TabIndex = 187
+        Me.txtPOS1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtPOS12
+        '
+        Me.txtPOS12.Location = New System.Drawing.Point(210, 217)
+        Me.txtPOS12.Name = "txtPOS12"
+        Me.txtPOS12.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS12.TabIndex = 220
+        Me.txtPOS12.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'pictPOS1
         '
@@ -1489,11 +930,20 @@ Partial Class frmCitadelFitting
         Me.pictPOS1.TabIndex = 198
         Me.pictPOS1.TabStop = False
         '
+        'lblPOS12
+        '
+        Me.lblPOS12.Location = New System.Drawing.Point(210, 202)
+        Me.lblPOS12.Name = "lblPOS12"
+        Me.lblPOS12.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS12.TabIndex = 222
+        Me.lblPOS12.Text = "Oxygen"
+        Me.lblPOS12.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'pictPOS10
         '
         Me.pictPOS10.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS10.Image = CType(resources.GetObject("pictPOS10.Image"), System.Drawing.Image)
-        Me.pictPOS10.Location = New System.Drawing.Point(172, 172)
+        Me.pictPOS10.Location = New System.Drawing.Point(172, 174)
         Me.pictPOS10.Name = "pictPOS10"
         Me.pictPOS10.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS10.TabIndex = 199
@@ -1503,7 +953,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS12.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS12.Image = CType(resources.GetObject("pictPOS12.Image"), System.Drawing.Image)
-        Me.pictPOS12.Location = New System.Drawing.Point(172, 210)
+        Me.pictPOS12.Location = New System.Drawing.Point(172, 211)
         Me.pictPOS12.Name = "pictPOS12"
         Me.pictPOS12.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS12.TabIndex = 221
@@ -1513,27 +963,44 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS3.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS3.Image = CType(resources.GetObject("pictPOS3.Image"), System.Drawing.Image)
-        Me.pictPOS3.Location = New System.Drawing.Point(11, 62)
+        Me.pictPOS3.Location = New System.Drawing.Point(11, 63)
         Me.pictPOS3.Name = "pictPOS3"
         Me.pictPOS3.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS3.TabIndex = 200
         Me.pictPOS3.TabStop = False
         '
+        'txtPOS8
+        '
+        Me.txtPOS8.Location = New System.Drawing.Point(210, 143)
+        Me.txtPOS8.Name = "txtPOS8"
+        Me.txtPOS8.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS8.TabIndex = 194
+        Me.txtPOS8.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
         'pictPOS11
         '
         Me.pictPOS11.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS11.Image = CType(resources.GetObject("pictPOS11.Image"), System.Drawing.Image)
-        Me.pictPOS11.Location = New System.Drawing.Point(11, 210)
+        Me.pictPOS11.Location = New System.Drawing.Point(11, 211)
         Me.pictPOS11.Name = "pictPOS11"
         Me.pictPOS11.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS11.TabIndex = 201
         Me.pictPOS11.TabStop = False
         '
+        'lblPOS8
+        '
+        Me.lblPOS8.Location = New System.Drawing.Point(210, 128)
+        Me.lblPOS8.Name = "lblPOS8"
+        Me.lblPOS8.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS8.TabIndex = 219
+        Me.lblPOS8.Text = "Robotics"
+        Me.lblPOS8.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'pictPOS9
         '
         Me.pictPOS9.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS9.Image = CType(resources.GetObject("pictPOS9.Image"), System.Drawing.Image)
-        Me.pictPOS9.Location = New System.Drawing.Point(11, 172)
+        Me.pictPOS9.Location = New System.Drawing.Point(11, 174)
         Me.pictPOS9.Name = "pictPOS9"
         Me.pictPOS9.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS9.TabIndex = 202
@@ -1543,7 +1010,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS8.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS8.Image = CType(resources.GetObject("pictPOS8.Image"), System.Drawing.Image)
-        Me.pictPOS8.Location = New System.Drawing.Point(172, 135)
+        Me.pictPOS8.Location = New System.Drawing.Point(172, 137)
         Me.pictPOS8.Name = "pictPOS8"
         Me.pictPOS8.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS8.TabIndex = 218
@@ -1553,41 +1020,102 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS7.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS7.Image = CType(resources.GetObject("pictPOS7.Image"), System.Drawing.Image)
-        Me.pictPOS7.Location = New System.Drawing.Point(11, 135)
+        Me.pictPOS7.Location = New System.Drawing.Point(11, 137)
         Me.pictPOS7.Name = "pictPOS7"
         Me.pictPOS7.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS7.TabIndex = 203
         Me.pictPOS7.TabStop = False
         '
+        'txtPOS4
+        '
+        Me.txtPOS4.Location = New System.Drawing.Point(210, 69)
+        Me.txtPOS4.Name = "txtPOS4"
+        Me.txtPOS4.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS4.TabIndex = 190
+        Me.txtPOS4.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
         'pictPOS6
         '
         Me.pictPOS6.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS6.Image = CType(resources.GetObject("pictPOS6.Image"), System.Drawing.Image)
-        Me.pictPOS6.Location = New System.Drawing.Point(172, 97)
+        Me.pictPOS6.Location = New System.Drawing.Point(172, 100)
         Me.pictPOS6.Name = "pictPOS6"
         Me.pictPOS6.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS6.TabIndex = 204
         Me.pictPOS6.TabStop = False
         '
+        'txtPOS2
+        '
+        Me.txtPOS2.Location = New System.Drawing.Point(210, 32)
+        Me.txtPOS2.Name = "txtPOS2"
+        Me.txtPOS2.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS2.TabIndex = 188
+        Me.txtPOS2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
         'pictPOS5
         '
         Me.pictPOS5.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS5.Image = CType(resources.GetObject("pictPOS5.Image"), System.Drawing.Image)
-        Me.pictPOS5.Location = New System.Drawing.Point(11, 97)
+        Me.pictPOS5.Location = New System.Drawing.Point(11, 100)
         Me.pictPOS5.Name = "pictPOS5"
         Me.pictPOS5.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS5.TabIndex = 205
         Me.pictPOS5.TabStop = False
         '
+        'lblPOS4
+        '
+        Me.lblPOS4.Location = New System.Drawing.Point(210, 54)
+        Me.lblPOS4.Name = "lblPOS4"
+        Me.lblPOS4.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS4.TabIndex = 217
+        Me.lblPOS4.Text = "Oxygen Isotopes"
+        Me.lblPOS4.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'lblPOS1
+        '
+        Me.lblPOS1.Location = New System.Drawing.Point(49, 17)
+        Me.lblPOS1.Name = "lblPOS1"
+        Me.lblPOS1.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS1.TabIndex = 206
+        Me.lblPOS1.Text = "Helium Isotopes"
+        Me.lblPOS1.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'lblPOS2
+        '
+        Me.lblPOS2.Location = New System.Drawing.Point(210, 17)
+        Me.lblPOS2.Name = "lblPOS2"
+        Me.lblPOS2.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS2.TabIndex = 216
+        Me.lblPOS2.Text = "Hydrogen Isotopes"
+        Me.lblPOS2.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'lblPOS3
+        '
+        Me.lblPOS3.Location = New System.Drawing.Point(49, 54)
+        Me.lblPOS3.Name = "lblPOS3"
+        Me.lblPOS3.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS3.TabIndex = 207
+        Me.lblPOS3.Text = "Nitrogen Isotopes"
+        Me.lblPOS3.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'pictPOS4
         '
         Me.pictPOS4.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS4.Image = CType(resources.GetObject("pictPOS4.Image"), System.Drawing.Image)
-        Me.pictPOS4.Location = New System.Drawing.Point(172, 62)
+        Me.pictPOS4.Location = New System.Drawing.Point(172, 63)
         Me.pictPOS4.Name = "pictPOS4"
         Me.pictPOS4.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS4.TabIndex = 215
         Me.pictPOS4.TabStop = False
+        '
+        'lblPOS9
+        '
+        Me.lblPOS9.Location = New System.Drawing.Point(49, 165)
+        Me.lblPOS9.Name = "lblPOS9"
+        Me.lblPOS9.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS9.TabIndex = 208
+        Me.lblPOS9.Text = "Mechanical Parts"
+        Me.lblPOS9.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'pictPOS2
         '
@@ -1598,6 +1126,208 @@ Partial Class frmCitadelFitting
         Me.pictPOS2.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS2.TabIndex = 214
         Me.pictPOS2.TabStop = False
+        '
+        'lblPOS6
+        '
+        Me.lblPOS6.Location = New System.Drawing.Point(210, 91)
+        Me.lblPOS6.Name = "lblPOS6"
+        Me.lblPOS6.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS6.TabIndex = 209
+        Me.lblPOS6.Text = "Liquid Ozone"
+        Me.lblPOS6.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOS5
+        '
+        Me.txtPOS5.Location = New System.Drawing.Point(49, 106)
+        Me.txtPOS5.Name = "txtPOS5"
+        Me.txtPOS5.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS5.TabIndex = 191
+        Me.txtPOS5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblPOS10
+        '
+        Me.lblPOS10.Location = New System.Drawing.Point(210, 165)
+        Me.lblPOS10.Name = "lblPOS10"
+        Me.lblPOS10.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS10.TabIndex = 210
+        Me.lblPOS10.Text = "Coolant"
+        Me.lblPOS10.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOS7
+        '
+        Me.txtPOS7.Location = New System.Drawing.Point(49, 143)
+        Me.txtPOS7.Name = "txtPOS7"
+        Me.txtPOS7.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS7.TabIndex = 193
+        Me.txtPOS7.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblPOS11
+        '
+        Me.lblPOS11.Location = New System.Drawing.Point(49, 202)
+        Me.lblPOS11.Name = "lblPOS11"
+        Me.lblPOS11.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS11.TabIndex = 211
+        Me.lblPOS11.Text = "Enriched Uranium"
+        Me.lblPOS11.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOS11
+        '
+        Me.txtPOS11.Location = New System.Drawing.Point(49, 217)
+        Me.txtPOS11.Name = "txtPOS11"
+        Me.txtPOS11.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS11.TabIndex = 197
+        Me.txtPOS11.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblPOS7
+        '
+        Me.lblPOS7.Location = New System.Drawing.Point(49, 128)
+        Me.lblPOS7.Name = "lblPOS7"
+        Me.lblPOS7.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS7.TabIndex = 212
+        Me.lblPOS7.Text = "Strontium Clathrates"
+        Me.lblPOS7.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOS10
+        '
+        Me.txtPOS10.Location = New System.Drawing.Point(210, 180)
+        Me.txtPOS10.Name = "txtPOS10"
+        Me.txtPOS10.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS10.TabIndex = 196
+        Me.txtPOS10.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblPOS5
+        '
+        Me.lblPOS5.Location = New System.Drawing.Point(49, 91)
+        Me.lblPOS5.Name = "lblPOS5"
+        Me.lblPOS5.Size = New System.Drawing.Size(101, 13)
+        Me.lblPOS5.TabIndex = 213
+        Me.lblPOS5.Text = "Heavy Water"
+        Me.lblPOS5.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOS6
+        '
+        Me.txtPOS6.Location = New System.Drawing.Point(210, 106)
+        Me.txtPOS6.Name = "txtPOS6"
+        Me.txtPOS6.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS6.TabIndex = 192
+        Me.txtPOS6.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtPOS3
+        '
+        Me.txtPOS3.Location = New System.Drawing.Point(49, 69)
+        Me.txtPOS3.Name = "txtPOS3"
+        Me.txtPOS3.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS3.TabIndex = 189
+        Me.txtPOS3.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtPOS9
+        '
+        Me.txtPOS9.Location = New System.Drawing.Point(49, 180)
+        Me.txtPOS9.Name = "txtPOS9"
+        Me.txtPOS9.Size = New System.Drawing.Size(101, 20)
+        Me.txtPOS9.TabIndex = 195
+        Me.txtPOS9.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'gbPOSFuelBlocks
+        '
+        Me.gbPOSFuelBlocks.Controls.Add(Me.chkAutoUpdateFuelPrice)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockBuild)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.txtPOSFuelBlockBuy)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSBlockBuild2)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSBlockBuy2)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.txtPOSFuelBlockBPME)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.btnPOSUpdateBlockPrice)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.btnRefreshBlockData)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSAmarrFuelBlock)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSCaldariFuelBlock)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockBPME)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlock)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSMinmatarFuelBlock)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSGallenteFuelBlock)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.rbtnPOSBuildBlocks)
+        Me.gbPOSFuelBlocks.Controls.Add(Me.rbtnPOSBuyBlocks)
+        Me.gbPOSFuelBlocks.Location = New System.Drawing.Point(16, 15)
+        Me.gbPOSFuelBlocks.Name = "gbPOSFuelBlocks"
+        Me.gbPOSFuelBlocks.Size = New System.Drawing.Size(322, 149)
+        Me.gbPOSFuelBlocks.TabIndex = 227
+        Me.gbPOSFuelBlocks.TabStop = False
+        Me.gbPOSFuelBlocks.Text = "Fuel Blocks"
+        '
+        'chkAutoUpdateFuelPrice
+        '
+        Me.chkAutoUpdateFuelPrice.AutoSize = True
+        Me.chkAutoUpdateFuelPrice.Location = New System.Drawing.Point(192, 77)
+        Me.chkAutoUpdateFuelPrice.Name = "chkAutoUpdateFuelPrice"
+        Me.chkAutoUpdateFuelPrice.Size = New System.Drawing.Size(86, 17)
+        Me.chkAutoUpdateFuelPrice.TabIndex = 62
+        Me.chkAutoUpdateFuelPrice.Text = "Auto Update"
+        Me.chkAutoUpdateFuelPrice.UseVisualStyleBackColor = True
+        '
+        'lblPOSFuelBlockBuild
+        '
+        Me.lblPOSFuelBlockBuild.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblPOSFuelBlockBuild.Location = New System.Drawing.Point(85, 50)
+        Me.lblPOSFuelBlockBuild.Name = "lblPOSFuelBlockBuild"
+        Me.lblPOSFuelBlockBuild.Size = New System.Drawing.Size(76, 20)
+        Me.lblPOSFuelBlockBuild.TabIndex = 243
+        Me.lblPOSFuelBlockBuild.Text = "0.00"
+        Me.lblPOSFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'txtPOSFuelBlockBuy
+        '
+        Me.txtPOSFuelBlockBuy.Location = New System.Drawing.Point(85, 28)
+        Me.txtPOSFuelBlockBuy.Name = "txtPOSFuelBlockBuy"
+        Me.txtPOSFuelBlockBuy.Size = New System.Drawing.Size(76, 20)
+        Me.txtPOSFuelBlockBuy.TabIndex = 220
+        Me.txtPOSFuelBlockBuy.Text = "0.00"
+        Me.txtPOSFuelBlockBuy.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblPOSBlockBuild2
+        '
+        Me.lblPOSBlockBuild2.AutoSize = True
+        Me.lblPOSBlockBuild2.Location = New System.Drawing.Point(50, 53)
+        Me.lblPOSBlockBuild2.Name = "lblPOSBlockBuild2"
+        Me.lblPOSBlockBuild2.Size = New System.Drawing.Size(33, 13)
+        Me.lblPOSBlockBuild2.TabIndex = 245
+        Me.lblPOSBlockBuild2.Text = "Build:"
+        Me.lblPOSBlockBuild2.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'lblPOSBlockBuy2
+        '
+        Me.lblPOSBlockBuy2.AutoSize = True
+        Me.lblPOSBlockBuy2.Location = New System.Drawing.Point(55, 32)
+        Me.lblPOSBlockBuy2.Name = "lblPOSBlockBuy2"
+        Me.lblPOSBlockBuy2.Size = New System.Drawing.Size(28, 13)
+        Me.lblPOSBlockBuy2.TabIndex = 244
+        Me.lblPOSBlockBuy2.Text = "Buy:"
+        Me.lblPOSBlockBuy2.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
+        'txtPOSFuelBlockBPME
+        '
+        Me.txtPOSFuelBlockBPME.Location = New System.Drawing.Point(120, 72)
+        Me.txtPOSFuelBlockBPME.Name = "txtPOSFuelBlockBPME"
+        Me.txtPOSFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
+        Me.txtPOSFuelBlockBPME.TabIndex = 230
+        Me.txtPOSFuelBlockBPME.Text = "0"
+        Me.txtPOSFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'btnPOSUpdateBlockPrice
+        '
+        Me.btnPOSUpdateBlockPrice.Location = New System.Drawing.Point(163, 103)
+        Me.btnPOSUpdateBlockPrice.Name = "btnPOSUpdateBlockPrice"
+        Me.btnPOSUpdateBlockPrice.Size = New System.Drawing.Size(124, 34)
+        Me.btnPOSUpdateBlockPrice.TabIndex = 233
+        Me.btnPOSUpdateBlockPrice.Text = "Update Block Price"
+        Me.btnPOSUpdateBlockPrice.UseVisualStyleBackColor = True
+        '
+        'btnRefreshBlockData
+        '
+        Me.btnRefreshBlockData.Location = New System.Drawing.Point(36, 103)
+        Me.btnRefreshBlockData.Name = "btnRefreshBlockData"
+        Me.btnRefreshBlockData.Size = New System.Drawing.Size(124, 34)
+        Me.btnRefreshBlockData.TabIndex = 232
+        Me.btnRefreshBlockData.Text = "Refresh"
+        Me.btnRefreshBlockData.UseVisualStyleBackColor = True
         '
         'picPOSAmarrFuelBlock
         '
@@ -1619,6 +1349,23 @@ Partial Class frmCitadelFitting
         Me.picPOSCaldariFuelBlock.TabIndex = 223
         Me.picPOSCaldariFuelBlock.TabStop = False
         '
+        'lblPOSFuelBlockBPME
+        '
+        Me.lblPOSFuelBlockBPME.Location = New System.Drawing.Point(17, 75)
+        Me.lblPOSFuelBlockBPME.Name = "lblPOSFuelBlockBPME"
+        Me.lblPOSFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
+        Me.lblPOSFuelBlockBPME.TabIndex = 231
+        Me.lblPOSFuelBlockBPME.Text = "Fuel Block BP ME:"
+        '
+        'lblPOSFuelBlock
+        '
+        Me.lblPOSFuelBlock.Location = New System.Drawing.Point(82, 14)
+        Me.lblPOSFuelBlock.Name = "lblPOSFuelBlock"
+        Me.lblPOSFuelBlock.Size = New System.Drawing.Size(76, 13)
+        Me.lblPOSFuelBlock.TabIndex = 225
+        Me.lblPOSFuelBlock.Text = "Caldari"
+        Me.lblPOSFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'picPOSMinmatarFuelBlock
         '
         Me.picPOSMinmatarFuelBlock.BackColor = System.Drawing.Color.Transparent
@@ -1639,41 +1386,385 @@ Partial Class frmCitadelFitting
         Me.picPOSGallenteFuelBlock.TabIndex = 226
         Me.picPOSGallenteFuelBlock.TabStop = False
         '
+        'rbtnPOSBuildBlocks
+        '
+        Me.rbtnPOSBuildBlocks.AutoSize = True
+        Me.rbtnPOSBuildBlocks.Location = New System.Drawing.Point(192, 52)
+        Me.rbtnPOSBuildBlocks.Name = "rbtnPOSBuildBlocks"
+        Me.rbtnPOSBuildBlocks.Size = New System.Drawing.Size(83, 17)
+        Me.rbtnPOSBuildBlocks.TabIndex = 128
+        Me.rbtnPOSBuildBlocks.TabStop = True
+        Me.rbtnPOSBuildBlocks.Text = "Build Blocks"
+        Me.rbtnPOSBuildBlocks.UseVisualStyleBackColor = True
+        '
+        'rbtnPOSBuyBlocks
+        '
+        Me.rbtnPOSBuyBlocks.AutoSize = True
+        Me.rbtnPOSBuyBlocks.Location = New System.Drawing.Point(192, 29)
+        Me.rbtnPOSBuyBlocks.Name = "rbtnPOSBuyBlocks"
+        Me.rbtnPOSBuyBlocks.Size = New System.Drawing.Size(78, 17)
+        Me.rbtnPOSBuyBlocks.TabIndex = 127
+        Me.rbtnPOSBuyBlocks.TabStop = True
+        Me.rbtnPOSBuyBlocks.Text = "Buy Blocks"
+        Me.rbtnPOSBuyBlocks.UseVisualStyleBackColor = True
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.chkRigTypeViewCombat)
+        Me.GroupBox1.Controls.Add(Me.chkRigTypeViewReprocessing)
+        Me.GroupBox1.Controls.Add(Me.chkRigTypeViewEngineering)
+        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeLow)
+        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeMedium)
+        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeHigh)
+        Me.GroupBox1.Controls.Add(Me.chkItemViewTypeServices)
+        Me.GroupBox1.Location = New System.Drawing.Point(6, 72)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(342, 70)
+        Me.GroupBox1.TabIndex = 51
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Item View Type:"
+        '
+        'chkRigTypeViewCombat
+        '
+        Me.chkRigTypeViewCombat.AutoSize = True
+        Me.chkRigTypeViewCombat.Location = New System.Drawing.Point(250, 43)
+        Me.chkRigTypeViewCombat.Name = "chkRigTypeViewCombat"
+        Me.chkRigTypeViewCombat.Size = New System.Drawing.Size(86, 17)
+        Me.chkRigTypeViewCombat.TabIndex = 61
+        Me.chkRigTypeViewCombat.Text = "Combat Rigs"
+        Me.chkRigTypeViewCombat.UseVisualStyleBackColor = True
+        '
+        'chkRigTypeViewReprocessing
+        '
+        Me.chkRigTypeViewReprocessing.AutoSize = True
+        Me.chkRigTypeViewReprocessing.Location = New System.Drawing.Point(17, 43)
+        Me.chkRigTypeViewReprocessing.Name = "chkRigTypeViewReprocessing"
+        Me.chkRigTypeViewReprocessing.Size = New System.Drawing.Size(115, 17)
+        Me.chkRigTypeViewReprocessing.TabIndex = 60
+        Me.chkRigTypeViewReprocessing.Text = "Reprocessing Rigs"
+        Me.chkRigTypeViewReprocessing.UseVisualStyleBackColor = True
+        '
+        'chkRigTypeViewEngineering
+        '
+        Me.chkRigTypeViewEngineering.AutoSize = True
+        Me.chkRigTypeViewEngineering.Location = New System.Drawing.Point(138, 43)
+        Me.chkRigTypeViewEngineering.Name = "chkRigTypeViewEngineering"
+        Me.chkRigTypeViewEngineering.Size = New System.Drawing.Size(106, 17)
+        Me.chkRigTypeViewEngineering.TabIndex = 59
+        Me.chkRigTypeViewEngineering.Text = "Engineering Rigs"
+        Me.chkRigTypeViewEngineering.UseVisualStyleBackColor = True
+        '
+        'chkItemViewTypeLow
+        '
+        Me.chkItemViewTypeLow.AutoSize = True
+        Me.chkItemViewTypeLow.Location = New System.Drawing.Point(190, 20)
+        Me.chkItemViewTypeLow.Name = "chkItemViewTypeLow"
+        Me.chkItemViewTypeLow.Size = New System.Drawing.Size(72, 17)
+        Me.chkItemViewTypeLow.TabIndex = 54
+        Me.chkItemViewTypeLow.Text = "Low Slots"
+        Me.chkItemViewTypeLow.UseVisualStyleBackColor = True
+        '
+        'chkItemViewTypeMedium
+        '
+        Me.chkItemViewTypeMedium.AutoSize = True
+        Me.chkItemViewTypeMedium.Location = New System.Drawing.Point(96, 20)
+        Me.chkItemViewTypeMedium.Name = "chkItemViewTypeMedium"
+        Me.chkItemViewTypeMedium.Size = New System.Drawing.Size(89, 17)
+        Me.chkItemViewTypeMedium.TabIndex = 53
+        Me.chkItemViewTypeMedium.Text = "Medium Slots"
+        Me.chkItemViewTypeMedium.UseVisualStyleBackColor = True
+        '
+        'chkItemViewTypeHigh
+        '
+        Me.chkItemViewTypeHigh.AutoSize = True
+        Me.chkItemViewTypeHigh.Location = New System.Drawing.Point(17, 20)
+        Me.chkItemViewTypeHigh.Name = "chkItemViewTypeHigh"
+        Me.chkItemViewTypeHigh.Size = New System.Drawing.Size(74, 17)
+        Me.chkItemViewTypeHigh.TabIndex = 52
+        Me.chkItemViewTypeHigh.Text = "High Slots"
+        Me.chkItemViewTypeHigh.UseVisualStyleBackColor = True
+        '
+        'chkItemViewTypeServices
+        '
+        Me.chkItemViewTypeServices.AutoSize = True
+        Me.chkItemViewTypeServices.Location = New System.Drawing.Point(267, 20)
+        Me.chkItemViewTypeServices.Name = "chkItemViewTypeServices"
+        Me.chkItemViewTypeServices.Size = New System.Drawing.Size(67, 17)
+        Me.chkItemViewTypeServices.TabIndex = 51
+        Me.chkItemViewTypeServices.Text = "Services"
+        Me.chkItemViewTypeServices.UseVisualStyleBackColor = True
+        '
+        'GBStats
+        '
+        Me.GBStats.Controls.Add(Me.GroupBox2)
+        Me.GBStats.Controls.Add(Me.lblCapacitorValues)
+        Me.GBStats.Controls.Add(Me.lblCapacitorLabel)
+        Me.GBStats.Controls.Add(Me.lblCalibration)
+        Me.GBStats.Controls.Add(Me.Calibration1)
+        Me.GBStats.Controls.Add(Me.lblCPU)
+        Me.GBStats.Controls.Add(Me.lblPowerGrid)
+        Me.GBStats.Controls.Add(Me.CPU1)
+        Me.GBStats.Controls.Add(Me.PowerGrid1)
+        Me.GBStats.Location = New System.Drawing.Point(959, 18)
+        Me.GBStats.Name = "GBStats"
+        Me.GBStats.Size = New System.Drawing.Size(158, 589)
+        Me.GBStats.TabIndex = 59
+        Me.GBStats.TabStop = False
+        '
+        'lblOnlineAmt
+        '
+        Me.lblOnlineAmt.Location = New System.Drawing.Point(6, 86)
+        Me.lblOnlineAmt.Name = "lblOnlineAmt"
+        Me.lblOnlineAmt.Size = New System.Drawing.Size(140, 16)
+        Me.lblOnlineAmt.TabIndex = 72
+        Me.lblOnlineAmt.Text = "Online Fuel Amount"
+        Me.lblOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblServiceModuleFCPH
+        '
+        Me.lblServiceModuleFCPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(6, 70)
+        Me.lblServiceModuleFCPH.Name = "lblServiceModuleFCPH"
+        Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(140, 16)
+        Me.lblServiceModuleFCPH.TabIndex = 71
+        Me.lblServiceModuleFCPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblFuelCost
+        '
+        Me.lblFuelCost.Location = New System.Drawing.Point(6, 54)
+        Me.lblFuelCost.Name = "lblFuelCost"
+        Me.lblFuelCost.Size = New System.Drawing.Size(140, 16)
+        Me.lblFuelCost.TabIndex = 70
+        Me.lblFuelCost.Text = "Fuel Cost per Hour"
+        Me.lblFuelCost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblServiceModuleBPH
+        '
+        Me.lblServiceModuleBPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(6, 38)
+        Me.lblServiceModuleBPH.Name = "lblServiceModuleBPH"
+        Me.lblServiceModuleBPH.Size = New System.Drawing.Size(140, 16)
+        Me.lblServiceModuleBPH.TabIndex = 69
+        Me.lblServiceModuleBPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblFuelBPH
+        '
+        Me.lblFuelBPH.Location = New System.Drawing.Point(6, 22)
+        Me.lblFuelBPH.Name = "lblFuelBPH"
+        Me.lblFuelBPH.Size = New System.Drawing.Size(140, 16)
+        Me.lblFuelBPH.TabIndex = 68
+        Me.lblFuelBPH.Text = "Fuel Blocks per Hour"
+        Me.lblFuelBPH.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblCapacitorValues
+        '
+        Me.lblCapacitorValues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCapacitorValues.Location = New System.Drawing.Point(6, 153)
+        Me.lblCapacitorValues.Name = "lblCapacitorValues"
+        Me.lblCapacitorValues.Size = New System.Drawing.Size(155, 16)
+        Me.lblCapacitorValues.TabIndex = 67
+        Me.lblCapacitorValues.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblCapacitorLabel
+        '
+        Me.lblCapacitorLabel.Location = New System.Drawing.Point(6, 137)
+        Me.lblCapacitorLabel.Name = "lblCapacitorLabel"
+        Me.lblCapacitorLabel.Size = New System.Drawing.Size(155, 16)
+        Me.lblCapacitorLabel.TabIndex = 66
+        Me.lblCapacitorLabel.Text = "Capacitor:"
+        Me.lblCapacitorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblCalibration
+        '
+        Me.lblCalibration.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCalibration.Location = New System.Drawing.Point(6, 114)
+        Me.lblCalibration.Name = "lblCalibration"
+        Me.lblCalibration.Size = New System.Drawing.Size(155, 16)
+        Me.lblCalibration.TabIndex = 65
+        Me.lblCalibration.Text = "400 / 400"
+        Me.lblCalibration.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'Calibration1
+        '
+        Me.Calibration1.AutoSize = True
+        Me.Calibration1.Location = New System.Drawing.Point(3, 100)
+        Me.Calibration1.Name = "Calibration1"
+        Me.Calibration1.Size = New System.Drawing.Size(59, 13)
+        Me.Calibration1.TabIndex = 64
+        Me.Calibration1.Text = "Calibration:"
+        '
+        'lblCPU
+        '
+        Me.lblCPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCPU.Location = New System.Drawing.Point(6, 76)
+        Me.lblCPU.Name = "lblCPU"
+        Me.lblCPU.Size = New System.Drawing.Size(155, 16)
+        Me.lblCPU.TabIndex = 63
+        Me.lblCPU.Text = "15,000,000 / 15,000,000"
+        Me.lblCPU.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblPowerGrid
+        '
+        Me.lblPowerGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblPowerGrid.Location = New System.Drawing.Point(6, 38)
+        Me.lblPowerGrid.Name = "lblPowerGrid"
+        Me.lblPowerGrid.Size = New System.Drawing.Size(155, 16)
+        Me.lblPowerGrid.TabIndex = 62
+        Me.lblPowerGrid.Text = "15,000,000 / 15,000,000"
+        Me.lblPowerGrid.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'CPU1
+        '
+        Me.CPU1.AutoSize = True
+        Me.CPU1.Location = New System.Drawing.Point(3, 62)
+        Me.CPU1.Name = "CPU1"
+        Me.CPU1.Size = New System.Drawing.Size(32, 13)
+        Me.CPU1.TabIndex = 61
+        Me.CPU1.Text = "CPU:"
+        '
+        'PowerGrid1
+        '
+        Me.PowerGrid1.AutoSize = True
+        Me.PowerGrid1.Location = New System.Drawing.Point(3, 24)
+        Me.PowerGrid1.Name = "PowerGrid1"
+        Me.PowerGrid1.Size = New System.Drawing.Size(62, 13)
+        Me.PowerGrid1.TabIndex = 60
+        Me.PowerGrid1.Text = "Power Grid:"
+        '
+        'btnSaveUpdatePrices
+        '
+        Me.btnSaveUpdatePrices.Location = New System.Drawing.Point(93, 35)
+        Me.btnSaveUpdatePrices.Name = "btnSaveUpdatePrices"
+        Me.btnSaveUpdatePrices.Size = New System.Drawing.Size(81, 30)
+        Me.btnSaveUpdatePrices.TabIndex = 48
+        Me.btnSaveUpdatePrices.Text = "Save Fitting"
+        Me.btnSaveUpdatePrices.UseVisualStyleBackColor = True
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(267, 35)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(81, 30)
+        Me.Button1.TabIndex = 60
+        Me.Button1.Text = "Save Settings"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'pbFloat
+        '
+        Me.pbFloat.BackColor = System.Drawing.Color.White
+        Me.pbFloat.InitialImage = Nothing
+        Me.pbFloat.Location = New System.Drawing.Point(254, 531)
+        Me.pbFloat.Name = "pbFloat"
+        Me.pbFloat.Size = New System.Drawing.Size(64, 64)
+        Me.pbFloat.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.pbFloat.TabIndex = 7
+        Me.pbFloat.TabStop = False
+        Me.pbFloat.Visible = False
+        '
+        'btnLoadFitting
+        '
+        Me.btnLoadFitting.Location = New System.Drawing.Point(180, 35)
+        Me.btnLoadFitting.Name = "btnLoadFitting"
+        Me.btnLoadFitting.Size = New System.Drawing.Size(81, 30)
+        Me.btnLoadFitting.TabIndex = 61
+        Me.btnLoadFitting.Text = "Load Fitting"
+        Me.btnLoadFitting.UseVisualStyleBackColor = True
+        '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.rbtnMinmatarFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnGallenteFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnCaldariFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.rbtnAmarrFuelBlock)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleOnlineAmt)
+        Me.GroupBox2.Controls.Add(Me.lblOnlineAmt)
+        Me.GroupBox2.Controls.Add(Me.lblFuelBPH)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleBPH)
+        Me.GroupBox2.Controls.Add(Me.lblServiceModuleFCPH)
+        Me.GroupBox2.Controls.Add(Me.lblFuelCost)
+        Me.GroupBox2.Controls.Add(Me.chkIncludeFuelCosts)
+        Me.GroupBox2.Location = New System.Drawing.Point(6, 187)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Size = New System.Drawing.Size(159, 204)
+        Me.GroupBox2.TabIndex = 73
+        Me.GroupBox2.TabStop = False
+        '
+        'lblServiceModuleOnlineAmt
+        '
+        Me.lblServiceModuleOnlineAmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(6, 102)
+        Me.lblServiceModuleOnlineAmt.Name = "lblServiceModuleOnlineAmt"
+        Me.lblServiceModuleOnlineAmt.Size = New System.Drawing.Size(140, 16)
+        Me.lblServiceModuleOnlineAmt.TabIndex = 73
+        Me.lblServiceModuleOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'rbtnAmarrFuelBlock
+        '
+        Me.rbtnAmarrFuelBlock.AutoSize = True
+        Me.rbtnAmarrFuelBlock.Location = New System.Drawing.Point(9, 124)
+        Me.rbtnAmarrFuelBlock.Name = "rbtnAmarrFuelBlock"
+        Me.rbtnAmarrFuelBlock.Size = New System.Drawing.Size(105, 17)
+        Me.rbtnAmarrFuelBlock.TabIndex = 74
+        Me.rbtnAmarrFuelBlock.TabStop = True
+        Me.rbtnAmarrFuelBlock.Text = "Amarr Fuel Block"
+        Me.rbtnAmarrFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnCaldariFuelBlock
+        '
+        Me.rbtnCaldariFuelBlock.AutoSize = True
+        Me.rbtnCaldariFuelBlock.Location = New System.Drawing.Point(9, 143)
+        Me.rbtnCaldariFuelBlock.Name = "rbtnCaldariFuelBlock"
+        Me.rbtnCaldariFuelBlock.Size = New System.Drawing.Size(110, 17)
+        Me.rbtnCaldariFuelBlock.TabIndex = 75
+        Me.rbtnCaldariFuelBlock.TabStop = True
+        Me.rbtnCaldariFuelBlock.Text = "Caldari Fuel Block"
+        Me.rbtnCaldariFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnGallenteFuelBlock
+        '
+        Me.rbtnGallenteFuelBlock.AutoSize = True
+        Me.rbtnGallenteFuelBlock.Location = New System.Drawing.Point(9, 162)
+        Me.rbtnGallenteFuelBlock.Name = "rbtnGallenteFuelBlock"
+        Me.rbtnGallenteFuelBlock.Size = New System.Drawing.Size(117, 17)
+        Me.rbtnGallenteFuelBlock.TabIndex = 76
+        Me.rbtnGallenteFuelBlock.TabStop = True
+        Me.rbtnGallenteFuelBlock.Text = "Gallente Fuel Block"
+        Me.rbtnGallenteFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnMinmatarFuelBlock
+        '
+        Me.rbtnMinmatarFuelBlock.AutoSize = True
+        Me.rbtnMinmatarFuelBlock.Location = New System.Drawing.Point(9, 181)
+        Me.rbtnMinmatarFuelBlock.Name = "rbtnMinmatarFuelBlock"
+        Me.rbtnMinmatarFuelBlock.Size = New System.Drawing.Size(121, 17)
+        Me.rbtnMinmatarFuelBlock.TabIndex = 77
+        Me.rbtnMinmatarFuelBlock.TabStop = True
+        Me.rbtnMinmatarFuelBlock.Text = "Minmatar Fuel Block"
+        Me.rbtnMinmatarFuelBlock.UseVisualStyleBackColor = True
+        '
         'frmCitadelFitting
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(1129, 611)
+        Me.Controls.Add(Me.btnLoadFitting)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.pbFloat)
         Me.Controls.Add(Me.GBStats)
-        Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.tabCitadel)
         Me.Controls.Add(Me.btnSaveUpdatePrices)
         Me.Controls.Add(Me.btnToggleAllPriceItems)
-        Me.Controls.Add(Me.chkIncludeFuelCosts)
         Me.Controls.Add(Me.cmbCitadelName)
-        Me.Controls.Add(Me.SelectedCitadel)
+        Me.Controls.Add(Me.lblSelectedCitadel)
         Me.Controls.Add(Me.ServiceModuleListView)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "frmCitadelFitting"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Engineering Complex Fitting"
+        Me.Text = "Citadel Fitting"
         Me.tabCitadel.ResumeLayout(False)
         Me.tabFitting.ResumeLayout(False)
-        Me.tabFuel.ResumeLayout(False)
-        Me.gbPOSFuelPrices.ResumeLayout(False)
-        Me.gbPOSFuelPrices.PerformLayout()
-        Me.gbPOSFuelBlocks.ResumeLayout(False)
-        Me.gbPOSFuelBlocks.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
-        Me.GroupBox2.ResumeLayout(False)
-        Me.GroupBox2.PerformLayout()
-        Me.GBStats.ResumeLayout(False)
-        Me.GBStats.PerformLayout()
-        CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.RigSlot2, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.LowSlot6, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1708,6 +1799,9 @@ Partial Class frmCitadelFitting
         CType(Me.MidSlot6, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.MidSlot7, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.StructurePicture, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.tabFuel.ResumeLayout(False)
+        Me.gbPOSFuelPrices.ResumeLayout(False)
+        Me.gbPOSFuelPrices.PerformLayout()
         CType(Me.picPOSCharters, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pictPOS1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pictPOS10, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1721,17 +1815,26 @@ Partial Class frmCitadelFitting
         CType(Me.pictPOS5, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pictPOS4, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pictPOS2, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.gbPOSFuelBlocks.ResumeLayout(False)
+        Me.gbPOSFuelBlocks.PerformLayout()
         CType(Me.picPOSAmarrFuelBlock, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picPOSCaldariFuelBlock, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picPOSMinmatarFuelBlock, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picPOSGallenteFuelBlock, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
+        Me.GBStats.ResumeLayout(False)
+        Me.GBStats.PerformLayout()
+        CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
     End Sub
     Friend WithEvents RigSlot1 As PictureBox
     Friend WithEvents HighSlot1 As PictureBox
-    Friend WithEvents ImageList1 As ImageList
+    Friend WithEvents FittingImages As ImageList
     Friend WithEvents ServiceModuleListView As ListView
     Friend WithEvents StructurePicture As PictureBox
     Friend WithEvents MidSlot1 As PictureBox
@@ -1766,10 +1869,9 @@ Partial Class frmCitadelFitting
     Friend WithEvents MidSlot4 As PictureBox
     Friend WithEvents MidSlot3 As PictureBox
     Friend WithEvents pbFloat As PictureBox
-    Friend WithEvents SelectedCitadel As Label
+    Friend WithEvents lblSelectedCitadel As Label
     Friend WithEvents cmbCitadelName As ComboBox
     Friend WithEvents chkIncludeFuelCosts As CheckBox
-    Friend WithEvents btnSaveUpdatePrices As Button
     Friend WithEvents btnToggleAllPriceItems As Button
     Friend WithEvents tabCitadel As TabControl
     Friend WithEvents tabFitting As TabPage
@@ -1831,24 +1933,36 @@ Partial Class frmCitadelFitting
     Friend WithEvents picPOSGallenteFuelBlock As PictureBox
     Friend WithEvents rbtnPOSBuildBlocks As RadioButton
     Friend WithEvents rbtnPOSBuyBlocks As RadioButton
-    Friend WithEvents chkItemViewTypeAll As CheckBox
     Friend WithEvents GroupBox1 As GroupBox
-    Friend WithEvents chkItemViewTypeRigs As CheckBox
     Friend WithEvents chkItemViewTypeLow As CheckBox
     Friend WithEvents chkItemViewTypeMedium As CheckBox
     Friend WithEvents chkItemViewTypeHigh As CheckBox
     Friend WithEvents chkItemViewTypeServices As CheckBox
-    Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents GBStats As GroupBox
+    Friend WithEvents lblCPU As Label
+    Friend WithEvents lblPowerGrid As Label
+    Friend WithEvents CPU1 As Label
+    Friend WithEvents PowerGrid1 As Label
+    Friend WithEvents lblCalibration As Label
+    Friend WithEvents Calibration1 As Label
+    Friend WithEvents lblCapacitorValues As Label
+    Friend WithEvents lblCapacitorLabel As Label
+    Friend WithEvents btnSaveUpdatePrices As Button
+    Friend WithEvents Button1 As Button
     Friend WithEvents chkRigTypeViewCombat As CheckBox
     Friend WithEvents chkRigTypeViewReprocessing As CheckBox
     Friend WithEvents chkRigTypeViewEngineering As CheckBox
-    Friend WithEvents GBStats As GroupBox
-    Friend WithEvents CPU As Label
-    Friend WithEvents PowerGrid As Label
-    Friend WithEvents CPU1 As Label
-    Friend WithEvents PowerGrid1 As Label
-    Friend WithEvents Calibration As Label
-    Friend WithEvents Calibration1 As Label
-    Friend WithEvents CapacitorValues As Label
-    Friend WithEvents CapacitorLabel As Label
+    Friend WithEvents lblServiceModuleFCPH As Label
+    Friend WithEvents lblFuelCost As Label
+    Friend WithEvents lblServiceModuleBPH As Label
+    Friend WithEvents lblFuelBPH As Label
+    Friend WithEvents chkAutoUpdateFuelPrice As CheckBox
+    Friend WithEvents btnLoadFitting As Button
+    Friend WithEvents lblOnlineAmt As Label
+    Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents lblServiceModuleOnlineAmt As Label
+    Friend WithEvents rbtnMinmatarFuelBlock As RadioButton
+    Friend WithEvents rbtnGallenteFuelBlock As RadioButton
+    Friend WithEvents rbtnCaldariFuelBlock As RadioButton
+    Friend WithEvents rbtnAmarrFuelBlock As RadioButton
 End Class
