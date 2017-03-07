@@ -540,8 +540,6 @@ Public Class Blueprint
             ' To track how many runs we have used in the batch setup
             Dim RunTracker As Long = 0
 
-            Dim TestList As New List(Of Integer)
-
             ' Fill a list of runs per bp
             For i = 0 To Batches - 1
                 For j = 0 To NumberofProductionLines - 1
@@ -556,7 +554,6 @@ Public Class Blueprint
                     End If
 
                     BatchList.Add(AdjRunsperBP)
-                    TestList.Add(AdjRunsperBP)
 
                     ' If we have used up all the runs, then exit the loop
                     RunTracker += AdjRunsperBP
@@ -988,13 +985,6 @@ Public Class Blueprint
                             ' Add the raw mats to build the item
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
 
-                            ' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
-                            If ComponentBlueprint.HasBuildableComponents Then
-                                ' Add the built components to the temp built item as well - one level down
-                                TempBuiltItem.HasBuildableComponents = True
-                                TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
-                            End If
-
                             BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
                         Else ' *** BUY ***
@@ -1062,13 +1052,6 @@ Public Class Blueprint
                             TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                         Else
                             TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
-                        End If
-
-                        ' Now add any components if we build them (ie. freighter components of T1 freighter for jump freighter)
-                        If ComponentBlueprint.HasBuildableComponents Then
-                            ' Add the built components to the temp built item as well - one level down
-                            TempBuiltItem.HasBuildableComponents = True
-                            TempBuiltItem.BuildComponents = ComponentBlueprint.BuiltComponentList.GetBuiltItemList
                         End If
 
                         BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
