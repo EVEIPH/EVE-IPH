@@ -25862,7 +25862,7 @@ Leave:
             If cmbMineMiningForeman.Text = "5" Then
                 cmbMineMiningDirector.Enabled = True
 
-                If cmbMineMiningDirector.Text = "1" Then
+                If cmbMineMiningDirector.Text >= "1" Then
                     chkMineForemanMindlink.Enabled = True ' Implant
                     chkMineForemanLaserOpBoost.ThreeState = True ' Allow for t2 mindlink
                     chkMineForemanLaserOpBoost.Enabled = True

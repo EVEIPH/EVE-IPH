@@ -79,45 +79,5 @@ Namespace My.Resources
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
-        
-        '''<summary>
-        '''  Looks up a localized resource of type System.Drawing.Bitmap.
-        '''</summary>
-        Friend ReadOnly Property AzbelRender() As System.Drawing.Bitmap
-            Get
-                Dim obj As Object = ResourceManager.GetObject("AzbelRender", resourceCulture)
-                Return CType(obj,System.Drawing.Bitmap)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized resource of type System.Drawing.Bitmap.
-        '''</summary>
-        Friend ReadOnly Property no() As System.Drawing.Bitmap
-            Get
-                Dim obj As Object = ResourceManager.GetObject("no", resourceCulture)
-                Return CType(obj,System.Drawing.Bitmap)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized resource of type System.Drawing.Bitmap.
-        '''</summary>
-        Friend ReadOnly Property RaitaruRender() As System.Drawing.Bitmap
-            Get
-                Dim obj As Object = ResourceManager.GetObject("RaitaruRender", resourceCulture)
-                Return CType(obj,System.Drawing.Bitmap)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized resource of type System.Drawing.Bitmap.
-        '''</summary>
-        Friend ReadOnly Property SotiyoRender() As System.Drawing.Bitmap
-            Get
-                Dim obj As Object = ResourceManager.GetObject("SotiyoRender", resourceCulture)
-                Return CType(obj,System.Drawing.Bitmap)
-            End Get
-        End Property
     End Module
 End Namespace

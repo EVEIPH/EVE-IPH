@@ -10,9 +10,6 @@ Public Class frmCitadelFitting
     Private FirstLoad As Boolean
 
     'Public CurrentCitadelName As String
-    'Public CitadelSystemName As String
-    'Public CitadelRegionName As String
-    'Public CitadelSystemSecurity As Double
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
@@ -22,8 +19,18 @@ Public Class frmCitadelFitting
 
     Private POSFuelPricesUpdated As Boolean
 
+    Private ConstUsesMissilesCode As Integer = 101
+
     Private StructureDBDataList As New List(Of CitadelDBData) ' For storing all the types of citadel structures
 
+    Private HighSlotBaseX As Integer
+    Private HighSlotBaseWidth As Integer
+    Private HighSlotSpacing As Integer
+    Private ServiceSlotBaseX As Integer
+    Private ServiceSlotBaseWidth As Integer
+    Private ServiceSlotSpacing As Integer
+
+    ' Used to look up modules and rigs to go into what slot
     Private Enum SlotSizes
         LowSlot = 11
         MediumSlot = 13
@@ -49,6 +56,8 @@ Public Class frmCitadelFitting
         Dim CapacitorRechargeRate As Double
         Dim BaseCapRechargeRate As Double
         Dim ServiceModuleFuelBPH As Integer ' blocks per hour
+
+        Dim LauncherSlots As Integer
 
     End Structure
 
@@ -102,6 +111,14 @@ Public Class frmCitadelFitting
             .Add(RigSlot3)
         End With
 
+        ' Save values
+        HighSlotBaseX = HighSlot1.Location.X
+        HighSlotBaseWidth = HighSlot1.Width
+        HighSlotSpacing = HighSlot2.Location.X - (HighSlot1.Location.X + HighSlot1.Width)
+        ServiceSlotBaseX = ServiceSlot1.Location.X
+        ServiceSlotBaseWidth = ServiceSlot1.Width
+        ServiceSlotSpacing = ServiceSlot2.Location.X - (ServiceSlot1.Location.X + ServiceSlot1.Width)
+
         ' Get all data on structures for DB look ups first
         Call LoadCitadelDBData()
 
@@ -109,7 +126,7 @@ Public Class frmCitadelFitting
         Call LoadFittingImages()
 
         ' Load the citadel
-        Call LoadCitadel("Azbel")
+        Call LoadCitadel("Raitaru")
 
         FirstLoad = False
 
@@ -149,61 +166,142 @@ Public Class frmCitadelFitting
     Private Sub ServiceModuleListView_MouseDown(sender As Object, e As MouseEventArgs) Handles ServiceModuleListView.MouseDown
         ' Make sure we select the image
         Dim Selection As ListViewItem = ServiceModuleListView.GetItemAt(e.X, e.Y)
-        Dim ModuleTypeID As String = Selection.ImageKey
 
         If Not IsNothing(Selection) Then
-            pbFloat.Image = FittingImages.Images(Selection.ImageKey)
-            pbFloat.Tag = Selection.Group.Tag
-        Else
-            pbFloat.Image = Nothing
-        End If
+            Dim ModuleTypeID As String = Selection.ImageKey
 
-        If Not IsNothing(pbFloat.Image) Then
-            pbFloat.Visible = True
-            pbFloat.Location = New Point(e.X + ServiceModuleListView.Left, e.Y + ServiceModuleListView.Top)
-            ' Now select the image and connect it to the mouse cursor
-            SendMessage(pbFloat.Handle.ToInt32, WM_NCLBUTTONDOWN, HTCAPTION, 0&)
-        Else
+            If Not IsNothing(Selection) Then
+                pbFloat.Image = FittingImages.Images(Selection.ImageKey)
+                pbFloat.Tag = Selection.Group.Tag
+            Else
+                pbFloat.Image = Nothing
+            End If
+
+            If Not IsNothing(pbFloat.Image) Then
+                pbFloat.Visible = True
+                pbFloat.Location = New Point(e.X + ServiceModuleListView.Left, e.Y + ServiceModuleListView.Top)
+                ' Now select the image and connect it to the mouse cursor
+                SendMessage(pbFloat.Handle.ToInt32, WM_NCLBUTTONDOWN, HTCAPTION, 0&)
+            Else
+                pbFloat.Visible = False
+            End If
+
             pbFloat.Visible = False
+
+            Dim SlotLocation As Point
+            Dim WHAdjust As Integer = 64
+            Dim MP As Point = PointToClient(MousePosition)
+
+            ' Loop through all the picture boxes and update the one they clicked over
+            For Each Slot In SlotPictureBoxList
+
+                SlotLocation = Slot.Location
+                SlotLocation.X += tabCitadel.Left
+                SlotLocation.Y += tabCitadel.Top
+
+                ' See if they dropped the image on a fitting slot and change the selected item
+                If MP.X > SlotLocation.X And MP.X < SlotLocation.X + WHAdjust And
+                    MP.Y > SlotLocation.Y And MP.Y < SlotLocation.Y + WHAdjust Then
+                    Dim FloatSlot As String = CStr(pbFloat.Tag)
+
+                    If FloatSlot.Contains(Slot.Name.Substring(0, Len(Slot.Name) - 1)) Then
+
+                        If Not CheckSlots(ModuleTypeID) Then
+                            Exit Sub
+                        End If
+
+                        ' Set the image info
+                        Slot.Image = pbFloat.Image
+                        Slot.Image.Tag = ModuleTypeID
+
+                        ' Update the slot stats
+                        Call UpdateCitadelStats()
+                        ' Update the launcher slots if added a launcher
+                        Call UpdateLauncherSlots(False, ModuleTypeID)
+                        ' Done updating
+                        Exit For
+                    End If
+                End If
+            Next
         End If
+    End Sub
 
-        pbFloat.Visible = False
+    ' Loads the image in the first free slot if available - use for double-click an item
+    Private Sub LoadImageInFreeSlot()
+        Dim Selection As ListViewItem = ServiceModuleListView.SelectedItems(0)
 
-        Dim SlotLocation As Point
-        Dim WHAdjust As Integer = 64
-        Dim MP As Point = PointToClient(MousePosition)
+        If Not IsNothing(Selection) Then
+            Dim ModuleTypeID As String = Selection.ImageKey
 
-        ' Loop through all the picture boxes and update the one they clicked over
-        For Each Slot In SlotPictureBoxList
+            ' Loop through all the picture boxes and add the first one that is empty
+            For Each Slot In SlotPictureBoxList
+                Dim FloatSlot As String = CStr(Selection.Group.Tag)
 
-            SlotLocation = Slot.Location
-            SlotLocation.X += tabCitadel.Left
-            SlotLocation.Y += tabCitadel.Top
-
-            ' See if they dropped the image on a fitting slot and change the selected item
-            If MP.X > SlotLocation.X And MP.X < SlotLocation.X + WHAdjust And
-                MP.Y > SlotLocation.Y And MP.Y < SlotLocation.Y + WHAdjust Then
-                Dim FloatSlot As String = CStr(pbFloat.Tag)
                 If FloatSlot.Contains(Slot.Name.Substring(0, Len(Slot.Name) - 1)) Then
-                    ' Only drop if over the right slot
-                    If RigFound(ModuleTypeID) Then
-                        ' They already used this rig, so don't allow
+
+                    If Not CheckSlots(ModuleTypeID) Then
                         Exit Sub
                     End If
-                    ' Set the image info
-                    Slot.Image = pbFloat.Image
-                    Slot.Image.Tag = ModuleTypeID
 
-                    ' Update the slot stats
-                    Call UpdateCitadelStats()
-
-                    ' Done updating
-                    Exit For
+                    ' Set the image info if nothing, then exit
+                    If IsNothing(Slot.Image) Then
+                        Slot.Image = FittingImages.Images(ModuleTypeID)
+                        Slot.Image.Tag = ModuleTypeID
+                        ' Update the slot stats
+                        Call UpdateCitadelStats()
+                        ' Update the launcher slots if added a launcher
+                        Call UpdateLauncherSlots(False, ModuleTypeID)
+                        ' Done updating
+                        Exit For
+                    End If
                 End If
-            End If
-        Next
-
+            Next
+        End If
     End Sub
+
+    Private Function CheckSlots(ByVal ModuleTypeID As String) As Boolean
+        ' Only drop if over the right slot
+        If RigFound(ModuleTypeID) Then
+            ' They already used this rig, so don't allow
+            Return False
+        End If
+
+        If ServiceFound(ModuleTypeID) Then
+            ' Already have this service installed
+            Return False
+        End If
+
+        ' Check launchers
+        If IsMissileLauncher(ModuleTypeID) Then
+            If CitadelStats.LauncherSlots = 0 Then
+                ' They don't have any slots left
+                Return False
+            End If
+        End If
+
+        Return True
+
+    End Function
+
+    ' Determines if the item is a missile launcher or not to adjust weapon slots
+    Private Function IsMissileLauncher(TypeID As String) As Boolean
+        Dim SQL As String = String.Format("SELECT * FROM type_effects WHERe typeid = {0} AND effectID = {1}", TypeID, ConstUsesMissilesCode)
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsReader = DBCommand.ExecuteReader
+
+        If rsReader.Read() Then
+            ' Found it
+            rsReader.Close()
+            Return True
+        Else
+            rsReader.Close()
+            Return False
+        End If
+
+    End Function
 
     ' Sees if the rig is already used or not
     Private Function RigFound(TypeID As String) As Boolean
@@ -225,6 +323,35 @@ Public Class frmCitadelFitting
             Return False
         End If
 
+    End Function
+
+    Private Function ServiceFound(TypeID As String) As Boolean
+        Dim CurrentServiceTypes As New List(Of String)
+
+        If Not IsNothing(ServiceSlot1.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot1.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot2.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot2.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot3.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot3.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot4.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot4.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot5.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot5.Image.Tag))
+        End If
+        If Not IsNothing(ServiceSlot6.Image) Then
+            CurrentServiceTypes.Add(CStr(ServiceSlot6.Image.Tag))
+        End If
+
+        If CurrentServiceTypes.Contains(TypeID) Then
+            Return True
+        Else
+            Return False
+        End If
     End Function
 
     Private Sub LoadCitadel(ByVal SentCitadelName As String)
@@ -380,19 +507,24 @@ Public Class frmCitadelFitting
             Select Case Stat.ID
                 Case ItemAttributes.cpuOutput
                     CitadelStats.MaxCPU = Stat.Value
-                    CitadelStats.CPU = 0
+                    CitadelStats.CPU = Stat.Value
                 Case ItemAttributes.powerOutput
                     CitadelStats.MaxPG = Stat.Value
-                    CitadelStats.PG = 0
+                    CitadelStats.PG = Stat.Value
                 Case ItemAttributes.upgradeCapacity ' Calibration
                     CitadelStats.MaxCalibration = Stat.Value
-                    CitadelStats.Calibration = 0
+                    CitadelStats.Calibration = Stat.Value
                 Case ItemAttributes.capacitorCapacity
-                    CitadelStats.Capacitor = 0
+                    CitadelStats.Capacitor = Stat.Value
                     CitadelStats.MaxCapacitor = Stat.Value
                 Case ItemAttributes.rechargeRate
                     CitadelStats.CapacitorRechargeRate = 100
                     CitadelStats.BaseCapRechargeRate = Stat.Value
+                Case ItemAttributes.launcherSlotsLeft
+                    If Not IgnoreLabelUpdate Then
+                        ' Only update this if we are updating the label too
+                        CitadelStats.LauncherSlots = CInt(Stat.Value)
+                    End If
             End Select
         Next
 
@@ -411,32 +543,34 @@ Public Class frmCitadelFitting
 
         ' Update the labels
         lblCPU.Text = FormatNumber(CitadelStats.CPU) & " / " & FormatNumber(CitadelStats.MaxCPU)
-        If CitadelStats.CPU > CitadelStats.MaxCPU Then
+        If CitadelStats.CPU < 0 Then
             lblCPU.ForeColor = Color.Red
         Else
             lblCPU.ForeColor = Color.Black
         End If
 
         lblPowerGrid.Text = FormatNumber(CitadelStats.PG) & " / " & FormatNumber(CitadelStats.MaxPG)
-        If CitadelStats.PG > CitadelStats.MaxPG Then
+        If CitadelStats.PG < 0 Then
             lblPowerGrid.ForeColor = Color.Red
         Else
             lblPowerGrid.ForeColor = Color.Black
         End If
 
         lblCalibration.Text = FormatNumber(CitadelStats.Calibration) & " / " & FormatNumber(CitadelStats.MaxCalibration)
-        If CitadelStats.Calibration > CitadelStats.MaxCalibration Then
+        If CitadelStats.Calibration < 0 Then
             lblCalibration.ForeColor = Color.Red
         Else
             lblCalibration.ForeColor = Color.Black
         End If
 
         lblCapacitorValues.Text = FormatNumber(CitadelStats.Capacitor) & " / " & FormatNumber(CitadelStats.MaxCapacitor)
-        If CitadelStats.Capacitor > CitadelStats.MaxCapacitor Then
+        If CitadelStats.Capacitor < 0 Then
             lblCapacitorValues.ForeColor = Color.Red
         Else
             lblCapacitorValues.ForeColor = Color.Black
         End If
+
+        lblLauncherSlots.Text = "Launcher Slots: " & CStr(CitadelStats.LauncherSlots)
 
         ' Update the fuel costs label
         Call UpdateFuelCostLabels()
@@ -460,25 +594,43 @@ Public Class frmCitadelFitting
             For Each Attribute In Attributes
                 Select Case Attribute.ID
                     Case ItemAttributes.power
-                        CitadelStats.PG += Attribute.Value
+                        CitadelStats.PG -= Attribute.Value
                     Case ItemAttributes.cpu
-                        CitadelStats.CPU += Attribute.Value
+                        CitadelStats.CPU -= Attribute.Value
                     Case ItemAttributes.capacitorNeed
-                        CitadelStats.Capacitor += Attribute.Value
+                        CitadelStats.Capacitor -= Attribute.Value
                     Case ItemAttributes.upgradeCost ' Calibration
-                        CitadelStats.Calibration += Attribute.Value
+                        CitadelStats.Calibration -= Attribute.Value
                     Case ItemAttributes.cpuMultiplier
                         CitadelStats.MaxCPU = CitadelStats.MaxCPU * Attribute.Value
                     Case ItemAttributes.powerOutputMultiplier
                         CitadelStats.MaxPG = CitadelStats.MaxPG * Attribute.Value
                     Case ItemAttributes.serviceModuleFuelAmount
-                        CitadelStats.ServiceModuleFuelBPH += CInt(Attribute.Value)
+                        CitadelStats.ServiceModuleFuelBPH -= CInt(Attribute.Value)
                 End Select
             Next
         Next
 
         ' Update the stats
         Call UpdateCitadelStatLabels()
+
+    End Sub
+
+    ' If true, increments the launcher slots, else decrements
+    Private Sub UpdateLauncherSlots(ByVal Increment As Boolean, ByVal ModuleTypeID As String)
+        ' Update number of launchers
+        If IsMissileLauncher(ModuleTypeID) Then
+            If Not Increment Then
+                If CitadelStats.LauncherSlots > 0 Then
+                    CitadelStats.LauncherSlots -= 1
+                End If
+
+            Else
+                CitadelStats.LauncherSlots += 1
+            End If
+        End If
+
+        lblLauncherSlots.Text = "Launcher Slots: " & CStr(CitadelStats.LauncherSlots)
 
     End Sub
 
@@ -616,7 +768,7 @@ Public Class frmCitadelFitting
         Dim DBCommand As SQLiteCommand
 
         SQL = "SELECT typeID, typeName FROM INVENTORY_TYPES, INVENTORY_GROUPS "
-        SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND categoryID = 66 "
+        SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND ABS(categoryID) = 66 " ' I save rigs as -66
         SQL &= "AND INVENTORY_TYPES.published <> 0"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -655,15 +807,22 @@ Public Class frmCitadelFitting
             Dim rsReader As SQLiteDataReader
             Dim DBCommand As SQLiteCommand
 
-            SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName "
+            SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
+            SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RS "
             SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
             SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
-            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND categoryID = 66 "
+            SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID AND attributeID = 1547 "
+            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND ABS(categoryID) = 66 " ' I save structure rigs as -66
             SQL &= "AND INVENTORY_TYPES.published <> 0 "
+
+            ' Add text first
+            If Trim(txtItemFilter.Text) <> "" Then
+                SQL &= "AND " & GetSearchText(txtItemFilter.Text, "typeName") & " "
+            End If
 
             If chkItemViewTypeServices.Checked Then
                 ' Add the sql
-                Call SQLList.Add("(INVENTORY_TYPES.groupID IN (1321, 1322, 1415, 1717)) ")
+                Call SQLList.Add("(INVENTORY_TYPES.groupID In (1321, 1322, 1415, 1717)) ")
             End If
 
             ' Process high, medium, and low slots together
@@ -681,21 +840,29 @@ Public Class frmCitadelFitting
 
             If SlotString <> "" Then
                 SlotString = SlotString.Substring(0, Len(SlotString) - 1)
-                SlotString = "(EffID IN (" & SlotString & "))"
+                SlotString = "(EffID In (" & SlotString & "))"
                 ' Add the sql
                 Call SQLList.Add(SlotString)
             End If
 
-            If chkRigTypeViewCombat.Checked Then
-                Call SQLList.Add("(groupName Like '%Combat Rig%')")
-            End If
+            If chkRigTypeViewCombat.Checked Or chkRigTypeViewEngineering.Checked Or chkRigTypeViewReprocessing.Checked Then
+                If chkRigTypeViewCombat.Checked Then
+                    Call SQLList.Add("(groupName Like '%Combat Rig%')")
+                End If
 
-            If chkRigTypeViewEngineering.Checked Then
-                Call SQLList.Add("(groupName LIKE '%Engineering Rig%')")
-            End If
+                If chkRigTypeViewEngineering.Checked Then
+                    Call SQLList.Add("(groupName LIKE '%Engineering Rig%')")
+                End If
 
-            If chkRigTypeViewReprocessing.Checked Then
-                Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
+                If chkRigTypeViewReprocessing.Checked Then
+                    Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
+                End If
+
+                Dim Attrib As New EVEAttributes
+
+                ' Add the check for rig size to limit, -1 is the default value
+                SQL &= "AND RS IN (-1," & CInt(Attrib.GetAttribute(SelectedCitadel.TypeID, ItemAttributes.rigSize)) & ") "
+
             End If
 
             ' Set the SQL
@@ -779,6 +946,56 @@ Public Class frmCitadelFitting
 
     End Function
 
+    ' Moves the high slots to center based on the rig slot images
+    Private Sub ShiftHighSlotImages()
+
+        ' Move the top 5 over to match the rig slot locations
+        HighSlot1.Left = RigSlot2.Left
+        Call AlignHighSlotsfromBase()
+
+    End Sub
+
+    Private Sub ResetHighSlotImages()
+
+        ' Move the top 5 back since 6 and above won't move
+        HighSlot1.Left = HighSlotBaseX
+        Call AlignHighSlotsfromBase()
+
+    End Sub
+
+    Private Sub AlignHighSlotsfromBase()
+        ' Aligns the high slots based on the first high slot position
+        HighSlot2.Left = HighSlot1.Left + HighSlotSpacing + HighSlotBaseWidth
+        HighSlot3.Left = HighSlot1.Left - HighSlotBaseWidth - HighSlotSpacing
+        HighSlot4.Left = HighSlot2.Left + HighSlotSpacing + HighSlotBaseWidth
+        HighSlot5.Left = HighSlot3.Left - HighSlotBaseWidth - HighSlotSpacing
+    End Sub
+
+    ' Moves the high slots to center based on the rig slot images
+    Private Sub ShiftServiceSlotImages()
+
+        ' Move the top 5 over to match the rig slot locations
+        ServiceSlot1.Left = RigSlot2.Left
+        Call AlignServiceSlotsfromBase()
+
+    End Sub
+
+    Private Sub ResetServiceSlotImages()
+
+        ' Move the top 5 back since 6 and above won't move
+        ServiceSlot1.Left = ServiceSlotBaseX
+        Call AlignServiceSlotsfromBase()
+
+    End Sub
+
+    Private Sub AlignServiceSlotsfromBase()
+        ' Aligns the service slots based on the first high slot position
+        ServiceSlot2.Left = ServiceSlot1.Left + ServiceSlotSpacing + ServiceSlotBaseWidth
+        ServiceSlot3.Left = ServiceSlot1.Left - ServiceSlotBaseWidth - ServiceSlotSpacing
+        ServiceSlot4.Left = ServiceSlot2.Left + ServiceSlotSpacing + ServiceSlotBaseWidth
+        ServiceSlot5.Left = ServiceSlot3.Left - ServiceSlotBaseWidth - ServiceSlotSpacing
+    End Sub
+
     Private Sub SetHighSlots(Slots As Integer)
 
         ' Init slots
@@ -820,6 +1037,15 @@ Public Class frmCitadelFitting
                     HighSlot8.Visible = True
             End Select
         Next
+
+        If Slots Mod 2 > 0 And Slots < 6 Then
+            ' Move the slots if we are on the first line
+            Call ShiftHighSlotImages()
+        Else
+            ' Reset them to the base positions
+            Call ResetHighSlotImages()
+        End If
+
     End Sub
 
     Private Sub SetMidSlots(Slots As Integer)
@@ -964,12 +1190,21 @@ Public Class frmCitadelFitting
                     ServiceSlot6.Visible = True
             End Select
         Next
+
+        If Slots Mod 2 > 0 And Slots < 6 Then
+            ' Move the slots if we are on the first line
+            Call ShiftServiceSlotImages()
+        Else
+            ' Reset them to the base positions
+            Call ResetServiceSlotImages()
+        End If
+
     End Sub
 
 #Region "Fuel Settings"
     Private Sub LoadPOSDataTab()
 
-        txtPOSFuelBlockBPME.Text = "0"
+        txtAmarrFuelBlockBPME.Text = "0"
 
         ' Building
         If SelectedTower.FuelBlockBuild Then
@@ -978,18 +1213,18 @@ Public Class frmCitadelFitting
             btnPOSUpdateBlockPrice.Enabled = False
             btnPOSUpdateFuelPrices.Enabled = True
             btnRefreshBlockData.Enabled = True
-            txtPOSFuelBlockBPME.Enabled = True
-            lblPOSFuelBlockBPME.Enabled = True
-            txtPOSFuelBlockBuy.Enabled = False
+            txtAmarrFuelBlockBPME.Enabled = True
+            lblAmarrFuelBlockBPME.Enabled = True
+            txtAmarrFuelBlockBuy.Enabled = False
         Else ' Buying
             rbtnPOSBuyBlocks.Checked = True
             gbPOSFuelPrices.Enabled = False
             btnPOSUpdateBlockPrice.Enabled = True
             btnPOSUpdateFuelPrices.Enabled = False
             btnRefreshBlockData.Enabled = False
-            txtPOSFuelBlockBPME.Enabled = False
-            lblPOSFuelBlockBPME.Enabled = False
-            txtPOSFuelBlockBuy.Enabled = True
+            txtAmarrFuelBlockBPME.Enabled = False
+            lblAmarrFuelBlockBPME.Enabled = False
+            txtAmarrFuelBlockBuy.Enabled = True
         End If
 
         txtCharters.Text = FormatNumber(SelectedTower.CharterCost, 2)
@@ -1020,7 +1255,7 @@ Public Class frmCitadelFitting
             Exit Sub
         End If
 
-        picPOSAmarrFuelBlock.Visible = False
+        picAmarrFuelBlock.Visible = False
         picPOSCaldariFuelBlock.Visible = False
         picPOSGallenteFuelBlock.Visible = False
         picPOSMinmatarFuelBlock.Visible = False
@@ -1029,19 +1264,19 @@ Public Class frmCitadelFitting
         Select Case SelectedTowerRaceID
             Case 1
                 FuelBlock = "Caldari Fuel Block"
-                lblPOSFuelBlock.Text = "Caldari"
+                lblPOSFuelBlockAmarr.Text = "Caldari"
                 picPOSCaldariFuelBlock.Visible = True
             Case 2
                 FuelBlock = "Minmatar Fuel Block"
-                lblPOSFuelBlock.Text = "Minmatar"
+                lblPOSFuelBlockAmarr.Text = "Minmatar"
                 picPOSMinmatarFuelBlock.Visible = True
             Case 4
                 FuelBlock = "Amarr Fuel Block"
-                lblPOSFuelBlock.Text = "Amarr"
-                picPOSAmarrFuelBlock.Visible = True
+                lblPOSFuelBlockAmarr.Text = "Amarr"
+                picAmarrFuelBlock.Visible = True
             Case 8
                 FuelBlock = "Gallente Fuel Block"
-                lblPOSFuelBlock.Text = "Gallente"
+                lblPOSFuelBlockAmarr.Text = "Gallente"
                 picPOSGallenteFuelBlock.Visible = True
         End Select
 
@@ -1070,9 +1305,9 @@ Public Class frmCitadelFitting
 
         If readerPOS.Read Then
             ' Owned and they have it
-            txtPOSFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
+            txtAmarrFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
         Else
-            txtPOSFuelBlockBPME.Text = "0"
+            txtAmarrFuelBlockBPME.Text = "0"
         End If
 
     End Sub
@@ -1159,20 +1394,20 @@ Public Class frmCitadelFitting
         Dim SQL As String
         Dim posfuelblockpricesupdated As Boolean
 
-        If POSFuelBlockPricesUpdated Then
+        If posfuelblockpricesupdated Then
             Me.Cursor = Cursors.WaitCursor
 
             ' Check the prices first
 
-            If Not IsNumeric(txtPOSFuelBlockBuy.Text) Then
+            If Not IsNumeric(txtAmarrFuelBlockBuy.Text) Then
                 MsgBox("Invalid Fuel Block Price", vbExclamation, Application.ProductName)
-                txtPOSFuelBlockBuy.Focus()
+                txtAmarrFuelBlockBuy.Focus()
                 Me.Cursor = Cursors.Default
                 Exit Sub
             End If
 
             ' Update the prices
-            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtPOSFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlock.Text & " Fuel Block'"
+            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtAmarrFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlockAmarr.Text & " Fuel Block'"
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -1217,10 +1452,10 @@ Public Class frmCitadelFitting
             readerPOS = DBCommand.ExecuteReader()
             readerPOS.Read()
 
-            txtPOSFuelBlockBuy.Text = FormatNumber(readerPOS.GetValue(1))
+            txtAmarrFuelBlockBuy.Text = FormatNumber(readerPOS.GetValue(1))
             readerPOS.Close()
         Else
-            txtPOSFuelBlockBuy.Text = "0.00"
+            txtAmarrFuelBlockBuy.Text = "0.00"
         End If
 
         Me.Cursor = Cursors.Default
@@ -1237,9 +1472,9 @@ Public Class frmCitadelFitting
 
         ' Get the block we are using
         If rbtnPOSBuildBlocks.Checked Then
-            CostperBlock = CDbl(lblPOSFuelBlockBuild.Text)
+            CostperBlock = CDbl(lblAmarrFuelBlockBuild.Text)
         Else
-            CostperBlock = CDbl(txtPOSFuelBlockBuy.Text)
+            CostperBlock = CDbl(txtAmarrFuelBlockBuy.Text)
         End If
 
         CostperHour = CostperBlock * Multiplier
@@ -1252,9 +1487,9 @@ Public Class frmCitadelFitting
     Private Sub SetFuelBlockBuildcost()
 
         ' Make sure it's valid
-        If Not IsNumeric(txtPOSFuelBlockBPME.Text) Then
+        If Not IsNumeric(txtAmarrFuelBlockBPME.Text) Then
             MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
-            txtPOSFuelBlockBPME.Focus()
+            txtAmarrFuelBlockBPME.Focus()
             Exit Sub
         End If
 
@@ -1265,17 +1500,17 @@ Public Class frmCitadelFitting
         End If
 
         ' First set all to 0 so we only build for the tower we are using
-        lblPOSFuelBlockBuild.Text = "0.00"
+        lblAmarrFuelBlockBuild.Text = "0.00"
 
         ' Get cost for building 1 block and add charter cost (divide by 40 since that's the number of blocks that is made for 1 charter)
         If rbtnCaldariFuelBlock.Checked Then
-            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
         ElseIf rbtnMinmatarFuelBlock.Checked Then
-            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
         ElseIf rbtnAmarrFuelBlock.Checked Then
-            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
         ElseIf rbtnGallenteFuelBlock.Checked Then
-            lblPOSFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtPOSFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
         End If
 
     End Sub
@@ -1385,41 +1620,65 @@ Public Class frmCitadelFitting
     End Sub
 
     Private Sub HighSlot1_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot1.DoubleClick
+        If Not IsNothing(HighSlot1.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot1.Image.Tag))
+        End If
         HighSlot1.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot2_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot2.DoubleClick
+        If Not IsNothing(HighSlot2.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot2.Image.Tag))
+        End If
         HighSlot2.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot3_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot3.DoubleClick
+        If Not IsNothing(HighSlot3.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot3.Image.Tag))
+        End If
         HighSlot3.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot5_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot5.DoubleClick
+        If Not IsNothing(HighSlot5.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot5.Image.Tag))
+        End If
         HighSlot5.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot7_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot7.DoubleClick
+        If Not IsNothing(HighSlot7.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot7.Image.Tag))
+        End If
         HighSlot7.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot4_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot4.DoubleClick
+        If Not IsNothing(HighSlot4.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot4.Image.Tag))
+        End If
         HighSlot4.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot6_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot6.DoubleClick
+        If Not IsNothing(HighSlot6.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot6.Image.Tag))
+        End If
         HighSlot6.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
 
     Private Sub HighSlot8_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot8.DoubleClick
+        If Not IsNothing(HighSlot8.Image) Then
+            Call UpdateLauncherSlots(True, CStr(HighSlot8.Image.Tag))
+        End If
         HighSlot8.Image = Nothing
         Call UpdateCitadelStats()
     End Sub
@@ -1521,7 +1780,25 @@ Public Class frmCitadelFitting
         Call UpdateFuelCostLabels()
     End Sub
 
-#End Region
+    Private Sub btnItemFilter_Click(sender As Object, e As EventArgs) Handles btnItemFilter.Click
+        Call UpdateFittingImages()
+    End Sub
 
+    Private Sub btnResetItemFilter_Click(sender As Object, e As EventArgs) Handles btnResetItemFilter.Click
+        txtItemFilter.Text = ""
+        Call UpdateFittingImages()
+    End Sub
+
+    Private Sub txtItemFilter_KeyDown(sender As Object, e As KeyEventArgs) Handles txtItemFilter.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Call UpdateFittingImages()
+        End If
+    End Sub
+
+    Private Sub ServiceModuleListView_ItemActivate(sender As Object, e As EventArgs) Handles ServiceModuleListView.ItemActivate
+        Call LoadImageInFreeSlot()
+    End Sub
+
+#End Region
 
 End Class

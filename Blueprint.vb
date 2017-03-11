@@ -702,13 +702,12 @@ Public Class Blueprint
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
 
-                    ' Adjust quantity - only build items will be in build/buy that need adjustment
-                    If BuildBuy Then
-                        ' Adjust the runs/quantity to use the quantity used (i.e. 1 ram has 100 runs in it)
-                        .ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
-                    End If
+                    Dim TempQuantity As Long = 0
+                    ' If BuildBuy Then
+                    ' Adjust the runs/quantity to use the quantity used (i.e. 1 ram has 100 runs in it)
+                    TempQuantity = CInt(Math.Ceiling(.UsedQuantity))
 
-                    ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
+                    ComponentBlueprint = New Blueprint(.BPTypeID, TempQuantity, .BuildME, .BuildTE, 1,
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
                                                    0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam,
                                                    ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)

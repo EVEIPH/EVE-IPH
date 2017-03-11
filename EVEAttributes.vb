@@ -45,8 +45,8 @@ Public Class EVEAttributes
         Dim readerAttribute As SQLiteDataReader
 
         SQL = "SELECT COALESCE(valuefloat, valueint) FROM TYPE_ATTRIBUTES "
-        SQL = SQL & "WHERE INVENTORY_TYPES.typeID = " & TypeID & " "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = " & AttributeCode
+        SQL = SQL & "WHERE typeID = " & TypeID & " "
+        SQL = SQL & "AND attributeID = " & AttributeCode
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAttribute = DBCommand.ExecuteReader
