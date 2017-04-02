@@ -168,6 +168,12 @@
     <Compile Include="frmCitadelFitting.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ManufacturingFacility.Designer.vb">
+      <DependentUpon>ManufacturingFacility.vb</DependentUpon>
+    </Compile>
+    <Compile Include="ManufacturingFacility.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -179,14 +185,6 @@
     </Compile>
     <Compile Include="frmBlueprintList.vb">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="IPHIndustryFacility.Designer.vb">
-      <DependentUpon>IPHIndustryFacility.vb</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="IPHIndustryFacility.vb">
-      <SubType>UserControl</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
     <Compile Include="MyDomainUpDown.Designer.vb">
       <DependentUpon>MyDomainUpDown.vb</DependentUpon>
@@ -595,9 +593,8 @@
     <EmbeddedResource Include="frmShoppingList.resx">
       <DependentUpon>frmShoppingList.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="IPHIndustryFacility.resx">
-      <DependentUpon>IPHIndustryFacility.vb</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <EmbeddedResource Include="ManufacturingFacility.resx">
+      <DependentUpon>ManufacturingFacility.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>

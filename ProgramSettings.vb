@@ -994,7 +994,8 @@ Public Class ProgramSettings
     Public DefaultBPViewerSelectionType As String = "All"
 
     ' 5 belts
-    Private IndustryBeltOreChecksFileName As String = IndustryBeltOreChecksFileName
+    Private IndustryBeltOreChecksBaseFileName As String = "IndustryBeltOreChecks"
+    Private IndustryBeltOreChecksFileName As String = ""
     Private Const IndustryBeltOreChecksFileName1 As String = "1"
     Private Const IndustryBeltOreChecksFileName2 As String = "2"
     Private Const IndustryBeltOreChecksFileName3 As String = "3"
@@ -3713,15 +3714,15 @@ Public Class ProgramSettings
 
         Select Case Belt
             Case BeltType.Small
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName1
             Case BeltType.Medium
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName3
             Case BeltType.Enormous
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName4
             Case BeltType.Colossal
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName5
         End Select
 
         Try
@@ -3887,15 +3888,15 @@ Public Class ProgramSettings
 
         Select Case Belt
             Case BeltType.Small
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName1
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName1
             Case BeltType.Medium
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName2
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName2
             Case BeltType.Large
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName3
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName3
             Case BeltType.Enormous
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName4
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName4
             Case BeltType.Colossal
-                IndustryBeltOreChecksFileName = IndustryBeltOreChecksFileName & IndustryBeltOreChecksFileName5
+                IndustryBeltOreChecksFileName = IndustryBeltOreChecksBaseFileName & IndustryBeltOreChecksFileName5
         End Select
 
         Try

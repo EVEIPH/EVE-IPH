@@ -747,7 +747,7 @@ Public Class frmCitadelFitting
     End Function
 
     Private Function GetFuelCost(ByVal NumBlocks As Integer) As String
-
+        Return ""
     End Function
 
     Private Sub UpdateFuelCostLabels()
@@ -1313,9 +1313,9 @@ Public Class frmCitadelFitting
     End Sub
 
     Private Sub UpdatePOSFuelPrices()
-        Dim SQL As String
-        Dim i As Integer
-        Dim Prices() As Double
+        'Dim SQL As String
+        'Dim i As Integer
+        'Dim Prices() As Double
 
         If POSFuelPricesUpdated Then
             'Me.Cursor = Cursors.WaitCursor

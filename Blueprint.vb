@@ -702,12 +702,11 @@ Public Class Blueprint
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
 
-                    Dim TempQuantity As Long = 0
-                    ' If BuildBuy Then
-                    ' Adjust the runs/quantity to use the quantity used (i.e. 1 ram has 100 runs in it)
-                    TempQuantity = CInt(Math.Ceiling(.UsedQuantity))
+                    ' Set the quantity to what was used - save the old required quantity for component list
+                    Dim ComponentQuantity As Long = .ItemQuantity
+                    .ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
 
-                    ComponentBlueprint = New Blueprint(.BPTypeID, TempQuantity, .BuildME, .BuildTE, 1,
+                    ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
                                                    0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam,
                                                    ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
@@ -718,14 +717,14 @@ Public Class Blueprint
                     Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
 
                     ' Reset the component's material list for shopping list functionality
-                    BuiltComponentList.GetBuiltItemList(i).BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
+                    .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
                     ' Set the variables
-                    BuiltComponentList.GetBuiltItemList(i).FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                    BuiltComponentList.GetBuiltItemList(i).FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
-                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
-                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
-                    BuiltComponentList.GetBuiltItemList(i).IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+                    .FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                    .FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                    .IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
+                    .IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
+                    .IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
 
                     ' See if we need to add the system on to the end of the build location for POS
                     If BuiltComponentList.GetBuiltItemList(i).FacilityType = POSFacility Then
@@ -750,8 +749,8 @@ Public Class Blueprint
                         ItemPrice = MarketPrice
                     End If
 
-                    ' Add the built material to the component list now - this way we only add one blueprint produced material
-                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume,
+                    ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
+                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, ComponentQuantity, .ItemVolume,
                                             ItemPrice, CStr(.BuildME), CStr(.BuildTE), True)
 
                     ComponentMaterials.InsertMaterial(TempMat)
@@ -962,8 +961,8 @@ Public Class Blueprint
                             TempBuiltItem.BPTypeID = readerME.GetInt64(0)
                             TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                             TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                            TempBuiltItem.ItemQuantity = BuildQuantity
-                            TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize)
+                            TempBuiltItem.ItemQuantity = CurrentMatQuantity
+                            TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize) ' use decimal here, don't round yet
                             TempBuiltItem.BuildME = TempME
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
@@ -1021,10 +1020,10 @@ Public Class Blueprint
                         ' Insert the existing component that we are using into the component list as set in the original BP
                         ComponentMaterials.InsertMaterial(CurrentMaterial)
 
-                        '' Adjust the material quantity if we are building and the buildquantity <> mat quantity
-                        'If BuildQuantity <> CurrentMaterial.GetQuantity Then
-                        '    CurrentMaterial.SetQuantity(BuildQuantity)
-                        'End If
+                        ' Adjust the material quantity if we are building and the buildquantity <> mat quantity
+                        If BuildQuantity <> CurrentMaterial.GetQuantity Then
+                            CurrentMaterial.SetQuantity(BuildQuantity)
+                        End If
 
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
@@ -1034,8 +1033,8 @@ Public Class Blueprint
                         TempBuiltItem.BPTypeID = readerME.GetInt64(0)
                         TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
                         TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                        TempBuiltItem.ItemQuantity = CurrentMaterial.GetQuantity
-                        TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize)
+                        TempBuiltItem.ItemQuantity = CurrentMatQuantity
+                        TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize) ' use decimal here, don't round yet
                         TempBuiltItem.BuildME = TempME
                         TempBuiltItem.BuildTE = TempTE
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume

@@ -7,7 +7,7 @@ Imports System.IO
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC 119.2"
+    Public Const SDEVersion As String = "YC 119.3"
     Public Const VersionNumber As String = "3.3.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -1367,11 +1367,10 @@ NoBonus:
     Public Sub LoadFacility(ProductionType As IndustryType, IsDefault As Boolean, NewBP As Boolean,
                              FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox, ByRef FacilityRegionCombo As ComboBox,
                              ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                             ByRef FacilityBonusLabel As Label, ByRef FacilityDefaultLabel As Label,
-                             ByRef FacilityManualMELabel As Label, ByRef FacilityManualMETextBox As TextBox,
-                             ByRef FacilityManualTELabel As Label, ByRef FacilityManualTETextBox As TextBox,
-                             ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxTextBox As TextBox,
-                             ByRef FacilitySaveButton As Button, ByRef FacilityTaxRateLabel As Label, Tab As String,
+                             ByRef FacilityDefaultLabel As Label,
+                             ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                             ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                             ByRef FacilitySaveButton As Button, Tab As String,
                              ByRef FacilityUsageCheck As CheckBox, ByRef FacilityIncludeLabel As Label,
                              ByRef FacilityActivityCostCheck As CheckBox, ByRef FacilityActivityTimeCheck As CheckBox,
                              ByRef FacilityLoaded As Boolean,
@@ -1380,7 +1379,8 @@ NoBonus:
                              Optional LoadActivites As Boolean = True, Optional RefreshBP As Boolean = True,
                              Optional ByRef FacilityUsageLabel As Label = Nothing,
                              Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing,
-                             Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing)
+                             Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing,
+                             Optional ByRef FWUpgradeButton As Button = Nothing)
 
         Dim SelectedFacility As New IndustryFacility
         Dim SelectedActivity As String = ActivityManufacturing
@@ -1614,9 +1614,9 @@ NoBonus:
         ' Facility Type combo
         ' Load the combo if they want to change
         Call LoadFacilityTypeCombo(ProductionType, FacilityActivity, FacilityTypeCombo, FacilityRegionCombo, FacilitySystemCombo,
-                                   FacilityCombo, FacilityBonusLabel, FacilityDefaultLabel, FacilityManualMELabel, FacilityManualMETextBox,
-                                   FacilityManualTELabel, FacilityManualMETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox,
-                                   FacilitySaveButton, FacilityTaxRateLabel, Tab, FacilityUsageLabel, FacilityUsageCheck, ManualSystemIndexGroupBox)
+                                   FacilityCombo, FacilityDefaultLabel, FacilityManualMETextBox, FacilityManualMETextBox, FacilityManualTaxTextBox,
+                                   FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel,
+                                   FacilitySaveButton, Tab, FacilityUsageLabel, FacilityUsageCheck, ManualSystemIndexGroupBox)
 
         ' Enable the type of facility and set
         LoadingFacilityTypes = True
@@ -1626,8 +1626,8 @@ NoBonus:
 
         If SelectedFacility.FacilityType = None Then
             ' Just hide the boxes and exit
-            Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel,
-                                        FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
+            Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                       FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, False, FacilityUsageLabel)
             Call SetNoFacility(FacilityRegionCombo, FacilitySystemCombo, FacilityCombo, FacilityUsageCheck,
                                FacilityActivityCostCheck, FacilityActivityTimeCheck, FacilityIncludeLabel)
             FacilityLoaded = True ' Even with none, it's loaded
@@ -1654,18 +1654,16 @@ NoBonus:
         If FacilityTypeCombo.Text = POSFacility And Tab = BPTab Then
             Call LoadFacilities(ItemGroupID, ItemCategoryID, False,
                                 FacilityActivity, FacilityTypeCombo, FacilityRegionCombo, FacilitySystemCombo, FacilityCombo,
-                                FacilityBonusLabel, FacilityDefaultLabel, FacilityManualMELabel, FacilityManualMETextBox,
-                                FacilityManualTELabel, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox,
-                                FacilitySaveButton, FacilityTaxRateLabel, Tab,
-                                FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, AutoLoad,
+                                FacilityDefaultLabel, FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel,
+                                FacilitySaveButton, Tab, FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, AutoLoad,
                                 SelectedFacility.IncludeActivityUsage, SelectedFacility.FacilityName, FacilityUsageLabel, ManualSystemIndexGroupBox, ToolTipRef, FWUpgradeLabel, FWUpgradeCombo)
         ElseIf Tab = CalcTab Then
             ' Load all facilities for each calc tab facility
             Call LoadFacilities(ItemGroupID, ItemCategoryID, False,
                     FacilityActivity, FacilityTypeCombo, FacilityRegionCombo, FacilitySystemCombo, FacilityCombo,
-                    FacilityBonusLabel, FacilityDefaultLabel, FacilityManualMELabel, FacilityManualMETextBox,
-                    FacilityManualTELabel, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox,
-                    FacilitySaveButton, FacilityTaxRateLabel, Tab,
+                    FacilityDefaultLabel, FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                    FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, FacilitySaveButton, Tab,
                     FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, AutoLoad,
                     SelectedFacility.IncludeActivityUsage, SelectedFacility.FacilityName, FacilityUsageLabel, ManualSystemIndexGroupBox, ToolTipRef)
         End If
@@ -1684,9 +1682,6 @@ NoBonus:
         End If
         ChangingUsageChecks = False
 
-        ' Set her in case we load the bonuses
-        Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, SelectedFacility.SolarSystemName)
-
         ' Finally show the results and save the facility locally
         If Not AutoLoad Then
             LoadingFacilities = True
@@ -1695,12 +1690,9 @@ NoBonus:
                                       ItemGroupID, ItemCategoryID,
                                       FacilityActivity, FacilityTypeCombo.Text, FacilityCombo.Text,
                                       FacilityRegionCombo, FacilitySystemCombo, FacilityCombo,
-                                      FacilityBonusLabel, FacilityDefaultLabel,
-                                      FacilityManualMELabel, FacilityManualMETextBox,
-                                      FacilityManualTELabel, FacilityManualTETextBox,
-                                      FacilityManualTaxLabel, FacilityManualTaxTextBox,
-                                      FacilitySaveButton, FacilityTaxRateLabel,
-                                      FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, Tab, FacilityLoaded,
+                                      FacilityDefaultLabel, FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                      FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel,
+                                      FacilitySaveButton, FacilityUsageCheck, FacilityActivityCostCheck, FacilityActivityTimeCheck, Tab, FacilityLoaded,
                                       SelectedFacility.IncludeActivityUsage, ToolTipRef, GetFWUpgradeLevel(FWUpgradeCombo, FacilitySystemCombo.Text))
             LoadingFacilities = False
         End If
@@ -1715,6 +1707,9 @@ NoBonus:
 
         Call ResetComboLoadVariables(Tab, ProductionType, False, False, False, True, ManualSystemIndexGroupBox)
 
+        ' Set here in case we load the bonuses
+        Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, SelectedFacility.SolarSystemName, FWUpgradeButton)
+
         ' All facilities loaded
         FacilityLoaded = True
 
@@ -1725,7 +1720,8 @@ NoBonus:
     End Sub
 
     ' Loads the bp facility activity combo
-    Public Sub LoadFacilityActivities(BPTech As Integer, NewBP As Boolean, ByRef FacilityActivitiesCombo As ComboBox, BPGroupID As Long, BPCategoryID As Long)
+    Public Sub LoadFacilityActivities(BPTech As Integer, NewBP As Boolean, ByRef FacilityActivitiesCombo As ComboBox,
+                                      BPGroupID As Long, BPCategoryID As Long)
 
         LoadingFacilityActivities = True
         FacilityActivitiesCombo.BeginUpdate()
@@ -1782,12 +1778,9 @@ NoBonus:
     Public Sub LoadFacilityTypeCombo(ProductionType As IndustryType,
                              ByRef FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox,
                              ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                             ByRef FacilityBonusLabel As Label, ByRef FacilityDefaultLabel As Label,
-                             ByRef FacilityManualMELabel As Label, ByRef FacilityManualMETextBox As TextBox,
-                             ByRef FacilityManualTELabel As Label, ByRef FacilityManualTETextBox As TextBox,
-                             ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxTextBox As TextBox,
-                             ByRef FacilitySaveButton As Button, ByRef FacilityTaxRateLabel As Label, Tab As String,
-                             ByRef FacilityUsageLabel As Label, ByRef FacilityUsageCheck As CheckBox, ByRef ManualSystemIndexGroupBox As GroupBox)
+                             ByRef FacilityDefaultLabel As Label, ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                             ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                             ByRef FacilitySaveButton As Button, Tab As String, ByRef FacilityUsageLabel As Label, ByRef FacilityUsageCheck As CheckBox, ByRef ManualSystemIndexGroupBox As GroupBox)
 
         LoadingFacilityTypes = True
         LoadingFacilityRegions = True
@@ -1862,9 +1855,8 @@ NoBonus:
             FacilityUsageCheck.Enabled = False
             PreviousIndustryType = ProductionType
             PreviousActivity = FacilityActivity
-            Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel,
-                                        FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
-
+            Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                       FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, False, FacilityUsageLabel)
 
         End If
 
@@ -1892,12 +1884,10 @@ NoBonus:
     ' Based on the selections, load the region combo
     Public Sub LoadFacilityRegions(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean,
                                     ByRef FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox,
-                                    ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                                    ByRef FacilityBonusLabel As Label, ByRef FacilityDefaultLabel As Label,
-                                    ByRef FacilityManualMELabel As Label, ByRef FacilityManualMETextBox As TextBox,
-                                    ByRef FacilityManualTELabel As Label, ByRef FacilityManualTETextBox As TextBox,
-                                    ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxTextBox As TextBox,
-                                    ByRef FacilitySaveButton As Button, ByRef FacilityTaxRateLabel As Label, Tab As String,
+                                    ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox, ByRef FacilityDefaultLabel As Label,
+                                    ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                                    ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                                    ByRef FacilitySaveButton As Button, Tab As String,
                                     ByRef FacilityUsageCheck As CheckBox,
                                     Optional ByRef FacilityUsageLabel As Label = Nothing,
                                     Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing)
@@ -1983,8 +1973,8 @@ NoBonus:
             FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
             FacilityUsageCheck.Enabled = False
-            Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel,
-                                        FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
+            Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                       FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, False, FacilityUsageLabel)
         End If
 
         ' Only reset the region if the current selected region is not in list, also if it is in list, enable solarsystem
@@ -2008,16 +1998,13 @@ NoBonus:
 
     ' Based on the selections, load the systems combo
     Public Sub LoadFacilitySystems(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean,
-                               ByRef FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox,
-                               ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                               ByRef FacilityBonusLabel As Label, ByRef FacilityTaxRateLabel As Label,
-                               ByRef FacilityManualMELabel As Label, ByRef FacilityManualMETextBox As TextBox,
-                               ByRef FacilityManualTELabel As Label, ByRef FacilityManualTETextBox As TextBox,
-                               ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxTextBox As TextBox,
-                               ByRef FacilityDefaultLabel As Label, ByRef FacilitySaveButton As Button, Tab As String,
-                               ByRef FacilityUsageCheck As CheckBox,
-                               Optional ByRef FacilityUsageLabel As Label = Nothing,
-                               Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing)
+                                ByRef FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox,
+                                ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox, ByRef FacilityDefaultLabel As Label,
+                                ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                                ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                                ByRef FacilitySaveButton As Button, Tab As String, ByRef FacilityUsageCheck As CheckBox,
+                                Optional ByRef FacilityUsageLabel As Label = Nothing,
+                                Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing)
 
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
@@ -2118,8 +2105,8 @@ NoBonus:
             FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
             FacilityUsageCheck.Enabled = False
-            Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel,
-                                        FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
+            Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                       FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, False, FacilityUsageLabel)
         End If
 
         ' Only reset the system if the current selected system is not in list, also if it is in list, enable facilty
@@ -2144,17 +2131,15 @@ NoBonus:
     Public Sub LoadFacilities(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean,
                                ByRef FacilityActivity As String, ByRef FacilityTypeCombo As ComboBox,
                                ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                               ByRef FacilityBonusLabel As Label, ByRef FacilityDefaultLabel As Label,
-                               ByRef FacilityManualMELabel As Label, ByRef FacilityManualMETextBox As TextBox,
-                               ByRef FacilityManualTELabel As Label, ByRef FacilityManualTETextBox As TextBox,
-                               ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxTextBox As TextBox,
-                               ByRef FacilitySaveButton As Button, ByRef FacilityTaxRateLabel As Label,
-                               ByVal Tab As String, ByRef FacilityUsageCheck As CheckBox,
+                               ByRef FacilityDefaultLabel As Label, ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                               ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                               ByRef FacilitySaveButton As Button, ByVal Tab As String, ByRef FacilityUsageCheck As CheckBox,
                                ByRef FacilityIncludeActivityCostsCheck As CheckBox, ByRef FacilityIncludeActivityTimeCheck As CheckBox,
                                ByRef AutoLoadFacility As Boolean, ByVal FacilityUsageCheckValue As Boolean,
                                Optional OverrideFacilityName As String = "", Optional ByRef FacilityUsageLabel As Label = Nothing,
                                Optional ByRef ManualSystemIndexGroupBox As GroupBox = Nothing, Optional ByRef ToolTipRef As ToolTip = Nothing,
-                               Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing, Optional ByVal SolarSystemName As String = "")
+                               Optional ByRef FWUpgradeLabel As Label = Nothing, Optional ByRef FWUpgradeCombo As ComboBox = Nothing, Optional ByVal SolarSystemName As String = "",
+                               Optional ByRef FWUpgradeButton As Button = Nothing)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
@@ -2283,20 +2268,17 @@ NoBonus:
             Dim Defaults As New ProgramSettings
 
             ' Set the FW controls before loading bonuses
-            Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, FacilitySystemCombo.Text)
+            Call SetFWUpgradeControls(Tab, FWUpgradeLabel, FWUpgradeCombo, FacilitySystemCombo.Text, FWUpgradeButton)
 
             ' For a pos, need to display the results and reload the bp
             Call DisplayFacilityBonus(GetProductionType(FacilityActivity, ItemGroupID, ItemCategoryID, FacilityTypeCombo.Text),
-                          Defaults.FacilityDefaultMM, Defaults.FacilityDefaultTM, Defaults.FacilityDefaultTax, ItemGroupID, ItemCategoryID,
-                          FacilityActivity, FacilityTypeCombo.Text, FacilityCombo.Text,
-                          FacilityRegionCombo, FacilitySystemCombo, FacilityCombo,
-                          FacilityBonusLabel, FacilityDefaultLabel,
-                          FacilityManualMELabel, FacilityManualMETextBox,
-                          FacilityManualTELabel, FacilityManualTETextBox,
-                          FacilityManualTaxLabel, FacilityManualTaxTextBox,
-                          FacilitySaveButton, FacilityTaxRateLabel,
-                          FacilityUsageCheck, FacilityIncludeActivityCostsCheck, FacilityIncludeActivityTimeCheck,
-                          Tab, FullyLoadedBPFacility, FacilityUsageCheckValue, ToolTipRef, GetFWUpgradeLevel(FWUpgradeCombo, FacilitySystemCombo.Text))
+                                      Defaults.FacilityDefaultMM, Defaults.FacilityDefaultTM, Defaults.FacilityDefaultTax, ItemGroupID, ItemCategoryID,
+                                      FacilityActivity, FacilityTypeCombo.Text, FacilityCombo.Text,
+                                      FacilityRegionCombo, FacilitySystemCombo, FacilityCombo,
+                                      FacilityDefaultLabel, FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                      FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel,
+                                      FacilitySaveButton, FacilityUsageCheck, FacilityIncludeActivityCostsCheck, FacilityIncludeActivityTimeCheck,
+                                      Tab, FullyLoadedBPFacility, FacilityUsageCheckValue, ToolTipRef, GetFWUpgradeLevel(FWUpgradeCombo, FacilitySystemCombo.Text))
 
         Else
             If Not FacilityCombo.Items.Contains(FacilityCombo.Text) Then
@@ -2327,8 +2309,8 @@ NoBonus:
             ' Make sure default is not checked yet
             FacilityDefaultLabel.ForeColor = SystemColors.ButtonShadow
             FacilitySaveButton.Enabled = False
-            Call HideFacilityBonusBoxes(FacilityBonusLabel, FacilityTaxRateLabel, FacilityManualMELabel, FacilityManualTELabel,
-                                        FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxLabel, FacilityManualTaxTextBox, FacilityUsageLabel)
+            Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                       FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, True, FacilityUsageLabel)
         End If
 
         ' Users might select the facility drop down first, so reload all others
@@ -2347,12 +2329,10 @@ NoBonus:
                                      ItemGroupID As Integer, ItemCategoryID As Integer,
                                      Activity As String, FacilityType As String, FacilityName As String,
                                      ByRef FacilityRegionCombo As ComboBox, ByRef FacilitySystemCombo As ComboBox, ByRef FacilityCombo As ComboBox,
-                                     ByRef FacilityBonusLabel As Label, ByRef FacilityDefaultLabel As Label,
-                                     ByRef FacilityManualMELabel As Label, ByRef FacilityManualMEText As TextBox,
-                                     ByRef FacilityManualTELabel As Label, ByRef FacilityManualTEText As TextBox,
-                                     ByRef FacilityManualTaxLabel As Label, ByRef FacilityManualTaxText As TextBox,
-                                     ByRef FacilitySaveButton As Button, ByRef FacilityTaxRateLabel As Label,
-                                     ByRef FacilityUsageCheck As CheckBox,
+                                     ByRef FacilityDefaultLabel As Label,
+                                     ByRef FacilityManualMETextBox As TextBox, ByRef FacilityManualTETextBox As TextBox, ByRef FacilityManualTaxTextBox As TextBox,
+                                     ByRef FacilityManualMELabel As Label, ByRef FacilityManualTELabel As Label, ByRef FacilityManualTaxLabel As Label,
+                                     ByRef FacilitySaveButton As Button, ByRef FacilityUsageCheck As CheckBox,
                                      ByRef ActivityCostCheck As CheckBox, ByRef ActivityTimeCheck As CheckBox,
                                      ByRef Tab As String, ByRef FacilityLoaded As Boolean, ByRef FacilityUsageCheckValue As Boolean,
                                      ByRef ToolTipRef As ToolTip, ByVal FWUpgradeLevel As Integer)
@@ -2480,36 +2460,20 @@ NoBonus:
         Dim TMText As String = FormatPercent(1 - TimeMultiplier, 1)
         Dim TaxText As String = FormatPercent(Tax, 1)
 
-        ' Show boxes for the user to enter for outposts since I can't get the upgrades or taxes from CREST
         If FacilityType = OutpostFacility Then
-
-            FacilityManualMELabel.Visible = True
-            FacilityManualTELabel.Visible = True
-            FacilityManualMEText.Visible = True
-            FacilityManualTEText.Visible = True
-            FacilityManualMEText.Text = MMText
-            FacilityManualTEText.Text = TMText
-
-            FacilityBonusLabel.Visible = False
-            FacilityManualTaxLabel.Visible = True
-            FacilityManualTaxText.Visible = True
-            FacilityManualTaxText.Text = TaxText
-            FacilityTaxRateLabel.Text = ""
-            FacilityTaxRateLabel.Visible = False
-        Else
-
-            FacilityBonusLabel.Visible = True
-            FacilityManualMELabel.Visible = False
-            FacilityManualTELabel.Visible = False
-            FacilityManualTaxLabel.Visible = False
-            FacilityManualMEText.Visible = False
-            FacilityManualTEText.Visible = False
-            FacilityManualTaxText.Visible = False
-
-            FacilityBonusLabel.Text = "ME: " & MMText & " TE: " & TMText
-            FacilityTaxRateLabel.Text = "Tax: " & TaxText
-            FacilityTaxRateLabel.Visible = True
+            FacilityManualMETextBox.Enabled = True
+            FacilityManualTETextBox.Enabled = True
+            FacilityManualTaxTextBox.Enabled = True
+        Else ' Disable for non-outpost
+            FacilityManualMETextBox.Enabled = False
+            FacilityManualTETextBox.Enabled = False
+            FacilityManualTaxTextBox.Enabled = False
         End If
+
+        ' Set the values
+        FacilityManualMETextBox.Text = MMText
+        FacilityManualTETextBox.Text = TMText
+        FacilityManualTaxTextBox.Text = TaxText
 
         ' Now that we have everything, load the full facility into the appropriate selected facility to use later
         With SelectedFacility
@@ -2588,6 +2552,10 @@ NoBonus:
                 .CostIndex = 0
             End If
         End With
+
+        ' Show the boxes
+        Call SetFacilityBonusBoxes(FacilityManualMETextBox, FacilityManualTETextBox, FacilityManualTaxTextBox,
+                                   FacilityManualMELabel, FacilityManualTELabel, FacilityManualTaxLabel, True)
 
         Call SetFacilityandDefault(SelectedFacility, ProductionType, Tab, FacilityType, FacilityCombo,
                                    FacilityDefaultLabel, FacilitySaveButton, CompareCostCheck, CompareTimeCheck, ToolTipRef)
@@ -2678,7 +2646,7 @@ NoBonus:
     End Function
 
     ' enables the controls for fw settings on the bp tab
-    Public Sub SetFWUpgradeControls(Tab As String, ByRef FWUpgradeLabel As Label, ByRef FWUpgradeCombo As ComboBox, ByVal SolarSystemName As String)
+    Public Sub SetFWUpgradeControls(Tab As String, ByRef FWUpgradeLabel As Label, ByRef FWUpgradeCombo As ComboBox, ByVal SolarSystemName As String, ByRef FWUpgradeButton As Button)
         ' Load the faction warfare upgrade if set for the BP tab
         If Tab = BPTab Then
             Dim rsFW As SQLiteDataReader
@@ -2727,6 +2695,11 @@ NoBonus:
             End If
             rsFW.Close()
         End If
+
+        If Not IsNothing(FWUpgradeButton) Then
+            FWUpgradeButton.Enabled = False
+        End If
+
     End Sub
 
     ' Sets the sent facility to the one we are selecting and sets the default 
@@ -3137,18 +3110,19 @@ NoBonus:
     End Function
 
     ' Hides all the facility bonus boxes and such
-    Public Sub HideFacilityBonusBoxes(ByRef LabelBonus As Label, LabelTaxRate As Label, ByRef LabelME As Label,
-                                       ByRef LabelTE As Label, ByRef TextME As TextBox, ByRef TextTE As TextBox,
-                                       ByRef LabelTax As Label, ByRef TextTax As TextBox,
-                                       Optional ByRef UsageLabel As Label = Nothing)
-        LabelBonus.Visible = False
-        LabelTaxRate.Visible = False
-        LabelME.Visible = False
-        LabelTE.Visible = False
-        TextME.Visible = False
-        TextTE.Visible = False
-        LabelTax.Visible = False
-        TextTax.Visible = False
+    Public Sub SetFacilityBonusBoxes(ByRef TextME As TextBox, ByRef TextTE As TextBox, ByRef TextTax As TextBox,
+                                      ByRef LabelME As Label, ByRef LabelTE As Label, ByRef LabelTax As Label,
+                                      ByVal Value As Boolean,
+                                      Optional ByRef UsageLabel As Label = Nothing)
+
+        TextME.Visible = Value
+        TextTE.Visible = Value
+        TextTax.Visible = Value
+
+        LabelME.Visible = Value
+        LabelTE.Visible = Value
+        LabelTax.Visible = Value
+
         ' Clear the usage until these are set
         If Not IsNothing(UsageLabel) Then
             UsageLabel.Text = ""
@@ -3818,7 +3792,7 @@ InvalidDate:
 
                     If Not CopyInventionMatsOnly Then
                         ShoppingBuyList = CType(SentBlueprint.GetRawMaterials.Clone, Materials) ' Need a deep copy because we might insert later
-                        ShoppingBuildList = CType(SentBlueprint.GetComponentsList.Clone, BuiltItemList)
+                        ShoppingBuildList = CType(SentBlueprint.BuiltComponentList.Clone, BuiltItemList)
                     End If
 
                     ' Total up all usage

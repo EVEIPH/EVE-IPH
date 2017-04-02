@@ -65,7 +65,7 @@ Public Class ShoppingList
         Dim FoundItem As ShoppingListItem
         Dim FoundBuildItem As BuiltItem
         Dim TempBuiltItem As New BuiltItem
-        Dim UpdatedQuantity As Long
+        Dim UpdatedRunQuantity As Long
 
         ' First, see if there are any other items in the list, if this is the only one and the quantity is 0 then just clear all lists and leave
         If UpdateItemQuantity <= 0 And TotalItemList.Count = 1 And TotalItemList(0).Name = SentItem.Name Then
@@ -120,11 +120,11 @@ Public Class ShoppingList
                                 Dim TempMat As New Material(.ItemTypeID, .ItemName, .FacilityLocation, .ItemQuantity, .ItemVolume, 0,
                                                             CStr(.BuildME), CStr(.BuildTE), True)
 
-                                UpdatedQuantity = GetUpdatedQuantity("Build", FoundItem, UpdateItemQuantity, TempMat)
+                                UpdatedRunQuantity = GetUpdatedQuantity("Build", FoundItem, UpdateItemQuantity, TempMat)
                             End With
 
                             ' Need to update to the quantity sent in the Build List
-                            Call UpdateShoppingBuiltItemQuantity(TempBuiltItem, UpdatedQuantity)
+                            Call UpdateShoppingBuiltItemQuantity(TempBuiltItem, UpdatedRunQuantity)
                         End If
                     Next
                 End With
@@ -138,9 +138,9 @@ Public Class ShoppingList
                         If .GetMaterialList(i).GetBuildItem = False Then
                             ' Make sure the item exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
-                                UpdatedQuantity = GetUpdatedQuantity("Buy", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
+                                UpdatedRunQuantity = GetUpdatedQuantity("Buy", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
                                 ' Need to update to the quantity sent in the Buy list
-                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
+                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                             End If
                         End If
 
@@ -160,11 +160,11 @@ Public Class ShoppingList
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
                                 ' Need to update to the quantity sent in the Buy List
-                                UpdatedQuantity = GetUpdatedQuantity("Invention", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
+                                UpdatedRunQuantity = GetUpdatedQuantity("Invention", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
 
-                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
+                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                                 ' Update this material in the item's invention list for copy/paste function
-                                If UpdatedQuantity > 0 Then
+                                If UpdatedRunQuantity > 0 Then
                                     ' Need to copy, remove, update, then add to update the volumes and prices of the material lists
                                     Dim TempMat As Material
                                     TempMat = CType(TotalInventionMats.SearchListbyName(.GetMaterialList(i).GetMaterialName).Clone, Material)
@@ -189,11 +189,11 @@ Public Class ShoppingList
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
                                 ' Need to update to the quantity sent in the Buy List
-                                UpdatedQuantity = GetUpdatedQuantity("Copying", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
+                                UpdatedRunQuantity = GetUpdatedQuantity("Copying", FoundItem, UpdateItemQuantity, .GetMaterialList(i))
 
-                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
+                                Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                                 ' Update this material in the item's invention list for copy/paste function
-                                If UpdatedQuantity <= 0 Then
+                                If UpdatedRunQuantity <= 0 Then
                                     Call TotalCopyMats.RemoveMaterial(.GetMaterialList(i))
                                 Else
                                     ' Need to copy, remove, update, then add to update the volumes and prices of the material lists
@@ -280,6 +280,24 @@ Public Class ShoppingList
                         ShoppingItem.AvgInvRunsforSuccess = 0
                         ShoppingItem.NumBPs = 1 ' Built items (components) are always one bp for now
 
+                        ' Get the right quantity for this built item's runs
+                        Dim SQL As String = ""
+                        Dim rsMatQuantity As SQLiteDataReader
+                        Dim TempQuantity As Long = 1
+
+                        SQL = "SELECT PORTION_SIZE FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID IN "
+                        SQL = SQL & "(SELECT DISTINCT BLUEPRINT_ID FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & ShoppingItem.TypeID & " AND ACTIVITY = 1) "
+
+                        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+                        rsMatQuantity = DBCommand.ExecuteReader
+
+                        If rsMatQuantity.Read Then
+                            ' Adjust the quantity by the portion size for this blueprint
+                            TempQuantity = CLng(Math.Ceiling(UpdateItemQuantity / rsMatQuantity.GetInt32(0)))
+                        Else
+                            TempQuantity = UpdateItemQuantity
+                        End If
+
                         ' Get the new quantity for each material to build this item - which will be in the buy list
                         UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, .GetMaterialList(i), RefMatQuantity)
 
@@ -326,6 +344,7 @@ Public Class ShoppingList
             End If
 
         End If
+
     End Sub
 
     ' Removes or updates the quantity of material in all lists of materials. i.e. Tritanium
@@ -522,14 +541,16 @@ Public Class ShoppingList
 
             Next
 
-            ' Now for each bp, calc the runs with the ME value
-            For i = 0 To BlueprintsRunList.Count - 1
-                ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
-                NewMatQuantity += CLng(Math.Max(BlueprintsRunList(i), Math.Ceiling(Math.Round(BlueprintsRunList(i) * SingleRunQuantity * MEBonus, 2))))
-            Next
-
-            ' Adjust quantity with portion size if building
-            If ProcessingType = "Build" Then
+            ' Now for each bp, calc the runs with the ME value - only do this for buy
+            If ProcessingType = "Buy" Then
+                For i = 0 To BlueprintsRunList.Count - 1
+                    ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
+                    NewMatQuantity += CLng(Math.Max(BlueprintsRunList(i), Math.Ceiling(Math.Round(BlueprintsRunList(i) * SingleRunQuantity * MEBonus, 2))))
+                Next
+            Else
+                ' Default to 1 run for build items to match the main blueprint function
+                NewMatQuantity += CLng(Math.Max(NewItemQuantity, Math.Ceiling(Math.Round(NewItemQuantity * SingleRunQuantity * MEBonus, 2))))
+                ' Adjust by portion size of the build quantity
                 NewMatQuantity = CLng(Math.Ceiling(NewMatQuantity / PortionSize))
             End If
 
