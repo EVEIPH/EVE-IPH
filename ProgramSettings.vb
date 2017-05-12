@@ -1007,7 +1007,7 @@ Public Class ProgramSettings
     Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
 
-    Public Const SettingsFolder As String = "Settings/"
+    Public SettingsFolder As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDataPath, "Settings")
     Private Const XMLfileType As String = ".xml"
 
     Public Sub New()
@@ -1037,12 +1037,12 @@ Public Class ProgramSettings
         End If
 
         ' Delete and make a fresh copy
-        If File.Exists(SettingsFolder & FileName & XMLfileType) Then
-            File.Delete(SettingsFolder & FileName & XMLfileType)
+        If File.Exists(Path.Combine(FileName, XMLfileType)) Then
+            File.Delete(Path.ChangeExtension(Path.Combine(SettingsFolder, FileName), XMLfileType))
         End If
 
         ' Loop through the settings sent and output each name and value
-        Using writer As XmlWriter = XmlWriter.Create(SettingsFolder & FileName & XMLfileType, XMLSettings)
+        Using writer As XmlWriter = XmlWriter.Create(Path.ChangeExtension(Path.Combine(SettingsFolder, FileName), XMLfileType), XMLSettings)
             writer.WriteStartDocument()
             writer.WriteStartElement(RootName) ' Root.
 
@@ -1065,7 +1065,7 @@ Public Class ProgramSettings
         Dim TempValue As String
 
         'Load the Xml file
-        m_xmld.Load(SettingsFolder & FileName & XMLfileType)
+        m_xmld.Load(Path.ChangeExtension(Path.Combine(SettingsFolder, FileName), XMLfileType))
 
         'Get the settings
 
@@ -5076,23 +5076,23 @@ Public Class ProgramSettings
     ' Deletes all the facility files for the tab sent
     Public Sub DeleteAllFacilitySettingsFiles(Tab As String)
 
-        File.Delete(SettingsFolder & Tab & ManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & ComponentsManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CapitalComponentsManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CapitalManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & SuperCapitalManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3CruiserManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3DestroyerManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & SubsystemManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & BoosterManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CopyFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & InventionFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3InventionFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & NoPoSFacilitySettingsFileName)
+        File.Delete(Path.Combine(SettingsFolder, Tab & ManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & ComponentsManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & CapitalComponentsManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & CapitalManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & SuperCapitalManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & T3CruiserManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & T3DestroyerManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & SubsystemManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & BoosterManufacturingFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & CopyFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & InventionFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & T3InventionFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & NoPoSFacilitySettingsFileName))
 
-        File.Delete(SettingsFolder & Tab & POSFuelBlockFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & POSLargeShipFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & POSModuleFacilitySettingsFileName)
+        File.Delete(Path.Combine(SettingsFolder, Tab & POSFuelBlockFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & POSLargeShipFacilitySettingsFileName))
+        File.Delete(Path.Combine(SettingsFolder, Tab & POSModuleFacilitySettingsFileName))
 
     End Sub
 

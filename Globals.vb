@@ -44,9 +44,9 @@ Public Module Public_Variables
     Public Const XMLUpdateFileURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/LatestVersionIPH.xml"
     Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
 
-    Public Const AppDataPath As String = "EVEIPH\"
-    Public Const BPImageFilePath As String = "EVEIPH Images\"
-    Public Const UpdatePath As String = "Updates\"
+    Public Const AppDataPath As String = "EVEIPH"
+    Public Const BPImageFilePath As String = "EVEIPH Images"
+    Public Const UpdatePath As String = "Updates"
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.s3db"
 
@@ -649,11 +649,11 @@ Public Module Public_Variables
 
         End With
 
-        Call evedb.ExecuteNonQuerySQL(SQL)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Update the Access mask of all keys to prevent duplicates
         SQL = "UPDATE API SET ACCESS_MASK = " & InsertData.AccessMask & " WHERE KEY_ID = " & InsertData.KeyID
-        Call evedb.ExecuteNonQuerySQL(SQL)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         readerCharacter.Close()
         readerCharacter = Nothing
@@ -706,7 +706,7 @@ Public Module Public_Variables
             End If
             SQL = SQL & "WHERE KEY_ID = " & CStr(KeyID) & " AND API_KEY = '" & APIKey & "' "
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If
     End Sub
@@ -4019,8 +4019,8 @@ InvalidDate:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        Sql = "SELECT regionName FROM REGIONS WHERE regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' GROUP BY regionName "
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        SQL = "SELECT regionName FROM REGIONS WHERE regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' GROUP BY regionName "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
         RegionCombo.BeginUpdate()
         RegionCombo.Items.Clear()
@@ -4234,7 +4234,7 @@ InvalidDate:
 
     ' Writes a sent message to a log file
     Public Sub WriteMsgToLog(ByVal ErrorMsg As String)
-        Dim FilePath As String = UserWorkingFolder & "EVEIPH.log"
+        Dim FilePath As String = Path.Combine(UserWorkingFolder, "EVEIPH.log")
         Dim AllText() As String
 
         If Not IO.File.Exists(FilePath) Then
@@ -4394,17 +4394,17 @@ InvalidDate:
         Call EVEDB.BeginSQLiteTransaction()
 
         SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & UserID & ",0)"
-        evedb.ExecuteNonQuerySQL(SQL)
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & CorpID & ",0)"
-        evedb.ExecuteNonQuerySQL(SQL)
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE CHARACTER_ID = " & UserID
-        evedb.ExecuteNonQuerySQL(SQL)
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE API_TYPE = 'Corporation' "
         SQL = SQL & "AND CORPORATION_ID = " & CorpID
-        evedb.ExecuteNonQuerySQL(SQL)
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         Call EVEDB.CommitSQLiteTransaction()
 
@@ -4543,6 +4543,8 @@ InvalidDate:
         ' Creating the request And getting the response
         Dim Response As HttpWebResponse
         Dim Request As HttpWebRequest
+
+        'veg: CHECK FOR EXISTENSE OF DIRECTORY
 
         ' For reading in chunks of data
         Dim readBytes(4095) As Byte

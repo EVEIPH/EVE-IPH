@@ -13,7 +13,7 @@ Public Class frmPatchNotes
         Me.Refresh()
 
         ' Download the patch notes from the server
-        FilePath = DownloadFileFromServer(PatchNotesURL, "Patch Notes.txt")
+        FilePath = DownloadFileFromServer(PatchNotesURL, Path.Combine(UpdaterFilePath, "Patch Notes.txt"))
 
         If FilePath = "" Then
             Exit Sub

@@ -27,9 +27,9 @@ Public Class ProgramUpdater
 
         ' Get the newest updatefile from server
         If TestingVersion Then
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestFileURL, UpdaterFilePath & XMLLatestVersionTest)
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestFileURL, Path.Combine(UpdaterFilePath, XMLLatestVersionTest))
         Else
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateFileURL, UpdaterFilePath & XMLLatestVersionFileName)
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateFileURL, Path.Combine(UpdaterFilePath, XMLLatestVersionFileName))
         End If
 
     End Sub
@@ -101,8 +101,13 @@ Public Class ProgramUpdater
         ' Get the directory path of this program to send to updater
         Dim ProcInfo As New ProcessStartInfo
 
+        ' veg this fails when Program Files\EVE-IPH is not writable.
+        ' veg also seems to loop until cancelled.
+        ' 
         ProcInfo.WindowStyle = ProcessWindowStyle.Normal
-        ProcInfo.FileName = UpdaterFileName
+        ProcInfo.FileName = Path.Combine(UserWorkingFolder, UpdaterFileName)
+        ProcInfo.WorkingDirectory = UserWorkingFolder
+
         ProcInfo.Arguments = String.Empty
         Process.Start(ProcInfo)
 
@@ -130,15 +135,15 @@ DownloadError:
         Dim fi As FileInfo
 
         ' Get the local updater MD5, if not found, we run update anyway
-        LocalFileMD5 = MD5CalcFile(UserWorkingFolder & UpdaterFileName)
+        LocalFileMD5 = MD5CalcFile(Path.Combine(UserWorkingFolder, UpdaterFileName))
 
         If LocalFileMD5 <> ServerFileMD5 Then
             ' Update the updater file, download the new file
-            ServerFilePath = DownloadFileFromServer(ServerFileURL, UpdaterFilePath & Filename)
+            ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(UpdaterFilePath, Filename))
 
             If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Then
                 ' Try again
-                ServerFilePath = DownloadFileFromServer(ServerFileURL, UpdaterFilePath & Filename)
+                ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(UpdaterFilePath, Filename))
 
                 If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Or ServerFilePath = "" Then
                     ' Download error, just leave because we want this update to go through before running
@@ -147,13 +152,13 @@ DownloadError:
             End If
 
             ' Delete the old file, rename the new
-            If File.Exists(UserWorkingFolder & Filename) Then
-                File.Delete(UserWorkingFolder & Filename)
+            If File.Exists(Path.Combine(UserWorkingFolder, Filename)) Then
+                File.Delete(Path.Combine(UserWorkingFolder, Filename))
             End If
 
             ' Move the downloaded file
             fi = New FileInfo(ServerFilePath)
-            fi.MoveTo(UserWorkingFolder & Filename)
+            fi.MoveTo(Path.Combine(UserWorkingFolder, Filename))
         End If
 
         Return ""
@@ -175,11 +180,11 @@ DownloadError:
             End If
 
             ' Get the hash of the local XML
-            LocalMD5 = MD5CalcFile(UserWorkingFolder & XMLFile)
+            LocalMD5 = MD5CalcFile(Path.Combine(UserWorkingFolder, XMLFile))
 
             If ServerXMLLastUpdatePath <> "" Then
                 ' Get the hash of the server XML
-                ServerMD5 = MD5CalcFile(UpdaterFilePath & XMLFile)
+                ServerMD5 = MD5CalcFile(Path.Combine(UpdaterFilePath, XMLFile))
             Else
                 Return UpdateCheckResult.UpdateError
             End If

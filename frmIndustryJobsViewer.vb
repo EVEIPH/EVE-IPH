@@ -4,7 +4,7 @@ Imports System.Threading
 
 Public Class frmIndustryJobsViewer
 
-    Private ColumnPositions(numIndustryJobColumns) As String ' For saving the column order
+    Private ColumnPositions(NumIndustryJobColumns) As String ' For saving the column order
     Private FirstLoad As Boolean
     Private Updating As Boolean
     Private AddingColumns As Boolean
@@ -822,7 +822,7 @@ Public Class frmIndustryJobsViewer
 
     ' Updates the column order when changed
     Private Sub lstIndustryJobs_ColumnReordered(sender As Object, e As System.Windows.Forms.ColumnReorderedEventArgs) Handles lstIndustryJobs.ColumnReordered
-        Dim TempArray(numIndustryJobColumns) As String
+        Dim TempArray(NumIndustryJobColumns) As String
         Dim Minus1 As Boolean = False
 
         e.Cancel = True ' Cancel the event so we can manually update the grid columns
@@ -1062,49 +1062,54 @@ Public Class frmIndustryJobsViewer
         Dim TimeToComplete As String
         Dim EndDate As Date
 
-        Dim myJobList As New ListView
-        myJobList = DirectCast(sentJobList, ListView)
+        ' veg Possible Disposed object reference here when closing this Industry Window.
+        Try
+            Dim myJobList As New ListView
+            myJobList = DirectCast(sentJobList, ListView)
 
-        If myJobList.InvokeRequired Then
-            myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
-            Exit Sub
-        End If
-
-        ' On each tick just update the time column manually
-        With UserIndustryJobsColumnSettings
-            If .TimeToComplete <> 0 Then ' only if the time to complete column is visible
-                CurrentDateTime = DateAdd(DateInterval.Second, 1, CurrentDateTime)
-                Application.DoEvents()
-
-                For i = 0 To myJobList.Items.Count - 1
-                    ' Only update records with a time
-                    If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
-
-                        EndDate = CDate(myJobList.Items(i).SubItems(0).Text)
-                        TimeToComplete = GetTimeToComplete(EndDate, CurrentDateTime)
-
-                        ' If the time comes back negative, then switch it to blank and reset the job state to 'Complete'
-                        If TimeToComplete = "" Then
-                            TimeToComplete = "0"
-                        End If
-
-                        If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
-                            myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
-                            myJobList.Items(i).SubItems(.JobState).Text = "Complete"
-                            myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
-                        Else
-                            myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
-                        End If
-
-                        myJobList.Update()
-                        Application.DoEvents()
-                    End If
-                Next
+            If myJobList.InvokeRequired Then
+                myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
+                Exit Sub
             End If
-        End With
+
+            ' On each tick just update the time column manually
+            With UserIndustryJobsColumnSettings
+                If .TimeToComplete <> 0 Then ' only if the time to complete column is visible
+                    CurrentDateTime = DateAdd(DateInterval.Second, 1, CurrentDateTime)
+                    Application.DoEvents()
+
+                    For i = 0 To myJobList.Items.Count - 1
+
+                        ' Only update records with a time
+                        If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
+
+                            EndDate = CDate(myJobList.Items(i).SubItems(0).Text)
+                            TimeToComplete = GetTimeToComplete(EndDate, CurrentDateTime)
+
+                            ' If the time comes back negative, then switch it to blank and reset the job state to 'Complete'
+                            If TimeToComplete = "" Then
+                                TimeToComplete = "0"
+                            End If
+
+                            If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
+                                myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
+                                myJobList.Items(i).SubItems(.JobState).Text = "Complete"
+                                myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
+                            Else
+                                myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
+                            End If
+
+                            myJobList.Update()
+                            Application.DoEvents()
+                        End If
+                    Next
+                End If
+            End With
+        Catch ex As ObjectDisposedException
+            Exit Sub
+        End Try
 
         Application.DoEvents()
-
     End Sub
 
     Private Function GetTimeToComplete(EndJobDate As Date, CompareDate As Date) As String
@@ -1167,5 +1172,10 @@ Public Class frmIndustryJobsViewer
         Return CharIDs
 
     End Function
+
+    ' veg Added
+    Private Sub frmIndustryJobsViewer_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        myTimer.Change(Timeout.Infinite, Timeout.Infinite)
+    End Sub
 
 End Class

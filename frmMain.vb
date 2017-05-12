@@ -293,7 +293,7 @@ Public Class frmMain
 #Region "Initialization Code"
 
     ' Set default window theme so tabs in invention window display correctly on all systems
-    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr, _
+    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr,
         ByVal pszSubAppName As String, ByVal pszSubIdList As String) As Integer
 
     Public Sub New()
@@ -342,13 +342,13 @@ Public Class frmMain
         ' Add any initialization after the InitializeComponent() call.
 
         ' Get user path for application data
-        UserAppDataPath = "" 'Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-        ' Set where files will be updated
-        UpdaterFilePath = UpdatePath ' UserAppDataPath & "\" & AppDataPath & UpdatePath
+        UserAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
         ' Set where the db, main exe, and updater and such will be
-        UserWorkingFolder = "" 'UserAppDataPath & "\" & AppDataPath
+        UserWorkingFolder = Path.Combine(UserAppDataPath, AppDataPath)
+        ' Set where files will be updated
+        UpdaterFilePath = Path.Combine(UserWorkingFolder, UpdatePath)
         ' The Image path
-        UserImagePath = BPImageFilePath 'UserAppDataPath & "\" & BPImageFilePath
+        UserImagePath = Path.Combine(UserWorkingFolder, BPImageFilePath)
 
         ' Get the user settings then check for updates
         UserApplicationSettings = AllSettings.LoadApplicationSettings
@@ -366,7 +366,7 @@ Public Class frmMain
         ' Initialize stuff
         Call SetProgress("Initializing Database...")
         Application.DoEvents()
-        EVEDB = New DBConnection(SQLiteDBFileName)
+        EVEDB = New DBConnection(Path.Combine(UserWorkingFolder, SQLiteDBFileName))
 
         ' For speed on CREST calls
         ServicePointManager.DefaultConnectionLimit = 20
@@ -636,21 +636,21 @@ Public Class frmMain
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
-            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
-                                                            "Sell = Use Sell orders only" & vbCrLf & _
-                                                            "Buy & Sell = Use All orders" & vbCrLf & _
-                                                            "Min = Minimum" & vbCrLf & _
-                                                            "Max = Maximum" & vbCrLf & _
-                                                            "Avg = Average" & vbCrLf & _
-                                                            "Med = Median" & vbCrLf & _
+            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
+                                                            "Sell = Use Sell orders only" & vbCrLf &
+                                                            "Buy & Sell = Use All orders" & vbCrLf &
+                                                            "Min = Minimum" & vbCrLf &
+                                                            "Max = Maximum" & vbCrLf &
+                                                            "Avg = Average" & vbCrLf &
+                                                            "Med = Median" & vbCrLf &
                                                             "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
-            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
-                                                            "Sell = Use Sell orders only" & vbCrLf & _
-                                                            "Buy & Sell = Use All orders" & vbCrLf & _
-                                                            "Min = Minimum" & vbCrLf & _
-                                                            "Max = Maximum" & vbCrLf & _
-                                                            "Avg = Average" & vbCrLf & _
-                                                            "Med = Median" & vbCrLf & _
+            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
+                                                            "Sell = Use Sell orders only" & vbCrLf &
+                                                            "Buy & Sell = Use All orders" & vbCrLf &
+                                                            "Min = Minimum" & vbCrLf &
+                                                            "Max = Maximum" & vbCrLf &
+                                                            "Avg = Average" & vbCrLf &
+                                                            "Med = Median" & vbCrLf &
                                                             "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
         End If
 
@@ -3252,7 +3252,7 @@ Public Class frmMain
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
                     SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, "
-                    SQL = sql & "CASE WHEN TE Is NULL THEN 0 ELSE TE END AS BP_TE "
+                    SQL = SQL & "CASE WHEN TE Is NULL THEN 0 ELSE TE END AS BP_TE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
                     SQL = SQL & "WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
 
@@ -4076,7 +4076,7 @@ Tabs:
         Dim OverrideFacilityName As String = ""
         Dim Autoload As Boolean = False
 
-                cmbBPFacilitySystem.SelectionLength = 0
+        cmbBPFacilitySystem.SelectionLength = 0
 
         If Not IsNothing(SelectedBlueprint) Then
             If Not LoadingFacilitySystems And Not FirstLoad And PreviousFacilitySystem <> cmbBPFacilitySystem.Text Then
@@ -5147,6 +5147,12 @@ Tabs:
     End Sub
 
     Private Sub chkBPIgnoreMinerals_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreMinerals.CheckedChanged
+        'If Not FirstLoad Then
+        '    Call RefreshBP()
+        'End If
+    End Sub
+
+    Private Sub chkBPIgnoreMinerals_CheckStateChanged(sender As Object, e As EventArgs) Handles chkBPIgnoreMinerals.CheckStateChanged
         If Not FirstLoad Then
             Call RefreshBP()
         End If
@@ -5999,7 +6005,7 @@ Tabs:
                 SQL = SQL & "AND ITEM_CATEGORY = 'Structure Rigs' "
             ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
                 SQL = SQL & "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
-            ElseIf .rbtnbpRigBlueprints.Checked Then
+            ElseIf .rbtnBPRigBlueprints.Checked Then
                 SQL = SQL & "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
             ElseIf .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
@@ -7268,7 +7274,7 @@ Tabs:
         End If
 
         ' Build the item and get the list of materials
-        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, chkBPTaxes.Checked, chkBPFacilityIncludeUsage.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, chkBPTaxes.Checked, chkBPFacilityIncludeUsage.Checked, chkBPIgnoreMinerals.CheckState, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -7769,7 +7775,7 @@ ExitForm:
 
                     'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
 
-                    
+
 
                     ' TODO : FIX THE MULTIPLIER
                     mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
@@ -7936,7 +7942,7 @@ ExitForm:
         Dim BPTechImagePath As String = ""
 
         ' Load the image - use absolute value since I use negative bpid's for special bps
-        BPImage = UserImagePath & CStr(Math.Abs(BPID) & "_64.png")
+        BPImage = Path.Combine(UserImagePath, CStr(Math.Abs(BPID) & "_64.png"))
 
         ' Check for the Tech Image
         If System.IO.File.Exists(BPImage) Then
@@ -16967,7 +16973,7 @@ CheckTechs:
             chkCalcMisc.Checked = .CheckBPTypeMisc
             chkCalcDeployables.Checked = .CheckBPTypeDeployables
             chkCalcCelestials.Checked = .CheckBPTypeCelestials
-            chkCalcStructureModules.Checked = .checkbptypestructuremodules
+            chkCalcStructureModules.Checked = .CheckBPTypeStructureModules
             chkCalcStructureRigs.Checked = .CheckBPTypeStationParts
 
             ' Tech
@@ -23716,7 +23722,7 @@ Leave:
                 ImageFile = 0
         End Select
 
-        BPImage = UserImagePath & CStr(ImageFile) & "_64.png"
+        BPImage = Path.Combine(UserImagePath, CStr(ImageFile) & "_64.png")
 
         Return BPImage
 
@@ -24005,17 +24011,17 @@ Leave:
                     cmbMineMiningUpgrade.Text = None
                 End If
                 cmbMineNumLasers.Text = CStr(.NumOreMiners)
-                    cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
-                    rbtnMineMercoxitRig.Enabled = True
-                    rbtnMineIceRig.Enabled = False
-                    If .MercoxitMiningRig Then
-                        rbtnMineMercoxitRig.Checked = True
-                    Else
-                        rbtnMineNoRigs.Checked = True
-                    End If
-                ElseIf .OreType = "Ice" Then
-                    cmbMineShipType.Text = .IceMiningShip
-                    cmbMineMiningLaser.Text = .IceStrip
+                cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
+                rbtnMineMercoxitRig.Enabled = True
+                rbtnMineIceRig.Enabled = False
+                If .MercoxitMiningRig Then
+                    rbtnMineMercoxitRig.Checked = True
+                Else
+                    rbtnMineNoRigs.Checked = True
+                End If
+            ElseIf .OreType = "Ice" Then
+                cmbMineShipType.Text = .IceMiningShip
+                cmbMineMiningLaser.Text = .IceStrip
                 If cmbMineMiningUpgrade.Items.Contains(.IceUpgrade) Then
                     cmbMineMiningUpgrade.Text = .IceUpgrade
                 Else
@@ -24023,14 +24029,14 @@ Leave:
                 End If
                 cmbMineNumLasers.Text = CStr(.NumIceMiners)
                 cmbMineNumMiningUpgrades.Text = CStr(.NumIceUpgrades)
-                    rbtnMineMercoxitRig.Enabled = False
-                    rbtnMineIceRig.Enabled = True
-                    If .IceMiningRig Then
-                        rbtnMineIceRig.Checked = True
-                    Else
-                        rbtnMineIceRig.Checked = True
-                    End If
-                ElseIf .OreType = "Gas" Then
+                rbtnMineMercoxitRig.Enabled = False
+                rbtnMineIceRig.Enabled = True
+                If .IceMiningRig Then
+                    rbtnMineIceRig.Checked = True
+                Else
+                    rbtnMineIceRig.Checked = True
+                End If
+            ElseIf .OreType = "Gas" Then
                 cmbMineShipType.Text = .GasMiningShip
                 cmbMineMiningLaser.Text = .GasHarvester
                 cmbMineMiningUpgrade.Text = .GasUpgrade
@@ -26083,35 +26089,35 @@ Leave:
         End Select
 
         If cmbMineOreType.Text = "Ice" Then
-                ' For Ice, check for duration reduction bonus, implant, and upgrades
-                If cmbMineGasIceHarvesting.Enabled Then
-                    ' Apply the ice harvesting bonus
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
-                End If
+            ' For Ice, check for duration reduction bonus, implant, and upgrades
+            If cmbMineGasIceHarvesting.Enabled Then
+                ' Apply the ice harvesting bonus
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
+            End If
 
-                ' Apply the upgrades
-                If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
-                    ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                    Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                    TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-                End If
+            ' Apply the upgrades
+            If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
+                ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
+                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
+                TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+            End If
 
-                ' Finally include the implant value
-                If cmbMineImplant.Text <> None Then
-                    'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-                    TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
-                End If
+            ' Finally include the implant value
+            If cmbMineImplant.Text <> None Then
+                'Inherent Implants 'Yeti' Ice Harvesting IH-1001
+                TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
+            End If
 
-                ' Apply the rig bonus if selected
-                If rbtnMineIceRig.Checked = True Then
-                    ' 12% cycle reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.12)
-                End If
+            ' Apply the rig bonus if selected
+            If rbtnMineIceRig.Checked = True Then
+                ' 12% cycle reduction
+                TempCycleTime = TempCycleTime * (1 - 0.12)
+            End If
 
-            ElseIf cmbMineOreType.Text = "Gas" Then
-                ' Gas, look for venture ship and implant
+        ElseIf cmbMineOreType.Text = "Gas" Then
+            ' Gas, look for venture ship and implant
 
-                Select Case cmbMineShipType.Text
+            Select Case cmbMineShipType.Text
                 Case Prospect, Venture, Endurance
                     ' 5% reduction to gas cloud harvesting duration per level
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))
@@ -26222,8 +26228,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link T2 - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\4276_32.png")
+            If System.IO.File.Exists(Path.Combine(UserImagePath, "4276_32.png")) Then
+                pictMineLaserOptmize.Image = Image.FromFile(Path.Combine(UserImagePath, "4276_32.png"))
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -26234,8 +26240,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\22557_32.png")
+            If System.IO.File.Exists(Path.Combine(UserImagePath, "22557_32.png")) Then
+                pictMineLaserOptmize.Image = Image.FromFile(Path.Combine(UserImagePath, "22557_32.png"))
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -26248,8 +26254,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link T2 - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\4276_32.png")
+            If System.IO.File.Exists(Path.Combine(UserImagePath, "4276_32.png")) Then
+                pictMineRangeLink.Image = Image.FromFile(Path.Combine(UserImagePath, "4276_32.png"))
             Else
                 pictMineRangeLink.Image = Nothing
             End If
@@ -26257,8 +26263,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\22557_32.png")
+            If System.IO.File.Exists(Path.Combine(UserImagePath, "22557_32.png")) Then
+                pictMineRangeLink.Image = Image.FromFile(Path.Combine(UserImagePath, "22557_32.png"))
             Else
                 pictMineRangeLink.Image = Nothing
             End If

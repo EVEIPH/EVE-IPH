@@ -174,9 +174,9 @@ Public Class Blueprint
 
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
-                   ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character, _
-                   ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double, BPProductionTeam As IndustryTeam, _
-                   ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionTeam As IndustryTeam, ByVal BPComponentProductionFacility As IndustryFacility, _
+                   ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character,
+                   ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double, BPProductionTeam As IndustryTeam,
+                   ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionTeam As IndustryTeam, ByVal BPComponentProductionFacility As IndustryFacility,
                    ByVal BPCapComponentProductionFacility As IndustryFacility, Optional ByVal ComponentBP As Boolean = False)
 
         Dim readerBP As SQLiteDataReader
@@ -403,8 +403,8 @@ Public Class Blueprint
 
     End Sub
 
-    Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor, _
-                   ByVal BPInventionFacility As IndustryFacility, ByVal BPInventionTeam As IndustryTeam, _
+    Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor,
+                   ByVal BPInventionFacility As IndustryFacility, ByVal BPInventionTeam As IndustryTeam,
                    ByVal BPCopyFacility As IndustryFacility, ByVal BPCopyTeam As IndustryTeam, ByVal InventionItemTypeID As Long) As Integer
 
         ' Don't invent these
@@ -497,8 +497,8 @@ Public Class Blueprint
     End Function
 
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
-    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean, _
-                          ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
+    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
+                          ByVal IgnoreMinerals As CheckState, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
         If NumberofBlueprints = 1 Then
@@ -581,8 +581,8 @@ Public Class Blueprint
                 For j = 0 To ProductionChain(i).Count - 1
                     Application.DoEvents()
 
-                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
-                                                       CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingTeam, ManufacturingFacility, ComponentManufacturingTeam, _
+                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
+                                                       CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingTeam, ManufacturingFacility, ComponentManufacturingTeam,
                                                        ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
@@ -681,7 +681,7 @@ Public Class Blueprint
                     SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES.ITEM_ID "
                     SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
 
-                    DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
                     If rsCheck.Read() Then
@@ -792,8 +792,8 @@ Public Class Blueprint
     End Sub
 
     ' Sets the material versions for our blueprint
-    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean, _
-                          ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
+    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
+                          ByVal IgnoreMinerals As CheckState, ByVal IgnoreT1Item As Boolean)
         ' Database stuff
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
@@ -844,6 +844,15 @@ Public Class Blueprint
 
                 ' Set the current material - adjust with portion size though if sent
                 CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "", "")
+
+                If (IgnoreMinerals = CheckState.Indeterminate And
+                    ((CurrentMaterial.GetMaterialName = "Tritanium") Or
+                    (CurrentMaterial.GetMaterialName = "Pyerite") Or
+                    (CurrentMaterial.GetMaterialName = "Mexallon") Or
+                    (CurrentMaterial.GetMaterialName = "Isogen") Or
+                    (CurrentMaterial.GetMaterialName = "Nocxium"))) Then
+                    Continue While
+                End If
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
                 BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(8)), 0, readerBP.GetDouble(8))
@@ -1475,14 +1484,16 @@ Public Class Blueprint
     End Function
 
     ' Determines if we should add this material to the list or not, based on passed settings
-    Private Function AddMaterial(CategoryName As String, GroupName As String, IgnoreMinerals As Boolean, IgnoreT1BaseItem As Boolean) As Boolean
+    Private Function AddMaterial(CategoryName As String, GroupName As String, IgnoreMinerals As CheckState, IgnoreT1BaseItem As Boolean) As Boolean
 
         If IgnoreT1BaseItem And IsT1BaseItemforT2(CategoryName) Then
             Return False
         End If
 
-        If IgnoreMinerals And GroupName = "Mineral" Then
-            Return False
+        If (GroupName = "Mineral") Then
+            If IgnoreMinerals = CheckState.Checked Then
+                Return False
+            End If
         End If
 
         Return True
@@ -1693,7 +1704,7 @@ Public Class Blueprint
         ' Get all the Datacores
         While readerBP.Read
             ' Add this to the invention materials - add price for data cores
-            InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
+            InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2),
                                        readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
             SingleInventionMats.InsertMaterial(InventionMat)
         End While
@@ -1810,7 +1821,7 @@ Public Class Blueprint
             ' Get all the mats and add
             While readerBP.Read
                 ' Add this to the copy materials 
-                CopyMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
+                CopyMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2),
                                             readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
                 SingleCopyMats.InsertMaterial(CopyMat)
             End While

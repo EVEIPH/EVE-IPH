@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SQLite
+Imports System.IO
 
 Public Class frmCitadelFitting
 
@@ -68,7 +69,7 @@ Public Class frmCitadelFitting
         FirstLoad = True
 
         'Temp stuff
-        EVEDB = New DBConnection(SQLiteDBFileName)
+        EVEDB = New DBConnection(Path.Combine(UserWorkingFolder, SQLiteDBFileName))
 
         ' Put all the slot images into an array
         With SlotPictureBoxList
@@ -421,7 +422,7 @@ Public Class frmCitadelFitting
         For Each Citadel In StructureDBDataList
             ' Look for the name and then load the render image from the typeID (should be in images folder)
             If Citadel.Name = cmbCitadelName.Text Then
-                StructurePicture.Image = Image.FromFile(BPImageFilePath & Citadel.TypeID & ".png")
+                StructurePicture.Image = Image.FromFile(Path.Combine(BPImageFilePath, Citadel.TypeID & ".png"))
                 Exit For
             End If
         Next
@@ -782,7 +783,7 @@ Public Class frmCitadelFitting
             ' Add to the image list, and put in view with names
             typeID = CStr(rsReader.GetInt32(0))
             typeName = rsReader.GetString(1)
-            myImage = Image.FromFile(BPImageFilePath & typeID & "_64.png")
+            myImage = Image.FromFile(Path.Combine(BPImageFilePath, typeID & "_64.png"))
 
             Call FittingImages.Images.Add(typeID, myImage)
 

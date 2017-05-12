@@ -1,5 +1,6 @@
 ﻿
 Imports System.Data.SQLite
+Imports System.IO
 
 Public Class frmInventionMonitor
 
@@ -47,7 +48,7 @@ Public Class frmInventionMonitor
 
         ' See if they can load the jobs at all
         If Not SelectedCharacter.JobsAccess Then
-            fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." & _
+            fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." &
                 Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
             fAccessError.Text = "API: No Industry Jobs Loaded"
 
@@ -283,7 +284,7 @@ Public Class frmInventionMonitor
             lblSelectedBP.Text = lstInventionItems.SelectedItems(0).SubItems(1).Text
 
             ' Now select the BP image
-            BPImage = UserImagePath & CStr(SelectedBPID & "_64.png")
+            BPImage = Path.Combine(UserImagePath, CStr(SelectedBPID & "_64.png"))
 
             If System.IO.File.Exists(BPImage) Then
                 pictInvention.Image = Image.FromFile(BPImage)
@@ -365,8 +366,8 @@ Public Class frmInventionMonitor
         gbSkills.Visible = True
 
         ' Build the T2 item as a blueprint and then get stats - CHECK
-        TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter, _
-                                        UserApplicationSettings, False, 0, NoTeam, SelectedBPManufacturingFacility, NoTeam, _
+        TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter,
+                                        UserApplicationSettings, False, 0, NoTeam, SelectedBPManufacturingFacility, NoTeam,
                                         SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
         ' Invent the bp
         Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, NoTeam, SelectedBPCopyFacility, NoTeam, 0)
@@ -487,7 +488,7 @@ Public Class frmInventionMonitor
     End Sub
 
     Private Sub dtpInventionEndDate_ValueChanged(sender As System.Object, e As System.EventArgs) Handles dtpInventionEndDate.ValueChanged
-        If Not firstformload Then
+        If Not FirstFormLoad Then
             Call ClearForm()
             If dtpInventionStartDate.Value > dtpInventionEndDate.Value Then
                 MsgBox("The Invention Start Date cannot be greater than the End Date", vbExclamation, Application.ProductName)
