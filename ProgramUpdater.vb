@@ -101,7 +101,8 @@ Public Class ProgramUpdater
         ' Get the directory path of this program to send to updater
         Dim ProcInfo As New ProcessStartInfo
 
-        ' veg this fails when Program Files\EVE-IPH is not writable.
+        ' veg this failed when Program Files\EVE-IPH is not writable.
+        '     moved all data to %appdata%\eveiph.
         ' veg also seems to loop until cancelled.
         ' 
         ProcInfo.WindowStyle = ProcessWindowStyle.Normal

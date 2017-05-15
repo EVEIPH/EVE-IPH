@@ -1483,7 +1483,7 @@ Public Class ShoppingListItem
 
     ' Ignore Variables
     Public IgnoredInvention As Boolean
-    Public IgnoredMinerals As Boolean
+    Public IgnoredMinerals As CheckState
     Public IgnoredT1BaseItem As Boolean
 
     Public IncludeActivityCost As Boolean
@@ -1527,7 +1527,7 @@ Public Class ShoppingListItem
         ManufacturingFacilityType = ""
 
         IgnoredInvention = False
-        IgnoredMinerals = False
+        IgnoredMinerals = CheckState.Unchecked
         IgnoredT1BaseItem = False
 
         IncludeActivityCost = False

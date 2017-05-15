@@ -6352,7 +6352,7 @@ Tabs:
 
             ' Ignore settings
             chkBPIgnoreInvention.Checked = .IgnoreInvention
-            chkBPIgnoreMinerals.Checked = .IgnoreMinerals
+            chkBPIgnoreMinerals.CheckState = .IgnoreMinerals
             chkBPIgnoreT1Item.Checked = .IgnoreT1Item
 
             ' Profit labels
@@ -6577,7 +6577,7 @@ Tabs:
 
             ' Ignore settings
             .IgnoreInvention = chkBPIgnoreInvention.Checked
-            .IgnoreMinerals = chkBPIgnoreMinerals.Checked
+            .IgnoreMinerals = chkBPIgnoreMinerals.CheckState
             .IgnoreT1Item = chkBPIgnoreT1Item.Checked
 
             SelectedBPSubsystemManufacturingFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
@@ -8229,7 +8229,7 @@ ExitForm:
         ' Just add it to shopping list with options
         Call AddToShoppingList(SelectedBlueprint, chkBPBuildBuy.Checked, rbtnBPRawmatCopy.Checked,
                                BlueprintBuildFacility.MaterialMultiplier, BlueprintBuildFacility.FacilityType,
-                               chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked,
+                               chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.CheckState, chkBPIgnoreT1Item.Checked,
                                BlueprintBuildFacility.IncludeActivityCost, BlueprintBuildFacility.IncludeActivityTime,
                                BlueprintBuildFacility.IncludeActivityUsage, rbtnBPCopyInvREMats.Checked)
 
@@ -15139,8 +15139,15 @@ CheckTechs:
     End Sub
 
     Private Sub chkCalcIgnoreMinerals_CheckedChanged_1(sender As System.Object, e As System.EventArgs) Handles chkCalcIgnoreMinerals.CheckedChanged
+        'veg Change this one to tristate.
+        'Call ResetRefresh()
+    End Sub
+
+    Private Sub chkCalcIgnoreMinerals_CheckStateChanged(sender As Object, e As EventArgs) Handles chkCalcIgnoreMinerals.CheckStateChanged
+        'veg Added
         Call ResetRefresh()
     End Sub
+
 
     Private Sub chkCalcIgnoreT1Item_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIgnoreT1Item.CheckedChanged
         Call ResetRefresh()
@@ -17609,6 +17616,9 @@ CheckTechs:
 
         End With
 
+        ' veg Added
+        TempSettings.IgnoreMinerals = chkCalcIgnoreMinerals.CheckState
+
         ' Save the data in the XML file
         Call Settings.SaveManufacturingSettings(TempSettings)
 
@@ -18556,7 +18566,8 @@ CheckTechs:
                     End If
 
                     ' Build the blueprint(s)
-                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, chkCalcBaseFacilityIncludeUsage.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                    ' veg Added chkCalcIgnoreMinerals tristate support.
+                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, chkCalcBaseFacilityIncludeUsage.Checked, chkCalcIgnoreMinerals.CheckState, chkCalcIgnoreT1Item.Checked)
 
                     ' If checked, Add the values to the array only if we can Build, Invent, or RE it
                     AddItem = True
@@ -18743,7 +18754,7 @@ CheckTechs:
                             End If
 
                             ' Get the list of materials
-                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, chkCalcBaseFacilityIncludeUsage.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, chkCalcBaseFacilityIncludeUsage.Checked, chkCalcIgnoreMinerals.CheckState, chkCalcIgnoreT1Item.Checked)
 
                             ' Build/Buy (add only if it has components we build)
                             If ManufacturingBlueprint.HasComponents Then
@@ -20943,7 +20954,7 @@ ExitCalc:
                         If Not IsNothing(.Blueprint) Then
                             Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
                                                .Blueprint.GetManufacturingFacility.FacilityType,
-                                               chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked,
+                                               chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.CheckState, chkCalcIgnoreT1Item.Checked,
                                                .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime,
                                                .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
                         Else

@@ -371,7 +371,7 @@ Public Class frmInventionMonitor
                                         SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
         ' Invent the bp
         Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, NoTeam, SelectedBPCopyFacility, NoTeam, 0)
-        Call TempBlueprint.BuildItems(False, False, False, False, False)
+        Call TempBlueprint.BuildItems(False, False, False, CheckState.Unchecked, False)
 
         ' Now get the data from the blueprint
         lblSuccessChance.Text = FormatPercent(TempBlueprint.GetInventionChance, 2)

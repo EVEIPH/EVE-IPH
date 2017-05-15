@@ -673,7 +673,7 @@ Public Class frmPOSSettings
             ' Build T1 BP for the block, standard settings - CHECK
             Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
                                         SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-            Call BlockBP.BuildItems(False, False, False, False, False)
+            Call BlockBP.BuildItems(False, False, False, CheckState.Unchecked, False)
             Return BlockBP.GetRawItemUnitPrice
         Else
             Return 0

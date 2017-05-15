@@ -238,7 +238,7 @@ Public Class ProgramSettings
     Public DefaultBPT3DecryptorType As String = "" ' if they want to save and auto load decryptors
     Public DefaultBPT2DecryptorType As String = "" ' if they want to save and auto load decryptors
     Public DefaultBPIgnoreInvention As Boolean = False
-    Public DefaultBPIgnoreMinerals As Boolean = False
+    Public DefaultBPIgnoreMinerals As CheckState = CheckState.Unchecked
     Public DefaultBPIgnoreT1Item As Boolean = False
     Public DefaultBPIncludeIgnoredBPs As Boolean = False
     Public DefaultBPShoppingListExportType As String = "Components"
@@ -1429,7 +1429,8 @@ Public Class ProgramSettings
                     .T2DecryptorType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "T2DecryptorType", DefaultBPT2DecryptorType))
                     .T3DecryptorType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "T3DecryptorType", DefaultBPT3DecryptorType))
                     .IgnoreInvention = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreInvention", DefaultBPIgnoreInvention))
-                    .IgnoreMinerals = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreMinerals", DefaultBPIgnoreMinerals))
+                    ' veg Changed to CheckState
+                    .IgnoreMinerals = DirectCast([Enum].Parse(GetType(CheckState), CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "IgnoreMinerals", DefaultBPIgnoreMinerals))), CheckState)
                     .IgnoreT1Item = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IgnoreT1Item", DefaultBPIgnoreT1Item))
                     .IncludeIgnoredBPs = CBool(GetSettingValue(BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeIgnoredBPs", DefaultBPIncludeIgnoredBPs))
                     .ExporttoShoppingListType = CStr(GetSettingValue(BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "ExporttoShoppingListType", DefaultBPShoppingListExportType))
@@ -1971,7 +1972,8 @@ Public Class ProgramSettings
                     .CheckT3DestroyerFacility = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckT3DestroyerFacility", DefaultCheckCapComponents))
                     .CheckAutoCalcNumBPs = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckAutoCalcNumBPs", DefaultCheckAutoCalcNumBPs))
                     .IgnoreInvention = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreInvention", DefaultCalcIgnoreInvention))
-                    .IgnoreMinerals = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreMinerals", DefaultCalcIgnoreMinerals))
+                    ' veg Changed to CheckState
+                    .IgnoreMinerals = DirectCast([Enum].Parse(GetType(CheckState), CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "IgnoreMinerals", DefaultCalcIgnoreMinerals))), CheckState)
                     .IgnoreT1Item = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "IgnoreT1Item", DefaultCalcIgnoreT1Item))
                     .CalcPPU = CBool(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CalcPPU", DefaultCalcPPU))
                     .ManufacturingFWUpgradeLevel = CStr(GetSettingValue(ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "ManufacturingFWUpgradeLevel", DefaultCalcManufacturingFWLevel))
@@ -5496,7 +5498,7 @@ Public Structure BPTabSettings
     Dim T3DecryptorType As String
 
     Dim IgnoreInvention As Boolean
-    Dim IgnoreMinerals As Boolean
+    Dim IgnoreMinerals As CheckState
     Dim IgnoreT1Item As Boolean
 
     Dim ExporttoShoppingListType As String
@@ -5704,7 +5706,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckXL As Boolean
 
     Dim IgnoreInvention As Boolean
-    Dim IgnoreMinerals As Boolean
+    Dim IgnoreMinerals As CheckState
     Dim IgnoreT1Item As Boolean
 
     Dim CalcPPU As Boolean

@@ -1063,6 +1063,7 @@ Public Class frmIndustryJobsViewer
         Dim EndDate As Date
 
         ' veg Possible Disposed object reference here when closing this Industry Window.
+        '     Had to add a try/catch to get rid of it (caused by the invoked code and bubbling up).
         Try
             Dim myJobList As New ListView
             myJobList = DirectCast(sentJobList, ListView)
@@ -1173,7 +1174,7 @@ Public Class frmIndustryJobsViewer
 
     End Function
 
-    ' veg Added
+    ' veg Added to stop update timer nicely.
     Private Sub frmIndustryJobsViewer_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         myTimer.Change(Timeout.Infinite, Timeout.Infinite)
     End Sub

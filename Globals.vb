@@ -3756,7 +3756,7 @@ InvalidDate:
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean,
                                  ManufacturingFacilityMEModifier As Double, ManufacturingFacilityType As String,
-                                 IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean,
+                                 IgnoreInvention As Boolean, IgnoreMinerals As CheckState, IgnoreT1ITem As Boolean,
                                  IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean,
                                  Optional CopyInventionMatsOnly As Boolean = False)
         Dim TempMats As New Materials

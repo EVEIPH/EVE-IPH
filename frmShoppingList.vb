@@ -120,7 +120,7 @@ Public Class frmShoppingList
         Dim BuildLocation As String
         Dim FacilityType As String
         Dim IgnoredInvention As Boolean
-        Dim IgnoredMinerals As Boolean
+        Dim IgnoredMinerals As CheckState
         Dim IgnoredT1BaseItem As Boolean
         Dim IncludeActivityCost As Boolean
         Dim IncludeActivityTime As Boolean
@@ -874,7 +874,7 @@ Public Class frmShoppingList
             SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
             SQL = SQL & " AND ID IN (" & IDString & ")"
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
@@ -901,13 +901,13 @@ Public Class frmShoppingList
                     SQL = SQL & " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
                     SQL = SQL & " AND ID IN (" & IDString & ")"
 
-                    Call evedb.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
                     Exit While
                 Else
                     ' Its less than or equal to the quantity so we need to delete this location's value and update the used quantity
                     SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID)
                     SQL = SQL & " AND ID IN (" & IDString & ")"
-                    Call evedb.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Update used quantity
                     UsedQuantityRemaining = UsedQuantityRemaining - LocUserQuantity
@@ -1280,7 +1280,7 @@ Public Class frmShoppingList
                         End If
 
                         ' If the line has records, import it into the correct lists
-                        If Line.Contains(Separator) And _
+                        If Line.Contains(Separator) And
                             Not (Line.Contains(BuyListHeader) Or Line.Contains(BuildListHeader) Or Line.Contains(ItemsListHeader) Or Line.Contains(ItemsListHeaderAdd)) Then
                             ' Parse the line
                             Dim Record As String()
@@ -1372,7 +1372,7 @@ Public Class frmShoppingList
                                         TempBPItem.FacilityType = Record(7)
                                         TempBPItem.BuildLocation = Record(8)
                                         TempBPItem.IgnoredInvention = CBool(Record(9))
-                                        TempBPItem.IgnoredMinerals = CBool(Record(10))
+                                        TempBPItem.IgnoredMinerals = DirectCast([Enum].Parse(GetType(CheckState), Record(10)), CheckState)
                                         TempBPItem.IgnoredT1BaseItem = CBool(Record(11))
                                         TempBPItem.IncludeActivityCost = CBool(Record(12))
                                         TempBPItem.IncludeActivityTime = CBool(Record(13))
@@ -1538,16 +1538,16 @@ Public Class frmShoppingList
                     Next
 
                     Application.UseWaitCursor = False
-                        ' Now load all the lists
-                        Call RefreshLists()
+                    ' Now load all the lists
+                    Call RefreshLists()
 
-                        ' Mark as items in list
-                        frmMain.pnlShoppingList.Text = "Items in Shopping List"
-                        frmMain.pnlShoppingList.ForeColor = Color.Red
+                    ' Mark as items in list
+                    frmMain.pnlShoppingList.Text = "Items in Shopping List"
+                    frmMain.pnlShoppingList.ForeColor = Color.Red
 
-                        MsgBox("Shopping List Loaded", vbInformation, Application.ProductName)
+                    MsgBox("Shopping List Loaded", vbInformation, Application.ProductName)
 
-                    End If
+                End If
 
             Catch Ex As Exception
                 ' Error'd so restore old shopping list
@@ -1581,7 +1581,7 @@ Public Class frmShoppingList
             End If
             TF = New IndustryFacility
             With BuiltItems(i)
-                Call TF.LoadFacility(GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, _
+                Call TF.LoadFacility(GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1,
                                                          .IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage), True)
             End With
 
@@ -1834,7 +1834,7 @@ Public Class frmShoppingList
 
         SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
@@ -2398,7 +2398,7 @@ Public Class frmShoppingList
             ElseIf ListRef.Name = lstBuy.Name And UpdatePrice Then ' Price update on the lstBuy screen
                 ' Update the price in the database
                 SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
                 CurrentRow.SubItems(2).Text = FormatNumber(txtListEdit.Text, 2)
