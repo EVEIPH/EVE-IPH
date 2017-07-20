@@ -335,7 +335,7 @@ Public Class ProgramSettings
     Public DefaultCheckT3Destroyers As Boolean = False
     Public DefaultCheckCapComponents As Boolean = False
     Public DefaultCalcIgnoreInvention As Boolean = False
-    Public DefaultCalcIgnoreMinerals As Boolean = False
+    Public DefaultCalcIgnoreMinerals As CheckState = CheckState.Unchecked
     Public DefaultCalcIgnoreT1Item As Boolean = False
     Public DefaultCalcPPU As Boolean = False
     Public DefaultCalcManufacturingFWLevel As String = "0"

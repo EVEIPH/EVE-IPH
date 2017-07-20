@@ -307,15 +307,27 @@ Public Class frmMain
         FirstLoad = True
         ErrorTracker = ""
 
+        ' Get user path for application data
+        UserAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+        ' Set where the db, main exe, and updater and such will be
+        UserWorkingFolder = Path.Combine(UserAppDataPath, AppDataPath)
+        ' Set where files will be updated
+        UpdaterFilePath = Path.Combine(UserWorkingFolder, UpdatePath)
+        ' The Image path
+        UserImagePath = Path.Combine(UserWorkingFolder, BPImageFilePath)
+
+        ' Get the user settings then check for updates
+        UserApplicationSettings = AllSettings.LoadApplicationSettings
+
         ' Set developer flag
-        If File.Exists("Developer.txt") Then
+        If File.Exists(Path.Combine(UserWorkingFolder, "Developer.txt")) Then
             Developer = True
         Else
             Developer = False
         End If
 
         ' Set test platform
-        If File.Exists("Test.txt") Then
+        If File.Exists(Path.Combine(UserWorkingFolder, "Test.txt")) Then
             TestingVersion = True
         Else
             TestingVersion = False
@@ -340,18 +352,6 @@ Public Class frmMain
         Thread.CurrentThread.CurrentCulture = LocalCulture
 
         ' Add any initialization after the InitializeComponent() call.
-
-        ' Get user path for application data
-        UserAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-        ' Set where the db, main exe, and updater and such will be
-        UserWorkingFolder = Path.Combine(UserAppDataPath, AppDataPath)
-        ' Set where files will be updated
-        UpdaterFilePath = Path.Combine(UserWorkingFolder, UpdatePath)
-        ' The Image path
-        UserImagePath = Path.Combine(UserWorkingFolder, BPImageFilePath)
-
-        ' Get the user settings then check for updates
-        UserApplicationSettings = AllSettings.LoadApplicationSettings
 
         ' Check for program updates first
         If UserApplicationSettings.CheckforUpdatesonStart Then
@@ -636,21 +636,21 @@ Public Class frmMain
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
-            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
-                                                            "Sell = Use Sell orders only" & vbCrLf &
-                                                            "Buy & Sell = Use All orders" & vbCrLf &
-                                                            "Min = Minimum" & vbCrLf &
-                                                            "Max = Maximum" & vbCrLf &
-                                                            "Avg = Average" & vbCrLf &
-                                                            "Med = Median" & vbCrLf &
+            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
+                                                            "Sell = Use Sell orders only" & vbCrLf & _
+                                                            "Buy & Sell = Use All orders" & vbCrLf & _
+                                                            "Min = Minimum" & vbCrLf & _
+                                                            "Max = Maximum" & vbCrLf & _
+                                                            "Avg = Average" & vbCrLf & _
+                                                            "Med = Median" & vbCrLf & _
                                                             "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
-            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
-                                                            "Sell = Use Sell orders only" & vbCrLf &
-                                                            "Buy & Sell = Use All orders" & vbCrLf &
-                                                            "Min = Minimum" & vbCrLf &
-                                                            "Max = Maximum" & vbCrLf &
-                                                            "Avg = Average" & vbCrLf &
-                                                            "Med = Median" & vbCrLf &
+            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf & _
+                                                            "Sell = Use Sell orders only" & vbCrLf & _
+                                                            "Buy & Sell = Use All orders" & vbCrLf & _
+                                                            "Min = Minimum" & vbCrLf & _
+                                                            "Max = Maximum" & vbCrLf & _
+                                                            "Avg = Average" & vbCrLf & _
+                                                            "Med = Median" & vbCrLf & _
                                                             "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
         End If
 
@@ -4076,7 +4076,7 @@ Tabs:
         Dim OverrideFacilityName As String = ""
         Dim Autoload As Boolean = False
 
-        cmbBPFacilitySystem.SelectionLength = 0
+                cmbBPFacilitySystem.SelectionLength = 0
 
         If Not IsNothing(SelectedBlueprint) Then
             If Not LoadingFacilitySystems And Not FirstLoad And PreviousFacilitySystem <> cmbBPFacilitySystem.Text Then
@@ -7775,7 +7775,7 @@ ExitForm:
 
                     'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
 
-
+                    
 
                     ' TODO : FIX THE MULTIPLIER
                     mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
@@ -15147,7 +15147,6 @@ CheckTechs:
         'veg Added
         Call ResetRefresh()
     End Sub
-
 
     Private Sub chkCalcIgnoreT1Item_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIgnoreT1Item.CheckedChanged
         Call ResetRefresh()
@@ -24022,17 +24021,17 @@ Leave:
                     cmbMineMiningUpgrade.Text = None
                 End If
                 cmbMineNumLasers.Text = CStr(.NumOreMiners)
-                cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
-                rbtnMineMercoxitRig.Enabled = True
-                rbtnMineIceRig.Enabled = False
-                If .MercoxitMiningRig Then
-                    rbtnMineMercoxitRig.Checked = True
-                Else
-                    rbtnMineNoRigs.Checked = True
-                End If
-            ElseIf .OreType = "Ice" Then
-                cmbMineShipType.Text = .IceMiningShip
-                cmbMineMiningLaser.Text = .IceStrip
+                    cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
+                    rbtnMineMercoxitRig.Enabled = True
+                    rbtnMineIceRig.Enabled = False
+                    If .MercoxitMiningRig Then
+                        rbtnMineMercoxitRig.Checked = True
+                    Else
+                        rbtnMineNoRigs.Checked = True
+                    End If
+                ElseIf .OreType = "Ice" Then
+                    cmbMineShipType.Text = .IceMiningShip
+                    cmbMineMiningLaser.Text = .IceStrip
                 If cmbMineMiningUpgrade.Items.Contains(.IceUpgrade) Then
                     cmbMineMiningUpgrade.Text = .IceUpgrade
                 Else
@@ -24040,14 +24039,14 @@ Leave:
                 End If
                 cmbMineNumLasers.Text = CStr(.NumIceMiners)
                 cmbMineNumMiningUpgrades.Text = CStr(.NumIceUpgrades)
-                rbtnMineMercoxitRig.Enabled = False
-                rbtnMineIceRig.Enabled = True
-                If .IceMiningRig Then
-                    rbtnMineIceRig.Checked = True
-                Else
-                    rbtnMineIceRig.Checked = True
-                End If
-            ElseIf .OreType = "Gas" Then
+                    rbtnMineMercoxitRig.Enabled = False
+                    rbtnMineIceRig.Enabled = True
+                    If .IceMiningRig Then
+                        rbtnMineIceRig.Checked = True
+                    Else
+                        rbtnMineIceRig.Checked = True
+                    End If
+                ElseIf .OreType = "Gas" Then
                 cmbMineShipType.Text = .GasMiningShip
                 cmbMineMiningLaser.Text = .GasHarvester
                 cmbMineMiningUpgrade.Text = .GasUpgrade
@@ -26100,35 +26099,35 @@ Leave:
         End Select
 
         If cmbMineOreType.Text = "Ice" Then
-            ' For Ice, check for duration reduction bonus, implant, and upgrades
-            If cmbMineGasIceHarvesting.Enabled Then
-                ' Apply the ice harvesting bonus
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
-            End If
+                ' For Ice, check for duration reduction bonus, implant, and upgrades
+                If cmbMineGasIceHarvesting.Enabled Then
+                    ' Apply the ice harvesting bonus
+                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
+                End If
 
-            ' Apply the upgrades
-            If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
-                ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-            End If
+                ' Apply the upgrades
+                If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
+                    ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
+                    Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
+                    TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+                End If
 
-            ' Finally include the implant value
-            If cmbMineImplant.Text <> None Then
-                'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-                TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
-            End If
+                ' Finally include the implant value
+                If cmbMineImplant.Text <> None Then
+                    'Inherent Implants 'Yeti' Ice Harvesting IH-1001
+                    TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
+                End If
 
-            ' Apply the rig bonus if selected
-            If rbtnMineIceRig.Checked = True Then
-                ' 12% cycle reduction
-                TempCycleTime = TempCycleTime * (1 - 0.12)
-            End If
+                ' Apply the rig bonus if selected
+                If rbtnMineIceRig.Checked = True Then
+                    ' 12% cycle reduction
+                    TempCycleTime = TempCycleTime * (1 - 0.12)
+                End If
 
-        ElseIf cmbMineOreType.Text = "Gas" Then
-            ' Gas, look for venture ship and implant
+            ElseIf cmbMineOreType.Text = "Gas" Then
+                ' Gas, look for venture ship and implant
 
-            Select Case cmbMineShipType.Text
+                Select Case cmbMineShipType.Text
                 Case Prospect, Venture, Endurance
                     ' 5% reduction to gas cloud harvesting duration per level
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))

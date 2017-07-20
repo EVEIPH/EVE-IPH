@@ -273,7 +273,8 @@ Public Class EVEAssets
 
                 If readerData.Read Then
                     ' Call this function again to get the location name
-                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt32(0), FlagID, FlagText)
+                    ' veg fixed reading negative id values.
+                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText)
                     readerData.Close()
                 Else
                     ' See if it's a Citadel
