@@ -168,6 +168,12 @@
     <Compile Include="frmCitadelFitting.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmFacilityTest.Designer.vb">
+      <DependentUpon>frmFacilityTest.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmFacilityTest.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ManufacturingFacility.Designer.vb">
       <DependentUpon>ManufacturingFacility.vb</DependentUpon>
     </Compile>
@@ -403,7 +409,6 @@
     </Compile>
     <Compile Include="Globals.vb" />
     <Compile Include="EVEIndustryJobs.vb" />
-    <Compile Include="IndustryFacility.vb" />
     <Compile Include="IndustryTeam.vb" />
     <Compile Include="ManufacturingListView.Designer.vb">
       <DependentUpon>ManufacturingListView.vb</DependentUpon>
@@ -469,6 +474,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmCitadelFitting.resx">
       <DependentUpon>frmCitadelFitting.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFacilityTest.resx">
+      <DependentUpon>frmFacilityTest.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>

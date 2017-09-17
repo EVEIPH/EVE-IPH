@@ -1404,7 +1404,7 @@ Public Class frmShoppingList
                     End Select
 
                     Dim TempBuildFacility As IndustryFacility
-                    Dim TempIndyType As IndustryType
+                    Dim TempIndyType As ProductionType = Nothing
 
 
                     ' We need to build the blueprints and adjust the final lists unless they want it to go right into as is
@@ -1424,12 +1424,12 @@ Public Class frmShoppingList
                         ' Determine the build facility 
                         If ItemList(i).BuildLocation <> "" Then
 
-                            Call TF.LoadFacility(GetFacilitySettings(ItemList(i).ItemName, ItemList(i).BuildLocation, ItemList(i).FacilityType, 1,
-                                                                ItemList(i).IncludeActivityCost, ItemList(i).IncludeActivityTime, ItemList(i).IncludeActivityUsage), True)
+                            '   Call TF.LoadFacility(GetFacilitySettings(ItemList(i).ItemName, ItemList(i).BuildLocation, ItemList(i).FacilityType, 1,
+                            ' ItemList(i).IncludeActivityCost, ItemList(i).IncludeActivityTime, ItemList(i).IncludeActivityUsage), True)
                             TempBuildFacility = TF
 
                         Else
-                            TempBuildFacility = GetManufacturingFacility(TempIndyType, BPTab, True)
+                            TempBuildFacility = Nothing ' GetManufacturingFacility(TempIndyType, BPTab, True)
                         End If
 
                         ' Set the component facilities 
@@ -1458,7 +1458,7 @@ Public Class frmShoppingList
                         End If
 
                         ' Build the item and get the list of materials
-                        Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, frmMain.chkBPFacilityIncludeUsage.Checked, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
+                        Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPTaxes.Checked, False, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 
                         ' Now that all the lists are loaded, load what we need 
                         If chkRebuildItemsfromList.Checked = False Then
@@ -1581,8 +1581,8 @@ Public Class frmShoppingList
             End If
             TF = New IndustryFacility
             With BuiltItems(i)
-                Call TF.LoadFacility(GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, _
-                                                         .IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage), True)
+                ' Call TF.LoadFacility(GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, _
+                '.IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage), True)
             End With
 
             ' See if we have this one already
@@ -1599,14 +1599,14 @@ Public Class frmShoppingList
 
         ' Loop through the facility list and pick out the first component and cap facilities and return (can't really deal with the option that someone has multiple component facilities in the same list
         For i = 0 To FacilityList.Count - 1
-            If FacilityList(i).ProductionType = IndustryType.ComponentManufacturing Then
+            If FacilityList(i).FacilityProductionType = ProductionType.ComponentManufacturing Then
                 TCF = CType(FacilityList(i).Clone, IndustryFacility)
                 Exit For
             End If
         Next
 
         For i = 0 To FacilityList.Count - 1
-            If FacilityList(i).ProductionType = IndustryType.CapitalComponentManufacturing Then
+            If FacilityList(i).FacilityProductionType = ProductionType.CapitalComponentManufacturing Then
                 TCapCF = CType(FacilityList(i).Clone, IndustryFacility)
                 Exit For
             End If
@@ -1627,7 +1627,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Function FindFacility(SentFacility As IndustryFacility) As Boolean
-        If FacilityToFind.FacilityName = SentFacility.FacilityName And FacilityToFind.ProductionType = SentFacility.ProductionType Then
+        If FacilityToFind.FacilityName = SentFacility.FacilityName And FacilityToFind.FacilityProductionType = SentFacility.FacilityProductionType Then
             Return True
         Else
             Return False

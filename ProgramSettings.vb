@@ -190,7 +190,7 @@ Public Class ProgramSettings
 
     Public FacilityDefaultMM As Double = 1
     Public FacilityDefaultTM As Double = 1
-    Public DefalutFacilityCM As Double = 1
+    Public DefaultFacilityCM As Double = 1
     Public FacilityDefaultTax As Double = 0.1 ' Only for processing
     Public OutpostDefaultTax As Double = 0 ' If we are saving the settings, then the only time would be for outposts
 
@@ -4484,42 +4484,42 @@ Public Class ProgramSettings
 #Region "Facility Settings"
 
     ' Loads the Facility settings from XML setting file
-    Public Function LoadFacilitySettings(ProductionType As IndustryType, Tab As String) As FacilitySettings
+    Public Function LoadFacilitySettings(LoadProductionType As ProductionType, Tab As String) As FacilitySettings
         Dim TempSettings As FacilitySettings = Nothing
         Dim FacilityFileName As String = ""
 
-        Select Case ProductionType
-            Case IndustryType.Manufacturing
+        Select Case LoadProductionType
+            Case ProductionType.Manufacturing
                 FacilityFileName = ManufacturingFacilitySettingsFileName
-            Case IndustryType.ComponentManufacturing
+            Case ProductionType.ComponentManufacturing
                 FacilityFileName = ComponentsManufacturingFacilitySettingsFileName
-            Case IndustryType.CapitalComponentManufacturing
+            Case ProductionType.CapitalComponentManufacturing
                 FacilityFileName = CapitalComponentsManufacturingFacilitySettingsFileName
-            Case IndustryType.CapitalManufacturing
+            Case ProductionType.CapitalManufacturing
                 FacilityFileName = CapitalManufacturingFacilitySettingsFileName
-            Case IndustryType.SuperManufacturing
+            Case ProductionType.SuperManufacturing
                 FacilityFileName = SuperCapitalManufacturingFacilitySettingsFileName
-            Case IndustryType.BoosterManufacturing
+            Case ProductionType.BoosterManufacturing
                 FacilityFileName = BoosterManufacturingFacilitySettingsFileName
-            Case IndustryType.T3CruiserManufacturing
+            Case ProductionType.T3CruiserManufacturing
                 FacilityFileName = T3CruiserManufacturingFacilitySettingsFileName
-            Case IndustryType.T3DestroyerManufacturing
+            Case ProductionType.T3DestroyerManufacturing
                 FacilityFileName = T3DestroyerManufacturingFacilitySettingsFileName
-            Case IndustryType.SubsystemManufacturing
+            Case ProductionType.SubsystemManufacturing
                 FacilityFileName = SubsystemManufacturingFacilitySettingsFileName
-            Case IndustryType.Copying
+            Case ProductionType.Copying
                 FacilityFileName = CopyFacilitySettingsFileName
-            Case IndustryType.Invention
+            Case ProductionType.Invention
                 FacilityFileName = InventionFacilitySettingsFileName
-            Case IndustryType.T3Invention
+            Case ProductionType.T3Invention
                 FacilityFileName = T3InventionFacilitySettingsFileName
-            Case IndustryType.NoPOSManufacturing
+            Case ProductionType.NoPOSManufacturing
                 FacilityFileName = NoPoSFacilitySettingsFileName
-            Case IndustryType.POSFuelBlockManufacturing
+            Case ProductionType.POSFuelBlockManufacturing
                 FacilityFileName = POSFuelBlockFacilitySettingsFileName
-            Case IndustryType.POSLargeShipManufacturing
+            Case ProductionType.POSLargeShipManufacturing
                 FacilityFileName = POSLargeShipFacilitySettingsFileName
-            Case IndustryType.POSModuleManufacturing
+            Case ProductionType.POSModuleManufacturing
                 FacilityFileName = POSModuleFacilitySettingsFileName
         End Select
 
@@ -4529,12 +4529,12 @@ Public Class ProgramSettings
             If FileExists(FacilityFileName) Then
                 'Get the settings
                 With TempSettings
-                    Select Case ProductionType
-                        Case IndustryType.Manufacturing
+                    Select Case LoadProductionType
+                        Case ProductionType.Manufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "Facility", DefaultBPManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "FacilityType", DefaultManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4546,11 +4546,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.ComponentManufacturing
+                        Case ProductionType.ComponentManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "Facility", DefaultComponentManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "FacilityType", DefaultComponentManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ComponentsManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ComponentsManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & ComponentsManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4562,11 +4562,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.CapitalComponentManufacturing
+                        Case ProductionType.CapitalComponentManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "Facility", DefaultCapitalComponentManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "FacilityType", DefaultCapitalComponentManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4578,11 +4578,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.CapitalManufacturing
+                        Case ProductionType.CapitalManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "Facility", DefaultCapitalManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "FacilityType", DefaultCapitalManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4594,11 +4594,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.SuperManufacturing
+                        Case ProductionType.SuperManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "Facility", DefaultSuperManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "FacilityType", DefaultSuperManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4610,11 +4610,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.BoosterManufacturing
+                        Case ProductionType.BoosterManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "Facility", DefaultBoosterManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "FacilityType", DefaultBoosterManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & BoosterManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & BoosterManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & BoosterManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4626,11 +4626,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.T3CruiserManufacturing
+                        Case ProductionType.T3CruiserManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "Facility", DefaultT3CruiserManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "FacilityType", DefaultT3CruiserManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4642,11 +4642,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.T3DestroyerManufacturing
+                        Case ProductionType.T3DestroyerManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "Facility", DefaultT3DestroyerManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "FacilityType", DefaultT3DestroyerManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4658,11 +4658,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.SubsystemManufacturing
+                        Case ProductionType.SubsystemManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "Facility", DefaultSubsystemManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "FacilityType", DefaultSubsystemManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ProductionType", IndustryType.Manufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4674,11 +4674,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.Copying
+                        Case ProductionType.Copying
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "Facility", DefaultCopyFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "FacilityType", DefaultCopyFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CopyFacilitySettingsFileName, "ActivityID", IndustryActivities.Copying))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CopyFacilitySettingsFileName, "ProductionType", IndustryType.Copying), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & CopyFacilitySettingsFileName, "ProductionType", ProductionType.Copying), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4690,11 +4690,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.Invention
+                        Case ProductionType.Invention
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "Facility", DefaultInventionFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "FacilityType", DefaultInventionFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & InventionFacilitySettingsFileName, "ActivityID", IndustryActivities.Invention))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & InventionFacilitySettingsFileName, "ProductionType", IndustryType.Invention), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & InventionFacilitySettingsFileName, "ProductionType", ProductionType.Invention), ProductionType)
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4706,11 +4706,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.T3Invention
+                        Case ProductionType.T3Invention
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "Facility", DefaultT3InventionFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "FacilityType", DefaultT3InventionFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3InventionFacilitySettingsFileName, "ActivityID", IndustryActivities.Invention))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3InventionFacilitySettingsFileName, "ProductionType", IndustryType.Invention), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & T3InventionFacilitySettingsFileName, "ProductionType", ProductionType.Invention), ProductionType)
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4722,11 +4722,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.NoPOSManufacturing
+                        Case ProductionType.NoPOSManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "Facility", DefaultManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "FacilityType", DefaultManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & NoPoSFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & NoPoSFacilitySettingsFileName, "ProductionType", IndustryType.NoPOSManufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & NoPoSFacilitySettingsFileName, "ProductionType", ProductionType.NoPOSManufacturing), ProductionType)
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4738,11 +4738,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.POSFuelBlockManufacturing
+                        Case ProductionType.POSFuelBlockManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "Facility", DefaultPOSFuelBlockManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "FacilityType", DefaultPOSFuelBlockManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ProductionType", IndustryType.POSFuelBlockManufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ProductionType", ProductionType.POSFuelBlockManufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4754,11 +4754,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.POSModuleManufacturing
+                        Case ProductionType.POSModuleManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "Facility", DefaultPOSModuleManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "FacilityType", DefaultPOSModuleManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ProductionType", IndustryType.POSModuleManufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ProductionType", ProductionType.POSModuleManufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4770,11 +4770,11 @@ Public Class ProgramSettings
                             .IncludeActivityUsage = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
                             .IncludeActivityCost = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
                             .IncludeActivityTime = CBool(GetSettingValue(FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case IndustryType.POSLargeShipManufacturing
+                        Case ProductionType.POSLargeShipManufacturing
                             .Facility = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "Facility", DefaultPOSLargeShipManufacturingFacility))
                             .FacilityType = CStr(GetSettingValue(FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "FacilityType", DefaultPOSLargeShipManufacturingFacilityType))
                             .ActivityID = CInt(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .ProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ProductionType", IndustryType.POSLargeShipManufacturing), IndustryType)
+                            .FacilityProductionType = CType(GetSettingValue(FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ProductionType", ProductionType.POSLargeShipManufacturing), ProductionType)
                             .MaterialMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
                             .TimeMultiplier = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
                             .TaxRate = CDbl(GetSettingValue(FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
@@ -4790,47 +4790,47 @@ Public Class ProgramSettings
                 End With
             Else
                 ' Load defaults 
-                TempSettings = SetFacilityDefaultSettings(ProductionType)
+                TempSettings = SetFacilityDefaultSettings(LoadProductionType)
             End If
         Catch ex As Exception
             MsgBox("An error occured when loading Facility Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
             ' Load defaults 
-            TempSettings = SetFacilityDefaultSettings(ProductionType)
+            TempSettings = SetFacilityDefaultSettings(LoadProductionType)
         End Try
 
         ' Save them locally and then export
-        Select Case ProductionType
-            Case IndustryType.Manufacturing
+        Select Case LoadProductionType
+            Case ProductionType.Manufacturing
                 ManufacturingFacilitySettings = TempSettings
-            Case IndustryType.ComponentManufacturing
+            Case ProductionType.ComponentManufacturing
                 ComponentsManufacturingFacilitySettings = TempSettings
-            Case IndustryType.CapitalComponentManufacturing
+            Case ProductionType.CapitalComponentManufacturing
                 CapitalComponentsManufacturingFacilitySettings = TempSettings
-            Case IndustryType.CapitalManufacturing
+            Case ProductionType.CapitalManufacturing
                 CapitalManufacturingFacilitySettings = TempSettings
-            Case IndustryType.SuperManufacturing
+            Case ProductionType.SuperManufacturing
                 SuperManufacturingFacilitySettings = TempSettings
-            Case IndustryType.BoosterManufacturing
+            Case ProductionType.BoosterManufacturing
                 BoosterManufacturingFacilitySettings = TempSettings
-            Case IndustryType.T3CruiserManufacturing
+            Case ProductionType.T3CruiserManufacturing
                 T3CruiserManufacturingFacilitySettings = TempSettings
-            Case IndustryType.T3DestroyerManufacturing
+            Case ProductionType.T3DestroyerManufacturing
                 T3DestroyerManufacturingFacilitySettings = TempSettings
-            Case IndustryType.SubsystemManufacturing
+            Case ProductionType.SubsystemManufacturing
                 SubsystemManufacturingFacilitySettings = TempSettings
-            Case IndustryType.Copying
+            Case ProductionType.Copying
                 CopyFacilitySettings = TempSettings
-            Case IndustryType.Invention
+            Case ProductionType.Invention
                 InventionFacilitySettings = TempSettings
-            Case IndustryType.T3Invention
+            Case ProductionType.T3Invention
                 T3InventionFacilitySettings = TempSettings
-            Case IndustryType.NoPOSManufacturing
+            Case ProductionType.NoPOSManufacturing
                 NoPOSFacilitySettings = TempSettings
-            Case IndustryType.POSFuelBlockManufacturing
+            Case ProductionType.POSFuelBlockManufacturing
                 POSFuelBlockFacilitySettings = TempSettings
-            Case IndustryType.POSLargeShipManufacturing
+            Case ProductionType.POSLargeShipManufacturing
                 POSLargeShipFacilitySettings = TempSettings
-            Case IndustryType.POSModuleManufacturing
+            Case ProductionType.POSModuleManufacturing
                 POSModuleFacilitySettings = TempSettings
         End Select
 
@@ -4839,14 +4839,14 @@ Public Class ProgramSettings
     End Function
 
     ' Saves the Facility Settings to XML
-    Public Sub FacilitySaveSettings(SentSettings As FacilitySettings, ProductionType As IndustryType, Tab As String)
+    Public Sub FacilitySaveSettings(SentSettings As FacilitySettings, LoadProductionType As ProductionType, Tab As String)
         Dim FacilitySettingsList(14) As Setting
 
         Try
             FacilitySettingsList(0) = New Setting("Facility", CStr(SentSettings.Facility))
             FacilitySettingsList(1) = New Setting("FacilityType", CStr(SentSettings.FacilityType))
             FacilitySettingsList(2) = New Setting("ActivityID", CStr(SentSettings.ActivityID))
-            FacilitySettingsList(3) = New Setting("ProductionType", CStr(SentSettings.ProductionType))
+            FacilitySettingsList(3) = New Setting("ProductionType", CStr(SentSettings.FacilityProductionType))
             FacilitySettingsList(4) = New Setting("MaterialMultiplier", CStr(SentSettings.MaterialMultiplier))
             FacilitySettingsList(5) = New Setting("TimeMultiplier", CStr(SentSettings.TimeMultiplier))
             FacilitySettingsList(6) = New Setting("TaxRate", CStr(SentSettings.TaxRate))
@@ -4859,38 +4859,38 @@ Public Class ProgramSettings
             FacilitySettingsList(13) = New Setting("IncludeActivityCost", CStr(SentSettings.IncludeActivityCost))
             FacilitySettingsList(14) = New Setting("IncludeActivityTime", CStr(SentSettings.IncludeActivityTime))
 
-            Select Case ProductionType
-                Case IndustryType.Manufacturing
+            Select Case LoadProductionType
+                Case ProductionType.Manufacturing
                     Call WriteSettingsToFile(Tab & ManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & ManufacturingFacilitySettingsFileName)
-                Case IndustryType.ComponentManufacturing
+                Case ProductionType.ComponentManufacturing
                     Call WriteSettingsToFile(Tab & ComponentsManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & ComponentsManufacturingFacilitySettingsFileName)
-                Case IndustryType.CapitalComponentManufacturing
+                Case ProductionType.CapitalComponentManufacturing
                     Call WriteSettingsToFile(Tab & CapitalComponentsManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & CapitalComponentsManufacturingFacilitySettingsFileName)
-                Case IndustryType.SubsystemManufacturing
+                Case ProductionType.SubsystemManufacturing
                     Call WriteSettingsToFile(Tab & SubsystemManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SubsystemManufacturingFacilitySettingsFileName)
-                Case IndustryType.SuperManufacturing
+                Case ProductionType.SuperManufacturing
                     Call WriteSettingsToFile(Tab & SuperCapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SuperCapitalManufacturingFacilitySettingsFileName)
-                Case IndustryType.T3CruiserManufacturing
+                Case ProductionType.T3CruiserManufacturing
                     Call WriteSettingsToFile(Tab & T3CruiserManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & T3CruiserManufacturingFacilitySettingsFileName)
-                Case IndustryType.T3DestroyerManufacturing
+                Case ProductionType.T3DestroyerManufacturing
                     Call WriteSettingsToFile(Tab & T3DestroyerManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & T3DestroyerManufacturingFacilitySettingsFileName)
-                Case IndustryType.BoosterManufacturing
+                Case ProductionType.BoosterManufacturing
                     Call WriteSettingsToFile(Tab & BoosterManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & BoosterManufacturingFacilitySettingsFileName)
-                Case IndustryType.CapitalManufacturing
+                Case ProductionType.CapitalManufacturing
                     Call WriteSettingsToFile(Tab & CapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & CapitalManufacturingFacilitySettingsFileName)
-                Case IndustryType.Copying
+                Case ProductionType.Copying
                     Call WriteSettingsToFile(Tab & CopyFacilitySettingsFileName, FacilitySettingsList, Tab & CopyFacilitySettingsFileName)
-                Case IndustryType.Invention
+                Case ProductionType.Invention
                     Call WriteSettingsToFile(Tab & InventionFacilitySettingsFileName, FacilitySettingsList, Tab & InventionFacilitySettingsFileName)
-                Case IndustryType.T3Invention
+                Case ProductionType.T3Invention
                     Call WriteSettingsToFile(Tab & T3InventionFacilitySettingsFileName, FacilitySettingsList, Tab & T3InventionFacilitySettingsFileName)
-                Case IndustryType.NoPOSManufacturing
+                Case ProductionType.NoPOSManufacturing
                     Call WriteSettingsToFile(Tab & NoPoSFacilitySettingsFileName, FacilitySettingsList, Tab & NoPoSFacilitySettingsFileName)
-                Case IndustryType.POSFuelBlockManufacturing
+                Case ProductionType.POSFuelBlockManufacturing
                     Call WriteSettingsToFile(Tab & POSFuelBlockFacilitySettingsFileName, FacilitySettingsList, Tab & POSFuelBlockFacilitySettingsFileName)
-                Case IndustryType.POSLargeShipManufacturing
+                Case ProductionType.POSLargeShipManufacturing
                     Call WriteSettingsToFile(Tab & POSLargeShipFacilitySettingsFileName, FacilitySettingsList, Tab & POSLargeShipFacilitySettingsFileName)
-                Case IndustryType.POSModuleManufacturing
+                Case ProductionType.POSModuleManufacturing
                     Call WriteSettingsToFile(Tab & POSModuleFacilitySettingsFileName, FacilitySettingsList, Tab & POSModuleFacilitySettingsFileName)
             End Select
 
@@ -4901,40 +4901,40 @@ Public Class ProgramSettings
     End Sub
 
     ' Returns the Facility Settings
-    Public Function GetFacilitySettings(ProductionType As IndustryType) As FacilitySettings
+    Public Function GetFacilitySettings(LoadProductionType As ProductionType) As FacilitySettings
 
-        Select Case ProductionType
-            Case IndustryType.Manufacturing
+        Select Case LoadProductionType
+            Case ProductionType.Manufacturing
                 Return ManufacturingFacilitySettings
-            Case IndustryType.BoosterManufacturing
+            Case ProductionType.BoosterManufacturing
                 Return BoosterManufacturingFacilitySettings
-            Case IndustryType.CapitalManufacturing
+            Case ProductionType.CapitalManufacturing
                 Return CapitalManufacturingFacilitySettings
-            Case IndustryType.SubsystemManufacturing
+            Case ProductionType.SubsystemManufacturing
                 Return SubsystemManufacturingFacilitySettings
-            Case IndustryType.SuperManufacturing
+            Case ProductionType.SuperManufacturing
                 Return SuperManufacturingFacilitySettings
-            Case IndustryType.T3CruiserManufacturing
+            Case ProductionType.T3CruiserManufacturing
                 Return T3CruiserManufacturingFacilitySettings
-            Case IndustryType.T3DestroyerManufacturing
+            Case ProductionType.T3DestroyerManufacturing
                 Return T3DestroyerManufacturingFacilitySettings
-            Case IndustryType.ComponentManufacturing
+            Case ProductionType.ComponentManufacturing
                 Return ComponentsManufacturingFacilitySettings
-            Case IndustryType.CapitalComponentManufacturing
+            Case ProductionType.CapitalComponentManufacturing
                 Return CapitalComponentsManufacturingFacilitySettings
-            Case IndustryType.Copying
+            Case ProductionType.Copying
                 Return CopyFacilitySettings
-            Case IndustryType.Invention
+            Case ProductionType.Invention
                 Return InventionFacilitySettings
-            Case IndustryType.T3Invention
+            Case ProductionType.T3Invention
                 Return T3InventionFacilitySettings
-            Case IndustryType.NoPOSManufacturing
+            Case ProductionType.NoPOSManufacturing
                 Return NoPOSFacilitySettings
-            Case IndustryType.POSFuelBlockManufacturing
+            Case ProductionType.POSFuelBlockManufacturing
                 Return POSFuelBlockFacilitySettings
-            Case IndustryType.POSLargeShipManufacturing
+            Case ProductionType.POSLargeShipManufacturing
                 Return POSLargeShipFacilitySettings
-            Case IndustryType.POSModuleManufacturing
+            Case ProductionType.POSModuleManufacturing
                 Return POSModuleFacilitySettings
         End Select
 
@@ -4943,7 +4943,7 @@ Public Class ProgramSettings
     End Function
 
     ' Load defaults 
-    Public Function SetFacilityDefaultSettings(ProductionType As IndustryType) As FacilitySettings
+    Public Function SetFacilityDefaultSettings(LoadProductionType As ProductionType) As FacilitySettings
         Dim TempSettings As FacilitySettings = Nothing
 
         ' These are all the same regardless
@@ -4956,8 +4956,8 @@ Public Class ProgramSettings
         TempSettings.IncludeActivityTime = FacilityDefaultIncludeTime
 
         ' For POS settings, use a null setting for boosters and supers, else use highsec (Jita)
-        Select Case ProductionType
-            Case IndustryType.SuperManufacturing, IndustryType.BoosterManufacturing
+        Select Case LoadProductionType
+            Case ProductionType.SuperManufacturing, ProductionType.BoosterManufacturing
                 TempSettings.SolarSystemID = DefaultNullFacilitySolarSystemID
                 TempSettings.SolarSystemName = DefaultNullFacilitySolarSystem
                 TempSettings.RegionID = DefaultNullFacilityRegionID
@@ -4970,102 +4970,102 @@ Public Class ProgramSettings
         End Select
 
         ' Load defaults 
-        Select Case ProductionType
-            Case IndustryType.Manufacturing
+        Select Case LoadProductionType
+            Case ProductionType.Manufacturing
                 TempSettings.Facility = DefaultManufacturingFacility
                 TempSettings.FacilityType = DefaultManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.Manufacturing
+                TempSettings.FacilityProductionType = ProductionType.Manufacturing
                 ManufacturingFacilitySettings = TempSettings
-            Case IndustryType.SuperManufacturing
+            Case ProductionType.SuperManufacturing
                 TempSettings.Facility = DefaultSuperManufacturingFacility
                 TempSettings.FacilityType = DefaultSuperManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.SuperManufacturing
+                TempSettings.FacilityProductionType = ProductionType.SuperManufacturing
                 SuperManufacturingFacilitySettings = TempSettings
-            Case IndustryType.BoosterManufacturing
+            Case ProductionType.BoosterManufacturing
                 TempSettings.Facility = DefaultBoosterManufacturingFacility
                 TempSettings.FacilityType = DefaultBoosterManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.BoosterManufacturing
+                TempSettings.FacilityProductionType = ProductionType.BoosterManufacturing
                 BoosterManufacturingFacilitySettings = TempSettings
-            Case IndustryType.SubsystemManufacturing
+            Case ProductionType.SubsystemManufacturing
                 TempSettings.Facility = DefaultSubsystemManufacturingFacility
                 TempSettings.FacilityType = DefaultSubsystemManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.SubsystemManufacturing
+                TempSettings.FacilityProductionType = ProductionType.SubsystemManufacturing
                 SubsystemManufacturingFacilitySettings = TempSettings
-            Case IndustryType.T3CruiserManufacturing
+            Case ProductionType.T3CruiserManufacturing
                 TempSettings.Facility = DefaultT3CruiserManufacturingFacility
                 TempSettings.FacilityType = DefaultT3CruiserManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.T3CruiserManufacturing
+                TempSettings.FacilityProductionType = ProductionType.T3CruiserManufacturing
                 T3CruiserManufacturingFacilitySettings = TempSettings
-            Case IndustryType.T3DestroyerManufacturing
+            Case ProductionType.T3DestroyerManufacturing
                 TempSettings.Facility = DefaultT3DestroyerManufacturingFacility
                 TempSettings.FacilityType = DefaultT3DestroyerManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.T3DestroyerManufacturing
+                TempSettings.FacilityProductionType = ProductionType.T3DestroyerManufacturing
                 T3DestroyerManufacturingFacilitySettings = TempSettings
-            Case IndustryType.CapitalManufacturing
+            Case ProductionType.CapitalManufacturing
                 TempSettings.Facility = DefaultCapitalManufacturingFacility
                 TempSettings.FacilityType = DefaultCapitalManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.CapitalManufacturing
+                TempSettings.FacilityProductionType = ProductionType.CapitalManufacturing
                 CapitalManufacturingFacilitySettings = TempSettings
-            Case IndustryType.ComponentManufacturing
+            Case ProductionType.ComponentManufacturing
                 TempSettings.Facility = DefaultComponentManufacturingFacility
                 TempSettings.FacilityType = DefaultComponentManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.ComponentManufacturing
+                TempSettings.FacilityProductionType = ProductionType.ComponentManufacturing
                 ComponentsManufacturingFacilitySettings = TempSettings
-            Case IndustryType.CapitalComponentManufacturing
+            Case ProductionType.CapitalComponentManufacturing
                 TempSettings.Facility = DefaultCapitalComponentManufacturingFacility
                 TempSettings.FacilityType = DefaultCapitalComponentManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.CapitalComponentManufacturing
+                TempSettings.FacilityProductionType = ProductionType.CapitalComponentManufacturing
                 CapitalComponentsManufacturingFacilitySettings = TempSettings
-            Case IndustryType.Copying
+            Case ProductionType.Copying
                 TempSettings.Facility = DefaultCopyFacility
                 TempSettings.FacilityType = DefaultCopyFacilityType
                 TempSettings.ActivityID = IndustryActivities.Copying
-                TempSettings.ProductionType = IndustryType.Copying
+                TempSettings.FacilityProductionType = ProductionType.Copying
                 CopyFacilitySettings = TempSettings
-            Case IndustryType.Invention
+            Case ProductionType.Invention
                 TempSettings.Facility = DefaultInventionFacility
                 TempSettings.FacilityType = DefaultInventionFacilityType
                 TempSettings.ActivityID = IndustryActivities.Invention
-                TempSettings.ProductionType = IndustryType.Invention
+                TempSettings.FacilityProductionType = ProductionType.Invention
                 InventionFacilitySettings = TempSettings
-            Case IndustryType.T3Invention
+            Case ProductionType.T3Invention
                 TempSettings.Facility = DefaultT3InventionFacility
                 TempSettings.FacilityType = DefaultT3InventionFacilityType
                 TempSettings.ActivityID = IndustryActivities.Invention
-                TempSettings.ProductionType = IndustryType.T3Invention
+                TempSettings.FacilityProductionType = ProductionType.T3Invention
                 InventionFacilitySettings = TempSettings
-            Case IndustryType.NoPOSManufacturing
+            Case ProductionType.NoPOSManufacturing
                 TempSettings.Facility = DefaultManufacturingFacility
                 TempSettings.FacilityType = DefaultManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.NoPOSManufacturing
+                TempSettings.FacilityProductionType = ProductionType.NoPOSManufacturing
                 NoPOSFacilitySettings = TempSettings
-            Case IndustryType.POSFuelBlockManufacturing
+            Case ProductionType.POSFuelBlockManufacturing
                 TempSettings.Facility = DefaultPOSFuelBlockManufacturingFacility
                 TempSettings.FacilityType = DefaultPOSFuelBlockManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.POSFuelBlockManufacturing
+                TempSettings.FacilityProductionType = ProductionType.POSFuelBlockManufacturing
                 POSFuelBlockFacilitySettings = TempSettings
-            Case IndustryType.POSLargeShipManufacturing
+            Case ProductionType.POSLargeShipManufacturing
                 TempSettings.Facility = DefaultPOSLargeShipManufacturingFacility
                 TempSettings.FacilityType = DefaultPOSLargeShipManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.POSLargeShipManufacturing
+                TempSettings.FacilityProductionType = ProductionType.POSLargeShipManufacturing
                 POSLargeShipFacilitySettings = TempSettings
-            Case IndustryType.POSModuleManufacturing
+            Case ProductionType.POSModuleManufacturing
                 TempSettings.Facility = DefaultPOSModuleManufacturingFacility
                 TempSettings.FacilityType = DefaultPOSModuleManufacturingFacilityType
                 TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.ProductionType = IndustryType.POSModuleManufacturing
+                TempSettings.FacilityProductionType = ProductionType.POSModuleManufacturing
                 POSModuleFacilitySettings = TempSettings
         End Select
 
@@ -6297,7 +6297,7 @@ Public Structure FacilitySettings
     Dim Facility As String ' Will be a station/outpost or a pos module
     Dim FacilityType As String ' Type of facility (station, outpost, or pos)
     Dim ActivityID As Integer
-    Dim ProductionType As IndustryType ' What will this facility be used for?
+    Dim FacilityProductionType As ProductionType ' What will this facility be used for?
     Dim MaterialMultiplier As Double ' Allows them to set the ME/TE/Tax for the facility (like in Outposts) when I can't get the info
     Dim TimeMultiplier As Double
     Dim TaxRate As Double

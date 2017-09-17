@@ -396,7 +396,9 @@ Public Class frmSettings
                     .DataExportFormat = rbtnExportSSV.Text
                 End If
                 .ShowToolTips = CBool(chkShowToolTips.Checked)
+                ' Disable sound here - only works for update dings, not all sound
                 .DisableSound = CBool(chkDisableSound.Checked)
+
                 .RefiningImplantValue = RefineImplantValue
                 .ManufacturingImplantValue = ManufacturingImplantValue
                 .CopyImplantValue = CopyImplantValue

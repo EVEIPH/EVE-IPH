@@ -1527,10 +1527,11 @@ Public Class frmCitadelFitting
 
         If readerPOS.Read Then
             ' Build T1 BP for the block, standard settings - CHECK
-            Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
-                                        SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-            Call BlockBP.BuildItems(False, False, False, False, False)
-            Return BlockBP.GetRawItemUnitPrice
+            ' Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
+            'SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+            '  Call BlockBP.BuildItems(False, False, False, False, False)
+            ' Return BlockBP.GetRawItemUnitPrice
+            Return 0
         Else
             Return 0
         End If

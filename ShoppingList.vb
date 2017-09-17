@@ -775,10 +775,10 @@ Public Class ShoppingList
                         With SentBuildList.GetBuiltItemList(i)
                             ' Get the component facility
                             Dim TempComponentFacility As New IndustryFacility
-                            Dim TempSettings As FacilitySettings = GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, .IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage)
+                            ' Dim TempSettings As FacilitySettings = GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, .IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage)
 
                             ' Set the component facility
-                            Call TempComponentFacility.LoadFacility(TempSettings, True)
+                            '  Call TempComponentFacility.LoadFacility(TempSettings, True)
 
                             ' Re-run with new quantity
                             Dim TempBP As New Blueprint(.BPTypeID, FoundBuildItem.ItemQuantity + .ItemQuantity, .BuildME, .BuildTE, 1,

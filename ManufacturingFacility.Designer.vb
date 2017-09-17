@@ -47,11 +47,14 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualME = New System.Windows.Forms.TextBox()
         Me.lblFacilityManualTE = New System.Windows.Forms.Label()
         Me.lblFacilityManualME = New System.Windows.Forms.Label()
-        Me.lblCostBonus = New System.Windows.Forms.Label()
-        Me.txtCostBonus = New System.Windows.Forms.TextBox()
+        Me.lblFacilityManualCost = New System.Windows.Forms.Label()
+        Me.txtFacilityManualCost = New System.Windows.Forms.TextBox()
         Me.lblFWUpgrade = New System.Windows.Forms.Label()
         Me.cmbFWUpgrade = New System.Windows.Forms.ComboBox()
         Me.chkFacilityToggle = New System.Windows.Forms.CheckBox()
+        Me.lblFacilityUsage = New System.Windows.Forms.Label()
+        Me.cmbFacilityActivities = New System.Windows.Forms.ComboBox()
+        Me.lblFacilityActivity = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -143,7 +146,7 @@ Partial Class ManufacturingFacility
         'lblFacilityType
         '
         Me.lblFacilityType.AutoSize = True
-        Me.lblFacilityType.Location = New System.Drawing.Point(3, 4)
+        Me.lblFacilityType.Location = New System.Drawing.Point(1, 4)
         Me.lblFacilityType.Name = "lblFacilityType"
         Me.lblFacilityType.Size = New System.Drawing.Size(69, 13)
         Me.lblFacilityType.TabIndex = 23
@@ -151,11 +154,9 @@ Partial Class ManufacturingFacility
         '
         'cmbFacilityType
         '
-        Me.cmbFacilityType.Enabled = False
         Me.cmbFacilityType.FormattingEnabled = True
         Me.cmbFacilityType.ItemHeight = 13
-        Me.cmbFacilityType.Items.AddRange(New Object() {"NPC Station", "Outpost", "POS"})
-        Me.cmbFacilityType.Location = New System.Drawing.Point(73, 1)
+        Me.cmbFacilityType.Location = New System.Drawing.Point(73, 0)
         Me.cmbFacilityType.Name = "cmbFacilityType"
         Me.cmbFacilityType.Size = New System.Drawing.Size(62, 21)
         Me.cmbFacilityType.TabIndex = 24
@@ -165,7 +166,7 @@ Partial Class ManufacturingFacility
         '
         Me.cmbLargeShips.FormattingEnabled = True
         Me.cmbLargeShips.Items.AddRange(New Object() {"All", "Capital", "Large"})
-        Me.cmbLargeShips.Location = New System.Drawing.Point(164, 85)
+        Me.cmbLargeShips.Location = New System.Drawing.Point(164, 84)
         Me.cmbLargeShips.Name = "cmbLargeShips"
         Me.cmbLargeShips.Size = New System.Drawing.Size(66, 21)
         Me.cmbLargeShips.TabIndex = 46
@@ -183,7 +184,7 @@ Partial Class ManufacturingFacility
         '
         Me.cmbFuelBlocks.FormattingEnabled = True
         Me.cmbFuelBlocks.Items.AddRange(New Object() {"All", "Ammunition", "Component"})
-        Me.cmbFuelBlocks.Location = New System.Drawing.Point(84, 85)
+        Me.cmbFuelBlocks.Location = New System.Drawing.Point(84, 84)
         Me.cmbFuelBlocks.Name = "cmbFuelBlocks"
         Me.cmbFuelBlocks.Size = New System.Drawing.Size(78, 21)
         Me.cmbFuelBlocks.TabIndex = 45
@@ -201,7 +202,7 @@ Partial Class ManufacturingFacility
         '
         Me.cmbModules.FormattingEnabled = True
         Me.cmbModules.Items.AddRange(New Object() {"All", "Equipment", "Rapid"})
-        Me.cmbModules.Location = New System.Drawing.Point(4, 85)
+        Me.cmbModules.Location = New System.Drawing.Point(4, 84)
         Me.cmbModules.Name = "cmbModules"
         Me.cmbModules.Size = New System.Drawing.Size(78, 21)
         Me.cmbModules.TabIndex = 44
@@ -223,7 +224,6 @@ Partial Class ManufacturingFacility
         Me.btnFacilityFitting.TabIndex = 92
         Me.btnFacilityFitting.Text = "Fitting"
         Me.btnFacilityFitting.UseVisualStyleBackColor = True
-        Me.btnFacilityFitting.Visible = False
         '
         'txtFacilityManualTax
         '
@@ -246,7 +246,6 @@ Partial Class ManufacturingFacility
         '
         'btnFacilitySave
         '
-        Me.btnFacilitySave.Enabled = False
         Me.btnFacilitySave.Location = New System.Drawing.Point(257, 83)
         Me.btnFacilitySave.Name = "btnFacilitySave"
         Me.btnFacilitySave.Size = New System.Drawing.Size(40, 22)
@@ -292,24 +291,24 @@ Partial Class ManufacturingFacility
         Me.lblFacilityManualME.TabIndex = 85
         Me.lblFacilityManualME.Text = "ME:"
         '
-        'lblCostBonus
+        'lblFacilityManualCost
         '
-        Me.lblCostBonus.AutoSize = True
-        Me.lblCostBonus.Location = New System.Drawing.Point(6, 109)
-        Me.lblCostBonus.Name = "lblCostBonus"
-        Me.lblCostBonus.Size = New System.Drawing.Size(31, 13)
-        Me.lblCostBonus.TabIndex = 93
-        Me.lblCostBonus.Text = "Cost:"
+        Me.lblFacilityManualCost.AutoSize = True
+        Me.lblFacilityManualCost.Location = New System.Drawing.Point(6, 109)
+        Me.lblFacilityManualCost.Name = "lblFacilityManualCost"
+        Me.lblFacilityManualCost.Size = New System.Drawing.Size(31, 13)
+        Me.lblFacilityManualCost.TabIndex = 93
+        Me.lblFacilityManualCost.Text = "Cost:"
         '
-        'txtCostBonus
+        'txtFacilityManualCost
         '
-        Me.txtCostBonus.Location = New System.Drawing.Point(38, 105)
-        Me.txtCostBonus.MaxLength = 5
-        Me.txtCostBonus.Name = "txtCostBonus"
-        Me.txtCostBonus.Size = New System.Drawing.Size(38, 20)
-        Me.txtCostBonus.TabIndex = 94
-        Me.txtCostBonus.Text = "-99.9%"
-        Me.txtCostBonus.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtFacilityManualCost.Location = New System.Drawing.Point(38, 105)
+        Me.txtFacilityManualCost.MaxLength = 5
+        Me.txtFacilityManualCost.Name = "txtFacilityManualCost"
+        Me.txtFacilityManualCost.Size = New System.Drawing.Size(38, 20)
+        Me.txtFacilityManualCost.TabIndex = 94
+        Me.txtFacilityManualCost.Text = "-99.9%"
+        Me.txtFacilityManualCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'lblFWUpgrade
         '
@@ -340,15 +339,46 @@ Partial Class ManufacturingFacility
         Me.chkFacilityToggle.Text = "Dessy/Cap"
         Me.chkFacilityToggle.UseVisualStyleBackColor = True
         '
+        'lblFacilityUsage
+        '
+        Me.lblFacilityUsage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblFacilityUsage.Location = New System.Drawing.Point(115, 128)
+        Me.lblFacilityUsage.Name = "lblFacilityUsage"
+        Me.lblFacilityUsage.Size = New System.Drawing.Size(177, 17)
+        Me.lblFacilityUsage.TabIndex = 100
+        Me.lblFacilityUsage.Text = "0.00"
+        Me.lblFacilityUsage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'cmbFacilityActivities
+        '
+        Me.cmbFacilityActivities.FormattingEnabled = True
+        Me.cmbFacilityActivities.Location = New System.Drawing.Point(6, 148)
+        Me.cmbFacilityActivities.Name = "cmbFacilityActivities"
+        Me.cmbFacilityActivities.Size = New System.Drawing.Size(170, 21)
+        Me.cmbFacilityActivities.TabIndex = 102
+        Me.cmbFacilityActivities.Text = "Select Activity"
+        '
+        'lblFacilityActivity
+        '
+        Me.lblFacilityActivity.AutoSize = True
+        Me.lblFacilityActivity.Location = New System.Drawing.Point(4, 132)
+        Me.lblFacilityActivity.Name = "lblFacilityActivity"
+        Me.lblFacilityActivity.Size = New System.Drawing.Size(44, 13)
+        Me.lblFacilityActivity.TabIndex = 101
+        Me.lblFacilityActivity.Text = "Activity:"
+        '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.cmbFacilityActivities)
+        Me.Controls.Add(Me.lblFacilityActivity)
+        Me.Controls.Add(Me.lblFacilityUsage)
         Me.Controls.Add(Me.chkFacilityToggle)
         Me.Controls.Add(Me.lblFWUpgrade)
         Me.Controls.Add(Me.cmbFWUpgrade)
-        Me.Controls.Add(Me.txtCostBonus)
-        Me.Controls.Add(Me.lblCostBonus)
+        Me.Controls.Add(Me.txtFacilityManualCost)
+        Me.Controls.Add(Me.lblFacilityManualCost)
         Me.Controls.Add(Me.btnFacilityFitting)
         Me.Controls.Add(Me.txtFacilityManualTax)
         Me.Controls.Add(Me.lblFacilityManualTax)
@@ -375,7 +405,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbModules)
         Me.Controls.Add(Me.lblModules)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(302, 128)
+        Me.Size = New System.Drawing.Size(302, 176)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -405,9 +435,12 @@ Partial Class ManufacturingFacility
     Friend WithEvents txtFacilityManualME As TextBox
     Friend WithEvents lblFacilityManualTE As Label
     Friend WithEvents lblFacilityManualME As Label
-    Friend WithEvents lblCostBonus As Label
-    Friend WithEvents txtCostBonus As TextBox
+    Friend WithEvents lblFacilityManualCost As Label
+    Friend WithEvents txtFacilityManualCost As TextBox
     Friend WithEvents lblFWUpgrade As Label
     Friend WithEvents cmbFWUpgrade As ComboBox
     Friend WithEvents chkFacilityToggle As CheckBox
+    Friend WithEvents lblFacilityUsage As Label
+    Friend WithEvents cmbFacilityActivities As ComboBox
+    Friend WithEvents lblFacilityActivity As Label
 End Class

@@ -32,7 +32,7 @@ Namespace My
         
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateMainForm()
-            Me.MainForm = Global.EVE_Isk_per_Hour.frmMain
+            Me.MainForm = Global.EVE_Isk_per_Hour.frmFacilityTest
         End Sub
         
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
