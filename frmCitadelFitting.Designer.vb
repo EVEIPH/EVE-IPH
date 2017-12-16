@@ -173,8 +173,8 @@ Partial Class frmCitadelFitting
         Me.gbBonuses = New System.Windows.Forms.GroupBox()
         Me.lstRigBonuses = New System.Windows.Forms.ListView()
         Me.Label5 = New System.Windows.Forms.Label()
-        Me.CheckBox2 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
+        Me.chkNullSec = New System.Windows.Forms.CheckBox()
+        Me.chkLowSec = New System.Windows.Forms.CheckBox()
         Me.chkHighSec = New System.Windows.Forms.CheckBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.rbtnMinmatarFuelBlock = New System.Windows.Forms.RadioButton()
@@ -198,7 +198,7 @@ Partial Class frmCitadelFitting
         Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
-        Me.btnLoadFitting = New System.Windows.Forms.Button()
+        Me.btnCloseForm = New System.Windows.Forms.Button()
         Me.gbTextFilter = New System.Windows.Forms.GroupBox()
         Me.btnItemFilter = New System.Windows.Forms.Button()
         Me.btnResetItemFilter = New System.Windows.Forms.Button()
@@ -909,16 +909,16 @@ Partial Class frmCitadelFitting
         Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS6)
         Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS3)
         Me.gbPOSFuelPrices.Controls.Add(Me.txtPOS9)
-        Me.gbPOSFuelPrices.Location = New System.Drawing.Point(16, 217)
+        Me.gbPOSFuelPrices.Location = New System.Drawing.Point(6, 216)
         Me.gbPOSFuelPrices.Name = "gbPOSFuelPrices"
-        Me.gbPOSFuelPrices.Size = New System.Drawing.Size(322, 294)
+        Me.gbPOSFuelPrices.Size = New System.Drawing.Size(583, 210)
         Me.gbPOSFuelPrices.TabIndex = 225
         Me.gbPOSFuelPrices.TabStop = False
         Me.gbPOSFuelPrices.Text = "Fuel Block Material Prices"
         '
         'txtCharters
         '
-        Me.txtCharters.Location = New System.Drawing.Point(49, 254)
+        Me.txtCharters.Location = New System.Drawing.Point(470, 75)
         Me.txtCharters.Name = "txtCharters"
         Me.txtCharters.Size = New System.Drawing.Size(101, 20)
         Me.txtCharters.TabIndex = 223
@@ -926,7 +926,7 @@ Partial Class frmCitadelFitting
         '
         'lblCharters
         '
-        Me.lblCharters.Location = New System.Drawing.Point(49, 239)
+        Me.lblCharters.Location = New System.Drawing.Point(470, 60)
         Me.lblCharters.Name = "lblCharters"
         Me.lblCharters.Size = New System.Drawing.Size(101, 13)
         Me.lblCharters.TabIndex = 225
@@ -935,7 +935,7 @@ Partial Class frmCitadelFitting
         '
         'btnPOSUpdateFuelPrices
         '
-        Me.btnPOSUpdateFuelPrices.Location = New System.Drawing.Point(180, 250)
+        Me.btnPOSUpdateFuelPrices.Location = New System.Drawing.Point(229, 161)
         Me.btnPOSUpdateFuelPrices.Name = "btnPOSUpdateFuelPrices"
         Me.btnPOSUpdateFuelPrices.Size = New System.Drawing.Size(124, 34)
         Me.btnPOSUpdateFuelPrices.TabIndex = 226
@@ -946,7 +946,7 @@ Partial Class frmCitadelFitting
         '
         Me.picPOSCharters.BackColor = System.Drawing.Color.Transparent
         Me.picPOSCharters.Image = CType(resources.GetObject("picPOSCharters.Image"), System.Drawing.Image)
-        Me.picPOSCharters.Location = New System.Drawing.Point(11, 248)
+        Me.picPOSCharters.Location = New System.Drawing.Point(434, 69)
         Me.picPOSCharters.Name = "picPOSCharters"
         Me.picPOSCharters.Size = New System.Drawing.Size(32, 32)
         Me.picPOSCharters.TabIndex = 224
@@ -954,7 +954,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS1
         '
-        Me.txtPOS1.Location = New System.Drawing.Point(49, 32)
+        Me.txtPOS1.Location = New System.Drawing.Point(46, 32)
         Me.txtPOS1.Name = "txtPOS1"
         Me.txtPOS1.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS1.TabIndex = 187
@@ -962,7 +962,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS12
         '
-        Me.txtPOS12.Location = New System.Drawing.Point(210, 217)
+        Me.txtPOS12.Location = New System.Drawing.Point(470, 118)
         Me.txtPOS12.Name = "txtPOS12"
         Me.txtPOS12.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS12.TabIndex = 220
@@ -980,7 +980,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS12
         '
-        Me.lblPOS12.Location = New System.Drawing.Point(210, 202)
+        Me.lblPOS12.Location = New System.Drawing.Point(470, 103)
         Me.lblPOS12.Name = "lblPOS12"
         Me.lblPOS12.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS12.TabIndex = 222
@@ -991,7 +991,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS10.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS10.Image = CType(resources.GetObject("pictPOS10.Image"), System.Drawing.Image)
-        Me.pictPOS10.Location = New System.Drawing.Point(172, 174)
+        Me.pictPOS10.Location = New System.Drawing.Point(293, 112)
         Me.pictPOS10.Name = "pictPOS10"
         Me.pictPOS10.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS10.TabIndex = 199
@@ -1001,7 +1001,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS12.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS12.Image = CType(resources.GetObject("pictPOS12.Image"), System.Drawing.Image)
-        Me.pictPOS12.Location = New System.Drawing.Point(172, 211)
+        Me.pictPOS12.Location = New System.Drawing.Point(434, 112)
         Me.pictPOS12.Name = "pictPOS12"
         Me.pictPOS12.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS12.TabIndex = 221
@@ -1011,7 +1011,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS3.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS3.Image = CType(resources.GetObject("pictPOS3.Image"), System.Drawing.Image)
-        Me.pictPOS3.Location = New System.Drawing.Point(11, 63)
+        Me.pictPOS3.Location = New System.Drawing.Point(11, 69)
         Me.pictPOS3.Name = "pictPOS3"
         Me.pictPOS3.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS3.TabIndex = 200
@@ -1019,7 +1019,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS8
         '
-        Me.txtPOS8.Location = New System.Drawing.Point(210, 143)
+        Me.txtPOS8.Location = New System.Drawing.Point(188, 118)
         Me.txtPOS8.Name = "txtPOS8"
         Me.txtPOS8.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS8.TabIndex = 194
@@ -1029,7 +1029,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS11.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS11.Image = CType(resources.GetObject("pictPOS11.Image"), System.Drawing.Image)
-        Me.pictPOS11.Location = New System.Drawing.Point(11, 211)
+        Me.pictPOS11.Location = New System.Drawing.Point(12, 155)
         Me.pictPOS11.Name = "pictPOS11"
         Me.pictPOS11.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS11.TabIndex = 201
@@ -1037,7 +1037,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS8
         '
-        Me.lblPOS8.Location = New System.Drawing.Point(210, 128)
+        Me.lblPOS8.Location = New System.Drawing.Point(188, 103)
         Me.lblPOS8.Name = "lblPOS8"
         Me.lblPOS8.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS8.TabIndex = 219
@@ -1048,7 +1048,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS9.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS9.Image = CType(resources.GetObject("pictPOS9.Image"), System.Drawing.Image)
-        Me.pictPOS9.Location = New System.Drawing.Point(11, 174)
+        Me.pictPOS9.Location = New System.Drawing.Point(11, 112)
         Me.pictPOS9.Name = "pictPOS9"
         Me.pictPOS9.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS9.TabIndex = 202
@@ -1058,7 +1058,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS8.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS8.Image = CType(resources.GetObject("pictPOS8.Image"), System.Drawing.Image)
-        Me.pictPOS8.Location = New System.Drawing.Point(172, 137)
+        Me.pictPOS8.Location = New System.Drawing.Point(152, 112)
         Me.pictPOS8.Name = "pictPOS8"
         Me.pictPOS8.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS8.TabIndex = 218
@@ -1068,7 +1068,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS7.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS7.Image = CType(resources.GetObject("pictPOS7.Image"), System.Drawing.Image)
-        Me.pictPOS7.Location = New System.Drawing.Point(11, 137)
+        Me.pictPOS7.Location = New System.Drawing.Point(293, 69)
         Me.pictPOS7.Name = "pictPOS7"
         Me.pictPOS7.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS7.TabIndex = 203
@@ -1076,7 +1076,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS4
         '
-        Me.txtPOS4.Location = New System.Drawing.Point(210, 69)
+        Me.txtPOS4.Location = New System.Drawing.Point(188, 75)
         Me.txtPOS4.Name = "txtPOS4"
         Me.txtPOS4.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS4.TabIndex = 190
@@ -1086,7 +1086,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS6.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS6.Image = CType(resources.GetObject("pictPOS6.Image"), System.Drawing.Image)
-        Me.pictPOS6.Location = New System.Drawing.Point(172, 100)
+        Me.pictPOS6.Location = New System.Drawing.Point(434, 26)
         Me.pictPOS6.Name = "pictPOS6"
         Me.pictPOS6.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS6.TabIndex = 204
@@ -1094,7 +1094,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS2
         '
-        Me.txtPOS2.Location = New System.Drawing.Point(210, 32)
+        Me.txtPOS2.Location = New System.Drawing.Point(188, 32)
         Me.txtPOS2.Name = "txtPOS2"
         Me.txtPOS2.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS2.TabIndex = 188
@@ -1104,7 +1104,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS5.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS5.Image = CType(resources.GetObject("pictPOS5.Image"), System.Drawing.Image)
-        Me.pictPOS5.Location = New System.Drawing.Point(11, 100)
+        Me.pictPOS5.Location = New System.Drawing.Point(293, 26)
         Me.pictPOS5.Name = "pictPOS5"
         Me.pictPOS5.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS5.TabIndex = 205
@@ -1112,7 +1112,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS4
         '
-        Me.lblPOS4.Location = New System.Drawing.Point(210, 54)
+        Me.lblPOS4.Location = New System.Drawing.Point(188, 60)
         Me.lblPOS4.Name = "lblPOS4"
         Me.lblPOS4.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS4.TabIndex = 217
@@ -1121,7 +1121,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS1
         '
-        Me.lblPOS1.Location = New System.Drawing.Point(49, 17)
+        Me.lblPOS1.Location = New System.Drawing.Point(46, 17)
         Me.lblPOS1.Name = "lblPOS1"
         Me.lblPOS1.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS1.TabIndex = 206
@@ -1130,7 +1130,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS2
         '
-        Me.lblPOS2.Location = New System.Drawing.Point(210, 17)
+        Me.lblPOS2.Location = New System.Drawing.Point(188, 17)
         Me.lblPOS2.Name = "lblPOS2"
         Me.lblPOS2.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS2.TabIndex = 216
@@ -1139,7 +1139,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS3
         '
-        Me.lblPOS3.Location = New System.Drawing.Point(49, 54)
+        Me.lblPOS3.Location = New System.Drawing.Point(46, 60)
         Me.lblPOS3.Name = "lblPOS3"
         Me.lblPOS3.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS3.TabIndex = 207
@@ -1150,7 +1150,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS4.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS4.Image = CType(resources.GetObject("pictPOS4.Image"), System.Drawing.Image)
-        Me.pictPOS4.Location = New System.Drawing.Point(172, 63)
+        Me.pictPOS4.Location = New System.Drawing.Point(152, 69)
         Me.pictPOS4.Name = "pictPOS4"
         Me.pictPOS4.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS4.TabIndex = 215
@@ -1158,7 +1158,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS9
         '
-        Me.lblPOS9.Location = New System.Drawing.Point(49, 165)
+        Me.lblPOS9.Location = New System.Drawing.Point(46, 103)
         Me.lblPOS9.Name = "lblPOS9"
         Me.lblPOS9.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS9.TabIndex = 208
@@ -1169,7 +1169,7 @@ Partial Class frmCitadelFitting
         '
         Me.pictPOS2.BackColor = System.Drawing.Color.Transparent
         Me.pictPOS2.Image = CType(resources.GetObject("pictPOS2.Image"), System.Drawing.Image)
-        Me.pictPOS2.Location = New System.Drawing.Point(172, 26)
+        Me.pictPOS2.Location = New System.Drawing.Point(152, 26)
         Me.pictPOS2.Name = "pictPOS2"
         Me.pictPOS2.Size = New System.Drawing.Size(32, 32)
         Me.pictPOS2.TabIndex = 214
@@ -1177,7 +1177,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS6
         '
-        Me.lblPOS6.Location = New System.Drawing.Point(210, 91)
+        Me.lblPOS6.Location = New System.Drawing.Point(470, 17)
         Me.lblPOS6.Name = "lblPOS6"
         Me.lblPOS6.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS6.TabIndex = 209
@@ -1186,7 +1186,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS5
         '
-        Me.txtPOS5.Location = New System.Drawing.Point(49, 106)
+        Me.txtPOS5.Location = New System.Drawing.Point(331, 32)
         Me.txtPOS5.Name = "txtPOS5"
         Me.txtPOS5.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS5.TabIndex = 191
@@ -1194,7 +1194,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS10
         '
-        Me.lblPOS10.Location = New System.Drawing.Point(210, 165)
+        Me.lblPOS10.Location = New System.Drawing.Point(331, 103)
         Me.lblPOS10.Name = "lblPOS10"
         Me.lblPOS10.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS10.TabIndex = 210
@@ -1203,7 +1203,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS7
         '
-        Me.txtPOS7.Location = New System.Drawing.Point(49, 143)
+        Me.txtPOS7.Location = New System.Drawing.Point(331, 75)
         Me.txtPOS7.Name = "txtPOS7"
         Me.txtPOS7.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS7.TabIndex = 193
@@ -1211,7 +1211,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS11
         '
-        Me.lblPOS11.Location = New System.Drawing.Point(49, 202)
+        Me.lblPOS11.Location = New System.Drawing.Point(46, 146)
         Me.lblPOS11.Name = "lblPOS11"
         Me.lblPOS11.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS11.TabIndex = 211
@@ -1220,7 +1220,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS11
         '
-        Me.txtPOS11.Location = New System.Drawing.Point(49, 217)
+        Me.txtPOS11.Location = New System.Drawing.Point(46, 161)
         Me.txtPOS11.Name = "txtPOS11"
         Me.txtPOS11.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS11.TabIndex = 197
@@ -1228,7 +1228,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS7
         '
-        Me.lblPOS7.Location = New System.Drawing.Point(49, 128)
+        Me.lblPOS7.Location = New System.Drawing.Point(331, 60)
         Me.lblPOS7.Name = "lblPOS7"
         Me.lblPOS7.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS7.TabIndex = 212
@@ -1237,7 +1237,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS10
         '
-        Me.txtPOS10.Location = New System.Drawing.Point(210, 180)
+        Me.txtPOS10.Location = New System.Drawing.Point(331, 118)
         Me.txtPOS10.Name = "txtPOS10"
         Me.txtPOS10.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS10.TabIndex = 196
@@ -1245,7 +1245,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOS5
         '
-        Me.lblPOS5.Location = New System.Drawing.Point(49, 91)
+        Me.lblPOS5.Location = New System.Drawing.Point(331, 17)
         Me.lblPOS5.Name = "lblPOS5"
         Me.lblPOS5.Size = New System.Drawing.Size(101, 13)
         Me.lblPOS5.TabIndex = 213
@@ -1254,7 +1254,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS6
         '
-        Me.txtPOS6.Location = New System.Drawing.Point(210, 106)
+        Me.txtPOS6.Location = New System.Drawing.Point(470, 32)
         Me.txtPOS6.Name = "txtPOS6"
         Me.txtPOS6.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS6.TabIndex = 192
@@ -1262,7 +1262,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS3
         '
-        Me.txtPOS3.Location = New System.Drawing.Point(49, 69)
+        Me.txtPOS3.Location = New System.Drawing.Point(46, 75)
         Me.txtPOS3.Name = "txtPOS3"
         Me.txtPOS3.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS3.TabIndex = 189
@@ -1270,7 +1270,7 @@ Partial Class frmCitadelFitting
         '
         'txtPOS9
         '
-        Me.txtPOS9.Location = New System.Drawing.Point(49, 180)
+        Me.txtPOS9.Location = New System.Drawing.Point(46, 118)
         Me.txtPOS9.Name = "txtPOS9"
         Me.txtPOS9.Size = New System.Drawing.Size(101, 20)
         Me.txtPOS9.TabIndex = 195
@@ -1319,9 +1319,9 @@ Partial Class frmCitadelFitting
         Me.gbPOSFuelBlocks.Controls.Add(Me.lblPOSFuelBlockAmarr)
         Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSMinmatarFuelBlock)
         Me.gbPOSFuelBlocks.Controls.Add(Me.picPOSGallenteFuelBlock)
-        Me.gbPOSFuelBlocks.Location = New System.Drawing.Point(16, 15)
+        Me.gbPOSFuelBlocks.Location = New System.Drawing.Point(6, 15)
         Me.gbPOSFuelBlocks.Name = "gbPOSFuelBlocks"
-        Me.gbPOSFuelBlocks.Size = New System.Drawing.Size(473, 195)
+        Me.gbPOSFuelBlocks.Size = New System.Drawing.Size(583, 195)
         Me.gbPOSFuelBlocks.TabIndex = 227
         Me.gbPOSFuelBlocks.TabStop = False
         Me.gbPOSFuelBlocks.Text = "Fuel Blocks"
@@ -1331,7 +1331,7 @@ Partial Class frmCitadelFitting
         Me.gbFuelBlockOptions.Controls.Add(Me.rbtnPOSBuyBlocks)
         Me.gbFuelBlockOptions.Controls.Add(Me.rbtnPOSBuildBlocks)
         Me.gbFuelBlockOptions.Controls.Add(Me.chkAutoUpdateFuelPrice)
-        Me.gbFuelBlockOptions.Location = New System.Drawing.Point(335, 19)
+        Me.gbFuelBlockOptions.Location = New System.Drawing.Point(447, 18)
         Me.gbFuelBlockOptions.Name = "gbFuelBlockOptions"
         Me.gbFuelBlockOptions.Size = New System.Drawing.Size(124, 88)
         Me.gbFuelBlockOptions.TabIndex = 228
@@ -1373,7 +1373,7 @@ Partial Class frmCitadelFitting
         'Label11
         '
         Me.Label11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label11.Location = New System.Drawing.Point(245, 140)
+        Me.Label11.Location = New System.Drawing.Point(320, 143)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(76, 20)
         Me.Label11.TabIndex = 276
@@ -1382,7 +1382,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox5
         '
-        Me.TextBox5.Location = New System.Drawing.Point(245, 118)
+        Me.TextBox5.Location = New System.Drawing.Point(320, 121)
         Me.TextBox5.Name = "TextBox5"
         Me.TextBox5.Size = New System.Drawing.Size(76, 20)
         Me.TextBox5.TabIndex = 268
@@ -1392,7 +1392,7 @@ Partial Class frmCitadelFitting
         'Label12
         '
         Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(210, 143)
+        Me.Label12.Location = New System.Drawing.Point(285, 146)
         Me.Label12.Name = "Label12"
         Me.Label12.Size = New System.Drawing.Size(33, 13)
         Me.Label12.TabIndex = 278
@@ -1402,7 +1402,7 @@ Partial Class frmCitadelFitting
         'Label13
         '
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(215, 122)
+        Me.Label13.Location = New System.Drawing.Point(290, 125)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(28, 13)
         Me.Label13.TabIndex = 277
@@ -1411,7 +1411,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox6
         '
-        Me.TextBox6.Location = New System.Drawing.Point(280, 162)
+        Me.TextBox6.Location = New System.Drawing.Point(355, 165)
         Me.TextBox6.Name = "TextBox6"
         Me.TextBox6.Size = New System.Drawing.Size(41, 20)
         Me.TextBox6.TabIndex = 274
@@ -1422,7 +1422,7 @@ Partial Class frmCitadelFitting
         '
         Me.picMinmatarFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picMinmatarFuelBlock.Image = CType(resources.GetObject("picMinmatarFuelBlock.Image"), System.Drawing.Image)
-        Me.picMinmatarFuelBlock.Location = New System.Drawing.Point(172, 118)
+        Me.picMinmatarFuelBlock.Location = New System.Drawing.Point(247, 121)
         Me.picMinmatarFuelBlock.Name = "picMinmatarFuelBlock"
         Me.picMinmatarFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picMinmatarFuelBlock.TabIndex = 269
@@ -1430,7 +1430,7 @@ Partial Class frmCitadelFitting
         '
         'Label14
         '
-        Me.Label14.Location = New System.Drawing.Point(177, 165)
+        Me.Label14.Location = New System.Drawing.Point(252, 168)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(97, 15)
         Me.Label14.TabIndex = 275
@@ -1438,7 +1438,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOSFuelBlockMinmatar
         '
-        Me.lblPOSFuelBlockMinmatar.Location = New System.Drawing.Point(242, 104)
+        Me.lblPOSFuelBlockMinmatar.Location = New System.Drawing.Point(317, 107)
         Me.lblPOSFuelBlockMinmatar.Name = "lblPOSFuelBlockMinmatar"
         Me.lblPOSFuelBlockMinmatar.Size = New System.Drawing.Size(76, 13)
         Me.lblPOSFuelBlockMinmatar.TabIndex = 271
@@ -1448,7 +1448,7 @@ Partial Class frmCitadelFitting
         'Label6
         '
         Me.Label6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label6.Location = New System.Drawing.Point(84, 140)
+        Me.Label6.Location = New System.Drawing.Point(112, 143)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(76, 20)
         Me.Label6.TabIndex = 265
@@ -1457,7 +1457,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox3
         '
-        Me.TextBox3.Location = New System.Drawing.Point(84, 118)
+        Me.TextBox3.Location = New System.Drawing.Point(112, 121)
         Me.TextBox3.Name = "TextBox3"
         Me.TextBox3.Size = New System.Drawing.Size(76, 20)
         Me.TextBox3.TabIndex = 257
@@ -1467,7 +1467,7 @@ Partial Class frmCitadelFitting
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(49, 143)
+        Me.Label7.Location = New System.Drawing.Point(77, 146)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(33, 13)
         Me.Label7.TabIndex = 267
@@ -1477,7 +1477,7 @@ Partial Class frmCitadelFitting
         'Label8
         '
         Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(54, 122)
+        Me.Label8.Location = New System.Drawing.Point(82, 125)
         Me.Label8.Name = "Label8"
         Me.Label8.Size = New System.Drawing.Size(28, 13)
         Me.Label8.TabIndex = 266
@@ -1486,7 +1486,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox4
         '
-        Me.TextBox4.Location = New System.Drawing.Point(119, 162)
+        Me.TextBox4.Location = New System.Drawing.Point(147, 165)
         Me.TextBox4.Name = "TextBox4"
         Me.TextBox4.Size = New System.Drawing.Size(41, 20)
         Me.TextBox4.TabIndex = 263
@@ -1497,7 +1497,7 @@ Partial Class frmCitadelFitting
         '
         Me.picGallenteFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picGallenteFuelBlock.Image = CType(resources.GetObject("picGallenteFuelBlock.Image"), System.Drawing.Image)
-        Me.picGallenteFuelBlock.Location = New System.Drawing.Point(11, 118)
+        Me.picGallenteFuelBlock.Location = New System.Drawing.Point(39, 121)
         Me.picGallenteFuelBlock.Name = "picGallenteFuelBlock"
         Me.picGallenteFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picGallenteFuelBlock.TabIndex = 258
@@ -1506,7 +1506,7 @@ Partial Class frmCitadelFitting
         'PictureBox6
         '
         Me.PictureBox6.BackColor = System.Drawing.Color.Transparent
-        Me.PictureBox6.Location = New System.Drawing.Point(11, 118)
+        Me.PictureBox6.Location = New System.Drawing.Point(39, 121)
         Me.PictureBox6.Name = "PictureBox6"
         Me.PictureBox6.Size = New System.Drawing.Size(32, 32)
         Me.PictureBox6.TabIndex = 259
@@ -1514,7 +1514,7 @@ Partial Class frmCitadelFitting
         '
         'Label9
         '
-        Me.Label9.Location = New System.Drawing.Point(16, 165)
+        Me.Label9.Location = New System.Drawing.Point(44, 168)
         Me.Label9.Name = "Label9"
         Me.Label9.Size = New System.Drawing.Size(97, 15)
         Me.Label9.TabIndex = 264
@@ -1522,7 +1522,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOSFuelBlockGallente
         '
-        Me.lblPOSFuelBlockGallente.Location = New System.Drawing.Point(81, 104)
+        Me.lblPOSFuelBlockGallente.Location = New System.Drawing.Point(109, 107)
         Me.lblPOSFuelBlockGallente.Name = "lblPOSFuelBlockGallente"
         Me.lblPOSFuelBlockGallente.Size = New System.Drawing.Size(76, 13)
         Me.lblPOSFuelBlockGallente.TabIndex = 260
@@ -1532,7 +1532,7 @@ Partial Class frmCitadelFitting
         'PictureBox7
         '
         Me.PictureBox7.BackColor = System.Drawing.Color.Transparent
-        Me.PictureBox7.Location = New System.Drawing.Point(11, 118)
+        Me.PictureBox7.Location = New System.Drawing.Point(39, 121)
         Me.PictureBox7.Name = "PictureBox7"
         Me.PictureBox7.Size = New System.Drawing.Size(32, 32)
         Me.PictureBox7.TabIndex = 262
@@ -1541,7 +1541,7 @@ Partial Class frmCitadelFitting
         'PictureBox8
         '
         Me.PictureBox8.BackColor = System.Drawing.Color.Transparent
-        Me.PictureBox8.Location = New System.Drawing.Point(11, 118)
+        Me.PictureBox8.Location = New System.Drawing.Point(39, 121)
         Me.PictureBox8.Name = "PictureBox8"
         Me.PictureBox8.Size = New System.Drawing.Size(32, 32)
         Me.PictureBox8.TabIndex = 261
@@ -1550,7 +1550,7 @@ Partial Class frmCitadelFitting
         'Label1
         '
         Me.Label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label1.Location = New System.Drawing.Point(245, 50)
+        Me.Label1.Location = New System.Drawing.Point(320, 53)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(76, 20)
         Me.Label1.TabIndex = 254
@@ -1559,7 +1559,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox1
         '
-        Me.TextBox1.Location = New System.Drawing.Point(245, 28)
+        Me.TextBox1.Location = New System.Drawing.Point(320, 31)
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.Size = New System.Drawing.Size(76, 20)
         Me.TextBox1.TabIndex = 246
@@ -1569,7 +1569,7 @@ Partial Class frmCitadelFitting
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(210, 53)
+        Me.Label2.Location = New System.Drawing.Point(285, 56)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(33, 13)
         Me.Label2.TabIndex = 256
@@ -1579,7 +1579,7 @@ Partial Class frmCitadelFitting
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(215, 32)
+        Me.Label3.Location = New System.Drawing.Point(290, 35)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(28, 13)
         Me.Label3.TabIndex = 255
@@ -1588,7 +1588,7 @@ Partial Class frmCitadelFitting
         '
         'TextBox2
         '
-        Me.TextBox2.Location = New System.Drawing.Point(280, 72)
+        Me.TextBox2.Location = New System.Drawing.Point(355, 75)
         Me.TextBox2.Name = "TextBox2"
         Me.TextBox2.Size = New System.Drawing.Size(41, 20)
         Me.TextBox2.TabIndex = 252
@@ -1599,7 +1599,7 @@ Partial Class frmCitadelFitting
         '
         Me.picCaldariFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picCaldariFuelBlock.Image = CType(resources.GetObject("picCaldariFuelBlock.Image"), System.Drawing.Image)
-        Me.picCaldariFuelBlock.Location = New System.Drawing.Point(172, 28)
+        Me.picCaldariFuelBlock.Location = New System.Drawing.Point(247, 31)
         Me.picCaldariFuelBlock.Name = "picCaldariFuelBlock"
         Me.picCaldariFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picCaldariFuelBlock.TabIndex = 247
@@ -1607,7 +1607,7 @@ Partial Class frmCitadelFitting
         '
         'Label4
         '
-        Me.Label4.Location = New System.Drawing.Point(177, 75)
+        Me.Label4.Location = New System.Drawing.Point(252, 78)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(97, 15)
         Me.Label4.TabIndex = 253
@@ -1615,7 +1615,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOSFuelBlockCaldari
         '
-        Me.lblPOSFuelBlockCaldari.Location = New System.Drawing.Point(242, 14)
+        Me.lblPOSFuelBlockCaldari.Location = New System.Drawing.Point(317, 17)
         Me.lblPOSFuelBlockCaldari.Name = "lblPOSFuelBlockCaldari"
         Me.lblPOSFuelBlockCaldari.Size = New System.Drawing.Size(76, 13)
         Me.lblPOSFuelBlockCaldari.TabIndex = 249
@@ -1625,7 +1625,7 @@ Partial Class frmCitadelFitting
         'lblAmarrFuelBlockBuild
         '
         Me.lblAmarrFuelBlockBuild.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblAmarrFuelBlockBuild.Location = New System.Drawing.Point(85, 50)
+        Me.lblAmarrFuelBlockBuild.Location = New System.Drawing.Point(113, 53)
         Me.lblAmarrFuelBlockBuild.Name = "lblAmarrFuelBlockBuild"
         Me.lblAmarrFuelBlockBuild.Size = New System.Drawing.Size(76, 20)
         Me.lblAmarrFuelBlockBuild.TabIndex = 243
@@ -1634,7 +1634,7 @@ Partial Class frmCitadelFitting
         '
         'txtAmarrFuelBlockBuy
         '
-        Me.txtAmarrFuelBlockBuy.Location = New System.Drawing.Point(85, 28)
+        Me.txtAmarrFuelBlockBuy.Location = New System.Drawing.Point(113, 31)
         Me.txtAmarrFuelBlockBuy.Name = "txtAmarrFuelBlockBuy"
         Me.txtAmarrFuelBlockBuy.Size = New System.Drawing.Size(76, 20)
         Me.txtAmarrFuelBlockBuy.TabIndex = 220
@@ -1644,7 +1644,7 @@ Partial Class frmCitadelFitting
         'lblAmarrBlockBuild2
         '
         Me.lblAmarrBlockBuild2.AutoSize = True
-        Me.lblAmarrBlockBuild2.Location = New System.Drawing.Point(50, 53)
+        Me.lblAmarrBlockBuild2.Location = New System.Drawing.Point(78, 56)
         Me.lblAmarrBlockBuild2.Name = "lblAmarrBlockBuild2"
         Me.lblAmarrBlockBuild2.Size = New System.Drawing.Size(33, 13)
         Me.lblAmarrBlockBuild2.TabIndex = 245
@@ -1654,7 +1654,7 @@ Partial Class frmCitadelFitting
         'lblAmarrBlockBuy2
         '
         Me.lblAmarrBlockBuy2.AutoSize = True
-        Me.lblAmarrBlockBuy2.Location = New System.Drawing.Point(55, 32)
+        Me.lblAmarrBlockBuy2.Location = New System.Drawing.Point(83, 35)
         Me.lblAmarrBlockBuy2.Name = "lblAmarrBlockBuy2"
         Me.lblAmarrBlockBuy2.Size = New System.Drawing.Size(28, 13)
         Me.lblAmarrBlockBuy2.TabIndex = 244
@@ -1663,7 +1663,7 @@ Partial Class frmCitadelFitting
         '
         'txtAmarrFuelBlockBPME
         '
-        Me.txtAmarrFuelBlockBPME.Location = New System.Drawing.Point(120, 72)
+        Me.txtAmarrFuelBlockBPME.Location = New System.Drawing.Point(148, 75)
         Me.txtAmarrFuelBlockBPME.Name = "txtAmarrFuelBlockBPME"
         Me.txtAmarrFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
         Me.txtAmarrFuelBlockBPME.TabIndex = 230
@@ -1672,7 +1672,7 @@ Partial Class frmCitadelFitting
         '
         'btnPOSUpdateBlockPrice
         '
-        Me.btnPOSUpdateBlockPrice.Location = New System.Drawing.Point(335, 151)
+        Me.btnPOSUpdateBlockPrice.Location = New System.Drawing.Point(447, 150)
         Me.btnPOSUpdateBlockPrice.Name = "btnPOSUpdateBlockPrice"
         Me.btnPOSUpdateBlockPrice.Size = New System.Drawing.Size(124, 34)
         Me.btnPOSUpdateBlockPrice.TabIndex = 233
@@ -1681,7 +1681,7 @@ Partial Class frmCitadelFitting
         '
         'btnRefreshBlockData
         '
-        Me.btnRefreshBlockData.Location = New System.Drawing.Point(335, 111)
+        Me.btnRefreshBlockData.Location = New System.Drawing.Point(447, 110)
         Me.btnRefreshBlockData.Name = "btnRefreshBlockData"
         Me.btnRefreshBlockData.Size = New System.Drawing.Size(124, 34)
         Me.btnRefreshBlockData.TabIndex = 232
@@ -1692,7 +1692,7 @@ Partial Class frmCitadelFitting
         '
         Me.picAmarrFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picAmarrFuelBlock.Image = CType(resources.GetObject("picAmarrFuelBlock.Image"), System.Drawing.Image)
-        Me.picAmarrFuelBlock.Location = New System.Drawing.Point(11, 28)
+        Me.picAmarrFuelBlock.Location = New System.Drawing.Point(39, 31)
         Me.picAmarrFuelBlock.Name = "picAmarrFuelBlock"
         Me.picAmarrFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picAmarrFuelBlock.TabIndex = 222
@@ -1702,7 +1702,7 @@ Partial Class frmCitadelFitting
         '
         Me.picPOSCaldariFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picPOSCaldariFuelBlock.Image = CType(resources.GetObject("picPOSCaldariFuelBlock.Image"), System.Drawing.Image)
-        Me.picPOSCaldariFuelBlock.Location = New System.Drawing.Point(12, 28)
+        Me.picPOSCaldariFuelBlock.Location = New System.Drawing.Point(40, 31)
         Me.picPOSCaldariFuelBlock.Name = "picPOSCaldariFuelBlock"
         Me.picPOSCaldariFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picPOSCaldariFuelBlock.TabIndex = 223
@@ -1710,7 +1710,7 @@ Partial Class frmCitadelFitting
         '
         'lblAmarrFuelBlockBPME
         '
-        Me.lblAmarrFuelBlockBPME.Location = New System.Drawing.Point(17, 75)
+        Me.lblAmarrFuelBlockBPME.Location = New System.Drawing.Point(45, 78)
         Me.lblAmarrFuelBlockBPME.Name = "lblAmarrFuelBlockBPME"
         Me.lblAmarrFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
         Me.lblAmarrFuelBlockBPME.TabIndex = 231
@@ -1718,7 +1718,7 @@ Partial Class frmCitadelFitting
         '
         'lblPOSFuelBlockAmarr
         '
-        Me.lblPOSFuelBlockAmarr.Location = New System.Drawing.Point(82, 14)
+        Me.lblPOSFuelBlockAmarr.Location = New System.Drawing.Point(110, 17)
         Me.lblPOSFuelBlockAmarr.Name = "lblPOSFuelBlockAmarr"
         Me.lblPOSFuelBlockAmarr.Size = New System.Drawing.Size(76, 13)
         Me.lblPOSFuelBlockAmarr.TabIndex = 225
@@ -1729,7 +1729,7 @@ Partial Class frmCitadelFitting
         '
         Me.picPOSMinmatarFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picPOSMinmatarFuelBlock.Image = CType(resources.GetObject("picPOSMinmatarFuelBlock.Image"), System.Drawing.Image)
-        Me.picPOSMinmatarFuelBlock.Location = New System.Drawing.Point(12, 28)
+        Me.picPOSMinmatarFuelBlock.Location = New System.Drawing.Point(40, 31)
         Me.picPOSMinmatarFuelBlock.Name = "picPOSMinmatarFuelBlock"
         Me.picPOSMinmatarFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picPOSMinmatarFuelBlock.TabIndex = 227
@@ -1739,7 +1739,7 @@ Partial Class frmCitadelFitting
         '
         Me.picPOSGallenteFuelBlock.BackColor = System.Drawing.Color.Transparent
         Me.picPOSGallenteFuelBlock.Image = CType(resources.GetObject("picPOSGallenteFuelBlock.Image"), System.Drawing.Image)
-        Me.picPOSGallenteFuelBlock.Location = New System.Drawing.Point(12, 28)
+        Me.picPOSGallenteFuelBlock.Location = New System.Drawing.Point(40, 31)
         Me.picPOSGallenteFuelBlock.Name = "picPOSGallenteFuelBlock"
         Me.picPOSGallenteFuelBlock.Size = New System.Drawing.Size(32, 32)
         Me.picPOSGallenteFuelBlock.TabIndex = 226
@@ -1863,8 +1863,8 @@ Partial Class frmCitadelFitting
         '
         Me.gbBonuses.Controls.Add(Me.lstRigBonuses)
         Me.gbBonuses.Controls.Add(Me.Label5)
-        Me.gbBonuses.Controls.Add(Me.CheckBox2)
-        Me.gbBonuses.Controls.Add(Me.CheckBox1)
+        Me.gbBonuses.Controls.Add(Me.chkNullSec)
+        Me.gbBonuses.Controls.Add(Me.chkLowSec)
         Me.gbBonuses.Controls.Add(Me.chkHighSec)
         Me.gbBonuses.Location = New System.Drawing.Point(6, 416)
         Me.gbBonuses.Name = "gbBonuses"
@@ -1896,25 +1896,25 @@ Partial Class frmCitadelFitting
         Me.Label5.TabIndex = 81
         Me.Label5.Text = "System Security:"
         '
-        'CheckBox2
+        'chkNullSec
         '
-        Me.CheckBox2.AutoSize = True
-        Me.CheckBox2.Location = New System.Drawing.Point(103, 34)
-        Me.CheckBox2.Name = "CheckBox2"
-        Me.CheckBox2.Size = New System.Drawing.Size(44, 17)
-        Me.CheckBox2.TabIndex = 80
-        Me.CheckBox2.Text = "Null"
-        Me.CheckBox2.UseVisualStyleBackColor = True
+        Me.chkNullSec.AutoSize = True
+        Me.chkNullSec.Location = New System.Drawing.Point(103, 34)
+        Me.chkNullSec.Name = "chkNullSec"
+        Me.chkNullSec.Size = New System.Drawing.Size(44, 17)
+        Me.chkNullSec.TabIndex = 80
+        Me.chkNullSec.Text = "Null"
+        Me.chkNullSec.UseVisualStyleBackColor = True
         '
-        'CheckBox1
+        'chkLowSec
         '
-        Me.CheckBox1.AutoSize = True
-        Me.CheckBox1.Location = New System.Drawing.Point(56, 34)
-        Me.CheckBox1.Name = "CheckBox1"
-        Me.CheckBox1.Size = New System.Drawing.Size(46, 17)
-        Me.CheckBox1.TabIndex = 79
-        Me.CheckBox1.Text = "Low"
-        Me.CheckBox1.UseVisualStyleBackColor = True
+        Me.chkLowSec.AutoSize = True
+        Me.chkLowSec.Location = New System.Drawing.Point(56, 34)
+        Me.chkLowSec.Name = "chkLowSec"
+        Me.chkLowSec.Size = New System.Drawing.Size(46, 17)
+        Me.chkLowSec.TabIndex = 79
+        Me.chkLowSec.Text = "Low"
+        Me.chkLowSec.UseVisualStyleBackColor = True
         '
         'chkHighSec
         '
@@ -2129,7 +2129,7 @@ Partial Class frmCitadelFitting
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(267, 35)
+        Me.Button1.Location = New System.Drawing.Point(180, 35)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(81, 30)
         Me.Button1.TabIndex = 60
@@ -2148,14 +2148,14 @@ Partial Class frmCitadelFitting
         Me.pbFloat.TabStop = False
         Me.pbFloat.Visible = False
         '
-        'btnLoadFitting
+        'btnCloseForm
         '
-        Me.btnLoadFitting.Location = New System.Drawing.Point(180, 35)
-        Me.btnLoadFitting.Name = "btnLoadFitting"
-        Me.btnLoadFitting.Size = New System.Drawing.Size(81, 30)
-        Me.btnLoadFitting.TabIndex = 61
-        Me.btnLoadFitting.Text = "Load Fitting"
-        Me.btnLoadFitting.UseVisualStyleBackColor = True
+        Me.btnCloseForm.Location = New System.Drawing.Point(267, 35)
+        Me.btnCloseForm.Name = "btnCloseForm"
+        Me.btnCloseForm.Size = New System.Drawing.Size(81, 30)
+        Me.btnCloseForm.TabIndex = 61
+        Me.btnCloseForm.Text = "Close"
+        Me.btnCloseForm.UseVisualStyleBackColor = True
         '
         'gbTextFilter
         '
@@ -2201,7 +2201,7 @@ Partial Class frmCitadelFitting
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(1134, 611)
         Me.Controls.Add(Me.gbTextFilter)
-        Me.Controls.Add(Me.btnLoadFitting)
+        Me.Controls.Add(Me.btnCloseForm)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.pbFloat)
         Me.Controls.Add(Me.GBStats)
@@ -2422,7 +2422,7 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblServiceModuleBPH As Label
     Friend WithEvents lblFuelBPH As Label
     Friend WithEvents chkAutoUpdateFuelPrice As CheckBox
-    Friend WithEvents btnLoadFitting As Button
+    Friend WithEvents btnCloseForm As Button
     Friend WithEvents lblOnlineAmt As Label
     Friend WithEvents GroupBox2 As GroupBox
     Friend WithEvents lblServiceModuleOnlineAmt As Label
@@ -2465,8 +2465,8 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblLauncherSlots As Label
     Friend WithEvents gbBonuses As GroupBox
     Friend WithEvents Label5 As Label
-    Friend WithEvents CheckBox2 As CheckBox
-    Friend WithEvents CheckBox1 As CheckBox
+    Friend WithEvents chkNullSec As CheckBox
+    Friend WithEvents chkLowSec As CheckBox
     Friend WithEvents chkHighSec As CheckBox
     Friend WithEvents lstRigBonuses As ListView
 End Class

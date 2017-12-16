@@ -1037,7 +1037,6 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.Button1 = New System.Windows.Forms.Button()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1808,7 +1807,6 @@ Partial Class frmMain
         '
         'tabBlueprints
         '
-        Me.tabBlueprints.Controls.Add(Me.Button1)
         Me.tabBlueprints.Controls.Add(Me.lstBPList)
         Me.tabBlueprints.Controls.Add(Me.gbBPBlueprintType)
         Me.tabBlueprints.Controls.Add(Me.gbBPBlueprintTech)
@@ -11401,16 +11399,6 @@ Partial Class frmMain
         Me.MyListView1.UseCompatibleStateImageBehavior = False
         Me.MyListView1.View = System.Windows.Forms.View.Details
         '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(583, 261)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(94, 34)
-        Me.Button1.TabIndex = 24
-        Me.Button1.Text = "Save BP"
-        Me.Button1.UseVisualStyleBackColor = True
-        Me.Button1.Visible = False
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -12653,5 +12641,4 @@ Partial Class frmMain
     Friend WithEvents chkBPSimpleCopy As CheckBox
     Friend WithEvents lblBPSimpleCopy As Label
     Friend WithEvents mnuViewAssets As ToolStripMenuItem
-    Friend WithEvents Button1 As Button
 End Class

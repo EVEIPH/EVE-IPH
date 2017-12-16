@@ -24,6 +24,7 @@ Partial Class frmFacilityTest
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmFacilityTest))
         Me.tabFacility = New System.Windows.Forms.TabPage()
+        Me.BPFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilities = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilityBase = New System.Windows.Forms.TabPage()
@@ -37,7 +38,9 @@ Partial Class frmFacilityTest
         Me.tabCalcFacilitySubsystems = New System.Windows.Forms.TabPage()
         Me.tabCalcFacilityBoosters = New System.Windows.Forms.TabPage()
         Me.tabCalcFacilityNoPOS = New System.Windows.Forms.TabPage()
-        Me.BPFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Button2 = New System.Windows.Forms.Button()
+        Me.Button3 = New System.Windows.Forms.Button()
         Me.tabFacility.SuspendLayout()
         Me.tabBPInventionEquip.SuspendLayout()
         Me.tabCalcFacilities.SuspendLayout()
@@ -55,6 +58,13 @@ Partial Class frmFacilityTest
         Me.tabFacility.TabIndex = 1
         Me.tabFacility.Text = "Facility"
         Me.tabFacility.UseVisualStyleBackColor = True
+        '
+        'BPFacility
+        '
+        Me.BPFacility.Location = New System.Drawing.Point(0, 0)
+        Me.BPFacility.Name = "BPFacility"
+        Me.BPFacility.Size = New System.Drawing.Size(281, 142)
+        Me.BPFacility.TabIndex = 0
         '
         'tabBPInventionEquip
         '
@@ -90,7 +100,7 @@ Partial Class frmFacilityTest
         Me.tabCalcFacilities.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabCalcFacilities.HotTrack = True
         Me.tabCalcFacilities.ItemSize = New System.Drawing.Size(49, 20)
-        Me.tabCalcFacilities.Location = New System.Drawing.Point(11, 180)
+        Me.tabCalcFacilities.Location = New System.Drawing.Point(11, 228)
         Me.tabCalcFacilities.Multiline = True
         Me.tabCalcFacilities.Name = "tabCalcFacilities"
         Me.tabCalcFacilities.Padding = New System.Drawing.Point(0, 0)
@@ -201,18 +211,41 @@ Partial Class frmFacilityTest
         Me.tabCalcFacilityNoPOS.Text = "No POS"
         Me.tabCalcFacilityNoPOS.UseVisualStyleBackColor = True
         '
-        'BPFacility
+        'Button1
         '
-        Me.BPFacility.Location = New System.Drawing.Point(0, 0)
-        Me.BPFacility.Name = "BPFacility"
-        Me.BPFacility.Size = New System.Drawing.Size(281, 142)
-        Me.BPFacility.TabIndex = 0
+        Me.Button1.Location = New System.Drawing.Point(62, 186)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(66, 21)
+        Me.Button1.TabIndex = 19
+        Me.Button1.Text = "Test BP 1"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'Button2
+        '
+        Me.Button2.Location = New System.Drawing.Point(134, 186)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(66, 21)
+        Me.Button2.TabIndex = 20
+        Me.Button2.Text = "Test BP 2"
+        Me.Button2.UseVisualStyleBackColor = True
+        '
+        'Button3
+        '
+        Me.Button3.Location = New System.Drawing.Point(206, 186)
+        Me.Button3.Name = "Button3"
+        Me.Button3.Size = New System.Drawing.Size(66, 21)
+        Me.Button3.TabIndex = 21
+        Me.Button3.Text = "Test BP 3"
+        Me.Button3.UseVisualStyleBackColor = True
         '
         'frmFacilityTest
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(334, 373)
+        Me.ClientSize = New System.Drawing.Size(334, 416)
+        Me.Controls.Add(Me.Button3)
+        Me.Controls.Add(Me.Button2)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.tabCalcFacilities)
         Me.Controls.Add(Me.tabBPInventionEquip)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
@@ -243,4 +276,7 @@ Partial Class frmFacilityTest
     Friend WithEvents tabCalcFacilityBoosters As TabPage
     Friend WithEvents tabCalcFacilityNoPOS As TabPage
     Friend WithEvents BPFacility As ManufacturingFacility
+    Friend WithEvents Button1 As Button
+    Friend WithEvents Button2 As Button
+    Friend WithEvents Button3 As Button
 End Class

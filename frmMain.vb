@@ -702,19 +702,6 @@ Public Class frmMain
             ttUpdatePrices.SetToolTip(txtCalcLabLines, "Enter the number of Laboratory Lines you have to invent per day for calculations. Double-Click to enter max runs for this character.")
 
             ttUpdatePrices.SetToolTip(txtCalcSVRThreshold, "No results with an SVR lower than the number entered will be returned.")
-
-            'ttUpdatePrices.SetToolTip(lblCalcBaseFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcComponentFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcInventionFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcT3InventionFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcCopyFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcSuperFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcCapitalFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcT3FacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcSubsystemFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcBoosterFacilityDefault, "Double-Click to load default facility")
-            'ttUpdatePrices.SetToolTip(lblCalcNoPOSFacilityDefault, "Double-Click to load default facility")
-
             ttUpdatePrices.SetToolTip(gbCalcFWUpgrade, "Sets the FW System Upgrade Level for any system not set (on BP tab) for the selected category.")
 
         End If
@@ -4346,11 +4333,6 @@ Tabs:
     '    End If
     'End Sub
 
-    'Private Sub btnBPFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnBPFacilityFitting.Click
-    '    Dim f1 As New frmCitadelFitting()
-    '    f1.Show()
-    'End Sub
-
     '' For outposts, save the ME/TE/Tax data since this is specific to the user's input
     'Private Sub UpdateMMTMTaxDataforOutpost(ByRef SentFacility As IndustryFacility, Activity As IndustryActivities)
     '    Dim SQL As String
@@ -5532,18 +5514,6 @@ Tabs:
         ElseIf Trim(txtBPAddlCosts.Text) = "" Then
             txtBPAddlCosts.Text = "0.00"
         End If
-    End Sub
-
-    Private Sub cmbBPFacilitySystem_TextChanged(sender As Object, e As System.EventArgs)
-        'If cmbBPFacilitySystem.Text <> "Select System" And cmbBPFacilitySystem.Text.Length > 3 And cmbBPFacilitySystem.Text.Contains("(") Then
-        '    Dim Start As Integer = InStr(cmbBPFacilitySystem.Text, "(")
-        '    Dim Length As Integer = InStr(cmbBPFacilitySystem.Text, ")") - 1 - Start
-        '    txtBPUpdateCostIndex.Text = FormatPercent(cmbBPFacilitySystem.Text.Substring(Start, Length))
-
-        '    ' Load the faction system upgrade for this system
-        '    Call SetFWUpgradeControls(BPTab, lblBPFWUpgrade, cmbBPFWUpgrade, cmbBPFacilitySystem.Text, btnBPUpdateCostIndex)
-
-        'End If
     End Sub
 
     Private Sub txtBPMarketPriceEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtBPMarketPriceEdit.GotFocus
@@ -8212,12 +8182,12 @@ ExitForm:
     ' Adds item to shopping list
     Private Sub btnAddBPMatstoShoppingList_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBPAddBPMatstoShoppingList.Click
 
-        ' Just add it to shopping list with options
-        Call AddToShoppingList(SelectedBlueprint, chkBPBuildBuy.Checked, rbtnBPRawmatCopy.Checked,
-                               BlueprintBuildFacility.MaterialMultiplier, BlueprintBuildFacility.FacilityType,
-                               chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked,
-                               BlueprintBuildFacility.IncludeActivityCost, BlueprintBuildFacility.IncludeActivityTime,
-                               BlueprintBuildFacility.IncludeActivityUsage, rbtnBPCopyInvREMats.Checked)
+        '' Just add it to shopping list with options
+        'Call AddToShoppingList(SelectedBlueprint, chkBPBuildBuy.Checked, rbtnBPRawmatCopy.Checked,
+        '                       BlueprintBuildFacility.MaterialMultiplier, BlueprintBuildFacility.FacilityType,
+        '                       chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked,
+        '                       BlueprintBuildFacility.IncludeActivityCost, BlueprintBuildFacility.IncludeActivityTime,
+        '                       BlueprintBuildFacility.IncludeActivityUsage, rbtnBPCopyInvREMats.Checked)
 
         If TotalShoppingList.GetNumShoppingItems > 0 Then
             ' Add the final item and mark as items in list
@@ -20927,11 +20897,11 @@ ExitCalc:
                     ' Get the BP variable and send the other settings to shopping list
                     With FoundItem
                         If Not IsNothing(.Blueprint) Then
-                            Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
-                                               .Blueprint.GetManufacturingFacility.FacilityType,
-                                               chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked,
-                                               .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime,
-                                               .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
+                            'Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
+                            '                   .Blueprint.GetManufacturingFacility.FacilityType,
+                            '                   chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked,
+                            '                   .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime,
+                            '                   .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
                         Else
                             MsgBox("You must calculate an item before adding it to the shopping list.", MsgBoxStyle.Information, Application.ProductName)
                             Exit Sub
@@ -26214,8 +26184,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link T2 - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\4276_32.png")
+            If System.IO.File.Exists(UserImagePath & "\43551_32.png") Then
+                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\43551_32.png")
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -26226,8 +26196,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\22557_32.png")
+            If System.IO.File.Exists(UserImagePath & "\42528_32.png") Then
+                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\42528_32.png")
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -26240,8 +26210,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link T2 - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\4276_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\4276_32.png")
+            If System.IO.File.Exists(UserImagePath & "\43551_32.png") Then
+                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\43551_32.png")
             Else
                 pictMineRangeLink.Image = Nothing
             End If
@@ -26249,8 +26219,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\22557_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\22557_32.png")
+            If System.IO.File.Exists(UserImagePath & "\42528_32.png") Then
+                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\42528_32.png")
             Else
                 pictMineRangeLink.Image = Nothing
             End If

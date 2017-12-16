@@ -190,7 +190,7 @@ Public Class ProgramSettings
 
     Public FacilityDefaultMM As Double = 1
     Public FacilityDefaultTM As Double = 1
-    Public DefaultFacilityCM As Double = 1
+    Public FacilityDefaultCM As Double = 1
     Public FacilityDefaultTax As Double = 0.1 ' Only for processing
     Public OutpostDefaultTax As Double = 0 ' If we are saving the settings, then the only time would be for outposts
 

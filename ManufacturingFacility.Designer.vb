@@ -22,6 +22,7 @@ Partial Class ManufacturingFacility
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.lblInclude = New System.Windows.Forms.Label()
         Me.chkFacilityIncludeUsage = New System.Windows.Forms.CheckBox()
         Me.chkFacilityIncludeTime = New System.Windows.Forms.CheckBox()
@@ -55,6 +56,7 @@ Partial Class ManufacturingFacility
         Me.lblFacilityUsage = New System.Windows.Forms.Label()
         Me.cmbFacilityActivities = New System.Windows.Forms.ComboBox()
         Me.lblFacilityActivity = New System.Windows.Forms.Label()
+        Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
         Me.SuspendLayout()
         '
         'lblInclude
@@ -443,4 +445,5 @@ Partial Class ManufacturingFacility
     Friend WithEvents lblFacilityUsage As Label
     Friend WithEvents cmbFacilityActivities As ComboBox
     Friend WithEvents lblFacilityActivity As Label
+    Friend WithEvents mainToolTip As ToolTip
 End Class

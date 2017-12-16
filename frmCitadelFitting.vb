@@ -8,8 +8,13 @@ Public Class frmCitadelFitting
 
     Private SlotPictureBoxList As New List(Of PictureBox)
     Private FirstLoad As Boolean
+    Private UpdateChecks As Boolean
 
-    'Public CurrentCitadelName As String
+    ' Public settings after intialized and returned for setting in the facilities
+    Public CitadelName As String = ""
+    Private SelectedCitadelView As FacilityView ' To help determine where we save citadels, etc. 
+    Private SelectedCharacterID As Long
+    Private SelectedFacilityProductionType As ProductionType
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
@@ -19,7 +24,9 @@ Public Class frmCitadelFitting
 
     Private POSFuelPricesUpdated As Boolean
 
-    Private ConstUsesMissilesCode As Integer = 101
+    Private Const UsesMissilesEffectID As Integer = 101
+    Private Const ServiceResearchLabI As String = "35891"
+    Private Const ServiceHyasyodaLab As String = "45550"
 
     Private StructureDBDataList As New List(Of CitadelDBData) ' For storing all the types of citadel structures
 
@@ -29,6 +36,8 @@ Public Class frmCitadelFitting
     Private ServiceSlotBaseX As Integer
     Private ServiceSlotBaseWidth As Integer
     Private ServiceSlotSpacing As Integer
+
+    Private SecurityCheckBoxes As List(Of CheckBox)
 
     ' Used to look up modules and rigs to go into what slot
     Private Enum SlotSizes
@@ -61,14 +70,12 @@ Public Class frmCitadelFitting
 
     End Structure
 
-    Public Sub New()
+    Public Sub New(ByVal InitName As String, ByVal CharacterID As Long, ByVal FacilityType As ProductionType,
+                   ByVal FacilityLocation As FacilityView, ByVal FacilitySystemSecurity As Double)
+        FirstLoad = True
 
         ' This call is required by the designer.
         InitializeComponent()
-        FirstLoad = True
-
-        'Temp stuff
-        EVEDB = New DBConnection(SQLiteDBFileName)
 
         ' Put all the slot images into an array
         With SlotPictureBoxList
@@ -119,14 +126,46 @@ Public Class frmCitadelFitting
         ServiceSlotBaseWidth = ServiceSlot1.Width
         ServiceSlotSpacing = ServiceSlot2.Location.X - (ServiceSlot1.Location.X + ServiceSlot1.Width)
 
+        SecurityCheckBoxes = New List(Of CheckBox)
+        Call SecurityCheckBoxes.Add(chkHighSec)
+        Call SecurityCheckBoxes.Add(chkLowSec)
+        Call SecurityCheckBoxes.Add(chkNullSec)
+
+        ' Select the security check box
+        If FacilitySystemSecurity <= 0.0 Then
+            chkNullSec.Checked = True
+        ElseIf FacilitySystemSecurity < 0.45 Then
+            chkLowSec.Checked = True
+        Else
+            chkHighSec.Checked = True
+        End If
+
+        'enable/ disable depending on the view
+        If SelectedCitadelView = FacilityView.NoView Then
+            ' They aren't connected to a system
+            chkHighSec.Enabled = True
+            chkLowSec.Enabled = True
+            chkNullSec.Enabled = True
+        Else
+            ' They are launching from a facility to view a system, don't let them change it
+            chkHighSec.Enabled = False
+            chkLowSec.Enabled = False
+            chkNullSec.Enabled = False
+        End If
+
         ' Get all data on structures for DB look ups first
         Call LoadCitadelDBData()
 
         ' Add all the images to the image list
         Call LoadFittingImages()
 
-        ' Load the citadel
-        Call LoadCitadel("Raitaru")
+        ' Load the facility default
+        Call LoadCitadel(InitName)
+
+        ' Save these varibles for later
+        SelectedCharacterID = CharacterID
+        SelectedCitadelView = FacilityLocation
+        SelectedFacilityProductionType = FacilityType
 
         FirstLoad = False
 
@@ -285,7 +324,7 @@ Public Class frmCitadelFitting
 
     ' Determines if the item is a missile launcher or not to adjust weapon slots
     Private Function IsMissileLauncher(TypeID As String) As Boolean
-        Dim SQL As String = String.Format("SELECT * FROM type_effects WHERe typeid = {0} AND effectID = {1}", TypeID, ConstUsesMissilesCode)
+        Dim SQL As String = String.Format("SELECT * FROM type_effects WHERe typeid = {0} AND effectID = {1}", TypeID, UsesMissilesEffectID)
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -350,11 +389,21 @@ Public Class frmCitadelFitting
         If CurrentServiceTypes.Contains(TypeID) Then
             Return True
         Else
-            Return False
+            ' Special case, check if they have a research lab loaded already, only allow one
+            If CurrentServiceTypes.Contains(ServiceResearchLabI) And TypeID = ServiceHyasyodaLab Or
+                    CurrentServiceTypes.Contains(ServiceHyasyodaLab) And TypeID = ServiceResearchLabI Then
+                Return True
+            Else
+                Return False
+            End If
+
         End If
     End Function
 
     Private Sub LoadCitadel(ByVal SentCitadelName As String)
+
+        CitadelName = SentCitadelName
+
         ' First get the data to use
         SelectedCitadel = GetCitadelData(SentCitadelName)
         ' Set the combo text
@@ -614,6 +663,9 @@ Public Class frmCitadelFitting
         ' Update the stats
         Call UpdateCitadelStatLabels()
 
+        ' Update the bonuses from items installed
+        Call UpdateBonusList()
+
     End Sub
 
     ' If true, increments the launcher slots, else decrements
@@ -634,6 +686,7 @@ Public Class frmCitadelFitting
 
     End Sub
 
+    ' Returns the list of moduleIDs installed in the citadel
     Private Function GetInstalledSlots() As List(Of Integer)
         Dim ReturnItems As New List(Of Integer)
 
@@ -767,29 +820,37 @@ Public Class frmCitadelFitting
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
-        SQL = "SELECT typeID, typeName FROM INVENTORY_TYPES, INVENTORY_GROUPS "
-        SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND ABS(categoryID) = 66 " ' I save rigs as -66
-        SQL &= "AND INVENTORY_TYPES.published <> 0"
+        Try
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsReader = DBCommand.ExecuteReader
+            SQL = "SELECT typeID, typeName FROM INVENTORY_TYPES, INVENTORY_GROUPS "
+            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND ABS(categoryID) = 66 " ' I save rigs as -66
+            SQL &= "AND INVENTORY_TYPES.published <> 0"
 
-        Dim myImage As Image
-        Dim typeID As String
-        Dim typeName As String
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsReader = DBCommand.ExecuteReader
 
-        While rsReader.Read()
-            ' Add to the image list, and put in view with names
-            typeID = CStr(rsReader.GetInt32(0))
-            typeName = rsReader.GetString(1)
-            myImage = Image.FromFile(BPImageFilePath & typeID & "_64.png")
+            Dim myImage As Image
+            Dim typeID As String
+            Dim typeName As String
 
-            Call FittingImages.Images.Add(typeID, myImage)
+            While rsReader.Read()
+                ' Add to the image list, and put in view with names
+                typeID = CStr(rsReader.GetInt32(0))
+                typeName = rsReader.GetString(1)
+                If System.IO.File.Exists(BPImageFilePath & typeID & "_64.png") Then
+                    myImage = Image.FromFile(BPImageFilePath & typeID & "_64.png")
 
-        End While
+                    Call FittingImages.Images.Add(typeID, myImage)
+                Else
+                    Debug.Print(BPImageFilePath & typeID & "_64.png")
+                End If
+            End While
 
-        rsReader.Close()
+            rsReader.Close()
 
+        Catch ex As Exception
+            Application.DoEvents()
+        End Try
     End Sub
 
     ' Updates all the fitting images based on the check boxes in the list view
@@ -1200,6 +1261,48 @@ Public Class frmCitadelFitting
         End If
 
     End Sub
+
+    Private Sub btnSaveUpdatePrices_Click(sender As Object, e As EventArgs) Handles btnSaveUpdatePrices.Click
+        Dim SQL As String
+
+        Try
+            EVEDB.BeginSQLiteTransaction()
+            ' Delete everything first, then insert the new records
+            EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM FACILITY_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
+            AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}", SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedCitadelView)))
+
+            ' Insert all the modules on the facility
+            For Each InstalledModule In GetInstalledSlots()
+                SQL = String.Format("INSERT INTO FACILITY_INSTALLED_MODULES VALUES({0},{1},{2},{3})",
+                                    SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedCitadelView), InstalledModule)
+                EVEDB.ExecuteNonQuerySQL(SQL)
+            Next
+
+            MsgBox("Facility Saved", vbInformation, Application.ProductName)
+
+            EVEDB.CommitSQLiteTransaction()
+
+        Catch ex As Exception
+            MsgBox("Facility failed to save: " & ex.Message, vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Loads up the bonuses from the modules installed in the list
+    Private Sub UpdateBonusList()
+
+        lstRigBonuses.Items.Clear()
+
+        ' Loop through each module installed and get a total of all the stats affected and how
+        For Each InstalledModule In GetInstalledSlots()
+
+
+
+
+        Next
+
+    End Sub
+
 
 #Region "Fuel Settings"
     Private Sub LoadPOSDataTab()
@@ -1798,6 +1901,50 @@ Public Class frmCitadelFitting
 
     Private Sub ServiceModuleListView_ItemActivate(sender As Object, e As EventArgs) Handles ServiceModuleListView.ItemActivate
         Call LoadImageInFreeSlot()
+    End Sub
+
+    Private Sub btnCloseForm_Click(sender As Object, e As EventArgs) Handles btnCloseForm.Click
+        Me.Hide()
+    End Sub
+
+    Private Sub chkHighSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkHighSec.CheckedChanged
+        If Not UpdateChecks Then
+            Call SetSpaceSecurityChecks(0)
+            Call UpdateBonusList
+        End If
+    End Sub
+
+    Private Sub chkLowSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowSec.CheckedChanged
+        If Not UpdateChecks Then
+            Call SetSpaceSecurityChecks(1)
+            Call UpdateBonusList
+        End If
+    End Sub
+
+    Private Sub chkNullSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkNullSec.CheckedChanged
+        If Not UpdateChecks Then
+            Call SetSpaceSecurityChecks(2)
+            Call UpdateBonusList
+        End If
+    End Sub
+
+    ' Ensures one is at least checked
+    Private Sub SetSpaceSecurityChecks(ByVal TriggerIndex As Integer)
+        Dim i As Integer
+
+        If Not FirstLoad Then
+            ' Adjust the checks depending on options
+            For i = 0 To SecurityCheckBoxes.Count - 1
+                    UpdateChecks = True
+                    If i <> TriggerIndex Then
+                        SecurityCheckBoxes(i).Checked = False
+                    ElseIf i = TriggerIndex And SecurityCheckBoxes(i).Checked = False Then
+                        SecurityCheckBoxes(i).Checked = True ' Don't let them uncheck the value
+                    End If
+                    UpdateChecks = False
+                Next
+            End If
+        'End If
     End Sub
 
 #End Region

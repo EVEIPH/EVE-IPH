@@ -721,7 +721,7 @@ Public Class Blueprint
 
                     ' Set the variables
                     .FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                    .FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                    '.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
                     .IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
                     .IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
                     .IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
@@ -968,7 +968,7 @@ Public Class Blueprint
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
 
                             TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                            TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                            ' TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
                             TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
                             TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
                             TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
@@ -1040,7 +1040,7 @@ Public Class Blueprint
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
                         TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
                         TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                        TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
+                        'TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
                         TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
                         TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
                         TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage

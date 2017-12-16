@@ -10,7 +10,19 @@ Public Class frmFacilityTest
         EVEDB = New DBConnection(SQLiteDBFileName)
 
         ' Add any initialization after the InitializeComponent() call.
-        Call BPFacility.InitializeControl(FacilityView.FullControls, ProductionType.Manufacturing)
+        Call BPFacility.InitializeControl(FacilityView.FullControls, ProductionType.Manufacturing, SelectedCharacter.ID)
+
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
 
     End Sub
 End Class

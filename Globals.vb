@@ -270,6 +270,88 @@ Public Module Public_Variables
     Public LoadTeambyCombo As Boolean
     Public PreviousTeamActivity As String
 
+    ' Delete these eventually
+    ' All locally saved facility variables will be here
+    Public SelectedBPManufacturingFacility As New IndustryFacility
+    Public SelectedBPComponentManufacturingFacility As New IndustryFacility
+    Public SelectedBPCapitalComponentManufacturingFacility As New IndustryFacility
+    Public SelectedBPCapitalManufacturingFacility As New IndustryFacility
+    Public SelectedBPSuperManufacturingFacility As New IndustryFacility
+    Public SelectedBPT3CruiserManufacturingFacility As New IndustryFacility
+    Public SelectedBPT3DestroyerManufacturingFacility As New IndustryFacility
+    Public SelectedBPSubsystemManufacturingFacility As New IndustryFacility
+    Public SelectedBPBoosterManufacturingFacility As New IndustryFacility
+    Public SelectedBPInventionFacility As New IndustryFacility
+    Public SelectedBPT3InventionFacility As New IndustryFacility
+    Public SelectedBPCopyFacility As New IndustryFacility
+    Public SelectedBPNoPOSFacility As New IndustryFacility
+
+    ' Special cases for POS Facilities where items can be produced at more than one array
+    Public SelectedBPPOSFuelBlockFacility As New IndustryFacility
+    Public SelectedBPPOSLargeShipFacility As New IndustryFacility
+    Public SelectedBPPOSModuleFacility As New IndustryFacility
+
+    ' Selected manufacturing tab facilities
+    Public SelectedCalcManufacturingFacility As New IndustryFacility
+    Public SelectedCalcComponentManufacturingFacility As New IndustryFacility
+    Public SelectedCalcCapitalComponentManufacturingFacility As New IndustryFacility
+    Public SelectedCalcCapitalManufacturingFacility As New IndustryFacility
+    Public SelectedCalcSuperManufacturingFacility As New IndustryFacility
+    Public SelectedCalcT3CruiserManufacturingFacility As New IndustryFacility
+    Public SelectedCalcT3DestroyerManufacturingFacility As New IndustryFacility
+    Public SelectedCalcSubsystemManufacturingFacility As New IndustryFacility
+    Public SelectedCalcBoosterManufacturingFacility As New IndustryFacility
+    Public SelectedCalcInventionFacility As New IndustryFacility
+    Public SelectedCalcT3InventionFacility As New IndustryFacility
+    Public SelectedCalcCopyFacility As New IndustryFacility
+    Public SelectedCalcNoPOSFacility As New IndustryFacility
+
+    ' Special cases for POS Facilities where items can be produced at more than one array
+    Public SelectedCalcPOSFuelBlockFacility As New IndustryFacility
+    Public SelectedCalcPOSLargeShipFacility As New IndustryFacility
+    Public SelectedCalcPOSModuleFacility As New IndustryFacility
+
+    ' Save the default data for checking if the selected facility is a default and quick reference
+    Public DefaultBPPOSFuelBlockFacility As New IndustryFacility
+    Public DefaultBPPOSLargeShipFacility As New IndustryFacility
+    Public DefaultBPPOSModuleFacility As New IndustryFacility
+
+    Public DefaultBPManufacturingFacility As New IndustryFacility
+    Public DefaultBPComponentManufacturingFacility As New IndustryFacility
+    Public DefaultBPCapitalComponentManufacturingFacility As New IndustryFacility
+    Public DefaultBPCapitalManufacturingFacility As New IndustryFacility
+    Public DefaultBPSuperManufacturingFacility As New IndustryFacility
+    Public DefaultBPT3CruiserManufacturingFacility As New IndustryFacility
+    Public DefaultBPT3DestroyerManufacturingFacility As New IndustryFacility
+    Public DefaultBPSubsystemManufacturingFacility As New IndustryFacility
+    Public DefaultBPBoosterManufacturingFacility As New IndustryFacility
+    Public DefaultBPInventionFacility As New IndustryFacility
+    Public DefaultBPT3InventionFacility As New IndustryFacility
+    Public DefaultBPCopyFacility As New IndustryFacility
+    Public DefaultBPNoPOSFacility As New IndustryFacility
+
+    Public DefaultCalcManufacturingFacility As New IndustryFacility
+    Public DefaultCalcComponentManufacturingFacility As New IndustryFacility
+    Public DefaultCalcCapitalComponentManufacturingFacility As New IndustryFacility
+    Public DefaultCalcCapitalManufacturingFacility As New IndustryFacility
+    Public DefaultCalcSuperManufacturingFacility As New IndustryFacility
+    Public DefaultCalcT3CruiserManufacturingFacility As New IndustryFacility
+    Public DefaultCalcT3DestroyerManufacturingFacility As New IndustryFacility
+    Public DefaultCalcSubsystemManufacturingFacility As New IndustryFacility
+    Public DefaultCalcBoosterManufacturingFacility As New IndustryFacility
+    Public DefaultCalcInventionFacility As New IndustryFacility
+    Public DefaultCalcT3InventionFacility As New IndustryFacility
+    Public DefaultCalcCopyFacility As New IndustryFacility
+    Public DefaultCalcNoPOSFacility As New IndustryFacility
+
+    Public DefaultCalcPOSFuelBlockFacility As New IndustryFacility
+    Public DefaultCalcPOSLargeShipFacility As New IndustryFacility
+    Public DefaultCalcPOSModuleFacility As New IndustryFacility
+
+    ' Delete these eventually
+    Public SelectedCalcBaseManufacturingFacility As New IndustryFacility
+    Public DefaultCalcBaseManufacturingFacility As New IndustryFacility
+
     '' Facility combos
     'Public PreviousIndustryType As IndustryType
     'Public PreviousFacilityType As String

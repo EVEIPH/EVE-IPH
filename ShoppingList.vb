@@ -801,7 +801,7 @@ Public Class ShoppingList
                             InsertBuildItem.ItemVolume = TempBP.GetTotalItemVolume
                             InsertBuildItem.BuildMaterials = TempBP.GetRawMaterials
                             InsertBuildItem.FacilityMEModifier = TempBP.GetManufacturingFacility.MaterialMultiplier
-                            InsertBuildItem.FacilityType = TempBP.GetManufacturingFacility.FacilityType
+                            'InsertBuildItem.FacilityType = TempBP.GetManufacturingFacility.FacilityType
                             InsertBuildItem.IncludeActivityCost = TempBP.GetManufacturingFacility.IncludeActivityCost
                             InsertBuildItem.IncludeActivityTime = TempBP.GetManufacturingFacility.IncludeActivityTime
                             InsertBuildItem.IncludeActivityUsage = TempBP.GetManufacturingFacility.IncludeActivityUsage
