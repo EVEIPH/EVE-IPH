@@ -207,7 +207,7 @@ Public Module Public_Variables
     Public Const POSFacility As String = "POS"
     Public Const StationFacility As String = "Station"
     Public Const OutpostFacility As String = "Outpost"
-    Public Const CitadelFacility As String = "Citadel"
+    Public Const StructureFacility As String = "Structure"
 
     Public Const BPO As String = "BPO"
     Public Const BPC As String = "BPC"
@@ -731,11 +731,11 @@ Public Module Public_Variables
 
         End With
 
-        Call evedb.ExecuteNonQuerySQL(SQL)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Update the Access mask of all keys to prevent duplicates
         SQL = "UPDATE API SET ACCESS_MASK = " & InsertData.AccessMask & " WHERE KEY_ID = " & InsertData.KeyID
-        Call evedb.ExecuteNonQuerySQL(SQL)
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         readerCharacter.Close()
         readerCharacter = Nothing
@@ -788,7 +788,7 @@ Public Module Public_Variables
             End If
             SQL = SQL & "WHERE KEY_ID = " & CStr(KeyID) & " AND API_KEY = '" & APIKey & "' "
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If
     End Sub
@@ -1881,12 +1881,12 @@ NoBonus:
     '                        ' Can be invented in outposts and POS
     '                        FacilityTypeCombo.Items.Add(OutpostFacility)
     '                        FacilityTypeCombo.Items.Add(POSFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                        FacilityTypeCombo.Items.Add(None)
     '                    Case Else
     '                        FacilityTypeCombo.Items.Add(StationFacility)
     '                        FacilityTypeCombo.Items.Add(OutpostFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                        FacilityTypeCombo.Items.Add(POSFacility)
     '                        FacilityTypeCombo.Items.Add(None)
     '                End Select
@@ -1895,30 +1895,30 @@ NoBonus:
     '                    Case IndustryType.SuperManufacturing
     '                        ' Check types, supers can only be built in a pos
     '                        FacilityTypeCombo.Items.Add(POSFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                    Case IndustryType.BoosterManufacturing, IndustryType.SubsystemManufacturing, IndustryType.T3CruiserManufacturing, IndustryType.T3DestroyerManufacturing
     '                        ' Can be built in outposts and POS
     '                        FacilityTypeCombo.Items.Add(OutpostFacility)
     '                        FacilityTypeCombo.Items.Add(POSFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                    Case IndustryType.NoPOSManufacturing
     '                        ' No POS for stuff like infrastructure hubs
     '                        FacilityTypeCombo.Items.Add(StationFacility)
     '                        FacilityTypeCombo.Items.Add(OutpostFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                    Case Else
     '                        ' Add all
     '                        FacilityTypeCombo.Items.Add(StationFacility)
     '                        FacilityTypeCombo.Items.Add(OutpostFacility)
     '                        FacilityTypeCombo.Items.Add(POSFacility)
-    '                        'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                        'FacilityTypeCombo.Items.Add(StructureFacility)
     '                End Select
     '            Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
     '                ' Can do these anywhere
     '                FacilityTypeCombo.Items.Add(StationFacility)
     '                FacilityTypeCombo.Items.Add(OutpostFacility)
     '                FacilityTypeCombo.Items.Add(POSFacility)
-    '                'FacilityTypeCombo.Items.Add(CitadelFacility)
+    '                'FacilityTypeCombo.Items.Add(StructureFacility)
     '        End Select
 
     '        ' Only reset if they changed it

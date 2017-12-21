@@ -457,6 +457,7 @@ Public Class frmMain
         UserShoppingListSettings = AllSettings.LoadShoppingListSettings
         UserMHViewerSettings = AllSettings.LoadMarketHistoryViewerSettingsSettings
         UserBPViewerSettings = AllSettings.LoadBPViewerSettings
+        UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
 
         UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
         UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
@@ -10915,8 +10916,6 @@ ExitSub:
                     RGN = "Station Parts"
                 Case "Booster"
                     RGN = "Boosters"
-                Case "Citadel"
-                    RGN = "Structures"
                 Case Else
                     ' Do if checks or select on category
                     If GN.Contains("Decryptor") Then
@@ -10957,6 +10956,8 @@ ExitSub:
                         RGN = "Rigs"
                     ElseIf (CN = "Celestial" Or CN = "Orbitals" Or CN = "Sovereignty Structures" Or CN = "Station" Or CN = "Accessories" Or CN = "Infrastructure Upgrades") And GN <> "Harvestable Clound" Then
                         RGN = "Celestials"
+                    ElseIf CN = "Structure" Then
+                        RGN = "Structures"
                     End If
             End Select
         End If
@@ -11014,15 +11015,15 @@ ExitSub:
 
                     If j < CacheItems(i).RegionIDList.Count - 1 Then
                         ' only add comma if we aren't at the last one
-                        RegionSystemSearchList = RegionSystemSearchList & ","
+                        RegionSystemSearchList = RegionSystemSearchList & ", "
                     End If
                 Next
             End If
 
             ' See if the record is in the cache first
-            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND REGIONLIST = '" & RegionSystemSearchList & "'"
+            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " And REGIONLIST = '" & RegionSystemSearchList & "'"
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPriceCheck = DBCommand.ExecuteReader
 
             If Not readerPriceCheck.HasRows Then

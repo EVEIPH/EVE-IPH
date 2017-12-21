@@ -158,9 +158,9 @@ Partial Class ManufacturingFacility
         '
         Me.cmbFacilityType.FormattingEnabled = True
         Me.cmbFacilityType.ItemHeight = 13
-        Me.cmbFacilityType.Location = New System.Drawing.Point(73, 0)
+        Me.cmbFacilityType.Location = New System.Drawing.Point(68, 1)
         Me.cmbFacilityType.Name = "cmbFacilityType"
-        Me.cmbFacilityType.Size = New System.Drawing.Size(62, 21)
+        Me.cmbFacilityType.Size = New System.Drawing.Size(65, 21)
         Me.cmbFacilityType.TabIndex = 24
         Me.cmbFacilityType.Text = "Type"
         '
@@ -354,7 +354,7 @@ Partial Class ManufacturingFacility
         'cmbFacilityActivities
         '
         Me.cmbFacilityActivities.FormattingEnabled = True
-        Me.cmbFacilityActivities.Location = New System.Drawing.Point(6, 148)
+        Me.cmbFacilityActivities.Location = New System.Drawing.Point(4, 148)
         Me.cmbFacilityActivities.Name = "cmbFacilityActivities"
         Me.cmbFacilityActivities.Size = New System.Drawing.Size(170, 21)
         Me.cmbFacilityActivities.TabIndex = 102

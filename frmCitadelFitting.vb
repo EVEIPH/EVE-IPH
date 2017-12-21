@@ -12,23 +12,21 @@ Public Class frmCitadelFitting
 
     ' Public settings after intialized and returned for setting in the facilities
     Public CitadelName As String = ""
-    Private SelectedCitadelView As FacilityView ' To help determine where we save citadels, etc. 
+    Private SelectedStructureView As FacilityView ' To help determine where we save citadels, etc. 
     Private SelectedCharacterID As Long
     Private SelectedFacilityProductionType As ProductionType
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
-    Private CitadelStats As New CitadelAttributes
-    ' Save the selected Citadel so we don't need to look it up
-    Private SelectedCitadel As CitadelDBData
+    Private UpwellStructureStats As New CitadelAttributes
+    ' Save the selected Upwell Structure so we don't need to look it up
+    Private SelectedUpwellStructure As UpwellStructureDBData
 
     Private POSFuelPricesUpdated As Boolean
 
     Private Const UsesMissilesEffectID As Integer = 101
-    Private Const ServiceResearchLabI As String = "35891"
-    Private Const ServiceHyasyodaLab As String = "45550"
 
-    Private StructureDBDataList As New List(Of CitadelDBData) ' For storing all the types of citadel structures
+    Private StructureDBDataList As New List(Of UpwellStructureDBData) ' For storing all the types of citadel structures
 
     Private HighSlotBaseX As Integer
     Private HighSlotBaseWidth As Integer
@@ -46,13 +44,18 @@ Public Class frmCitadelFitting
         HighSlot = 12
     End Enum
 
-    Private Structure CitadelDBData
+    Public Structure StructureModule
+        Dim typeID As Integer
+        Dim moduleType As String
+    End Structure
+
+    Private Structure UpwellStructureDBData
         Dim Name As String
         Dim TypeID As Integer
         Dim GroupID As Integer
     End Structure
 
-    ' For saving and updating the selected citadel
+    ' For saving and updating the selected upwell structure
     Private Structure CitadelAttributes
         Dim CPU As Double
         Dim MaxCPU As Double
@@ -141,7 +144,7 @@ Public Class frmCitadelFitting
         End If
 
         'enable/ disable depending on the view
-        If SelectedCitadelView = FacilityView.NoView Then
+        If SelectedStructureView = FacilityView.NoView Then
             ' They aren't connected to a system
             chkHighSec.Enabled = True
             chkLowSec.Enabled = True
@@ -154,38 +157,77 @@ Public Class frmCitadelFitting
         End If
 
         ' Get all data on structures for DB look ups first
-        Call LoadCitadelDBData()
+        Call LoadStructureDBData()
 
         ' Add all the images to the image list
         Call LoadFittingImages()
 
         ' Load the facility default
-        Call LoadCitadel(InitName)
+        Call LoadStructure(InitName)
 
         ' Save these varibles for later
         SelectedCharacterID = CharacterID
-        SelectedCitadelView = FacilityLocation
+        SelectedStructureView = FacilityLocation
         SelectedFacilityProductionType = FacilityType
 
         FirstLoad = False
 
     End Sub
 
-    Private Sub LoadCitadelDBData()
+    Private Sub frmCitadelFitting_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
+
+        With UserUpwellStructureSettings
+            chkItemViewTypeHigh.Checked = .HighSlotsCheck
+            chkItemViewTypeMedium.Checked = .MediumSlotsCheck
+            chkItemViewTypeLow.Checked = .LowSlotsCheck
+            chkItemViewTypeServices.Checked = .ServicesCheck
+
+            chkRigTypeViewReprocessing.Checked = .ReprocessingRigsCheck
+            chkRigTypeViewEngineering.Checked = .EngineeringRigsCheck
+            chkRigTypeViewCombat.Checked = .CombatRigsCheck
+
+            txtItemFilter.Text = .SearchFilterText
+
+            chkIncludeFuelCosts.Checked = .IncludeFuelCostsCheck
+
+            Select Case .FuelBlockType
+                Case rbtnHeliumFuelBlock.Text
+                    rbtnHeliumFuelBlock.Checked = True
+                Case rbtnHydrogenFuelBlock.Text
+                    rbtnHydrogenFuelBlock.Checked = True
+                Case rbtnNitrogenFuelBlock.Text
+                    rbtnNitrogenFuelBlock.Checked = True
+                Case rbtnOxygenFuelBlock.Text
+                    rbtnOxygenFuelBlock.Checked = True
+            End Select
+
+            Select Case .BuyBuildBlockOption
+                Case rbtnBuildBlocks.Text
+                    rbtnBuildBlocks.Checked = True
+                Case rbtnBuyBlocks.Text
+                    rbtnBuyBlocks.Checked = True
+            End Select
+
+        End With
+
+    End Sub
+
+    Private Sub LoadStructureDBData()
         Dim SQL As String = ""
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
-        SQL = "SELECT typeID, typeName, groupID FROM INVENTORY_TYPES WHERE groupID IN (1404, 1657)"
+        SQL = "SELECT typeID, typeName, INVENTORY_GROUPS.groupID FROM INVENTORY_TYPES, INVENTORY_GROUPS WHERE INVENTORY_GROUPS.categoryID = 65 
+                AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid AND INVENTORY_TYPES.published = 1"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader
 
         ' Clear the combo
-        Call cmbCitadelName.Items.Clear()
+        Call cmbUpwellStructureName.Items.Clear()
 
         While rsReader.Read()
-            Dim TempData As CitadelDBData
+            Dim TempData As UpwellStructureDBData
 
             TempData.TypeID = rsReader.GetInt32(0)
             TempData.Name = rsReader.GetString(1)
@@ -194,7 +236,7 @@ Public Class frmCitadelFitting
             Call StructureDBDataList.Add(TempData)
 
             ' Also add each to the combo box
-            Call cmbCitadelName.Items.Add(TempData.Name)
+            Call cmbUpwellStructureName.Items.Add(TempData.Name)
 
         End While
 
@@ -211,6 +253,7 @@ Public Class frmCitadelFitting
 
             If Not IsNothing(Selection) Then
                 pbFloat.Image = FittingImages.Images(Selection.ImageKey)
+                pbFloat.Name = Selection.Group.Name
                 pbFloat.Tag = Selection.Group.Tag
             Else
                 pbFloat.Image = Nothing
@@ -235,8 +278,8 @@ Public Class frmCitadelFitting
             For Each Slot In SlotPictureBoxList
 
                 SlotLocation = Slot.Location
-                SlotLocation.X += tabCitadel.Left
-                SlotLocation.Y += tabCitadel.Top
+                SlotLocation.X += tabUpwellStructure.Left
+                SlotLocation.Y += tabUpwellStructure.Top
 
                 ' See if they dropped the image on a fitting slot and change the selected item
                 If MP.X > SlotLocation.X And MP.X < SlotLocation.X + WHAdjust And
@@ -252,9 +295,10 @@ Public Class frmCitadelFitting
                         ' Set the image info
                         Slot.Image = pbFloat.Image
                         Slot.Image.Tag = ModuleTypeID
+                        Slot.Tag = pbFloat.Name
 
                         ' Update the slot stats
-                        Call UpdateCitadelStats()
+                        Call UpdateUpwellStructureStats()
                         ' Update the launcher slots if added a launcher
                         Call UpdateLauncherSlots(False, ModuleTypeID)
                         ' Done updating
@@ -287,7 +331,7 @@ Public Class frmCitadelFitting
                         Slot.Image = FittingImages.Images(ModuleTypeID)
                         Slot.Image.Tag = ModuleTypeID
                         ' Update the slot stats
-                        Call UpdateCitadelStats()
+                        Call UpdateUpwellStructureStats()
                         ' Update the launcher slots if added a launcher
                         Call UpdateLauncherSlots(False, ModuleTypeID)
                         ' Done updating
@@ -312,7 +356,7 @@ Public Class frmCitadelFitting
 
         ' Check launchers
         If IsMissileLauncher(ModuleTypeID) Then
-            If CitadelStats.LauncherSlots = 0 Then
+            If UpwellStructureStats.LauncherSlots = 0 Then
                 ' They don't have any slots left
                 Return False
             End If
@@ -389,33 +433,33 @@ Public Class frmCitadelFitting
         If CurrentServiceTypes.Contains(TypeID) Then
             Return True
         Else
-            ' Special case, check if they have a research lab loaded already, only allow one
-            If CurrentServiceTypes.Contains(ServiceResearchLabI) And TypeID = ServiceHyasyodaLab Or
-                    CurrentServiceTypes.Contains(ServiceHyasyodaLab) And TypeID = ServiceResearchLabI Then
-                Return True
-            Else
-                Return False
-            End If
-
+            '' Special case, check if they have a research lab loaded already, only allow one
+            'If CurrentServiceTypes.Contains(ServiceResearchLabI) And TypeID = ServiceHyasyodaLab Or
+            '        CurrentServiceTypes.Contains(ServiceHyasyodaLab) And TypeID = ServiceResearchLabI Then
+            '    Return True
+            'Else
+            Return False
+            'End If
         End If
+
     End Function
 
-    Private Sub LoadCitadel(ByVal SentCitadelName As String)
+    Private Sub LoadStructure(ByVal SentCitadelName As String)
 
         CitadelName = SentCitadelName
 
         ' First get the data to use
-        SelectedCitadel = GetCitadelData(SentCitadelName)
+        SelectedUpwellStructure = GetCitadelData(SentCitadelName)
         ' Set the combo text
-        cmbCitadelName.Text = SelectedCitadel.Name
+        cmbUpwellStructureName.Text = SelectedUpwellStructure.Name
         ' Load the image
-        Call LoadCitadelRenderImage()
+        Call LoadStructureRenderImage()
         ' Refresh the items list
         Call UpdateFittingImages()
         ' Set the slots
         Call UpdateCitadelSlots()
         ' Set the stats
-        Call LoadCitadelStats()
+        Call LoadUpwellStuctureStats()
 
     End Sub
 
@@ -459,18 +503,22 @@ Public Class frmCitadelFitting
         RigSlot2.Image = Nothing
         RigSlot3.Image = Nothing
 
-        ' init the citadel stats
-        Call LoadCitadelStats()
+        ' init the upwell structure stats
+        Call LoadUpwellStuctureStats()
 
     End Sub
 
     ' Load the image into the background
-    Private Sub LoadCitadelRenderImage()
+    Private Sub LoadStructureRenderImage()
 
-        For Each Citadel In StructureDBDataList
+        For Each UPWStructure In StructureDBDataList
             ' Look for the name and then load the render image from the typeID (should be in images folder)
-            If Citadel.Name = cmbCitadelName.Text Then
-                StructurePicture.Image = Image.FromFile(BPImageFilePath & Citadel.TypeID & ".png")
+            If UPWStructure.Name = cmbUpwellStructureName.Text Then
+                If System.IO.File.Exists(BPImageFilePath & UPWStructure.TypeID & ".png") Then
+                    StructurePicture.Image = Image.FromFile(BPImageFilePath & UPWStructure.TypeID & ".png")
+                Else
+                    StructurePicture.Image = Nothing
+                End If
                 Exit For
             End If
         Next
@@ -480,8 +528,8 @@ Public Class frmCitadelFitting
 
     End Sub
 
-    ' Gets and returns the citadel data
-    Private Function GetCitadelData(ByVal LookupName As String) As CitadelDBData
+    ' Gets and returns the upwell structure data
+    Private Function GetCitadelData(ByVal LookupName As String) As UpwellStructureDBData
         Dim SQL As String = ""
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
@@ -493,7 +541,7 @@ Public Class frmCitadelFitting
         rsReader = DBCommand.ExecuteReader
 
         If rsReader.Read() Then
-            Dim TempData As CitadelDBData
+            Dim TempData As UpwellStructureDBData
 
             TempData.TypeID = rsReader.GetInt32(0)
             TempData.Name = LookupName
@@ -508,18 +556,18 @@ Public Class frmCitadelFitting
 
     End Function
 
-    ' Clear and Set the slots to match the citadel we are using
+    ' Clear and Set the slots to match the upwell structure we are using
     Private Sub UpdateCitadelSlots()
         Dim SQL As String = ""
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
         Dim AID As Integer
 
-        ' Query all the stats for the selected Citadel and process slots
+        ' Query all the stats for the selected Upwell Structure and process slots
         SQL = "Select attributeID, COALESCE(valueint, valuefloat) As Value "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
         SQL &= "WHERE attributeID In (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
-        SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & cmbCitadelName.Text & "'"
+        SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & cmbUpwellStructureName.Text & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader
@@ -544,127 +592,127 @@ Public Class frmCitadelFitting
     End Sub
 
     ' Updates the stats after a module is chosen
-    Private Sub LoadCitadelStats(Optional IgnoreLabelUpdate As Boolean = False)
+    Private Sub LoadUpwellStuctureStats(Optional IgnoreLabelUpdate As Boolean = False)
         Dim Stats As New List(Of AttributeRecord)
         Dim AttributesLookup As New EVEAttributes
 
-        ' Get all the stats for the citadel 
-        Stats = AttributesLookup.GetAttributes(SelectedCitadel.Name)
+        ' Get all the stats for the upwell structure 
+        Stats = AttributesLookup.GetAttributes(SelectedUpwellStructure.Name)
 
         ' Loop through and get the stuff we want, save it locally for update
         For Each Stat In Stats
             Select Case Stat.ID
                 Case ItemAttributes.cpuOutput
-                    CitadelStats.MaxCPU = Stat.Value
-                    CitadelStats.CPU = Stat.Value
+                    UpwellStructureStats.MaxCPU = Stat.Value
+                    UpwellStructureStats.CPU = Stat.Value
                 Case ItemAttributes.powerOutput
-                    CitadelStats.MaxPG = Stat.Value
-                    CitadelStats.PG = Stat.Value
+                    UpwellStructureStats.MaxPG = Stat.Value
+                    UpwellStructureStats.PG = Stat.Value
                 Case ItemAttributes.upgradeCapacity ' Calibration
-                    CitadelStats.MaxCalibration = Stat.Value
-                    CitadelStats.Calibration = Stat.Value
+                    UpwellStructureStats.MaxCalibration = Stat.Value
+                    UpwellStructureStats.Calibration = Stat.Value
                 Case ItemAttributes.capacitorCapacity
-                    CitadelStats.Capacitor = Stat.Value
-                    CitadelStats.MaxCapacitor = Stat.Value
+                    UpwellStructureStats.Capacitor = Stat.Value
+                    UpwellStructureStats.MaxCapacitor = Stat.Value
                 Case ItemAttributes.rechargeRate
-                    CitadelStats.CapacitorRechargeRate = 100
-                    CitadelStats.BaseCapRechargeRate = Stat.Value
+                    UpwellStructureStats.CapacitorRechargeRate = 100
+                    UpwellStructureStats.BaseCapRechargeRate = Stat.Value
                 Case ItemAttributes.launcherSlotsLeft
                     If Not IgnoreLabelUpdate Then
                         ' Only update this if we are updating the label too
-                        CitadelStats.LauncherSlots = CInt(Stat.Value)
+                        UpwellStructureStats.LauncherSlots = CInt(Stat.Value)
                     End If
             End Select
         Next
 
         ' Fuel is always 0 to start with no limit
-        CitadelStats.ServiceModuleFuelBPH = 0
+        UpwellStructureStats.ServiceModuleFuelBPH = 0
 
         ' Update the stats
         If Not IgnoreLabelUpdate Then
-            Call UpdateCitadelStatLabels()
+            Call UpdateUpwellStructureStatLabels()
         End If
 
     End Sub
 
-    ' Updates the label stats of the citadel to include any items selected and installed
-    Private Sub UpdateCitadelStatLabels()
+    ' Updates the label stats of the upwell structure to include any items selected and installed
+    Private Sub UpdateUpwellStructureStatLabels()
 
         ' Update the labels
-        lblCPU.Text = FormatNumber(CitadelStats.CPU) & " / " & FormatNumber(CitadelStats.MaxCPU)
-        If CitadelStats.CPU < 0 Then
+        lblCPU.Text = FormatNumber(UpwellStructureStats.CPU) & " / " & FormatNumber(UpwellStructureStats.MaxCPU)
+        If UpwellStructureStats.CPU < 0 Then
             lblCPU.ForeColor = Color.Red
         Else
             lblCPU.ForeColor = Color.Black
         End If
 
-        lblPowerGrid.Text = FormatNumber(CitadelStats.PG) & " / " & FormatNumber(CitadelStats.MaxPG)
-        If CitadelStats.PG < 0 Then
+        lblPowerGrid.Text = FormatNumber(UpwellStructureStats.PG) & " / " & FormatNumber(UpwellStructureStats.MaxPG)
+        If UpwellStructureStats.PG < 0 Then
             lblPowerGrid.ForeColor = Color.Red
         Else
             lblPowerGrid.ForeColor = Color.Black
         End If
 
-        lblCalibration.Text = FormatNumber(CitadelStats.Calibration) & " / " & FormatNumber(CitadelStats.MaxCalibration)
-        If CitadelStats.Calibration < 0 Then
+        lblCalibration.Text = FormatNumber(UpwellStructureStats.Calibration) & " / " & FormatNumber(UpwellStructureStats.MaxCalibration)
+        If UpwellStructureStats.Calibration < 0 Then
             lblCalibration.ForeColor = Color.Red
         Else
             lblCalibration.ForeColor = Color.Black
         End If
 
-        lblCapacitorValues.Text = FormatNumber(CitadelStats.Capacitor) & " / " & FormatNumber(CitadelStats.MaxCapacitor)
-        If CitadelStats.Capacitor < 0 Then
-            lblCapacitorValues.ForeColor = Color.Red
+        lblCapacitor.Text = FormatNumber(UpwellStructureStats.Capacitor) & " / " & FormatNumber(UpwellStructureStats.MaxCapacitor)
+        If UpwellStructureStats.Capacitor < 0 Then
+            lblCapacitor.ForeColor = Color.Red
         Else
-            lblCapacitorValues.ForeColor = Color.Black
+            lblCapacitor.ForeColor = Color.Black
         End If
 
-        lblLauncherSlots.Text = "Launcher Slots: " & CStr(CitadelStats.LauncherSlots)
+        lblLauncherSlots.Text = "Launcher Slots: " & CStr(UpwellStructureStats.LauncherSlots)
 
         ' Update the fuel costs label
         Call UpdateFuelCostLabels()
 
     End Sub
 
-    Private Sub UpdateCitadelStats()
-        Dim InstalledSlots As New List(Of Integer)
+    Private Sub UpdateUpwellStructureStats()
+        Dim InstalledSlots As New List(Of StructureModule)
         Dim Attributes As New List(Of AttributeRecord)
         Dim AttribLookup As New EVEAttributes
 
         InstalledSlots = GetInstalledSlots()
 
         ' Reset the totals each time before updating
-        Call LoadCitadelStats(True)
+        Call LoadUpwellStuctureStats(True)
 
         For Each Item In InstalledSlots
             ' Look up the attributes for each slot and update the stats we want
-            Attributes = AttribLookup.GetAttributes(Item)
+            Attributes = AttribLookup.GetAttributes(Item.typeID)
 
             For Each Attribute In Attributes
                 Select Case Attribute.ID
                     Case ItemAttributes.power
-                        CitadelStats.PG -= Attribute.Value
+                        UpwellStructureStats.PG -= Attribute.Value
                     Case ItemAttributes.cpu
-                        CitadelStats.CPU -= Attribute.Value
+                        UpwellStructureStats.CPU -= Attribute.Value
                     Case ItemAttributes.capacitorNeed
-                        CitadelStats.Capacitor -= Attribute.Value
+                        UpwellStructureStats.Capacitor -= Attribute.Value
                     Case ItemAttributes.upgradeCost ' Calibration
-                        CitadelStats.Calibration -= Attribute.Value
+                        UpwellStructureStats.Calibration -= Attribute.Value
                     Case ItemAttributes.cpuMultiplier
-                        CitadelStats.MaxCPU = CitadelStats.MaxCPU * Attribute.Value
+                        UpwellStructureStats.MaxCPU = UpwellStructureStats.MaxCPU * Attribute.Value
                     Case ItemAttributes.powerOutputMultiplier
-                        CitadelStats.MaxPG = CitadelStats.MaxPG * Attribute.Value
+                        UpwellStructureStats.MaxPG = UpwellStructureStats.MaxPG * Attribute.Value
                     Case ItemAttributes.serviceModuleFuelAmount
-                        CitadelStats.ServiceModuleFuelBPH -= CInt(Attribute.Value)
+                        UpwellStructureStats.ServiceModuleFuelBPH -= CInt(Attribute.Value)
                 End Select
             Next
         Next
 
-        ' Update the stats
-        Call UpdateCitadelStatLabels()
+        ' Update the stat labels
+        Call UpdateUpwellStructureStatLabels()
 
         ' Update the bonuses from items installed
-        Call UpdateBonusList()
+        Call UpdateUpwellStructureBonuses()
 
     End Sub
 
@@ -673,126 +721,193 @@ Public Class frmCitadelFitting
         ' Update number of launchers
         If IsMissileLauncher(ModuleTypeID) Then
             If Not Increment Then
-                If CitadelStats.LauncherSlots > 0 Then
-                    CitadelStats.LauncherSlots -= 1
+                If UpwellStructureStats.LauncherSlots > 0 Then
+                    UpwellStructureStats.LauncherSlots -= 1
                 End If
 
             Else
-                CitadelStats.LauncherSlots += 1
+                UpwellStructureStats.LauncherSlots += 1
             End If
         End If
 
-        lblLauncherSlots.Text = "Launcher Slots: " & CStr(CitadelStats.LauncherSlots)
+        lblLauncherSlots.Text = "Launcher Slots: " & CStr(UpwellStructureStats.LauncherSlots)
 
     End Sub
 
-    ' Returns the list of moduleIDs installed in the citadel
-    Private Function GetInstalledSlots() As List(Of Integer)
-        Dim ReturnItems As New List(Of Integer)
+    ' Returns the list of moduleIDs installed in the upwell structure
+    Private Function GetInstalledSlots() As List(Of StructureModule)
+        Dim ReturnItems As New List(Of StructureModule)
+        Dim Entry As StructureModule
 
         ' Go through all slots and return the typeIDs (saved in tag of image) for each installed item
         If Not IsNothing(HighSlot1.Image) Then
-            ReturnItems.Add(CInt(HighSlot1.Image.Tag))
+            Entry.typeID = CInt(HighSlot1.Image.Tag)
+            Entry.moduleType = CStr(HighSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot2.Image) Then
-            ReturnItems.Add(CInt(HighSlot2.Image.Tag))
+            Entry.typeID = CInt(HighSlot2.Image.Tag)
+            Entry.moduleType = CStr(HighSlot2.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot3.Image) Then
-            ReturnItems.Add(CInt(HighSlot3.Image.Tag))
+            Entry.typeID = CInt(HighSlot3.Image.Tag)
+            Entry.moduleType = CStr(HighSlot3.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot4.Image) Then
-            ReturnItems.Add(CInt(HighSlot4.Image.Tag))
+            Entry.typeID = CInt(HighSlot4.Image.Tag)
+            Entry.moduleType = CStr(HighSlot4.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot5.Image) Then
-            ReturnItems.Add(CInt(HighSlot5.Image.Tag))
+            Entry.typeID = CInt(HighSlot5.Image.Tag)
+            Entry.moduleType = CStr(HighSlot5.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot6.Image) Then
-            ReturnItems.Add(CInt(HighSlot6.Image.Tag))
+            Entry.typeID = CInt(HighSlot6.Image.Tag)
+            Entry.moduleType = CStr(HighSlot6.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot7.Image) Then
-            ReturnItems.Add(CInt(HighSlot7.Image.Tag))
+            Entry.typeID = CInt(HighSlot7.Image.Tag)
+            Entry.moduleType = CStr(HighSlot7.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(HighSlot8.Image) Then
-            ReturnItems.Add(CInt(HighSlot1.Image.Tag))
+            Entry.typeID = CInt(HighSlot8.Image.Tag)
+            Entry.moduleType = CStr(HighSlot8.Tag)
+            ReturnItems.Add(Entry)
         End If
 
         If Not IsNothing(MidSlot1.Image) Then
-            ReturnItems.Add(CInt(MidSlot1.Image.Tag))
+            Entry.typeID = CInt(MidSlot1.Image.Tag)
+            Entry.moduleType = CStr(MidSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot2.Image) Then
-            ReturnItems.Add(CInt(MidSlot2.Image.Tag))
+            Entry.typeID = CInt(MidSlot2.Image.Tag)
+            Entry.moduleType = CStr(MidSlot2.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot3.Image) Then
-            ReturnItems.Add(CInt(MidSlot3.Image.Tag))
+            Entry.typeID = CInt(MidSlot3.Image.Tag)
+            Entry.moduleType = CStr(MidSlot3.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot4.Image) Then
-            ReturnItems.Add(CInt(MidSlot4.Image.Tag))
+            Entry.typeID = CInt(MidSlot4.Image.Tag)
+            Entry.moduleType = CStr(MidSlot4.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot5.Image) Then
-            ReturnItems.Add(CInt(MidSlot5.Image.Tag))
+            Entry.typeID = CInt(MidSlot5.Image.Tag)
+            Entry.moduleType = CStr(MidSlot5.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot6.Image) Then
-            ReturnItems.Add(CInt(MidSlot6.Image.Tag))
+            Entry.typeID = CInt(MidSlot6.Image.Tag)
+            Entry.moduleType = CStr(MidSlot6.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot7.Image) Then
-            ReturnItems.Add(CInt(MidSlot7.Image.Tag))
+            Entry.typeID = CInt(MidSlot7.Image.Tag)
+            Entry.moduleType = CStr(MidSlot7.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(MidSlot8.Image) Then
-            ReturnItems.Add(CInt(MidSlot1.Image.Tag))
+            Entry.typeID = CInt(MidSlot8.Image.Tag)
+            Entry.moduleType = CStr(MidSlot8.Tag)
+            ReturnItems.Add(Entry)
         End If
 
         If Not IsNothing(LowSlot1.Image) Then
-            ReturnItems.Add(CInt(LowSlot1.Image.Tag))
+            Entry.typeID = CInt(LowSlot1.Image.Tag)
+            Entry.moduleType = CStr(LowSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot2.Image) Then
-            ReturnItems.Add(CInt(LowSlot2.Image.Tag))
+            Entry.typeID = CInt(LowSlot2.Image.Tag)
+            Entry.moduleType = CStr(LowSlot2.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot3.Image) Then
-            ReturnItems.Add(CInt(LowSlot3.Image.Tag))
+            Entry.typeID = CInt(LowSlot3.Image.Tag)
+            Entry.moduleType = CStr(LowSlot3.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot4.Image) Then
-            ReturnItems.Add(CInt(LowSlot4.Image.Tag))
+            Entry.typeID = CInt(HighSlot1.Image.Tag)
+            Entry.moduleType = CStr(HighSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot5.Image) Then
-            ReturnItems.Add(CInt(LowSlot5.Image.Tag))
+            Entry.typeID = CInt(LowSlot5.Image.Tag)
+            Entry.moduleType = CStr(LowSlot5.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot6.Image) Then
-            ReturnItems.Add(CInt(LowSlot6.Image.Tag))
+            Entry.typeID = CInt(LowSlot6.Image.Tag)
+            Entry.moduleType = CStr(LowSlot6.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot7.Image) Then
-            ReturnItems.Add(CInt(LowSlot7.Image.Tag))
+            Entry.typeID = CInt(LowSlot7.Image.Tag)
+            Entry.moduleType = CStr(LowSlot7.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(LowSlot8.Image) Then
-            ReturnItems.Add(CInt(LowSlot1.Image.Tag))
+            Entry.typeID = CInt(LowSlot8.Image.Tag)
+            Entry.moduleType = CStr(LowSlot8.Tag)
+            ReturnItems.Add(Entry)
         End If
 
         If Not IsNothing(RigSlot1.Image) Then
-            ReturnItems.Add(CInt(RigSlot1.Image.Tag))
+            Entry.typeID = CInt(RigSlot1.Image.Tag)
+            Entry.moduleType = CStr(RigSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(RigSlot2.Image) Then
-            ReturnItems.Add(CInt(RigSlot2.Image.Tag))
+            Entry.typeID = CInt(RigSlot2.Image.Tag)
+            Entry.moduleType = CStr(RigSlot2.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(RigSlot3.Image) Then
-            ReturnItems.Add(CInt(RigSlot3.Image.Tag))
+            Entry.typeID = CInt(RigSlot3.Image.Tag)
+            Entry.moduleType = CStr(RigSlot3.Tag)
+            ReturnItems.Add(Entry)
         End If
 
         If Not IsNothing(ServiceSlot1.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot1.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot1.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot1.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(ServiceSlot2.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot2.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot2.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot2.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(ServiceSlot3.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot3.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot3.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot3.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(ServiceSlot4.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot4.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot4.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot4.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(ServiceSlot5.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot5.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot5.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot5.Tag)
+            ReturnItems.Add(Entry)
         End If
         If Not IsNothing(ServiceSlot6.Image) Then
-            ReturnItems.Add(CInt(ServiceSlot6.Image.Tag))
+            Entry.typeID = CInt(ServiceSlot6.Image.Tag)
+            Entry.moduleType = CStr(ServiceSlot6.Tag)
+            ReturnItems.Add(Entry)
         End If
 
         Return ReturnItems
@@ -806,8 +921,8 @@ Public Class frmCitadelFitting
     Private Sub UpdateFuelCostLabels()
         ' If they want fuel cost
         If chkIncludeFuelCosts.Checked Then
-            lblServiceModuleBPH.Text = FormatNumber(CitadelStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
-            lblServiceModuleFCPH.Text = GetFuelCost(CitadelStats.ServiceModuleFuelBPH)
+            lblServiceModuleBPH.Text = FormatNumber(UpwellStructureStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
+            lblServiceModuleFCPH.Text = GetFuelCost(UpwellStructureStats.ServiceModuleFuelBPH)
         Else
             lblServiceModuleBPH.Text = "-"
             lblServiceModuleFCPH.Text = "-"
@@ -868,17 +983,21 @@ Public Class frmCitadelFitting
             Dim rsReader As SQLiteDataReader
             Dim DBCommand As SQLiteCommand
 
-            SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
-            SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RS "
+            SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
+            SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
+            SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE, "
+            SQL &= "CASE WHEN (SELECT COALESCE(valuefloat, valueint) FROM TYPE_ATTRIBUTES "
+            SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND attributeID = " & ItemAttributes.disallowInHighSec & ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
             SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
             SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
-            SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID AND attributeID = 1547 "
-            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND ABS(categoryID) = 66 " ' I save structure rigs as -66
-            SQL &= "AND INVENTORY_TYPES.published <> 0 "
+            SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
+            SQL &= "AND attributeID = " & CStr(ItemAttributes.rigSize) & " "
+            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID And ABS(categoryID) = 66 " ' I save structure rigs as -66
+            SQL &= "And INVENTORY_TYPES.published <> 0 "
 
             ' Add text first
             If Trim(txtItemFilter.Text) <> "" Then
-                SQL &= "AND " & GetSearchText(txtItemFilter.Text, "typeName") & " "
+                SQL &= "And " & GetSearchText(txtItemFilter.Text, "typeName") & " "
             End If
 
             If chkItemViewTypeServices.Checked Then
@@ -906,7 +1025,8 @@ Public Class frmCitadelFitting
                 Call SQLList.Add(SlotString)
             End If
 
-            If chkRigTypeViewCombat.Checked Or chkRigTypeViewEngineering.Checked Or chkRigTypeViewReprocessing.Checked Then
+            If chkRigTypeViewCombat.Checked Or chkRigTypeViewEngineering.Checked Or chkRigTypeViewReprocessing.Checked _
+                Or chkRigTypeViewDrilling.Checked Or chkRigTypeViewReaction.Checked Then
                 If chkRigTypeViewCombat.Checked Then
                     Call SQLList.Add("(groupName Like '%Combat Rig%')")
                 End If
@@ -919,10 +1039,18 @@ Public Class frmCitadelFitting
                     Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
                 End If
 
+                If chkRigTypeViewReaction.Checked Then
+                    Call SQLList.Add("(groupName LIKE '%Reactor Rig%')")
+                End If
+
+                If chkRigTypeViewDrilling.Checked Then
+                    Call SQLList.Add("(groupName LIKE '%Drilling Rig%')")
+                End If
+
                 Dim Attrib As New EVEAttributes
 
                 ' Add the check for rig size to limit, -1 is the default value
-                SQL &= "AND RS IN (-1," & CInt(Attrib.GetAttribute(SelectedCitadel.TypeID, ItemAttributes.rigSize)) & ") "
+                SQL &= "AND RIG_SIZE IN (-1," & CInt(Attrib.GetAttribute(SelectedUpwellStructure.TypeID, ItemAttributes.rigSize)) & ") "
 
             End If
 
@@ -947,8 +1075,11 @@ Public Class frmCitadelFitting
                 Dim EID As Integer = rsReader.GetInt32(3)
                 Dim LVI As New ListViewItem
 
-                ' Only add if it can be fit to the selected citadel
-                If CitadelCanFitItem(SelectedCitadel.TypeID, SelectedCitadel.GroupID, rsReader.GetInt32(0)) Then
+                ' Only add if it can be fit to the selected upwell structure and it meets the space requirements
+                If StructureCanFitItem(SelectedUpwellStructure.TypeID, SelectedUpwellStructure.GroupID, rsReader.GetInt32(0)) _
+                    And ((chkHighSec.Checked = True And rsReader.GetInt32(6) <> 0) Or chkHighSec.Checked = False) Then
+
+                    '& CStr(ItemAttributes.disallowInHighSec) & ") "
                     If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Then
                         LVI.Group = ServiceModuleListView.Groups(0) ' 0 is services
                     ElseIf EID = SlotSizes.HighSlot Then
@@ -961,10 +1092,14 @@ Public Class frmCitadelFitting
                         ' Rigs
                         If rsReader.GetString(4).Contains("Combat") Then
                             LVI.Group = ServiceModuleListView.Groups(4) ' 4 is Combat rigs
-                        ElseIf rsReader.GetString(4).Contains("Reprocessing") Then
+                        ElseIf rsReader.GetString(4).Contains("Reprocessing") Or rsReader.GetString(4).Contains("Grading") Then
                             LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
                         ElseIf rsReader.GetString(4).Contains("Engineering") Then
                             LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
+                        ElseIf rsReader.GetString(4).Contains("Reaction") Then
+                            LVI.Group = ServiceModuleListView.Groups(7) ' 7 is Reaction rigs
+                        ElseIf rsReader.GetString(4).Contains("Drilling") Then
+                            LVI.Group = ServiceModuleListView.Groups(8) ' 8 is Drilling rigs
                         End If
                     End If
 
@@ -980,13 +1115,13 @@ Public Class frmCitadelFitting
 
     End Sub
 
-    ' Reads the attributes to see if the itemID sent can be fit to the citadelID sent
-    Private Function CitadelCanFitItem(ByVal CitadelTypeID As Integer, ByVal CitadelGroupID As Integer, ByVal ItemTypeID As Integer) As Boolean
+    ' Reads the attributes to see if the itemID sent can be fit to the upwell structureID sent
+    Private Function StructureCanFitItem(ByVal StructureTypeID As Integer, ByVal StructureGroupID As Integer, ByVal ItemTypeID As Integer) As Boolean
         Dim SQL As String = ""
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
-        SQL = "SELECT COALESCE(valuefloat, valueint) AS CitadelID FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+        SQL = "SELECT COALESCE(valuefloat, valueint) AS STRUCTURE_ID FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
         SQL &= "WHERE TYPE_ATTRIBUTES.typeID = {0} AND ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
         SQL &= "AND (attributeName LIKE 'canFitShipType%' OR attributeName LIKE 'canFitShipGroup%')"
         ' Add typeid to look up
@@ -997,7 +1132,7 @@ Public Class frmCitadelFitting
 
         While rsReader.Read()
             Dim IDtoCheck As Integer = CInt(rsReader.GetValue(0))
-            If IDtoCheck = CitadelTypeID Or IDtoCheck = CitadelGroupID Then
+            If IDtoCheck = StructureTypeID Or IDtoCheck = StructureGroupID Then
                 Return True
             End If
         End While
@@ -1269,12 +1404,12 @@ Public Class frmCitadelFitting
             EVEDB.BeginSQLiteTransaction()
             ' Delete everything first, then insert the new records
             EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM FACILITY_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
-            AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}", SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedCitadelView)))
+            AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}", SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedStructureView)))
 
             ' Insert all the modules on the facility
             For Each InstalledModule In GetInstalledSlots()
                 SQL = String.Format("INSERT INTO FACILITY_INSTALLED_MODULES VALUES({0},{1},{2},{3})",
-                                    SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedCitadelView), InstalledModule)
+                                    SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedStructureView), InstalledModule.typeID)
                 EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
@@ -1289,45 +1424,238 @@ Public Class frmCitadelFitting
     End Sub
 
     ' Loads up the bonuses from the modules installed in the list
-    Private Sub UpdateBonusList()
+    Private Sub UpdateUpwellStructureBonuses()
+        Dim SQL As String
+        Dim SystemSecurityBonus As Double
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
 
-        lstRigBonuses.Items.Clear()
+        Dim BonusList As ListViewItem
+
+        lstUpwellStructureBonuses.Items.Clear()
 
         ' Loop through each module installed and get a total of all the stats affected and how
         For Each InstalledModule In GetInstalledSlots()
+            ' Only look at rig bonuses for now
+            If InstalledModule.moduleType.Contains("Rig") Then
+                ' Get the security modifier first - set to 1 if not found
+                SQL = "SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES WHERE typeID = {0} AND attributeID = "
+                If chkHighSec.Checked Then
+                    SQL &= CStr(ItemAttributes.hiSecModifier) & " "
+                ElseIf chkLowSec.Checked Then
+                    SQL &= CStr(ItemAttributes.lowSecModifier) & " "
+                ElseIf chkNullSec.Checked Then
+                    SQL &= CStr(ItemAttributes.nullSecModifier) & " "
+                End If
+
+                DBCommand = New SQLiteCommand(String.Format(SQL, InstalledModule.typeID), EVEDB.DBREf)
+                rsReader = DBCommand.ExecuteReader
+
+                If rsReader.Read Then
+                    SystemSecurityBonus = rsReader.GetDouble(0)
+                Else
+                    SystemSecurityBonus = 1
+                End If
+
+                ' Engineering Rigs
+                Select Case InstalledModule.moduleType
+                    Case "EngineeringRigs"
+
+                        SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS APPPLICATION, activityName, "
+                        SQL &= "AT.displayName || ': ' || CAST(COALESCE(valueint, valuefloat)*100 AS VARCHAR) || '%' AS BONUSES, typeName AS BONUS_SOURCE "
+
+                        SQL &= "(SELECT AT.DISPALYCOALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigMatBonus) & " "
+                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS ME_VALUE, "
+                        SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigTimeBonus) & " "
+                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS TE_VALUE, "
+                        SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigCostBonus) & " "
+                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS COST_VALUE, "
+
+                    Case "CombatRigs"
 
 
+                    Case "ReprocessingRigs"
+
+                        SQL = "SELECT 'Refining' AS BONUS_APPLIES, 'Refining' AS ACTIVITY, "
+                        SQL &= "AT.displayName || ': ' || CAST(COALESCE(valueint, valuefloat)*100 AS VARCHAR) || '%' AS BONUSES, typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID "
+                        SQL &= "AND TA.typeID = IT.typeID AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'refiningYield%') "
+                        SQL &= SQL & "AND TA.typeID = {0} ORDER BY BONUSES "
+
+                    Case "ReactionRigs"
 
 
+                    Case "DrillingRigs"
+
+                    Case Else
+                        Exit For
+                End Select
+
+                ' Look up the stats for the item and the bonus based on the type of security in the system and te,mat,cost
+
+                ' Engineering Rigs
+
+                ' Refining Rigs
+
+                ' Reaction Rigs
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.RefRigMatBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS REACTION_MAT_BONUS, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.RefRigTimeBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS REACTION_TIME_BONUS, "
+                ' Drilling Rigs
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigFractureDelayBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Chunk_Stability_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigAsteroidDecayBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Extracted_Asteroid_Decay_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigSpewRadiusBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Moon_Asteroid_Belt_Radius_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigSpewVolumeBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Moon_Extraction_Volume_Bonus, "
+                ' Combat Rigs
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileExploVeloBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Explosion_Velocity_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarOptimalBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Optimal_Range_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarFalloffBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Falloff_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileVelocityBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Missile_Velocity_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarCapUseBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Capacitor_Use_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMaxTargetBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Maximum_Locked_Targets_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigScanResBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Scan_Resolution_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileExplosionRadiusBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Guided_Bomb_Explosion_Radius_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigPDRangeBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Point_Defense_Battery_Range_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigPDCapUseBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Point_Defense_Battery_Capacitor_Use_Bonus, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigDoomsdayTargetAmountBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Additional_doomsday_secondary_targets, "
+                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
+                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigDoomsdayDamageLossTargetBonus) & " "
+                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Bonus_to_doomsday_secondary_target_damage_reduction, "
+
+                SQL &= "typeName, INVENTORY_CATEGORIES.categoryID, RAM_ACTIVITIES.activityID, AT.displayName AS BONUS "
+                SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS SRB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                SQL &= "LEFT JOIN INVENTORY_GROUPS ON SRB.groupID = INVENTORY_GROUPS.groupID "
+                SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON SRB.categoryID = INVENTORY_CATEGORIES.categoryID "
+                SQL &= "LEFT JOIN RAM_ACTIVITIES ON SRB.activityID = RAM_ACTIVITIES.activityID "
+                SQL &= "WHERE SRB.typeID = TA.typeID AND SRB.typeID = IT.typeID AND TA.attributeID = AT.attributeID "
+                SQL &= "AND SRB.typeID = {0} AND TA.attributeID = "
+                If chkHighSec.Checked Then
+                    SQL &= CStr(ItemAttributes.hiSecModifier) & " "
+                ElseIf chkLowSec.Checked Then
+                    SQL &= CStr(ItemAttributes.lowSecModifier) & " "
+                ElseIf chkNullSec.Checked Then
+                    SQL &= CStr(ItemAttributes.nullSecModifier) & " "
+                End If
+                SQL &= "AND ME_VALUE IS NOT NULL AND TE_VALUE IS NOT NULL AND COST_VALUE IS NOT NULL "
+                SQL &= "ORDER BY APPPLICATION"
+
+                DBCommand = New SQLiteCommand(String.Format(SQL, InstalledModule.typeID), EVEDB.DBREf)
+                rsReader = DBCommand.ExecuteReader
+
+                While rsReader.Read
+                    ' Insert a row with the data pulled
+                    ' Columns: Bonus Applies to, Activity, Bonuses, Bonus Source
+
+                    BonusList = New ListViewItem(rsReader.GetString(0)) ' Group or Category bonus is applied
+
+                    ' Set the activity name
+                    If Not IsDBNull(rsReader.GetValue(6)) Then
+                        If rsReader.GetInt32(6) = 9 Then
+                            If rsReader.GetInt32(7) = -1 Then
+                                ' All laboratory things
+                                BonusList.SubItems.Add("All Laboratory Jobs")
+                            Else
+                                BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
+                            End If
+                        Else
+                            ' Just the category
+                            BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
+                        End If
+                    Else
+                        ' Group name must have something then
+                        BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
+                    End If
+
+                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(2), 3)) ' ME
+                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(3), 3)) ' TE
+                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(4), 3)) ' Cost
+
+                    BonusList.SubItems.Add(CStr(rsReader.GetString(5))) ' Source of bonus
+
+                    ' Update the final list
+                    Call lstUpwellStructureBonuses.Items.Add(BonusList)
+
+                End While
+            End If
         Next
 
     End Sub
 
 
 #Region "Fuel Settings"
+
+    Private Sub btnSaveFuelBlockInfo_Click(sender As Object, e As EventArgs) Handles btnSaveFuelBlockInfo.Click
+
+    End Sub
+
+    Private Sub btnRefreshBlockData_Click(sender As Object, e As EventArgs) Handles btnRefreshBlockData.Click
+
+    End Sub
+
+    Private Sub btnUpdateBlockPrice_Click(sender As Object, e As EventArgs) Handles btnUpdatePrices.Click
+
+    End Sub
+
     Private Sub LoadPOSDataTab()
 
-        txtAmarrFuelBlockBPME.Text = "0"
+        txtHeliumFuelBlockBPME.Text = "0"
 
         ' Building
         If SelectedTower.FuelBlockBuild Then
-            rbtnPOSBuildBlocks.Checked = True
-            gbPOSFuelPrices.Enabled = True
-            btnPOSUpdateBlockPrice.Enabled = False
-            btnPOSUpdateFuelPrices.Enabled = True
+            rbtnBuildBlocks.Checked = True
+            gbFuelPrices.Enabled = True
+            btnUpdatePrices.Enabled = False
+            btnUpdatePrices.Enabled = True
             btnRefreshBlockData.Enabled = True
-            txtAmarrFuelBlockBPME.Enabled = True
-            lblAmarrFuelBlockBPME.Enabled = True
-            txtAmarrFuelBlockBuy.Enabled = False
+            txtHeliumFuelBlockBPME.Enabled = True
+            lblHeliumFuelBlockBPME.Enabled = True
+            txtHeliumFuelBlockBuyPrice.Enabled = False
         Else ' Buying
-            rbtnPOSBuyBlocks.Checked = True
-            gbPOSFuelPrices.Enabled = False
-            btnPOSUpdateBlockPrice.Enabled = True
-            btnPOSUpdateFuelPrices.Enabled = False
+            rbtnBuyBlocks.Checked = True
+            gbFuelPrices.Enabled = False
+            btnUpdatePrices.Enabled = True
+            btnUpdatePrices.Enabled = False
             btnRefreshBlockData.Enabled = False
-            txtAmarrFuelBlockBPME.Enabled = False
-            lblAmarrFuelBlockBPME.Enabled = False
-            txtAmarrFuelBlockBuy.Enabled = True
+            txtHeliumFuelBlockBPME.Enabled = False
+            lblHeliumFuelBlockBPME.Enabled = False
+            txtHeliumFuelBlockBuyPrice.Enabled = True
         End If
 
         txtCharters.Text = FormatNumber(SelectedTower.CharterCost, 2)
@@ -1346,7 +1674,7 @@ Public Class frmCitadelFitting
         Dim FuelBlock As String = ""
         Dim SelectedTowerRaceID As Integer
 
-        SQL = "SELECT raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
+        SQL = "Select raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerPOS = DBCommand.ExecuteReader()
@@ -1358,29 +1686,25 @@ Public Class frmCitadelFitting
             Exit Sub
         End If
 
-        picAmarrFuelBlock.Visible = False
-        picPOSCaldariFuelBlock.Visible = False
-        picPOSGallenteFuelBlock.Visible = False
-        picPOSMinmatarFuelBlock.Visible = False
+        picHeliumFuelBlock.Visible = False
+        picHydrogenFuelBlock.Visible = False
+        picNitrogenFuelBlock.Visible = False
+        picOxygenFuelBlock.Visible = False
 
         ' Based on the race of the tower, choose the type of fuel block it will use
         Select Case SelectedTowerRaceID
             Case 1
                 FuelBlock = "Caldari Fuel Block"
-                lblPOSFuelBlockAmarr.Text = "Caldari"
-                picPOSCaldariFuelBlock.Visible = True
+                picHydrogenFuelBlock.Visible = True
             Case 2
                 FuelBlock = "Minmatar Fuel Block"
-                lblPOSFuelBlockAmarr.Text = "Minmatar"
-                picPOSMinmatarFuelBlock.Visible = True
+                picOxygenFuelBlock.Visible = True
             Case 4
                 FuelBlock = "Amarr Fuel Block"
-                lblPOSFuelBlockAmarr.Text = "Amarr"
-                picAmarrFuelBlock.Visible = True
+                picHeliumFuelBlock.Visible = True
             Case 8
                 FuelBlock = "Gallente Fuel Block"
-                lblPOSFuelBlockAmarr.Text = "Gallente"
-                picPOSGallenteFuelBlock.Visible = True
+                picNitrogenFuelBlock.Visible = True
         End Select
 
         ' Reload the ME if we need too
@@ -1389,7 +1713,7 @@ Public Class frmCitadelFitting
         End If
 
         ' Build the block value if we are building
-        If rbtnPOSBuildBlocks.Checked Then
+        If rbtnBuildBlocks.Checked Then
             Call SetFuelBlockBuildcost()
         End If
 
@@ -1408,9 +1732,9 @@ Public Class frmCitadelFitting
 
         If readerPOS.Read Then
             ' Owned and they have it
-            txtAmarrFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
+            txtHeliumFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
         Else
-            txtAmarrFuelBlockBPME.Text = "0"
+            txtHeliumFuelBlockBPME.Text = "0"
         End If
 
     End Sub
@@ -1473,17 +1797,18 @@ Public Class frmCitadelFitting
         readerPOS = DBCommand.ExecuteReader()
 
         While readerPOS.Read
-            ' Update the textboxes and images
-            'For i = 1 To POSTextBoxes.Count - 1
-            '    If POSLabels(i).Text = readerPOS.GetString(0) Then
-            '        POSTextBoxes(i).Text = FormatNumber(readerPOS.GetDouble(1), 2) ' Price
-            '    End If
-            'Next
+            ' Update the textboxes with prices
+            Select Case readerPOS.GetString(0)
+                Case "Hydrogen Isotopes"
+                    txtHeliumIsotopes.Text = FormatNumber(readerPOS.GetDouble(1), 2)
+
+
+            End Select
             Application.DoEvents()
         End While
 
         Me.Cursor = Cursors.Default
-        txtPOS1.Focus()
+        txtHeliumIsotopes.Focus()
 
         readerPOS.Close()
         readerPOS = Nothing
@@ -1502,15 +1827,15 @@ Public Class frmCitadelFitting
 
             ' Check the prices first
 
-            If Not IsNumeric(txtAmarrFuelBlockBuy.Text) Then
+            If Not IsNumeric(txtHeliumFuelBlockBuyPrice.Text) Then
                 MsgBox("Invalid Fuel Block Price", vbExclamation, Application.ProductName)
-                txtAmarrFuelBlockBuy.Focus()
+                txtHeliumFuelBlockBuyPrice.Focus()
                 Me.Cursor = Cursors.Default
                 Exit Sub
             End If
 
             ' Update the prices
-            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtAmarrFuelBlockBuy.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblPOSFuelBlockAmarr.Text & " Fuel Block'"
+            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblHeliumFuelBlock.Text & " Fuel Block'"
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             MsgBox("Prices Updated", vbInformation, Me.Text)
@@ -1534,7 +1859,7 @@ Public Class frmCitadelFitting
         readerPOS = Nothing
         DBCommand = Nothing
 
-        If cmbCitadelName.Text <> None Then
+        If cmbUpwellStructureName.Text <> None Then
             ' Load the fuel block price
             SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
             SQL = SQL & "FROM ITEM_PRICES, INVENTORY_TYPES "
@@ -1555,10 +1880,10 @@ Public Class frmCitadelFitting
             readerPOS = DBCommand.ExecuteReader()
             readerPOS.Read()
 
-            txtAmarrFuelBlockBuy.Text = FormatNumber(readerPOS.GetValue(1))
+            txtHeliumFuelBlockBuyPrice.Text = FormatNumber(readerPOS.GetValue(1))
             readerPOS.Close()
         Else
-            txtAmarrFuelBlockBuy.Text = "0.00"
+            txtHeliumFuelBlockBuyPrice.Text = "0.00"
         End If
 
         Me.Cursor = Cursors.Default
@@ -1574,10 +1899,10 @@ Public Class frmCitadelFitting
         Dim Multiplier As Integer
 
         ' Get the block we are using
-        If rbtnPOSBuildBlocks.Checked Then
-            CostperBlock = CDbl(lblAmarrFuelBlockBuild.Text)
+        If rbtnBuildBlocks.Checked Then
+            CostperBlock = CDbl(lblHeliumFuelBlockBuild.Text)
         Else
-            CostperBlock = CDbl(txtAmarrFuelBlockBuy.Text)
+            CostperBlock = CDbl(txtHeliumFuelBlockBuyPrice.Text)
         End If
 
         CostperHour = CostperBlock * Multiplier
@@ -1590,9 +1915,9 @@ Public Class frmCitadelFitting
     Private Sub SetFuelBlockBuildcost()
 
         ' Make sure it's valid
-        If Not IsNumeric(txtAmarrFuelBlockBPME.Text) Then
+        If Not IsNumeric(txtHeliumFuelBlockBPME.Text) Then
             MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
-            txtAmarrFuelBlockBPME.Focus()
+            txtHeliumFuelBlockBPME.Focus()
             Exit Sub
         End If
 
@@ -1603,17 +1928,17 @@ Public Class frmCitadelFitting
         End If
 
         ' First set all to 0 so we only build for the tower we are using
-        lblAmarrFuelBlockBuild.Text = "0.00"
+        lblHeliumFuelBlockBuild.Text = "0.00"
 
         ' Get cost for building 1 block and add charter cost (divide by 40 since that's the number of blocks that is made for 1 charter)
-        If rbtnCaldariFuelBlock.Checked Then
-            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnMinmatarFuelBlock.Checked Then
-            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnAmarrFuelBlock.Checked Then
-            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnGallenteFuelBlock.Checked Then
-            lblAmarrFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtAmarrFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        If rbtnHydrogenFuelBlock.Checked Then
+            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnOxygenFuelBlock.Checked Then
+            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnHeliumFuelBlock.Checked Then
+            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
+        ElseIf rbtnNitrogenFuelBlock.Checked Then
+            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
         End If
 
     End Sub
@@ -1644,8 +1969,8 @@ Public Class frmCitadelFitting
 #End Region
 
 #Region "Click Events"
-    Private Sub cmbCitadelName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbCitadelName.SelectedIndexChanged
-        Call LoadCitadel(cmbCitadelName.Text)
+    Private Sub cmbUpwellStructureName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbUpwellStructureName.SelectedIndexChanged
+        Call LoadStructure(cmbUpwellStructureName.Text)
     End Sub
 
     Private Sub chkItemViewTypeAll_CheckedChanged(sender As Object, e As EventArgs)
@@ -1672,6 +1997,14 @@ Public Class frmCitadelFitting
         Call UpdateFittingImages()
     End Sub
 
+    Private Sub chkRigTypeViewReaction_CheckedChanged(sender As Object, e As EventArgs) Handles chkRigTypeViewReaction.CheckedChanged
+        Call UpdateFittingImages()
+    End Sub
+
+    Private Sub chkRigViewTypeDrilling_CheckedChanged(sender As Object, e As EventArgs) Handles chkRigTypeViewDrilling.CheckedChanged
+        Call UpdateFittingImages()
+    End Sub
+
     Private Sub chkRigTypeViewEngineering_CheckedChanged(sender As Object, e As EventArgs) Handles chkRigTypeViewEngineering.CheckedChanged
         Call UpdateFittingImages()
     End Sub
@@ -1680,38 +2013,38 @@ Public Class frmCitadelFitting
         Call UpdateFittingImages()
     End Sub
 
-    Private Sub cmbCitadelName_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbCitadelName.KeyPress
+    Private Sub cmbUpwellStructureName_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbUpwellStructureName.KeyPress
         e.Handled = True
     End Sub
 
     Private Sub MidSlot1_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot1.DoubleClick
         MidSlot1.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot2_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot2.DoubleClick
         MidSlot2.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot3_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot3.DoubleClick
         MidSlot3.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot4_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot4.DoubleClick
         MidSlot4.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot5_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot5.DoubleClick
         MidSlot5.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot6_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot6.DoubleClick
         MidSlot6.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot7_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot7.DoubleClick
@@ -1720,7 +2053,7 @@ Public Class frmCitadelFitting
 
     Private Sub MidSlot8_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot8.DoubleClick
         MidSlot8.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot1_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot1.DoubleClick
@@ -1728,7 +2061,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot1.Image.Tag))
         End If
         HighSlot1.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot2_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot2.DoubleClick
@@ -1736,7 +2069,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot2.Image.Tag))
         End If
         HighSlot2.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot3_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot3.DoubleClick
@@ -1744,7 +2077,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot3.Image.Tag))
         End If
         HighSlot3.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot5_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot5.DoubleClick
@@ -1752,7 +2085,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot5.Image.Tag))
         End If
         HighSlot5.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot7_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot7.DoubleClick
@@ -1760,7 +2093,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot7.Image.Tag))
         End If
         HighSlot7.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot4_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot4.DoubleClick
@@ -1768,7 +2101,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot4.Image.Tag))
         End If
         HighSlot4.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot6_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot6.DoubleClick
@@ -1776,7 +2109,7 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot6.Image.Tag))
         End If
         HighSlot6.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot8_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot8.DoubleClick
@@ -1784,100 +2117,96 @@ Public Class frmCitadelFitting
             Call UpdateLauncherSlots(True, CStr(HighSlot8.Image.Tag))
         End If
         HighSlot8.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot3_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot3.DoubleClick
         RigSlot3.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot2_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot2.DoubleClick
         RigSlot2.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot1_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot1.DoubleClick
         RigSlot1.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot1_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot1.DoubleClick
         LowSlot1.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot2_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot2.DoubleClick
         LowSlot2.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot3_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot3.DoubleClick
         LowSlot3.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot4_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot4.DoubleClick
         LowSlot4.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot5_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot5.DoubleClick
         LowSlot5.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot6_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot6.DoubleClick
         LowSlot6.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot7_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot7.DoubleClick
         LowSlot7.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot8_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot8.DoubleClick
         LowSlot8.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot5_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot5.DoubleClick
         ServiceSlot5.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot3_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot3.DoubleClick
         ServiceSlot3.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot1_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot1.DoubleClick
         ServiceSlot1.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot2_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot2.DoubleClick
         ServiceSlot2.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot4_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot4.DoubleClick
         ServiceSlot4.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot6_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot6.DoubleClick
         ServiceSlot6.Image = Nothing
-        Call UpdateCitadelStats()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub btnToggleAllPriceItems_Click(sender As Object, e As EventArgs) Handles btnToggleAllPriceItems.Click
         Call StripFitting()
-    End Sub
-
-    Private Sub btnRefreshBlockData_Click(sender As Object, e As EventArgs) Handles btnRefreshBlockData.Click
-
     End Sub
 
     Private Sub chkIncludeFuelCosts_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeFuelCosts.CheckedChanged
@@ -1910,21 +2239,21 @@ Public Class frmCitadelFitting
     Private Sub chkHighSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkHighSec.CheckedChanged
         If Not UpdateChecks Then
             Call SetSpaceSecurityChecks(0)
-            Call UpdateBonusList
+            Call UpdateUpwellStructureBonuses()
         End If
     End Sub
 
     Private Sub chkLowSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowSec.CheckedChanged
         If Not UpdateChecks Then
             Call SetSpaceSecurityChecks(1)
-            Call UpdateBonusList
+            Call UpdateUpwellStructureBonuses()
         End If
     End Sub
 
     Private Sub chkNullSec_CheckedChanged(sender As Object, e As EventArgs) Handles chkNullSec.CheckedChanged
         If Not UpdateChecks Then
             Call SetSpaceSecurityChecks(2)
-            Call UpdateBonusList
+            Call UpdateUpwellStructureBonuses()
         End If
     End Sub
 
@@ -1935,17 +2264,69 @@ Public Class frmCitadelFitting
         If Not FirstLoad Then
             ' Adjust the checks depending on options
             For i = 0 To SecurityCheckBoxes.Count - 1
-                    UpdateChecks = True
-                    If i <> TriggerIndex Then
-                        SecurityCheckBoxes(i).Checked = False
-                    ElseIf i = TriggerIndex And SecurityCheckBoxes(i).Checked = False Then
-                        SecurityCheckBoxes(i).Checked = True ' Don't let them uncheck the value
-                    End If
-                    UpdateChecks = False
-                Next
-            End If
+                UpdateChecks = True
+                If i <> TriggerIndex Then
+                    SecurityCheckBoxes(i).Checked = False
+                ElseIf i = TriggerIndex And SecurityCheckBoxes(i).Checked = False Then
+                    SecurityCheckBoxes(i).Checked = True ' Don't let them uncheck the value
+                End If
+                UpdateChecks = False
+            Next
+        End If
         'End If
     End Sub
+
+    Private Sub btnSaveSettings_Click(sender As Object, e As EventArgs) Handles btnSaveSettings.Click
+        Dim TempSettings As UpwellStructureSettings = Nothing
+        Dim Settings As New ProgramSettings
+
+
+        With TempSettings
+            .HighSlotsCheck = chkItemViewTypeHigh.Checked
+            .MediumSlotsCheck = chkItemViewTypeMedium.Checked
+            .LowSlotsCheck = chkItemViewTypeLow.Checked
+            .ServicesCheck = chkItemViewTypeServices.Checked
+
+            .ReprocessingRigsCheck = chkRigTypeViewReprocessing.Checked
+            .EngineeringRigsCheck = chkRigTypeViewEngineering.Checked
+            .CombatRigsCheck = chkRigTypeViewCombat.Checked
+            .ReactionsRigsCheck = chkRigTypeViewReaction.Checked
+            .DrillingRigsCheck = chkRigTypeViewDrilling.Checked
+
+            .SearchFilterText = txtItemFilter.Text
+
+            .IncludeFuelCostsCheck = chkIncludeFuelCosts.Checked
+
+            If rbtnHeliumFuelBlock.Checked Then
+                .FuelBlockType = rbtnHeliumFuelBlock.Text
+            ElseIf rbtnHydrogenFuelBlock.Checked Then
+                .FuelBlockType = rbtnHydrogenFuelBlock.Text
+            ElseIf rbtnNitrogenFuelBlock.Checked Then
+                .FuelBlockType = rbtnNitrogenFuelBlock.Text
+            ElseIf rbtnOxygenFuelBlock.Checked Then
+                .FuelBlockType = rbtnOxygenFuelBlock.Text
+            End If
+
+            If rbtnBuildBlocks.Checked Then
+                .BuyBuildBlockOption = rbtnBuildBlocks.Text
+            ElseIf rbtnBuyBlocks.Checked Then
+                .BuyBuildBlockOption = rbtnBuyBlocks.Text
+            End If
+
+            .SelectedStructureName = cmbUpwellStructureName.Text
+
+        End With
+
+        ' Save the data in the XML file
+        Call Settings.SaveUpwellStructureViewerSettings(TempSettings)
+
+        ' Save the data to the local variable
+        UserUpwellStructureSettings = TempSettings
+
+        MsgBox("Settings Saved", vbInformation, Application.ProductName)
+
+    End Sub
+
 
 #End Region
 

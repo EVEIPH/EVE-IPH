@@ -47,6 +47,8 @@ Public Module SettingsVariables
     Public UserLPStoreSettings As LPStore
     ' For the Blueprint List Viewer
     Public UserBPViewerSettings As BPViewerSettings
+    ' For Upwell Structure viewer
+    Public UserUpwellStructureSettings As UpwellStructureSettings
 
 End Module
 
@@ -883,10 +885,27 @@ Public Class ProgramSettings
     Private DefaultLPISKCostGreaterThan As String = "0.00"
     Private DefaultLPStandingLessThan As String = "0.00"
     Private DefaultLPStandingGreaterThan As String = "0.00"
-    Private DefaulTLPSearchOption As String = "All Corporations"
+    Private DefaultLPSearchOption As String = "All Corporations"
     Private DefaultLPSortByOption As String = "ISK/LP"
     Private DefaultLPHighlightCheck As Boolean = True
     Private DefaultLPSelectedCorporations As String = ""
+
+    ' Upwell Structures Viewer
+    Private DefaultHighSlotsCheck As Boolean = False
+    Private DefaultMediumSlotsCheck As Boolean = False
+    Private DefaultLowSlotsCheck As Boolean = False
+    Private DefaultServicesCheck As Boolean = False
+    Private DefaultReprocessingRigsCheck As Boolean = False
+    Private DefaultEngineeringRigsCheck As Boolean = False
+    Private DefaultCombatRigsCheck As Boolean = False
+    Private DefaultIncludeFuelCostsCheck As Boolean = False
+    Private DefaultFuelBlockType As String = "Amarr Fuel Block"
+    Private DefaultBuyBuildBlockOption As String = "Buy Blocks"
+    Private DefaultAutoUpdateFuelBlockPricesCheck As Boolean = False
+    Private DefaultSearchFilterText As String = ""
+    Private DefaultSelectedStructureName As String = "Raitaru"
+    Private DefaultReactionsRigsCheck As Boolean = False
+    Private DefaultDrillingRigsCheck As Boolean = False
 
     ' Local versions of settings
     Private ApplicationSettings As ApplicationSettings
@@ -904,6 +923,7 @@ Public Class ProgramSettings
     Private IndustryTeamSettings As TeamSettings
     Private LPStoreSettings As LPStore
     Private MarketHistoryViewSettings As MarketHistoryViewerSettings
+    Private UpwellStructureViewerSettings As UpwellStructureSettings
     Private BPViewSettings As BPViewerSettings
 
     ' Facilities
@@ -985,7 +1005,9 @@ Public Class ProgramSettings
 
     Private Const LPStoreSettingsFileName As String = "LPStoreSettings"
 
-    Private Const MarketHistoryViewerSettingsSettingsFileName As String = "MarketHistoryViewerSettingsSettingsFileName"
+    Private Const MarketHistoryViewerSettingsFileName As String = "MarketHistoryViewerSettings"
+
+    Private Const UpwellStructureViewerSettingsFileName As String = "UpwellStructureViewerSettings"
 
     ' For BP List Viewer
     Public DefaultBPViewerTechChecks As Boolean = True
@@ -1021,6 +1043,15 @@ Public Class ProgramSettings
         MiningSettings = Nothing
         UpdatePricesSettings = Nothing
         IndustryJobsColumnSettings = Nothing
+        ManufacturingTabColumnSettings = Nothing
+        IndustryFlipBeltsSettings = Nothing
+        ShoppingListTabSettings = Nothing
+        IndustryTeamSettings = Nothing
+        LPStoreSettings = Nothing
+        MarketHistoryViewSettings = Nothing
+        UpwellStructureViewerSettings = Nothing
+        BPViewSettings = Nothing
+
     End Sub
 
     ' Writes the sent settings to the sent file name
@@ -5122,7 +5153,7 @@ Public Class ProgramSettings
                     .ISKCostGreaterThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostGreaterThan", DefaultLPISKCostGreaterThan))
                     .StandingLessThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingLessThan", DefaultLPStandingLessThan))
                     .StandingGreaterThan = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingGreaterThan", DefaultLPStandingGreaterThan))
-                    .SearchOption = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SearchOption", DefaulTLPSearchOption))
+                    .SearchOption = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SearchOption", DefaultLPSearchOption))
                     .HighlightCheck = CBool(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "HighlightCheck", DefaultLPHighlightCheck))
                     .SelectedCorporations = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SelectedCorporations", DefaultLPSelectedCorporations))
                     .SortByOption = CStr(GetSettingValue(LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SortByOption", DefaultLPSortByOption))
@@ -5165,7 +5196,7 @@ Public Class ProgramSettings
             .ISKCostGreaterThan = DefaultLPISKCostGreaterThan
             .StandingLessThan = DefaultLPStandingLessThan
             .StandingGreaterThan = DefaultLPStandingGreaterThan
-            .SearchOption = DefaulTLPSearchOption
+            .SearchOption = DefaultLPSearchOption
             .HighlightCheck = DefaultLPHighlightCheck
             .SelectedCorporations = DefaultLPSelectedCorporations
             .SortByOption = DefaultLPSortByOption
@@ -5224,16 +5255,16 @@ Public Class ProgramSettings
 
         Try
 
-            If FileExists(MarketHistoryViewerSettingsSettingsFileName) Then
+            If FileExists(MarketHistoryViewerSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .DatePreference = CStr(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeString, MarketHistoryViewerSettingsSettingsFileName, "DatePreference", DefaultMHDatePreference))
-                    .Volume = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "Volume", DefaultMHVolume))
-                    .MinMaxDayPrice = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "MinMaxDayPrice", DefaultMHMinMaxDayPrice))
-                    .LinearTrend = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "LinearTrend", DefaultMHLinearTrend))
-                    .DochianChannel = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "DochianChannel", DefaultMHDochianChannel))
-                    .FiveDayAvg = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "FiveDayAvg", DefaultMHFiveDayAvg))
-                    .TwentyDayAvg = CBool(GetSettingValue(MarketHistoryViewerSettingsSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsSettingsFileName, "TwentyDayAvg", DefaultMHTwentyDayAvg))
+                    .DatePreference = CStr(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeString, MarketHistoryViewerSettingsFileName, "DatePreference", DefaultMHDatePreference))
+                    .Volume = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "Volume", DefaultMHVolume))
+                    .MinMaxDayPrice = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "MinMaxDayPrice", DefaultMHMinMaxDayPrice))
+                    .LinearTrend = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "LinearTrend", DefaultMHLinearTrend))
+                    .DochianChannel = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "DochianChannel", DefaultMHDochianChannel))
+                    .FiveDayAvg = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "FiveDayAvg", DefaultMHFiveDayAvg))
+                    .TwentyDayAvg = CBool(GetSettingValue(MarketHistoryViewerSettingsFileName, SettingTypes.TypeBoolean, MarketHistoryViewerSettingsFileName, "TwentyDayAvg", DefaultMHTwentyDayAvg))
                 End With
             Else
                 ' Load defaults 
@@ -5285,7 +5316,7 @@ Public Class ProgramSettings
             MarketHistoryViewerSettingsSettingsList(5) = New Setting("FiveDayAvg", CStr(SentSettings.FiveDayAvg))
             MarketHistoryViewerSettingsSettingsList(6) = New Setting("TwentyDayAvg", CStr(SentSettings.TwentyDayAvg))
 
-            Call WriteSettingsToFile(MarketHistoryViewerSettingsSettingsFileName, MarketHistoryViewerSettingsSettingsList, MarketHistoryViewerSettingsSettingsFileName)
+            Call WriteSettingsToFile(MarketHistoryViewerSettingsFileName, MarketHistoryViewerSettingsSettingsList, MarketHistoryViewerSettingsFileName)
 
         Catch ex As Exception
             MsgBox("An error occured when saving LP Store Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
@@ -5401,6 +5432,114 @@ Public Class ProgramSettings
 
 #End Region
 
+#Region "Upwell Structures Viewer Settings"
+
+    ' Loads the tab settings
+    Public Function LoadUpwellStructureViewerSettings() As UpwellStructureSettings
+        Dim TempSettings As UpwellStructureSettings = Nothing
+
+        Try
+
+            If FileExists(UpwellStructureViewerSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .HighSlotsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "HighSlotsCheck", DefaultHighSlotsCheck))
+                    .MediumSlotsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "MediumSlotsCheck", DefaultMediumSlotsCheck))
+                    .LowSlotsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "LowSlotsCheck", DefaultLowSlotsCheck))
+                    .ServicesCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "ServicesCheck", DefaultServicesCheck))
+                    .ReprocessingRigsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "ReprocessingRigsCheck", DefaultReprocessingRigsCheck))
+                    .EngineeringRigsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "EngineeringRigsCheck", DefaultEngineeringRigsCheck))
+                    .CombatRigsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "CombatRigsCheck", DefaultCombatRigsCheck))
+                    .IncludeFuelCostsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "IncludeFuelCostsCheck", DefaultIncludeFuelCostsCheck))
+                    .FuelBlockType = CStr(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeString, UpwellStructureViewerSettingsFileName, "FuelBlockType", DefaultFuelBlockType))
+                    .BuyBuildBlockOption = CStr(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeString, UpwellStructureViewerSettingsFileName, "BuyBuildBlockOption", DefaultBuyBuildBlockOption))
+                    .AutoUpdateFuelBlockPricesCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "AutoUpdateFuelBlockPricesCheck", DefaultAutoUpdateFuelBlockPricesCheck))
+                    .SearchFilterText = CStr(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeString, UpwellStructureViewerSettingsFileName, "SearchFilterText", DefaultSearchFilterText))
+                    .SelectedStructureName = CStr(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeString, UpwellStructureViewerSettingsFileName, "SelectedStructureName", DefaultSelectedStructureName))
+                    .ReactionsRigsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "ReactionsRigsCheck", DefaultReactionsRigsCheck))
+                    .DrillingRigsCheck = CBool(GetSettingValue(UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "DrillingRigsCheck", DefaultDrillingRigsCheck))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultUpwellStructureViewerSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading UpwellStructureViewer Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultUpwellStructureViewerSettings()
+        End Try
+
+        ' Save them locally and then export
+        UpwellStructureViewerSettings = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    Public Function SetDefaultUpwellStructureViewerSettings() As UpwellStructureSettings
+        Dim LocalSettings As UpwellStructureSettings
+
+        With LocalSettings
+            .HighSlotsCheck = DefaultHighSlotsCheck
+            .MediumSlotsCheck = DefaultMediumSlotsCheck
+            .LowSlotsCheck = DefaultLowSlotsCheck
+            .ServicesCheck = DefaultServicesCheck
+            .ReprocessingRigsCheck = DefaultReprocessingRigsCheck
+            .EngineeringRigsCheck = DefaultEngineeringRigsCheck
+            .CombatRigsCheck = DefaultCombatRigsCheck
+            .IncludeFuelCostsCheck = DefaultIncludeFuelCostsCheck
+            .FuelBlockType = DefaultFuelBlockType
+            .BuyBuildBlockOption = DefaultBuyBuildBlockOption
+            .AutoUpdateFuelBlockPricesCheck = DefaultAutoUpdateFuelBlockPricesCheck
+            .SearchFilterText = DefaultSearchFilterText
+            .SelectedStructureName = DefaultSelectedStructureName
+            .ReactionsRigsCheck = DefaultReactionsRigsCheck
+            .DrillingRigsCheck = DefaultDrillingRigsCheck
+        End With
+
+        ' Save locally
+        UpwellStructureViewerSettings = LocalSettings
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveUpwellStructureViewerSettings(SentSettings As UpwellStructureSettings)
+        Dim UpwellStructureViewerSettingsList(14) As Setting
+
+        Try
+            UpwellStructureViewerSettingsList(0) = New Setting("HighSlotsCheck", CStr(SentSettings.HighSlotsCheck))
+            UpwellStructureViewerSettingsList(1) = New Setting("MediumSlotsCheck", CStr(SentSettings.MediumSlotsCheck))
+            UpwellStructureViewerSettingsList(2) = New Setting("LowSlotsCheck", CStr(SentSettings.LowSlotsCheck))
+            UpwellStructureViewerSettingsList(3) = New Setting("ServicesCheck", CStr(SentSettings.ServicesCheck))
+            UpwellStructureViewerSettingsList(4) = New Setting("ReprocessingRigsCheck", CStr(SentSettings.ReprocessingRigsCheck))
+            UpwellStructureViewerSettingsList(5) = New Setting("EngineeringRigsCheck", CStr(SentSettings.EngineeringRigsCheck))
+            UpwellStructureViewerSettingsList(6) = New Setting("CombatRigsCheck", CStr(SentSettings.CombatRigsCheck))
+            UpwellStructureViewerSettingsList(7) = New Setting("IncludeFuelCostsCheck", CStr(SentSettings.IncludeFuelCostsCheck))
+            UpwellStructureViewerSettingsList(8) = New Setting("FuelBlockType", CStr(SentSettings.FuelBlockType))
+            UpwellStructureViewerSettingsList(9) = New Setting("BuyBuildBlockOption", CStr(SentSettings.BuyBuildBlockOption))
+            UpwellStructureViewerSettingsList(10) = New Setting("AutoUpdateFuelBlockPricesCheck", CStr(SentSettings.AutoUpdateFuelBlockPricesCheck))
+            UpwellStructureViewerSettingsList(11) = New Setting("SearchFilterText", CStr(SentSettings.SearchFilterText))
+            UpwellStructureViewerSettingsList(12) = New Setting("SelectedStructureName", CStr(SentSettings.SelectedStructureName))
+            UpwellStructureViewerSettingsList(13) = New Setting("ReactionsRigsCheck", CStr(SentSettings.ReactionsRigsCheck))
+            UpwellStructureViewerSettingsList(14) = New Setting("DrillingRigsCheck", CStr(SentSettings.DrillingRigsCheck))
+
+            Call WriteSettingsToFile(UpwellStructureViewerSettingsFileName, UpwellStructureViewerSettingsList, UpwellStructureViewerSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Upwell Structures Viewer Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetUpwellStructureViewerSettings() As UpwellStructureSettings
+        Return UpwellStructureViewerSettings
+    End Function
+
+#End Region
 End Class
 
 ' For general program settings
@@ -6348,4 +6487,23 @@ Public Structure LPStore
 
     Dim SelectedCorporations As String ' CSV string with all the corp names checked
 
+End Structure
+
+' For Upwell Structures fitting window
+Public Structure UpwellStructureSettings
+    Dim HighSlotsCheck As Boolean
+    Dim MediumSlotsCheck As Boolean
+    Dim LowSlotsCheck As Boolean
+    Dim ServicesCheck As Boolean
+    Dim ReprocessingRigsCheck As Boolean
+    Dim EngineeringRigsCheck As Boolean
+    Dim CombatRigsCheck As Boolean
+    Dim IncludeFuelCostsCheck As Boolean
+    Dim FuelBlockType As String
+    Dim BuyBuildBlockOption As String
+    Dim AutoUpdateFuelBlockPricesCheck As Boolean
+    Dim SearchFilterText As String
+    Dim SelectedStructureName As String
+    Dim ReactionsRigsCheck As Boolean
+    Dim DrillingRigsCheck As Boolean
 End Structure

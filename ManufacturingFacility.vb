@@ -570,7 +570,7 @@ Public Class ManufacturingFacility
         Dim Station As String = GetFacilityNameCode(FacilityTypes.Station)
         Dim Outpost As String = GetFacilityNameCode(FacilityTypes.Outpost)
         Dim POS As String = GetFacilityNameCode(FacilityTypes.POS)
-        Dim Citadel As String = GetFacilityNameCode(FacilityTypes.Citadel)
+        Dim UpwellStructure As String = GetFacilityNameCode(FacilityTypes.UpwellStructures)
         Dim NoneFacility As String = GetFacilityNameCode(FacilityTypes.None)
 
         MY_LoadingFacilityTypes = True
@@ -590,13 +590,13 @@ Public Class ManufacturingFacility
                         ' Can be invented in outposts and POS
                         If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                         If NoneFacility <> "" Then cmbFacilityType.Items.Add(NoneFacility)
                     Case Else
                         If Station <> "" Then cmbFacilityType.Items.Add(Station)
                         If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                         If NoneFacility <> "" Then cmbFacilityType.Items.Add(NoneFacility)
                 End Select
             Case MY_ActivityManufacturing
@@ -604,30 +604,30 @@ Public Class ManufacturingFacility
                     Case ProductionType.SuperManufacturing
                         ' Check types, supers can only be built in a pos
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case ProductionType.BoosterManufacturing, ProductionType.SubsystemManufacturing, ProductionType.T3CruiserManufacturing, ProductionType.T3DestroyerManufacturing
                         ' Can be built in outposts and POS
                         If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case ProductionType.NoPOSManufacturing
                         ' No POS stuff like infrastructure hubs
                         If Station <> "" Then cmbFacilityType.Items.Add(Station)
                         If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case Else
                         ' Add all
                         If Station <> "" Then cmbFacilityType.Items.Add(Station)
                         If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                 End Select
             Case MY_ActivityComponentManufacturing, MY_ActivityCapComponentManufacturing
                 ' Can do these anywhere
                 If Station <> "" Then cmbFacilityType.Items.Add(Station)
                 If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                 If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                If Citadel <> "" Then cmbFacilityType.Items.Add(Citadel)
+                If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
         End Select
 
         ' Only reset if they changed it
@@ -763,8 +763,8 @@ Public Class ManufacturingFacility
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
                 End Select
 
-            Case POSFacility, CitadelFacility
-                ' For a POS and Citadels (for now), load all regions as options, but adding only one wormhole region option and don't show Jove regions
+            Case POSFacility, StructureFacility
+                ' For a POS and Upwell Structures, load all regions as options, but adding only one wormhole region option and don't show Jove regions
                 SQL = "SELECT DISTINCT CASE WHEN (REGIONS.regionID >=11000000 and REGIONS.regionid <=11000030) THEN 'Wormhole Space' ELSE regionName END AS REGION_NAME "
                 SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
@@ -935,7 +935,7 @@ Public Class ManufacturingFacility
                     SQL = SQL & " AND security < .45 "
                 End If
 
-            Case CitadelFacility
+            Case StructureFacility
                 SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS COST_INDEX "
                 SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
@@ -951,7 +951,7 @@ Public Class ManufacturingFacility
 
                 SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
 
-                ' Citadels can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
+                ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
                 ' Check both disallowable anchor tables
                 SQL = SQL & "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
                 SQL = SQL & "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
@@ -1153,9 +1153,10 @@ Public Class ManufacturingFacility
                         SQL = SQL & GetFacilityCatGroupIDSQL(MY_SelectedBPCategoryID, MY_SelectedBPGroupID, IndustryActivities.Invention)
                 End Select
 
-            Case FacilityTypes.Citadel
-                ' Load all the citadels
-                SQL = "SELECT typeName AS FACILITY_NAME FROM INVENTORY_TYPES WHERE groupID IN (1404, 1657)"
+            Case FacilityTypes.UpwellStructures
+                ' Load all the upwell structures
+                SQL = "SELECT typeName as FACILITY_NAME FROM INVENTORY_TYPES, INVENTORY_GROUPS WHERE INVENTORY_GROUPS.categoryID = 65 
+                AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid AND INVENTORY_TYPES.published = 1"
 
         End Select
 
@@ -1223,8 +1224,8 @@ Public Class ManufacturingFacility
                         cmbFacilityorArray.Text = "Select Outpost"
                     Case FacilityTypes.POS
                         cmbFacilityorArray.Text = "Select Array"
-                    Case FacilityTypes.Citadel
-                        cmbFacilityorArray.Text = "Select Citadel"
+                    Case FacilityTypes.UpwellStructures
+                        cmbFacilityorArray.Text = "Select Upwell Structure"
                 End Select
 
                 ' Make sure default is turned off since we still have to load the array
@@ -1369,14 +1370,14 @@ Public Class ManufacturingFacility
                         SQL = "SELECT ARRAY_TYPE_ID AS FACILITY_ID, ARRAY_TYPE_ID, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER, " & CStr(POSTaxRate) & " as TAX "
                         SQL = SQL & "FROM ASSEMBLY_ARRAYS WHERE ARRAY_NAME = '" & FormatDBString(FacilityName) & "' "
 
-                    Case FacilityTypes.Citadel
+                    Case FacilityTypes.UpwellStructures
 
-                        SQL = "SELECT CITADEL_TYPE_ID AS FACILITY_ID, CITADEL_TYPE_ID, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER, " & CStr(POSTaxRate) & " as TAX "
-                        SQL &= "FROM CITADELS WHERE CITADEL_NAME = '" & FormatDBString(FacilityName) & "' "
+                        SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID AS FACILITY_ID, UPWELL_STRUCTURE_TYPE_ID, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER, " & CStr(POSTaxRate) & " as TAX "
+                        SQL &= "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
 
                 End Select
 
-                If FacilityType <> FacilityTypes.Citadel Then
+                If FacilityType <> FacilityTypes.UpwellStructures Then
                     Select Case Activity
                         Case ActivityManufacturing
                             SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
@@ -1440,7 +1441,7 @@ Public Class ManufacturingFacility
         Dim CostText As String = FormatPercent(1 - CostMultiplier, 1)
         Dim TaxText As String = FormatPercent(Tax, 1)
 
-        If FacilityType = FacilityTypes.Outpost Or FacilityType = FacilityTypes.Citadel Then
+        If FacilityType = FacilityTypes.Outpost Or FacilityType = FacilityTypes.UpwellStructures Then
             txtFacilityManualME.Enabled = True
             txtFacilityManualTE.Enabled = True
             txtFacilityManualTax.Enabled = True
@@ -1520,9 +1521,9 @@ Public Class ManufacturingFacility
                         SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
                         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
-                    Case FacilityTypes.Citadel
-                        SQL = "SELECT COST_INDEX FROM CITADELS, INDUSTRY_SYSTEMS_COST_INDICIES "
-                        SQL = SQL & "WHERE CITADELS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
+                    Case FacilityTypes.UpwellStructures
+                        SQL = "SELECT COST_INDEX FROM UPWELL_STRUCTURES, INDUSTRY_SYSTEMS_COST_INDICIES "
+                        SQL = SQL & "WHERE UPWELL_STRUCTURES.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
                         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
                         SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
                 End Select
@@ -1544,7 +1545,7 @@ Public Class ManufacturingFacility
             End If
 
             ' If this is a citadel, then look up any saved modules and store them
-            If .FacilityType = FacilityTypes.Citadel Then
+            If .FacilityType = FacilityTypes.UpwellStructures Then
                 SQL = "SELECT INSTALLED_MODULE_ID FROM FACILITY_INSTALLED_MODULES "
                 SQL &= "WHERE CHARACTER_ID = {0} AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}"
                 DBCommand = New SQLiteCommand(String.Format(SQL, MY_SelectedCharacterID, CStr(MY_SelectedProductionType), CStr(MY_SelectedView)), EVEDB.DBREf)
@@ -1576,7 +1577,7 @@ Public Class ManufacturingFacility
             chkFacilityIncludeUsage.Enabled = True
         End If
 
-        If FacilityType = FacilityTypes.Citadel Then
+        If FacilityType = FacilityTypes.UpwellStructures Then
             ' Enable fitting
             btnFacilityFitting.Enabled = True
             btnFacilityFitting.Visible = True
@@ -1803,7 +1804,7 @@ Public Class ManufacturingFacility
 
     Private Sub chkFacilityIncludeUsage_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeUsage.CheckedChanged
         Call SetDefaultFacilitybyCheck(MY_SelectedProductionType)
-  
+
     End Sub
 
     Private Sub btnFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnFacilityFitting.Click
@@ -2317,7 +2318,7 @@ Public Enum FacilityTypes
     Station = 0
     POS = 1
     Outpost = 2
-    Citadel = 3
+    UpwellStructures = 3
 End Enum
 
 ' Industry facility class, move to private use if possible
@@ -2327,7 +2328,7 @@ Public Class IndustryFacility
     ' For industry Facilities
     Public FacilityID As Long ' ID Of the facility
     Public FacilityName As String ' Station/Outpost Name or the Array name
-    Public FacilityType As FacilityTypes ' POS, Station, Outpost, Citadel
+    Public FacilityType As FacilityTypes ' POS, Station, Outpost, Upwell Structure
     Public FacilityTypeID As Integer ' type ID for facility - type of outpost, etc
     Public FacilityProductionType As ProductionType ' What we are doing at this facility
     Public ActivityID As Integer ' Activity code of the facility
@@ -2357,11 +2358,6 @@ Public Class IndustryFacility
     Public Const DefaultMaterialMultiplier As Double = 1
     Public Const DefaultTimeMultiplier As Double = 1
     Public Const DefaultCostMultiplier As Double = 1
-
-    Private Const MY_POSFacility As String = "POS"
-    Private Const MY_StationFacility As String = "Station"
-    Private Const MY_OutpostFacility As String = "Outpost"
-    Private Const MY_CitadelFacility As String = "Citadel"
 
     Public Sub New()
 
@@ -2473,7 +2469,7 @@ Public Class IndustryFacility
         If rsLoader.HasRows Then
             With rsLoader
                 FacilityID = .GetInt32(0)
-                FacilityType = CType(.GetInt32(1), FacilityTypes) ' Station, Citadel, etc.
+                FacilityType = CType(.GetInt32(1), FacilityTypes) ' Station, Upwell Structure, etc.
                 FacilityTypeID = .GetInt32(2)
                 FacilityProductionType = InitialProductionType
                 ActivityID = .GetInt32(3)
@@ -2521,9 +2517,9 @@ Public Class IndustryFacility
                 ElseIf FacilityType = FacilityTypes.Station Or FacilityType = FacilityTypes.Outpost Then ' Stations, outposts
                     SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
                     SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID = " & CStr(FacilityID) & " "
-                ElseIf FacilityType = FacilityTypes.Citadel Then
-                    SQL = "SELECT DISTINCT CITADEL_NAME, 0 AS FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
-                    SQL = SQL & "FROM CITADELS WHERE CITADEL_TYPE_ID = " & CStr(FacilityID) & " "
+                ElseIf FacilityType = FacilityTypes.UpwellStructures Then
+                    SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, 0 AS FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
+                    SQL = SQL & "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_TYPE_ID = " & CStr(FacilityID) & " "
                 End If
 
                 SQL = SQL & "AND ACTIVITY_ID = " & CStr(ActivityID) & " "
@@ -2570,8 +2566,8 @@ Public Class IndustryFacility
                     GoTo ExitBlock
                 End If
 
-                ' If this is a citadel, then look up any saved modules
-                If FacilityType = FacilityTypes.Citadel Then
+                ' If this is a upwell structure, then look up any saved modules
+                If FacilityType = FacilityTypes.UpwellStructures Then
                     rsLoader.Close()
                     SQL = "SELECT INSTALLED_MODULE_ID FROM FACILITY_INSTALLED_MODULES "
                     SQL &= "WHERE CHARACTER_ID = {0} AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}"
