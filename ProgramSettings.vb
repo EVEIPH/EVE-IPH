@@ -49,6 +49,8 @@ Public Module SettingsVariables
     Public UserBPViewerSettings As BPViewerSettings
     ' For Upwell Structure viewer
     Public UserUpwellStructureSettings As UpwellStructureSettings
+    ' For bonus popout on structure viewer
+    Public StructureBonusPopoutViewerSettings As StructureBonusPopoutSettings
 
 End Module
 
@@ -907,6 +909,14 @@ Public Class ProgramSettings
     Private DefaultReactionsRigsCheck As Boolean = False
     Private DefaultDrillingRigsCheck As Boolean = False
 
+    ' Bonus Popout Viewer Settings for facilities
+    Private DefaultSBPVFormWidth As Integer = 750
+    Private DefaultSBPVFormHeight As Integer = 275
+    Private DefaultSBPVBonusAppliesColumnWidth As Integer = 150
+    Private DefaultSBPVActivityColumnWidth As Integer = 125
+    Private DefaultSBPVBonusesColumnWidth As Integer = 250
+    Private DefaultSBPVBonusSourceColumnWidth As Integer = 165
+
     ' Local versions of settings
     Private ApplicationSettings As ApplicationSettings
     Private POSSettings As PlayerOwnedStationSettings
@@ -1004,10 +1014,9 @@ Public Class ProgramSettings
     Private Const InventionTeamSettingsFileName As String = "InventionTeamSettings"
 
     Private Const LPStoreSettingsFileName As String = "LPStoreSettings"
-
     Private Const MarketHistoryViewerSettingsFileName As String = "MarketHistoryViewerSettings"
-
     Private Const UpwellStructureViewerSettingsFileName As String = "UpwellStructureViewerSettings"
+    Private Const StructureBonusPopoutViewerSettingsFileName As String = "StructureBonusPopoutViewerSettings"
 
     ' For BP List Viewer
     Public DefaultBPViewerTechChecks As Boolean = True
@@ -5540,6 +5549,88 @@ Public Class ProgramSettings
     End Function
 
 #End Region
+
+#Region "Bonus Popup Settings"
+
+    ' Loads the tab settings
+    Public Function LoadStructureBonusPopoutViewerSettings() As StructureBonusPopoutSettings
+        Dim TempSettings As StructureBonusPopoutSettings = Nothing
+
+        Try
+
+            If FileExists(StructureBonusPopoutViewerSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .FormHeight = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "FormHeight", DefaultSBPVFormHeight))
+                    .FormWidth = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "FormWidth", DefaultSBPVFormWidth))
+                    .ActivityColumnWidth = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "ActivityColumnWidth", DefaultSBPVActivityColumnWidth))
+                    .BonusAppliesColumnWidth = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "BonusAppliesColumnWidth", DefaultSBPVBonusAppliesColumnWidth))
+                    .BonusesColumnWidth = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "BonusesColumnWidth", DefaultSBPVBonusesColumnWidth))
+                    .BonusSourceColumnWidth = CInt(GetSettingValue(StructureBonusPopoutViewerSettingsFileName, SettingTypes.TypeInteger, StructureBonusPopoutViewerSettingsFileName, "BonusSourceColumnWidth", DefaultSBPVBonusSourceColumnWidth))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultStructureBonusPopoutViewerSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading UpwellStructureViewer Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultStructureBonusPopoutViewerSettings()
+        End Try
+
+        ' Save them locally and then export
+        StructureBonusPopoutViewerSettings = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    Public Function SetDefaultStructureBonusPopoutViewerSettings() As StructureBonusPopoutSettings
+        Dim LocalSettings As StructureBonusPopoutSettings
+
+        With LocalSettings
+            .FormHeight = DefaultSBPVFormHeight
+            .FormWidth = DefaultSBPVFormWidth
+            .ActivityColumnWidth = DefaultSBPVActivityColumnWidth
+            .BonusAppliesColumnWidth = DefaultSBPVBonusAppliesColumnWidth
+            .BonusesColumnWidth = DefaultSBPVBonusesColumnWidth
+            .BonusSourceColumnWidth = DefaultSBPVBonusSourceColumnWidth
+        End With
+
+        ' Save locally
+        StructureBonusPopoutViewerSettings = LocalSettings
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveStructureBonusPopoutViewerSettings(SentSettings As StructureBonusPopoutSettings)
+        Dim StructureBonusPopoutViewerSettingsList(5) As Setting
+
+        Try
+            StructureBonusPopoutViewerSettingsList(0) = New Setting("FormHeight", CStr(SentSettings.FormHeight))
+            StructureBonusPopoutViewerSettingsList(1) = New Setting("FormWidth", CStr(SentSettings.FormWidth))
+            StructureBonusPopoutViewerSettingsList(2) = New Setting("ActivityColumnWidth", CStr(SentSettings.ActivityColumnWidth))
+            StructureBonusPopoutViewerSettingsList(3) = New Setting("BonusAppliesColumnWidth", CStr(SentSettings.BonusAppliesColumnWidth))
+            StructureBonusPopoutViewerSettingsList(4) = New Setting("BonusesColumnWidth", CStr(SentSettings.BonusesColumnWidth))
+            StructureBonusPopoutViewerSettingsList(5) = New Setting("BonusSourceColumnWidth", CStr(SentSettings.BonusSourceColumnWidth))
+
+            Call WriteSettingsToFile(StructureBonusPopoutViewerSettingsFileName, StructureBonusPopoutViewerSettingsList, StructureBonusPopoutViewerSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Upwell Structures Viewer Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetStructureBonusPopoutViewerSettings() As StructureBonusPopoutSettings
+        Return StructureBonusPopoutViewerSettings
+    End Function
+
+#End Region
 End Class
 
 ' For general program settings
@@ -6506,4 +6597,14 @@ Public Structure UpwellStructureSettings
     Dim SelectedStructureName As String
     Dim ReactionsRigsCheck As Boolean
     Dim DrillingRigsCheck As Boolean
+End Structure
+
+' For structure bonus viewing
+Public Structure StructureBonusPopoutSettings
+    Dim FormWidth As Integer
+    Dim FormHeight As Integer
+    Dim BonusAppliesColumnWidth As Integer
+    Dim ActivityColumnWidth As Integer
+    Dim BonusesColumnWidth As Integer
+    Dim BonusSourceColumnWidth As Integer
 End Structure

@@ -10,6 +10,7 @@ Public Class frmFacilityTest
         EVEDB = New DBConnection(SQLiteDBFileName)
 
         UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
+        StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
 
         ' Add any initialization after the InitializeComponent() call.
         Call BPFacility.InitializeControl(FacilityView.FullControls, ProductionType.Manufacturing, SelectedCharacter.ID)

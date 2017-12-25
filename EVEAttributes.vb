@@ -2482,7 +2482,8 @@ Public Enum ItemAttributes
     eliteBonusCovertOps4 = 2731
     stealthBomberLauncherCPU = 2732
     npcStructureStasisWebificationBonus = 2735
-    npcStructureEnergyWarfareBonus = 2736
+    npcStructureEnergyWarfareBonus = 2736
+
 End Enum
 
 Public Structure AttributeRecord

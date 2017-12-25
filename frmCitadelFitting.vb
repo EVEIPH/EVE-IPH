@@ -22,7 +22,7 @@ Public Class frmCitadelFitting
     ' Save the selected Upwell Structure so we don't need to look it up
     Private SelectedUpwellStructure As UpwellStructureDBData
 
-    Private POSFuelPricesUpdated As Boolean
+    Private StructureFuelPricesUpdated As Boolean
 
     Private Const UsesMissilesEffectID As Integer = 101
 
@@ -36,6 +36,8 @@ Public Class frmCitadelFitting
     Private ServiceSlotSpacing As Integer
 
     Private SecurityCheckBoxes As List(Of CheckBox)
+
+    Private frmPopout As frmBonusPopout
 
     ' Used to look up modules and rigs to go into what slot
     Private Enum SlotSizes
@@ -165,10 +167,14 @@ Public Class frmCitadelFitting
         ' Load the facility default
         Call LoadStructure(InitName)
 
+        Call LoadFuelBlockDataTab()
+
         ' Save these varibles for later
         SelectedCharacterID = CharacterID
         SelectedStructureView = FacilityLocation
         SelectedFacilityProductionType = FacilityType
+
+        frmPopout = New frmBonusPopout
 
         FirstLoad = False
 
@@ -330,6 +336,11 @@ Public Class frmCitadelFitting
                     If IsNothing(Slot.Image) Then
                         Slot.Image = FittingImages.Images(ModuleTypeID)
                         Slot.Image.Tag = ModuleTypeID
+                        Slot.Tag = Selection.Group.Name
+
+                        'Entry.typeID = CInt(HighSlot1.Image.Tag)
+                        'Entry.moduleType = CStr(HighSlot1.Tag)
+
                         ' Update the slot stats
                         Call UpdateUpwellStructureStats()
                         ' Update the launcher slots if added a launcher
@@ -915,16 +926,32 @@ Public Class frmCitadelFitting
     End Function
 
     Private Function GetFuelCost(ByVal NumBlocks As Integer) As String
+
+        'Select the type of fuel and then update the cost per hour from the text boxes
+        If rbtnHeliumFuelBlock.Checked Then
+
+        ElseIf rbtnHydrogenFuelBlock.Checked Then
+
+        ElseIf rbtnNitrogenFuelBlock.Checked Then
+
+        ElseIf rbtnOxygenFuelBlock.Checked Then
+
+        End If
+
         Return ""
+
     End Function
 
     Private Sub UpdateFuelCostLabels()
         ' If they want fuel cost
         If chkIncludeFuelCosts.Checked Then
+            ' Select blocks and online amount (shouldn't change)
             lblServiceModuleBPH.Text = FormatNumber(UpwellStructureStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
+            lblServiceModuleOnlineAmt.Text = ""
             lblServiceModuleFCPH.Text = GetFuelCost(UpwellStructureStats.ServiceModuleFuelBPH)
         Else
             lblServiceModuleBPH.Text = "-"
+            lblServiceModuleOnlineAmt.Text = "-"
             lblServiceModuleFCPH.Text = "-"
         End If
     End Sub
@@ -1096,7 +1123,7 @@ Public Class frmCitadelFitting
                             LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
                         ElseIf rsReader.GetString(4).Contains("Engineering") Then
                             LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
-                        ElseIf rsReader.GetString(4).Contains("Reaction") Then
+                        ElseIf rsReader.GetString(4).Contains("Reactor") Then
                             LVI.Group = ServiceModuleListView.Groups(7) ' 7 is Reaction rigs
                         ElseIf rsReader.GetString(4).Contains("Drilling") Then
                             LVI.Group = ServiceModuleListView.Groups(8) ' 8 is Drilling rigs
@@ -1431,8 +1458,12 @@ Public Class frmCitadelFitting
         Dim DBCommand As SQLiteCommand
 
         Dim BonusList As ListViewItem
+        lstUpwellStructureBonuses.Items.Clear() ' Clear all items each time
 
-        lstUpwellStructureBonuses.Items.Clear()
+        If Application.OpenForms().OfType(Of frmBonusPopout).Any Then
+            ' if the form is active, clear any items first in case we want to add them later
+            Call frmPopout.lstUpwellStructureBonuses.Items.Clear()
+        End If
 
         ' Loop through each module installed and get a total of all the stats affected and how
         For Each InstalledModule In GetInstalledSlots()
@@ -1452,6 +1483,7 @@ Public Class frmCitadelFitting
                 rsReader = DBCommand.ExecuteReader
 
                 If rsReader.Read Then
+                    ' Save bonus for later application
                     SystemSecurityBonus = rsReader.GetDouble(0)
                 Else
                     SystemSecurityBonus = 1
@@ -1461,120 +1493,71 @@ Public Class frmCitadelFitting
                 Select Case InstalledModule.moduleType
                     Case "EngineeringRigs"
 
-                        SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS APPPLICATION, activityName, "
-                        SQL &= "AT.displayName || ': ' || CAST(COALESCE(valueint, valuefloat)*100 AS VARCHAR) || '%' AS BONUSES, typeName AS BONUS_SOURCE "
-
-                        SQL &= "(SELECT AT.DISPALYCOALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigMatBonus) & " "
-                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS ME_VALUE, "
-                        SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigTimeBonus) & " "
-                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS TE_VALUE, "
-                        SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                        SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.attributeEngRigCostBonus) & " "
-                        SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS COST_VALUE, "
+                        SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
+                        SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
+                        SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON ERB.categoryID = INVENTORY_CATEGORIES.categoryID "
+                        SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%')"
 
                     Case "CombatRigs"
 
+                        SQL = "SELECT 'Combat' AS BONUS_APPLIES_TO, "
+                        SQL &= "'Combat' AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID "
+                        SQL &= "AND TA.typeID = IT.typeID  "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'structureRig%') "
 
                     Case "ReprocessingRigs"
 
-                        SQL = "SELECT 'Refining' AS BONUS_APPLIES, 'Refining' AS ACTIVITY, "
-                        SQL &= "AT.displayName || ': ' || CAST(COALESCE(valueint, valuefloat)*100 AS VARCHAR) || '%' AS BONUSES, typeName AS BONUS_SOURCE "
+                        SQL = "SELECT 'Refining' AS BONUS_APPLIES_TO, "
+                        SQL &= "'Refining' AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) * " & CStr(SystemSecurityBonus) & " AS BONUS, " ' Data is stored as a decimal but others it's a full number
+                        SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
-                        SQL &= "AND TA.typeID = IT.typeID AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'refiningYield%') "
-                        SQL &= SQL & "AND TA.typeID = {0} ORDER BY BONUSES "
+                        SQL &= "AND TA.typeID = IT.typeID  "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'refiningYield%') "
 
                     Case "ReactionRigs"
 
+                        SQL = "SELECT 'Reactions' AS BONUS_APPLIES_TO, "
+                        SQL &= "'Reactions' AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID "
+                        SQL &= "AND TA.typeID = IT.typeID  "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'RefRig%') "
 
                     Case "DrillingRigs"
+
+                        SQL = "SELECT 'Moon Mining' AS BONUS_APPLIES_TO, "
+                        SQL &= "'Moon Mining' AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID "
+                        SQL &= "AND TA.typeID = IT.typeID  "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'moonRig%') "
 
                     Case Else
                         Exit For
                 End Select
 
-                ' Look up the stats for the item and the bonus based on the type of security in the system and te,mat,cost
-
-                ' Engineering Rigs
-
-                ' Refining Rigs
-
-                ' Reaction Rigs
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.RefRigMatBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS REACTION_MAT_BONUS, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.RefRigTimeBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS REACTION_TIME_BONUS, "
-                ' Drilling Rigs
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigFractureDelayBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Chunk_Stability_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigAsteroidDecayBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Extracted_Asteroid_Decay_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigSpewRadiusBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Moon_Asteroid_Belt_Radius_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.moonRigSpewVolumeBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Moon_Extraction_Volume_Bonus, "
-                ' Combat Rigs
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileExploVeloBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Explosion_Velocity_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarOptimalBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Optimal_Range_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarFalloffBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Falloff_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileVelocityBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Missile_Velocity_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigEwarCapUseBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Capacitor_Use_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMaxTargetBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Maximum_Locked_Targets_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigScanResBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Scan_Resolution_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigMissileExplosionRadiusBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Guided_Bomb_Explosion_Radius_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigPDRangeBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Point_Defense_Battery_Range_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigPDCapUseBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Point_Defense_Battery_Capacitor_Use_Bonus, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigDoomsdayTargetAmountBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Additional_doomsday_secondary_targets, "
-                SQL &= "(SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES AS TA, ATTRIBUTE_TYPES AS AT "
-                SQL &= "WHERE TA.attributeID = AT.attributeID AND AT.attributeID = " & CStr(ItemAttributes.structureRigDoomsdayDamageLossTargetBonus) & " "
-                SQL &= "AND typeID = {0}) * COALESCE(valueint, valuefloat)/100 AS Bonus_to_doomsday_secondary_target_damage_reduction, "
-
-                SQL &= "typeName, INVENTORY_CATEGORIES.categoryID, RAM_ACTIVITIES.activityID, AT.displayName AS BONUS "
-                SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS SRB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
-                SQL &= "LEFT JOIN INVENTORY_GROUPS ON SRB.groupID = INVENTORY_GROUPS.groupID "
-                SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON SRB.categoryID = INVENTORY_CATEGORIES.categoryID "
-                SQL &= "LEFT JOIN RAM_ACTIVITIES ON SRB.activityID = RAM_ACTIVITIES.activityID "
-                SQL &= "WHERE SRB.typeID = TA.typeID AND SRB.typeID = IT.typeID AND TA.attributeID = AT.attributeID "
-                SQL &= "AND SRB.typeID = {0} AND TA.attributeID = "
-                If chkHighSec.Checked Then
-                    SQL &= CStr(ItemAttributes.hiSecModifier) & " "
-                ElseIf chkLowSec.Checked Then
-                    SQL &= CStr(ItemAttributes.lowSecModifier) & " "
-                ElseIf chkNullSec.Checked Then
-                    SQL &= CStr(ItemAttributes.nullSecModifier) & " "
-                End If
-                SQL &= "AND ME_VALUE IS NOT NULL AND TE_VALUE IS NOT NULL AND COST_VALUE IS NOT NULL "
-                SQL &= "ORDER BY APPPLICATION"
+                SQL &= "AND BONUS <> 0 AND TA.typeID = {0} ORDER BY BONUS "
 
                 DBCommand = New SQLiteCommand(String.Format(SQL, InstalledModule.typeID), EVEDB.DBREf)
                 rsReader = DBCommand.ExecuteReader
@@ -1584,30 +1567,16 @@ Public Class frmCitadelFitting
                     ' Columns: Bonus Applies to, Activity, Bonuses, Bonus Source
 
                     BonusList = New ListViewItem(rsReader.GetString(0)) ' Group or Category bonus is applied
+                    BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
+                    BonusList.SubItems.Add(CStr(rsReader.GetString(2)) & ": " & FormatPercent(rsReader.GetDouble(3), 2)) ' Combine bonus and bonus name
+                    BonusList.SubItems.Add(CStr(rsReader.GetString(4))) ' Source of bonus
 
-                    ' Set the activity name
-                    If Not IsDBNull(rsReader.GetValue(6)) Then
-                        If rsReader.GetInt32(6) = 9 Then
-                            If rsReader.GetInt32(7) = -1 Then
-                                ' All laboratory things
-                                BonusList.SubItems.Add("All Laboratory Jobs")
-                            Else
-                                BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
-                            End If
-                        Else
-                            ' Just the category
-                            BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
-                        End If
-                    Else
-                        ' Group name must have something then
-                        BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
+                    ' Make sure it's visible, then refresh the list
+                    If Application.OpenForms().OfType(Of frmBonusPopout).Any Then
+                        ' add the record to the popout list too
+                        Dim PopupBonusList As ListViewItem = CType(BonusList.Clone, ListViewItem)
+                        Call frmPopout.lstUpwellStructureBonuses.Items.Add(PopupBonusList)
                     End If
-
-                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(2), 3)) ' ME
-                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(3), 3)) ' TE
-                    BonusList.SubItems.Add(FormatPercent(rsReader.GetDouble(4), 3)) ' Cost
-
-                    BonusList.SubItems.Add(CStr(rsReader.GetString(5))) ' Source of bonus
 
                     ' Update the final list
                     Call lstUpwellStructureBonuses.Items.Add(BonusList)
@@ -1618,6 +1587,31 @@ Public Class frmCitadelFitting
 
     End Sub
 
+    Private Sub btnBonusPopout_Click(sender As Object, e As EventArgs) Handles btnBonusPopout.Click
+        Dim BonusList As ListViewItem
+
+        If Application.OpenForms().OfType(Of frmBonusPopout).Any Then
+            Exit Sub
+        End If
+
+        frmPopout = New frmBonusPopout
+
+        Call frmPopout.lstUpwellStructureBonuses.Items.Clear()
+
+        For i = 0 To lstUpwellStructureBonuses.Items.Count - 1
+            BonusList = New ListViewItem(lstUpwellStructureBonuses.Items(i).SubItems(0).Text)
+            BonusList.SubItems.Add(lstUpwellStructureBonuses.Items(i).SubItems(1).Text)
+            BonusList.SubItems.Add(lstUpwellStructureBonuses.Items(i).SubItems(2).Text)
+            BonusList.SubItems.Add(lstUpwellStructureBonuses.Items(i).SubItems(3).Text)
+
+            ' Update the form list
+            frmPopout.lstUpwellStructureBonuses.Items.Add(BonusList)
+
+        Next
+
+        frmPopout.Show()
+
+    End Sub
 
 #Region "Fuel Settings"
 
@@ -1626,19 +1620,18 @@ Public Class frmCitadelFitting
     End Sub
 
     Private Sub btnRefreshBlockData_Click(sender As Object, e As EventArgs) Handles btnRefreshBlockData.Click
-
+        Call UpdateFuelBlockData(0)
     End Sub
 
     Private Sub btnUpdateBlockPrice_Click(sender As Object, e As EventArgs) Handles btnUpdatePrices.Click
 
     End Sub
 
-    Private Sub LoadPOSDataTab()
+    Private Sub LoadFuelBlockDataTab()
 
         txtHeliumFuelBlockBPME.Text = "0"
 
-        ' Building
-        If SelectedTower.FuelBlockBuild Then
+        If UserUpwellStructureSettings.BuyBuildBlockOption = rbtnBuildBlocks.Text Then
             rbtnBuildBlocks.Checked = True
             gbFuelPrices.Enabled = True
             btnUpdatePrices.Enabled = False
@@ -1658,38 +1651,31 @@ Public Class frmCitadelFitting
             txtHeliumFuelBlockBuyPrice.Enabled = True
         End If
 
-        txtCharters.Text = FormatNumber(SelectedTower.CharterCost, 2)
-
-        Call LoadPOSFuelPrices()
+        Call LoadFuelPrices()
         ' Load both the block build and buy prices
-        Call LoadPOSFuelBlockPrice()
+        Call LoadFuelBlockPrice()
         Call SetFuelBlockBuildcost()
 
 
     End Sub
 
-    Private Sub UpdateFuelBlockData(ByVal TowerName As String, ReloadME As Boolean)
+    Private Sub UpdateFuelBlockData(ReloadME As Boolean)
         Dim SQL As String
-        Dim readerPOS As SQLiteDataReader
+        Dim reader As SQLiteDataReader
         Dim FuelBlock As String = ""
         Dim SelectedTowerRaceID As Integer
 
-        SQL = "Select raceID FROM INVENTORY_TYPES WHERE typeName ='" & TowerName & "' "
+        SQL = "Select raceID FROM INVENTORY_TYPES WHERE typeName ='"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerPOS = DBCommand.ExecuteReader()
+        reader = DBCommand.ExecuteReader()
 
-        If readerPOS.Read Then
-            SelectedTowerRaceID = readerPOS.GetInt32(0)
+        If reader.Read Then
+            SelectedTowerRaceID = reader.GetInt32(0)
         Else
             MsgBox("Unknown Tower. Cannot calculate.", vbExclamation, Application.ProductName)
             Exit Sub
         End If
-
-        picHeliumFuelBlock.Visible = False
-        picHydrogenFuelBlock.Visible = False
-        picNitrogenFuelBlock.Visible = False
-        picOxygenFuelBlock.Visible = False
 
         ' Based on the race of the tower, choose the type of fuel block it will use
         Select Case SelectedTowerRaceID
@@ -1722,48 +1708,48 @@ Public Class frmCitadelFitting
     Private Sub LoadBlockBPME(FuelBlockName As String)
         ' Load the ME for the type of block that we are using for this tower
         Dim SQL As String
-        Dim readerPOS As SQLiteDataReader
+        Dim reader As SQLiteDataReader
 
         SQL = "SELECT ME FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerPOS = DBCommand.ExecuteReader()
+        reader = DBCommand.ExecuteReader()
 
-        If readerPOS.Read Then
+        If reader.Read Then
             ' Owned and they have it
-            txtHeliumFuelBlockBPME.Text = CStr(readerPOS.GetValue(0))
+            txtHeliumFuelBlockBPME.Text = CStr(reader.GetValue(0))
         Else
             txtHeliumFuelBlockBPME.Text = "0"
         End If
 
     End Sub
 
-    Private Sub UpdatePOSFuelPrices()
+    Private Sub UpdateFuelPrices()
         'Dim SQL As String
         'Dim i As Integer
         'Dim Prices() As Double
 
-        If POSFuelPricesUpdated Then
+        If StructureFuelPricesUpdated Then
             'Me.Cursor = Cursors.WaitCursor
 
-            'ReDim Prices(POSTextBoxes.Count - 1)
+            'ReDim Prices(TextBoxes.Count - 1)
 
             '' Check the prices first
-            'For i = 1 To POSTextBoxes.Count - 1
-            '    If Not IsNumeric(POSTextBoxes(i).Text) Then
-            '        MsgBox("Invalid " & POSLabels(i).Text & " Price", vbExclamation, Me.Text)
-            '        POSTextBoxes(i).Focus()
+            'For i = 1 To TextBoxes.Count - 1
+            '    If Not IsNumeric(TextBoxes(i).Text) Then
+            '        MsgBox("Invalid " & Labels(i).Text & " Price", vbExclamation, Me.Text)
+            '        TextBoxes(i).Focus()
             '        Me.Cursor = Cursors.Default
             '        Exit Sub
             '    Else
-            '        Prices(i) = CDbl(POSTextBoxes(i).Text)
+            '        Prices(i) = CDbl(TextBoxes(i).Text)
             '    End If
             'Next
 
             '' Update all the prices
-            'For i = 1 To POSTextBoxes.Count - 1
-            '    SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & POSLabels(i).Text & "'"
+            'For i = 1 To TextBoxes.Count - 1
+            '    SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & Labels(i).Text & "'"
             '    Call EVEDB.ExecuteNonQuerySQL(SQL)
             'Next
 
@@ -1777,13 +1763,13 @@ Public Class frmCitadelFitting
         End If
 
         ' Refresh the prices
-        Call LoadPOSFuelPrices()
+        Call LoadFuelPrices()
 
     End Sub
 
-    Private Sub LoadPOSFuelPrices()
+    Private Sub LoadFuelPrices()
         Dim SQL As String
-        Dim readerPOS As SQLiteDataReader
+        Dim reader As SQLiteDataReader
 
         Me.Cursor = Cursors.WaitCursor
 
@@ -1794,15 +1780,35 @@ Public Class frmCitadelFitting
         SQL = SQL & "'Heavy Water','Liquid Ozone','Robotics','Oxygen','Mechanical Parts','Coolant','Enriched Uranium')"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerPOS = DBCommand.ExecuteReader()
+        reader = DBCommand.ExecuteReader()
 
-        While readerPOS.Read
+        While reader.Read
             ' Update the textboxes with prices
-            Select Case readerPOS.GetString(0)
+            Select Case reader.GetString(0)
                 Case "Hydrogen Isotopes"
-                    txtHeliumIsotopes.Text = FormatNumber(readerPOS.GetDouble(1), 2)
-
-
+                    txtHydrogenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Oxygen Isotopes"
+                    txtOxygenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Nitrogen Isotopes"
+                    txtNitrogenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Helium Isotopes"
+                    txtHeliumIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Strontium Clathrates"
+                    txtStrontiumClathrates.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Heavy Water"
+                    txtHeavyWater.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Liquid Ozone"
+                    txtLiquidOzone.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Robotics"
+                    txtRobotics.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Oxygen"
+                    txtOxygen.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Mechanical Parts"
+                    txtMechanicalParts.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Coolant"
+                    txtCoolant.Text = FormatNumber(reader.GetDouble(1), 2)
+                Case "Enriched Uranium"
+                    txtEnrichedUranium.Text = FormatNumber(reader.GetDouble(1), 2)
             End Select
             Application.DoEvents()
         End While
@@ -1810,15 +1816,15 @@ Public Class frmCitadelFitting
         Me.Cursor = Cursors.Default
         txtHeliumIsotopes.Focus()
 
-        readerPOS.Close()
-        readerPOS = Nothing
+        reader.Close()
+        reader = Nothing
         DBCommand = Nothing
 
-        POSFuelPricesUpdated = False
+        StructureFuelPricesUpdated = False
 
     End Sub
 
-    Private Sub UpdatePOSFuelBlockPrices()
+    Private Sub UpdateFuelBlockPrices()
         Dim SQL As String
         Dim posfuelblockpricesupdated As Boolean
 
@@ -1845,50 +1851,52 @@ Public Class frmCitadelFitting
         End If
 
         ' Refresh the prices
-        Call LoadPOSFuelBlockPrice()
+        Call LoadFuelBlockPrice()
 
     End Sub
 
-    Private Sub LoadPOSFuelBlockPrice()
+    Private Sub LoadFuelBlockPrice()
         Dim SQL As String
-        Dim readerPOS As SQLiteDataReader
-        Dim selectedtowerraceid As Integer
+        Dim reader As SQLiteDataReader
+        Dim Price As String
 
         Me.Cursor = Cursors.WaitCursor
 
-        readerPOS = Nothing
+        reader = Nothing
         DBCommand = Nothing
 
         If cmbUpwellStructureName.Text <> None Then
             ' Load the fuel block price
-            SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
-            SQL = SQL & "FROM ITEM_PRICES, INVENTORY_TYPES "
-            SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME = "
-            Select Case selectedtowerraceid
-                Case 1
-                    SQL = SQL & "'Caldari Fuel Block' "
-                Case 2
-                    SQL = SQL & "'Minmatar Fuel Block' "
-                Case 4
-                    SQL = SQL & "'Amarr Fuel Block' "
-                Case 8
-                    SQL = SQL & "'Gallente Fuel Block' "
-            End Select
-            SQL = SQL & "AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
+            SQL = "SELECT IP.ITEM_NAME, IP.PRICE "
+            SQL = SQL & "FROM ITEM_PRICES AS IP, INVENTORY_TYPES AS IT "
+            SQL = SQL & "WHERE IP.ITEM_NAME LIKE '%Fuel Block%' AND IT.published <> 0 "
+            SQL = SQL & "AND IT.typeID = IP.ITEM_ID "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerPOS = DBCommand.ExecuteReader()
-            readerPOS.Read()
+            reader = DBCommand.ExecuteReader()
+            While reader.Read()
+                Price = FormatNumber(reader.GetValue(1))
 
-            txtHeliumFuelBlockBuyPrice.Text = FormatNumber(readerPOS.GetValue(1))
-            readerPOS.Close()
+                Select Case reader.GetString(0)
+                    Case "Nitrogen Fuel Block"
+                        txtNitrogenFuelBlockBuyPrice.Text = Price
+                    Case "Hydrogen Fuel Block"
+                        txtHydrogenFuelBlockBuyPrice.Text = Price
+                    Case "Helium Fuel Block"
+                        txtHeliumFuelBlockBuyPrice.Text = Price
+                    Case "Oxygen Fuel Block"
+                        txtOxygenFuelBlockBuyPrice.Text = Price
+                End Select
+            End While
+
+            reader.Close()
         Else
             txtHeliumFuelBlockBuyPrice.Text = "0.00"
         End If
 
         Me.Cursor = Cursors.Default
 
-        readerPOS = Nothing
+        reader = Nothing
         DBCommand = Nothing
 
     End Sub
@@ -1906,9 +1914,9 @@ Public Class frmCitadelFitting
         End If
 
         CostperHour = CostperBlock * Multiplier
-        'lblPOSCostperHour.Text = FormatNumber(CostperHour, 2)
-        'lblPOSCostperDay.Text = FormatNumber(CostperHour * 24, 2)
-        'lblPOSCostperMonth.Text = FormatNumber(CostperHour * 24 * 30, 2)
+        'lblCostperHour.Text = FormatNumber(CostperHour, 2)
+        'lblCostperDay.Text = FormatNumber(CostperHour * 24, 2)
+        'lblCostperMonth.Text = FormatNumber(CostperHour * 24 * 30, 2)
 
     End Sub
 
@@ -1921,41 +1929,21 @@ Public Class frmCitadelFitting
             Exit Sub
         End If
 
-        If Trim(txtCharters.Text) = "" Or Not IsNumeric(txtCharters.Text) Then
-            MsgBox("Invalid Charter Cost", vbExclamation, Application.ProductName)
-            txtCharters.Focus()
-            Exit Sub
-        End If
-
-        ' First set all to 0 so we only build for the tower we are using
-        lblHeliumFuelBlockBuild.Text = "0.00"
-
-        ' Get cost for building 1 block and add charter cost (divide by 40 since that's the number of blocks that is made for 1 charter)
-        If rbtnHydrogenFuelBlock.Checked Then
-            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Caldari Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnOxygenFuelBlock.Checked Then
-            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Minmatar Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnHeliumFuelBlock.Checked Then
-            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Amarr Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        ElseIf rbtnNitrogenFuelBlock.Checked Then
-            lblHeliumFuelBlockBuild.Text = FormatNumber(GetFuelBlockBuildCost("Gallente Fuel Block", CInt(txtHeliumFuelBlockBPME.Text)) + (CInt(txtCharters.Text) / 40), 2)
-        End If
-
     End Sub
 
     Private Function GetFuelBlockBuildCost(FuelBlock As String, bpME As Integer) As Double
         Dim SQL As String
-        Dim readerPOS As SQLiteDataReader
+        Dim reader As SQLiteDataReader
 
 
         SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FuelBlock & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerPOS = DBCommand.ExecuteReader()
+        reader = DBCommand.ExecuteReader()
 
-        If readerPOS.Read Then
+        If reader.Read Then
             ' Build T1 BP for the block, standard settings - CHECK
-            ' Dim BlockBP = New Blueprint(readerPOS.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
+            ' Dim BlockBP = New Blueprint(reader.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
             'SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
             '  Call BlockBP.BuildItems(False, False, False, False, False)
             ' Return BlockBP.GetRawItemUnitPrice
@@ -1969,6 +1957,7 @@ Public Class frmCitadelFitting
 #End Region
 
 #Region "Click Events"
+
     Private Sub cmbUpwellStructureName_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbUpwellStructureName.SelectedIndexChanged
         Call LoadStructure(cmbUpwellStructureName.Text)
     End Sub
@@ -2280,7 +2269,6 @@ Public Class frmCitadelFitting
         Dim TempSettings As UpwellStructureSettings = Nothing
         Dim Settings As New ProgramSettings
 
-
         With TempSettings
             .HighSlotsCheck = chkItemViewTypeHigh.Checked
             .MediumSlotsCheck = chkItemViewTypeMedium.Checked
@@ -2327,6 +2315,69 @@ Public Class frmCitadelFitting
 
     End Sub
 
+    Private Sub rbtnHeliumFuelBlock_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnHeliumFuelBlock.CheckedChanged
+        Call UpdateFuelCostLabels()
+    End Sub
+
+    Private Sub rbtnHydrogenFuelBlock_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnHydrogenFuelBlock.CheckedChanged
+        Call UpdateFuelCostLabels()
+    End Sub
+
+    Private Sub rbtnNitrogenFuelBlock_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnNitrogenFuelBlock.CheckedChanged
+        Call UpdateFuelCostLabels()
+    End Sub
+
+    Private Sub rbtnOxygenFuelBlock_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnOxygenFuelBlock.CheckedChanged
+        Call UpdateFuelCostLabels()
+    End Sub
+
+    Private Sub rbtnBuyBlocks_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuyBlocks.CheckedChanged
+
+        txtNitrogenFuelBlockBuyPrice.Enabled = True
+        lblNitrogenFuelBlockBuy.Enabled = True
+        txtHydrogenFuelBlockBuyPrice.Enabled = True
+        lblHydrogenBlockBuy.Enabled = True
+        txtHeliumFuelBlockBuyPrice.Enabled = True
+        lblHeliumFuelBlockBuy.Enabled = True
+        txtOxygenFuelBlockBuyPrice.Enabled = True
+        lblOxygenFuelBlockBuy.Enabled = True
+
+        txtHeliumFuelBlockBPME.Enabled = False
+        txtNitrogenFuelBlockBPME.Enabled = False
+        txtHydrogenFuelBlockBPME.Enabled = False
+        txtOxygenFuelBlockBPME.Enabled = False
+        lblNitrogenFuelBlockBuildPrice.Enabled = False
+        lblNitrogenFuelBlockBuild.Enabled = False
+        lblOxygenFuelBlockBuildPrice.Enabled = False
+        lblOxygenFuelBlockBuild.Enabled = False
+        lblHeliumFuelBlockBuildPrice.Enabled = False
+        lblHeliumFuelBlockBuild.Enabled = False
+        lblHydrogenFuelBlockBuildPrice.Enabled = False
+        lblHyrogenBlockBuild.Enabled = False
+
+    End Sub
+
+    Private Sub rbtnBuildBlocks_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildBlocks.CheckedChanged
+
+        txtNitrogenFuelBlockBuyPrice.Enabled = False
+        lblNitrogenFuelBlockBuy.Enabled = False
+        txtHydrogenFuelBlockBuyPrice.Enabled = False
+        lblHydrogenBlockBuy.Enabled = False
+        txtHeliumFuelBlockBuyPrice.Enabled = False
+        lblHeliumFuelBlockBuy.Enabled = False
+        txtOxygenFuelBlockBuyPrice.Enabled = False
+        lblOxygenFuelBlockBuy.Enabled = False
+
+        txtHeliumFuelBlockBPME.Enabled = True
+        txtNitrogenFuelBlockBPME.Enabled = True
+        txtHydrogenFuelBlockBPME.Enabled = True
+        txtOxygenFuelBlockBPME.Enabled = True
+        lblNitrogenFuelBlockBuildPrice.Enabled = True
+        lblOxygenFuelBlockBuildPrice.Enabled = True
+        lblHeliumFuelBlockBuildPrice.Enabled = True
+        lblHydrogenFuelBlockBuildPrice.Enabled = True
+
+    End Sub
 
 #End Region
 

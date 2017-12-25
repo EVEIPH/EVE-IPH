@@ -458,6 +458,7 @@ Public Class frmMain
         UserMHViewerSettings = AllSettings.LoadMarketHistoryViewerSettingsSettings
         UserBPViewerSettings = AllSettings.LoadBPViewerSettings
         UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
+        StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
 
         UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
         UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)

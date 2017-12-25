@@ -1810,7 +1810,7 @@ Public Class ManufacturingFacility
     Private Sub btnFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnFacilityFitting.Click
         Dim CitadelViewer As New frmCitadelFitting(cmbFacilityorArray.Text, MY_SelectedCharacterID,
                                                    MY_SelectedProductionType, MY_SelectedView, MY_SelectedFacility.SolarSystemSecurity)
-        CitadelViewer.ShowDialog()
+        Call CitadelViewer.ShowDialog()
 
         ' After showing, select the name of the citadel chosen and then dispose
         cmbFacilityorArray.Text = CitadelViewer.CitadelName
