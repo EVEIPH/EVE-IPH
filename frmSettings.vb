@@ -226,7 +226,6 @@ Public Class frmSettings
             ' CREST
             chkRefreshFacilityDataonStartup.Checked = .LoadCRESTFacilityDataonStartup
             chkRefreshMarketDataonStartup.Checked = .LoadCRESTMarketDataonStartup
-            chkRefreshTeamDataonStartup.Checked = .LoadCRESTTeamDataonStartup
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -406,7 +405,6 @@ Public Class frmSettings
                 ' CREST
                 .LoadCRESTFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
                 .LoadCRESTMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
-                .LoadCRESTTeamDataonStartup = chkRefreshTeamDataonStartup.Checked
 
                 ' If they didn't have this checked before, refresh assets
                 If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
@@ -574,10 +572,6 @@ InvalidData:
         f1.ShowDialog()
     End Sub
 
-    Private Sub chkRefreshTeamDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshTeamDataonStartup.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
     Private Sub chkRefreshMarketDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshMarketDataonStartup.CheckedChanged
         btnSave.Text = "Save"
     End Sub
@@ -595,10 +589,6 @@ InvalidData:
     End Sub
 
     Private Sub rbtnExportSSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportSSV.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub chkLinkBPTabTeamstoSystem_CheckedChanged(sender As System.Object, e As System.EventArgs)
         btnSave.Text = "Save"
     End Sub
 

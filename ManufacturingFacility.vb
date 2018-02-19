@@ -5,13 +5,14 @@ Public Class ManufacturingFacility
     Private EVEDBRef As DBConnection
     Private EVEDBCommandRef As SQLiteCommand
 
-    Private MY_SelectedView As FacilityView
     Private MY_SelectedFacility As IndustryFacility ' This is the active facility for the control, if not loaded will use the default
-    Private MY_SelectedProductionType As ProductionType
+    Private MY_SelectedView As FacilityView
+    Private MY_SelectedLocation As ProgramLocation
     Private MY_SelectedCharacterID As Long
+    Private MY_SelectedProductionType As ProductionType
 
-    Private MY_BPTech As Integer
-    Private MY_BPHasComponents As Boolean
+    Private MY_SelectedBPTech As Integer
+    Private MY_SelectedBPHasComponents As Boolean
     Private MY_SelectedBPGroupID As Integer
     Private MY_SelectedBPCategoryID As Integer
 
@@ -32,12 +33,10 @@ Public Class ManufacturingFacility
     Private MY_PreviousActivity As String
 
     ' Loaded variables
-    Private MY_FacilityFullyLoaded As Boolean ' Determines if the facility was fully loaded through control changes or not
     Private MY_FacilityRegionsLoaded As Boolean
     Private MY_FacilitySystemsLoaded As Boolean
     Private MY_FacilityorArrayLoaded As Boolean
 
-    Private MY_tt As ToolTip
     Private MY_FirstLoad As Boolean
 
     ' Save these options here in the facility and allow functions to get the values publically
@@ -88,11 +87,15 @@ Public Class ManufacturingFacility
     Private DefaultNoPOSFacility As New IndustryFacility
 
     ' Constant activities
-    Private Const MY_ActivityManufacturing As String = "Manufacturing"
-    Private Const MY_ActivityComponentManufacturing As String = "Component Manufacturing"
-    Private Const MY_ActivityCapComponentManufacturing As String = "Cap Component Manufacturing"
-    Private Const MY_ActivityCopying As String = "Copying"
-    Private Const MY_ActivityInvention As String = "Invention"
+    Public Const MY_ActivityManufacturing As String = "Manufacturing"
+    Public Const MY_ActivityComponentManufacturing As String = "Component Manufacturing"
+    Public Const MY_ActivityCapComponentManufacturing As String = "Cap Component Manufacturing"
+    Public Const MY_ActivityCopying As String = "Copying"
+    Public Const MY_ActivityInvention As String = "Invention"
+
+    ' For verifying activity and facility type combos selected something
+    Private Const InitialFacilityTypeComboText = "Type"
+    Private Const InitialActivityComboText = "Select Activity"
 
     Private FacilityLabelDefaultColor As Color = SystemColors.Highlight
     Private FacilityLabelNonDefaultColor As Color = SystemColors.ButtonShadow
@@ -146,11 +149,9 @@ Public Class ManufacturingFacility
 
     End Sub
 
-    ''' <summary>
-    ''' Before any controls are shown, the control needs to be initilaized by sending the view type.
-    ''' </summary>
-    ''' <param name="ViewType"></param>
-    Public Sub InitializeControl(ViewType As FacilityView, InitialProductionType As ProductionType, SentSelectedCharacterID As Long)
+    ' Before any controls are shown, the control needs to be initilaized by sending the view type.
+    Public Sub InitializeControl(ByVal ViewType As FacilityView, ByVal SentSelectedCharacterID As Long, FormLocation As ProgramLocation,
+                                 Optional ByVal InitialProductionType As ProductionType = ProductionType.Manufacturing)
         Const SolarSystemWidthBP As Integer = 142
         'Const SolarSystemWidthCalc As Integer = 156
 
@@ -168,11 +169,9 @@ Public Class ManufacturingFacility
 
         ' Save for later
         MY_SelectedView = ViewType
+        MY_SelectedLocation = FormLocation
         MY_SelectedProductionType = InitialProductionType
         MY_SelectedCharacterID = SentSelectedCharacterID
-
-        MY_SelectedBPCategoryID = 0
-        MY_SelectedBPGroupID = 0
 
         EVEDBRef = EVEDB
         EVEDBCommandRef = DBCommand
@@ -188,6 +187,7 @@ Public Class ManufacturingFacility
                 cmbFacilityActivities.Top = lblFacilityActivity.Top + lblFacilityActivity.Height + 1
                 cmbFacilityActivities.Left = LeftObjectLocation
                 cmbFacilityActivities.Visible = True
+                cmbFacilityActivities.Text = InitialActivityComboText
 
                 lblFacilityType.Top = 1
                 lblFacilityType.Left = cmbFacilityActivities.Left + cmbFacilityActivities.Width
@@ -196,6 +196,7 @@ Public Class ManufacturingFacility
                 cmbFacilityType.Top = cmbFacilityActivities.Top
                 cmbFacilityType.Left = cmbFacilityActivities.Left + cmbFacilityActivities.Width + 2
                 cmbFacilityType.Visible = True
+                cmbFacilityType.Text = InitialFacilityTypeComboText
 
                 lblFacilityDefault.Height = DefaultLabelHeightBP
                 lblFacilityDefault.Width = DefaultLabelWidthBP
@@ -283,6 +284,85 @@ Public Class ManufacturingFacility
                 btnFacilitySave.Visible = True
                 btnFacilitySave.Enabled = False
 
+                ' Set initial settings to load 
+                MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                MY_SelectedBPGroupID = ItemIDs.FrigateGroupID
+                MY_SelectedBPTech = BPTechLevel.T1
+
+                ' Load all the facilities for full controls tab 
+                Call MY_InitializeFacilities(FacilityView.FullControls)
+
+            Case FacilityView.LimitedControls
+
+                ' TODO - Move the objects around and place in control for view type
+
+                ' Set the initial group/category IDs
+                Select Case InitialProductionType
+                    Case ProductionType.Manufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.FrigateGroupID
+                        MY_SelectedBPTech = BPTechLevel.T2
+                    Case ProductionType.CapitalComponentManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.CapitalComponentGroupID
+                        MY_SelectedBPGroupID = ItemIDs.None
+                        MY_SelectedBPTech = BPTechLevel.T1
+                    Case ProductionType.CapitalManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.CarrierGroupID
+                        MY_SelectedBPTech = BPTechLevel.T1
+                    Case ProductionType.SuperManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.SupercarrierGroupID
+                        MY_SelectedBPTech = BPTechLevel.T1
+                    Case ProductionType.T3CruiserManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.StrategicCruiserGroupID
+                        MY_SelectedBPTech = BPTechLevel.T3
+                    Case ProductionType.SubsystemManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.SubsystemCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.None
+                        MY_SelectedBPTech = BPTechLevel.T3
+                    Case ProductionType.BoosterManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.None
+                        MY_SelectedBPGroupID = ItemIDs.BoosterGroupID
+                        MY_SelectedBPTech = BPTechLevel.T1
+                    Case ProductionType.Copying
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.FrigateGroupID
+                        MY_SelectedBPTech = BPTechLevel.T2
+                    Case ProductionType.Invention
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.FrigateGroupID
+                        MY_SelectedBPTech = BPTechLevel.T2
+                    Case ProductionType.NoPOSManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.SovStructureCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.None
+                        MY_SelectedBPTech = BPTechLevel.T1
+                    Case ProductionType.T3Invention
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.CarrierGroupID
+                        MY_SelectedBPTech = BPTechLevel.T2
+                    Case ProductionType.T3DestroyerManufacturing
+                        MY_SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                        MY_SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
+                        MY_SelectedBPTech = BPTechLevel.T3
+                End Select
+
+                ' Load the defaults
+                Call MY_InitializeFacilities(FacilityView.LimitedControls, InitialProductionType)
+
+            Case Else
+                ' Leave, no valid option sent
+                Exit Sub
+        End Select
+
+    End Sub
+
+    ' Loads all the facilities for the view type sent to include defaults
+    Public Sub MY_InitializeFacilities(ViewType As FacilityView, Optional InitialProductionType As ProductionType = ProductionType.Manufacturing)
+
+        Select Case ViewType
+            Case FacilityView.FullControls
                 ' Load all the facilities for  tab - always start with manufacturing
                 Call MY_SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, ViewType)
                 SelectedManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
@@ -324,12 +404,7 @@ Public Class ManufacturingFacility
                 SelectedT3DestroyerManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
                 DefaultT3DestroyerManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
 
-                ' Always load up the default manufacturing facility on initialization
-                Call MY_LoadFacility(ProductionType.Manufacturing, 1, False, 25, 6)
-
             Case FacilityView.LimitedControls
-
-                ' TODO - Move the objects around and place in control for view type
 
                 ' Select what facility to load based on the industry type
                 Call MY_SelectedFacility.InitalizeFacility(InitialProductionType, ViewType)
@@ -379,84 +454,109 @@ Public Class ManufacturingFacility
                 Exit Sub
         End Select
 
+        ' Reset these
+        ' To save previous values for checking and loading
+        MY_PreviousProductionType = ProductionType.None
+        MY_PreviousFacilityType = FacilityTypes.None
+        MY_PreviousRegion = ""
+        MY_PreviousSystem = ""
+        MY_PreviousEquipment = ""
+        MY_PreviousActivity = ""
+
+        ' Loaded variables
+        MY_FacilityRegionsLoaded = False
+        MY_FacilitySystemsLoaded = False
+        MY_FacilityorArrayLoaded = False
+
+        MY_LoadingActivities = False
+        MY_LoadingFacilityTypes = False
+        MY_LoadingRegions = False
+        MY_LoadingSystems = False
+        MY_LoadingFacilities = False
+        MY_ChangingUsageChecks = False
+
+        ' Load the selected facility with set bp
+        Call MY_LoadFacility(MY_SelectedBPGroupID, MY_SelectedBPCategoryID, MY_SelectedBPTech, True, False)
+
     End Sub
 
     ' Loads the class facility and objects
-    Public Sub MY_LoadFacility(ByVal FacilityBuildType As ProductionType, ByVal BlueprintTech As Integer, ByVal BPHasComponents As Boolean,
-                               ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer,
-                               Optional ByVal LoadDefault As Boolean = False)
-
-        Dim SelectedFacility As New IndustryFacility
-        Dim SelectedActivity As String = ""
+    Public Sub MY_LoadFacility(ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer,
+                               ByVal BlueprintTech As Integer, ByVal BPHasComponents As Boolean,
+                               Optional ByVal LoadDefault As Boolean = False, Optional DefaultFacility As IndustryFacility = Nothing)
 
         ' Save these for later use
         MY_SelectedBPCategoryID = ItemCategoryID
         MY_SelectedBPGroupID = ItemGroupID
-        MY_SelectedProductionType = FacilityBuildType
-        MY_BPTech = BlueprintTech
-        MY_BPHasComponents = BPHasComponents
-
-        ' Look up Facility and Activity by reference
-        Call SelectFacility(FacilityBuildType, LoadDefault, SelectedFacility, SelectedActivity)
+        MY_SelectedBPTech = BlueprintTech
+        MY_SelectedBPHasComponents = BPHasComponents
 
         ' Process the activities combo if showing full controls
         If MY_SelectedView = FacilityView.FullControls Then
-            Call MY_LoadFacilityActivities(BlueprintTech, BPHasComponents, ItemGroupID, ItemCategoryID)
-            ' Activity combo is loaded so set the activity Text
-            MY_LoadingActivities = True
-            cmbFacilityActivities.Text = SelectedActivity
-            MY_PreviousActivity = MY_ActivityManufacturing
-            MY_LoadingActivities = False
+            Call MY_LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasComponents)
+            MY_PreviousActivity = cmbFacilityActivities.Text
+        End If
+
+        ' Get the production type, based on activity selected
+        MY_SelectedProductionType = MY_GetProductionType(ItemGroupID, ItemCategoryID, cmbFacilityActivities.Text)
+        Application.DoEvents()
+
+        ' If we get a facility sent, load that, else load it up from the other information
+        If Not IsNothing(DefaultFacility) Then
+            MY_SelectedFacility = DefaultFacility
+        Else
+            ' Look up Facility - activity set to facility inside
+            MY_SelectedFacility = SelectFacility(MY_SelectedProductionType, LoadDefault)
         End If
 
         ' Facility Type combo, load it if they want to change
-        Call MY_LoadFacilityTypes(MY_SelectedProductionType, SelectedActivity)
+        Call MY_LoadFacilityTypes(MY_SelectedProductionType, MY_SelectedFacility.Activity)
 
         ' Enable the type of facility and set
         MY_LoadingFacilityTypes = True
         cmbFacilityType.Enabled = True
-        cmbFacilityType.Text = GetFacilityNameCode(SelectedFacility.FacilityType)
+        cmbFacilityType.Text = GetFacilityNameCode(MY_SelectedFacility.FacilityType)
         MY_LoadingFacilityTypes = False
 
-        If SelectedFacility.FacilityType = FacilityTypes.None Then
+        If MY_SelectedFacility.FacilityType = FacilityTypes.None Then
             ' Just hide the boxes and exit
             Call SetFacilityBonusBoxes(False)
+            MY_SelectedFacility.FullyLoaded = True ' Even with none, it's loaded
             Call SetNoFacility()
-            MY_FacilityFullyLoaded = True ' Even with none, it's loaded
             Exit Sub ' Leave, all loaded
         End If
 
         ' Region name Combo
         MY_LoadingRegions = True
         cmbFacilityRegion.Enabled = True
-        cmbFacilityRegion.Text = SelectedFacility.RegionName
+        cmbFacilityRegion.Text = MY_SelectedFacility.RegionName
         MY_LoadingRegions = False
 
         ' Systems combo
         MY_LoadingSystems = True
         cmbFacilitySystem.Enabled = True
-        cmbFacilitySystem.Text = SelectedFacility.SolarSystemName
+        cmbFacilitySystem.Text = MY_SelectedFacility.SolarSystemName
         MY_LoadingSystems = False
 
         ' Facility/Array combo
         MY_LoadingFacilities = True
         cmbFacilityorArray.Enabled = True
         Dim AutoLoad As Boolean = False
-        Call MY_LoadFacilities(False, SelectedActivity, AutoLoad, SelectedFacility.FacilityName)
+        Call MY_LoadFacilities(False, MY_SelectedFacility.Activity, AutoLoad, MY_SelectedFacility.FacilityName)
         MY_LoadingFacilities = False
 
         ' Usage checks
         MY_ChangingUsageChecks = True
 
         ' Usage always visible
-        chkFacilityIncludeUsage.Checked = SelectedFacility.IncludeActivityUsage
+        chkFacilityIncludeUsage.Checked = MY_SelectedFacility.IncludeActivityUsage
 
         If Not IsNothing(chkFacilityIncludeCost) Then
-            chkFacilityIncludeCost.Checked = SelectedFacility.IncludeActivityCost
+            chkFacilityIncludeCost.Checked = MY_SelectedFacility.IncludeActivityCost
         End If
 
         If Not IsNothing(chkFacilityIncludeTime) Then
-            chkFacilityIncludeTime.Checked = SelectedFacility.IncludeActivityTime
+            chkFacilityIncludeTime.Checked = MY_SelectedFacility.IncludeActivityTime
         End If
 
         MY_ChangingUsageChecks = False
@@ -464,9 +564,9 @@ Public Class ManufacturingFacility
         ' Finally show the results and save the facility locally
         If Not AutoLoad Then
             MY_LoadingFacilities = True
-            With SelectedFacility
+            With MY_SelectedFacility
                 cmbFacilityorArray.Text = .FacilityName
-                Call DisplayFacilityBonus(.FacilityProductionType, ItemGroupID, ItemCategoryID, SelectedActivity,
+                Call DisplayFacilityBonus(.FacilityProductionType, ItemGroupID, ItemCategoryID, MY_SelectedFacility.Activity,
                                           GetFacilityTypeCode(cmbFacilityType.Text), cmbFacilityorArray.Text)
             End With
             MY_LoadingFacilities = False
@@ -474,31 +574,35 @@ Public Class ManufacturingFacility
 
         Call ResetComboLoadVariables(False, False, False)
 
-        ' All facilities loaded
-        MY_FacilityFullyLoaded = True
+        ' All data loaded
+        MY_SelectedFacility.FullyLoaded = True
+
+        ' Facility is loaded, so save it to default and dynamic variable
+        Call SetFacility(MY_SelectedFacility, MY_SelectedProductionType, False, False)
 
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub MY_LoadFacilityActivities(BlueprintTech As Integer, HasComponents As Boolean, BPGroupID As Long, BPCategoryID As Long)
+    Public Sub MY_LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, HasComponents As Boolean)
 
         MY_LoadingActivities = True
+        Dim ActivityText As String = cmbFacilityActivities.Text ' Save what is selected first
         cmbFacilityActivities.BeginUpdate()
 
         Select Case BlueprintTech
-            Case BlueprintTechLevel.T1
+            Case BPTechLevel.T1
                 ' Just manufacturing (add components later if there are any)
                 cmbFacilityActivities.Items.Clear()
                 cmbFacilityActivities.Items.Add(MY_ActivityManufacturing)
 
-            Case BlueprintTechLevel.T2
+            Case BPTechLevel.T2
                 ' Add only T2 activities to equipment
                 cmbFacilityActivities.Items.Clear()
                 cmbFacilityActivities.Items.Add(MY_ActivityManufacturing)
                 cmbFacilityActivities.Items.Add(MY_ActivityCopying)
                 cmbFacilityActivities.Items.Add(MY_ActivityInvention)
 
-            Case BlueprintTechLevel.T3
+            Case BPTechLevel.T3
                 ' Add only T3 activities to eqipment
                 cmbFacilityActivities.Items.Clear()
                 cmbFacilityActivities.Items.Add(MY_ActivityManufacturing)
@@ -523,22 +627,31 @@ Public Class ManufacturingFacility
             End Select
         End If
 
-        MY_LoadingActivities = False
         cmbFacilityActivities.EndUpdate()
+
+        ' Set default activity text if it's not in the list
+        If Not cmbFacilityActivities.Items.Contains(ActivityText) Then
+            cmbFacilityActivities.Text = MY_ActivityManufacturing
+        Else
+            cmbFacilityActivities.Text = ActivityText
+        End If
+
+
+        MY_LoadingActivities = False
 
     End Sub
 
     Private Sub cmbFacilityActivities_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilityActivities.SelectedIndexChanged
 
         If Not MY_LoadingActivities And Not FirstLoad Then
-            MY_SelectedProductionType = MY_GetProductionType(cmbFacilityActivities.Text, GetFacilityTypeCode(cmbFacilityType.Text), MY_SelectedBPGroupID, MY_SelectedBPCategoryID)
+            MY_SelectedProductionType = MY_GetProductionType(MY_SelectedBPGroupID, MY_SelectedBPCategoryID, cmbFacilityActivities.Text)
 
             ' If they switch the activity and it changed from the previous, then load the selected facility for this activity
             If MY_SelectedProductionType <> MY_PreviousProductionType Then
                 MY_PreviousProductionType = MY_SelectedProductionType
 
                 ' Load the facility for this activity
-                Call MY_LoadFacility(MY_SelectedProductionType, MY_BPTech, MY_BPHasComponents, MY_SelectedBPGroupID, MY_SelectedBPCategoryID)
+                Call MY_LoadFacility(MY_SelectedBPGroupID, MY_SelectedBPCategoryID, MY_SelectedBPTech, MY_SelectedBPHasComponents)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 MY_PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -688,7 +801,7 @@ Public Class ManufacturingFacility
                 ' Allow this to be saved as a default though
                 btnFacilitySave.Enabled = True
                 ' changed so not the default
-                lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+                Call SetDefaultVisuals(False)
                 ' Save the facility locally
                 Call DisplayFacilityBonus(MY_SelectedProductionType, MY_SelectedBPGroupID, MY_SelectedBPCategoryID, cmbFacilityActivities.Text,
                                           GetFacilityTypeCode(cmbFacilityType.Text), cmbFacilityorArray.Text)
@@ -696,7 +809,7 @@ Public Class ManufacturingFacility
 
             ' Anytime this changes, set all the other ME/TE boxes to not viewed
             Call SetFacilityBonusBoxes(False)
-            MY_FacilityFullyLoaded = False
+            MY_SelectedFacility.FullyLoaded = False
             MY_PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
             ' Reset the previous records
             MY_PreviousEquipment = ""
@@ -801,7 +914,7 @@ Public Class ManufacturingFacility
             cmbFacilityorArray.Text = "Select Facility / Array"
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
-            lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+            Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
             Call SetFacilityBonusBoxes(False)
@@ -831,7 +944,7 @@ Public Class ManufacturingFacility
             Call MY_LoadFacilitySystems(MY_SelectedBPGroupID, MY_SelectedBPCategoryID, True, cmbFacilityActivities.Text)
             Call cmbFacilitySystem.Focus()
             Call SetFacilityBonusBoxes(False)
-            MY_FacilityFullyLoaded = False
+            MY_SelectedFacility.FullyLoaded = False
             MY_PreviousRegion = cmbFacilityRegion.Text
         End If
     End Sub
@@ -875,28 +988,33 @@ Public Class ManufacturingFacility
 
             Case OutpostFacility, StationFacility
 
-                SQL = "SELECT DISTINCT SOLAR_SYSTEM_NAME, COST_INDEX FROM STATION_FACILITIES WHERE OUTPOST "
+                SQL = "SELECT DISTINCT INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_NAME AS SSN, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX AS CI "
+                SQL &= "FROM STATION_FACILITIES, INDUSTRY_SYSTEMS_COST_INDICIES "
+                SQL &= "WHERE STATION_FACILITIES.SOLAR_SYSTEM_ID = INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID "
+                SQL &= "AND STATION_FACILITIES.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
 
                 ' Set flag for outpost just to delineate
                 If cmbFacilityType.Text = StationFacility Then
-                    SQL = SQL & " = " & CStr(StationType.Station) & " "
+                    SQL = SQL & "AND OUTPOST  = " & CStr(StationType.Station) & " "
                 Else
-                    SQL = SQL & " = " & CStr(StationType.Outpost) & " "
+                    SQL = SQL & "AND OUTPOST  = " & CStr(StationType.Outpost) & " "
                 End If
+
+                SQL &= "AND STATION_FACILITIES.ACTIVITY_ID = "
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & CStr(IndustryActivities.Manufacturing) & " "
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Manufacturing)
                     Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for components - All types can be built in stations
                         SQL = SQL & GetFacilityCatGroupIDSQL(ComponentCategoryID, -1, IndustryActivities.Manufacturing)
                     Case ActivityCopying
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                        SQL = SQL & CStr(IndustryActivities.Copying) & " "
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Copying)
                     Case ActivityInvention
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                        SQL = SQL & CStr(IndustryActivities.Invention) & " "
                         ' For T3 stuff, need to make sure we only show facilities that can do T3 invention (Caldari Outposts)
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
                 End Select
@@ -905,7 +1023,7 @@ Public Class ManufacturingFacility
 
             Case POSFacility
                 ' For a POS, load all systems, if wormhole 'region' selected, then load jspace systems
-                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS COST_INDEX "
+                SQL = "SELECT DISTINCT solarSystemName AS SSN, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS CI  "
                 SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
 
@@ -936,7 +1054,7 @@ Public Class ManufacturingFacility
                 End If
 
             Case StructureFacility
-                SQL = "SELECT DISTINCT solarSystemName AS SOLAR_SYSTEM_NAME, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS COST_INDEX "
+                SQL = "SELECT DISTINCT solarSystemName AS SSN, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END  AS CI "
                 SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
 
@@ -973,7 +1091,7 @@ Public Class ManufacturingFacility
 
         End Select
 
-        SQL = SQL & " GROUP BY SOLAR_SYSTEM_NAME, COST_INDEX"
+        SQL = SQL & " GROUP BY SSN, CI"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
@@ -995,7 +1113,7 @@ Public Class ManufacturingFacility
             End If
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
-            lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+            Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
             Call SetFacilityBonusBoxes(False)
@@ -1040,10 +1158,24 @@ Public Class ManufacturingFacility
             Call MY_LoadFacilities(False, cmbFacilityActivities.Text, Autoload, OverrideFacilityName)
 
             If Autoload Then
-                MY_FacilityFullyLoaded = True
+                MY_SelectedFacility.FullyLoaded = True
+                ' Facility is loaded, so save it to default and dynamic variable
+                Call SetFacility(MY_SelectedFacility, MY_SelectedProductionType, False, False)
+                ' Load the bp on bp tab
+                If Not IsNothing(SelectedBlueprint) And MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                    Dim SentFrom As SentFromLocation
+                    If MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                        SentFrom = SentFromLocation.BlueprintTab
+                    ElseIf MY_SelectedLocation = ProgramLocation.ManufacturingTab Then
+                        SentFrom = SentFromLocation.ManufacturingTab
+                    End If
+                    With SelectedBlueprint
+                        Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+                    End With
+                End If
             Else
                 Call SetFacilityBonusBoxes(False)
-                MY_FacilityFullyLoaded = False
+                MY_SelectedFacility.FullyLoaded = False
             End If
 
             Call cmbFacilityorArray.Focus()
@@ -1074,7 +1206,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Based on the selections, load the facilities/arrays combo - an itemcategory or itemgroup id of -1 means to ignore it when filling arrays
-    Public Sub MY_LoadFacilities(NewFacility As Boolean, ByRef FacilityActivity As String,
+    Private Sub MY_LoadFacilities(NewFacility As Boolean, ByRef FacilityActivity As String,
                                  ByRef AutoLoadFacility As Boolean, Optional OverrideFacilityName As String = "")
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
@@ -1146,7 +1278,7 @@ Public Class ManufacturingFacility
                         End Select
                     Case ActivityCopying
                         SQL = SQL & CStr(IndustryActivities.Copying) & " "
-                        SQL = SQL & GetFacilityCatGroupIDSQL(MY_SelectedBPCategoryID, MY_SelectedBPGroupID, IndustryActivities.Invention)
+                        SQL = SQL & GetFacilityCatGroupIDSQL(MY_SelectedBPCategoryID, MY_SelectedBPGroupID, IndustryActivities.Copying)
                     Case ActivityInvention
                         ' POS invention you can only do T3 in certain arrays
                         SQL = SQL & CStr(IndustryActivities.Invention) & " "
@@ -1154,9 +1286,37 @@ Public Class ManufacturingFacility
                 End Select
 
             Case FacilityTypes.UpwellStructures
-                ' Load all the upwell structures
-                SQL = "SELECT typeName as FACILITY_NAME FROM INVENTORY_TYPES, INVENTORY_GROUPS WHERE INVENTORY_GROUPS.categoryID = 65 
-                AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid AND INVENTORY_TYPES.published = 1"
+                ' Load all the upwell structures based on the production type
+                SQL = "SELECT typeName as FACILITY_NAME FROM INVENTORY_TYPES, INVENTORY_GROUPS "
+                SQL &= "WHERE INVENTORY_GROUPS.categoryID = 65 "
+                SQL &= "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid "
+                SQL &= "AND INVENTORY_TYPES.published = 1 "
+                SQL &= "AND (typeID IN (SELECT COALESCE(valuefloat, valueint) AS UPWELL_STRUCTURE_ID "
+                SQL &= "FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+                SQL &= "WHERE ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
+                SQL &= "AND attributeName Like 'canFitShipType%' "
+                SQL &= "AND TYPE_ATTRIBUTES.typeID = {0}) "
+                SQL &= "OR INVENTORY_TYPES.groupID In (Select COALESCE(valuefloat, valueint) As UPWELL_STRUCTURE_ID "
+                SQL &= "FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+                SQL &= "WHERE ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
+                SQL &= "AND attributeName LIKE 'canFitShipGroup%' "
+                SQL &= "AND TYPE_ATTRIBUTES.typeID = {0})) "
+
+                ' Check for production types so that we don't show facilities that can't use services for that type (i.e. capital building)
+                Select Case MY_SelectedProductionType
+                    Case ProductionType.BoosterManufacturing
+                        SQL = String.Format(SQL, CInt(Services.StandupBiochemicalReactor))
+                    Case ProductionType.CapitalManufacturing
+                        SQL = String.Format(SQL, CInt(Services.StandupCapitalShipyard))
+                    Case ProductionType.SuperManufacturing
+                        SQL = String.Format(SQL, CInt(Services.StandupSupercapitalShipyard))
+                    Case ProductionType.Copying
+                        SQL = String.Format(SQL, CInt(Services.StandupResearchLab))
+                    Case ProductionType.Invention, ProductionType.T3Invention
+                        SQL = String.Format(SQL, CInt(Services.StandupInventionLab))
+                    Case Else ' All others get manufacturing
+                        SQL = String.Format(SQL, CInt(Services.StandupManufacturingPlant))
+                End Select
 
         End Select
 
@@ -1175,13 +1335,10 @@ Public Class ManufacturingFacility
         While rsLoader.Read
             If rsLoader.GetString(0).Contains("Thukker") And GetFacilityTypeCode(cmbFacilityType.Text) = FacilityTypes.POS Then
                 ' Need to make sure it's a low sec system selected
-                Dim rsCheck As SQLiteDataReader
-                SQL = "SELECT SECURITY FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsCheck = DBCommand.ExecuteReader
+                Dim security As Double = GetSolarSystemSecurityLevel(SystemName)
 
-                If rsCheck.Read Then
-                    If rsCheck.GetDouble(0) < 0.45 Then
+                If security <> -1 Then
+                    If security < 0.45 Then
                         ' Thukker is only low sec - no easy way to weed this out
                         cmbFacilityorArray.Items.Add(rsLoader.GetString(0))
                     End If
@@ -1230,12 +1387,12 @@ Public Class ManufacturingFacility
 
                 ' Make sure default is turned off since we still have to load the array
                 btnFacilitySave.Enabled = False
-                lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+                Call SetDefaultVisuals(False)
                 chkFacilityIncludeUsage.Enabled = False ' Don't enable the usage either
             Else
                 ' Since this is a different system but facility is loaded, enable save
                 btnFacilitySave.Enabled = True
-                lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+                Call SetDefaultVisuals(False)
                 chkFacilityIncludeUsage.Enabled = True
             End If
 
@@ -1245,7 +1402,7 @@ Public Class ManufacturingFacility
 
         If NewFacility Then
             ' Make sure default is not checked yet
-            lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+            Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
             Call SetFacilityBonusBoxes(True)
         End If
@@ -1268,7 +1425,18 @@ Public Class ManufacturingFacility
                                           GetFacilityTypeCode(cmbFacilityType.Text), cmbFacilityorArray.Text)
 
             MY_PreviousEquipment = cmbFacilityorArray.Text
-
+            ' Load the bp on bp tab
+            If Not IsNothing(SelectedBlueprint) And MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                Dim SentFrom As SentFromLocation
+                If MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                    SentFrom = SentFromLocation.BlueprintTab
+                ElseIf MY_SelectedLocation = ProgramLocation.ManufacturingTab Then
+                    SentFrom = SentFromLocation.ManufacturingTab
+                End If
+                With SelectedBlueprint
+                    Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+                End With
+            End If
         End If
     End Sub
 
@@ -1295,13 +1463,25 @@ Public Class ManufacturingFacility
         ' Load the default facility for the selected activity if it's not already the default
         If lblFacilityDefault.ForeColor = SystemColors.ButtonShadow Then
             MY_LoadingActivities = True ' Don't trigger a combo load yet
-            ' Call MY_LoadFacility(MY_SelectedProductionType, True, MY_SelectedBPGroupID, MY_SelectedBPCategoryID)
+            Dim SelectedFacility As New IndustryFacility
+            Dim SelectedActivity As String = ""
+
+            SelectedFacility = SelectFacility(MY_SelectedProductionType, True)
+
+            If Not IsNothing(SelectedBlueprint) Then
+                With SelectedBlueprint
+                    Call MY_LoadFacility(.GetItemGroupID, .GetItemCategoryID, .GetTechLevel, .HasComponents, True)
+                End With
+            End If
+            ' Set the default based on the checkbox 
+            Call SetFacility(SelectedFacility, MY_SelectedProductionType, False, False)
+
             MY_LoadingActivities = False
         End If
     End Sub
 
     ' Displays the bonus for the facility selected in the facility or array combo
-    Public Sub DisplayFacilityBonus(BuildType As ProductionType, ItemGroupID As Integer, ItemCategoryID As Integer, Activity As String,
+    Private Sub DisplayFacilityBonus(BuildType As ProductionType, ItemGroupID As Integer, ItemCategoryID As Integer, Activity As String,
                                     FacilityType As FacilityTypes, FacilityName As String)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
@@ -1314,10 +1494,6 @@ Public Class ManufacturingFacility
         Dim Tax As Double
 
         Dim TempDefaultFacility As New IndustryFacility
-
-        Dim SelectedFacility As New IndustryFacility
-        Dim CompareCostCheck As Boolean = False
-        Dim CompareTimeCheck As Boolean = False
 
         ' Process system if needed
         Dim SystemName As String
@@ -1337,9 +1513,9 @@ Public Class ManufacturingFacility
             SQL &= "AND SAVED_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
             SQL &= String.Format("AND CHARACTER_ID = {0} ", CStr(SelectedCharacter.ID))
             SQL &= String.Format("AND PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} ", CStr(BuildType), CStr(MY_SelectedView))
-            SQL &= "AND REGIONS.regionName = '" & cmbFacilityRegion.Text & "' "
+            SQL &= "AND REGIONS.regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
             SQL &= "AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "' "
-            SQL &= "AND typeName = '" & cmbFacilityorArray.Text & "'"
+            SQL &= "AND typeName = '" & FormatDBString(cmbFacilityorArray.Text) & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
@@ -1436,6 +1612,145 @@ Public Class ManufacturingFacility
             Tax = Defaults.FacilityDefaultTax
         End If
 
+        ' Now that we have everything, load the full facility into the appropriate selected facility to use later
+        With MY_SelectedFacility
+            ' First, if this is a citadel, then look up any saved modules and adjust the MM/TM/CM
+            If .FacilityType = FacilityTypes.UpwellStructures Then
+                Dim InstalledModules = New List(Of Integer) ' Reset
+                Dim SystemID As Long = GetSolarSystemID(SystemName)
+
+                SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
+                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
+                SQL &= "AND UPWELL_STRUCTURES_INSTALLED_MODULES.INSTALLED_MODULE_ID = ENGINEERING_RIG_BONUSES.typeID "
+                SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
+                DBCommand = New SQLiteCommand(String.Format(SQL, MY_SelectedCharacterID, CStr(MY_SelectedProductionType), CStr(SystemID), CStr(MY_SelectedView),
+                                              CStr(FacilityID), CStr(MY_SelectedBPCategoryID), CStr(MY_SelectedBPGroupID)), EVEDB.DBREf)
+                rsLoader = DBCommand.ExecuteReader
+
+                While rsLoader.Read()
+                    InstalledModules.Add(rsLoader.GetInt32(0))
+                End While
+                rsLoader.Close()
+
+                ' Get the system security first
+                Dim security As Double = GetSolarSystemSecurityLevel(SystemName)
+                Dim securityAttribute As ItemAttributes
+
+                If Not IsNothing(security) Then
+                    If security <= 0.0 Then
+                        securityAttribute = ItemAttributes.nullSecModifier
+                    ElseIf security < 0.45 Then
+                        securityAttribute = ItemAttributes.lowSecModifier
+                    Else
+                        securityAttribute = ItemAttributes.hiSecModifier
+                    End If
+                Else
+                    ' Just assume null
+                    securityAttribute = ItemAttributes.nullSecModifier
+                End If
+
+                ' Now, adjust the MM, TM, CM based on modules installed
+                For Each RigID In InstalledModules
+                    ' Look up the bonus while adjusting for the type of space we are in
+                    SQL = "SELECT attributeID, "
+                    SQL &= "(COALESCE(VALUEFLOAT, VALUEINT) * (SELECT COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1}))/100 AS BONUS "
+                    SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2594,2593,2595) "
+                    SQL &= "AND COALESCE(VALUEFLOAT, VALUEINT) <> 0 AND TYPEID = {0}"
+                    SQL = String.Format(SQL, RigID, CInt(securityAttribute))
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsLoader = DBCommand.ExecuteReader
+                    rsLoader.Read()
+
+                    ' Adjust MM, TM, CM by attribute
+
+                    Select Case rsLoader.GetInt32(0)
+                        Case ItemAttributes.attributeEngRigCostBonus
+                            CostMultiplier = CostMultiplier + rsLoader.GetDouble(1)
+                        Case ItemAttributes.attributeEngRigMatBonus
+                            MaterialMultiplier = MaterialMultiplier + rsLoader.GetDouble(1)
+                        Case ItemAttributes.attributeEngRigTimeBonus
+                            TimeMultiplier = TimeMultiplier + rsLoader.GetDouble(1)
+                    End Select
+                Next
+
+            End If
+
+            .ActivityCostPerSecond = 0
+            Select Case Activity
+                Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
+                    .ActivityID = IndustryActivities.Manufacturing
+                Case ActivityCopying
+                    .ActivityID = IndustryActivities.Copying
+                Case ActivityInvention
+                    .ActivityID = IndustryActivities.Invention
+            End Select
+
+            .Activity = Activity
+            .FacilityID = FacilityID
+            .FacilityName = FacilityName
+            .FacilityTypeID = FacilityTypeID
+            .FacilityType = FacilityType
+            .MaterialMultiplier = MaterialMultiplier
+            .TimeMultiplier = TimeMultiplier
+            .CostMultiplier = CostMultiplier
+            .RegionName = cmbFacilityRegion.Text
+            .SolarSystemName = cmbFacilitySystem.Text
+            .FacilityProductionType = BuildType
+            .TaxRate = Tax
+
+            MY_ChangingUsageChecks = True
+
+            '.IncludeActivityUsage = chkFacilityIncludeUsage.Checked ' Use this value when loading from Load Facility (using the selected facility) or from the form dropdown (use the checkbox)
+
+            If Not IsNothing(chkFacilityIncludeCost) And chkFacilityIncludeCost.Visible Then
+                .IncludeActivityCost = chkFacilityIncludeCost.Checked
+            Else
+                .IncludeActivityCost = False
+            End If
+
+            If Not IsNothing(chkFacilityIncludeTime) And chkFacilityIncludeTime.Visible Then
+                .IncludeActivityTime = chkFacilityIncludeTime.Checked
+            Else
+                .IncludeActivityTime = False
+            End If
+            MY_ChangingUsageChecks = False
+
+            If FacilityType <> FacilityTypes.None Then
+                ' Quick look up for the solarsystemid and region id, Strip off the system index first
+                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsLoader = DBCommand.ExecuteReader
+                rsLoader.Read()
+
+                .SolarSystemID = rsLoader.GetInt64(0)
+                .SolarSystemSecurity = rsLoader.GetDouble(1)
+                .RegionID = rsLoader.GetInt64(2)
+                rsLoader.Close()
+
+                ' Now look up the cost index 
+                SQL = "SELECT COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES "
+                SQL &= "WHERE INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
+                SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsLoader = DBCommand.ExecuteReader
+
+                If rsLoader.Read() Then
+                    .CostIndex = rsLoader.GetFloat(0)
+                Else
+                    .CostIndex = 0
+                End If
+
+                rsLoader.Close()
+            Else
+                .SolarSystemID = 0
+                .RegionID = 0
+                .CostIndex = 0
+            End If
+
+        End With
+
         Dim MMText As String = FormatPercent(1 - MaterialMultiplier, 1)
         Dim TMText As String = FormatPercent(1 - TimeMultiplier, 1)
         Dim CostText As String = FormatPercent(1 - CostMultiplier, 1)
@@ -1459,122 +1774,13 @@ Public Class ManufacturingFacility
         txtFacilityManualTax.Text = TaxText
         txtFacilityManualCost.Text = CostText
 
-        ' Now that we have everything, load the full facility into the appropriate selected facility to use later
-        With SelectedFacility
-            .ActivityCostPerSecond = 0
-            Select Case Activity
-                Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                    .ActivityID = IndustryActivities.Manufacturing
-                Case ActivityCopying
-                    .ActivityID = IndustryActivities.Copying
-                Case ActivityInvention
-                    .ActivityID = IndustryActivities.Invention
-            End Select
-
-            .FacilityID = FacilityID
-            .FacilityName = FacilityName
-            .FacilityTypeID = FacilityTypeID
-            .FacilityType = FacilityType
-            .MaterialMultiplier = MaterialMultiplier
-            .TimeMultiplier = TimeMultiplier
-            .CostMultiplier = CostMultiplier
-            .RegionName = cmbFacilityRegion.Text
-            .SolarSystemName = cmbFacilitySystem.Text
-            .FacilityProductionType = BuildType
-            MY_ChangingUsageChecks = True
-            .IncludeActivityUsage = chkFacilityIncludeUsage.Checked ' Use this value when loading from Load Facility (using the selected facility) or from the form dropdown (use the checkbox)
-            .TaxRate = Tax
-
-            If Not IsNothing(chkFacilityIncludeCost) Then
-                .IncludeActivityCost = chkFacilityIncludeCost.Checked
-            Else
-                .IncludeActivityCost = False
-            End If
-
-            If Not IsNothing(chkFacilityIncludeTime) Then
-                .IncludeActivityTime = chkFacilityIncludeTime.Checked
-            Else
-                .IncludeActivityTime = False
-            End If
-            MY_ChangingUsageChecks = False
-
-            If FacilityType <> FacilityTypes.None And .SolarSystemID = 0 Then
-                ' Quick look up for the solarsystemid and region id, Strip off the system index first
-                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsLoader = DBCommand.ExecuteReader
-                rsLoader.Read()
-
-                .SolarSystemID = rsLoader.GetInt64(0)
-                .SolarSystemSecurity = rsLoader.GetDouble(1)
-                .RegionID = rsLoader.GetInt64(2)
-                rsLoader.Close()
-
-                ' Now look up the cost index 
-                Select Case FacilityType
-                    Case FacilityTypes.Station, FacilityTypes.Outpost
-                        SQL = "SELECT COST_INDEX FROM STATION_FACILITIES WHERE FACILITY_NAME = '" & FormatDBString(FacilityName) & "'"
-                        SQL = SQL & "AND ACTIVITY_ID = " & .ActivityID & " "
-                    Case FacilityTypes.POS
-                        SQL = "SELECT COST_INDEX FROM ASSEMBLY_ARRAYS, INDUSTRY_SYSTEMS_COST_INDICIES "
-                        SQL = SQL & "WHERE ASSEMBLY_ARRAYS.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
-                        SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
-                        SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
-                    Case FacilityTypes.UpwellStructures
-                        SQL = "SELECT COST_INDEX FROM UPWELL_STRUCTURES, INDUSTRY_SYSTEMS_COST_INDICIES "
-                        SQL = SQL & "WHERE UPWELL_STRUCTURES.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
-                        SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = " & .SolarSystemID & " "
-                        SQL = SQL & "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = " & .ActivityID & " "
-                End Select
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsLoader = DBCommand.ExecuteReader
-
-                If rsLoader.Read() Then
-                    .CostIndex = rsLoader.GetFloat(0)
-                Else
-                    .CostIndex = 0
-                End If
-
-                rsLoader.Close()
-            Else
-                .SolarSystemID = 0
-                .RegionID = 0
-                .CostIndex = 0
-            End If
-
-            ' If this is a citadel, then look up any saved modules and store them
-            If .FacilityType = FacilityTypes.UpwellStructures Then
-                SQL = "SELECT INSTALLED_MODULE_ID FROM FACILITY_INSTALLED_MODULES "
-                SQL &= "WHERE CHARACTER_ID = {0} AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}"
-                DBCommand = New SQLiteCommand(String.Format(SQL, MY_SelectedCharacterID, CStr(MY_SelectedProductionType), CStr(MY_SelectedView)), EVEDB.DBREf)
-                rsLoader = DBCommand.ExecuteReader
-                rsLoader.Read()
-
-                .InstalledModules = New List(Of Integer)
-
-                While rsLoader.Read()
-                    .InstalledModules.Add(rsLoader.GetInt32(0))
-                End While
-                rsLoader.Close()
-
-                ' Now, adjust the MM, TM, CM based on modules installed
-
-
-            End If
-
-        End With
-
         ' Show the boxes
         Call SetFacilityBonusBoxes(True)
 
-        ' Facility is loaded, so save it to default and dynamic variable
-        Call SetFacility(SelectedFacility, BuildType, CompareCostCheck, CompareTimeCheck)
-
-        ' Make sure the usage check is now enabled
+        ' Make sure the usage check is now enabled and update the box if a value exists
         If FacilityType <> FacilityTypes.None Then
             chkFacilityIncludeUsage.Enabled = True
+            lblFacilityUsage.Text = FormatNumber(MY_SelectedFacility.FacilityUsage, 2)
         End If
 
         If FacilityType = FacilityTypes.UpwellStructures Then
@@ -1586,17 +1792,28 @@ Public Class ManufacturingFacility
             btnFacilityFitting.Visible = False
         End If
 
+        ' Enable the FW settings if on the bp tab
+        If MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+            If Not FirstLoad Then
+                Call SetFWUpgradeControls(frmMain.lblBPFWUpgrade, frmMain.cmbBPFWUpgrade, MY_SelectedFacility.SolarSystemName, frmMain.btnBPUpdateCostIndex)
+                Call CostIndexUpdateText()
+            End If
+        End If
+
         ' Loaded up, let them save it
         btnFacilitySave.Visible = True
+        ' Fully loaded
+        MY_SelectedFacility.FullyLoaded = True
 
-        MY_FacilityFullyLoaded = True
+        ' Facility is loaded, so save it to default and dynamic variable
+        Call SetFacility(MY_SelectedFacility, BuildType, False, False)
 
         Application.DoEvents()
 
     End Sub
 
     ' Sets the sent facility To the one we are selecting And sets the Default 
-    Public Sub SetFacility(ByVal SelectedFacility As IndustryFacility, BuildType As ProductionType,
+    Private Sub SetFacility(ByVal SelectedFacility As IndustryFacility, BuildType As ProductionType,
                            ByVal CompareIncludeCostCheck As Boolean, ByVal CompareIncludeTimeCheck As Boolean)
 
         ' For checking change from stations to pos on  tab
@@ -1798,24 +2015,46 @@ Public Class ManufacturingFacility
         ' Save the selected facility locally
         MY_SelectedFacility = CType(SelectedFacility.Clone, IndustryFacility)
 
-        lblFacilityDefault.Visible = True
-
     End Sub
 
     Private Sub chkFacilityIncludeUsage_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeUsage.CheckedChanged
-        Call SetDefaultFacilitybyCheck(MY_SelectedProductionType)
+        If Not MY_ChangingUsageChecks Then
+            ' Re-run the blueprint
+            If MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                If chkFacilityIncludeUsage.Checked = True Then
+                    MY_SelectedFacility.IncludeActivityUsage = True
+                Else
+                    MY_SelectedFacility.IncludeActivityUsage = False
+                End If
+                ' Facility is loaded, so save it to default and dynamic variable
+                Call SetFacility(MY_SelectedFacility, MY_SelectedProductionType, False, False)
+                If Not IsNothing(SelectedBlueprint) Then
+                    Dim SentFrom As SentFromLocation
+                    If MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+                        SentFrom = SentFromLocation.BlueprintTab
+                    ElseIf MY_SelectedLocation = ProgramLocation.ManufacturingTab Then
+                        SentFrom = SentFromLocation.ManufacturingTab
+                    End If
+                    With SelectedBlueprint
+                        Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+                    End With
+                End If
+            End If
 
+            lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
+
+        End If
     End Sub
 
     Private Sub btnFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnFacilityFitting.Click
-        Dim CitadelViewer As New frmCitadelFitting(cmbFacilityorArray.Text, MY_SelectedCharacterID,
-                                                   MY_SelectedProductionType, MY_SelectedView, MY_SelectedFacility.SolarSystemSecurity)
-        Call CitadelViewer.ShowDialog()
+        Dim StructureViewer As New frmUpwellStructureFitting(cmbFacilityorArray.Text, MY_SelectedCharacterID,
+                                                   MY_SelectedProductionType, MY_SelectedView, MY_SelectedFacility.SolarSystemName)
+        Call StructureViewer.ShowDialog()
 
         ' After showing, select the name of the citadel chosen and then dispose
-        cmbFacilityorArray.Text = CitadelViewer.CitadelName
+        cmbFacilityorArray.Text = StructureViewer.UpwellStructureName
 
-        Call CitadelViewer.Dispose()
+        Call StructureViewer.Dispose()
 
         ' Reload the stats each time
         Call DisplayFacilityBonus(MY_SelectedProductionType, MY_SelectedBPGroupID, MY_SelectedBPCategoryID, cmbFacilityActivities.Text,
@@ -1824,70 +2063,115 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub btnFacilitySave_Click(sender As Object, e As EventArgs) Handles btnFacilitySave.Click
-        If MY_FacilityFullyLoaded Then
+        If MY_SelectedFacility.FullyLoaded Then
+
             If MY_SelectedFacility.SaveFacility(MY_SelectedView, MY_SelectedCharacterID) Then
                 ' Just saved, so must be the default
                 Call SetDefaultVisuals(True)
             Else
                 Call SetDefaultVisuals(False)
+                Exit Sub
             End If
+
+            ' Need to update the local default copy of the facility first
+            Select Case MY_SelectedFacility.FacilityProductionType
+                Case ProductionType.BoosterManufacturing
+                    DefaultBoosterManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.CapitalComponentManufacturing
+                    DefaultCapitalComponentManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.CapitalManufacturing
+                    DefaultCapitalManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.ComponentManufacturing
+                    DefaultComponentManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.Copying
+                    DefaultCopyFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.Invention
+                    DefaultInventionFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.Manufacturing
+                    DefaultManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.NoPOSManufacturing
+                    DefaultNoPOSFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.POSFuelBlockManufacturing
+                    DefaultPOSFuelBlockFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.POSLargeShipManufacturing
+                    DefaultPOSLargeShipFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.POSModuleManufacturing
+                    DefaultPOSModuleFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.SubsystemManufacturing
+                    DefaultSubsystemManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.SuperManufacturing
+                    DefaultSuperManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.T3CruiserManufacturing
+                    DefaultT3CruiserManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.T3DestroyerManufacturing
+                    DefaultT3DestroyerManufacturingFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+                Case ProductionType.T3Invention
+                    DefaultT3InventionFacility = CType(MY_SelectedFacility.Clone, IndustryFacility)
+            End Select
+
+            ' Now set the facility
+            Call SetFacility(MY_SelectedFacility, MY_SelectedFacility.FacilityProductionType, True, True)
+
         End If
     End Sub
 
 #Region "Support Functions"
 
-    ' Selects the facility and returns it and the activity through reference
-    Private Sub SelectFacility(ByVal BuildType As ProductionType, ByVal IsDefault As Boolean,
-                                    ByRef ReturnFacility As IndustryFacility, ByRef ReturnActivity As String)
+    ' Selects the facility and returns it and sets the activity on the facility found
+    Private Function SelectFacility(ByVal BuildType As ProductionType, ByVal IsDefault As Boolean) As IndustryFacility
+
+        Dim FacilityActivity As String = ""
+        Dim ReturnFacility As New IndustryFacility
+
         If IsDefault Then
             Select Case BuildType
                 Case ProductionType.Manufacturing
                     ReturnFacility = CType(DefaultManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.SuperManufacturing
                     ReturnFacility = CType(DefaultSuperManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.CapitalManufacturing
                     ReturnFacility = CType(DefaultCapitalManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.BoosterManufacturing
                     ReturnFacility = CType(DefaultBoosterManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.T3CruiserManufacturing
                     ReturnFacility = CType(DefaultT3CruiserManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.T3DestroyerManufacturing
                     ReturnFacility = CType(DefaultT3DestroyerManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.SubsystemManufacturing
                     ReturnFacility = CType(DefaultSubsystemManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.Invention
                     ReturnFacility = CType(DefaultInventionFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityInvention
+                    FacilityActivity = MY_ActivityInvention
                 Case ProductionType.T3Invention
                     ReturnFacility = CType(DefaultT3InventionFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityInvention
+                    FacilityActivity = MY_ActivityInvention
                 Case ProductionType.Copying
-                    ReturnActivity = ActivityCopying
+                    FacilityActivity = MY_ActivityCopying
                     ReturnFacility = CType(DefaultCopyFacility.Clone, IndustryFacility)
                 Case ProductionType.NoPOSManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(DefaultNoPOSFacility.Clone, IndustryFacility)
                 Case ProductionType.ComponentManufacturing
-                    ReturnActivity = ActivityComponentManufacturing
+                    FacilityActivity = MY_ActivityComponentManufacturing
                     ReturnFacility = CType(DefaultComponentManufacturingFacility.Clone, IndustryFacility)
                 Case ProductionType.CapitalComponentManufacturing
-                    ReturnActivity = ActivityCapComponentManufacturing
+                    FacilityActivity = MY_ActivityCapComponentManufacturing
                     ReturnFacility = CType(DefaultCapitalComponentManufacturingFacility.Clone, IndustryFacility)
                 Case ProductionType.POSFuelBlockManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(DefaultPOSFuelBlockFacility.Clone, IndustryFacility)
                 Case ProductionType.POSLargeShipManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(DefaultPOSLargeShipFacility.Clone, IndustryFacility)
                 Case ProductionType.POSModuleManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(DefaultPOSModuleFacility.Clone, IndustryFacility)
             End Select
 
@@ -1895,124 +2179,59 @@ Public Class ManufacturingFacility
             Select Case BuildType
                 Case ProductionType.Manufacturing
                     ReturnFacility = CType(SelectedManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.SuperManufacturing
                     ReturnFacility = CType(SelectedSuperManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.CapitalManufacturing
                     ReturnFacility = CType(SelectedCapitalManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.BoosterManufacturing
                     ReturnFacility = CType(SelectedBoosterManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.T3CruiserManufacturing
                     ReturnFacility = CType(SelectedT3CruiserManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.T3DestroyerManufacturing
                     ReturnFacility = CType(SelectedT3DestroyerManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.SubsystemManufacturing
                     ReturnFacility = CType(SelectedSubsystemManufacturingFacility.Clone, IndustryFacility)
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                 Case ProductionType.Invention
-                    ReturnActivity = ActivityInvention
+                    FacilityActivity = MY_ActivityInvention
                     ReturnFacility = CType(SelectedInventionFacility.Clone, IndustryFacility)
                 Case ProductionType.T3Invention
-                    ReturnActivity = ActivityInvention
+                    FacilityActivity = MY_ActivityInvention
                     ReturnFacility = CType(SelectedT3InventionFacility.Clone, IndustryFacility)
                 Case ProductionType.Copying
-                    ReturnActivity = ActivityCopying
+                    FacilityActivity = MY_ActivityCopying
                     ReturnFacility = CType(SelectedCopyFacility.Clone, IndustryFacility)
                 Case ProductionType.NoPOSManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(SelectedNoPOSFacility.Clone, IndustryFacility)
                 Case ProductionType.ComponentManufacturing
-                    ReturnActivity = ActivityComponentManufacturing
+                    FacilityActivity = MY_ActivityComponentManufacturing
                     ReturnFacility = CType(SelectedComponentManufacturingFacility.Clone, IndustryFacility)
                 Case ProductionType.CapitalComponentManufacturing
-                    ReturnActivity = ActivityCapComponentManufacturing
+                    FacilityActivity = MY_ActivityCapComponentManufacturing
                     ReturnFacility = CType(SelectedCapitalComponentManufacturingFacility.Clone, IndustryFacility)
                 Case ProductionType.POSFuelBlockManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(SelectedPOSFuelBlockFacility.Clone, IndustryFacility)
                 Case ProductionType.POSLargeShipManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(SelectedPOSLargeShipFacility.Clone, IndustryFacility)
                 Case ProductionType.POSModuleManufacturing
-                    ReturnActivity = ActivityManufacturing
+                    FacilityActivity = MY_ActivityManufacturing
                     ReturnFacility = CType(SelectedPOSModuleFacility.Clone, IndustryFacility)
             End Select
         End If
 
-    End Sub
+        ' Set the activity text here
+        ReturnFacility.Activity = FacilityActivity
 
-    ' Returns the type of production done for the activity and bp data sent
-    Private Function MY_GetProductionType(Activity As String, FacilityType As FacilityTypes, BPGroupID As Integer, BPCategoryID As Integer) As ProductionType
-        Dim SelectedIndyType As ProductionType
-
-        ' Determine if it's a fuel block, module, or big ship that can use a multi-use array in a POS - Need to add as a query, not hard code
-        If FacilityType = FacilityTypes.POS And (BPGroupID = 1136 _
-                                           Or BPCategoryID = 7 Or BPCategoryID = 20 Or BPCategoryID = 22 Or BPCategoryID = 23 _
-                                           Or BPGroupID = 27 Or BPGroupID = 513 Or BPGroupID = 941 _
-                                           Or BPGroupID = 12 Or BPGroupID = 340 Or BPGroupID = 448 Or BPGroupID = 649
-                                           ) And Activity = MY_ActivityManufacturing Then
-            If BPGroupID = 1136 Then
-                SelectedIndyType = ProductionType.POSFuelBlockManufacturing
-            ElseIf BPGroupID = 27 Or BPGroupID = 513 Or BPGroupID = 941 Then
-                SelectedIndyType = ProductionType.POSLargeShipManufacturing
-            ElseIf BPCategoryID = 7 Or BPCategoryID = 20 Or BPCategoryID = 22 Or BPCategoryID = 23 _
-                Or BPGroupID = 12 Or BPGroupID = 340 Or BPGroupID = 448 Or BPGroupID = 649 Then
-                SelectedIndyType = ProductionType.POSModuleManufacturing
-            End If
-        Else
-            Select Case Activity
-                ' TODO look into making these a lookup with the facility type if there are category or groupid's in the tables for them
-                Case MY_ActivityManufacturing
-                    ' Need to load selected manufacturing facility
-                    Select Case BPGroupID
-                        Case ItemIDs.SupercarrierGroupID, ItemIDs.TitanGroupID
-                            SelectedIndyType = ProductionType.SuperManufacturing
-                        Case ItemIDs.BoosterGroupID
-                            SelectedIndyType = ProductionType.BoosterManufacturing
-                        Case ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
-                            SelectedIndyType = ProductionType.CapitalManufacturing
-                        Case ItemIDs.StrategicCruiserGroupID
-                            SelectedIndyType = ProductionType.T3CruiserManufacturing
-                        Case ItemIDs.TacticalDestroyerGroupID
-                            SelectedIndyType = ProductionType.T3DestroyerManufacturing
-                        Case Else
-                            SelectedIndyType = ProductionType.Manufacturing
-
-                            If BPCategoryID = ItemIDs.SubsystemCategoryID Then
-                                SelectedIndyType = ProductionType.SubsystemManufacturing
-                            ElseIf BPCategoryID = ItemIDs.ComponentCategoryID Then
-                                ' Add category for component
-                                If BPGroupID = ItemIDs.CapitalComponentGroupID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID Then
-                                    SelectedIndyType = ProductionType.CapitalComponentManufacturing ' These all use cap components
-                                Else
-                                    SelectedIndyType = ProductionType.ComponentManufacturing
-                                End If
-                            ElseIf NoPOSCategoryIDs.Contains(BPCategoryID) Or BPGroupID = ItemIDs.StationEggGroupID Then
-                                SelectedIndyType = ProductionType.NoPOSManufacturing
-                            End If
-                    End Select
-                Case MY_ActivityComponentManufacturing
-                    SelectedIndyType = ProductionType.ComponentManufacturing
-                Case MY_ActivityCapComponentManufacturing
-                    SelectedIndyType = ProductionType.CapitalComponentManufacturing
-                Case MY_ActivityCopying
-                    SelectedIndyType = ProductionType.Copying
-                Case MY_ActivityInvention
-                    If BPCategoryID = ItemIDs.SubsystemCategoryID Or BPGroupID = ItemIDs.StrategicCruiserGroupID Then
-                        ' Need to invent this at a station or pos
-                        SelectedIndyType = ProductionType.T3Invention
-                    Else
-                        SelectedIndyType = ProductionType.Invention
-                    End If
-            End Select
-        End If
-
-        Return SelectedIndyType
+        Return ReturnFacility
 
     End Function
 
@@ -2107,10 +2326,12 @@ Public Class ManufacturingFacility
     Private Sub SetDefaultVisuals(isDefault As Boolean)
         If isDefault = True Then
             lblFacilityDefault.ForeColor = FacilityLabelDefaultColor
+            lblFacilityDefault.Visible = True
             Call ResetToolTipforDefaultFacilityLabel(False)
             btnFacilitySave.Enabled = False ' don't enable since it's already the default, it's pointless to save it
         Else
             lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
+            lblFacilityDefault.Visible = True
             Call ResetToolTipforDefaultFacilityLabel(True)
             btnFacilitySave.Enabled = True
         End If
@@ -2203,29 +2424,369 @@ Public Class ManufacturingFacility
         End If
     End Sub
 
-    ' Sets the default facility based on a check change
-    Public Sub SetDefaultFacilitybyCheck(IndustryType As ProductionType,
-                                         Optional CompareTime As Boolean = False,
-                                         Optional CompareCost As Boolean = False)
-        Dim SelectedFacility As New IndustryFacility
-        Dim SelectedActivity As String = ""
+    ' Returns the type of production done for the activity and bp data sent
+    Private Function MY_GetProductionType(BPGroupID As Integer, BPCategoryID As Integer, SelectedActivity As String) As ProductionType
+        Dim SelectedIndyType As ProductionType
 
-        Call SelectFacility(IndustryType, False, SelectedFacility, SelectedActivity)
+        Dim FacilityType As FacilityTypes
+        Dim BaseActivity As String
 
-        SelectedFacility.IncludeActivityUsage = chkFacilityIncludeUsage.Checked
+        ' Select the facility type from the combo or default
+        If cmbFacilityType.Text = InitialFacilityTypeComboText Then
+            FacilityType = FacilityTypes.Station
+        Else
+            FacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
+        End If
 
-        ' Set the default based on the checkbox 
-        Call SetFacility(SelectedFacility, IndustryType, CompareCost, CompareTime)
+        ' Select the activity type from combo or default
+        If SelectedActivity = InitialActivityComboText Then
+            ' Use the manufacturing activity for these
+            BaseActivity = MY_ActivityManufacturing
+        Else
+            BaseActivity = SelectedActivity
+        End If
 
+        ' Determine if it's a fuel block, module, or big ship that can use a multi-use array in a POS - Need to add as a query, not hard code
+        If FacilityType = FacilityTypes.POS And (BPGroupID = 1136 _
+                                           Or BPCategoryID = 7 Or BPCategoryID = 20 Or BPCategoryID = 22 Or BPCategoryID = 23 _
+                                           Or BPGroupID = 27 Or BPGroupID = 513 Or BPGroupID = 941 _
+                                           Or BPGroupID = 12 Or BPGroupID = 340 Or BPGroupID = 448 Or BPGroupID = 649
+                                           ) And BaseActivity = MY_ActivityManufacturing Then
+            If BPGroupID = 1136 Then
+                SelectedIndyType = ProductionType.POSFuelBlockManufacturing
+            ElseIf BPGroupID = 27 Or BPGroupID = 513 Or BPGroupID = 941 Then
+                SelectedIndyType = ProductionType.POSLargeShipManufacturing
+            ElseIf BPCategoryID = 7 Or BPCategoryID = 20 Or BPCategoryID = 22 Or BPCategoryID = 23 _
+                Or BPGroupID = 12 Or BPGroupID = 340 Or BPGroupID = 448 Or BPGroupID = 649 Then
+                SelectedIndyType = ProductionType.POSModuleManufacturing
+            End If
+        Else
+            Select Case BaseActivity
+                ' TODO look into making these a lookup with the facility type if there are category or groupid's in the tables for them. 
+                Case MY_ActivityManufacturing
+                    ' Need to load selected manufacturing facility
+                    Select Case BPGroupID
+                        Case ItemIDs.SupercarrierGroupID, ItemIDs.TitanGroupID
+                            SelectedIndyType = ProductionType.SuperManufacturing
+                        Case ItemIDs.BoosterGroupID
+                            SelectedIndyType = ProductionType.BoosterManufacturing
+                        Case ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
+                            SelectedIndyType = ProductionType.CapitalManufacturing
+                        Case ItemIDs.StrategicCruiserGroupID
+                            SelectedIndyType = ProductionType.T3CruiserManufacturing
+                        Case ItemIDs.TacticalDestroyerGroupID
+                            SelectedIndyType = ProductionType.T3DestroyerManufacturing
+                        Case Else
+                            SelectedIndyType = ProductionType.Manufacturing
+
+                            If BPCategoryID = ItemIDs.SubsystemCategoryID Then
+                                SelectedIndyType = ProductionType.SubsystemManufacturing
+                            ElseIf BPCategoryID = ItemIDs.ComponentCategoryID Then
+                                ' Add category for component
+                                If BPGroupID = ItemIDs.CapitalComponentGroupID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID Then
+                                    SelectedIndyType = ProductionType.CapitalComponentManufacturing ' These all use cap components
+                                Else
+                                    SelectedIndyType = ProductionType.ComponentManufacturing
+                                End If
+                            ElseIf NoPOSCategoryIDs.Contains(BPCategoryID) Or BPGroupID = ItemIDs.StationEggGroupID Then
+                                SelectedIndyType = ProductionType.NoPOSManufacturing
+                            End If
+                    End Select
+                Case MY_ActivityComponentManufacturing
+                    SelectedIndyType = ProductionType.ComponentManufacturing
+                Case MY_ActivityCapComponentManufacturing
+                    SelectedIndyType = ProductionType.CapitalComponentManufacturing
+                Case MY_ActivityCopying
+                    SelectedIndyType = ProductionType.Copying
+                Case MY_ActivityInvention
+                    If BPCategoryID = ItemIDs.SubsystemCategoryID Or BPGroupID = ItemIDs.StrategicCruiserGroupID Or BPGroupID = TacticalDestroyerGroupID Then
+                        ' Need to invent this at a station or pos
+                        SelectedIndyType = ProductionType.T3Invention
+                    Else
+                        SelectedIndyType = ProductionType.Invention
+                    End If
+            End Select
+        End If
+
+        Return SelectedIndyType
+
+    End Function
+
+    ' Loads up all the usage for all facilities on this bp into a form
+    Private Sub lblFacilityUsage_DoubleClick(sender As System.Object, e As System.EventArgs) Handles lblFacilityUsage.DoubleClick
+        Dim f1 As New frmUsageViewer
+        Dim RawCostSplit As UsageSplit
+
+        ' Fill up the array to display only if on the bp tab
+        If Not IsNothing(SelectedBlueprint) And MY_SelectedLocation = ProgramLocation.BlueprintTab Then
+
+            ' Manufacturing Facility usage
+            RawCostSplit.UsageName = "Manufacturing Facility Usage"
+            RawCostSplit.UsageValue = GetSelectedManufacturingFacility.FacilityUsage
+            f1.UsageSplits.Add(RawCostSplit)
+
+            If SelectedBlueprint.HasComponents Then
+                ' Component Facility Usage
+                RawCostSplit.UsageName = "Component Facility Usage"
+                RawCostSplit.UsageValue = SelectedComponentManufacturingFacility.FacilityUsage
+                f1.UsageSplits.Add(RawCostSplit)
+
+                ' Capital Component Facility Usage
+                Select Case SelectedBlueprint.GetItemGroupID
+                    Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID,
+                        JumpFreighterGroupID, ItemIDs.FreighterGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
+                        ' Only add cap component usage for ships that use them
+                        RawCostSplit.UsageName = "Capital Component Facility Usage"
+                        RawCostSplit.UsageValue = SelectedCapitalComponentManufacturingFacility.FacilityUsage
+                        f1.UsageSplits.Add(RawCostSplit)
+                End Select
+            End If
+
+            If SelectedBlueprint.GetTechLevel <> BPTechLevel.T1 Then
+                ' Invention Facility
+                RawCostSplit.UsageName = "Invention Usage"
+                RawCostSplit.UsageValue = SelectedInventionFacility.FacilityUsage
+                f1.UsageSplits.Add(RawCostSplit)
+            End If
+
+            If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
+                ' Copy Facility
+                RawCostSplit.UsageName = "Copy Usage"
+                RawCostSplit.UsageValue = SelectedCopyFacility.FacilityUsage
+                f1.UsageSplits.Add(RawCostSplit)
+            End If
+
+            f1.Show()
+        End If
     End Sub
 
-    ' Allows outside the form to update the rig list when saved for the selected facility
-    Public Sub UpdateRigs(RigList As List(Of Integer))
-        MY_SelectedFacility.InstalledModules = RigList
+    ' Updates the cost index text box on the bp tab
+    Private Sub CostIndexUpdateText()
+
+        If MY_SelectedLocation = ProgramLocation.BlueprintTab And Not FirstLoad Then
+            Dim System As String = cmbFacilitySystem.Text
+            Dim Start As Integer = InStr(System, "(")
+            If System.Contains("(") Then
+                frmMain.txtBPUpdateCostIndex.Text = FormatPercent(System.Substring(Start, InStr(System, ")") - (Start + 1)))
+            End If
+        End If
+
     End Sub
 
 #End Region
 
+#Region "Public Functions"
+
+    ' Loads the facility sent into the type of the facility
+    Public Sub MY_UpdateFacility(UpdatedFacility As IndustryFacility)
+        Select Case UpdatedFacility.FacilityProductionType
+            Case ProductionType.BoosterManufacturing
+                SelectedBoosterManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.CapitalComponentManufacturing
+                SelectedCapitalComponentManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.CapitalManufacturing
+                SelectedCapitalManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.ComponentManufacturing
+                SelectedComponentManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.Copying
+                SelectedCopyFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.Invention
+                SelectedInventionFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.Manufacturing
+                SelectedManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.NoPOSManufacturing
+                SelectedNoPOSFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.POSFuelBlockManufacturing
+                SelectedPOSFuelBlockFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.POSLargeShipManufacturing
+                SelectedPOSLargeShipFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.POSModuleManufacturing
+                SelectedPOSModuleFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.SubsystemManufacturing
+                SelectedSubsystemManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.SuperManufacturing
+                SelectedSuperManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3CruiserManufacturing
+                SelectedT3CruiserManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3DestroyerManufacturing
+                SelectedT3DestroyerManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3Invention
+                SelectedT3InventionFacility = CType(UpdatedFacility.Clone, IndustryFacility)
+        End Select
+
+    End Sub
+
+    ' Returns the facilty for the production type sent
+    Public Function GetFacility(BuildType As ProductionType) As IndustryFacility
+
+        ' Select based on input type. If not fully loaded, then load the default and also load the default facility in the facility controls
+        Select Case BuildType
+            Case ProductionType.BoosterManufacturing
+                If SelectedBoosterManufacturingFacility.FullyLoaded Then
+                    Return SelectedBoosterManufacturingFacility
+                Else
+                    Return DefaultBoosterManufacturingFacility
+                End If
+            Case ProductionType.CapitalComponentManufacturing
+                If SelectedCapitalComponentManufacturingFacility.FullyLoaded Then
+                    Return SelectedCapitalComponentManufacturingFacility
+                Else
+                    Return DefaultCapitalComponentManufacturingFacility
+                End If
+            Case ProductionType.CapitalManufacturing
+                If SelectedCapitalManufacturingFacility.FullyLoaded Then
+                    Return SelectedCapitalManufacturingFacility
+                Else
+                    Return DefaultCapitalManufacturingFacility
+                End If
+            Case ProductionType.ComponentManufacturing
+                If SelectedComponentManufacturingFacility.FullyLoaded Then
+                    Return SelectedComponentManufacturingFacility
+                Else
+                    Return DefaultComponentManufacturingFacility
+                End If
+            Case ProductionType.Copying
+                If SelectedCopyFacility.FullyLoaded Then
+                    Return SelectedCopyFacility
+                Else
+                    Return DefaultCopyFacility
+                End If
+            Case ProductionType.Invention
+                If SelectedInventionFacility.FullyLoaded Then
+                    Return SelectedInventionFacility
+                Else
+                    Return DefaultInventionFacility
+                End If
+            Case ProductionType.Manufacturing
+                If SelectedManufacturingFacility.FullyLoaded Then
+                    Return SelectedManufacturingFacility
+                Else
+                    Return DefaultManufacturingFacility
+                End If
+            Case ProductionType.NoPOSManufacturing
+                If SelectedNoPOSFacility.FullyLoaded Then
+                    Return SelectedNoPOSFacility
+                Else
+                    Return DefaultNoPOSFacility
+                End If
+            Case ProductionType.POSFuelBlockManufacturing
+                If SelectedPOSFuelBlockFacility.FullyLoaded Then
+                    Return SelectedPOSFuelBlockFacility
+                Else
+                    Return DefaultPOSFuelBlockFacility
+                End If
+            Case ProductionType.POSLargeShipManufacturing
+                If SelectedPOSLargeShipFacility.FullyLoaded Then
+                    Return SelectedPOSLargeShipFacility
+                Else
+
+                    Return DefaultPOSLargeShipFacility
+                End If
+            Case ProductionType.POSModuleManufacturing
+                If SelectedPOSModuleFacility.FullyLoaded Then
+                    Return SelectedPOSModuleFacility
+                Else
+                    Return DefaultPOSModuleFacility
+                End If
+            Case ProductionType.SubsystemManufacturing
+                If SelectedSubsystemManufacturingFacility.FullyLoaded Then
+                    Return SelectedSubsystemManufacturingFacility
+                Else
+                    Return DefaultSubsystemManufacturingFacility
+                End If
+            Case ProductionType.SuperManufacturing
+                If SelectedSuperManufacturingFacility.FullyLoaded Then
+                    Return SelectedSuperManufacturingFacility
+                Else
+                    Return DefaultSuperManufacturingFacility
+                End If
+            Case ProductionType.T3CruiserManufacturing
+                If SelectedT3CruiserManufacturingFacility.FullyLoaded Then
+                    Return SelectedT3CruiserManufacturingFacility
+                Else
+
+                    Return DefaultT3CruiserManufacturingFacility
+                End If
+            Case ProductionType.T3DestroyerManufacturing
+                If SelectedT3DestroyerManufacturingFacility.FullyLoaded Then
+                    Return SelectedT3DestroyerManufacturingFacility
+                Else
+                    Return DefaultT3DestroyerManufacturingFacility
+                End If
+            Case ProductionType.T3Invention
+                If SelectedT3InventionFacility.FullyLoaded Then
+                    Return SelectedT3InventionFacility
+                Else
+
+                    Return DefaultT3InventionFacility
+                End If
+            Case Else
+                Return Nothing
+        End Select
+
+        Return Nothing
+
+    End Function
+
+    ' Gets the facility for manufacturing based on the bp data on initialization or sent bp data
+    Public Function GetSelectedManufacturingFacility(Optional BPGroupID As Integer = 0, Optional BPCategoryID As Integer = 0) As IndustryFacility
+        Dim TempGroupID As Integer
+        Dim TempCategoryID As Integer
+
+        ' If either one of the numbers are 0, then use the init data
+        If BPGroupID = 0 Or BPCategoryID = 0 Then
+            TempGroupID = MY_SelectedBPGroupID
+            TempCategoryID = MY_SelectedBPCategoryID
+        Else
+            TempGroupID = BPGroupID
+            TempCategoryID = BPCategoryID
+        End If
+
+        ' Determine the production type and then pull the correct facility for manufacturing only based on the category and group id not the activity selected
+        Dim PT As ProductionType = MY_GetProductionType(TempGroupID, TempCategoryID, MY_ActivityManufacturing)
+
+        Return GetFacility(PT)
+
+    End Function
+
+    ' Gets the facility for invention based on the bp data on initialization or sent bp data
+    Public Function GetSelectedInventionFacility(Optional BPGroupID As Integer = 0, Optional BPCategoryID As Integer = 0) As IndustryFacility
+        Dim TempGroupID As Integer
+        Dim TempCategoryID As Integer
+
+        ' If either one of the numbers are 0, then use the init data
+        If BPGroupID = 0 Or BPCategoryID = 0 Then
+            TempGroupID = MY_SelectedBPGroupID
+            TempCategoryID = MY_SelectedBPCategoryID
+        Else
+            TempGroupID = BPGroupID
+            TempCategoryID = BPCategoryID
+        End If
+
+        ' Determine the production type and then pull the correct facility for manufacturing only based on the category and group id not the activity selected
+        Dim PT As ProductionType = MY_GetProductionType(TempGroupID, TempCategoryID, MY_ActivityInvention)
+
+        Return GetFacility(PT)
+
+    End Function
+
+    ' Just return the current facility selected
+    Public Function GetSelectedFacility() As IndustryFacility
+        Return MY_SelectedFacility
+    End Function
+
+    ' Returns if the facility is fully loaded or not
+    Public Function FullyLoaded() As Boolean
+        Return MY_SelectedFacility.FullyLoaded
+    End Function
+
+    ' Updates the usage value   
+    Public Sub UpdateUsage(ToolTipText As String)
+        lblFacilityUsage.Text = FormatNumber(MY_SelectedFacility.FacilityUsage)
+        Call mainToolTip.SetToolTip(lblFacilityUsage, ToolTipText)
+    End Sub
+
+#End Region
 End Class
 
 ' What type of view are we looking at
@@ -2233,6 +2794,11 @@ Public Enum FacilityView
     FullControls = 0 ' for BP tab right now
     LimitedControls = 1 ' for use on manufacturing tab now
     NoView = 2 ' For not connecting this to a tab or facilty view
+End Enum
+
+Public Enum ProgramLocation
+    BlueprintTab = 0
+    ManufacturingTab = 1
 End Enum
 
 ' Types of actual activities that you can conduct in a facility
@@ -2272,6 +2838,8 @@ Public Enum ProductionType
 End Enum
 
 Public Enum ItemIDs
+    None = 0
+
     ' These are all the capital ships that use capital parts
     CapitalIndustrialShipGroupID = 883
     CarrierGroupID = 547
@@ -2299,7 +2867,8 @@ Public Enum ItemIDs
     BattleshipGroupID = 27
     ModuleCategoryID = 7
 
-    ShipCategoryID = 6 ' for loading invention and copying 
+    ShipCategoryID = 6 ' for loading invention and copying and basic t1
+    FrigateGroupID = 25
 
     ConstructionComponentsGroupID = 334 ' Use this for all non-capital components
     ComponentCategoryID = 17
@@ -2332,6 +2901,7 @@ Public Class IndustryFacility
     Public FacilityTypeID As Integer ' type ID for facility - type of outpost, etc
     Public FacilityProductionType As ProductionType ' What we are doing at this facility
     Public ActivityID As Integer ' Activity code of the facility
+    Public Activity As String ' String value of the activity
     Public RegionName As String ' Region of this facility
     Public RegionID As Long
     Public SolarSystemName As String ' System where this is located
@@ -2340,11 +2910,13 @@ Public Class IndustryFacility
     Public FWUpgradeLevel As Integer ' Level of the FW upgrade for this system (if applies)
     Public CostIndex As Double ' Cost index for the system and activity from CREST
     Public ActivityCostPerSecond As Double ' The cost to conduct the activity for this facility per second - my setting for POS and ECs
-    Public InstalledModules As List(Of Integer) ' For EC use, to list all items installed on the structure
     Public IsDefault As Boolean
     Public IncludeActivityCost As Boolean ' This is the total cost of materials to do the activiy
     Public IncludeActivityTime As Boolean ' This is the time for doing the activity
     Public IncludeActivityUsage As Boolean ' This is the cost of using the facility only
+
+    Public FacilityUsage As Double ' The usage charged by this facility, set after bp has run
+    Public UsageToolTipText As String ' The text to display for the usage label
 
     ' Nullable fields
     Public TaxRate As Double ' The tax rate
@@ -2352,6 +2924,8 @@ Public Class IndustryFacility
     Public MaterialMultiplier As Double ' The bonus material percentage for materials used in this facility
     Public TimeMultiplier As Double ' The bonus to time to conduct an activity in this facility
     Public CostMultiplier As Double ' The bonus to cost to conduct an activity in this facility
+
+    Public FullyLoaded As Boolean ' This facility was fully loaded in all parts
 
     ' Default multiplier rates if we can't find them
     Public Const DefaultTaxRate As Double = 0
@@ -2364,8 +2938,10 @@ Public Class IndustryFacility
         FacilityID = 0
         FacilityName = None
         FacilityType = FacilityTypes.None
+        FacilityTypeID = 0
         FacilityProductionType = ProductionType.None
         ActivityID = 0
+        Activity = ""
         RegionName = None
         RegionID = 0
         SolarSystemName = None
@@ -2373,19 +2949,19 @@ Public Class IndustryFacility
         SolarSystemSecurity = 0
         FWUpgradeLevel = 0
         CostIndex = 0
-        MaterialMultiplier = 0
-        TimeMultiplier = 0
-        CostMultiplier = 0
         ActivityCostPerSecond = 0
-        TaxRate = 0
-
+        IsDefault = False
         IncludeActivityCost = False
         IncludeActivityTime = False
         IncludeActivityUsage = False
 
-        InstalledModules = New List(Of Integer)
+        TaxRate = 0
 
-        IsDefault = False
+        MaterialMultiplier = 0
+        TimeMultiplier = 0
+        CostMultiplier = 0
+
+        FullyLoaded = False
 
     End Sub
 
@@ -2399,23 +2975,26 @@ Public Class IndustryFacility
         CopyOfMe.FacilityTypeID = FacilityTypeID
         CopyOfMe.FacilityProductionType = FacilityProductionType
         CopyOfMe.ActivityID = ActivityID
+        CopyOfMe.Activity = Activity
         CopyOfMe.RegionName = RegionName
         CopyOfMe.RegionID = RegionID
         CopyOfMe.SolarSystemName = SolarSystemName
         CopyOfMe.SolarSystemID = SolarSystemID
         CopyOfMe.SolarSystemSecurity = SolarSystemSecurity
         CopyOfMe.FWUpgradeLevel = FWUpgradeLevel
-        CopyOfMe.TaxRate = TaxRate
-        CopyOfMe.MaterialMultiplier = MaterialMultiplier
-        CopyOfMe.TimeMultiplier = TimeMultiplier
-        CopyOfMe.CostMultiplier = CostMultiplier
         CopyOfMe.CostIndex = CostIndex
         CopyOfMe.ActivityCostPerSecond = ActivityCostPerSecond
-        CopyOfMe.InstalledModules = InstalledModules
         CopyOfMe.IsDefault = IsDefault
         CopyOfMe.IncludeActivityCost = IncludeActivityCost
         CopyOfMe.IncludeActivityTime = IncludeActivityTime
         CopyOfMe.IncludeActivityUsage = IncludeActivityUsage
+        CopyOfMe.FacilityUsage = FacilityUsage
+        CopyOfMe.UsageToolTipText = UsageToolTipText
+        CopyOfMe.TaxRate = TaxRate
+        CopyOfMe.MaterialMultiplier = MaterialMultiplier
+        CopyOfMe.TimeMultiplier = TimeMultiplier
+        CopyOfMe.CostMultiplier = CostMultiplier
+        CopyOfMe.FullyLoaded = FullyLoaded
 
         Return CopyOfMe
 
@@ -2428,13 +3007,13 @@ Public Class IndustryFacility
 
         ' Look up all the data in two queries - first base data and try to get the multipliers and cost data - it should only be there for saved outposts (which are being removed)
         SQL = "SELECT SF.FACILITY_ID, SF.FACILITY_TYPE, SF.FACILITY_TYPE_ID, "
-        SQL &= "FACILITY_PRODUCTION_TYPES.ACTIVITY_ID, "
+        SQL &= "FACILITY_PRODUCTION_TYPES.ACTIVITY_ID, RAM_ACTIVITIES.activityName, "
         SQL &= "REGIONS.regionName, REGIONS.regionID, SOLAR_SYSTEMS.solarSystemName, SOLAR_SYSTEMS.solarSystemID, "
         SQL &= "CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL, SF.ACTIVITY_COST_PER_SECOND, "
         SQL &= "CASE WHEN COST_INDEX IS NULL THEN 0 ELSE COST_INDEX END AS COST_INDEX,"
         SQL &= "SF.INCLUDE_ACTIVITY_COST, SF.INCLUDE_ACTIVITY_TIME, SF.INCLUDE_ACTIVITY_USAGE, "
         SQL &= "SF.FACILITY_TAX, SF.MATERIAL_MULTIPLIER, SF.TIME_MULTIPLIER, SF.COST_MULTIPLIER, security "
-        SQL &= "FROM SAVED_FACILITIES AS SF, FACILITY_PRODUCTION_TYPES, REGIONS, SOLAR_SYSTEMS, FACILITY_TYPES "
+        SQL &= "FROM SAVED_FACILITIES AS SF, FACILITY_PRODUCTION_TYPES, REGIONS, SOLAR_SYSTEMS, FACILITY_TYPES, RAM_ACTIVITIES "
         SQL &= "LEFT JOIN FW_SYSTEM_UPGRADES On FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = SF.SOLAR_SYSTEM_ID "
         SQL &= "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES "
         SQL &= "ON INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = SF.SOLAR_SYSTEM_ID "
@@ -2443,6 +3022,7 @@ Public Class IndustryFacility
         SQL &= "AND SF.REGION_ID = REGIONS.regionID "
         SQL &= "AND SF.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
         SQL &= "AND SF.FACILITY_TYPE = FACILITY_TYPES.FACILITY_TYPE_ID "
+        SQL &= "AND FACILITY_PRODUCTION_TYPES.ACTIVITY_ID = RAM_ACTIVITIES.activityID "
         SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityTab))
 
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
@@ -2473,41 +3053,44 @@ Public Class IndustryFacility
                 FacilityTypeID = .GetInt32(2)
                 FacilityProductionType = InitialProductionType
                 ActivityID = .GetInt32(3)
-                RegionName = .GetString(4)
-                RegionID = .GetInt64(5)
-                SolarSystemName = .GetString(6)
-                SolarSystemID = .GetInt64(7)
-                SolarSystemSecurity = .GetDouble(18)
-                FWUpgradeLevel = .GetInt32(8)
-                ActivityCostPerSecond = .GetFloat(9)
-                CostIndex = .GetFloat(10)
-                IncludeActivityCost = CBool(.GetInt32(11))
-                IncludeActivityTime = CBool(.GetInt32(12))
-                IncludeActivityUsage = CBool(.GetInt32(13))
+                Activity = .GetString(4)
+                RegionName = .GetString(5)
+                RegionID = .GetInt64(6)
+                ' Paste the cost index to the solar system name
+                CostIndex = .GetFloat(11)
+                SolarSystemName = .GetString(7) & " (" & FormatNumber(CostIndex, 3) & ")"
+                SolarSystemID = .GetInt64(8)
+                SolarSystemSecurity = .GetDouble(19)
+                FWUpgradeLevel = .GetInt32(9)
+                ActivityCostPerSecond = .GetFloat(10)
+
+                IncludeActivityCost = CBool(.GetInt32(12))
+                IncludeActivityTime = CBool(.GetInt32(13))
+                IncludeActivityUsage = CBool(.GetInt32(14))
 
                 ' Save these values for later lookup - use -1 for null indicator
-                If IsDBNull(.GetValue(14)) Then
+                If IsDBNull(.GetValue(15)) Then
                     TaxRate = -1
                 Else
-                    TaxRate = .GetDouble(14)
-                End If
-
-                If IsDBNull(.GetValue(15)) Then
-                    MaterialMultiplier = -1
-                Else
-                    MaterialMultiplier = .GetDouble(15)
+                    TaxRate = .GetDouble(15)
                 End If
 
                 If IsDBNull(.GetValue(16)) Then
-                    TimeMultiplier = -1
+                    MaterialMultiplier = -1
                 Else
-                    TimeMultiplier = .GetDouble(16)
+                    MaterialMultiplier = .GetDouble(16)
                 End If
 
                 If IsDBNull(.GetValue(17)) Then
+                    TimeMultiplier = -1
+                Else
+                    TimeMultiplier = .GetDouble(17)
+                End If
+
+                If IsDBNull(.GetValue(18)) Then
                     CostMultiplier = -1
                 Else
-                    CostMultiplier = .GetDouble(17)
+                    CostMultiplier = .GetDouble(18)
                 End If
 
                 ' Now, depending on type, look up the name, cost index, tax, and multipliers from the station_facilities table (this is mainly for speed)
@@ -2566,22 +3149,7 @@ Public Class IndustryFacility
                     GoTo ExitBlock
                 End If
 
-                ' If this is a upwell structure, then look up any saved modules
-                If FacilityType = FacilityTypes.UpwellStructures Then
-                    rsLoader.Close()
-                    SQL = "SELECT INSTALLED_MODULE_ID FROM FACILITY_INSTALLED_MODULES "
-                    SQL &= "WHERE CHARACTER_ID = {0} AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}"
-                    DBCommand = New SQLiteCommand(String.Format(SQL, UsedCharID, CStr(InitialProductionType), CStr(FacilityTab)), EVEDB.DBREf)
-                    rsLoader = DBCommand.ExecuteReader
-                    rsLoader.Read()
-
-                    InstalledModules = New List(Of Integer)
-
-                    While rsLoader.Read()
-                        InstalledModules.Add(rsLoader.GetInt32(0))
-                    End While
-                End If
-
+                FullyLoaded = True
                 IsDefault = True ' Always loading default with initialize
 
             End With
@@ -2609,7 +3177,7 @@ ExitBlock:
         Try
 
             ' See if the record exists - only save one set of facilities for now
-            SQL = String.Format("Select 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
+            SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
                             CInt(FacilityProductionType), CInt(ViewType), CharacterID)
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
@@ -2640,7 +3208,7 @@ ExitBlock:
             Else
                 ' Insert
                 SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15})",
-                                    CharacterID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, FacilityType, FacilityTypeID,
+                                    CharacterID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, CInt(FacilityType), FacilityTypeID,
                                     RegionID, SolarSystemID, ActivityCostPerSecond,
                                     CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage),
                                     TaxRate, MaterialMultiplier, TimeMultiplier, CostMultiplier)

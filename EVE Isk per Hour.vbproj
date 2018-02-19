@@ -160,6 +160,7 @@
     <Compile Include="Blueprint.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="EngineeringCitadel.vb" />
+    <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
     <Compile Include="EVEEffects.vb" />
     <Compile Include="frmBonusPopout.Designer.vb">
@@ -168,10 +169,22 @@
     <Compile Include="frmBonusPopout.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmCitadelFitting.designer.vb">
-      <DependentUpon>frmCitadelFitting.vb</DependentUpon>
+    <Compile Include="frmLoadCharacterESI.Designer.vb">
+      <DependentUpon>frmLoadCharacterESI.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmCitadelFitting.vb">
+    <Compile Include="frmLoadCharacterESI.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmLoadESIAuthorization.Designer.vb">
+      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmLoadESIAuthorization.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmUpwellStructureFitting.designer.vb">
+      <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmUpwellStructureFitting.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmFacilityTest.Designer.vb">
@@ -415,7 +428,6 @@
     </Compile>
     <Compile Include="Globals.vb" />
     <Compile Include="EVEIndustryJobs.vb" />
-    <Compile Include="IndustryTeam.vb" />
     <Compile Include="ManufacturingListView.Designer.vb">
       <DependentUpon>ManufacturingListView.vb</DependentUpon>
     </Compile>
@@ -481,8 +493,14 @@
     <EmbeddedResource Include="frmBonusPopout.resx">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmCitadelFitting.resx">
-      <DependentUpon>frmCitadelFitting.vb</DependentUpon>
+    <EmbeddedResource Include="frmLoadCharacterESI.resx">
+      <DependentUpon>frmLoadCharacterESI.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmLoadESIAuthorization.resx">
+      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmUpwellStructureFitting.resx">
+      <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmFacilityTest.resx">
       <DependentUpon>frmFacilityTest.vb</DependentUpon>

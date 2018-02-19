@@ -70,10 +70,7 @@ Public Class frmMain
         Dim BPName As String
         Dim BuildType As String
         Dim Inputs As String
-        Dim SentFrom As String
-        Dim BuildTeam As IndustryTeam
-        Dim ComponentTeam As IndustryTeam
-        Dim CopyTeam As IndustryTeam
+        Dim SentFrom As SentFromLocation
         Dim BuildFacility As IndustryFacility
         Dim ComponentFacility As IndustryFacility
         Dim CapComponentFacility As IndustryFacility
@@ -117,20 +114,12 @@ Public Class frmMain
     Private InventionDecryptorsLoaded As Boolean
     Private T3DecryptorsLoaded As Boolean
 
-    ' If we doubleclick an item from Manufacturing Tab
-    Private SentFromManufacturingTab As Boolean
-
     ' If we are loading from history
     Private LoadingBPfromHistory As Boolean
 
     ' Updates for threading
     Public PriceHistoryUpdateCount As Integer
     Public PriceOrdersUpdateCount As Integer
-
-    ' Same with shopping list
-    Public SentFromShoppingList As Boolean
-
-    Private BlueprintBuildFacility As IndustryFacility ' for knowing what facility we used to add to shopping list data
 
     ' BP stats
     Private OwnedBP As Boolean
@@ -304,7 +293,6 @@ Public Class frmMain
         Dim UserAppDataPath As String = ""
         Dim CREST As New EVECREST
 
-        FirstLoad = True
         ErrorTracker = ""
 
         ' Set developer flag
@@ -327,6 +315,8 @@ Public Class frmMain
 
         ' This call is required by the designer.
         InitializeComponent()
+
+        FirstLoad = True
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
@@ -367,30 +357,7 @@ Public Class frmMain
         ServicePointManager.UseNagleAlgorithm = False
         ServicePointManager.Expect100Continue = False
 
-        ' Set these here for later use
-        'Call SetNoPOSGroupIDs()
-
         Dim Timecheck As DateTime
-
-        ' Update CREST Data - Teams
-        'If UserApplicationSettings.LoadCRESTTeamDataonStartup Then
-        '    Application.UseWaitCursor = True
-        '    Application.DoEvents()
-        '    Timecheck = Now
-        '    Call SetProgress("Updating Industry Teams...")
-        '    Call CREST.UpdateIndustryTeams()
-        '    Debug.Print("Teams " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
-        '    Timecheck = Now
-        '    Call SetProgress("Updating Industry Team Auctions...")
-        '    Call CREST.UpdateIndustryTeamAuctions()
-        '    Debug.Print("Team Auctions " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
-        '    Timecheck = Now
-        '    Call SetProgress("Updating Industry Specialties...")
-        '    Call CREST.UpdateIndustrySpecialties()
-        '    Debug.Print("Specs " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
-        '    Application.UseWaitCursor = False
-        '    Application.DoEvents()
-        'End If
 
         ' CREST Facilities
         If UserApplicationSettings.LoadCRESTFacilityDataonStartup Then
@@ -400,7 +367,6 @@ Public Class frmMain
             Call SetProgress("Updating Industry Facilities...")
             Application.DoEvents()
             Call CREST.UpdateIndustryFacilties(Nothing, Nothing, True)
-            Debug.Print("Facilities " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
             Timecheck = Now
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -415,7 +381,6 @@ Public Class frmMain
             Timecheck = Now
             Call SetProgress("Updating Avg/Adj Market Prices...")
             Call CREST.UpdateAdjAvgMarketPrices()
-            Debug.Print("Market Prices " & CStr(DateDiff(DateInterval.Second, Timecheck, Now)))
             Application.UseWaitCursor = False
             Application.DoEvents()
         End If
@@ -440,9 +405,6 @@ Public Class frmMain
             mnuLPStore.Visible = False
             tabMain.TabPages.Remove(tabPI)
         End If
-
-        ' Don't include invention teams until CCP implements it
-        tabCalcTeams.TabPages.Remove(tabCalcTeamInvention)
 
         ' Load the user settings
         Call SetProgress("Loading User Settings...")
@@ -473,26 +435,6 @@ Public Class frmMain
 
         SelectedTower = AllSettings.LoadPOSSettings
 
-        ' Teams (save the default teams for loading defaults later)
-        Call SetAllTeams(True)
-
-        BPTeamComboLoaded = False
-        CalcManufacturingTeamComboLoaded = False
-        CalcComponentManufacturingTeamComboLoaded = False
-        CalcInventionTeamComboLoaded = False
-        CalcCopyTeamComboLoaded = False
-        LoadTeambyCombo = True
-
-        ' Load up the BP facilities
-        ' Call SetAllFacilities(True)
-
-        ' Init combo loading
-        'LoadingFacilityActivities = False
-        'LoadingFacilityRegions = False
-        'LoadingFacilityRegions = False
-        'LoadingFacilityTypes = False
-        'LoadingFacilities = False
-
         ' Load the character
         Call SetProgress("Loading Character Data from API...")
         Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
@@ -516,6 +458,12 @@ Public Class frmMain
             MaximumProductionLines = 1
             MaximumLaboratoryLines = 1
         End If
+
+        ' Initialize the BP facility
+        Call BlueprintTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab)
+
+        ' Load up the Manufacturing tab facilities
+        'Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProductionType.Manufacturing)
 
         ' Init Tool tips
         If UserApplicationSettings.ShowToolTips Then
@@ -712,8 +660,6 @@ Public Class frmMain
 
         ' If there is an error in price updates, only show once
         ShownPriceUpdateError = False
-        SentFromManufacturingTab = False
-        SentFromShoppingList = False
 
         Call InitManufacturingTab()
 
@@ -1195,59 +1141,6 @@ Public Class frmMain
 
     'End Sub
 
-    ' Loads all the teams
-    Private Sub SetAllTeams(LoadDefault As Boolean)
-
-        SelectedBPManufacturingTeam = NoTeam
-        DefaultBPManufacturingTeam = SelectedBPManufacturingTeam
-        SelectedBPComponentManufacturingTeam = NoTeam
-        DefaultBPComponentManufacturingTeam = SelectedBPComponentManufacturingTeam
-        SelectedBPCopyTeam = NoTeam
-        DefaultBPCopyTeam = SelectedBPCopyTeam
-        SelectedBPInventionTeam = NoTeam
-        DefaultBPInventionTeam = SelectedBPInventionTeam
-
-        SelectedCalcManufacturingTeam = NoTeam
-        DefaultCalcManufacturingTeam = SelectedCalcManufacturingTeam
-        SelectedCalcComponentManufacturingTeam = NoTeam
-        DefaultCalcComponentManufacturingTeam = SelectedCalcComponentManufacturingTeam
-        SelectedCalcCopyTeam = NoTeam
-        DefaultCalcCopyTeam = SelectedCalcCopyTeam
-        SelectedCalcInventionTeam = NoTeam
-        DefaultCalcInventionTeam = SelectedCalcInventionTeam
-
-        'If Not LoadDefault Then
-        '    Call SelectedBPManufacturingTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedBPManufacturingTeam, BPTab))
-        '    Call SelectedBPComponentManufacturingTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedBPComponentManufacturingTeam, BPTab))
-        '    Call SelectedBPCopyTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedBPCopyTeam, BPTab))
-        '    Call SelectedBPInventionTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedBPInventionTeam, BPTab))
-
-        '    Call SelectedCalcManufacturingTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedCalcManufacturingTeam, CalcTab))
-        '    Call SelectedCalcComponentManufacturingTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedCalcComponentManufacturingTeam, CalcTab))
-        '    Call SelectedCalcCopyTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedCalcCopyTeam, CalcTab))
-        '    Call SelectedCalcInventionTeam.LoadTeamFromSettings(LoadTeamSettingsfromTeam(SelectedCalcInventionTeam, CalcTab))
-        'Else
-        '    Call SelectedBPManufacturingTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Manufacturing, BPTab))
-        '    DefaultBPManufacturingTeam = SelectedBPManufacturingTeam
-        '    Call SelectedBPComponentManufacturingTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.ComponentManufacturing, BPTab))
-        '    DefaultBPComponentManufacturingTeam = SelectedBPComponentManufacturingTeam
-        '    Call SelectedBPCopyTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Copy, BPTab))
-        '    DefaultBPCopyTeam = SelectedBPCopyTeam
-        '    Call SelectedBPInventionTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Invention, BPTab))
-        '    DefaultBPInventionTeam = SelectedBPInventionTeam
-
-        '    Call SelectedCalcManufacturingTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Manufacturing, CalcTab))
-        '    DefaultCalcManufacturingTeam = SelectedCalcManufacturingTeam
-        '    Call SelectedCalcComponentManufacturingTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.ComponentManufacturing, CalcTab))
-        '    DefaultCalcComponentManufacturingTeam = SelectedCalcComponentManufacturingTeam
-        '    Call SelectedCalcCopyTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Copy, CalcTab))
-        '    DefaultCalcCopyTeam = SelectedCalcCopyTeam
-        '    Call SelectedCalcInventionTeam.LoadTeamFromSettings(AllSettings.LoadTeamSettings(TeamType.Invention, CalcTab))
-        '    DefaultCalcInventionTeam = SelectedCalcInventionTeam
-        'End If
-
-    End Sub
-
     Private Sub LoadCharacterNamesinMenu()
         ' Default character set, now set the menu name on the panel
         mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
@@ -1518,19 +1411,6 @@ Public Class frmMain
 
     End Sub
 
-    ' Loads the team settings from a current team
-    Private Function LoadTeamSettingsfromTeam(SentTeam As IndustryTeam, SentTab As String) As TeamSettings
-        Dim TempSettings As New TeamSettings
-
-        With TempSettings
-            .TeamID = SentTeam.TeamID
-            .TeamTab = SentTab
-        End With
-
-        Return TempSettings
-
-    End Function
-
     '' Sets the categories that must be made in a station/outpost
     'Private Sub SetNoPOSGroupIDs()
     '    Dim SQL As String
@@ -1632,19 +1512,20 @@ Public Class frmMain
     End Sub
 
     ' Loads a BP sent from a double click on shopping list or manufacturing list, or loading history
-    Public Sub LoadBPfromEvent(BPID As Long, BuildType As String, Inputs As String, SentFrom As String,
-                                     BuildTeam As IndustryTeam, ComponentTeam As IndustryTeam, CopyTeam As IndustryTeam,
-                                     BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, CapCompentFacility As IndustryFacility,
-                                     InventionFacility As IndustryFacility, CopyFacility As IndustryFacility,
-                                     IncludeTaxes As Boolean, IncludeFees As Boolean,
-                                     MEValue As String, TEValue As String, SentRuns As String,
-                                     ManufacturingLines As String, LaboratoryLines As String, NumBPs As String,
-                                     AddlCosts As String, PPUCheck As Boolean,
-                                     Optional CompareType As String = "")
+    Public Sub LoadBPfromEvent(BPID As Long, BuildType As String, Inputs As String, SentFrom As SentFromLocation,
+                                BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, CapCompentFacility As IndustryFacility,
+                                InventionFacility As IndustryFacility, CopyFacility As IndustryFacility,
+                                IncludeTaxes As Boolean, IncludeFees As Boolean,
+                                MEValue As String, TEValue As String, SentRuns As String,
+                                ManufacturingLines As String, LaboratoryLines As String, NumBPs As String,
+                                AddlCosts As String, PPUCheck As Boolean,
+                                Optional CompareType As String = "")
         Dim BPTech As Integer
-        Dim BPDecryptor As New Decryptor
+        Dim CurrentBPCategoryID As Integer
+        Dim CurrentBPGroupID As Integer
+        Dim BPHasComponents As Boolean
         Dim DecryptorName As String = None
-
+        Dim BPDecryptor As New Decryptor
         Dim readerBP As SQLiteDataReader
         Dim readerRelic As SQLiteDataReader
         Dim SQL As String
@@ -1662,7 +1543,7 @@ Public Class frmMain
         AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
         BPTech = readerBP.GetInt32(1)
 
-        If BPTech = BlueprintTechLevel.T2 Or BPTech = BlueprintTechLevel.T3 Then
+        If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
             ' Set the decryptor
             If Inputs <> None Then
                 If Not CBool(InStr(Inputs, "No Decryptor")) Then
@@ -1718,96 +1599,24 @@ Public Class frmMain
             txtBPNumBPs.Text = NumBPs
         End If
 
-        ' We are always going to load up manufacturing first
-        'cmbBPFacilityActivities.Text = ActivityManufacturing
-
-        If SentFrom = "Manufacturing Tab" Then ' Or SentFrom = "History" Then
-            SentFromManufacturingTab = True
-            SentFromShoppingList = False
-
-            SelectedBPComponentManufacturingFacility = CType(ComponentFacility.Clone, IndustryFacility)
-            SelectedBPCapitalComponentManufacturingFacility = CType(CapCompentFacility.Clone, IndustryFacility)
-            If BPTech = 2 Then
-                SelectedBPInventionFacility = CType(InventionFacility.Clone, IndustryFacility)
-                SelectedBPCopyFacility = CType(CopyFacility.Clone, IndustryFacility)
-
-                chkBPIncludeCopyCosts.Checked = SelectedBPCopyFacility.IncludeActivityCost
-                chkBPIncludeCopyTime.Checked = SelectedBPCopyFacility.IncludeActivityTime
-
-                chkBPIncludeInventionCosts.Checked = SelectedBPInventionFacility.IncludeActivityCost
-                chkBPIncludeInventionTime.Checked = SelectedBPInventionFacility.IncludeActivityTime
-
-            ElseIf BPTech = 3 Then
-                SelectedBPT3InventionFacility = CType(InventionFacility.Clone, IndustryFacility)
-                chkBPIncludeT3Costs.Checked = SelectedBPT3InventionFacility.IncludeActivityCost
-                chkBPIncludeT3Time.Checked = SelectedBPT3InventionFacility.IncludeActivityTime
-            End If
-
-            '' Reset the current bp selection to override what is there
-            'CurrentBPCategoryID = readerBP.GetInt32(3)
-            'CurrentBPGroupID = readerBP.GetInt32(2)
-
-            Dim SelectedIndyType As ProductionType ' = GetProductionType(ActivityManufacturing, CurrentBPGroupID, CurrentBPCategoryID, BuildFacility.FacilityType)
-
-            ' Set the correct facility to match what was sent
-            Select Case SelectedIndyType
-                Case ProductionType.Manufacturing
-                    SelectedBPManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.POSFuelBlockManufacturing
-                    SelectedBPPOSFuelBlockFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.POSLargeShipManufacturing
-                    SelectedBPPOSLargeShipFacility = CType(BuildFacility.Clone, IndustryFacility)
-                    SelectedBPManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility) ' This is also the default POS for everything else, so save
-                Case ProductionType.POSModuleManufacturing
-                    SelectedBPPOSModuleFacility = CType(BuildFacility.Clone, IndustryFacility)
-                    SelectedBPManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility) ' This is also the default POS for everything else, so save
-                Case ProductionType.BoosterManufacturing
-                    SelectedBPBoosterManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.CapitalManufacturing
-                    SelectedBPCapitalManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.SuperManufacturing
-                    SelectedBPSuperManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.T3CruiserManufacturing
-                    SelectedBPT3CruiserManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.T3DestroyerManufacturing
-                    SelectedBPT3DestroyerManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.SubsystemManufacturing
-                    SelectedBPSubsystemManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.ComponentManufacturing
-                    SelectedBPComponentManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.CapitalComponentManufacturing
-                    SelectedBPCapitalComponentManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.Invention
-                    SelectedBPInventionFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.T3Invention
-                    SelectedBPT3InventionFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.Copying
-                    SelectedBPCopyFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case ProductionType.NoPOSManufacturing
-                    SelectedBPNoPOSFacility = CType(BuildFacility.Clone, IndustryFacility)
-                Case Else
-                    SelectedBPManufacturingFacility = CType(BuildFacility.Clone, IndustryFacility)
-            End Select
-
-            '' Make sure to set they type of facility we are using
-            'LoadingFacilityTypes = True
-            'cmbBPFacilityType.Text = BuildFacility.FacilityType
-            'chkBPFacilityIncludeUsage.Checked = BuildFacility.IncludeActivityUsage
-            'LoadingFacilityTypes = False
-
-            ' Set the teams
-            SelectedBPManufacturingTeam = CType(BuildTeam.Clone, IndustryTeam)
-            SelectedBPComponentManufacturingTeam = CType(ComponentTeam.Clone, IndustryTeam)
-            SelectedBPCopyTeam = CType(CopyTeam.Clone, IndustryTeam)
-
-            ' Always start with manufacturing team
-            cmbBPTeamActivities.Text = ActivityManufacturing
-            cmbBPTeam.Text = SelectedBPManufacturingTeam.TeamName & " - " & FormatPercent(SelectedBPManufacturingTeam.CostModifier / 100, 0)
-
-        Else ' just use BP Tab settings with basic stuff - use bp facilities
-            SentFromManufacturingTab = False
-            SentFromShoppingList = True
+        ' We need to set each facility individually for later use
+        BlueprintTabFacility.MY_UpdateFacility(CType(BuildFacility.Clone, IndustryFacility))
+        BlueprintTabFacility.MY_UpdateFacility(CType(ComponentFacility.Clone, IndustryFacility))
+        BlueprintTabFacility.MY_UpdateFacility(CType(CapCompentFacility.Clone, IndustryFacility))
+        If BPTech = BPTechLevel.T2 Or BPTech = 3 Then
+            BlueprintTabFacility.MY_UpdateFacility(CType(InventionFacility.Clone, IndustryFacility))
         End If
+        If BPTech = 2 Then
+            BlueprintTabFacility.MY_UpdateFacility(CType(CopyFacility.Clone, IndustryFacility))
+        End If
+
+        ' Reset the current bp selection to override what is there
+        CurrentBPCategoryID = readerBP.GetInt32(3)
+        CurrentBPGroupID = readerBP.GetInt32(2)
+        BPHasComponents = DoesBPHaveBuildableComponents(BPID)
+
+        ' Load the manufacturing BP here
+        BlueprintTabFacility.MY_LoadFacility(CurrentBPGroupID, CurrentBPCategoryID, BPTech, BPHasComponents, False, BuildFacility)
 
         ' Common to all settings
         If CompareType <> "" Then ' if "" then let the BP tab handle it
@@ -1834,71 +1643,21 @@ Public Class frmMain
         UpdatingCheck = False
 
         ' Set the optimize check
+        UpdatingCheck = True
         If BuildType = "Build/Buy" Then
             chkBPBuildBuy.Checked = True
         Else
             chkBPBuildBuy.Checked = False
         End If
+        UpdatingCheck = False
 
         ' Show the BP tab 
         tabMain.SelectedTab = tabBlueprints
         readerBP.Close()
 
         ' Finally, load the blueprint with data in the row selected like it was just selected
-        If SentFrom = "History" Then
-            Call SelectBlueprint(False, True)
-        Else
-            Call SelectBlueprint(False)
-        End If
+        Call SelectBlueprint(True, SentFrom)
 
-    End Sub
-
-    ' Loads up all the usage for all facilities on this bp into a form
-    Private Sub lblBPFacilityUsage_DoubleClick(sender As System.Object, e As System.EventArgs)
-        Dim f1 As New frmUsageViewer
-        Dim RawCostSplit As UsageSplit
-
-        ' Fill up the array to display
-        If Not IsNothing(SelectedBlueprint) Then
-
-            ' Manufacturing Facility usage
-            RawCostSplit.UsageName = "Manufacturing Facility Usage"
-            RawCostSplit.UsageValue = SelectedBlueprint.GetManufacturingFacilityUsage
-            f1.UsageSplits.Add(RawCostSplit)
-
-            If SelectedBlueprint.HasComponents Then
-                ' Component Facility Usage
-                RawCostSplit.UsageName = "Component Facility Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetComponentFacilityUsage
-                f1.UsageSplits.Add(RawCostSplit)
-
-                ' Capital Component Facility Usage
-                Select Case SelectedBlueprint.GetItemGroupID
-                    Case TitanGroupID, SupercarrierGroupID, CarrierGroupID, DreadnoughtGroupID,
-                        JumpFreighterGroupID, FreighterGroupID, IndustrialCommandShipGroupID, CapitalIndustrialShipGroupID, FAXGroupID
-                        ' Only add cap component usage for ships that use them
-                        RawCostSplit.UsageName = "Capital Component Facility Usage"
-                        RawCostSplit.UsageValue = SelectedBlueprint.GetCapComponentFacilityUsage
-                        f1.UsageSplits.Add(RawCostSplit)
-                End Select
-            End If
-
-            If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
-                ' Invention Facility
-                RawCostSplit.UsageName = "Invention Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetInventionUsage
-                f1.UsageSplits.Add(RawCostSplit)
-            End If
-
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
-                ' Copy Facility
-                RawCostSplit.UsageName = "Copy Usage"
-                RawCostSplit.UsageValue = SelectedBlueprint.GetCopyUsage
-                f1.UsageSplits.Add(RawCostSplit)
-            End If
-
-            f1.Show()
-        End If
     End Sub
 
     ' Loads the popup with all the material break down and usage for invention
@@ -1908,7 +1667,7 @@ Public Class frmMain
         Me.Cursor = Cursors.WaitCursor
 
         If Not IsNothing(SelectedBlueprint) Then
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+            If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
                 f1.MatType = "T2 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     f1.MatType = f1.MatType & " Run"
@@ -1931,7 +1690,7 @@ Public Class frmMain
         Dim f1 As New frmInventionMats
 
         If Not IsNothing(SelectedBlueprint) Then
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+            If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
                 f1.MatType = "T2 Copy Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     f1.MatType = f1.MatType & " Run"
@@ -1952,7 +1711,7 @@ Public Class frmMain
         Dim f1 As New frmInventionMats
 
         If Not IsNothing(SelectedBlueprint) Then
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+            If SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
                 f1.MatType = "T3 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     f1.MatType = f1.MatType & " Run"
@@ -2031,7 +1790,7 @@ Public Class frmMain
                 f1.CostSplits.Add(RawCostSplit)
             End If
 
-            If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
+            If SelectedBlueprint.GetTechLevel <> BPTechLevel.T1 Then
                 ' Total Invention Costs
                 RawCostSplit.SplitName = "Invention Costs"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetInventionCost
@@ -2517,6 +2276,11 @@ Public Class frmMain
         Call ResetTabs()
     End Sub
 
+    Private Sub mnuSelectionAddESICharacter_Click(sender As Object, e As EventArgs) Handles mnuSelectionAddESICharacter.Click
+        Dim f1 = New frmLoadESIAuthorization
+        f1.ShowDialog()
+    End Sub
+
     Private Sub mnuSelectionManageAPI_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionManageAPI.Click
         Dim f1 As New frmManageAccounts
 
@@ -2919,7 +2683,7 @@ Public Class frmMain
             SelectedBPCopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
                 ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
 
             End If
         End If
@@ -2930,7 +2694,7 @@ Public Class frmMain
             ' Include copy costs
             SelectedBPCopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
         End If
     End Sub
@@ -2940,7 +2704,7 @@ Public Class frmMain
             ' Include invention time
             SelectedBPInventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
         End If
     End Sub
@@ -2951,7 +2715,7 @@ Public Class frmMain
             SelectedBPInventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
             ' Use the original ME and TE values when they change the meta level
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
         End If
     End Sub
@@ -2961,7 +2725,7 @@ Public Class frmMain
             ' Set the time for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
         End If
     End Sub
@@ -2971,13 +2735,9 @@ Public Class frmMain
             ' Set the usage for T3 invention
             SelectedBPT3InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
         End If
-    End Sub
-
-    Private Sub UpdateTeamsToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateCRESTTeams.Click
-        Call UpdateCRESTTeams()
     End Sub
 
     Private Sub UpdateIndustryFacilitiesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateIndustryFacilities.Click
@@ -2996,48 +2756,11 @@ Public Class frmMain
         Application.UseWaitCursor = True
         Call f1.Show()
         Application.DoEvents()
+
         ' Always do indicies first since facilities has a field it uses
         If CREST.UpdateIndustryFacilties(f1.lblCRESTStatus, f1.pgCREST) Then
-            '' Reset all facility combos
-            'CalcBaseFacilityRegionsLoaded = False
-            'CalcBaseFacilitySystemsLoaded = False
-            'CalcBaseFacilitiesLoaded = False
-            'CalcComponentFacilityRegionsLoaded = False
-            'CalcComponentFacilitySystemsLoaded = False
-            'CalcComponentFacilitiesLoaded = False
-            'CalcInventionFacilityRegionsLoaded = False
-            'CalcInventionFacilitySystemsLoaded = False
-            'CalcInventionFacilitiesLoaded = False
-            'CalcCopyFacilityRegionsLoaded = False
-            'CalcCopyFacilitySystemsLoaded = False
-            'CalcCopyFacilitiesLoaded = False
-            'CalcNoPOSFacilityRegionsLoaded = False
-            'CalcNoPOSFacilitySystemsLoaded = False
-            'CalcNoPOSFacilitiesLoaded = False
-            'CalcCapitalFacilityRegionsLoaded = False
-            'CalcCapitalFacilitySystemsLoaded = False
-            'CalcCapitalFacilitiesLoaded = False
-            'CalcSuperFacilityRegionsLoaded = False
-            'CalcSuperFacilitySystemsLoaded = False
-            'CalcSuperFacilitiesLoaded = False
-            'CalcT3FacilityRegionsLoaded = False
-            'CalcT3FacilitySystemsLoaded = False
-            'CalcT3FacilitiesLoaded = False
-            'CalcSubsystemFacilityRegionsLoaded = False
-            'CalcSubsystemFacilitySystemsLoaded = False
-            'CalcSubsystemFacilitiesLoaded = False
-            'CalcBoosterFacilityRegionsLoaded = False
-            'CalcBoosterFacilitySystemsLoaded = False
-            'CalcBoosterFacilitiesLoaded = False
-
-            'LoadingFacilityActivities = False
-            'LoadingFacilityTypes = False
-            'LoadingFacilityRegions = False
-            'LoadingFacilitySystems = False
-            'LoadingFacilities = False
-
             ' Reload the industry facilities now
-            'Call SetAllFacilities(False)
+            Call BlueprintTabFacility.MY_InitializeFacilities(FacilityView.FullControls)
 
             ' Refresh the BP Tab if there is a blueprint selected
             If Not IsNothing(SelectedBlueprint) Then
@@ -3045,34 +2768,6 @@ Public Class frmMain
             End If
 
             MsgBox("Industry System Indicies and Facilities Updated", vbInformation, Application.ProductName)
-        End If
-
-        f1.Dispose()
-        Application.UseWaitCursor = False
-
-    End Sub
-
-    ' Function runs the CREST update for teams
-    Private Sub UpdateCRESTTeams()
-        Dim CREST As New EVECREST
-        Dim f1 As New frmCRESTStatus
-
-        Application.UseWaitCursor = True
-        Call f1.Show()
-        Application.DoEvents()
-        If CREST.UpdateIndustryTeams(f1.lblCRESTStatus, f1.pgCREST) And CREST.UpdateIndustryTeamAuctions(f1.lblCRESTStatus, f1.pgCREST) And CREST.UpdateIndustrySpecialties(f1.lblCRESTStatus, f1.pgCREST) Then
-            ' Reset Team Combos
-            BPTeamComboLoaded = False
-            CalcManufacturingTeamComboLoaded = False
-            CalcComponentManufacturingTeamComboLoaded = False
-            CalcInventionTeamComboLoaded = False
-            CalcCopyTeamComboLoaded = False
-
-            ' Reload all the teams
-            Call SetAllTeams(False)
-
-            MsgBox("Industry Teams Updated", vbInformation, Application.ProductName)
-
         End If
 
         f1.Dispose()
@@ -3247,7 +2942,7 @@ Public Class frmMain
                     Dim AdditionalCost As Double
                     Dim TempTE As Integer = rsData.GetInt32(5)
 
-                    If rsData.GetInt64(2) = BlueprintTechLevel.T1 Then
+                    If rsData.GetInt64(2) = BPTechLevel.T1 Then
                         ' T1 BPO
                         TempBPType = BPType.Original
                     Else
@@ -3267,7 +2962,7 @@ Public Class frmMain
                         TempTE = BaseT2T3TE
                     End If
 
-                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0, 0,
+                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0,
                                       CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
@@ -4423,119 +4118,6 @@ Tabs:
     '                                                                             SelectedBlueprint.GetItemCategoryID, cmbBPFacilityType.Text), BPTab, False).MaterialMultiplier, True)
     'End Sub
 
-    ' Team functions
-    Private Sub btnBPSaveTeam_Click(sender As System.Object, e As System.EventArgs) Handles btnBPSaveTeam.Click
-
-        Select Case cmbBPTeamActivities.Text
-            Case ActivityManufacturing
-                SelectedBPManufacturingTeam.SaveTeam(TeamType.Manufacturing, BPTab)
-            Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                SelectedBPComponentManufacturingTeam.SaveTeam(TeamType.ComponentManufacturing, BPTab)
-            Case ActivityCopying
-                SelectedBPCopyTeam.SaveTeam(TeamType.Copy, BPTab)
-            Case ActivityInvention
-                SelectedBPInventionTeam.SaveTeam(TeamType.Invention, BPTab)
-        End Select
-
-        lblBPDefaultTeam.Visible = True
-        btnBPSaveTeam.Enabled = False
-
-        MsgBox(cmbBPTeamActivities.Text & " Team Saved", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub cmbBPTeamActivities_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPTeamActivities.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub cmbBPTeamActivity_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeamActivities.SelectedIndexChanged
-        If PreviousTeamActivity <> cmbBPTeamActivities.Text And Not FirstLoad Then
-            BPTeamComboLoaded = False ' Always load combo on changing of the activity
-            Call LoadTeamCombo(True, cmbBPTeam, cmbBPTeamActivities, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities))
-            ' Load the default team for this activity
-            Call LoadDefaultTeam(True, cmbBPTeamActivities, False, cmbBPTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, SelectedBlueprint)
-            PreviousTeamActivity = cmbBPTeamActivities.Text
-            BPTeamComboLoaded = True
-        End If
-    End Sub
-
-    Private Sub cmbBPTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPTeam.DropDown
-        ' If you drop down, don't show the text window
-        cmbBPTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbBPTeam.AutoCompleteSource = AutoCompleteSource.None
-        ComboMenuDown = True
-
-        If Not BPTeamComboLoaded Then ' TODO don't reload if not needed
-            Call LoadTeamCombo(False, cmbBPTeam, cmbBPTeamActivities, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities))
-            If cmbBPTeam.Items.Contains(cmbBPTeam.Text) Then
-                Dim TempTeam As New IndustryTeam
-                Select Case cmbBPTeamActivities.Text
-                    Case ActivityManufacturing
-                        TempTeam = SelectedBPManufacturingTeam
-                    Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        TempTeam = SelectedBPComponentManufacturingTeam
-                    Case ActivityCopying
-                        TempTeam = SelectedBPCopyTeam
-                End Select
-                Call DisplayTeamBonus(GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities), TempTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveBP, BPTab)
-            End If
-            BPTeamComboLoaded = True
-        End If
-
-    End Sub
-
-    Private Sub cmbBPTeam_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPTeam.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbBPTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbBPTeam.AutoCompleteSource = AutoCompleteSource.ListItems
-        ComboMenuDown = False
-    End Sub
-
-    Private Sub cmbBPTeam_GotFocus(sender As Object, e As System.EventArgs) Handles cmbBPTeam.GotFocus
-        Call cmbBPTeam.SelectAll()
-    End Sub
-
-    Private Sub cmbBPTeam_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPTeam.KeyDown
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the team if the text is in the combo
-        If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities))
-        End If
-    End Sub
-
-    Private Sub cmbBPTeam_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbBPTeam.MouseWheel
-        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
-        If ComboMenuDown Then
-            MouseWheelSelection = False
-        Else
-            MouseWheelSelection = True
-        End If
-    End Sub
-
-    Private Sub cmbBPTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPTeam.SelectedIndexChanged
-        If Not IsNothing(SelectedBlueprint) And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities))
-            If Not FirstLoad Then
-                ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
-            End If
-        End If
-    End Sub
-
-    Private Sub cmbBPTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPTeam.SelectionChangeCommitted
-        If Not MouseWheelSelection And Not ComboBoxArrowKeys And LoadTeambyCombo Then
-            Call LoadTeam(cmbBPTeam.SelectedItem.ToString, cmbBPTeamActivities.Text, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab, GetTeamGroupIDList(SelectedBlueprint, cmbBPTeamActivities))
-            ' Use the original ME and TE values when they change the meta level
-            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, False)
-        End If
-    End Sub
-
     Private Sub chkPerUnit_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPPricePerUnit.CheckedChanged
         If Not FirstLoad And Not UpdatingCheck Then
             Call UpdateBPPriceLabels()
@@ -4656,7 +4238,7 @@ Tabs:
 
     Private Sub chkBPBuildBuy_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPBuildBuy.CheckedChanged
         ' Disable the choice for raw or components for shopping list and just add components
-        If Not FirstLoad And Not SentFromManufacturingTab Then
+        If Not FirstLoad And Not UpdatingCheck Then
             If chkBPBuildBuy.Checked Then
                 rbtnBPComponentCopy.Enabled = True
                 rbtnBPRawmatCopy.Enabled = False
@@ -4674,7 +4256,7 @@ Tabs:
 
             ' Refresh
             If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
 
         End If
@@ -4973,7 +4555,7 @@ Tabs:
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
 
         End If
 
@@ -4994,7 +4576,7 @@ Tabs:
             Call UpdateBPLinesandBPs()
 
             ' Use the original ME and TE values when they change the decryptor
-            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
 
         End If
     End Sub
@@ -5011,7 +4593,7 @@ Tabs:
 
         If Not LoadingRelics Then
             ' Use the original values when selecting a new relic
-            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
+            Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
         End If
 
     End Sub
@@ -5437,12 +5019,7 @@ Tabs:
     Public Sub RefreshBP(Optional IgnoreFocus As Boolean = False)
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
             If Not IsNothing(SelectedBlueprint) Then
-                If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
-                    ' They have a decryptor, so use original
-                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-                Else
-                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-                End If
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
                 txtBPRuns.SelectAll()
                 If Not IgnoreFocus Then
                     txtBPRuns.Focus()
@@ -5463,12 +5040,7 @@ Tabs:
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
             If e.KeyCode = Keys.Enter Then
                 EnterKeyPressed = True
-                If SelectedBlueprint.GetTechLevel = 2 And cmbBPInventionDecryptor.Text <> None Then
-                    ' They have a decryptor, so use original
-                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-                Else
-                    Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
-                End If
+                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
                 txtBPRuns.SelectAll()
                 IgnoreFocus = True
                 txtBPRuns.Focus()
@@ -5603,15 +5175,14 @@ Tabs:
     End Sub
 
     Private Sub lstBPComponentMats_DoubleClick(sender As Object, e As System.EventArgs) Handles lstBPComponentMats.DoubleClick
-        Dim rsBP As SQLiteDataReader
-        Dim SQL As String
-        Dim BuildType As String = ""
-        Dim BuildFacility As IndustryFacility = Nothing
-        Dim Runs As Long = 0
 
         ' If the item doesn't have an ME (set to "-") then don't load
         If lstBPComponentMats.SelectedItems(0).SubItems(2).Text <> "-" Then
-            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
+            Dim rsBP As SQLiteDataReader
+            Dim SQL As String
+            Dim BuildType As String = ""
+
+            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
             SQL = SQL & "'" & lstBPComponentMats.SelectedItems(0).SubItems(0).Text & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -5623,19 +5194,23 @@ Tabs:
             End If
 
             ' Adjust the runs for porition size needed and use that instead
-            Runs = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
+            Dim BPID As Long = rsBP.GetInt64(0)
+            Dim Runs As Long = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
+            Dim GroupID As Integer = rsBP.GetInt32(2)
+            Dim CategoryID As Integer = rsBP.GetInt32(3)
 
-            ' Set the type build facility
-            'BuildFacility = GetManufacturingFacility(GetProductionType(ActivityManufacturing, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, cmbBPFacilityType.Text), BPTab)
+            rsBP.Close()
 
-            Call LoadBPfromEvent(CLng(rsBP.GetInt64(0)), BuildType, "Raw", "Blueprint Tab",
-                                       SelectedBPManufacturingTeam, SelectedBPComponentManufacturingTeam, SelectedBPCopyTeam,
-                                       BuildFacility, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility,
-                                       SelectedBPInventionFacility, SelectedBPCopyFacility,
-                                       chkBPTaxes.Checked, chkBPBrokerFees.Checked,
-                                       lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
-                                       CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
-                                       "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
+            With BlueprintTabFacility
+                Call LoadBPfromEvent(BPID, BuildType, "Raw", SentFromLocation.BlueprintTab,
+                                    .GetSelectedManufacturingFacility(GroupID, CategoryID), .GetFacility(ProductionType.ComponentManufacturing),
+                                    .GetFacility(ProductionType.CapitalComponentManufacturing),
+                                    .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
+                                    chkBPTaxes.Checked, chkBPBrokerFees.Checked,
+                                    lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
+                                    CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
+                                    "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
+            End With
         End If
 
     End Sub
@@ -6077,7 +5652,6 @@ Tabs:
         If Not IsNothing(cmbBPBlueprintSelection.SelectedItem) Then
             SelectedBPText = cmbBPBlueprintSelection.SelectedItem.ToString
             cmbBPBlueprintSelection.Text = SelectedBPText
-            SentFromManufacturingTab = False
 
             Call SelectBlueprint()
 
@@ -6122,7 +5696,7 @@ Tabs:
             RemoveHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
             cmbBPBlueprintSelection.Text = bpName
             AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
-            SelectBlueprint()
+            Call SelectBlueprint()
         End If
 
     End Sub
@@ -6304,11 +5878,6 @@ Tabs:
             txtBPInventionLines.Text = CStr(.LaboratoryLines)
             txtBPRelicLines.Text = CStr(.T3Lines)
 
-            '' Facility combos
-            'cmbBPFacilitySystem.Enabled = False
-            'cmbBPFacilityRegion.Enabled = False
-            'cmbBPFacilityorArray.Enabled = False
-
             ' Ignore settings
             chkBPIgnoreInvention.Checked = .IgnoreInvention
             chkBPIgnoreMinerals.Checked = .IgnoreMinerals
@@ -6333,38 +5902,7 @@ Tabs:
         tabBPInventionEquip.TabPages.Remove(tabInventionCalcs)
         tabBPInventionEquip.TabPages.Remove(tabT3Calcs)
         tabBPInventionEquip.SelectTab(0)
-        ' Disable it and teams until BP selected
-        gbBPTeam.Enabled = False
         tabBPInventionEquip.Enabled = False
-
-        ' Default team
-        BPTeamComboLoaded = True ' Don't trigger a combo load yet
-        cmbBPTeamActivities.Text = ActivityManufacturing
-        Call LoadDefaultTeam(True, cmbBPTeamActivities, False, cmbBPTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
-        ' Enable default label and disable save since just loaded the default
-        lblBPDefaultTeam.Visible = True
-        btnBPSaveTeam.Enabled = False
-        BPTeamComboLoaded = False
-
-        ' Default facility
-        'LoadingFacilityActivities = True ' Don't trigger a combo load yet
-        ''cmbBPFacilityActivities.Text = ActivityManufacturing ' Always load the default manufacturing facility
-        ''chkBPFacilityIncludeUsage.Checked = DefaultBPManufacturingFacility.IncludeActivityUsage ' Make sure this is set before loading
-        ''Call LoadFacility(IndustryType.Manufacturing, True, False,
-        ''                  cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray,
-        ''                  lblBPFacilityDefault, txtBPFacilityManualME, txtBPFacilityManualTE, txtBPFacilityManualTax,
-        ''                  lblBPFacilityManualME, lblBPFacilityManualTE, lblBPFacilityManualTax, btnBPFacilitySave,
-        ''                  BPTab, chkBPFacilityIncludeUsage, Nothing, Nothing, Nothing, FullyLoadedBPFacility, cmbBPFacilityActivities, 1, 0, 0, True, False,
-        ''                  Nothing, gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade, btnBPUpdateCostIndex)
-        'LoadingFacilityActivities = False
-
-        'CurrentBPCategoryID = 0
-        'CurrentBPGroupID = 0
-        'CurrentIndustryType = IndustryType.Manufacturing
-
-        'BPFacilityRegionsLoaded = False
-        'BPFacilitySystemsLoaded = False
-        'BPFacilitiesLoaded = False
 
         ' Disable all entry areas until a blueprint is selected
         btnBPRefreshBP.Enabled = False
@@ -6565,14 +6103,14 @@ Tabs:
             ' Save the relic and decryptor if they have the setting set
             If UserApplicationSettings.SaveBPRelicsDecryptors And Not IsNothing(SelectedBlueprint) Then
                 ' See if the T2 window is open and has a decryptor then save, only will be open if they have a t2 bp loaded
-                If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
                     .T2DecryptorType = cmbBPInventionDecryptor.Text
                     .RelicType = UserBPTabSettings.RelicType
                     .T3DecryptorType = UserBPTabSettings.T3DecryptorType ' Save the old one
                 End If
 
                 ' See if the T3 window is open and has a decryptor then save, only will be open if they have a t3 bp loaded
-                If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                If SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
                     .T2DecryptorType = UserBPTabSettings.T2DecryptorType ' Save the old one
                     .RelicType = cmbBPRelic.Text
                     .T3DecryptorType = cmbBPT3Decryptor.Text
@@ -6626,10 +6164,10 @@ Tabs:
 
         ' Save the BP
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
-            If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 And chkBPIgnoreInvention.Checked = True Then
+            If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 And chkBPIgnoreInvention.Checked = True Then
                 ' T2 BPO 
                 SaveBPType = BPType.Original
-            ElseIf SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+            ElseIf SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Or SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
                 ' Save T2/T3 an invented BPC, since if they aren't ignoring invention they have to use a decryptor or invention to get it
                 SaveBPType = BPType.InventedBPC
             Else ' Everything else is a copy
@@ -6637,7 +6175,7 @@ Tabs:
             End If
 
             Call UpdateBPinDB(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType,
-                              CInt(txtBPME.Text), CInt(txtBPTE.Text), 0, False, False, AdditionalCost)
+                              CInt(txtBPME.Text), CInt(txtBPTE.Text), False, False, AdditionalCost)
 
             Call RefreshBP()
 
@@ -6648,16 +6186,15 @@ Tabs:
     End Sub
 
     ' Selects the blueprint from the combo and loads it into the grids
-    Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional HistoryBP As Boolean = False)
+    Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
-        Dim BPTypeID As Long
+        Dim BPTypeID As Integer
         Dim TempTech As Integer
         Dim ItemType As Integer
         Dim ItemGroupID As Integer
         Dim ItemCategoryID As Integer
-
-        Dim SelectedIndyType As ProductionType
+        Dim BPHasComponents As Boolean
 
         ' Set the number of runs to 1 if it's blank
         If Trim(txtBPRuns.Text) = "" Then
@@ -6705,7 +6242,7 @@ Tabs:
         readerBP = DBCommand.ExecuteReader
 
         If readerBP.Read() Then
-            BPTypeID = readerBP.GetInt64(0)
+            BPTypeID = readerBP.GetInt32(0)
             TempTech = readerBP.GetInt32(1)
             ItemType = readerBP.GetInt32(2)
             ItemGroupID = readerBP.GetInt32(3)
@@ -6716,11 +6253,19 @@ Tabs:
 
         readerBP.Close()
 
+        ' See if this has buildable components
+        BPHasComponents = DoesBPHaveBuildableComponents(BPTypeID)
+
+        ' Load the facilty based on the groupid and categoryid - if sent from another location, it's already loaded
+        If SentFrom = SentFromLocation.None Then
+            Call BlueprintTabFacility.MY_LoadFacility(ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
+        End If
+
         ' Load the image
         Call LoadBlueprintPicture(BPTypeID, ItemType)
 
-        ' Set for max production lines
-        If Not SentFromManufacturingTab And Not SentFromShoppingList Then ' We might have different values there and they set on double click
+        ' Set for max production lines - bp tab or history (bp tab)
+        If SentFrom = SentFromLocation.History Or SentFrom = SentFromLocation.BlueprintTab Then ' We might have different values there and they set on double click
             ' Reset the entry boxes
             txtBPRuns.Text = "1"
             txtBPNumBPs.Text = "1"
@@ -6731,7 +6276,7 @@ Tabs:
 
             Call ResetDecryptorCombos(TempTech)
 
-        Else
+        Else ' Sent from manufacturing tab or shopping list
             ' Set up for Reloading the decryptor combo on T2/T3
             ' Allow reloading of Decryptors
             InventionDecryptorsLoaded = False
@@ -6777,7 +6322,7 @@ Tabs:
 
         Dim OwnedBPRuns As Integer
 
-        If HasOwnedBP And Not SentFromManufacturingTab Then
+        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
             txtBPME.Text = CStr(readerBP.GetInt32(0))
             OwnedBPME = txtBPME.Text
             txtBPTE.Text = CStr(readerBP.GetInt32(1))
@@ -6789,10 +6334,10 @@ Tabs:
             OwnedBP = False
             OwnedBPRuns = 1
             If TempTech = 1 Then ' All T1
-                If Not SentFromManufacturingTab Then
+                If SentFrom <> SentFromLocation.ManufacturingTab Then
                     txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
-                ElseIf SentFromShoppingList Then
+                ElseIf SentFrom = SentFromLocation.ShoppingList Then
                     ' Will be set already or use default
                     If Trim(txtBPME.Text) = "" Then
                         txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
@@ -6843,76 +6388,10 @@ Tabs:
             chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
         End If
 
-        BPTeamComboLoaded = True  ' Dont' trigger a reload  yet
-
         gbBPManualSystemCostIndex.Enabled = True
         gbBPIgnoreinCalcs.Enabled = True
         cmbBPFWUpgrade.Enabled = False
         btnBPUpdateCostIndex.Enabled = False
-
-        ' Teams
-        Select Case TempTech
-            Case BlueprintTechLevel.T1
-                ' Add only T1 or T3 activities to team
-                cmbBPTeamActivities.Items.Clear()
-                cmbBPTeamActivities.Items.Add(ActivityManufacturing)
-            Case BlueprintTechLevel.T2
-                ' Add only T2 activities to team
-                cmbBPTeamActivities.Items.Clear()
-                cmbBPTeamActivities.Items.Add(ActivityManufacturing)
-                cmbBPTeamActivities.Items.Add(ActivityCopying)
-                'cmbBPTeamActivities.Items.Add(ActivityInvention) ' Remove until they implement invention teams
-                cmbBPTeamActivities.Items.Add(ActivityComponentManufacturing)
-            Case BlueprintTechLevel.T3
-                cmbBPTeamActivities.Items.Clear()
-                cmbBPTeamActivities.Items.Add(ActivityManufacturing)
-                cmbBPTeamActivities.Items.Add(ActivityComponentManufacturing)
-        End Select
-
-        ' Make sure the current option matches what's in the team combo or set to manufacturing
-        If Not cmbBPTeamActivities.Items.Contains(cmbBPTeamActivities.Text) Then
-            cmbBPTeamActivities.Text = ActivityManufacturing
-        End If
-
-        BPTeamComboLoaded = False
-
-        '' Load the facility activity types for this setup
-        'Call LoadFacilityActivities(TempTech, True, cmbBPFacilityActivities, ItemGroupID, ItemCategoryID)
-
-        '' Make sure the selection is in the list of options, set to manufacturing if not
-        'If Not cmbBPFacilityActivities.Items.Contains(cmbBPFacilityActivities.Text) Then
-        '    cmbBPFacilityActivities.Text = ActivityManufacturing
-        'End If
-
-        'SelectedIndyType = GetProductionType(cmbBPFacilityActivities.Text, ItemGroupID, ItemCategoryID, cmbBPFacilityType.Text)
-
-        Dim CostCheck As CheckBox
-        Dim TimeCheck As CheckBox
-
-        Select Case SelectedIndyType
-            Case ProductionType.Invention, ProductionType.T3Invention
-                CostCheck = chkBPIncludeInventionCosts
-                TimeCheck = chkBPIncludeInventionTime
-            Case ProductionType.Copying
-                CostCheck = chkBPIncludeCopyCosts
-                TimeCheck = chkBPIncludeCopyTime
-            Case ProductionType.T3Invention
-                CostCheck = chkBPIncludeT3Costs
-                TimeCheck = chkBPIncludeT3Time
-            Case Else
-                CostCheck = Nothing
-                TimeCheck = Nothing
-        End Select
-
-        '' Load the facility based on what was selected, if not in the list then load manufacturing - basically don't change the facility unless we have to
-        'If SelectedIndyType <> PreviousIndustryType Or cmbBPFacilityType.Text = POSFacility Or SentFromManufacturingTab Then  ' always load with POS so we can load the correct array
-        '    Call LoadFacility(SelectedIndyType, False, True,
-        '                    cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray,
-        '                    lblBPFacilityDefault, txtBPFacilityManualME, txtBPFacilityManualTE, txtBPFacilityManualTax,
-        '                    lblBPFacilityManualME, lblBPFacilityManualTE, lblBPFacilityManualTax,
-        '                    btnBPFacilitySave, BPTab, chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities,
-        '                    TempTech, ItemGroupID, ItemCategoryID, False, False, Nothing, gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade, btnBPUpdateCostIndex) ' Don't load activites again
-        'End If
 
         cmbBPBlueprintSelection.Focus()
 
@@ -6959,21 +6438,6 @@ Tabs:
                 End If
             End If
 
-            ' Turn off the invention calcs if unknown
-            'UpdatingInventionChecks = True
-            'If TempDName = Unknown Then
-            '    chkBPIncludeCopyCosts.Checked = False
-            '    chkBPIncludeCopyTime.Checked = False
-            '    chkBPIncludeInventionCosts.Checked = False
-            '    chkBPIncludeInventionTime.Checked = False
-            'Else
-            '    chkBPIncludeCopyCosts.Checked = UserBPTabSettings.IncludeCopyCost
-            '    chkBPIncludeCopyTime.Checked = UserBPTabSettings.IncludeCopyTime
-            '    chkBPIncludeInventionCosts.Checked = UserBPTabSettings.IncludeInventionCost
-            '    chkBPIncludeInventionTime.Checked = UserBPTabSettings.IncludeInventionTime
-            'End If
-            'UpdatingInventionChecks = False
-
         End If
 
         ' Make sure everything is enabled on first BP load
@@ -7005,10 +6469,10 @@ Tabs:
         Application.DoEvents()
 
         ' Update the grid
-        Call UpdateBPGrids(BPTypeID, TempTech, NewBP, ItemGroupID, ItemCategoryID)
+        Call UpdateBPGrids(BPTypeID, TempTech, NewBP, ItemGroupID, ItemCategoryID, SentFromLocation.BlueprintTab)
 
         ' Save the blueprint in the history if it's not already in there
-        If Not IsNothing(SelectedBlueprint) And Not HistoryBP Then
+        If Not IsNothing(SelectedBlueprint) And SentFrom <> SentFromLocation.History Then
             Call UpdateBPHistory(True)
         End If
 
@@ -7019,8 +6483,8 @@ Tabs:
     End Sub
 
     ' Updates the lists with the correct materials for the selected item
-    Private Sub UpdateBPGrids(ByVal BPID As Long, ByVal BPTech As Integer, ByVal NewBPSelection As Boolean,
-                              BPGroupID As Integer, BPCategoryID As Integer, Optional UpdateTeamBonusLabel As Boolean = True)
+    Public Sub UpdateBPGrids(ByVal BPID As Integer, ByVal BPTech As Integer, ByVal NewBPSelection As Boolean,
+                              BPGroupID As Integer, BPCategoryID As Integer, ByVal SentFrom As SentFromLocation)
         Dim IndustrySkill As Integer = 0
         Dim i As Integer = 0
         Dim BPRawMats As List(Of Material)
@@ -7031,23 +6495,20 @@ Tabs:
         Dim TempPrice As Double = 0
         Dim BPCName As String = ""
 
-        Dim SelectedRuns As Integer
-        Dim ZeroCostToolTipText As String = ""
-
-        Dim InventionFacility As IndustryFacility
-        Dim IndyType As ProductionType
-
         ' For Invention Copy data - set defaults here
         Dim T1CopyRuns As Integer = 0
         Dim CopyCostPerSecond As Double = 0
         Dim SQL As String = ""
         Dim AdditionalCosts As Double
 
+        Dim BPME As Integer = 0
+        Dim BPTE As Integer = 0
+
         ' T2/T3 variables
         Dim RelicName As String = ""
 
-        Dim BPME As Integer = 0
-        Dim BPTE As Integer = 0
+        Dim SelectedRuns As Integer
+        Dim ZeroCostToolTipText As String = ""
 
         ' Set the number of runs to 1 if it's blank
         If Trim(txtBPRuns.Text) = "" Then
@@ -7114,74 +6575,73 @@ Tabs:
             Exit Sub
         End If
 
-        ' Make sure they have a facility loaded - if not, load the default for this indy type
-        If Not FullyLoadedBPFacility Then
-            ' Get the type of facility we are doing
-            'IndyType = GetProductionType(cmbBPFacilityActivities.Text, BPGroupID, BPCategoryID, cmbBPFacilityType.Text)
+        ' Facility setup
+        Dim ManufacturingFacility As IndustryFacility = BlueprintTabFacility.GetSelectedManufacturingFacility ' This is the facility to manufacture the item in the blueprint
+        Dim ComponentManufacturingFacility As IndustryFacility = BlueprintTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+        Dim CapitalComponentManufacturingFacility As IndustryFacility = BlueprintTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
+        Dim CopyFacility As IndustryFacility = BlueprintTabFacility.GetFacility(ProductionType.Copying)
+        Dim InventionFacility As New IndustryFacility
 
-            Dim CostCheck As CheckBox
-            Dim TimeCheck As CheckBox
+        If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
+            ' Set the invention facility data
+            If BPTech = BPTechLevel.T3 Then
+                ' Need to add the relic variant to the query for just one item
+                RelicName = cmbBPRelic.Text
+                InventionFacility = BlueprintTabFacility.GetFacility(ProductionType.T3Invention)
+                ' Load the decryptor options
+                Call LoadBPT3InventionDecryptors()
+            ElseIf BPTech = BPTechLevel.T2 Then
+                ' T2 no relic 
+                RelicName = ""
+                InventionFacility = BlueprintTabFacility.GetFacility(ProductionType.Invention)
+                ' Load the decryptor options
+                Call LoadBPInventionDecryptors()
+                ' T2 has copy costs/time
+                CopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
+                CopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
+            End If
 
-            Select Case IndyType
-                Case ProductionType.Invention, ProductionType.T3Invention
-                    CostCheck = chkBPIncludeInventionCosts
-                    TimeCheck = chkBPIncludeInventionTime
-                Case ProductionType.Copying
-                    CostCheck = chkBPIncludeCopyCosts
-                    TimeCheck = chkBPIncludeCopyTime
-                Case ProductionType.T3Invention
-                    CostCheck = chkBPIncludeT3Costs
-                    TimeCheck = chkBPIncludeT3Time
-                Case Else
-                    CostCheck = Nothing
-                    TimeCheck = Nothing
-            End Select
-
-            'Call LoadFacility(IndyType, True, True,
-            '                  cmbBPFacilityActivities.Text, cmbBPFacilityType, cmbBPFacilityRegion, cmbBPFacilitySystem, cmbBPFacilityorArray,
-            '                  lblBPFacilityDefault, txtBPFacilityManualME, txtBPFacilityManualTE, txtBPFacilityManualTax,
-            '                  lblBPFacilityManualME, lblBPFacilityManualTE, lblBPFacilityManualTax, btnBPFacilitySave, BPTab,
-            '                  chkBPFacilityIncludeUsage, Nothing, CostCheck, TimeCheck, FullyLoadedBPFacility, cmbBPFacilityActivities,
-            '                  BPTech, BPGroupID, BPCategoryID, False, True, Nothing, gbBPManualSystemCostIndex, ttBP, lblBPFWUpgrade, cmbBPFWUpgrade, btnBPUpdateCostIndex)
+            ' All invention facilities need to have these set
+            InventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
+            InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
         End If
 
-        '' Determine the type of facility we want to build from for this blueprint first
-        'BlueprintBuildFacility = GetManufacturingFacility(GetProductionType(ActivityManufacturing, BPGroupID, BPCategoryID, cmbBPFacilityType.Text), BPTab)
+        ' Set the FW upgrade level for the five facility types
+        With ManufacturingFacility
+            If .Activity = ActivityManufacturing Then
+                .FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, .SolarSystemName)
+            Else
+                .FWUpgradeLevel = GetFWUpgradeLevel(.SolarSystemName)
+            End If
 
-        '' Set the fw upgrade level for the five facilities
-        'If cmbBPFacilityActivities.Text = ActivityManufacturing Then
-        '    BlueprintBuildFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-        'Else
-        '    BlueprintBuildFacility.FWUpgradeLevel = GetFWUpgradeLevel(BlueprintBuildFacility.SolarSystemName)
-        'End If
+            If .Activity = ActivityComponentManufacturing Then
+                ComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, .SolarSystemName)
+            Else
+                ComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(ComponentManufacturingFacility.SolarSystemName)
+            End If
 
-        'If cmbBPFacilityActivities.Text = ActivityComponentManufacturing Then
-        '    SelectedBPComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-        'Else
-        '    SelectedBPComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPComponentManufacturingFacility.SolarSystemName)
-        'End If
+            If .Activity = ActivityCapComponentManufacturing Then
+                CapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, .SolarSystemName)
+            Else
+                CapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(CapitalComponentManufacturingFacility.SolarSystemName)
+            End If
 
-        'If cmbBPFacilityActivities.Text = ActivityCapComponentManufacturing Then
-        '    SelectedBPCapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-        'Else
-        '    SelectedBPCapitalComponentManufacturingFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPCapitalComponentManufacturingFacility.SolarSystemName)
-        'End If
+            If .Activity = ActivityCopying Then
+                CopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, .SolarSystemName)
+            Else
+                CopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPCopyFacility.SolarSystemName)
+            End If
 
-        'If cmbBPFacilityActivities.Text = ActivityCopying Then
-        '    SelectedBPCopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-        'Else
-        '    SelectedBPCopyFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPCopyFacility.SolarSystemName)
-        'End If
-
-        'If cmbBPFacilityActivities.Text = ActivityInvention Then
-        '    SelectedBPInventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-        'Else
-        '    SelectedBPInventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPInventionFacility.SolarSystemName)
-        'End If
+            If .Activity = ActivityInvention Then
+                InventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbBPFWUpgrade, .SolarSystemName)
+            Else
+                InventionFacility.FWUpgradeLevel = GetFWUpgradeLevel(SelectedBPInventionFacility.SolarSystemName)
+            End If
+        End With
 
         ' Working
+
         ' Now load the materials into the lists
-        ' Clear Lists
         lstBPComponentMats.Items.Clear()
         lstBPComponentMats.Enabled = False
         lstBPRawMats.Items.Clear()
@@ -7198,37 +6658,16 @@ Tabs:
         BPME = CInt(txtBPME.Text)
         BPTE = CInt(txtBPTE.Text)
 
-        'Dim FWUpgradeLevel As Integer = GetFWUpgradeLevel(cmbBPFWUpgrade, cmbBPFacilitySystem.Text)
-
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, SelectedBPManufacturingTeam, BlueprintBuildFacility,
-                                          SelectedBPComponentManufacturingTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManufacturingFacility,
+                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
         ' Set the T2 and T3 inputs if necessary
-        If BPTech <> BlueprintTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
-
-            If BPTech = BlueprintTechLevel.T3 Then
-                ' Need to add the relic variant to the query for just one item
-                RelicName = cmbBPRelic.Text
-                InventionFacility = SelectedBPT3InventionFacility
-                ' Load the decryptor options
-                Call LoadBPT3InventionDecryptors()
-            Else
-                ' T2 no relic 
-                RelicName = ""
-                InventionFacility = SelectedBPInventionFacility
-                ' Load the decryptor options
-                Call LoadBPInventionDecryptors()
-            End If
-
+        If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
             ' invent this bp
             txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
-                                  InventionFacility, SelectedBPInventionTeam, SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(BPID, RelicName)))
-            '    ' Disable the num bps box
-            '    txtBPNumBPs.Enabled = False
-            'Else
-            '    txtBPNumBPs.Enabled = True
+                                  InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
         End If
 
         ' Build the item and get the list of materials
@@ -7288,7 +6727,7 @@ Tabs:
                 End If
                 complstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetTotalCost, 2))
-                Call lstBPComponentMats.Items.Add(complstViewRow) ' Check TODO - Add check box?
+                Call lstBPComponentMats.Items.Add(complstViewRow)
             Next
 
             Dim TempSort As SortOrder
@@ -7312,7 +6751,7 @@ Tabs:
                 rbtnBPComponentCopy.Enabled = True
             End If
 
-            If Not SentFromManufacturingTab Then
+            If SentFrom <> SentFromLocation.ManufacturingTab Then
                 Select Case UserBPTabSettings.ExporttoShoppingListType
                     Case rbtnBPComponentCopy.Text
                         rbtnBPComponentCopy.Checked = True
@@ -7337,7 +6776,7 @@ Tabs:
             lstBPComponentMats.Enabled = False
         End If
 
-        If SelectedBlueprint.GetTechLevel <> BlueprintTechLevel.T1 Then
+        If SelectedBlueprint.GetTechLevel <> BPTechLevel.T1 Then
             ' Enable the invention mats
             rbtnBPCopyInvREMats.Enabled = True
 
@@ -7398,7 +6837,7 @@ Tabs:
         txtBPNumBPs.Text = CStr(SelectedBlueprint.GetUsedNumBPs)
 
         ' Show and update labels for T2 if selected
-        If SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+        If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
             If chkBPIgnoreInvention.Checked = False Then
                 If SelectedBlueprint.UserCanInventRE Then
                     lblBPT2InventStatus.Text = "Invention Calculations:"
@@ -7466,7 +6905,7 @@ Tabs:
             ' Enable option
             rbtnBPCopyInvREMats.Enabled = True
 
-        ElseIf SelectedBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+        ElseIf SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
             ' Show the RE calc tab
             tabBPInventionEquip.TabPages.Remove(tabInventionCalcs)
             If Not tabBPInventionEquip.TabPages.Contains(tabT3Calcs) Then
@@ -7541,72 +6980,13 @@ Tabs:
             tabBPInventionEquip.SelectTab(0)
         End If
 
-        ' Update any bonus label the selected team might give for this BP
-        If UpdateTeamBonusLabel Then
-            Dim TempList As New List(Of Long)
-
-            ' Set the groupID's that we want to limit the team search to
-            If SelectedBlueprint.HasComponents And cmbBPTeamActivities.Text = ActivityComponentManufacturing Then
-                ' Load up all the items that build this blueprint
-                For i = 0 To SelectedBlueprint.GetComponentMaterials.GetMaterialList.Count - 1
-                    TempList.Add(SelectedBlueprint.GetComponentMaterials.GetMaterialList(i).GetMaterialTypeID)
-                Next
-            ElseIf cmbBPTeamActivities.Text <> ActivityComponentManufacturing Or cmbBPTeamActivities.Text <> ActivityCapComponentManufacturing Then
-                ' Just add the groupID
-                TempList.Add(SelectedBlueprint.GetItemGroupID)
-            Else
-                ' Send nothing
-                TempList = Nothing
-            End If
-
-            Select Case cmbBPTeamActivities.Text
-                Case ActivityManufacturing
-                    Call DisplayTeamBonus(TempList, SelectedBPManufacturingTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
-                Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                    Call DisplayTeamBonus(TempList, SelectedBPComponentManufacturingTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
-                Case ActivityCopying
-                    Call DisplayTeamBonus(TempList, SelectedBPCopyTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
-                Case ActivityInvention
-                    Call DisplayTeamBonus(TempList, SelectedBPInventionTeam, txtBPTeamBonus, lblBPDefaultTeam, btnBPSaveTeam, BPTab)
-            End Select
-        End If
-
-        '' Save this for later
-        'CurrentBPCategoryID = SelectedBlueprint.GetItemCategoryID
-        'CurrentBPGroupID = SelectedBlueprint.GetItemGroupID
-
-        'If SelectedBlueprint.HasComponents Then
-        '    Select Case BPGroupID
-        '        Case TitanGroupID, DreadnoughtGroupID, CarrierGroupID, SupercarrierGroupID, CapitalIndustrialShipGroupID,
-        '             IndustrialCommandShipGroupID, FreighterGroupID, JumpFreighterGroupID, FAXGroupID
-        '            If Not cmbBPFacilityActivities.Items.Contains(ActivityCapComponentManufacturing) Then
-        '                cmbBPFacilityActivities.Items.Add(ActivityCapComponentManufacturing)
-        '            End If
-        '            If BPGroupID = JumpFreighterGroupID Then
-        '                ' Need to add both cap and components
-        '                If Not cmbBPFacilityActivities.Items.Contains(ActivityComponentManufacturing) Then
-        '                    cmbBPFacilityActivities.Items.Add(ActivityComponentManufacturing)
-        '                End If
-        '            End If
-        '        Case Else
-        '            If Not cmbBPFacilityActivities.Items.Contains(ActivityComponentManufacturing) Then
-        '                cmbBPFacilityActivities.Items.Add(ActivityComponentManufacturing)
-        '            End If
-        '    End Select
-        'End If
-
-        '' Make sure the selection is in the list of options, set to manufacturing if not
-        'If Not cmbBPFacilityActivities.Items.Contains(cmbBPFacilityActivities.Text) Then
-        '    cmbBPFacilityActivities.Text = ActivityManufacturing
-        'End If
-
         ' Finally Update the labels
         Call UpdateBPPriceLabels()
 
 ExitForm:
 
         ' If the bp was updated (not new, then save any changes to the history - e.g. facility changes)
-        If Not NewBPSelection And Not SentFromManufacturingTab And Not SentFromShoppingList Then
+        If Not NewBPSelection And SentFrom = SentFromLocation.BlueprintTab Then
             Call UpdateBPHistory(False)
         End If
 
@@ -7619,13 +6999,8 @@ ExitForm:
         lblBPCanMakeBPAll.Visible = True
         btnBPRefreshBP.Enabled = True
 
-        ' If we loaded from the manufacturing tab or shopping list, reset
-        SentFromManufacturingTab = False
-        SentFromShoppingList = False
-
-        ' Enable Teams and facility selectors
+        ' Enable facility selectors
         tabBPInventionEquip.Enabled = True
-        'gbBPTeam.Enabled = True
 
         Me.Cursor = Cursors.Default
 
@@ -7838,22 +7213,19 @@ ExitForm:
                         .BuildType = ""
                     End If
 
-                    If BP.GetTechLevel = BlueprintTechLevel.T2 Then
+                    If BP.GetTechLevel = BPTechLevel.T2 Then
                         .Inputs = BP.GetDecryptor.Name
-                    ElseIf BP.GetTechLevel = BlueprintTechLevel.T3 Then
+                    ElseIf BP.GetTechLevel = BPTechLevel.T3 Then
                         .Inputs = BP.GetDecryptor.Name & " - " & BP.GetRelic ' parse decryptor and relic
                     Else
                         .Inputs = ""
                     End If
-                    .SentFrom = "History"
-                    .BuildTeam = CType(SelectedBPManufacturingTeam.Clone, IndustryTeam)
-                    .ComponentTeam = CType(SelectedBPComponentManufacturingTeam, IndustryTeam)
-                    .CopyTeam = CType(SelectedBPCopyTeam, IndustryTeam)
-                    .BuildFacility = CType(BP.GetManufacturingFacility, IndustryFacility)
-                    .ComponentFacility = CType(BP.GetComponentManufacturingFacility, IndustryFacility)
-                    .CapComponentFacility = CType(BP.GetCapitalComponentManufacturingFacility, IndustryFacility)
-                    .CopyFacility = CType(BP.GetCopyFacility, IndustryFacility)
-                    .InventionFacility = CType(BP.GetInventionFacility, IndustryFacility)
+                    .SentFrom = SentFromLocation.History
+                    .BuildFacility = CType(BlueprintTabFacility.GetSelectedManufacturingFacility(BP.GetItemGroupID, BP.GetItemCategoryID).Clone, IndustryFacility)
+                    .ComponentFacility = CType(BlueprintTabFacility.GetFacility(ProductionType.ComponentManufacturing).Clone, IndustryFacility)
+                    .CapComponentFacility = CType(BlueprintTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing).Clone, IndustryFacility)
+                    .CopyFacility = CType(BlueprintTabFacility.GetFacility(ProductionType.Copying).Clone, IndustryFacility)
+                    .InventionFacility = CType(BlueprintTabFacility.GetSelectedInventionFacility(BP.GetItemGroupID, BP.GetItemCategoryID).Clone, IndustryFacility)
                     .SentRuns = txtBPRuns.Text
                     .IncludeTaxes = chkBPTaxes.Checked
                     .IncludeFees = chkBPBrokerFees.Checked
@@ -7861,9 +7233,9 @@ ExitForm:
                     .TEValue = txtBPTE.Text
                     .SentRuns = txtBPRuns.Text
                     .ManufacturingLines = txtBPLines.Text
-                    If BP.GetTechLevel = BlueprintTechLevel.T2 Then
+                    If BP.GetTechLevel = BPTechLevel.T2 Then
                         .LabLines = txtBPInventionLines.Text
-                    ElseIf BP.GetTechLevel = BlueprintTechLevel.T3 Then
+                    ElseIf BP.GetTechLevel = BPTechLevel.T3 Then
                         .LabLines = txtBPRelicLines.Text
                     Else
                         .LabLines = "1"
@@ -7887,6 +7259,7 @@ ExitForm:
                     Call BPHistory.RemoveAt(CurrentBPHistoryIndex)
                     Call BPHistory.Insert(CurrentBPHistoryIndex, TempBPHistoryItem)
                 End If
+
             End If
         End If
 
@@ -7967,28 +7340,8 @@ ExitForm:
         lblBPTaxes.Text = FormatNumber(SelectedBlueprint.GetSalesTaxes / DivideUnits, 2)
         lblBPBrokerFees.Text = FormatNumber(SelectedBlueprint.GetSalesBrokerFees / DivideUnits, 2)
 
-        '' Show the usage cost for the activity selected
-        'If chkBPFacilityIncludeUsage.Checked Then
-        '    Select Case cmbBPFacilityActivities.Text
-        '        Case ActivityManufacturing
-        '            lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits, 2)
-        '            ttBP.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetManufacturingFacility, True))
-        '        Case ActivityInvention
-        '            lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetInventionUsage() / DivideUnits, 2)
-        '            ttBP.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetInventionFacility, False))
-        '        Case ActivityCopying
-        '            lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetCopyUsage() / DivideUnits, 2)
-        '            ttBP.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetCopyFacility, False))
-        '        Case ActivityComponentManufacturing
-        '            lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits, 2)
-        '            ttBP.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetComponentManufacturingFacility, True))
-        '        Case ActivityCapComponentManufacturing
-        '            lblBPFacilityUsage.Text = FormatNumber(SelectedBlueprint.GetCapComponentFacilityUsage() / DivideUnits, 2)
-        '            ttBP.SetToolTip(lblBPFacilityUsage, GetUsageToolTipText(SelectedBlueprint.GetCapitalComponentManufacturingFacility, True))
-        '    End Select
-        'Else
-        '    lblBPFacilityUsage.Text = "0.00"
-        'End If
+        ' Update usage labels
+        Call UpdateFacilityUsage(DivideUnits)
 
         ' Total
         lblBPRawTotalCost.Text = FormatNumber((SelectedBlueprint.GetTotalRawCost) / DivideUnits, 2)
@@ -8115,6 +7468,45 @@ ExitForm:
 
     End Sub
 
+    Private Sub UpdateFacilityUsage(DivideUnits As Long)
+        Dim UsedFacility As IndustryFacility = BlueprintTabFacility.GetSelectedFacility()
+        Dim TTText As String = ""
+
+        ' Save all the usage values each time we update to allow updates for changing the facilit
+        BlueprintTabFacility.GetSelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
+        BlueprintTabFacility.GetFacility(ProductionType.ComponentManufacturing).FacilityUsage = SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits
+        BlueprintTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage() / DivideUnits
+        BlueprintTabFacility.GetFacility(ProductionType.Invention).FacilityUsage = SelectedBlueprint.GetInventionUsage() / DivideUnits
+        BlueprintTabFacility.GetFacility(ProductionType.Copying).FacilityUsage = SelectedBlueprint.GetCopyUsage() / DivideUnits
+
+        ' Show the usage cost for the activity selected
+        If UsedFacility.IncludeActivityUsage Then
+            Select Case UsedFacility.Activity
+                Case ActivityManufacturing
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetManufacturingFacility, True)
+                Case ActivityInvention
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetInventionUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetInventionFacility, False)
+                Case ActivityCopying
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetCopyUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetCopyFacility, False)
+                Case ActivityComponentManufacturing
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetComponentFacilityUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetComponentManufacturingFacility, True)
+                Case ActivityCapComponentManufacturing
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetCapitalComponentManufacturingFacility, True)
+            End Select
+        Else
+            UsedFacility.FacilityUsage = 0
+        End If
+
+        ' Set the tool tip text
+        Call BlueprintTabFacility.UpdateUsage(TTText)
+
+    End Sub
+
     ' Check if the runs they entered can be made with the number of blueprints, this only applies to BPC's (T2 and T3)
     Private Sub UpdateBPLinesandBPs()
 
@@ -8222,8 +7614,7 @@ ExitForm:
         If BPHistory.Count > 0 And LocationID < BPHistory.Count And LocationID >= 0 Then
             With BPHistory(LocationID)
                 LoadingBPfromHistory = True
-                Call LoadBPfromEvent(.BPID, .BuildType, .Inputs, .SentFrom, .BuildTeam, .ComponentTeam, .CopyTeam,
-                                           .BuildFacility, .ComponentFacility, .CapComponentFacility, .InventionFacility, .CopyFacility, .IncludeTaxes,
+                Call LoadBPfromEvent(.BPID, .BuildType, .Inputs, .SentFrom, .BuildFacility, .ComponentFacility, .CapComponentFacility, .InventionFacility, .CopyFacility, .IncludeTaxes,
                                            .IncludeFees, .MEValue, .TEValue, .SentRuns, .ManufacturingLines, .LabLines, .NumBPs, .AddlCosts, .PPU)
             End With
 
@@ -8258,16 +7649,6 @@ ExitForm:
         ' Set the usage tool tip data
         Dim TTString As String = ""
 
-        ' TODO - need to update if they add Teams back in
-        'TTString = "Total cost of doing the selected activity at this facility using:" & vbCrLf
-        'If cmbBPFacilityActivities.Text = ActivityCopying Then
-        '    TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseCopyJobCost, 2) & " " & vbCrLf
-        'ElseIf cmbBPFacilityActivities.Text = ActivityInvention Then
-        '    TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseInventionJobCost, 2) & " " & vbCrLf
-        'Else
-        '    TTString = TTString & "Base Job Cost = " & FormatNumber(SelectedBlueprint.GetBaseJobCost, 2) & " " & vbCrLf
-        'End If
-
         TTString = TTString & "System Index = " & FormatPercent(SentFacility.CostIndex, 2) & " " & vbCrLf
         If IncludeTax Then
             TTString = TTString & "Facility Tax Rate = " & FormatPercent(SentFacility.TaxRate, 2) & " " & vbCrLf
@@ -8282,6 +7663,8 @@ ExitForm:
     Private Sub btnBPUpdateCostIndex_Click(sender As System.Object, e As System.EventArgs) Handles btnBPUpdateCostIndex.Click
         ' Check the data
         Dim Text As String = txtBPUpdateCostIndex.Text.Replace("%", "")
+        Dim SelectedFacility As IndustryFacility = BlueprintTabFacility.GetSelectedFacility
+        Dim SelectedActivity As String = BlueprintTabFacility.GetSelectedFacility.Activity
 
         If Text <> "" Then
             If Not IsNumeric(Text) Then
@@ -8291,53 +7674,47 @@ ExitForm:
             End If
         End If
 
-        ''If cmbBPFacilityActivities.Text = "Select Activity" Then
-        ''    MsgBox("Please select an activity", vbInformation, Application.ProductName)
-        ''    cmbBPFacilityActivities.Focus()
-        ''    Exit Sub
-        ''End If
-
         Application.UseWaitCursor = True
         Application.DoEvents()
 
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
-        Dim SolarSystemName As String = "" '= Trim(FormatDBString(cmbBPFacilitySystem.Text.Substring(0, InStr(cmbBPFacilitySystem.Text, "(") - 1)))
+        Dim SolarSystemName As String = Trim(FormatDBString(SelectedFacility.SolarSystemName.Substring(0, InStr(SelectedFacility.SolarSystemName, "(") - 1)))
         Dim CostIndex As String = CStr(Val(txtBPUpdateCostIndex.Text.Replace("%", "")) / 100)
 
         '' Look up Solar System ID
         Dim SSID As String = CStr(GetSolarSystemID(SolarSystemName))
         Dim TempActivityID As String = ""
 
-        'Select Case cmbBPFacilityActivities.Text
-        '    Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-        '        TempActivityID = "1"
-        '    Case ActivityCopying
-        '        TempActivityID = "5"
-        '    Case ActivityInvention
-        '        TempActivityID = "8"
-        '    Case Else
-        '        TempActivityID = "1"
-        'End Select
+        Select Case SelectedActivity
+            Case ManufacturingFacility.MY_ActivityManufacturing ', ManufacturingFacility.MY_ActivityComponentManufacturing, ManufacturingFacility.MY_ActivityCapComponentManufacturing
+                TempActivityID = "1"
+            Case ManufacturingFacility.MY_ActivityCopying
+                TempActivityID = "5"
+            Case ManufacturingFacility.MY_ActivityInvention
+                TempActivityID = "8"
+            Case Else
+                TempActivityID = "1"
+        End Select
 
         SQL = "SELECT * FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
 
-        'Sql = Sql & "AND ACTIVITY_NAME = '" & cmbBPFacilityActivities.Text & "'"
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        SQL = SQL & "AND ACTIVITY_NAME = '" & SelectedFacility.Activity & "'"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
         rsCheck.Read()
 
-        '' See if the Current facility data exists, and update it. If not, then insert a new record
-        'If rsCheck.HasRows Then
-        '    ' Update
-        '    SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES SET COST_INDEX = " & CostIndex
-        '    SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_NAME = '" & cmbBPFacilityActivities.Text & "'"
-        'Else
-        '    ' Insert 
-        '    SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SolarSystemName & "'," & TempActivityID & ",'"
-        '    SQL = SQL & cmbBPFacilityActivities.Text & "'," & CostIndex & ")"
+        ' See if the Current facility data exists, and update it. If not, then insert a new record
+        If rsCheck.HasRows Then
+            ' Update
+            SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES SET COST_INDEX = " & CostIndex
+            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_NAME = '" & SelectedActivity & "'"
+        Else
+            ' Insert 
+            SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SolarSystemName & "'," & TempActivityID & ",'"
+            SQL = SQL & SelectedActivity & "'," & CostIndex & ")"
 
-        'End If
+        End If
 
         rsCheck.Close()
         DBCommand = Nothing
@@ -8346,7 +7723,7 @@ ExitForm:
 
         ' Update the station records for this system
         SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex
-        'SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
+        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
 
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -8375,25 +7752,25 @@ ExitForm:
                     FWUpgradeLevel = 0
             End Select
 
-            'If rsCheck.HasRows Then
-            '    SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
-            '    SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID
-            'Else
-            '    SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SSID & "," & CStr(FWUpgradeLevel) & ")"
-            'End If
+            If rsCheck.HasRows Then
+                SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
+                SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID
+            Else
+                SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SSID & "," & CStr(FWUpgradeLevel) & ")"
+            End If
 
             Call EVEDB.ExecuteNonQuerySQL(SQL)
             rsCheck.Close()
 
         End If
 
-        ' Reload the facility now
-        'Call SetAllFacilities(True)
+        ' Reload all the facilities to get the change
+        Call BlueprintTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab)
+
+        ' Refresh the bp, which will reload the facility with the changes
+        Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
 
         btnBPUpdateCostIndex.Enabled = False
-
-        ' Update the current system loaded with the new index
-        'cmbBPFacilitySystem.Text = SolarSystemName & " (" & FormatNumber(CostIndex, 3) & ")"
 
         Application.UseWaitCursor = False
         Application.DoEvents()
@@ -8411,6 +7788,24 @@ ExitForm:
         txtBPMarketPriceEdit.Visible = True
         txtBPMarketPriceEdit.Focus()
     End Sub
+
+    Private Function DoesBPHaveBuildableComponents(BPID As Long) As Boolean
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+
+        ' See if this has buildable components
+        SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINTS "
+        SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})"
+        DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+
+        If readerBP.Read Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
 
 #End Region
 
@@ -11024,7 +10419,7 @@ ExitSub:
             ' See if the record is in the cache first
             SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " And REGIONLIST = '" & RegionSystemSearchList & "'"
 
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPriceCheck = DBCommand.ExecuteReader
 
             If Not readerPriceCheck.HasRows Then
@@ -14598,327 +13993,6 @@ ExitSub:
     '    End If
     'End Sub
 
-    ' Team functions
-    Private Sub btnCalcSaveManufacturingTeam_Click(sender As System.Object, e As System.EventArgs) Handles btnCalcSaveManufacturingTeam.Click
-
-        SelectedCalcManufacturingTeam.SaveTeam(TeamType.Manufacturing, CalcTab)
-        lblCalcManufacturingTeamDefault.Visible = True
-        btnCalcSaveManufacturingTeam.Enabled = False
-
-        MsgBox("Manufacturing Team Saved", vbInformation, Application.ProductName)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.DropDown
-        ' If you drop down, don't show the text window
-        cmbCalcManufacturingTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbCalcManufacturingTeam.AutoCompleteSource = AutoCompleteSource.None
-        ComboMenuDown = True
-
-        If Not CalcManufacturingTeamComboLoaded Then
-            Dim TempCombo As New ComboBox
-            TempCombo.Text = ActivityManufacturing
-            Call LoadTeamCombo(False, cmbCalcManufacturingTeam, TempCombo, txtCalcManufacturingTeamBonus, lblCalcManufacturingTeamDefault, btnCalcSaveManufacturingTeam, CalcTab)
-            CalcManufacturingTeamComboLoaded = True
-        End If
-
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        Application.DoEvents()
-        cmbCalcManufacturingTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbCalcManufacturingTeam.AutoCompleteSource = AutoCompleteSource.ListItems
-        ComboMenuDown = False
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_GotFocus(sender As Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.GotFocus
-        Call cmbCalcManufacturingTeam.SelectAll()
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbCalcManufacturingTeam.KeyDown
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the team if the text is in the combo
-        If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbCalcManufacturingTeam.SelectedItem.ToString, ActivityManufacturing, txtCalcManufacturingTeamBonus, lblCalcManufacturingTeamDefault, btnCalcSaveManufacturingTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbCalcManufacturingTeam.MouseWheel
-        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
-        If ComboMenuDown Then
-            MouseWheelSelection = False
-        Else
-            MouseWheelSelection = True
-        End If
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.SelectedIndexChanged
-        Call LoadTeam(cmbCalcManufacturingTeam.SelectedItem.ToString, ActivityManufacturing, txtCalcManufacturingTeamBonus, lblCalcManufacturingTeamDefault, btnCalcSaveManufacturingTeam, CalcTab, Nothing)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcManufacturingTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbCalcManufacturingTeam.SelectionChangeCommitted
-        If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
-            Call ResetRefresh()
-            Call LoadTeam(cmbCalcManufacturingTeam.SelectedItem.ToString, ActivityManufacturing, txtCalcManufacturingTeamBonus, lblCalcManufacturingTeamDefault, btnCalcSaveManufacturingTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub btnCalcSaveComponentManufacturingTeam_Click(sender As System.Object, e As System.EventArgs) Handles btnCalcSaveComponentManufacturingTeam.Click
-
-        SelectedCalcComponentManufacturingTeam.SaveTeam(TeamType.ComponentManufacturing, CalcTab)
-        lblCalcComponentManufacturingTeamDefault.Visible = True
-        btnCalcSaveComponentManufacturingTeam.Enabled = False
-
-        MsgBox("Component Manufacturing Team Saved", vbInformation, Application.ProductName)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcComponentManufacturingTeam.DropDown
-        ' If you drop down, don't show the text window
-        cmbCalcComponentManufacturingTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbCalcComponentManufacturingTeam.AutoCompleteSource = AutoCompleteSource.None
-        ComboMenuDown = True
-
-        If Not CalcComponentManufacturingTeamComboLoaded Then
-            Dim TempCombo As New ComboBox
-            TempCombo.Text = ActivityComponentManufacturing
-            Call LoadTeamCombo(False, cmbCalcComponentManufacturingTeam, TempCombo, txtCalcComponentManufacturingTeamBonus, lblCalcComponentManufacturingTeamDefault, btnCalcSaveComponentManufacturingTeam, CalcTab, Nothing)
-            CalcComponentManufacturingTeamComboLoaded = True
-        End If
-
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbCalcComponentManufacturingTeam.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        Application.DoEvents()
-        cmbCalcComponentManufacturingTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbCalcComponentManufacturingTeam.AutoCompleteSource = AutoCompleteSource.ListItems
-        ComboMenuDown = False
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_GotFocus(sender As Object, e As System.EventArgs) Handles cmbCalcComponentManufacturingTeam.GotFocus
-        Call cmbCalcComponentManufacturingTeam.SelectAll()
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbCalcComponentManufacturingTeam.KeyDown
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the team if the text is in the combo
-        If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbCalcComponentManufacturingTeam.SelectedItem.ToString, ActivityComponentManufacturing, txtCalcComponentManufacturingTeamBonus, lblCalcComponentManufacturingTeamDefault, btnCalcSaveComponentManufacturingTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbCalcComponentManufacturingTeam.MouseWheel
-        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
-        If ComboMenuDown Then
-            MouseWheelSelection = False
-        Else
-            MouseWheelSelection = True
-        End If
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcComponentManufacturingTeam.SelectedIndexChanged
-        Call LoadTeam(cmbCalcComponentManufacturingTeam.SelectedItem.ToString, ActivityComponentManufacturing, txtCalcComponentManufacturingTeamBonus, lblCalcComponentManufacturingTeamDefault, btnCalcSaveComponentManufacturingTeam, CalcTab, Nothing)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcComponentManufacturingTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbCalcComponentManufacturingTeam.SelectionChangeCommitted
-        If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
-            Call LoadTeam(cmbCalcComponentManufacturingTeam.SelectedItem.ToString, ActivityComponentManufacturing, txtCalcComponentManufacturingTeamBonus, lblCalcComponentManufacturingTeamDefault, btnCalcSaveComponentManufacturingTeam, CalcTab, Nothing)
-            Call ResetRefresh()
-        End If
-    End Sub
-
-    ' Save the team to xml and reset the default if not set
-    Private Sub btnCalcSaveInventionTeam_Click(sender As System.Object, e As System.EventArgs) Handles btnCalcSaveInventionTeam.Click
-
-        SelectedCalcInventionTeam.SaveTeam(TeamType.Invention, CalcTab)
-        lblCalcInventionTeamDefault.Visible = True
-        btnCalcSaveInventionTeam.Enabled = False
-
-        MsgBox("Invention Team Saved", vbInformation, Application.ProductName)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcInventionTeam.DropDown
-        ' If you drop down, don't show the text window
-        cmbCalcInventionTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbCalcInventionTeam.AutoCompleteSource = AutoCompleteSource.None
-        ComboMenuDown = True
-
-        If Not CalcInventionTeamComboLoaded Then
-            Dim TempCombo As New ComboBox
-            TempCombo.Text = ActivityInvention
-            Call LoadTeamCombo(False, cmbCalcInventionTeam, TempCombo, txtCalcInventionTeamBonus, lblCalcInventionTeamDefault, btnCalcSaveInventionTeam, CalcTab)
-            CalcInventionTeamComboLoaded = True
-        End If
-
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbCalcInventionTeam.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbCalcInventionTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbCalcInventionTeam.AutoCompleteSource = AutoCompleteSource.ListItems
-        ComboMenuDown = False
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_GotFocus(sender As Object, e As System.EventArgs) Handles cmbCalcInventionTeam.GotFocus
-        Call cmbCalcInventionTeam.SelectAll()
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbCalcInventionTeam.KeyDown
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the team if the text is in the combo
-        If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbCalcInventionTeam.SelectedItem.ToString, ActivityInvention, txtCalcInventionTeamBonus, lblCalcInventionTeamDefault, btnCalcSaveInventionTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbCalcInventionTeam.MouseWheel
-        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
-        If ComboMenuDown Then
-            MouseWheelSelection = False
-        Else
-            MouseWheelSelection = True
-        End If
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcInventionTeam.SelectedIndexChanged
-        Call LoadTeam(cmbCalcInventionTeam.SelectedItem.ToString, ActivityInvention, txtCalcInventionTeamBonus, lblCalcInventionTeamDefault, btnCalcSaveInventionTeam, CalcTab, Nothing)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcInventionTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbCalcInventionTeam.SelectionChangeCommitted
-        If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
-            Call ResetRefresh()
-            Call LoadTeam(cmbCalcInventionTeam.SelectedItem.ToString, ActivityInvention, txtCalcInventionTeamBonus, lblCalcInventionTeamDefault, btnCalcSaveInventionTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    ' Save the team to xml and reset the default if not set
-    Private Sub btnCalcSaveCopyTeam_Click(sender As System.Object, e As System.EventArgs) Handles btnCalcSaveCopyTeam.Click
-
-        SelectedCalcCopyTeam.SaveTeam(TeamType.Copy, CalcTab)
-        lblCalcCopyTeamDefault.Visible = True
-        btnCalcSaveCopyTeam.Enabled = False
-
-        MsgBox("Copy Team Saved", vbInformation, Application.ProductName)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_DropDown(sender As Object, e As System.EventArgs) Handles cmbCalcCopyTeam.DropDown
-        ' If you drop down, don't show the text window
-        cmbCalcCopyTeam.AutoCompleteMode = AutoCompleteMode.None
-        cmbCalcCopyTeam.AutoCompleteSource = AutoCompleteSource.None
-        ComboMenuDown = True
-
-        If Not CalcCopyTeamComboLoaded Then
-            Dim TempCombo As New ComboBox
-            TempCombo.Text = ActivityCopying
-            Call LoadTeamCombo(False, cmbCalcCopyTeam, TempCombo, txtCalcCopyTeamBonus, lblCalcCopyTeamDefault, btnCalcSaveCopyTeam, CalcTab)
-            CalcCopyTeamComboLoaded = True
-        End If
-
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbCalcCopyTeam.DropDownClosed
-        ' If it closes up, re-enable autocomplete
-        cmbCalcCopyTeam.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-        cmbCalcCopyTeam.AutoCompleteSource = AutoCompleteSource.ListItems
-        ComboMenuDown = False
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_GotFocus(sender As Object, e As System.EventArgs) Handles cmbCalcCopyTeam.GotFocus
-        Call cmbCalcCopyTeam.SelectAll()
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbCalcCopyTeam.KeyDown
-        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
-            ComboBoxArrowKeys = True
-        Else
-            ComboBoxArrowKeys = False
-        End If
-
-        ' If they select enter, then load the team if the text is in the combo
-        If e.KeyValue = Keys.Enter Then
-            Call LoadTeam(cmbCalcCopyTeam.SelectedItem.ToString, ActivityCopying, txtCalcCopyTeamBonus, lblCalcCopyTeamDefault, btnCalcSaveCopyTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbCalcCopyTeam.MouseWheel
-        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
-        If ComboMenuDown Then
-            MouseWheelSelection = False
-        Else
-            MouseWheelSelection = True
-        End If
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbCalcCopyTeam.SelectedIndexChanged
-        Call LoadTeam(cmbCalcCopyTeam.SelectedItem.ToString, ActivityCopying, txtCalcCopyTeamBonus, lblCalcCopyTeamDefault, btnCalcSaveCopyTeam, CalcTab, Nothing)
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub cmbCalcCopyTeam_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbCalcCopyTeam.SelectionChangeCommitted
-        If Not MouseWheelSelection And Not ComboBoxArrowKeys Then
-            Call ResetRefresh()
-            Call LoadTeam(cmbCalcCopyTeam.SelectedItem.ToString, ActivityCopying, txtCalcCopyTeamBonus, lblCalcCopyTeamDefault, btnCalcSaveCopyTeam, CalcTab, Nothing)
-        End If
-    End Sub
-
-    Private Sub txtBPTeamBonus_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPTeamBonus.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub txtCalcManufacturingTeamBonus_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcManufacturingTeamBonus.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub txtCalcInventionTeamBonus_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcInventionTeamBonus.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub txtCalcCopyTeamBonus_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcCopyTeamBonus.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub chkCalcIncludeNoTeamManufacturing_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIncludeNoTeamManufacturing.CheckedChanged
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub chkCalcIncludeNoTeamComponents_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIncludeNoTeamComponents.CheckedChanged
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub chkCalcIncludeNoTeamCopy_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIncludeNoTeamCopy.CheckedChanged
-        Call ResetRefresh()
-    End Sub
-
-    Private Sub chkCalcIncludeNoTeamInvention_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcIncludeNoTeamInvention.CheckedChanged
-        Call ResetRefresh()
-    End Sub
-
     Private Sub CheckRelicCalcChecks()
         Dim i As Integer
 
@@ -14961,17 +14035,17 @@ CheckTechs:
         If chkCalcDecryptorforT2.Enabled And chkCalcDecryptorforT3.Enabled Then
             ' If both enabled, one needs to be checked
             If chkCalcDecryptorforT2.Checked = False And chkCalcDecryptorforT3.Checked = False Then
-                MsgBox("Must select Decryptor use Tech", vbExclamation, Application.ProductName)
+                MsgBox("Must select Decryptor if using Tech 2 and 3", vbExclamation, Application.ProductName)
                 chkCalcDecryptorforT2.Checked = True
             End If
         ElseIf chkCalcDecryptorforT2.Enabled Then
             If chkCalcDecryptorforT2.Checked = False Then
-                MsgBox("Must select Decryptor use Tech", vbExclamation, Application.ProductName)
+                MsgBox("Must select Decryptor if using Tech 2", vbExclamation, Application.ProductName)
                 chkCalcDecryptorforT2.Checked = True
             End If
         ElseIf chkCalcDecryptorforT3.Enabled Then
             If chkCalcDecryptorforT3.Checked = False Then
-                MsgBox("Must select Decryptor use Tech", vbExclamation, Application.ProductName)
+                MsgBox("Must select Decryptor if using Tech 3", vbExclamation, Application.ProductName)
                 chkCalcDecryptorforT3.Checked = True
             End If
         End If
@@ -16931,7 +16005,7 @@ CheckTechs:
             chkCalcMisc.Checked = .CheckBPTypeMisc
             chkCalcDeployables.Checked = .CheckBPTypeDeployables
             chkCalcCelestials.Checked = .CheckBPTypeCelestials
-            chkCalcStructureModules.Checked = .checkbptypestructuremodules
+            chkCalcStructureModules.Checked = .CheckBPTypeStructureModules
             chkCalcStructureRigs.Checked = .CheckBPTypeStationParts
 
             ' Tech
@@ -17042,39 +16116,6 @@ CheckTechs:
                 Case rbtnCalcCompareRawMats.Text
                     rbtnCalcCompareRawMats.Checked = True
             End Select
-
-            ' Default teams
-            CalcManufacturingTeamComboLoaded = True ' Don't trigger a combo load yet
-            Dim TempCombo As New ComboBox
-            TempCombo.Text = ActivityManufacturing
-            Call LoadDefaultTeam(True, TempCombo, False, cmbCalcManufacturingTeam, txtCalcManufacturingTeamBonus, lblCalcManufacturingTeamDefault, btnCalcSaveManufacturingTeam, CalcTab)
-            ' Enable default label and disable save since just loaded the default
-            lblCalcManufacturingTeamDefault.Visible = True
-            btnCalcSaveManufacturingTeam.Enabled = False
-            CalcManufacturingTeamComboLoaded = False
-
-            CalcComponentManufacturingTeamComboLoaded = True ' Don't trigger a combo load yet
-            TempCombo.Text = ActivityComponentManufacturing
-            Call LoadDefaultTeam(True, TempCombo, False, cmbCalcComponentManufacturingTeam, txtCalcComponentManufacturingTeamBonus, lblCalcComponentManufacturingTeamDefault, btnCalcSaveComponentManufacturingTeam, CalcTab)
-            ' Enable default label and disable save since just loaded the default
-            lblCalcComponentManufacturingTeamDefault.Visible = True
-            btnCalcSaveComponentManufacturingTeam.Enabled = False
-            CalcComponentManufacturingTeamComboLoaded = False
-
-            'CalcInventionTeamComboLoaded = True ' Don't trigger a combo load yet
-            'Call LoadDefaultTeam(True, ActivityInvention, False, cmbCalcInventionTeam, txtCalcInventionTeamBonus, lblCalcInventionTeamDefault, btnCalcSaveInventionTeam, CalcTab)
-            '' Enable default label and disable save since just loaded the default
-            'lblCalcInventionTeamDefault.Visible = True
-            'btnCalcSaveInventionTeam.Enabled = False
-            'CalcInventionTeamComboLoaded = False
-
-            CalcCopyTeamComboLoaded = True ' Don't trigger a combo load yet
-            TempCombo.Text = ActivityCopying
-            Call LoadDefaultTeam(True, TempCombo, False, cmbCalcCopyTeam, txtCalcCopyTeamBonus, lblCalcCopyTeamDefault, btnCalcSaveCopyTeam, CalcTab)
-            ' Enable default label and disable save since just loaded the default
-            lblCalcCopyTeamDefault.Visible = True
-            btnCalcSaveCopyTeam.Enabled = False
-            CalcCopyTeamComboLoaded = False
 
             '' Load the Default facilities for the tab
             'Call LoadDefaultCalcBaseFacility()
@@ -18125,12 +17166,6 @@ CheckTechs:
                 OrigME = CInt(InsertItem.BPME)
                 OrigTE = CInt(InsertItem.BPTE)
 
-                ' Set all the teams regardless of tech used
-                InsertItem.ManufacturingTeam = SelectedCalcManufacturingTeam
-                InsertItem.ComponentTeam = SelectedCalcComponentManufacturingTeam
-                InsertItem.InventionTeam = SelectedCalcInventionTeam
-                InsertItem.CopyTeam = SelectedCalcCopyTeam
-
                 ' Runs and lines
                 InsertItem.Runs = CInt(txtCalcRuns.Text)
                 InsertItem.ProductionLines = CInt(txtCalcProdLines.Text)
@@ -18272,21 +17307,17 @@ CheckTechs:
                                 InsertItem.BPTE = BaseT2T3TE
                             End If
 
-                            ' Teams and facilities
+                            ' Facilities
                             If InsertItem.TechLevel = "T2" Then
                                 InsertItem.InventionFacility = SelectedCalcInventionFacility
                                 InsertItem.CopyFacility = SelectedCalcCopyFacility
-                                InsertItem.CopyTeam = SelectedCalcCopyTeam
                             ElseIf InsertItem.TechLevel = "T3" Then
                                 InsertItem.InventionFacility = SelectedCalcT3InventionFacility
                                 InsertItem.CopyFacility = NoFacility
-                                InsertItem.CopyTeam = NoTeam
                             End If
 
                             InsertItem.InventionFacility.FWUpgradeLevel = FWInventionUpgradeLevel
                             InsertItem.CopyFacility.FWUpgradeLevel = FWCopyUpgradeLevel
-
-                            InsertItem.InventionTeam = NoTeam ' Disable until CCP implements
 
                             Dim BaseInputs As String = InsertItem.Inputs
 
@@ -18303,7 +17334,7 @@ CheckTechs:
                                         If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT3Owned.Checked) Or
                                             (rbtnCalcBPOwned.Checked And CheckOwnedBP) Then
                                             ' Insert the item 
-                                            Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False, ListRowFormats)
+                                            Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, ListRowFormats)
                                         End If
                                     End If
                                 Next
@@ -18315,7 +17346,7 @@ CheckTechs:
                                 If rbtnCalcAllBPs.Checked Or (chkCalcIncludeT2Owned.Checked And UserInventedBPs.Contains(InsertItem.BPID)) Or
                                     (rbtnCalcBPOwned.Checked And CheckOwnedBP) Or rbtnCalcBPFavorites.Checked Then
                                     ' Insert the item 
-                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False, ListRowFormats)
+                                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, ListRowFormats)
                                 End If
                             End If
 
@@ -18337,7 +17368,7 @@ CheckTechs:
                         InsertItem.BlueprintType = OriginalBPType
 
                         ' Insert the item 
-                        Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False, ListRowFormats)
+                        Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, ListRowFormats)
                     End If
 
                 Else ' All T1 and others
@@ -18347,11 +17378,9 @@ CheckTechs:
 
                     InsertItem.InventionFacility = NoFacility
                     InsertItem.CopyFacility = NoFacility
-                    InsertItem.CopyTeam = NoTeam
-                    InsertItem.InventionTeam = NoTeam
 
                     ' Insert the items based on compare types
-                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, False, False, False, ListRowFormats)
+                    Call InsertItemCalcType(BaseItems, InsertItem, ProcessAllMultiUsePOSArrays, MultiUsePOSArrays, ListRowFormats)
                 End If
 
                 ' For each record, update the progress bar
@@ -18399,7 +17428,6 @@ CheckTechs:
                 gbCalcFilter.Enabled = False
                 gbCalcFWUpgrade.Enabled = False
                 gbCalcIgnoreinCalcs.Enabled = False
-                gbCalcIncludeNoTeam.Enabled = False
                 gbCalcIncludeOwned.Enabled = False
                 gbCalcInvention.Enabled = False
                 gbCalcProdLines.Enabled = False
@@ -18408,7 +17436,6 @@ CheckTechs:
                 gbCalcTextFilter.Enabled = False
                 lstManufacturing.Enabled = False
                 tabCalcFacilities.Enabled = False
-                tabCalcTeams.Enabled = False
 
                 If Not UserApplicationSettings.DisableSVR Then
 
@@ -18488,8 +17515,8 @@ CheckTechs:
                     ' Construct the BP
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                    NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                   UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingTeam, InsertItem.ManufacturingFacility,
-                                   InsertItem.ComponentTeam, InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
+                                   UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
+                                  InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
                     ' Set the T2 and T3 inputs if necessary
                     If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
@@ -18508,8 +17535,8 @@ CheckTechs:
                         End If
 
                         ' Construct the T2/T3 BP
-                        Call ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility, InsertItem.InventionTeam,
-                                                               InsertItem.CopyFacility, InsertItem.CopyTeam, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
+                        Call ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility,
+                                                               InsertItem.CopyFacility, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
 
                     End If
 
@@ -18591,13 +17618,13 @@ CheckTechs:
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3 Then
+                                If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3 Then
                                     InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Then
+                                If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Then
                                     InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
@@ -18657,13 +17684,13 @@ CheckTechs:
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                            If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
@@ -18688,15 +17715,14 @@ CheckTechs:
                             ' *** For Build/Buy we need to construct a new BP and add that
                             ' Construct the BP
                             ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
-                                           NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                           UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingTeam,
-                                           InsertItem.ManufacturingFacility, InsertItem.ComponentTeam,
-                                           InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
+                                                        NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
+                                                        UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
+                                                        InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
 
                             If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP
-                                ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility, InsertItem.InventionTeam,
-                                                                       InsertItem.CopyFacility, InsertItem.CopyTeam, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
+                                ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility,
+                                                                       InsertItem.CopyFacility, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
 
                             End If
 
@@ -18740,13 +17766,13 @@ CheckTechs:
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                                If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                                If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                     InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
                                 End If
 
-                                If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                                If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                     InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                                 Else
                                     InsertItem.CopyCost = 0
@@ -18844,13 +17870,13 @@ CheckTechs:
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                            If (ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
                             End If
 
-                            If ManufacturingBlueprint.GetTechLevel = BlueprintTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
+                            If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 And InsertItem.BlueprintType <> BPType.Original Then
                                 InsertItem.CopyCost = ManufacturingBlueprint.GetCopyCost
                             Else
                                 InsertItem.CopyCost = 0
@@ -19203,7 +18229,6 @@ ExitCalc:
         gbCalcFilter.Enabled = True
         gbCalcFWUpgrade.Enabled = True
         gbCalcIgnoreinCalcs.Enabled = True
-        gbCalcIncludeNoTeam.Enabled = True
         gbCalcIncludeOwned.Enabled = True
         gbCalcInvention.Enabled = True
         gbCalcProdLines.Enabled = True
@@ -19212,7 +18237,6 @@ ExitCalc:
         gbCalcTextFilter.Enabled = True
         lstManufacturing.Enabled = True
         tabCalcFacilities.Enabled = True
-        tabCalcTeams.Enabled = True
 
         Application.UseWaitCursor = False
         Me.Cursor = Cursors.Default
@@ -19231,22 +18255,6 @@ ExitCalc:
         End If
 
     End Sub
-
-    ' Builds a string to display Team Bonuses
-    Private Function GetTeamBonusDisplayString(Bonuses As List(Of IndustryTeamBonus)) As String
-        Dim BonusString As String = ""
-
-        For i = 0 To Bonuses.Count - 1
-            BonusString = BonusString & Bonuses(i).BonusSpecialtyGroupName & " - " & Bonuses(i).BonusValue & "% " & Bonuses(i).BonusType & " | "
-        Next
-
-        If BonusString <> "" Then
-            BonusString = BonusString.Substring(0, Len(BonusString) - 2)
-        End If
-
-        Return BonusString
-
-    End Function
 
     ' Finds the total items sold over the time period for the region sent
     Private Function CalculateTotalItemsSold(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer) As Long
@@ -19508,9 +18516,7 @@ ExitCalc:
 
     ' Just adds an item into the list and duplicates if raw or components checked
     Private Sub InsertItemCalcType(ByRef ManufacturingItemList As List(Of ManufacturingItem), ByVal BaseItem As ManufacturingItem,
-                                   ByVal AddMultipleFacilities As Boolean, ByVal FacilityList As List(Of IndustryFacility),
-                                   ByVal AddManufacturingNoTeam As Boolean, ByVal AddComponentsNoTeam As Boolean, ByVal AddCopyingNoTeam As Boolean,
-                                   ByRef FormatList As List(Of RowFormat))
+                                   ByVal AddMultipleFacilities As Boolean, ByVal FacilityList As List(Of IndustryFacility), ByRef FormatList As List(Of RowFormat))
 
         Dim CalcType As String = ""
         Dim TempItem As New ManufacturingItem
@@ -19536,8 +18542,6 @@ ExitCalc:
                 TempItem.CalcType = CalcType
                 ' Add it
                 ManufacturingItemList.Add(TempItem)
-                ' If we want to add No Team, make sure the current team isn't no team and then add it as well
-                ' Call InsertItemNoTeamCalcType(ManufacturingItemList, TempItem, AddManufacturingNoTeam, AddComponentsNoTeam, AddCopyingNoTeam, ListFormats)
                 ' Reset the Item
                 TempItem = New ManufacturingItem
             Next
@@ -19548,8 +18552,6 @@ ExitCalc:
             TempItem.CalcType = CalcType
 
             ManufacturingItemList.Add(TempItem)
-            ' If we want to add No Team, make sure the current team isn't no team and then add it as well
-            'Call InsertItemNoTeamCalcType(ManufacturingItemList, TempItem, AddManufacturingNoTeam, AddComponentsNoTeam, AddCopyingNoTeam, ListFormats)
         End If
 
         ' Set the list row format for just display, after calcs it will reset
@@ -19578,40 +18580,6 @@ ExitCalc:
 
         ' Insert the format
         FormatList.Add(CurrentRowFormat)
-
-    End Sub
-
-    ' Inserts a record for no team
-    Private Sub InsertItemNoTeamCalcType(ByRef ManufacturingItemList As List(Of ManufacturingItem), ByVal BaseItem As ManufacturingItem,
-                                         ByVal AddManufacturingNoTeam As Boolean, ByVal AddComponentsNoTeam As Boolean, ByVal AddCopyingNoTeam As Boolean,
-                                         ByRef FormatList As List(Of RowFormat))
-
-        Dim TempItem As New ManufacturingItem
-
-        ' If we want to add No Team, make sure the current team isn't no team and then add it as well
-        If AddManufacturingNoTeam And BaseItem.ManufacturingTeam.TeamName <> NoTeam.TeamName Then
-            TempItem = CType(BaseItem.Clone, ManufacturingItem)
-            ListIDIterator += 1
-            TempItem.ListID = ListIDIterator
-            TempItem.ManufacturingTeam = NoTeam
-            ManufacturingItemList.Add(TempItem)
-        End If
-
-        If AddComponentsNoTeam And BaseItem.ComponentTeam.TeamName <> NoTeam.TeamName Then
-            TempItem = CType(BaseItem.Clone, ManufacturingItem)
-            ListIDIterator += 1
-            TempItem.ListID = ListIDIterator
-            TempItem.ComponentTeam = NoTeam
-            ManufacturingItemList.Add(TempItem)
-        End If
-
-        If AddCopyingNoTeam And BaseItem.CopyTeam.TeamName <> NoTeam.TeamName Then
-            TempItem = CType(BaseItem.Clone, ManufacturingItem)
-            ListIDIterator += 1
-            TempItem.ListID = ListIDIterator
-            TempItem.CopyTeam = NoTeam
-            ManufacturingItemList.Add(TempItem)
-        End If
 
     End Sub
 
@@ -20237,8 +19205,8 @@ ExitCalc:
             End If
 
             ' Insert the record if it has a decryptor and T2/T3
-            If (BP.GetTechLevel = BlueprintTechLevel.T2 And chkCalcDecryptorforT2.Checked) Or
-               (BP.GetTechLevel = BlueprintTechLevel.T3 And chkCalcDecryptorforT3.Checked) Then
+            If (BP.GetTechLevel = BPTechLevel.T2 And chkCalcDecryptorforT2.Checked) Or
+               (BP.GetTechLevel = BPTechLevel.T3 And chkCalcDecryptorforT3.Checked) Then
                 TempItem.CalcType = CalcType
                 TempItem.ItemTypeID = BP.GetItemID
                 TempItem.ListLocationID = LocationID
@@ -20350,12 +19318,12 @@ ExitCalc:
                     CompareType = "Raw"
                 End If
 
-                Call LoadBPfromEvent(.BPID, .CalcType, .Inputs, "Manufacturing Tab",
-                                           .ManufacturingTeam, .ComponentTeam, .CopyTeam,
-                                           .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility, .InventionFacility, .CopyFacility,
-                                           chkCalcTaxes.Checked, chkCalcFees.Checked,
-                                           CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
-                                           txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType)
+                Call LoadBPfromEvent(.BPID, .CalcType, .Inputs, SentFromLocation.ManufacturingTab,
+                                     .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility,
+                                     .InventionFacility, .CopyFacility,
+                                     chkCalcTaxes.Checked, chkCalcFees.Checked,
+                                     CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
+                                     txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType)
             End With
         End If
 
@@ -20451,17 +19419,6 @@ ExitCalc:
         Public DivideUnits As Integer
 
         Public JobFee As Double
-        Public TeamFee As Double
-
-        Public ManufacturingTeam As IndustryTeam
-        Public ComponentTeam As IndustryTeam
-        Public InventionTeam As IndustryTeam
-        Public CopyTeam As IndustryTeam
-
-        Public ManufacturingTeamUsage As Double
-        Public ComponentTeamUsage As Double
-        Public CopyTeamUsage As Double
-        Public InventionTeamUsage As Double
 
         Public Function Clone() As Object Implements System.ICloneable.Clone
             Dim CopyofMe As New ManufacturingItem
@@ -20521,11 +19478,6 @@ ExitCalc:
             CopyofMe.InventionCost = InventionCost
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
 
-            CopyofMe.ManufacturingTeam = ManufacturingTeam
-            CopyofMe.ComponentTeam = ComponentTeam
-            CopyofMe.InventionTeam = InventionTeam
-            CopyofMe.CopyTeam = CopyTeam
-
             CopyofMe.ManufacturingFacility = ManufacturingFacility
             CopyofMe.ComponentManufacturingFacility = ComponentManufacturingFacility
             CopyofMe.CapComponentManufacturingFacility = CapComponentManufacturingFacility
@@ -20534,12 +19486,9 @@ ExitCalc:
 
             CopyofMe.BPProductionTime = BPProductionTime
             CopyofMe.TotalProductionTime = TotalProductionTime
-
             CopyofMe.ItemMarketPrice = ItemMarketPrice
-
             CopyofMe.BrokerFees = BrokerFees
             CopyofMe.Taxes = Taxes
-
             CopyofMe.BaseJobCost = BaseJobCost
 
             CopyofMe.NumBPs = NumBPs
@@ -20552,19 +19501,12 @@ ExitCalc:
             CopyofMe.DivideUnits = DivideUnits
 
             CopyofMe.JobFee = JobFee
-            CopyofMe.TeamFee = TeamFee
 
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
             CopyofMe.ComponentManufacturingFacilityUsage = ComponentManufacturingFacilityUsage
             CopyofMe.CapComponentManufacturingFacilityUsage = CapComponentManufacturingFacilityUsage
             CopyofMe.CopyFacilityUsage = CopyFacilityUsage
             CopyofMe.InventionFacilityUsage = InventionFacilityUsage
-
-            CopyofMe.ManufacturingTeamUsage = ManufacturingTeamUsage
-            CopyofMe.ComponentTeamUsage = ComponentTeamUsage
-            'CopyofMe.CapComponentTeamUsage = CapComponentTeamUsage
-            CopyofMe.CopyTeamUsage = CopyTeamUsage
-            CopyofMe.InventionTeamUsage = InventionTeamUsage
 
             Return CopyofMe
 
@@ -24492,6 +23434,15 @@ Leave:
         cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingEfficiencySkillTypeID))
         cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingSkillTypeID))
 
+        ' If this is a dummy account, set these all to 1 - TODO Remove, or re-check so they work even if 0
+        If cmbMineAstrogeology.Text = "" Then
+            cmbMineAstrogeology.Text = "1"
+        End If
+        If cmbMineSkill.Text = "" Then
+            cmbMineSkill.Text = "1"
+        End If
+
+
         If cmbMineOreType.Text = "Gas" Then
             If SelectedCharacter.Skills.GetSkillLevel(GasCloudHarvestingSkillTypeID) = 0 Then
                 ' Set it to base 1 - even though if they don't have this skill they can't fit a gas harvester
@@ -24931,6 +23882,10 @@ Leave:
         ' 4 for Astrology and ice harvesting
         ' 5 for Deep core mining
 
+        If cmbMineSkill.Text = "" Then
+            cmbMineSkill.Text = "1"
+        End If
+
         ' Mining upgrades (ice and ore)
         If CInt(cmbMineSkill.Text) >= 3 And cmbMineOreType.Text <> "Gas" Then
             cmbMineMiningUpgrade.Enabled = True
@@ -24959,6 +23914,10 @@ Leave:
             cmbMineAstrogeology.Enabled = False
             lblMineGasIceHarvesting.Enabled = False
             cmbMineGasIceHarvesting.Enabled = False
+        End If
+
+        If cmbMineAstrogeology.Text = "" Then
+            cmbMineAstrogeology.Text = "1"
         End If
 
         ' Deep core only for asteroid mining
@@ -25007,6 +23966,14 @@ Leave:
 
         UpdatingMiningShips = True
         cmbMineShipType.Items.Clear()
+
+        If cmbMineBaseShipSkill.Text = "" Then
+            cmbMineBaseShipSkill.Text = "1"
+        End If
+
+        If cmbMineExhumers.Text = "" Then
+            cmbMineExhumers.Text = "1"
+        End If
 
         ' For gas and ore, load venture, prospect and other
         If cmbMineOreType.Text <> "Ice" Then
@@ -26334,6 +25301,7 @@ Leave:
         End Function
 
     End Class
+
 
 #End Region
 

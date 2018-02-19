@@ -1,6 +1,6 @@
 ﻿Imports System.Data.SQLite
 
-Public Class frmCitadelFitting
+Public Class frmUpwellStructureFitting
 
     Declare Function SendMessage Lib "User32" Alias "SendMessageA" (ByVal hWnd As Integer, ByVal wMsg As Integer, ByVal wParam As Integer, ByVal lParam As Integer) As Integer
     Const WM_NCLBUTTONDOWN As Integer = &HA1
@@ -11,18 +11,18 @@ Public Class frmCitadelFitting
     Private UpdateChecks As Boolean
 
     ' Public settings after intialized and returned for setting in the facilities
-    Public CitadelName As String = ""
+    Public UpwellStructureName As String = ""
     Private SelectedStructureView As FacilityView ' To help determine where we save citadels, etc. 
     Private SelectedCharacterID As Long
     Private SelectedFacilityProductionType As ProductionType
+    Private SelectedSolarSystemID As Long
+    Private SelectedFacilityID As Long
+    ' Save the selected Upwell Structure so we don't need to look it up
+    Private SelectedUpwellStructure As UpwellStructureDBData
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
     Private UpwellStructureStats As New CitadelAttributes
-    ' Save the selected Upwell Structure so we don't need to look it up
-    Private SelectedUpwellStructure As UpwellStructureDBData
-
-    Private StructureFuelPricesUpdated As Boolean
 
     Private Const UsesMissilesEffectID As Integer = 101
 
@@ -35,9 +35,36 @@ Public Class frmCitadelFitting
     Private ServiceSlotBaseWidth As Integer
     Private ServiceSlotSpacing As Integer
 
+    Private NitrogenFuelBlockBPUpdated As Boolean
+    Private HeliumFuelBlockBPUpdated As Boolean
+    Private HydrogenFuelBlockBPUpdated As Boolean
+    Private OxygenFuelBlockBPUpdated As Boolean
+
+    ' Save these here incase we update the ME
+    Private OriginalNitrogenFuelBlockBPME As Integer
+    Private OriginalHeliumFuelBlockBPME As Integer
+    Private OriginalHydrogenFuelBlockBPME As Integer
+    Private OriginalOxygenFuelBlockBPME As Integer
+    Private OriginalNitrogenFuelBlockBPTE As Integer
+    Private OriginalHeliumFuelBlockBPTE As Integer
+    Private OriginalHydrogenFuelBlockBPTE As Integer
+    Private OriginalOxygenFuelBlockBPTE As Integer
+
     Private SecurityCheckBoxes As List(Of CheckBox)
 
     Private frmPopout As frmBonusPopout
+
+    ' Fuel block IDs
+    Private Enum FuelBlocks
+        Nitrogen = 4051
+        NitrogenBP = 4314
+        Hydrogen = 4246
+        HydrogenBP = 4316
+        Helium = 4247
+        HeliumBP = 4315
+        Oxygen = 4312
+        OxygenBP = 4313
+    End Enum
 
     ' Used to look up modules and rigs to go into what slot
     Private Enum SlotSizes
@@ -69,18 +96,23 @@ Public Class frmCitadelFitting
         Dim MaxCapacitor As Double
         Dim CapacitorRechargeRate As Double
         Dim BaseCapRechargeRate As Double
-        Dim ServiceModuleFuelBPH As Integer ' blocks per hour
+        Dim ServiceModuleFuelBPH As Integer ' Blocks per hour
+        Dim OnlineFuelAmount As Integer ' Blocks to bring services online
 
         Dim LauncherSlots As Integer
 
     End Structure
 
-    Public Sub New(ByVal InitName As String, ByVal CharacterID As Long, ByVal FacilityType As ProductionType,
-                   ByVal FacilityLocation As FacilityView, ByVal FacilitySystemSecurity As Double)
-        FirstLoad = True
+    Public Sub New(ByVal InitUSName As String, ByVal CharacterID As Long, ByVal ProductionTypeCode As ProductionType,
+                   ByVal FacilityLocation As FacilityView, ByVal FacilitySystem As String)
 
         ' This call is required by the designer.
         InitializeComponent()
+
+        ' Save these varibles for later
+        SelectedCharacterID = CharacterID
+        SelectedFacilityProductionType = ProductionTypeCode
+        SelectedStructureView = FacilityLocation
 
         ' Put all the slot images into an array
         With SlotPictureBoxList
@@ -136,6 +168,17 @@ Public Class frmCitadelFitting
         Call SecurityCheckBoxes.Add(chkLowSec)
         Call SecurityCheckBoxes.Add(chkNullSec)
 
+        ' Get the security of the system
+        Dim System As String = FacilitySystem
+
+        If FacilitySystem.Contains("(") Then
+            ' Reset if it has the system index
+            System = FacilitySystem.Substring(0, InStr(FacilitySystem, "(") - 2)
+        End If
+
+        Dim FacilitySystemSecurity As Double = GetSolarSystemSecurityLevel(System)
+        SelectedSolarSystemID = GetSolarSystemID(System)
+
         ' Select the security check box
         If FacilitySystemSecurity <= 0.0 Then
             chkNullSec.Checked = True
@@ -164,16 +207,26 @@ Public Class frmCitadelFitting
         ' Add all the images to the image list
         Call LoadFittingImages()
 
-        ' Load the facility default
-        Call LoadStructure(InitName)
+        ' Load the facility default if saved
+        Call LoadStructure(InitUSName)
 
+        ' Load up all the fuel block data on that tab
         Call LoadFuelBlockDataTab()
 
-        ' Save these varibles for later
-        SelectedCharacterID = CharacterID
-        SelectedStructureView = FacilityLocation
-        SelectedFacilityProductionType = FacilityType
+        NitrogenFuelBlockBPUpdated = False
+        HeliumFuelBlockBPUpdated = False
+        HydrogenFuelBlockBPUpdated = False
+        OxygenFuelBlockBPUpdated = False
 
+        ' Set tool tips
+        If UserApplicationSettings.ShowToolTips Then
+            With MainToolTip
+                .SetToolTip(btnRefreshPrices, "Refreshes prices on screen (useful if update done in other parts of program)")
+                .SetToolTip(btnSavePrices, "Saves prices entered for buying fuel blocks or materials if building")
+                .SetToolTip(btnUpdateBuildCost, "Updated the build cost after updating a Fuel Block ME value")
+                .SetToolTip(btnSaveFuelBlockInfo, "Saves the Fuel Block BP ME data if changed")
+            End With
+        End If
         frmPopout = New frmBonusPopout
 
         FirstLoad = False
@@ -205,6 +258,8 @@ Public Class frmCitadelFitting
                     rbtnNitrogenFuelBlock.Checked = True
                 Case rbtnOxygenFuelBlock.Text
                     rbtnOxygenFuelBlock.Checked = True
+                Case Else
+                    rbtnHeliumFuelBlock.Checked = True
             End Select
 
             Select Case .BuyBuildBlockOption
@@ -212,6 +267,8 @@ Public Class frmCitadelFitting
                     rbtnBuildBlocks.Checked = True
                 Case rbtnBuyBlocks.Text
                     rbtnBuyBlocks.Checked = True
+                Case Else
+                    rbtnBuildBlocks.Checked = True
             End Select
 
         End With
@@ -255,12 +312,13 @@ Public Class frmCitadelFitting
         Dim Selection As ListViewItem = ServiceModuleListView.GetItemAt(e.X, e.Y)
 
         If Not IsNothing(Selection) Then
-            Dim ModuleTypeID As String = Selection.ImageKey
+            Dim ModuleTypeID As Integer = CInt(Selection.ImageKey)
 
             If Not IsNothing(Selection) Then
                 pbFloat.Image = FittingImages.Images(Selection.ImageKey)
                 pbFloat.Name = Selection.Group.Name
                 pbFloat.Tag = Selection.Group.Tag
+                pbFloat.Text = Selection.Text
             Else
                 pbFloat.Image = Nothing
             End If
@@ -302,6 +360,7 @@ Public Class frmCitadelFitting
                         Slot.Image = pbFloat.Image
                         Slot.Image.Tag = ModuleTypeID
                         Slot.Tag = pbFloat.Name
+                        Slot.Text = pbFloat.Text
 
                         ' Update the slot stats
                         Call UpdateUpwellStructureStats()
@@ -315,45 +374,50 @@ Public Class frmCitadelFitting
         End If
     End Sub
 
-    ' Loads the image in the first free slot if available - use for double-click an item
-    Private Sub LoadImageInFreeSlot()
+    ' Loads a selected image in a free slot - use for double-click on an item
+    Private Sub LoadSelectedImageInFreeSlot()
         Dim Selection As ListViewItem = ServiceModuleListView.SelectedItems(0)
 
         If Not IsNothing(Selection) Then
-            Dim ModuleTypeID As String = Selection.ImageKey
-
-            ' Loop through all the picture boxes and add the first one that is empty
-            For Each Slot In SlotPictureBoxList
-                Dim FloatSlot As String = CStr(Selection.Group.Tag)
-
-                If FloatSlot.Contains(Slot.Name.Substring(0, Len(Slot.Name) - 1)) Then
-
-                    If Not CheckSlots(ModuleTypeID) Then
-                        Exit Sub
-                    End If
-
-                    ' Set the image info if nothing, then exit
-                    If IsNothing(Slot.Image) Then
-                        Slot.Image = FittingImages.Images(ModuleTypeID)
-                        Slot.Image.Tag = ModuleTypeID
-                        Slot.Tag = Selection.Group.Name
-
-                        'Entry.typeID = CInt(HighSlot1.Image.Tag)
-                        'Entry.moduleType = CStr(HighSlot1.Tag)
-
-                        ' Update the slot stats
-                        Call UpdateUpwellStructureStats()
-                        ' Update the launcher slots if added a launcher
-                        Call UpdateLauncherSlots(False, ModuleTypeID)
-                        ' Done updating
-                        Exit For
-                    End If
-                End If
-            Next
+            Call LoadImageInFreeSlot(CInt(Selection.ImageKey), Selection.Text, CStr(Selection.Group.Tag), Selection.Group.Name)
         End If
+
     End Sub
 
-    Private Function CheckSlots(ByVal ModuleTypeID As String) As Boolean
+    ' Loads the image in the first free slot if available - use for double-click an item
+    Private Sub LoadImageInFreeSlot(ByVal ModuleTypeID As Integer, ByVal ModuleName As String, ByVal GroupTag As String, ByVal GroupName As String)
+
+        ' Loop through all the picture boxes and add the first one that is empty
+        For Each Slot In SlotPictureBoxList
+            Dim FloatSlot As String = GroupTag
+
+            If FloatSlot.Contains(Slot.Name.Substring(0, Len(Slot.Name) - 1)) Then
+
+                If Not CheckSlots(ModuleTypeID) Then
+                    Exit Sub
+                End If
+
+                ' Set the image info if nothing, then exit
+                If IsNothing(Slot.Image) Then
+                    Slot.Image = FittingImages.Images(CStr(ModuleTypeID))
+                    Slot.Image.Tag = ModuleTypeID
+                    Slot.Tag = GroupName
+                    Slot.Text = ModuleName
+
+                    ' Update the slot stats
+                    Call UpdateUpwellStructureStats()
+                    ' Update the launcher slots if added a launcher
+                    Call UpdateLauncherSlots(False, ModuleTypeID)
+                    ' Done updating
+                    Exit For
+                End If
+            End If
+        Next
+
+    End Sub
+
+    Private Function CheckSlots(ByVal ModuleTypeID As Integer) As Boolean
+
         ' Only drop if over the right slot
         If RigFound(ModuleTypeID) Then
             ' They already used this rig, so don't allow
@@ -378,8 +442,8 @@ Public Class frmCitadelFitting
     End Function
 
     ' Determines if the item is a missile launcher or not to adjust weapon slots
-    Private Function IsMissileLauncher(TypeID As String) As Boolean
-        Dim SQL As String = String.Format("SELECT * FROM type_effects WHERe typeid = {0} AND effectID = {1}", TypeID, UsesMissilesEffectID)
+    Private Function IsMissileLauncher(TypeID As Integer) As Boolean
+        Dim SQL As String = String.Format("SELECT * FROM type_effects WHERe typeid = {0} AND effectID = {1}", CStr(TypeID), UsesMissilesEffectID)
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -398,17 +462,17 @@ Public Class frmCitadelFitting
     End Function
 
     ' Sees if the rig is already used or not
-    Private Function RigFound(TypeID As String) As Boolean
-        Dim CurrentRigTypes As New List(Of String)
+    Private Function RigFound(TypeID As Integer) As Boolean
+        Dim CurrentRigTypes As New List(Of Integer)
 
         If Not IsNothing(RigSlot1.Image) Then
-            CurrentRigTypes.Add(CStr(RigSlot1.Image.Tag))
+            CurrentRigTypes.Add(CInt(RigSlot1.Image.Tag))
         End If
         If Not IsNothing(RigSlot2.Image) Then
-            CurrentRigTypes.Add(CStr(RigSlot2.Image.Tag))
+            CurrentRigTypes.Add(CInt(RigSlot2.Image.Tag))
         End If
         If Not IsNothing(RigSlot3.Image) Then
-            CurrentRigTypes.Add(CStr(RigSlot3.Image.Tag))
+            CurrentRigTypes.Add(CInt(RigSlot3.Image.Tag))
         End If
 
         If CurrentRigTypes.Contains(TypeID) Then
@@ -419,26 +483,26 @@ Public Class frmCitadelFitting
 
     End Function
 
-    Private Function ServiceFound(TypeID As String) As Boolean
-        Dim CurrentServiceTypes As New List(Of String)
+    Private Function ServiceFound(TypeID As Integer) As Boolean
+        Dim CurrentServiceTypes As New List(Of Integer)
 
         If Not IsNothing(ServiceSlot1.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot1.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot1.Image.Tag))
         End If
         If Not IsNothing(ServiceSlot2.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot2.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot2.Image.Tag))
         End If
         If Not IsNothing(ServiceSlot3.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot3.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot3.Image.Tag))
         End If
         If Not IsNothing(ServiceSlot4.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot4.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot4.Image.Tag))
         End If
         If Not IsNothing(ServiceSlot5.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot5.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot5.Image.Tag))
         End If
         If Not IsNothing(ServiceSlot6.Image) Then
-            CurrentServiceTypes.Add(CStr(ServiceSlot6.Image.Tag))
+            CurrentServiceTypes.Add(CInt(ServiceSlot6.Image.Tag))
         End If
 
         If CurrentServiceTypes.Contains(TypeID) Then
@@ -455,12 +519,20 @@ Public Class frmCitadelFitting
 
     End Function
 
-    Private Sub LoadStructure(ByVal SentCitadelName As String)
+    ' Loads up the structure and modules with it
+    Private Sub LoadStructure(ByVal SentUSName As String)
+        Dim SQL As String = ""
+        Dim rsStructure As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
 
-        CitadelName = SentCitadelName
+        Application.UseWaitCursor = True
+        Me.Enabled = False
+
+        ' Load the structure first
+        UpwellStructureName = SentUSName
 
         ' First get the data to use
-        SelectedUpwellStructure = GetCitadelData(SentCitadelName)
+        SelectedUpwellStructure = GetCitadelData(SentUSName)
         ' Set the combo text
         cmbUpwellStructureName.Text = SelectedUpwellStructure.Name
         ' Load the image
@@ -471,6 +543,106 @@ Public Class frmCitadelFitting
         Call UpdateCitadelSlots()
         ' Set the stats
         Call LoadUpwellStuctureStats()
+
+        ' Now load up the modules if any are saved for this structure
+        SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, INVENTORY_TYPES "
+        SQL &= "WHERE UPWELL_STRUCTURES_INSTALLED_MODULES.FACILITY_ID = INVENTORY_TYPES.typeID "
+        SQL &= "And FACILITY_VIEW = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureView), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, SentUSName), EVEDB.DBREf)
+        rsStructure = DBCommand.ExecuteReader
+
+        Dim InstalledModules As New List(Of Integer)
+
+        If rsStructure.HasRows() Then
+            ' Need to load each module
+
+            While rsStructure.Read
+                InstalledModules.Add(rsStructure.GetInt32(0))
+            End While
+            ' Load the structure
+        End If
+
+        rsStructure.Close()
+        DBCommand = Nothing
+
+        ' Now fill the slots with the modules in the list
+        For Each typeID In InstalledModules
+
+            If CheckSlots(typeID) Then
+                SQL = "SELECT typeName, INVENTORY_TYPES.groupID, groupName, "
+                SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, "
+                SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE "
+                SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
+                SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
+                SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
+                SQL &= "AND attributeID = " & CStr(ItemAttributes.rigSize) & " "
+                SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID And ABS(categoryID) = 66 " ' Rigs are -66
+                SQL &= "AND INVENTORY_TYPES.published <> 0 "
+                SQL &= "AND INVENTORY_TYPES.typeID = " & CStr(typeID)
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsStructure = DBCommand.ExecuteReader
+
+                If rsStructure.Read() Then
+                    Dim ModuleTypeID As Integer = typeID
+                    Dim ModuleName As String = rsStructure.GetString(0)
+                    Dim GroupName As String = ""
+                    Dim GroupTag As String = ""
+
+                    Dim GroupID As Integer = rsStructure.GetInt32(1)
+                    Dim ModuleGroupName As String = rsStructure.GetString(2)
+                    Dim EffID As Integer = rsStructure.GetInt32(3)
+                    Dim RigCheck As Integer = CInt(rsStructure.GetValue(4))
+                    Dim Rig As Boolean
+
+                    If RigCheck = -1 Then
+                        Rig = False
+                    Else
+                        Rig = True
+                    End If
+
+                    If GroupID = 1321 Or GroupID = 1322 Or GroupID = 1415 Or GroupID = 1717 Then
+                        GroupName = "ServiceSlots"
+                        GroupTag = "ServiceSlot"
+                    ElseIf EffID = SlotSizes.HighSlot Then
+                        GroupName = "HighSlots"
+                        GroupTag = "HighSlot"
+                    ElseIf EffID = SlotSizes.MediumSlot Then
+                        GroupName = "MidSlots"
+                        GroupTag = "MidSlot"
+                    ElseIf EffID = SlotSizes.LowSlot Then
+                        GroupName = "LowSlots"
+                        GroupTag = "LowSlot"
+                    Else
+                        ' Rigs
+                        If ModuleGroupName.Contains("Combat") Then
+                            GroupName = "CombatRigs"
+                            GroupTag = "RigSlot"
+                        ElseIf ModuleGroupName.Contains("Reprocessing") Or ModuleGroupName.Contains("Grading") Then
+                            GroupName = "ReprocessingRigs"
+                            GroupTag = "RigSlot"
+                        ElseIf ModuleGroupName.Contains("Engineering") Then
+                            GroupName = "EngineeringRigs"
+                            GroupTag = "RigSlot"
+                        ElseIf ModuleGroupName.Contains("Reactor") Then
+                            GroupName = "ReactionRigs"
+                            GroupTag = "RigSlot"
+                        ElseIf ModuleGroupName.Contains("Drilling") Then
+                            GroupName = "DrillingRigs"
+                            GroupTag = "RigSlot"
+                        End If
+                    End If
+
+                    ' Now add the image to an image slot
+                    Call LoadImageInFreeSlot(ModuleTypeID, ModuleName, GroupTag, GroupName)
+
+                End If
+            End If
+        Next
+
+        Application.UseWaitCursor = False
+        Me.Enabled = True
 
     End Sub
 
@@ -545,8 +717,8 @@ Public Class frmCitadelFitting
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
-        SQL = "SELECT typeID, groupID FROM INVENTORY_TYPES "
-        SQL &= "WHERE INVENTORY_TYPES.published <> 0 AND typeName = '" & LookupName & "'"
+        SQL = "Select typeID, groupID FROM INVENTORY_TYPES "
+        SQL &= "WHERE INVENTORY_TYPES.published <> 0 And typeName = '" & LookupName & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader
@@ -638,6 +810,7 @@ Public Class frmCitadelFitting
 
         ' Fuel is always 0 to start with no limit
         UpwellStructureStats.ServiceModuleFuelBPH = 0
+        UpwellStructureStats.OnlineFuelAmount = 0
 
         ' Update the stats
         If Not IgnoreLabelUpdate Then
@@ -714,7 +887,9 @@ Public Class frmCitadelFitting
                     Case ItemAttributes.powerOutputMultiplier
                         UpwellStructureStats.MaxPG = UpwellStructureStats.MaxPG * Attribute.Value
                     Case ItemAttributes.serviceModuleFuelAmount
-                        UpwellStructureStats.ServiceModuleFuelBPH -= CInt(Attribute.Value)
+                        UpwellStructureStats.ServiceModuleFuelBPH += CInt(Attribute.Value)
+                    Case ItemAttributes.serviceModuleFuelOnlineAmount
+                        UpwellStructureStats.OnlineFuelAmount += CInt(Attribute.Value)
                 End Select
             Next
         Next
@@ -728,7 +903,7 @@ Public Class frmCitadelFitting
     End Sub
 
     ' If true, increments the launcher slots, else decrements
-    Private Sub UpdateLauncherSlots(ByVal Increment As Boolean, ByVal ModuleTypeID As String)
+    Private Sub UpdateLauncherSlots(ByVal Increment As Boolean, ByVal ModuleTypeID As Integer)
         ' Update number of launchers
         If IsMissileLauncher(ModuleTypeID) Then
             If Not Increment Then
@@ -928,14 +1103,26 @@ Public Class frmCitadelFitting
     Private Function GetFuelCost(ByVal NumBlocks As Integer) As String
 
         'Select the type of fuel and then update the cost per hour from the text boxes
-        If rbtnHeliumFuelBlock.Checked Then
-
-        ElseIf rbtnHydrogenFuelBlock.Checked Then
-
-        ElseIf rbtnNitrogenFuelBlock.Checked Then
-
-        ElseIf rbtnOxygenFuelBlock.Checked Then
-
+        If rbtnBuyBlocks.Checked Then
+            If rbtnHeliumFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(txtHeliumFuelBlockBuyPrice.Text))
+            ElseIf rbtnHydrogenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(txtHydrogenFuelBlockBuyPrice.Text))
+            ElseIf rbtnNitrogenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(txtNitrogenFuelBlockBuyPrice.Text))
+            ElseIf rbtnOxygenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(txtOxygenFuelBlockBuyPrice.Text))
+            End If
+        Else
+            If rbtnHeliumFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(lblHeliumFuelBlockBuild.Text))
+            ElseIf rbtnHydrogenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(lblHydrogenFuelBlockBuildPrice.Text))
+            ElseIf rbtnNitrogenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(lblNitrogenFuelBlockBuildPrice.Text))
+            ElseIf rbtnOxygenFuelBlock.Checked Then
+                Return FormatNumber(NumBlocks * CDbl(lblOxygenFuelBlockBuildPrice.Text))
+            End If
         End If
 
         Return ""
@@ -947,7 +1134,7 @@ Public Class frmCitadelFitting
         If chkIncludeFuelCosts.Checked Then
             ' Select blocks and online amount (shouldn't change)
             lblServiceModuleBPH.Text = FormatNumber(UpwellStructureStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
-            lblServiceModuleOnlineAmt.Text = ""
+            lblServiceModuleOnlineAmt.Text = FormatNumber(UpwellStructureStats.OnlineFuelAmount, 0) & " Blocks"
             lblServiceModuleFCPH.Text = GetFuelCost(UpwellStructureStats.ServiceModuleFuelBPH)
         Else
             lblServiceModuleBPH.Text = "-"
@@ -979,12 +1166,10 @@ Public Class frmCitadelFitting
                 ' Add to the image list, and put in view with names
                 typeID = CStr(rsReader.GetInt32(0))
                 typeName = rsReader.GetString(1)
-                If System.IO.File.Exists(BPImageFilePath & typeID & "_64.png") Then
+                If IO.File.Exists(BPImageFilePath & typeID & "_64.png") Then
                     myImage = Image.FromFile(BPImageFilePath & typeID & "_64.png")
 
                     Call FittingImages.Images.Add(typeID, myImage)
-                Else
-                    Debug.Print(BPImageFilePath & typeID & "_64.png")
                 End If
             End While
 
@@ -1014,13 +1199,14 @@ Public Class frmCitadelFitting
             SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
             SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE, "
             SQL &= "CASE WHEN (SELECT COALESCE(valuefloat, valueint) FROM TYPE_ATTRIBUTES "
-            SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND attributeID = " & ItemAttributes.disallowInHighSec & ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
+            SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND (attributeID = " & ItemAttributes.disallowInHighSec & " OR attributeID = " & ItemAttributes.disallowInEmpireSpace & ") "
+            SQL &= ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
             SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
             SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
             SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
             SQL &= "AND attributeID = " & CStr(ItemAttributes.rigSize) & " "
             SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID And ABS(categoryID) = 66 " ' I save structure rigs as -66
-            SQL &= "And INVENTORY_TYPES.published <> 0 "
+            SQL &= "AND INVENTORY_TYPES.published <> 0 "
 
             ' Add text first
             If Trim(txtItemFilter.Text) <> "" Then
@@ -1424,27 +1610,31 @@ Public Class frmCitadelFitting
 
     End Sub
 
-    Private Sub btnSaveUpdatePrices_Click(sender As Object, e As EventArgs) Handles btnSaveUpdatePrices.Click
+    Private Sub btnSaveFitting_Click(sender As Object, e As EventArgs) Handles btnSaveFitting.Click
         Dim SQL As String
 
         Try
             EVEDB.BeginSQLiteTransaction()
             ' Delete everything first, then insert the new records
-            EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM FACILITY_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
-            AND INDUSTRY_TYPE = {1} AND FACILITY_VIEW = {2}", SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedStructureView)))
+            EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
+            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} ",
+            SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView), SelectedUpwellStructure.TypeID))
 
             ' Insert all the modules on the facility
-            For Each InstalledModule In GetInstalledSlots()
-                SQL = String.Format("INSERT INTO FACILITY_INSTALLED_MODULES VALUES({0},{1},{2},{3})",
-                                    SelectedCharacterID, CStr(SelectedFacilityProductionType), CStr(SelectedStructureView), InstalledModule.typeID)
+            Dim Modules As New List(Of StructureModule)
+            Modules = GetInstalledSlots()
+            For Each InstalledModule In Modules
+                SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
+                SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
                 EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
-            MsgBox("Facility Saved", vbInformation, Application.ProductName)
-
             EVEDB.CommitSQLiteTransaction()
 
+            MsgBox("Facility Saved", vbInformation, Application.ProductName)
+
         Catch ex As Exception
+            EVEDB.RollbackSQLiteTransaction()
             MsgBox("Facility failed to save: " & ex.Message, vbExclamation, Application.ProductName)
         End Try
 
@@ -1615,200 +1805,412 @@ Public Class frmCitadelFitting
 
 #Region "Fuel Settings"
 
+    Private Sub btnRefreshPrices_Click(sender As Object, e As EventArgs) Handles btnRefreshPrices.Click
+        ' Refresh all prices
+        Call LoadFuelPrices()
+    End Sub
+
+    Private Sub btnSavePrices_Click(sender As Object, e As EventArgs) Handles btnSavePrices.Click
+        Dim SQL As String = ""
+
+        Try
+            ' Only save mats
+            If rbtnBuildBlocks.Checked Then
+                EVEDB.BeginSQLiteTransaction()
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Helium)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHydrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Hydrogen)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Nitrogen)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Oxygen)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                EVEDB.CommitSQLiteTransaction()
+            Else ' Buying, so save only the fuel block prices
+                EVEDB.BeginSQLiteTransaction()
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeliumIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16274"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHydrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17889"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17888"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtOxygenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17887"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtCoolant.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9832"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtEnrichedUranium.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 44"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeavyWater.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16272"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtLiquidOzone.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16273"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtMechanicalParts.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3689"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtOxygen.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3683"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtRobotics.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9848"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtStrontiumClathrates.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16275"
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                EVEDB.CommitSQLiteTransaction()
+            End If
+
+            MsgBox("Prices Saved", vbInformation, Me.Text)
+
+            ' Refresh the prices
+            Call LoadFuelPrices()
+        Catch EX As Exception
+            MsgBox("Prices not saved, Error: " & EX.Message, vbExclamation, Me.Text)
+        End Try
+
+    End Sub
+
+    Private Sub btnUpdateBuildCost_Click(sender As Object, e As EventArgs) Handles btnUpdateBuildCost.Click
+        ' Refresh the price based on building the blocks with ME's entered (just do all to simplify)
+        Call SetFuelBlockBuildcost(FuelBlocks.Helium)
+        Call SetFuelBlockBuildcost(FuelBlocks.Hydrogen)
+        Call SetFuelBlockBuildcost(FuelBlocks.Nitrogen)
+        Call SetFuelBlockBuildcost(FuelBlocks.Oxygen)
+    End Sub
+
     Private Sub btnSaveFuelBlockInfo_Click(sender As Object, e As EventArgs) Handles btnSaveFuelBlockInfo.Click
 
-    End Sub
+        ' Save just the bp ME data if building
+        If rbtnBuildBlocks.Checked Then
+            If HeliumFuelBlockBPUpdated Then
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtHeliumFuelBlockBPME.Text), OriginalHeliumFuelBlockBPTE, BPType.Original,
+                             OriginalHeliumFuelBlockBPME, OriginalHeliumFuelBlockBPTE)
+                HeliumFuelBlockBPUpdated = False ' Saved, so updated
+            End If
 
-    Private Sub btnRefreshBlockData_Click(sender As Object, e As EventArgs) Handles btnRefreshBlockData.Click
-        Call UpdateFuelBlockData(0)
-    End Sub
+            If HydrogenFuelBlockBPUpdated Then
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtHydrogenFuelBlockBPME.Text), OriginalHydrogenFuelBlockBPTE, BPType.Original,
+                             OriginalHydrogenFuelBlockBPME, OriginalHydrogenFuelBlockBPTE)
+                HydrogenFuelBlockBPUpdated = False ' Saved, so updated
+            End If
 
-    Private Sub btnUpdateBlockPrice_Click(sender As Object, e As EventArgs) Handles btnUpdatePrices.Click
+            If NitrogenFuelBlockBPUpdated Then
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtNitrogenFuelBlockBPME.Text), OriginalNitrogenFuelBlockBPTE, BPType.Original,
+                             OriginalNitrogenFuelBlockBPME, OriginalNitrogenFuelBlockBPTE)
+                NitrogenFuelBlockBPUpdated = False ' Saved, so updated
+            End If
+
+            If OxygenFuelBlockBPUpdated Then
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtOxygenFuelBlockBPME.Text), OriginalOxygenFuelBlockBPTE, BPType.Original,
+                             OriginalOxygenFuelBlockBPME, OriginalOxygenFuelBlockBPTE)
+                OxygenFuelBlockBPUpdated = False ' Saved, so updated
+            End If
+        End If
 
     End Sub
 
     Private Sub LoadFuelBlockDataTab()
 
-        txtHeliumFuelBlockBPME.Text = "0"
-
-        If UserUpwellStructureSettings.BuyBuildBlockOption = rbtnBuildBlocks.Text Then
-            rbtnBuildBlocks.Checked = True
-            gbFuelPrices.Enabled = True
-            btnUpdatePrices.Enabled = False
-            btnUpdatePrices.Enabled = True
-            btnRefreshBlockData.Enabled = True
-            txtHeliumFuelBlockBPME.Enabled = True
-            lblHeliumFuelBlockBPME.Enabled = True
-            txtHeliumFuelBlockBuyPrice.Enabled = False
-        Else ' Buying
-            rbtnBuyBlocks.Checked = True
-            gbFuelPrices.Enabled = False
-            btnUpdatePrices.Enabled = True
-            btnUpdatePrices.Enabled = False
-            btnRefreshBlockData.Enabled = False
-            txtHeliumFuelBlockBPME.Enabled = False
-            lblHeliumFuelBlockBPME.Enabled = False
-            txtHeliumFuelBlockBuyPrice.Enabled = True
-        End If
-
+        ' Dynamically load images
+        Call LoadFuelBlockImages()
+        ' Load all the fuel prices
         Call LoadFuelPrices()
-        ' Load both the block build and buy prices
-        Call LoadFuelBlockPrice()
-        Call SetFuelBlockBuildcost()
-
-
-    End Sub
-
-    Private Sub UpdateFuelBlockData(ReloadME As Boolean)
-        Dim SQL As String
-        Dim reader As SQLiteDataReader
-        Dim FuelBlock As String = ""
-        Dim SelectedTowerRaceID As Integer
-
-        SQL = "Select raceID FROM INVENTORY_TYPES WHERE typeName ='"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        reader = DBCommand.ExecuteReader()
-
-        If reader.Read Then
-            SelectedTowerRaceID = reader.GetInt32(0)
-        Else
-            MsgBox("Unknown Tower. Cannot calculate.", vbExclamation, Application.ProductName)
-            Exit Sub
-        End If
-
-        ' Based on the race of the tower, choose the type of fuel block it will use
-        Select Case SelectedTowerRaceID
-            Case 1
-                FuelBlock = "Caldari Fuel Block"
-                picHydrogenFuelBlock.Visible = True
-            Case 2
-                FuelBlock = "Minmatar Fuel Block"
-                picOxygenFuelBlock.Visible = True
-            Case 4
-                FuelBlock = "Amarr Fuel Block"
-                picHeliumFuelBlock.Visible = True
-            Case 8
-                FuelBlock = "Gallente Fuel Block"
-                picNitrogenFuelBlock.Visible = True
-        End Select
-
-        ' Reload the ME if we need too
-        If ReloadME Then
-            Call LoadBlockBPME(FuelBlock)
-        End If
-
-        ' Build the block value if we are building
-        If rbtnBuildBlocks.Checked Then
-            Call SetFuelBlockBuildcost()
-        End If
+        ' Load the ME's for each fuel block bp
+        Call LoadBlockBPMEs()
+        ' Load the costs to build the blocks with current settings
+        Call SetFuelBlockBuildcost(FuelBlocks.Helium)
+        Call SetFuelBlockBuildcost(FuelBlocks.Hydrogen)
+        Call SetFuelBlockBuildcost(FuelBlocks.Nitrogen)
+        Call SetFuelBlockBuildcost(FuelBlocks.Oxygen)
 
     End Sub
 
-    Private Sub LoadBlockBPME(FuelBlockName As String)
+    Private Sub LoadBlockBPMEs()
         ' Load the ME for the type of block that we are using for this tower
         Dim SQL As String
         Dim reader As SQLiteDataReader
+        Dim HasHelium As Boolean = False
+        Dim HasHydrogen As Boolean = False
+        Dim HasNitrogen As Boolean = False
+        Dim HasOxygen As Boolean = False
+        Dim FoundME As String = ""
+        Dim FoundTE As Integer = 0
 
-        SQL = "SELECT ME FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
-        SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ME, TE FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
+        SQL &= "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+        SQL &= "AND ALL_BLUEPRINTS.BLUEPRINT_ID IN (" & CStr(FuelBlocks.HeliumBP) & "," & CStr(FuelBlocks.HydrogenBP) & "," & CStr(FuelBlocks.NitrogenBP) & "," & CStr(FuelBlocks.OxygenBP) & ")"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         reader = DBCommand.ExecuteReader()
 
-        If reader.Read Then
-            ' Owned and they have it
-            txtHeliumFuelBlockBPME.Text = CStr(reader.GetValue(0))
-        Else
-            txtHeliumFuelBlockBPME.Text = "0"
-        End If
+        While reader.Read
+            FoundME = CStr(reader.GetInt64(1))
+            FoundTE = reader.GetInt32(2)
+
+            Select Case reader.GetInt64(0)
+                Case FuelBlocks.Nitrogen
+                    txtNitrogenFuelBlockBPME.Text = FoundME
+                    OriginalNitrogenFuelBlockBPME = CInt(FoundME)
+                    OriginalNitrogenFuelBlockBPTE = FoundTE
+                    HasNitrogen = True
+                Case FuelBlocks.Hydrogen
+                    txtHydrogenFuelBlockBPME.Text = FoundME
+                    OriginalHydrogenFuelBlockBPME = CInt(FoundME)
+                    OriginalHydrogenFuelBlockBPTE = FoundTE
+                    HasHydrogen = True
+                Case FuelBlocks.Helium
+                    txtHeliumFuelBlockBPME.Text = FoundME
+                    OriginalHeliumFuelBlockBPME = CInt(FoundME)
+                    OriginalHeliumFuelBlockBPTE = FoundTE
+                    HasHelium = True
+                Case FuelBlocks.Oxygen
+                    txtOxygenFuelBlockBPME.Text = FoundME
+                    OriginalOxygenFuelBlockBPME = CInt(FoundME)
+                    OriginalOxygenFuelBlockBPTE = FoundTE
+                    HasOxygen = True
+            End Select
+
+            ' See what they didn't have and set to 0 ME
+            If Not HasNitrogen Then
+                txtNitrogenFuelBlockBPME.Text = "0"
+                OriginalNitrogenFuelBlockBPME = 0
+                OriginalNitrogenFuelBlockBPTE = 0
+            End If
+            If Not HasHydrogen Then
+                txtHydrogenFuelBlockBPME.Text = "0"
+                OriginalHydrogenFuelBlockBPME = 0
+                OriginalHydrogenFuelBlockBPTE = 0
+            End If
+            If Not HasHelium Then
+                txtHeliumFuelBlockBPME.Text = "0"
+                OriginalHeliumFuelBlockBPME = 0
+                OriginalHeliumFuelBlockBPTE = 0
+            End If
+            If Not HasOxygen Then
+                txtOxygenFuelBlockBPME.Text = "0"
+                OriginalOxygenFuelBlockBPME = 0
+                OriginalOxygenFuelBlockBPTE = 0
+            End If
+
+        End While
 
     End Sub
 
-    Private Sub UpdateFuelPrices()
-        'Dim SQL As String
-        'Dim i As Integer
-        'Dim Prices() As Double
+    Private Sub SetFuelBlockBuildcost(FuelBlock As FuelBlocks)
 
-        If StructureFuelPricesUpdated Then
-            'Me.Cursor = Cursors.WaitCursor
+        ' Go through each fuel block and build it, then set the price. Make sure the ME's are valid first
+        Select Case FuelBlock
+            Case FuelBlocks.Helium
+                If Not IsNumeric(txtHeliumFuelBlockBPME.Text) Then
+                    MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
+                    txtHeliumFuelBlockBPME.Focus()
+                    Exit Sub
+                End If
 
-            'ReDim Prices(TextBoxes.Count - 1)
+                lblHeliumFuelBlockBuildPrice.Text = CStr(GetFuelBlockBuildCost(FuelBlocks.Helium, CInt(txtHeliumFuelBlockBPME.Text)))
 
-            '' Check the prices first
-            'For i = 1 To TextBoxes.Count - 1
-            '    If Not IsNumeric(TextBoxes(i).Text) Then
-            '        MsgBox("Invalid " & Labels(i).Text & " Price", vbExclamation, Me.Text)
-            '        TextBoxes(i).Focus()
-            '        Me.Cursor = Cursors.Default
-            '        Exit Sub
-            '    Else
-            '        Prices(i) = CDbl(TextBoxes(i).Text)
-            '    End If
-            'Next
+            Case FuelBlocks.Hydrogen
+                If Not IsNumeric(txtHydrogenFuelBlockBPME.Text) Then
+                    MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
+                    txtHydrogenFuelBlockBPME.Focus()
+                    Exit Sub
+                End If
 
-            '' Update all the prices
-            'For i = 1 To TextBoxes.Count - 1
-            '    SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & Labels(i).Text & "'"
-            '    Call EVEDB.ExecuteNonQuerySQL(SQL)
-            'Next
+                lblHydrogenFuelBlockBuildPrice.Text = CStr(GetFuelBlockBuildCost(FuelBlocks.Hydrogen, CInt(txtHydrogenFuelBlockBPME.Text)))
 
-            'MsgBox("Prices Updated", vbInformation, Me.Text)
-            'Me.Cursor = Cursors.Default
+            Case FuelBlocks.Nitrogen
+                If Not IsNumeric(txtNitrogenFuelBlockBPME.Text) Then
+                    MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
+                    txtNitrogenFuelBlockBPME.Focus()
+                    Exit Sub
+                End If
 
-            '' Update the block data
-            Call SetFuelBlockBuildcost()
+                lblNitrogenFuelBlockBuildPrice.Text = CStr(GetFuelBlockBuildCost(FuelBlocks.Nitrogen, CInt(txtNitrogenFuelBlockBPME.Text)))
+
+            Case FuelBlocks.Oxygen
+                If Not IsNumeric(txtOxygenFuelBlockBPME.Text) Then
+                    MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
+                    txtOxygenFuelBlockBPME.Focus()
+                    Exit Sub
+                End If
+
+                lblOxygenFuelBlockBuildPrice.Text = CStr(GetFuelBlockBuildCost(FuelBlocks.Oxygen, CInt(txtOxygenFuelBlockBPME.Text)))
+
+        End Select
+
+    End Sub
+
+    Private Function GetFuelBlockBuildCost(FuelBlock As FuelBlocks, bpME As Integer) As Double
+
+        ' Build T1 BP for the block, standard settings - CHECK
+        ' Dim BlockBP = New Blueprint(FUELBLOCK, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, 
+        'SelectedBPManufacturingFacility, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+        '  Call BlockBP.BuildItems(False, False, False, False, False)
+        ' Return BlockBP.GetRawItemUnitPrice
+
+        Return 0
+
+    End Function
+
+    Private Sub LoadFuelBlockImages()
+        ' Just load up all the images dyamically
+
+        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Nitrogen) & "_32.png") Then
+            picNitrogenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Nitrogen) & "_32.png")
         Else
-            MsgBox("No Prices were Updated", vbInformation, Me.Text)
+            picNitrogenFuelBlock.Image = Nothing
         End If
 
-        ' Refresh the prices
-        Call LoadFuelPrices()
+        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Oxygen) & "_32.png") Then
+            picOxygenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Oxygen) & "_32.png")
+        Else
+            picOxygenFuelBlock.Image = Nothing
+        End If
+
+        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Hydrogen) & "_32.png") Then
+            picHydrogenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Hydrogen) & "_32.png")
+        Else
+            picHydrogenFuelBlock.Image = Nothing
+        End If
+
+        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Helium) & "_32.png") Then
+            picHeliumFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Helium) & "_32.png")
+        Else
+            picHeliumFuelBlock.Image = Nothing
+        End If
+
+        picNitrogenFuelBlock.Refresh()
+        picOxygenFuelBlock.Refresh()
+        picHydrogenFuelBlock.Refresh()
+        picHeliumFuelBlock.Refresh()
+
+        If IO.File.Exists(BPImageFilePath & "9832_32.png") Then
+            picCoolant.Image = Image.FromFile(BPImageFilePath & "9832_32.png")
+        Else
+            picCoolant.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "44_32.png") Then
+            picEnrichedUranium.Image = Image.FromFile(BPImageFilePath & "44_32.png")
+        Else
+            picEnrichedUranium.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "16272_32.png") Then
+            picHeavyWater.Image = Image.FromFile(BPImageFilePath & "16272_32.png")
+        Else
+            picHeavyWater.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "16274_32.png") Then
+            picHeliumIsotopes.Image = Image.FromFile(BPImageFilePath & "16274_32.png")
+        Else
+            picHeliumIsotopes.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "17889_32.png") Then
+            picHydrogenIsotopes.Image = Image.FromFile(BPImageFilePath & "17889_32.png")
+        Else
+            picHydrogenIsotopes.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "16273_32.png") Then
+            picLiquidOzone.Image = Image.FromFile(BPImageFilePath & "16273_32.png")
+        Else
+            picLiquidOzone.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "3689_32.png") Then
+            picMechanicalParts.Image = Image.FromFile(BPImageFilePath & "3689_32.png")
+        Else
+            picMechanicalParts.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "17888_32.png") Then
+            picNitrogenIsotopes.Image = Image.FromFile(BPImageFilePath & "17888_32.png")
+        Else
+            picNitrogenIsotopes.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "3683_32.png") Then
+            picOxygen.Image = Image.FromFile(BPImageFilePath & "3683_32.png")
+        Else
+            picOxygen.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "17887_32.png") Then
+            picOxygenIsotopes.Image = Image.FromFile(BPImageFilePath & "17887_32.png")
+        Else
+            picOxygenIsotopes.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "9848_32.png") Then
+            picRobotics.Image = Image.FromFile(BPImageFilePath & "9848_32.png")
+        Else
+            picRobotics.Image = Nothing
+        End If
+        If IO.File.Exists(BPImageFilePath & "16275_32.png") Then
+            picStrontiumClathrates.Image = Image.FromFile(BPImageFilePath & "16275_32.png")
+        Else
+            picStrontiumClathrates.Image = Nothing
+        End If
+
+        picCoolant.Refresh()
+        picEnrichedUranium.Refresh()
+        picHeavyWater.Refresh()
+        picHeliumIsotopes.Refresh()
+        picHydrogenIsotopes.Refresh()
+        picLiquidOzone.Refresh()
+        picMechanicalParts.Refresh()
+        picNitrogenIsotopes.Refresh()
+        picOxygen.Refresh()
+        picOxygenIsotopes.Refresh()
+        picRobotics.Refresh()
+        picStrontiumClathrates.Refresh()
+
+        Application.DoEvents()
 
     End Sub
 
     Private Sub LoadFuelPrices()
         Dim SQL As String
         Dim reader As SQLiteDataReader
+        Dim Price As String
 
         Me.Cursor = Cursors.WaitCursor
 
-        SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
+        SQL = "SELECT ITEM_PRICES.ITEM_ID, ITEM_PRICES.PRICE "
         SQL = SQL & "FROM ITEM_PRICES "
-        SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME IN "
-        SQL = SQL & "('Hydrogen Isotopes','Oxygen Isotopes','Nitrogen Isotopes','Helium Isotopes','Strontium Clathrates',"
-        SQL = SQL & "'Heavy Water','Liquid Ozone','Robotics','Oxygen','Mechanical Parts','Coolant','Enriched Uranium')"
+        SQL = SQL & "WHERE ITEM_PRICES.ITEM_ID IN "
+        SQL = SQL & "(9832, 44, 16272, 16274, 17889, 16273, 3689, 17888, 3683, 17887, 9848, 16275)" ' Mats
+        SQL = SQL & "OR ITEM_PRICES.ITEM_ID IN (" & CStr(FuelBlocks.Nitrogen) & "," & CStr(FuelBlocks.Hydrogen) & "," & CStr(FuelBlocks.Helium) & "," & CStr(FuelBlocks.Oxygen) & ")"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         reader = DBCommand.ExecuteReader()
 
         While reader.Read
-            ' Update the textboxes with prices
-            Select Case reader.GetString(0)
-                Case "Hydrogen Isotopes"
-                    txtHydrogenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Oxygen Isotopes"
-                    txtOxygenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Nitrogen Isotopes"
-                    txtNitrogenIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Helium Isotopes"
-                    txtHeliumIsotopes.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Strontium Clathrates"
-                    txtStrontiumClathrates.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Heavy Water"
-                    txtHeavyWater.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Liquid Ozone"
-                    txtLiquidOzone.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Robotics"
-                    txtRobotics.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Oxygen"
-                    txtOxygen.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Mechanical Parts"
-                    txtMechanicalParts.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Coolant"
-                    txtCoolant.Text = FormatNumber(reader.GetDouble(1), 2)
-                Case "Enriched Uranium"
-                    txtEnrichedUranium.Text = FormatNumber(reader.GetDouble(1), 2)
+
+            Price = FormatNumber(reader.GetDouble(1), 2)
+
+            ' Update the textboxes with Prices
+            Select Case reader.GetInt64(0)
+                Case 17889 'Hydrogen Isotopes'
+                    txtHydrogenIsotopes.Text = Price
+                Case 17887 'Oxygen Isotopes'
+                    txtOxygenIsotopes.Text = Price
+                Case 17888 'Nitrogen Isotopes'
+                    txtNitrogenIsotopes.Text = Price
+                Case 16274 'Helium Isotopes'
+                    txtHeliumIsotopes.Text = Price
+                Case 16275 'Strontium Clathrates'
+                    txtStrontiumClathrates.Text = Price
+                Case 16272 'Heavy Water'
+                    txtHeavyWater.Text = Price
+                Case 16273 'Liquid Ozone'
+                    txtLiquidOzone.Text = Price
+                Case 9848 'Robotics'
+                    txtRobotics.Text = Price
+                Case 3683 'Oxygen'
+                    txtOxygen.Text = Price
+                Case 3689 'Mechanical Parts'
+                    txtMechanicalParts.Text = Price
+                Case 9832 'Coolant'
+                    txtCoolant.Text = Price
+                Case 44 'Enriched Uranium'
+                    txtEnrichedUranium.Text = Price
+                Case FuelBlocks.Nitrogen
+                    txtNitrogenFuelBlockBuyPrice.Text = Price
+                Case FuelBlocks.Hydrogen
+                    txtHydrogenFuelBlockBuyPrice.Text = Price
+                Case FuelBlocks.Helium
+                    txtHeliumFuelBlockBuyPrice.Text = Price
+                Case FuelBlocks.Oxygen
+                    txtOxygenFuelBlockBuyPrice.Text = Price
             End Select
             Application.DoEvents()
         End While
@@ -1820,139 +2222,7 @@ Public Class frmCitadelFitting
         reader = Nothing
         DBCommand = Nothing
 
-        StructureFuelPricesUpdated = False
-
     End Sub
-
-    Private Sub UpdateFuelBlockPrices()
-        Dim SQL As String
-        Dim posfuelblockpricesupdated As Boolean
-
-        If posfuelblockpricesupdated Then
-            Me.Cursor = Cursors.WaitCursor
-
-            ' Check the prices first
-
-            If Not IsNumeric(txtHeliumFuelBlockBuyPrice.Text) Then
-                MsgBox("Invalid Fuel Block Price", vbExclamation, Application.ProductName)
-                txtHeliumFuelBlockBuyPrice.Focus()
-                Me.Cursor = Cursors.Default
-                Exit Sub
-            End If
-
-            ' Update the prices
-            SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDec(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & lblHeliumFuelBlock.Text & " Fuel Block'"
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            MsgBox("Prices Updated", vbInformation, Me.Text)
-            Me.Cursor = Cursors.Default
-        Else
-            MsgBox("No Prices were Updated", vbInformation, Me.Text)
-        End If
-
-        ' Refresh the prices
-        Call LoadFuelBlockPrice()
-
-    End Sub
-
-    Private Sub LoadFuelBlockPrice()
-        Dim SQL As String
-        Dim reader As SQLiteDataReader
-        Dim Price As String
-
-        Me.Cursor = Cursors.WaitCursor
-
-        reader = Nothing
-        DBCommand = Nothing
-
-        If cmbUpwellStructureName.Text <> None Then
-            ' Load the fuel block price
-            SQL = "SELECT IP.ITEM_NAME, IP.PRICE "
-            SQL = SQL & "FROM ITEM_PRICES AS IP, INVENTORY_TYPES AS IT "
-            SQL = SQL & "WHERE IP.ITEM_NAME LIKE '%Fuel Block%' AND IT.published <> 0 "
-            SQL = SQL & "AND IT.typeID = IP.ITEM_ID "
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            reader = DBCommand.ExecuteReader()
-            While reader.Read()
-                Price = FormatNumber(reader.GetValue(1))
-
-                Select Case reader.GetString(0)
-                    Case "Nitrogen Fuel Block"
-                        txtNitrogenFuelBlockBuyPrice.Text = Price
-                    Case "Hydrogen Fuel Block"
-                        txtHydrogenFuelBlockBuyPrice.Text = Price
-                    Case "Helium Fuel Block"
-                        txtHeliumFuelBlockBuyPrice.Text = Price
-                    Case "Oxygen Fuel Block"
-                        txtOxygenFuelBlockBuyPrice.Text = Price
-                End Select
-            End While
-
-            reader.Close()
-        Else
-            txtHeliumFuelBlockBuyPrice.Text = "0.00"
-        End If
-
-        Me.Cursor = Cursors.Default
-
-        reader = Nothing
-        DBCommand = Nothing
-
-    End Sub
-
-    Private Sub UpdateCosts()
-        Dim CostperBlock As Double
-        Dim CostperHour As Double
-        Dim Multiplier As Integer
-
-        ' Get the block we are using
-        If rbtnBuildBlocks.Checked Then
-            CostperBlock = CDbl(lblHeliumFuelBlockBuild.Text)
-        Else
-            CostperBlock = CDbl(txtHeliumFuelBlockBuyPrice.Text)
-        End If
-
-        CostperHour = CostperBlock * Multiplier
-        'lblCostperHour.Text = FormatNumber(CostperHour, 2)
-        'lblCostperDay.Text = FormatNumber(CostperHour * 24, 2)
-        'lblCostperMonth.Text = FormatNumber(CostperHour * 24 * 30, 2)
-
-    End Sub
-
-    Private Sub SetFuelBlockBuildcost()
-
-        ' Make sure it's valid
-        If Not IsNumeric(txtHeliumFuelBlockBPME.Text) Then
-            MsgBox("Invalid Fuel Block BPO ME", vbExclamation, Application.ProductName)
-            txtHeliumFuelBlockBPME.Focus()
-            Exit Sub
-        End If
-
-    End Sub
-
-    Private Function GetFuelBlockBuildCost(FuelBlock As String, bpME As Integer) As Double
-        Dim SQL As String
-        Dim reader As SQLiteDataReader
-
-
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FuelBlock & "'"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        reader = DBCommand.ExecuteReader()
-
-        If reader.Read Then
-            ' Build T1 BP for the block, standard settings - CHECK
-            ' Dim BlockBP = New Blueprint(reader.GetInt64(0), 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, NoTeam,
-            'SelectedBPManufacturingFacility, NoTeam, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-            '  Call BlockBP.BuildItems(False, False, False, False, False)
-            ' Return BlockBP.GetRawItemUnitPrice
-            Return 0
-        Else
-            Return 0
-        End If
-
-    End Function
 
 #End Region
 
@@ -2008,36 +2278,44 @@ Public Class frmCitadelFitting
 
     Private Sub MidSlot1_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot1.DoubleClick
         MidSlot1.Image = Nothing
+        MidSlot1.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot2_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot2.DoubleClick
         MidSlot2.Image = Nothing
+        MidSlot2.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot3_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot3.DoubleClick
         MidSlot3.Image = Nothing
+        MidSlot3.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot4_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot4.DoubleClick
         MidSlot4.Image = Nothing
+        MidSlot4.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot5_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot5.DoubleClick
         MidSlot5.Image = Nothing
+        MidSlot5.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot6_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot6.DoubleClick
         MidSlot6.Image = Nothing
+        MidSlot6.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot7_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot7.DoubleClick
         MidSlot7.Image = Nothing
+        MidSlot7.ResetText()
+        Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub MidSlot8_DoubleClick(sender As Object, e As EventArgs) Handles MidSlot8.DoubleClick
@@ -2047,158 +2325,188 @@ Public Class frmCitadelFitting
 
     Private Sub HighSlot1_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot1.DoubleClick
         If Not IsNothing(HighSlot1.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot1.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot1.Image.Tag))
         End If
         HighSlot1.Image = Nothing
+        HighSlot1.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot2_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot2.DoubleClick
         If Not IsNothing(HighSlot2.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot2.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot2.Image.Tag))
         End If
         HighSlot2.Image = Nothing
+        HighSlot2.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot3_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot3.DoubleClick
         If Not IsNothing(HighSlot3.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot3.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot3.Image.Tag))
         End If
         HighSlot3.Image = Nothing
+        HighSlot3.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot5_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot5.DoubleClick
         If Not IsNothing(HighSlot5.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot5.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot5.Image.Tag))
         End If
         HighSlot5.Image = Nothing
+        HighSlot5.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot7_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot7.DoubleClick
         If Not IsNothing(HighSlot7.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot7.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot7.Image.Tag))
         End If
         HighSlot7.Image = Nothing
+        HighSlot7.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot4_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot4.DoubleClick
         If Not IsNothing(HighSlot4.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot4.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot4.Image.Tag))
         End If
         HighSlot4.Image = Nothing
+        HighSlot4.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot6_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot6.DoubleClick
         If Not IsNothing(HighSlot6.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot6.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot6.Image.Tag))
         End If
         HighSlot6.Image = Nothing
+        HighSlot6.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub HighSlot8_DoubleClick(sender As Object, e As EventArgs) Handles HighSlot8.DoubleClick
         If Not IsNothing(HighSlot8.Image) Then
-            Call UpdateLauncherSlots(True, CStr(HighSlot8.Image.Tag))
+            Call UpdateLauncherSlots(True, CInt(HighSlot8.Image.Tag))
         End If
         HighSlot8.Image = Nothing
+        HighSlot8.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot3_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot3.DoubleClick
         RigSlot3.Image = Nothing
+        RigSlot3.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot2_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot2.DoubleClick
         RigSlot2.Image = Nothing
+        RigSlot2.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub RigSlot1_DoubleClick(sender As Object, e As EventArgs) Handles RigSlot1.DoubleClick
         RigSlot1.Image = Nothing
+        RigSlot1.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot1_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot1.DoubleClick
         LowSlot1.Image = Nothing
+        LowSlot1.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot2_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot2.DoubleClick
         LowSlot2.Image = Nothing
+        LowSlot2.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot3_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot3.DoubleClick
         LowSlot3.Image = Nothing
+        LowSlot3.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot4_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot4.DoubleClick
         LowSlot4.Image = Nothing
+        LowSlot4.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot5_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot5.DoubleClick
         LowSlot5.Image = Nothing
+        LowSlot5.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot6_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot6.DoubleClick
         LowSlot6.Image = Nothing
+        LowSlot6.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot7_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot7.DoubleClick
         LowSlot7.Image = Nothing
+        LowSlot7.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub LowSlot8_DoubleClick(sender As Object, e As EventArgs) Handles LowSlot8.DoubleClick
         LowSlot8.Image = Nothing
+        LowSlot8.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot5_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot5.DoubleClick
         ServiceSlot5.Image = Nothing
+        ServiceSlot5.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot3_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot3.DoubleClick
         ServiceSlot3.Image = Nothing
+        ServiceSlot3.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot1_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot1.DoubleClick
         ServiceSlot1.Image = Nothing
+        ServiceSlot1.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot2_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot2.DoubleClick
         ServiceSlot2.Image = Nothing
+        ServiceSlot2.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot4_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot4.DoubleClick
         ServiceSlot4.Image = Nothing
+        ServiceSlot4.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
     Private Sub ServiceSlot6_DoubleClick(sender As Object, e As EventArgs) Handles ServiceSlot6.DoubleClick
         ServiceSlot6.Image = Nothing
+        ServiceSlot6.ResetText()
         Call UpdateUpwellStructureStats()
     End Sub
 
-    Private Sub btnToggleAllPriceItems_Click(sender As Object, e As EventArgs) Handles btnToggleAllPriceItems.Click
+    Private Sub btnToggleAllPriceItems_Click(sender As Object, e As EventArgs) Handles btnStripFitting.Click
         Call StripFitting()
     End Sub
 
     Private Sub chkIncludeFuelCosts_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeFuelCosts.CheckedChanged
+        If chkIncludeFuelCosts.Checked Then
+            gbIncludeFuelBlocks.Enabled = True
+        Else
+            gbIncludeFuelBlocks.Enabled = False
+        End If
         Call UpdateFuelCostLabels()
     End Sub
 
@@ -2218,7 +2526,7 @@ Public Class frmCitadelFitting
     End Sub
 
     Private Sub ServiceModuleListView_ItemActivate(sender As Object, e As EventArgs) Handles ServiceModuleListView.ItemActivate
-        Call LoadImageInFreeSlot()
+        Call LoadSelectedImageInFreeSlot()
     End Sub
 
     Private Sub btnCloseForm_Click(sender As Object, e As EventArgs) Handles btnCloseForm.Click
@@ -2343,17 +2651,28 @@ Public Class frmCitadelFitting
         lblOxygenFuelBlockBuy.Enabled = True
 
         txtHeliumFuelBlockBPME.Enabled = False
+        lblHeliumFuelBlockBPME.Enabled = False
         txtNitrogenFuelBlockBPME.Enabled = False
+        lblNitrogenFuelBlockBPME.Enabled = False
         txtHydrogenFuelBlockBPME.Enabled = False
+        lblHydrogenFuelBlockBPME.Enabled = False
         txtOxygenFuelBlockBPME.Enabled = False
+        lblOxygenFuelBlockBPME.Enabled = False
         lblNitrogenFuelBlockBuildPrice.Enabled = False
-        lblNitrogenFuelBlockBuild.Enabled = False
         lblOxygenFuelBlockBuildPrice.Enabled = False
-        lblOxygenFuelBlockBuild.Enabled = False
-        lblHeliumFuelBlockBuildPrice.Enabled = False
         lblHeliumFuelBlockBuild.Enabled = False
         lblHydrogenFuelBlockBuildPrice.Enabled = False
-        lblHyrogenBlockBuild.Enabled = False
+        lblNitrogenFuelBlockBuild.Enabled = False
+        lblOxygenFuelBlockBuild.Enabled = False
+        lblHeliumFuelBlockBuildPrice.Enabled = False
+        lblHydrogenFuelBlockBuild.Enabled = False
+
+        ' Not building so disable prices
+        gbFuelPrices.Enabled = False
+
+        ' Disable the update build cost and save fuel block info buttons too
+        btnUpdateBuildCost.Enabled = False
+        btnSaveFuelBlockInfo.Enabled = False
 
     End Sub
 
@@ -2369,16 +2688,466 @@ Public Class frmCitadelFitting
         lblOxygenFuelBlockBuy.Enabled = False
 
         txtHeliumFuelBlockBPME.Enabled = True
+        lblHeliumFuelBlockBPME.Enabled = True
         txtNitrogenFuelBlockBPME.Enabled = True
+        lblNitrogenFuelBlockBPME.Enabled = True
         txtHydrogenFuelBlockBPME.Enabled = True
+        lblHydrogenFuelBlockBPME.Enabled = True
         txtOxygenFuelBlockBPME.Enabled = True
+        lblOxygenFuelBlockBPME.Enabled = True
         lblNitrogenFuelBlockBuildPrice.Enabled = True
         lblOxygenFuelBlockBuildPrice.Enabled = True
-        lblHeliumFuelBlockBuildPrice.Enabled = True
+        lblHeliumFuelBlockBuild.Enabled = True
         lblHydrogenFuelBlockBuildPrice.Enabled = True
+        lblNitrogenFuelBlockBuild.Enabled = True
+        lblOxygenFuelBlockBuild.Enabled = True
+        lblHeliumFuelBlockBuildPrice.Enabled = True
+        lblHydrogenFuelBlockBuild.Enabled = True
 
+        ' Building so enable all prices
+        gbFuelPrices.Enabled = True
+
+        ' Building, so enable the update build cost and save fuel block info buttons
+        btnUpdateBuildCost.Enabled = True
+        btnSaveFuelBlockInfo.Enabled = True
+
+    End Sub
+
+    Private Sub ProcessKeyPress(ByRef e As KeyPressEventArgs)
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub ProcessMaterialKeyDown(e As KeyEventArgs, ProcessTextBox As TextBox)
+        Call ProcessCutCopyPasteSelect(ProcessTextBox, e)
+        If e.KeyCode = Keys.Enter Then
+            ' Set them all
+            Call SetFuelBlockBuildcost(FuelBlocks.Helium)
+            Call SetFuelBlockBuildcost(FuelBlocks.Hydrogen)
+            Call SetFuelBlockBuildcost(FuelBlocks.Oxygen)
+            Call SetFuelBlockBuildcost(FuelBlocks.Nitrogen)
+        End If
+    End Sub
+
+    Private Sub ProcessBlockBuyKeyDown(e As KeyEventArgs, ProcessTextBox As TextBox)
+        Call ProcessCutCopyPasteSelect(ProcessTextBox, e)
+        If e.KeyCode = Keys.Enter Then
+            Call UpdateFuelCostLabels()
+        End If
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBPME_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHeliumFuelBlockBPME.KeyDown
+        Call ProcessCutCopyPasteSelect(txtHeliumFuelBlockBPME, e)
+        If e.KeyCode = Keys.Enter Then
+            Call SetFuelBlockBuildcost(FuelBlocks.Helium)
+        End If
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBPME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHeliumFuelBlockBPME.KeyPress
+        Call ProcessKeyPress(e)
+        HeliumFuelBlockBPUpdated = True
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBPME_GotFocus(sender As Object, e As EventArgs) Handles txtHeliumFuelBlockBPME.GotFocus
+        Call txtHeliumFuelBlockBPME.SelectAll()
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBPME_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHydrogenFuelBlockBPME.KeyDown
+        Call ProcessCutCopyPasteSelect(txtHydrogenFuelBlockBPME, e)
+        If e.KeyCode = Keys.Enter Then
+            Call SetFuelBlockBuildcost(FuelBlocks.Hydrogen)
+        End If
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBPME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHydrogenFuelBlockBPME.KeyPress
+        Call ProcessKeyPress(e)
+        HydrogenFuelBlockBPUpdated = True
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBPME_GotFocus(sender As Object, e As EventArgs) Handles txtHydrogenFuelBlockBPME.GotFocus
+        Call txtHydrogenFuelBlockBPME.SelectAll()
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBPME_KeyDown(sender As Object, e As KeyEventArgs) Handles txtNitrogenFuelBlockBPME.KeyDown
+        Call ProcessCutCopyPasteSelect(txtNitrogenFuelBlockBPME, e)
+        If e.KeyCode = Keys.Enter Then
+            Call SetFuelBlockBuildcost(FuelBlocks.Nitrogen)
+        End If
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBPME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtNitrogenFuelBlockBPME.KeyPress
+        Call ProcessKeyPress(e)
+        NitrogenFuelBlockBPUpdated = True
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBPME_GotFocus(sender As Object, e As EventArgs) Handles txtNitrogenFuelBlockBPME.GotFocus
+        Call txtNitrogenFuelBlockBPME.SelectAll()
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBPME_KeyDown(sender As Object, e As KeyEventArgs) Handles txtOxygenFuelBlockBPME.KeyDown
+        Call ProcessCutCopyPasteSelect(txtOxygenFuelBlockBPME, e)
+        If e.KeyCode = Keys.Enter Then
+            Call SetFuelBlockBuildcost(FuelBlocks.Oxygen)
+        End If
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBPME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtOxygenFuelBlockBPME.KeyPress
+        Call ProcessKeyPress(e)
+        OxygenFuelBlockBPUpdated = True
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBPME_GotFocus(sender As Object, e As EventArgs) Handles txtOxygenFuelBlockBPME.GotFocus
+        Call txtOxygenFuelBlockBPME.SelectAll()
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBuyPrice_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHeliumFuelBlockBuyPrice.KeyDown
+        Call ProcessBlockBuyKeyDown(e, txtHeliumFuelBlockBuyPrice)
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBuyPrice_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHeliumFuelBlockBuyPrice.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtHeliumFuelBlockBuyPrice_GotFocus(sender As Object, e As EventArgs) Handles txtHeliumFuelBlockBuyPrice.GotFocus
+        Call txtHeliumFuelBlockBuyPrice.SelectAll()
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBuyPrice_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHydrogenFuelBlockBuyPrice.KeyDown
+        Call ProcessBlockBuyKeyDown(e, txtHydrogenFuelBlockBuyPrice)
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBuyPrice_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHydrogenFuelBlockBuyPrice.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtHydrogenFuelBlockBuyPrice_GotFocus(sender As Object, e As EventArgs) Handles txtHydrogenFuelBlockBuyPrice.GotFocus
+        Call txtHydrogenFuelBlockBuyPrice.SelectAll()
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBuyPrice_KeyDown(sender As Object, e As KeyEventArgs) Handles txtNitrogenFuelBlockBuyPrice.KeyDown
+        Call ProcessBlockBuyKeyDown(e, txtNitrogenFuelBlockBuyPrice)
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBuyPrice_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtNitrogenFuelBlockBuyPrice.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtNitrogenFuelBlockBuyPrice_GotFocus(sender As Object, e As EventArgs) Handles txtNitrogenFuelBlockBuyPrice.GotFocus
+        Call txtNitrogenFuelBlockBuyPrice.SelectAll()
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBuyPrice_KeyDown(sender As Object, e As KeyEventArgs) Handles txtOxygenFuelBlockBuyPrice.KeyDown
+        Call ProcessBlockBuyKeyDown(e, txtOxygenFuelBlockBuyPrice)
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBuyPrice_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtOxygenFuelBlockBuyPrice.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtOxygenFuelBlockBuyPrice_GotFocus(sender As Object, e As EventArgs) Handles txtOxygenFuelBlockBuyPrice.GotFocus
+        Call txtOxygenFuelBlockBuyPrice.SelectAll()
+    End Sub
+
+    Private Sub txtHeliumIsotopes_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHeliumIsotopes.KeyDown
+        Call ProcessMaterialKeyDown(e, txtHeliumIsotopes)
+    End Sub
+
+    Private Sub txtHeliumIsotopes_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHeliumIsotopes.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtHeliumIsotopes_GotFocus(sender As Object, e As EventArgs) Handles txtHeliumIsotopes.GotFocus
+        Call txtHeliumIsotopes.SelectAll()
+    End Sub
+
+    Private Sub txtHydrogenIsotopes_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHydrogenIsotopes.KeyDown
+        Call ProcessMaterialKeyDown(e, txtHydrogenIsotopes)
+    End Sub
+
+    Private Sub txtHydrogenIsotopes_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHydrogenIsotopes.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtHydrogenIsotopes_GotFocus(sender As Object, e As EventArgs) Handles txtHydrogenIsotopes.GotFocus
+        Call txtHydrogenIsotopes.SelectAll()
+    End Sub
+
+    Private Sub txtHeavyWater_KeyDown(sender As Object, e As KeyEventArgs) Handles txtHeavyWater.KeyDown
+        Call ProcessMaterialKeyDown(e, txtHeavyWater)
+    End Sub
+
+    Private Sub txtHeavyWater_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtHeavyWater.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtHeavyWater_GotFocus(sender As Object, e As EventArgs) Handles txtHeavyWater.GotFocus
+        Call txtHeavyWater.SelectAll()
+    End Sub
+
+    Private Sub txtNitrogenIsotopes_KeyDown(sender As Object, e As KeyEventArgs) Handles txtNitrogenIsotopes.KeyDown
+        Call ProcessMaterialKeyDown(e, txtNitrogenIsotopes)
+    End Sub
+
+    Private Sub txtNitrogenIsotopes_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtNitrogenIsotopes.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtNitrogenIsotopes_GotFocus(sender As Object, e As EventArgs) Handles txtNitrogenIsotopes.GotFocus
+        Call txtNitrogenIsotopes.SelectAll()
+    End Sub
+
+    Private Sub txtOxygenIsotopes_KeyDown(sender As Object, e As KeyEventArgs) Handles txtOxygenIsotopes.KeyDown
+        Call ProcessMaterialKeyDown(e, txtOxygenIsotopes)
+    End Sub
+
+    Private Sub txtOxygenIsotopes_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtOxygenIsotopes.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtOxygenIsotopes_GotFocus(sender As Object, e As EventArgs) Handles txtOxygenIsotopes.GotFocus
+        Call txtOxygenIsotopes.SelectAll()
+    End Sub
+
+    Private Sub txtStrontiumClathrates_KeyDown(sender As Object, e As KeyEventArgs) Handles txtStrontiumClathrates.KeyDown
+        Call ProcessMaterialKeyDown(e, txtStrontiumClathrates)
+    End Sub
+
+    Private Sub txtStrontiumClathrates_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtStrontiumClathrates.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtStrontiumClathrates_GotFocus(sender As Object, e As EventArgs) Handles txtStrontiumClathrates.GotFocus
+        Call txtStrontiumClathrates.SelectAll()
+    End Sub
+
+    Private Sub txtMechanicalParts_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMechanicalParts.KeyDown
+        Call ProcessMaterialKeyDown(e, txtMechanicalParts)
+    End Sub
+
+    Private Sub txtMechanicalParts_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMechanicalParts.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtMechanicalParts_GotFocus(sender As Object, e As EventArgs) Handles txtMechanicalParts.GotFocus
+        Call txtMechanicalParts.SelectAll()
+    End Sub
+
+    Private Sub txtRobotics_KeyDown(sender As Object, e As KeyEventArgs) Handles txtRobotics.KeyDown
+        Call ProcessMaterialKeyDown(e, txtRobotics)
+    End Sub
+
+    Private Sub txtRobotics_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtRobotics.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtRobotics_GotFocus(sender As Object, e As EventArgs) Handles txtRobotics.GotFocus
+        Call txtRobotics.SelectAll()
+    End Sub
+
+    Private Sub txtCoolant_KeyDown(sender As Object, e As KeyEventArgs) Handles txtCoolant.KeyDown
+        Call ProcessMaterialKeyDown(e, txtCoolant)
+    End Sub
+
+    Private Sub txtCoolant_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCoolant.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtCoolant_GotFocus(sender As Object, e As EventArgs) Handles txtCoolant.GotFocus
+        Call txtCoolant.SelectAll()
+    End Sub
+
+    Private Sub txtEnrichedUranium_KeyDown(sender As Object, e As KeyEventArgs) Handles txtEnrichedUranium.KeyDown
+        Call ProcessMaterialKeyDown(e, txtEnrichedUranium)
+    End Sub
+
+    Private Sub txtEnrichedUranium_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtEnrichedUranium.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtEnrichedUranium_GotFocus(sender As Object, e As EventArgs) Handles txtEnrichedUranium.GotFocus
+        Call txtEnrichedUranium.SelectAll()
+    End Sub
+
+    Private Sub txtOxygen_KeyDown(sender As Object, e As KeyEventArgs) Handles txtOxygen.KeyDown
+        Call ProcessMaterialKeyDown(e, txtOxygen)
+    End Sub
+
+    Private Sub txtOxygen_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtOxygen.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtOxygen_GotFocus(sender As Object, e As EventArgs) Handles txtOxygen.GotFocus
+        Call txtOxygen.SelectAll()
+    End Sub
+
+    Private Sub txtLiquidOzone_KeyDown(sender As Object, e As KeyEventArgs) Handles txtLiquidOzone.KeyDown
+        Call ProcessMaterialKeyDown(e, txtLiquidOzone)
+    End Sub
+
+    Private Sub txtLiquidOzone_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtLiquidOzone.KeyPress
+        Call ProcessKeyPress(e)
+    End Sub
+
+    Private Sub txtLiquidOzone_GotFocus(sender As Object, e As EventArgs) Handles txtLiquidOzone.GotFocus
+        Call txtLiquidOzone.SelectAll()
+    End Sub
+
+    Private Sub ShowToolTipForModule(ByRef SentSender As Object)
+        Dim SO As PictureBox
+        SO = CType(SentSender, PictureBox)
+        If SO.Text <> "" Then
+            MainToolTip.SetToolTip(SO, SO.Text)
+        End If
+    End Sub
+
+    Private Sub RigSlot1_MouseEnter(sender As Object, e As EventArgs) Handles RigSlot1.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub RigSlot2_MouseEnter(sender As Object, e As EventArgs) Handles RigSlot2.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub RigSlot3_MouseEnter(sender As Object, e As EventArgs) Handles RigSlot3.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot1_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot1.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot2_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot2.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot3_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot3.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot4_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot4.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot5_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot5.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot6_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot6.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot7_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot7.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub MidSlot8_MouseEnter(sender As Object, e As EventArgs) Handles MidSlot8.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot5_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot5.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot3_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot3.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot1_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot1.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot2_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot2.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot4_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot4.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub ServiceSlot6_MouseEnter(sender As Object, e As EventArgs) Handles ServiceSlot6.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot8_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot8.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot7_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot7.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot6_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot6.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot5_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot5.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot4_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot4.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot3_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot3.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot2_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot2.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub LowSlot1_MouseEnter(sender As Object, e As EventArgs) Handles LowSlot1.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot7_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot7.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot8_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot8.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot5_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot5.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot3_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot3.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot1_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot1.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot2_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot2.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot4_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot4.MouseEnter
+        Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub HighSlot6_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot6.MouseEnter
+        Call ShowToolTipForModule(sender)
     End Sub
 
 #End Region
 
 End Class
+
+Public Enum Services
+    StandupBiochemicalReactor = 45539 ' Boosters
+    StandupManufacturingPlant = 35878
+    StandupCapitalShipyard = 35881
+    StandupSupercapitalShipyard = 35877
+
+    StandupInventionLab = 35886 ' Invention
+    StandupResearchLab = 35891 ' Copying, ME/TE research
+    StandupHyasyodaResearchLab = 45550 ' Copying, ME/TE research
+End Enum

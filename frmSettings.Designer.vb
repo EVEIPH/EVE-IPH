@@ -66,7 +66,6 @@ Partial Class frmSettings
         Me.gbStartupOptions = New System.Windows.Forms.GroupBox()
         Me.chkRefreshFacilityDataonStartup = New System.Windows.Forms.CheckBox()
         Me.chkRefreshMarketDataonStartup = New System.Windows.Forms.CheckBox()
-        Me.chkRefreshTeamDataonStartup = New System.Windows.Forms.CheckBox()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
@@ -483,7 +482,6 @@ Partial Class frmSettings
         '
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshFacilityDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshMarketDataonStartup)
-        Me.gbStartupOptions.Controls.Add(Me.chkRefreshTeamDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
@@ -497,7 +495,7 @@ Partial Class frmSettings
         'chkRefreshFacilityDataonStartup
         '
         Me.chkRefreshFacilityDataonStartup.AutoSize = True
-        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 123)
+        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 100)
         Me.chkRefreshFacilityDataonStartup.Name = "chkRefreshFacilityDataonStartup"
         Me.chkRefreshFacilityDataonStartup.Size = New System.Drawing.Size(124, 17)
         Me.chkRefreshFacilityDataonStartup.TabIndex = 29
@@ -507,23 +505,12 @@ Partial Class frmSettings
         'chkRefreshMarketDataonStartup
         '
         Me.chkRefreshMarketDataonStartup.AutoSize = True
-        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 102)
+        Me.chkRefreshMarketDataonStartup.Location = New System.Drawing.Point(17, 79)
         Me.chkRefreshMarketDataonStartup.Name = "chkRefreshMarketDataonStartup"
         Me.chkRefreshMarketDataonStartup.Size = New System.Drawing.Size(125, 17)
         Me.chkRefreshMarketDataonStartup.TabIndex = 28
         Me.chkRefreshMarketDataonStartup.Text = "Refresh Market Data"
         Me.chkRefreshMarketDataonStartup.UseVisualStyleBackColor = True
-        '
-        'chkRefreshTeamDataonStartup
-        '
-        Me.chkRefreshTeamDataonStartup.AutoSize = True
-        Me.chkRefreshTeamDataonStartup.Enabled = False
-        Me.chkRefreshTeamDataonStartup.Location = New System.Drawing.Point(17, 81)
-        Me.chkRefreshTeamDataonStartup.Name = "chkRefreshTeamDataonStartup"
-        Me.chkRefreshTeamDataonStartup.Size = New System.Drawing.Size(119, 17)
-        Me.chkRefreshTeamDataonStartup.TabIndex = 27
-        Me.chkRefreshTeamDataonStartup.Text = "Refresh Team Data"
-        Me.chkRefreshTeamDataonStartup.UseVisualStyleBackColor = True
         '
         'gbExportOptions
         '
@@ -788,7 +775,6 @@ Partial Class frmSettings
     Friend WithEvents chkDisableSound As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshBPsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbStartupOptions As System.Windows.Forms.GroupBox
-    Friend WithEvents chkRefreshTeamDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshFacilityDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshMarketDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbExportOptions As System.Windows.Forms.GroupBox

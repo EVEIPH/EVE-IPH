@@ -24,7 +24,6 @@ Partial Class frmFacilityTest
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmFacilityTest))
         Me.tabFacility = New System.Windows.Forms.TabPage()
-        Me.BPFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilities = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilityBase = New System.Windows.Forms.TabPage()
@@ -41,6 +40,7 @@ Partial Class frmFacilityTest
         Me.Button1 = New System.Windows.Forms.Button()
         Me.Button2 = New System.Windows.Forms.Button()
         Me.Button3 = New System.Windows.Forms.Button()
+        Me.BPFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabFacility.SuspendLayout()
         Me.tabBPInventionEquip.SuspendLayout()
         Me.tabCalcFacilities.SuspendLayout()
@@ -58,13 +58,6 @@ Partial Class frmFacilityTest
         Me.tabFacility.TabIndex = 1
         Me.tabFacility.Text = "Facility"
         Me.tabFacility.UseVisualStyleBackColor = True
-        '
-        'BPFacility
-        '
-        Me.BPFacility.Location = New System.Drawing.Point(0, 0)
-        Me.BPFacility.Name = "BPFacility"
-        Me.BPFacility.Size = New System.Drawing.Size(281, 142)
-        Me.BPFacility.TabIndex = 0
         '
         'tabBPInventionEquip
         '
@@ -237,6 +230,13 @@ Partial Class frmFacilityTest
         Me.Button3.TabIndex = 21
         Me.Button3.Text = "Test BP 3"
         Me.Button3.UseVisualStyleBackColor = True
+        '
+        'BPFacility
+        '
+        Me.BPFacility.Location = New System.Drawing.Point(0, 0)
+        Me.BPFacility.Name = "BPFacility"
+        Me.BPFacility.Size = New System.Drawing.Size(280, 142)
+        Me.BPFacility.TabIndex = 0
         '
         'frmFacilityTest
         '

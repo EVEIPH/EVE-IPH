@@ -783,8 +783,7 @@ Public Class ShoppingList
                             ' Re-run with new quantity
                             Dim TempBP As New Blueprint(.BPTypeID, FoundBuildItem.ItemQuantity + .ItemQuantity, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False,
-                               0, SelectedBPManufacturingTeam, TempComponentFacility, SelectedBPComponentManufacturingTeam,
-                               TempComponentFacility, TempComponentFacility, True)
+                               0, TempComponentFacility, TempComponentFacility, TempComponentFacility, True)
 
                             Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)

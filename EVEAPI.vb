@@ -12,14 +12,14 @@ Public Class EVEAPI
     ' 09-01-2011: New API info page to get all data about accounts and access.
     Private Const AccountDetails As String = "/account/APIKeyInfo.xml.aspx"
 
-    Private Const CharacterSheet As String = "/char/CharacterSheet.xml.aspx" ' For skill tree
+    Private Const CharacterSheet As String = "/char/CharacterSheet.xml.aspx" ' For skill tree - use skills and public information (for race info)
     Private Const StandingsSheet As String = "/char/Standings.xml.aspx" ' For NPC Standings list
     Private Const ResearchAgents As String = "/char/Research.xml.aspx" ' For NPC Standings list
 
     Private Const CharacterAssets As String = "/char/AssetList.xml.aspx" ' Returns list of assets for character
     Private Const CorporationAssets As String = "/corp/AssetList.xml.aspx" ' Returns list of assets for corporation, requires corp key
 
-    Private Const CorporationFacilities As String = "/corp/Facilities.xml.aspx" ' Returns a list of all corp facilities and outposts
+    Private Const CorporationFacilities As String = "/corp/Facilities.xml.aspx" ' Returns a list of all corp facilities and outposts (not used)
 
     ' Blueprint API
     Private Const CharacterBlueprints As String = "/char/Blueprints.xml.aspx"
@@ -43,7 +43,7 @@ Public Class EVEAPI
 
     Private Const EVEOutpostData As String = "/eve/ConquerableStationList.xml.aspx" ' List of conquerable stations
 
-    Private Const EVEServerData As String = "/server/ServerStatus.xml.aspx" ' Singularity server data
+    Private Const EVEServerData As String = "/server/ServerStatus.xml.aspx" ' Singularity server data (not used)
 
     Private APIError As ErrorData
 
@@ -637,7 +637,6 @@ Public Class EVEAPI
                             TempJob.outputLocationID = CLng(.GetNamedItem("outputLocationID").Value)
                             TempJob.runs = CLng(.GetNamedItem("runs").Value)
                             TempJob.cost = CDbl(.GetNamedItem("cost").Value)
-                            TempJob.teamID = CLng(.GetNamedItem("teamID").Value)
                             TempJob.licensedRuns = CLng(.GetNamedItem("licensedRuns").Value)
                             TempJob.probability = CDbl(.GetNamedItem("probability").Value)
                             TempJob.productTypeID = CLng(.GetNamedItem("productTypeID").Value)

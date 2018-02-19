@@ -13,7 +13,7 @@ Public Class frmFacilityTest
         StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
 
         ' Add any initialization after the InitializeComponent() call.
-        Call BPFacility.InitializeControl(FacilityView.FullControls, ProductionType.Manufacturing, SelectedCharacter.ID)
+        'Call BPFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID)
 
     End Sub
 

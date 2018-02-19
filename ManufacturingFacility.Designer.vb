@@ -74,7 +74,7 @@ Partial Class ManufacturingFacility
         Me.chkFacilityIncludeUsage.Location = New System.Drawing.Point(139, 20)
         Me.chkFacilityIncludeUsage.Name = "chkFacilityIncludeUsage"
         Me.chkFacilityIncludeUsage.Size = New System.Drawing.Size(57, 17)
-        Me.chkFacilityIncludeUsage.TabIndex = 26
+        Me.chkFacilityIncludeUsage.TabIndex = 18
         Me.chkFacilityIncludeUsage.Text = "Usage"
         Me.chkFacilityIncludeUsage.UseVisualStyleBackColor = True
         '
@@ -84,7 +84,7 @@ Partial Class ManufacturingFacility
         Me.chkFacilityIncludeTime.Location = New System.Drawing.Point(243, 20)
         Me.chkFacilityIncludeTime.Name = "chkFacilityIncludeTime"
         Me.chkFacilityIncludeTime.Size = New System.Drawing.Size(49, 17)
-        Me.chkFacilityIncludeTime.TabIndex = 28
+        Me.chkFacilityIncludeTime.TabIndex = 20
         Me.chkFacilityIncludeTime.Text = "Time"
         Me.chkFacilityIncludeTime.UseVisualStyleBackColor = True
         '
@@ -94,7 +94,7 @@ Partial Class ManufacturingFacility
         Me.lblFacilityDefault.Location = New System.Drawing.Point(218, -2)
         Me.lblFacilityDefault.Name = "lblFacilityDefault"
         Me.lblFacilityDefault.Size = New System.Drawing.Size(79, 20)
-        Me.lblFacilityDefault.TabIndex = 29
+        Me.lblFacilityDefault.TabIndex = 1
         Me.lblFacilityDefault.Text = "Default Facility"
         Me.lblFacilityDefault.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -104,7 +104,7 @@ Partial Class ManufacturingFacility
         Me.chkFacilityIncludeCost.Location = New System.Drawing.Point(196, 20)
         Me.chkFacilityIncludeCost.Name = "chkFacilityIncludeCost"
         Me.chkFacilityIncludeCost.Size = New System.Drawing.Size(47, 17)
-        Me.chkFacilityIncludeCost.TabIndex = 27
+        Me.chkFacilityIncludeCost.TabIndex = 19
         Me.chkFacilityIncludeCost.Text = "Cost"
         Me.chkFacilityIncludeCost.UseVisualStyleBackColor = True
         '
@@ -115,7 +115,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityorArray.Location = New System.Drawing.Point(5, 60)
         Me.cmbFacilityorArray.Name = "cmbFacilityorArray"
         Me.cmbFacilityorArray.Size = New System.Drawing.Size(291, 21)
-        Me.cmbFacilityorArray.TabIndex = 33
+        Me.cmbFacilityorArray.TabIndex = 4
         Me.cmbFacilityorArray.Text = "Select Facility / Array"
         '
         'cmbFacilitySystem
@@ -124,7 +124,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilitySystem.Location = New System.Drawing.Point(139, 37)
         Me.cmbFacilitySystem.Name = "cmbFacilitySystem"
         Me.cmbFacilitySystem.Size = New System.Drawing.Size(157, 21)
-        Me.cmbFacilitySystem.TabIndex = 32
+        Me.cmbFacilitySystem.TabIndex = 3
         Me.cmbFacilitySystem.Text = "Select System"
         '
         'cmbFacilityRegion
@@ -133,7 +133,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityRegion.Location = New System.Drawing.Point(5, 37)
         Me.cmbFacilityRegion.Name = "cmbFacilityRegion"
         Me.cmbFacilityRegion.Size = New System.Drawing.Size(130, 21)
-        Me.cmbFacilityRegion.TabIndex = 31
+        Me.cmbFacilityRegion.TabIndex = 2
         Me.cmbFacilityRegion.Text = "Select Region"
         '
         'lblFacilityLocation
@@ -161,7 +161,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityType.Location = New System.Drawing.Point(68, 1)
         Me.cmbFacilityType.Name = "cmbFacilityType"
         Me.cmbFacilityType.Size = New System.Drawing.Size(65, 21)
-        Me.cmbFacilityType.TabIndex = 24
+        Me.cmbFacilityType.TabIndex = 1
         Me.cmbFacilityType.Text = "Type"
         '
         'cmbLargeShips
@@ -171,7 +171,7 @@ Partial Class ManufacturingFacility
         Me.cmbLargeShips.Location = New System.Drawing.Point(164, 84)
         Me.cmbLargeShips.Name = "cmbLargeShips"
         Me.cmbLargeShips.Size = New System.Drawing.Size(66, 21)
-        Me.cmbLargeShips.TabIndex = 46
+        Me.cmbLargeShips.TabIndex = 7
         Me.cmbLargeShips.Text = "All"
         '
         'lblLargeShips
@@ -189,7 +189,7 @@ Partial Class ManufacturingFacility
         Me.cmbFuelBlocks.Location = New System.Drawing.Point(84, 84)
         Me.cmbFuelBlocks.Name = "cmbFuelBlocks"
         Me.cmbFuelBlocks.Size = New System.Drawing.Size(78, 21)
-        Me.cmbFuelBlocks.TabIndex = 45
+        Me.cmbFuelBlocks.TabIndex = 6
         Me.cmbFuelBlocks.Text = "All"
         '
         'lblFuelBlocks
@@ -207,7 +207,7 @@ Partial Class ManufacturingFacility
         Me.cmbModules.Location = New System.Drawing.Point(4, 84)
         Me.cmbModules.Name = "cmbModules"
         Me.cmbModules.Size = New System.Drawing.Size(78, 21)
-        Me.cmbModules.TabIndex = 44
+        Me.cmbModules.TabIndex = 5
         Me.cmbModules.Text = "All"
         '
         'lblModules
@@ -223,7 +223,7 @@ Partial Class ManufacturingFacility
         Me.btnFacilityFitting.Location = New System.Drawing.Point(213, 83)
         Me.btnFacilityFitting.Name = "btnFacilityFitting"
         Me.btnFacilityFitting.Size = New System.Drawing.Size(43, 22)
-        Me.btnFacilityFitting.TabIndex = 92
+        Me.btnFacilityFitting.TabIndex = 13
         Me.btnFacilityFitting.Text = "Fitting"
         Me.btnFacilityFitting.UseVisualStyleBackColor = True
         '
@@ -233,7 +233,7 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualTax.MaxLength = 5
         Me.txtFacilityManualTax.Name = "txtFacilityManualTax"
         Me.txtFacilityManualTax.Size = New System.Drawing.Size(38, 20)
-        Me.txtFacilityManualTax.TabIndex = 90
+        Me.txtFacilityManualTax.TabIndex = 11
         Me.txtFacilityManualTax.Text = "-99.9%"
         Me.txtFacilityManualTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -251,7 +251,7 @@ Partial Class ManufacturingFacility
         Me.btnFacilitySave.Location = New System.Drawing.Point(257, 83)
         Me.btnFacilitySave.Name = "btnFacilitySave"
         Me.btnFacilitySave.Size = New System.Drawing.Size(40, 22)
-        Me.btnFacilitySave.TabIndex = 91
+        Me.btnFacilitySave.TabIndex = 14
         Me.btnFacilitySave.Text = "Save"
         Me.btnFacilitySave.UseVisualStyleBackColor = True
         '
@@ -261,7 +261,7 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualTE.MaxLength = 5
         Me.txtFacilityManualTE.Name = "txtFacilityManualTE"
         Me.txtFacilityManualTE.Size = New System.Drawing.Size(38, 20)
-        Me.txtFacilityManualTE.TabIndex = 88
+        Me.txtFacilityManualTE.TabIndex = 9
         Me.txtFacilityManualTE.Text = "-99.9%"
         Me.txtFacilityManualTE.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -271,7 +271,7 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualME.MaxLength = 5
         Me.txtFacilityManualME.Name = "txtFacilityManualME"
         Me.txtFacilityManualME.Size = New System.Drawing.Size(38, 20)
-        Me.txtFacilityManualME.TabIndex = 86
+        Me.txtFacilityManualME.TabIndex = 8
         Me.txtFacilityManualME.Text = "-99.9%"
         Me.txtFacilityManualME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -308,7 +308,7 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualCost.MaxLength = 5
         Me.txtFacilityManualCost.Name = "txtFacilityManualCost"
         Me.txtFacilityManualCost.Size = New System.Drawing.Size(38, 20)
-        Me.txtFacilityManualCost.TabIndex = 94
+        Me.txtFacilityManualCost.TabIndex = 10
         Me.txtFacilityManualCost.Text = "-99.9%"
         Me.txtFacilityManualCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -328,7 +328,7 @@ Partial Class ManufacturingFacility
         Me.cmbFWUpgrade.Location = New System.Drawing.Point(230, 106)
         Me.cmbFWUpgrade.Name = "cmbFWUpgrade"
         Me.cmbFWUpgrade.Size = New System.Drawing.Size(66, 21)
-        Me.cmbFWUpgrade.TabIndex = 95
+        Me.cmbFWUpgrade.TabIndex = 12
         Me.cmbFWUpgrade.Text = "Level 5"
         '
         'chkFacilityToggle
@@ -337,7 +337,7 @@ Partial Class ManufacturingFacility
         Me.chkFacilityToggle.Location = New System.Drawing.Point(139, 3)
         Me.chkFacilityToggle.Name = "chkFacilityToggle"
         Me.chkFacilityToggle.Size = New System.Drawing.Size(79, 17)
-        Me.chkFacilityToggle.TabIndex = 97
+        Me.chkFacilityToggle.TabIndex = 17
         Me.chkFacilityToggle.Text = "Dessy/Cap"
         Me.chkFacilityToggle.UseVisualStyleBackColor = True
         '
@@ -357,7 +357,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityActivities.Location = New System.Drawing.Point(4, 148)
         Me.cmbFacilityActivities.Name = "cmbFacilityActivities"
         Me.cmbFacilityActivities.Size = New System.Drawing.Size(170, 21)
-        Me.cmbFacilityActivities.TabIndex = 102
+        Me.cmbFacilityActivities.TabIndex = 0
         Me.cmbFacilityActivities.Text = "Select Activity"
         '
         'lblFacilityActivity
@@ -373,6 +373,7 @@ Partial Class ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.cmbFacilityType)
         Me.Controls.Add(Me.cmbFacilityActivities)
         Me.Controls.Add(Me.lblFacilityActivity)
         Me.Controls.Add(Me.lblFacilityUsage)
@@ -399,7 +400,6 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbFacilityRegion)
         Me.Controls.Add(Me.lblFacilityLocation)
         Me.Controls.Add(Me.lblFacilityType)
-        Me.Controls.Add(Me.cmbFacilityType)
         Me.Controls.Add(Me.cmbLargeShips)
         Me.Controls.Add(Me.lblLargeShips)
         Me.Controls.Add(Me.cmbFuelBlocks)

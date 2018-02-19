@@ -5,7 +5,7 @@ Imports System.Data.SQLite
 Public Class Blueprint
 
     ' Base variables
-    Private BlueprintID As Long
+    Private BlueprintID As Integer
     Private BlueprintName As String
     Private BlueprintGroup As String
     Private ItemID As Long
@@ -54,12 +54,6 @@ Public Class Blueprint
     Private IncludeManufacturingUsage As Boolean
     Private ComponentFacilityUsage As Double
     Private CapComponentFacilityUsage As Double
-
-    ' Team costs
-    Private ManufacturingTeamFee As Double
-    Private ComponentTeamFee As Double
-    Private InventionTeamFee As Double
-    Private CopyTeamFee As Double
 
     ' Variables for calcuations
     Private BPProductionTime As Double ' Production Time for 1 Run of Blueprint 
@@ -149,12 +143,6 @@ Public Class Blueprint
     ' Save all the settings here, which has all the standings, fees, etc in it
     Private BPUserSettings As ApplicationSettings
 
-    ' What team they are using for this job
-    Private ManufacturingTeam As IndustryTeam
-    Private ComponentManufacturingTeam As IndustryTeam
-    Private InventionTeam As IndustryTeam
-    Private CopyTeam As IndustryTeam
-
     ' What facility are they using to produce?
     Private ManufacturingFacility As IndustryFacility
     Private ComponentManufacturingFacility As IndustryFacility
@@ -174,9 +162,9 @@ Public Class Blueprint
 
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
-                   ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character, _
-                   ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double, BPProductionTeam As IndustryTeam, _
-                   ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionTeam As IndustryTeam, ByVal BPComponentProductionFacility As IndustryFacility, _
+                   ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character,
+                   ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double,
+                   ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                    ByVal BPCapComponentProductionFacility As IndustryFacility, Optional ByVal ComponentBP As Boolean = False)
 
         Dim readerBP As SQLiteDataReader
@@ -194,7 +182,7 @@ Public Class Blueprint
 
         If readerBP.Read Then
             ' Set the variables
-            BlueprintID = readerBP.GetInt64(0)
+            BlueprintID = readerBP.GetInt32(0)
             BlueprintName = readerBP.GetString(1)
             BlueprintGroup = readerBP.GetString(2)
             ItemID = readerBP.GetInt64(3)
@@ -242,9 +230,6 @@ Public Class Blueprint
         BaseJobCost = 0
         JobFee = 0
 
-        ManufacturingTeamFee = 0
-        ComponentTeamFee = 0
-
         InventionDecryptor = NoDecryptor
         Relic = ""
         TotalInventedRuns = 0
@@ -289,10 +274,6 @@ Public Class Blueprint
 
         ' Add production implant from settings
         AIImplantValue = 1 - UserSettings.ManufacturingImplantValue
-
-        ' Teams
-        ManufacturingTeam = BPProductionTeam
-        ComponentManufacturingTeam = BPComponentProductionTeam
 
         ' Production facilities
         ManufacturingFacility = BPProductionFacility
@@ -377,13 +358,6 @@ Public Class Blueprint
         ' 3406 laboratory operation and 24624 is adv laboratory operation
         NumberofLaboratoryLines = 0
 
-        ' Save teams
-        InventionTeam = NoTeam
-        CopyTeam = NoTeam
-
-        InventionTeamFee = 0
-        CopyTeamFee = 0
-
         ' Save copy and invention facility
         CopyFacility = NoFacility
         InventionFacility = NoFacility
@@ -403,9 +377,8 @@ Public Class Blueprint
 
     End Sub
 
-    Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor, _
-                   ByVal BPInventionFacility As IndustryFacility, ByVal BPInventionTeam As IndustryTeam, _
-                   ByVal BPCopyFacility As IndustryFacility, ByVal BPCopyTeam As IndustryTeam, ByVal InventionItemTypeID As Long) As Integer
+    Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor,
+                   ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility, ByVal InventionItemTypeID As Long) As Integer
 
         ' Don't invent these
         If BlueprintName.Contains("Edition") Or BlueprintName.Contains("Polarized") Or BlueprintName.Contains("'Augmented'") Then
@@ -414,13 +387,6 @@ Public Class Blueprint
 
         ' 3406 laboratory operation and 24624 is adv laboratory operation
         NumberofLaboratoryLines = NumLaboratoryLines
-
-        ' Save teams
-        InventionTeam = BPInventionTeam
-        CopyTeam = BPCopyTeam
-
-        InventionTeamFee = 0
-        CopyTeamFee = 0
 
         ' Save copy and invention facility
         CopyFacility = BPCopyFacility
@@ -471,8 +437,6 @@ Public Class Blueprint
         IncludeCopyCosts = CopyFacility.IncludeActivityCost
         IncludeCopyTime = CopyFacility.IncludeActivityTime
         IncludeCopyUsage = CopyFacility.IncludeActivityUsage
-
-        ' Set the invention data 
 
         ' Set the T2/T3 skills to invent from the T1 version
         Call SetInventionSkills()
@@ -581,9 +545,8 @@ Public Class Blueprint
                 For j = 0 To ProductionChain(i).Count - 1
                     Application.DoEvents()
 
-                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, _
-                                                       CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingTeam, ManufacturingFacility, ComponentManufacturingTeam, _
-                                                       ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
+                    BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
+                                                       CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingFacility, ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -640,12 +603,6 @@ Public Class Blueprint
 
                         ' How much it costs to use each facility to manufacture items 
                         ManufacturingFacilityUsage += .GetManufacturingFacilityUsage
-
-                        ' Team costs
-                        ManufacturingTeamFee += .GetManufacturingTeamFee
-                        ComponentTeamFee += .GetComponentTeamFee
-                        InventionTeamFee = 0 ' No invention teams
-                        CopyTeamFee += .CopyTeamFee
 
                     End With
                 Next
@@ -708,8 +665,7 @@ Public Class Blueprint
 
                     ComponentBlueprint = New Blueprint(.BPTypeID, .ItemQuantity, .BuildME, .BuildTE, 1,
                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
-                                                   0, ManufacturingTeam, TempComponentFacility, ComponentManufacturingTeam,
-                                                   ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
+                                                   0, TempComponentFacility, ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -895,9 +851,8 @@ Public Class Blueprint
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
-                              1, 1, BPCharacter, BPUserSettings, BuildBuy,
-                              0, ComponentManufacturingTeam, TempComponentFacility,
-                              ComponentManufacturingTeam, ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
+                                            1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
+                                            ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
 
                     ' Set this blueprint with the quantity needed and get it's mats
                     Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
@@ -941,9 +896,6 @@ Public Class Blueprint
                                 Case Else
                                     ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                             End Select
-
-                            ' Save the component team fees
-                            ComponentTeamFee += ComponentBlueprint.GetManufacturingTeamFee
 
                             ' Since we are building this item, set the material cost to build cost per item, not buy
                             CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity)
@@ -1013,9 +965,6 @@ Public Class Blueprint
                             Case Else
                                 ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                         End Select
-
-                        ' Save the component team fees
-                        ComponentTeamFee += ComponentBlueprint.GetManufacturingTeamFee
 
                         ' Insert the existing component that we are using into the component list as set in the original BP
                         ComponentMaterials.InsertMaterial(CurrentMaterial)
@@ -1400,7 +1349,7 @@ Public Class Blueprint
             InventionCost = 0
         End If
 
-        If IncludeCopyCosts And TechLevel <> BlueprintTechLevel.T3 Then
+        If IncludeCopyCosts And TechLevel <> BPTechLevel.T3 Then
             ' Set the total cost for the sent runs by totaling all to get success needed, then dividing it by the runs invented
             ' (some bps have more runs than 1 - i.e. Drones = 10) to get the cost per run, then multiply that cost by the number of runs
             CopyCost = TotalCopyCost / TotalInventedRuns * UserRuns
@@ -1444,36 +1393,6 @@ Public Class Blueprint
 
     End Sub
 
-    ' Returns the bonus for the team of the sent bonus
-    Private Function GetTeamBonus(Team As IndustryTeam, BonusType As String) As Double
-        Dim TotalTeamBonus As Double = 0 ' More than one team can affect the total
-        Dim SQL As String
-        Dim rsSearch As SQLite.SQLiteDataReader
-
-        ' Normalize
-        TotalTeamBonus = 1
-
-        For i = 0 To Team.Bonuses.Count - 1
-            If Team.Bonuses(i).BonusType = BonusType Then
-
-                SQL = "SELECT 'X' FROM INDUSTRY_GROUP_SPECIALTIES "
-                SQL = SQL & "WHERE SPECIALTY_GROUP_ID = " & Team.Bonuses(i).BonusSpecialtyGroupID & " "
-                SQL = SQL & "AND GROUP_ID = " & ItemGroupID
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsSearch = DBCommand.ExecuteReader
-
-                If rsSearch.Read Then
-                    ' Each bonus multiplies against the other
-                    TotalTeamBonus = ((100 - Team.Bonuses(i).BonusValue) * TotalTeamBonus) / 100
-                End If
-            End If
-        Next
-
-        Return TotalTeamBonus
-
-    End Function
-
     ' Determines if we should add this material to the list or not, based on passed settings
     Private Function AddMaterial(CategoryName As String, GroupName As String, IgnoreMinerals As Boolean, IgnoreT1BaseItem As Boolean) As Boolean
 
@@ -1499,13 +1418,11 @@ Public Class Blueprint
         End Select
     End Function
 
-    ' Calculates the total material muliplier for the blueprint based on the bp, facility and team bonuses
+    ' Calculates the total material muliplier for the blueprint based on the bp, and facility
     Private Function SetBPMaterialModifier() As Double
 
-        Dim TeamBonus As Double = GetTeamBonus(ManufacturingTeam, "ME")
-
-        ' Material modifier is the BP ME, Facility, and team bonus - Facility is saved as a straight multiplier, the others need to be set
-        Return TeamBonus * (1 - (iME / 100)) * ManufacturingFacility.MaterialMultiplier
+        ' Material modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set
+        Return (1 - (iME / 100)) * ManufacturingFacility.MaterialMultiplier
 
     End Function
 
@@ -1527,7 +1444,7 @@ Public Class Blueprint
             OwnedBP = CBool(readerLookup.GetInt64(2))
         Else
             ' T2
-            If BPTech = BlueprintTechLevel.T2 Or BPTech = BlueprintTechLevel.T3 Then
+            If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
                 RefME = BaseT2T3ME
                 RefTE = BaseT2T3TE
             Else
@@ -1542,14 +1459,12 @@ Public Class Blueprint
 
     End Sub
 
-    ' Calculates the total time muliplier for the blueprint based on the bp, facility, implants and team bonuses
+    ' Calculates the total time muliplier for the blueprint based on the bp, facility, amd implants
     Private Function SetBPTimeModifier() As Double
         Dim Modifier As Double
 
-        Dim TeamBonus As Double = GetTeamBonus(ManufacturingTeam, "TE")
-
-        ' Time modifier is the BP ME, Facility, and team bonus - Facility is saved as a straight multiplier, the others need to be set, then do the skills
-        Modifier = TeamBonus * (1 - (iTE / 100)) * ManufacturingFacility.TimeMultiplier * AIImplantValue * (1 - (IndustrySkill * 0.04)) * (1 - (AdvancedIndustrySkill * 0.03))
+        ' Time modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set, then do the skills
+        Modifier = (1 - (iTE / 100)) * ManufacturingFacility.TimeMultiplier * AIImplantValue * (1 - (IndustrySkill * 0.04)) * (1 - (AdvancedIndustrySkill * 0.03))
 
         Return Modifier
 
@@ -1601,14 +1516,11 @@ Public Class Blueprint
             ' jobFee = baseJobCost * systemCostIndex * runs
             JobFee = BaseJobCost * ManufacturingFacility.CostIndex * UserRuns
 
-            ' teamCost = jobFee * teamCostModifier
-            ManufacturingTeamFee = JobFee * ManufacturingTeam.CostModifier
+            ' facilityUsage = jobFee * taxRate
+            FacilityUsage = JobFee * ManufacturingFacility.TaxRate
 
-            ' facilityUsage = (jobFee + teamCost) * taxRate
-            FacilityUsage = (JobFee + ManufacturingTeamFee) * ManufacturingFacility.TaxRate
-
-            ' totalInstallationCost = jobFee + teamCost + facilityUsage
-            ManufacturingFacilityUsage = (JobFee + ManufacturingTeamFee + FacilityUsage) * FWManufacturingCostBonus
+            ' totalInstallationCost = jobFee + facilityUsage
+            ManufacturingFacilityUsage = (JobFee + FacilityUsage) * FWManufacturingCostBonus
         Else
             ManufacturingFacilityUsage = 0
         End If
@@ -1693,7 +1605,7 @@ Public Class Blueprint
         ' Get all the Datacores
         While readerBP.Read
             ' Add this to the invention materials - add price for data cores
-            InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
+            InventionMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2),
                                        readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
             SingleInventionMats.InsertMaterial(InventionMat)
         End While
@@ -1728,7 +1640,7 @@ Public Class Blueprint
         End If
 
         ' If this is T3, get the relic and add it to the list of invention materials
-        If TechLevel = BlueprintTechLevel.T3 Then
+        If TechLevel = BPTechLevel.T3 Then
             ' Look up the cost for the material
             SQL = "SELECT PRICE, ITEM_NAME FROM ITEM_PRICES WHERE ITEM_ID =" & InventionBPCTypeID
 
@@ -1750,7 +1662,7 @@ Public Class Blueprint
         InventionChance = SetInventionChance(UseTypical)
 
         ' Use the max runs for the T2 item and this should be the invented runs for one bpc
-        If TechLevel = BlueprintTechLevel.T2 Then
+        If TechLevel = BPTechLevel.T2 Then
             SingleInventedBPCRuns = MaxProductionLimit + InventionDecryptor.RunMod
         Else
             ' Base it off of the relic type - need to look it up based on the TypeID
@@ -1790,14 +1702,14 @@ Public Class Blueprint
         ' Ex. avgruns = 2, user runs = 100, inventedruns = 10, lines = 10 => 200/10 = 20/10 = 2 invention sessions to get enough bps to make 100 runs.
         NumInventionSessions = CInt(Math.Ceiling(NumInventionJobs / NumberofLaboratoryLines))
 
-        If IncludeCopyTime And TechLevel <> BlueprintTechLevel.T3 Then
+        If IncludeCopyTime And TechLevel <> BPTechLevel.T3 Then
             ' Set the total copy time based on the number of invention jobs we need - assume only one bp to copy
             CopyTime = GetCopyTime(NumInventionJobs)
         Else
             CopyTime = 0 ' No copies for T3
         End If
 
-        If IncludeCopyCosts And TechLevel <> BlueprintTechLevel.T3 Then
+        If IncludeCopyCosts And TechLevel <> BPTechLevel.T3 Then
             ' Get the copy materials and update
             SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
             SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
@@ -1810,7 +1722,7 @@ Public Class Blueprint
             ' Get all the mats and add
             While readerBP.Read
                 ' Add this to the copy materials 
-                CopyMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2), _
+                CopyMat = New Material(readerBP.GetInt64(0), readerBP.GetString(1), readerBP.GetString(2),
                                             readerBP.GetInt64(3), readerBP.GetDouble(4), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
                 SingleCopyMats.InsertMaterial(CopyMat)
             End While
@@ -1869,7 +1781,7 @@ Public Class Blueprint
     ' Sets the usage for Copying, which is based on the base mats cost
     Private Sub SetCopyUsage()
 
-        If IncludeCopyUsage And TechLevel <> BlueprintTechLevel.T3 Then
+        If IncludeCopyUsage And TechLevel <> BPTechLevel.T3 Then
             ' Set the copy cost based on the number of copies we'll need for these runs
             CopyUsage = GetCopyUsage(NumInventionJobs) / TotalInventedRuns
             'InventionMaterials.InsertMaterial(New Material(0, "Copy Usage", "Usage", 1, 0, CopyUsage, ""))
@@ -1961,11 +1873,11 @@ Public Class Blueprint
         BaseInventionJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
         Dim InventionJobFee As Double = BaseInventionJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
 
-        ' facilityUsage = (jobFee + teamCost) * taxRate
-        Dim InventionFacilityTax As Double = (InventionJobFee + InventionTeamFee) * InventionFacility.TaxRate
+        ' facilityUsage = (jobFee) * taxRate
+        Dim InventionFacilityTax As Double = InventionJobFee * InventionFacility.TaxRate
 
-        ' totalInstallationCost = jobFee + teamCost + facilityTax
-        Return (InventionJobFee + InventionTeamFee + InventionFacilityTax) * FWInventionCostBonus
+        ' totalInstallationCost = jobFee + facilityTax
+        Return (InventionJobFee + InventionFacilityTax) * FWInventionCostBonus
 
     End Function
 
@@ -1976,7 +1888,7 @@ Public Class Blueprint
         Dim TempTime As Double
 
         ' Look up the blueprint name from the sent blueprint ID
-        If TechLevel = BlueprintTechLevel.T3 Then
+        If TechLevel = BPTechLevel.T3 Then
             ' Hardcode this to 3600 for now. Later need to figure out the logic for looking it up, since the "T1" BP is a relic, we can't do anything but invent it and don't want to include it in the all_blueprints table since we only use that to select what to build
             TempTime = 3600
         Else
@@ -1986,9 +1898,9 @@ Public Class Blueprint
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerLookup = DBCommand.ExecuteReader
 
-            ' inventionTime = baseInventionTime * facilityModifier * 3% of AI level * implant (doesn't work) * team if set
+            ' inventionTime = baseInventionTime * facilityModifier * 3% of AI level * implant (doesn't work)
             If readerLookup.Read Then
-                TempTime = CDbl(readerLookup.GetInt64(0)) * InventionFacility.TimeMultiplier * (1 - (0.03 * AdvancedIndustrySkill)) * GetTeamBonus(InventionTeam, "TE") * 1 '* InventionImplantValue
+                TempTime = CDbl(readerLookup.GetInt64(0)) * InventionFacility.TimeMultiplier * (1 - (0.03 * AdvancedIndustrySkill)) * 1 '* InventionImplantValue
             Else
                 TempTime = 0
             End If
@@ -2007,11 +1919,11 @@ Public Class Blueprint
         BaseCopyJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
         Dim CopyJobFee As Double = BaseCopyJobCost * CopyFacility.CostIndex * 0.02 * NumberofCopies
 
-        ' facilityUsage = (jobFee + teamCost) * taxRate
-        Dim CopyFacilityTax As Double = (CopyJobFee + CopyTeamFee) * CopyFacility.TaxRate
+        ' facilityUsage = jobFee * taxRate
+        Dim CopyFacilityTax As Double = CopyJobFee * CopyFacility.TaxRate
 
-        ' totalInstallationCost = jobFee + teamCost + facilityTax
-        Return (CopyJobFee + CopyTeamFee + CopyFacilityTax) * FWCopyingCostBonus
+        ' totalInstallationCost = jobFee +  facilityTax
+        Return (CopyJobFee + CopyFacilityTax) * FWCopyingCostBonus
 
     End Function
 
@@ -2027,9 +1939,9 @@ Public Class Blueprint
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
-        ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * (1 - (0.03 * advancedindustry)) * facility copyslotmod * (1-implant) * (1-Team value)
+        ' copyTime = BaseCopyTime * runs * runsperBP * (1 - (0.05 * science)) * (1 - (0.03 * advancedindustry)) * facility copyslotmod * (1-implant)
         If readerLookup.Read Then ' just use the number of runs we need to make
-            TempTime = CDec((readerLookup.GetInt64(0)) * (1 - (0.05 * ScienceSkill)) * (1 - (0.03 * AdvancedIndustrySkill)) * CopyFacility.TimeMultiplier * (1 - BPUserSettings.CopyImplantValue) * GetTeamBonus(CopyTeam, "TE"))
+            TempTime = CDec((readerLookup.GetInt64(0)) * (1 - (0.05 * ScienceSkill)) * (1 - (0.03 * AdvancedIndustrySkill)) * CopyFacility.TimeMultiplier * (1 - BPUserSettings.CopyImplantValue))
         Else
             TempTime = 0
         End If
@@ -2233,16 +2145,6 @@ Public Class Blueprint
     ' Returns the base job cost for the BPC to make the invention bpc
     Public Function GetBaseCopyJobCost() As Double
         Return BaseCopyJobCost
-    End Function
-
-    ' Returns the base team cost for this blueprint
-    Public Function GetManufacturingTeamFee() As Double
-        Return ManufacturingTeamFee
-    End Function
-
-    ' Returns the team fee for component team
-    Public Function GetComponentTeamFee() As Double
-        Return ComponentTeamFee
     End Function
 
     ' Returns the Job fee based on the system index
@@ -2467,7 +2369,7 @@ Public Class Blueprint
     End Function
 
     ' Returns the TypeID of the BP
-    Public Function GetTypeID() As Long
+    Public Function GetTypeID() As Integer
         Return BlueprintID
     End Function
 

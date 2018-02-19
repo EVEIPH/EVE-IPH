@@ -50,8 +50,8 @@ Public Class frmIndustryJobsViewer
 
         CurrentDateTime = DateTime.UtcNow
 
-        Dim myCallback As New System.Threading.TimerCallback(AddressOf UpdateTimes)
-        myTimer = New System.Threading.Timer(myCallback, lstIndustryJobs, 1000, 1000)
+        Dim myCallback As New TimerCallback(AddressOf UpdateTimes)
+        myTimer = New Timer(myCallback, lstIndustryJobs, 1000, 1000)
 
         ' Width 510, 21 for scrollbar, 25 for check (464)
         lstCharacters.Columns.Add("", -2, HorizontalAlignment.Left)

@@ -79,7 +79,6 @@ Public Class EVEIndustryJobs
             TempJob.runs = readerJobs.GetInt64(24)
             TempJob.successfulRuns = readerJobs.GetInt64(25)
             TempJob.cost = readerJobs.GetDouble(26)
-            TempJob.teamID = readerJobs.GetInt64(27)
 
             TempJob.JobType = readerJobs.GetInt32(28)
 
@@ -189,7 +188,7 @@ Public Class EVEIndustryJobs
                             SQL = SQL & "VALUES (" & .jobID & "," & .installerID & ",'" & FormatDBString(.installerName) & "',"
                             SQL = SQL & .facilityID & "," & .solarSystemID & ",'" & FormatDBString(.solarSystemName) & "'," & .stationID & "," & .activityID & ","
                             SQL = SQL & .blueprintID & "," & .blueprintTypeID & ",'" & FormatDBString(.blueprintTypeName) & "',"
-                            SQL = SQL & .blueprintLocationID & "," & .outputLocationID & "," & .runs & "," & .successfulRuns & "," & .cost & "," & .teamID & ","
+                            SQL = SQL & .blueprintLocationID & "," & .outputLocationID & "," & .runs & "," & .successfulRuns & "," & .cost & ",0,"
                             SQL = SQL & .licensedRuns & "," & .probability & "," & .productTypeID & ",'" & FormatDBString(.productTypeName) & "'," & .status & ","
                             SQL = SQL & .timeInSeconds & ",'"
                             SQL = SQL & Format(.startDate, SQLiteDateFormat) & "','"
@@ -282,7 +281,6 @@ Public Structure IndustryJob
     Dim outputLocationID As Long
     Dim runs As Long
     Dim cost As Double
-    Dim teamID As Long
     Dim licensedRuns As Long
     Dim probability As Double
     Dim productTypeID As Long

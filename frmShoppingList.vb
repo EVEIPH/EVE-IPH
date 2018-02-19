@@ -1446,15 +1446,15 @@ Public Class frmShoppingList
 
                         ' Build the Item - use everything we can from file import
                         TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
-                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, NoTeam, TempBuildFacility,
-                                                NoTeam, TempCompFacility, TempCapCompFacility)
+                                               SelectedCharacter, UserApplicationSettings, BuildBuy, 0, TempBuildFacility,
+                                               TempCompFacility, TempCapCompFacility)
 
                         ' See if we invent, use selected BP facilities for invention
                         If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then
                             Dim MaximumLaboratoryLines As Integer = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
 
-                            TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility, SelectedBPInventionTeam,
-                                                    SelectedBPCopyFacility, SelectedBPCopyTeam, GetInventItemTypeID(CLng(readerBP.GetValue(0)), ItemList(i).Relic))
+                            TempBP.InventBlueprint(MaximumLaboratoryLines, TempDecryptor, SelectedBPInventionFacility,
+                                                    SelectedBPCopyFacility, GetInventItemTypeID(CLng(readerBP.GetValue(0)), ItemList(i).Relic))
                         End If
 
                         ' Build the item and get the list of materials
@@ -1838,8 +1838,8 @@ Public Class frmShoppingList
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
-        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, "Shopping List",
-                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing,
+        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, SentFromLocation.ShoppingList,
+                                           Nothing, Nothing, Nothing, Nothing, Nothing,
                                            UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
                                            lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
                                            lstBuild.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),
@@ -1898,8 +1898,8 @@ Public Class frmShoppingList
         rsBPLookup.Read()
 
         ' Get the decryptor or relic used from the item
-        Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, "Shopping List",
-                                           Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing,
+        Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, SentFromLocation.ShoppingList,
+                                           Nothing, Nothing, Nothing, Nothing, Nothing,
                                            UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
                                            lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(15).Text,
                                            lstItems.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),

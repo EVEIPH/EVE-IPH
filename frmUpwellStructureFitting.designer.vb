@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class frmCitadelFitting
+Partial Class frmUpwellStructureFitting
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -23,22 +23,22 @@ Partial Class frmCitadelFitting
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim ListViewGroup10 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup11 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup12 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup13 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup14 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup15 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup16 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup17 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reaction Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim ListViewGroup18 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Drilling Rigs", System.Windows.Forms.HorizontalAlignment.Left)
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCitadelFitting))
+        Dim ListViewGroup1 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Services", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup2 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("High Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup3 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Mid Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup4 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Low Slots", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup5 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Combat Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup6 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reprocessing Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup7 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Engineering Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup8 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Reaction Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim ListViewGroup9 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Drilling Rigs", System.Windows.Forms.HorizontalAlignment.Left)
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmUpwellStructureFitting))
         Me.FittingImages = New System.Windows.Forms.ImageList(Me.components)
         Me.ServiceModuleListView = New System.Windows.Forms.ListView()
         Me.lblSelectedUpwellStructure = New System.Windows.Forms.Label()
         Me.cmbUpwellStructureName = New System.Windows.Forms.ComboBox()
         Me.chkIncludeFuelCosts = New System.Windows.Forms.CheckBox()
-        Me.btnToggleAllPriceItems = New System.Windows.Forms.Button()
+        Me.btnStripFitting = New System.Windows.Forms.Button()
         Me.tabUpwellStructure = New System.Windows.Forms.TabControl()
         Me.tabFitting = New System.Windows.Forms.TabPage()
         Me.LowSlot3 = New System.Windows.Forms.PictureBox()
@@ -84,10 +84,10 @@ Partial Class frmCitadelFitting
         Me.Bonuses = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Source = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gbFuelBlocks = New System.Windows.Forms.GroupBox()
+        Me.btnRefreshPrices = New System.Windows.Forms.Button()
         Me.gbFuelPrices = New System.Windows.Forms.GroupBox()
         Me.lblHydrogenIsotopes = New System.Windows.Forms.Label()
         Me.lblHeavyWater = New System.Windows.Forms.Label()
-        Me.lblCharters = New System.Windows.Forms.Label()
         Me.lblStrontiumClathrates = New System.Windows.Forms.Label()
         Me.lblEnrichedUranium = New System.Windows.Forms.Label()
         Me.lblOxygen = New System.Windows.Forms.Label()
@@ -101,9 +101,7 @@ Partial Class frmCitadelFitting
         Me.picHeliumIsotopes = New System.Windows.Forms.PictureBox()
         Me.txtMechanicalParts = New System.Windows.Forms.TextBox()
         Me.txtNitrogenIsotopes = New System.Windows.Forms.TextBox()
-        Me.txtCharters = New System.Windows.Forms.TextBox()
         Me.txtLiquidOzone = New System.Windows.Forms.TextBox()
-        Me.picPOSCharters = New System.Windows.Forms.PictureBox()
         Me.txtCoolant = New System.Windows.Forms.TextBox()
         Me.txtOxygen = New System.Windows.Forms.TextBox()
         Me.txtEnrichedUranium = New System.Windows.Forms.TextBox()
@@ -127,19 +125,22 @@ Partial Class frmCitadelFitting
         Me.btnSaveFuelBlockInfo = New System.Windows.Forms.Button()
         Me.gbFuelBlocks2 = New System.Windows.Forms.GroupBox()
         Me.picHeliumFuelBlock = New System.Windows.Forms.PictureBox()
+        Me.lblHeliumFuelBlock = New System.Windows.Forms.Label()
         Me.lblHeliumFuelBlockBPME = New System.Windows.Forms.Label()
         Me.txtHeliumFuelBlockBPME = New System.Windows.Forms.TextBox()
         Me.lblHeliumFuelBlockBuy = New System.Windows.Forms.Label()
-        Me.lblHeliumFuelBlockBuildPrice = New System.Windows.Forms.Label()
-        Me.txtHeliumFuelBlockBuyPrice = New System.Windows.Forms.TextBox()
         Me.lblHeliumFuelBlockBuild = New System.Windows.Forms.Label()
+        Me.txtHeliumFuelBlockBuyPrice = New System.Windows.Forms.TextBox()
+        Me.lblHeliumFuelBlockBuildPrice = New System.Windows.Forms.Label()
+        Me.lblHydrogenFuelBlock = New System.Windows.Forms.Label()
         Me.lblHydrogenFuelBlockBPME = New System.Windows.Forms.Label()
         Me.picHydrogenFuelBlock = New System.Windows.Forms.PictureBox()
         Me.txtHydrogenFuelBlockBPME = New System.Windows.Forms.TextBox()
         Me.lblHydrogenBlockBuy = New System.Windows.Forms.Label()
-        Me.lblHyrogenBlockBuild = New System.Windows.Forms.Label()
+        Me.lblHydrogenFuelBlockBuild = New System.Windows.Forms.Label()
         Me.txtHydrogenFuelBlockBuyPrice = New System.Windows.Forms.TextBox()
         Me.lblHydrogenFuelBlockBuildPrice = New System.Windows.Forms.Label()
+        Me.lblNitrogenFuelBlock = New System.Windows.Forms.Label()
         Me.lblNitrogenFuelBlockBPME = New System.Windows.Forms.Label()
         Me.picNitrogenFuelBlock = New System.Windows.Forms.PictureBox()
         Me.txtNitrogenFuelBlockBPME = New System.Windows.Forms.TextBox()
@@ -147,6 +148,7 @@ Partial Class frmCitadelFitting
         Me.lblNitrogenFuelBlockBuild = New System.Windows.Forms.Label()
         Me.txtNitrogenFuelBlockBuyPrice = New System.Windows.Forms.TextBox()
         Me.lblNitrogenFuelBlockBuildPrice = New System.Windows.Forms.Label()
+        Me.lblOxygenFuelBlock = New System.Windows.Forms.Label()
         Me.lblOxygenFuelBlockBPME = New System.Windows.Forms.Label()
         Me.picOxygenFuelBlock = New System.Windows.Forms.PictureBox()
         Me.txtOxygenFuelBlockBPME = New System.Windows.Forms.TextBox()
@@ -158,8 +160,8 @@ Partial Class frmCitadelFitting
         Me.rbtnBuyBlocks = New System.Windows.Forms.RadioButton()
         Me.rbtnBuildBlocks = New System.Windows.Forms.RadioButton()
         Me.chkAutoUpdateFuelPrice = New System.Windows.Forms.CheckBox()
-        Me.btnUpdatePrices = New System.Windows.Forms.Button()
-        Me.btnRefreshBlockData = New System.Windows.Forms.Button()
+        Me.btnSavePrices = New System.Windows.Forms.Button()
+        Me.btnUpdateBuildCost = New System.Windows.Forms.Button()
         Me.lblLauncherSlots = New System.Windows.Forms.Label()
         Me.gbFilterOptions = New System.Windows.Forms.GroupBox()
         Me.chkRigTypeViewDrilling = New System.Windows.Forms.CheckBox()
@@ -196,7 +198,7 @@ Partial Class frmCitadelFitting
         Me.lblPowerGrid = New System.Windows.Forms.Label()
         Me.lblCPU1 = New System.Windows.Forms.Label()
         Me.lblPowerGrid1 = New System.Windows.Forms.Label()
-        Me.btnSaveUpdatePrices = New System.Windows.Forms.Button()
+        Me.btnSaveFitting = New System.Windows.Forms.Button()
         Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.btnCloseForm = New System.Windows.Forms.Button()
         Me.gbTextFilter = New System.Windows.Forms.GroupBox()
@@ -205,10 +207,7 @@ Partial Class frmCitadelFitting
         Me.txtItemFilter = New System.Windows.Forms.TextBox()
         Me.EventLog1 = New System.Diagnostics.EventLog()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
-        Me.lblHydrogenFuelBlock = New System.Windows.Forms.Label()
-        Me.lblOxygenFuelBlock = New System.Windows.Forms.Label()
-        Me.lblNitrogenFuelBlock = New System.Windows.Forms.Label()
-        Me.lblHeliumFuelBlock = New System.Windows.Forms.Label()
+        Me.MainToolTip = New System.Windows.Forms.ToolTip(Me.components)
         Me.tabUpwellStructure.SuspendLayout()
         Me.tabFitting.SuspendLayout()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -250,7 +249,6 @@ Partial Class frmCitadelFitting
         Me.gbFuelBlocks.SuspendLayout()
         Me.gbFuelPrices.SuspendLayout()
         CType(Me.picHeliumIsotopes, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.picPOSCharters, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picCoolant, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picOxygen, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picNitrogenIsotopes, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -288,34 +286,34 @@ Partial Class frmCitadelFitting
         Me.ServiceModuleListView.Activation = System.Windows.Forms.ItemActivation.TwoClick
         Me.ServiceModuleListView.AllowDrop = True
         Me.ServiceModuleListView.AutoArrange = False
-        ListViewGroup10.Header = "Services"
-        ListViewGroup10.Name = "ServiceSlots"
-        ListViewGroup10.Tag = "ServiceSlot"
-        ListViewGroup11.Header = "High Slots"
-        ListViewGroup11.Name = "HighSlots"
-        ListViewGroup11.Tag = "HighSlot"
-        ListViewGroup12.Header = "Mid Slots"
-        ListViewGroup12.Name = "MidSlots"
-        ListViewGroup12.Tag = "MidSlots"
-        ListViewGroup13.Header = "Low Slots"
-        ListViewGroup13.Name = "LowSlots"
-        ListViewGroup13.Tag = "LowSlot"
-        ListViewGroup14.Header = "Combat Rigs"
-        ListViewGroup14.Name = "CombatRigs"
-        ListViewGroup14.Tag = "RigSlot"
-        ListViewGroup15.Header = "Reprocessing Rigs"
-        ListViewGroup15.Name = "ReprocessingRigs"
-        ListViewGroup15.Tag = "RigSlot"
-        ListViewGroup16.Header = "Engineering Rigs"
-        ListViewGroup16.Name = "EngineeringRigs"
-        ListViewGroup16.Tag = "RigSlot"
-        ListViewGroup17.Header = "Reaction Rigs"
-        ListViewGroup17.Name = "ReactionRigs"
-        ListViewGroup17.Tag = "RigSlot"
-        ListViewGroup18.Header = "Drilling Rigs"
-        ListViewGroup18.Name = "DrillingRigs"
-        ListViewGroup18.Tag = "RigSlot"
-        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup10, ListViewGroup11, ListViewGroup12, ListViewGroup13, ListViewGroup14, ListViewGroup15, ListViewGroup16, ListViewGroup17, ListViewGroup18})
+        ListViewGroup1.Header = "Services"
+        ListViewGroup1.Name = "ServiceSlots"
+        ListViewGroup1.Tag = "ServiceSlot"
+        ListViewGroup2.Header = "High Slots"
+        ListViewGroup2.Name = "HighSlots"
+        ListViewGroup2.Tag = "HighSlot"
+        ListViewGroup3.Header = "Mid Slots"
+        ListViewGroup3.Name = "MidSlots"
+        ListViewGroup3.Tag = "MidSlot"
+        ListViewGroup4.Header = "Low Slots"
+        ListViewGroup4.Name = "LowSlots"
+        ListViewGroup4.Tag = "LowSlot"
+        ListViewGroup5.Header = "Combat Rigs"
+        ListViewGroup5.Name = "CombatRigs"
+        ListViewGroup5.Tag = "RigSlot"
+        ListViewGroup6.Header = "Reprocessing Rigs"
+        ListViewGroup6.Name = "ReprocessingRigs"
+        ListViewGroup6.Tag = "RigSlot"
+        ListViewGroup7.Header = "Engineering Rigs"
+        ListViewGroup7.Name = "EngineeringRigs"
+        ListViewGroup7.Tag = "RigSlot"
+        ListViewGroup8.Header = "Reaction Rigs"
+        ListViewGroup8.Name = "ReactionRigs"
+        ListViewGroup8.Tag = "RigSlot"
+        ListViewGroup9.Header = "Drilling Rigs"
+        ListViewGroup9.Name = "DrillingRigs"
+        ListViewGroup9.Tag = "RigSlot"
+        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7, ListViewGroup8, ListViewGroup9})
         Me.ServiceModuleListView.HoverSelection = True
         Me.ServiceModuleListView.LargeImageList = Me.FittingImages
         Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 210)
@@ -331,7 +329,7 @@ Partial Class frmCitadelFitting
         Me.lblSelectedUpwellStructure.Location = New System.Drawing.Point(6, 12)
         Me.lblSelectedUpwellStructure.Name = "lblSelectedUpwellStructure"
         Me.lblSelectedUpwellStructure.Size = New System.Drawing.Size(133, 13)
-        Me.lblSelectedUpwellStructure.TabIndex = 42
+        Me.lblSelectedUpwellStructure.TabIndex = 0
         Me.lblSelectedUpwellStructure.Text = "Selected Upwell Structure:"
         '
         'cmbUpwellStructureName
@@ -340,26 +338,26 @@ Partial Class frmCitadelFitting
         Me.cmbUpwellStructureName.Location = New System.Drawing.Point(138, 8)
         Me.cmbUpwellStructureName.Name = "cmbUpwellStructureName"
         Me.cmbUpwellStructureName.Size = New System.Drawing.Size(210, 21)
-        Me.cmbUpwellStructureName.TabIndex = 43
+        Me.cmbUpwellStructureName.TabIndex = 1
         '
         'chkIncludeFuelCosts
         '
         Me.chkIncludeFuelCosts.AutoSize = True
-        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(4, 0)
+        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(6, 308)
         Me.chkIncludeFuelCosts.Name = "chkIncludeFuelCosts"
         Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(113, 17)
-        Me.chkIncludeFuelCosts.TabIndex = 44
+        Me.chkIncludeFuelCosts.TabIndex = 9
         Me.chkIncludeFuelCosts.Text = "Include Fuel Costs"
         Me.chkIncludeFuelCosts.UseVisualStyleBackColor = True
         '
-        'btnToggleAllPriceItems
+        'btnStripFitting
         '
-        Me.btnToggleAllPriceItems.Location = New System.Drawing.Point(6, 35)
-        Me.btnToggleAllPriceItems.Name = "btnToggleAllPriceItems"
-        Me.btnToggleAllPriceItems.Size = New System.Drawing.Size(81, 30)
-        Me.btnToggleAllPriceItems.TabIndex = 46
-        Me.btnToggleAllPriceItems.Text = "Strip Fitting"
-        Me.btnToggleAllPriceItems.UseVisualStyleBackColor = True
+        Me.btnStripFitting.Location = New System.Drawing.Point(6, 35)
+        Me.btnStripFitting.Name = "btnStripFitting"
+        Me.btnStripFitting.Size = New System.Drawing.Size(81, 30)
+        Me.btnStripFitting.TabIndex = 2
+        Me.btnStripFitting.Text = "Strip Fitting"
+        Me.btnStripFitting.UseVisualStyleBackColor = True
         '
         'tabUpwellStructure
         '
@@ -369,7 +367,7 @@ Partial Class frmCitadelFitting
         Me.tabUpwellStructure.Name = "tabUpwellStructure"
         Me.tabUpwellStructure.SelectedIndex = 0
         Me.tabUpwellStructure.Size = New System.Drawing.Size(603, 603)
-        Me.tabUpwellStructure.TabIndex = 49
+        Me.tabUpwellStructure.TabIndex = 9
         '
         'tabFitting
         '
@@ -883,7 +881,7 @@ Partial Class frmCitadelFitting
         Me.gbFacilityBonuses.Location = New System.Drawing.Point(6, 10)
         Me.gbFacilityBonuses.Name = "gbFacilityBonuses"
         Me.gbFacilityBonuses.Size = New System.Drawing.Size(583, 145)
-        Me.gbFacilityBonuses.TabIndex = 229
+        Me.gbFacilityBonuses.TabIndex = 0
         Me.gbFacilityBonuses.TabStop = False
         Me.gbFacilityBonuses.Text = "Facility Bonuses"
         '
@@ -896,7 +894,7 @@ Partial Class frmCitadelFitting
         Me.btnBonusPopout.Location = New System.Drawing.Point(551, 20)
         Me.btnBonusPopout.Name = "btnBonusPopout"
         Me.btnBonusPopout.Size = New System.Drawing.Size(18, 18)
-        Me.btnBonusPopout.TabIndex = 63
+        Me.btnBonusPopout.TabIndex = 0
         Me.btnBonusPopout.UseVisualStyleBackColor = True
         '
         'lstUpwellStructureBonuses
@@ -910,7 +908,7 @@ Partial Class frmCitadelFitting
         Me.lstUpwellStructureBonuses.MultiSelect = False
         Me.lstUpwellStructureBonuses.Name = "lstUpwellStructureBonuses"
         Me.lstUpwellStructureBonuses.Size = New System.Drawing.Size(560, 116)
-        Me.lstUpwellStructureBonuses.TabIndex = 82
+        Me.lstUpwellStructureBonuses.TabIndex = 0
         Me.lstUpwellStructureBonuses.TabStop = False
         Me.lstUpwellStructureBonuses.UseCompatibleStateImageBehavior = False
         Me.lstUpwellStructureBonuses.View = System.Windows.Forms.View.Details
@@ -937,24 +935,33 @@ Partial Class frmCitadelFitting
         '
         'gbFuelBlocks
         '
+        Me.gbFuelBlocks.Controls.Add(Me.btnRefreshPrices)
         Me.gbFuelBlocks.Controls.Add(Me.gbFuelPrices)
         Me.gbFuelBlocks.Controls.Add(Me.btnSaveFuelBlockInfo)
         Me.gbFuelBlocks.Controls.Add(Me.gbFuelBlocks2)
         Me.gbFuelBlocks.Controls.Add(Me.gbFuelBlockOptions)
-        Me.gbFuelBlocks.Controls.Add(Me.btnUpdatePrices)
-        Me.gbFuelBlocks.Controls.Add(Me.btnRefreshBlockData)
+        Me.gbFuelBlocks.Controls.Add(Me.btnSavePrices)
+        Me.gbFuelBlocks.Controls.Add(Me.btnUpdateBuildCost)
         Me.gbFuelBlocks.Location = New System.Drawing.Point(6, 161)
         Me.gbFuelBlocks.Name = "gbFuelBlocks"
         Me.gbFuelBlocks.Size = New System.Drawing.Size(583, 410)
-        Me.gbFuelBlocks.TabIndex = 227
+        Me.gbFuelBlocks.TabIndex = 0
         Me.gbFuelBlocks.TabStop = False
         Me.gbFuelBlocks.Text = "Fuel Blocks"
+        '
+        'btnRefreshPrices
+        '
+        Me.btnRefreshPrices.Location = New System.Drawing.Point(444, 19)
+        Me.btnRefreshPrices.Name = "btnRefreshPrices"
+        Me.btnRefreshPrices.Size = New System.Drawing.Size(125, 34)
+        Me.btnRefreshPrices.TabIndex = 6
+        Me.btnRefreshPrices.Text = "Refresh Prices"
+        Me.btnRefreshPrices.UseVisualStyleBackColor = True
         '
         'gbFuelPrices
         '
         Me.gbFuelPrices.Controls.Add(Me.lblHydrogenIsotopes)
         Me.gbFuelPrices.Controls.Add(Me.lblHeavyWater)
-        Me.gbFuelPrices.Controls.Add(Me.lblCharters)
         Me.gbFuelPrices.Controls.Add(Me.lblStrontiumClathrates)
         Me.gbFuelPrices.Controls.Add(Me.lblEnrichedUranium)
         Me.gbFuelPrices.Controls.Add(Me.lblOxygen)
@@ -968,9 +975,7 @@ Partial Class frmCitadelFitting
         Me.gbFuelPrices.Controls.Add(Me.picHeliumIsotopes)
         Me.gbFuelPrices.Controls.Add(Me.txtMechanicalParts)
         Me.gbFuelPrices.Controls.Add(Me.txtNitrogenIsotopes)
-        Me.gbFuelPrices.Controls.Add(Me.txtCharters)
         Me.gbFuelPrices.Controls.Add(Me.txtLiquidOzone)
-        Me.gbFuelPrices.Controls.Add(Me.picPOSCharters)
         Me.gbFuelPrices.Controls.Add(Me.txtCoolant)
         Me.gbFuelPrices.Controls.Add(Me.txtOxygen)
         Me.gbFuelPrices.Controls.Add(Me.txtEnrichedUranium)
@@ -993,8 +998,8 @@ Partial Class frmCitadelFitting
         Me.gbFuelPrices.Controls.Add(Me.txtHeliumIsotopes)
         Me.gbFuelPrices.Location = New System.Drawing.Point(13, 219)
         Me.gbFuelPrices.Name = "gbFuelPrices"
-        Me.gbFuelPrices.Size = New System.Drawing.Size(559, 191)
-        Me.gbFuelPrices.TabIndex = 320
+        Me.gbFuelPrices.Size = New System.Drawing.Size(420, 191)
+        Me.gbFuelPrices.TabIndex = 1
         Me.gbFuelPrices.TabStop = False
         '
         'lblHydrogenIsotopes
@@ -1002,7 +1007,7 @@ Partial Class frmCitadelFitting
         Me.lblHydrogenIsotopes.Location = New System.Drawing.Point(174, 12)
         Me.lblHydrogenIsotopes.Name = "lblHydrogenIsotopes"
         Me.lblHydrogenIsotopes.Size = New System.Drawing.Size(101, 16)
-        Me.lblHydrogenIsotopes.TabIndex = 308
+        Me.lblHydrogenIsotopes.TabIndex = 2
         Me.lblHydrogenIsotopes.Text = "Hydrogen Isotopes"
         Me.lblHydrogenIsotopes.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1011,26 +1016,16 @@ Partial Class frmCitadelFitting
         Me.lblHeavyWater.Location = New System.Drawing.Point(315, 12)
         Me.lblHeavyWater.Name = "lblHeavyWater"
         Me.lblHeavyWater.Size = New System.Drawing.Size(93, 16)
-        Me.lblHeavyWater.TabIndex = 305
+        Me.lblHeavyWater.TabIndex = 4
         Me.lblHeavyWater.Text = "Heavy Water"
         Me.lblHeavyWater.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblCharters
-        '
-        Me.lblCharters.Location = New System.Drawing.Point(450, 12)
-        Me.lblCharters.Name = "lblCharters"
-        Me.lblCharters.Size = New System.Drawing.Size(93, 16)
-        Me.lblCharters.TabIndex = 317
-        Me.lblCharters.Text = "Charters"
-        Me.lblCharters.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.lblCharters.Visible = False
         '
         'lblStrontiumClathrates
         '
         Me.lblStrontiumClathrates.Location = New System.Drawing.Point(311, 55)
         Me.lblStrontiumClathrates.Name = "lblStrontiumClathrates"
         Me.lblStrontiumClathrates.Size = New System.Drawing.Size(101, 16)
-        Me.lblStrontiumClathrates.TabIndex = 304
+        Me.lblStrontiumClathrates.TabIndex = 10
         Me.lblStrontiumClathrates.Text = "Strontium Clathrates"
         Me.lblStrontiumClathrates.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1039,7 +1034,7 @@ Partial Class frmCitadelFitting
         Me.lblEnrichedUranium.Location = New System.Drawing.Point(43, 141)
         Me.lblEnrichedUranium.Name = "lblEnrichedUranium"
         Me.lblEnrichedUranium.Size = New System.Drawing.Size(93, 16)
-        Me.lblEnrichedUranium.TabIndex = 303
+        Me.lblEnrichedUranium.TabIndex = 18
         Me.lblEnrichedUranium.Text = "Enriched Uranium"
         Me.lblEnrichedUranium.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1048,7 +1043,7 @@ Partial Class frmCitadelFitting
         Me.lblOxygen.Location = New System.Drawing.Point(178, 141)
         Me.lblOxygen.Name = "lblOxygen"
         Me.lblOxygen.Size = New System.Drawing.Size(93, 16)
-        Me.lblOxygen.TabIndex = 314
+        Me.lblOxygen.TabIndex = 20
         Me.lblOxygen.Text = "Oxygen"
         Me.lblOxygen.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1057,7 +1052,7 @@ Partial Class frmCitadelFitting
         Me.lblCoolant.Location = New System.Drawing.Point(315, 98)
         Me.lblCoolant.Name = "lblCoolant"
         Me.lblCoolant.Size = New System.Drawing.Size(93, 16)
-        Me.lblCoolant.TabIndex = 302
+        Me.lblCoolant.TabIndex = 16
         Me.lblCoolant.Text = "Coolant"
         Me.lblCoolant.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1066,7 +1061,7 @@ Partial Class frmCitadelFitting
         Me.lblLiquidOzone.Location = New System.Drawing.Point(313, 141)
         Me.lblLiquidOzone.Name = "lblLiquidOzone"
         Me.lblLiquidOzone.Size = New System.Drawing.Size(93, 16)
-        Me.lblLiquidOzone.TabIndex = 301
+        Me.lblLiquidOzone.TabIndex = 22
         Me.lblLiquidOzone.Text = "Liquid Ozone"
         Me.lblLiquidOzone.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1075,7 +1070,7 @@ Partial Class frmCitadelFitting
         Me.lblMechanicalParts.Location = New System.Drawing.Point(43, 98)
         Me.lblMechanicalParts.Name = "lblMechanicalParts"
         Me.lblMechanicalParts.Size = New System.Drawing.Size(93, 16)
-        Me.lblMechanicalParts.TabIndex = 300
+        Me.lblMechanicalParts.TabIndex = 12
         Me.lblMechanicalParts.Text = "Mechanical Parts"
         Me.lblMechanicalParts.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1084,7 +1079,7 @@ Partial Class frmCitadelFitting
         Me.lblRobotics.Location = New System.Drawing.Point(178, 98)
         Me.lblRobotics.Name = "lblRobotics"
         Me.lblRobotics.Size = New System.Drawing.Size(93, 16)
-        Me.lblRobotics.TabIndex = 311
+        Me.lblRobotics.TabIndex = 14
         Me.lblRobotics.Text = "Robotics"
         Me.lblRobotics.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1093,7 +1088,7 @@ Partial Class frmCitadelFitting
         Me.lblNitrogenIsotopes.Location = New System.Drawing.Point(43, 55)
         Me.lblNitrogenIsotopes.Name = "lblNitrogenIsotopes"
         Me.lblNitrogenIsotopes.Size = New System.Drawing.Size(93, 16)
-        Me.lblNitrogenIsotopes.TabIndex = 299
+        Me.lblNitrogenIsotopes.TabIndex = 6
         Me.lblNitrogenIsotopes.Text = "Nitrogen Isotopes"
         Me.lblNitrogenIsotopes.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1102,7 +1097,7 @@ Partial Class frmCitadelFitting
         Me.lblHeliumIsotopes.Location = New System.Drawing.Point(43, 12)
         Me.lblHeliumIsotopes.Name = "lblHeliumIsotopes"
         Me.lblHeliumIsotopes.Size = New System.Drawing.Size(93, 16)
-        Me.lblHeliumIsotopes.TabIndex = 298
+        Me.lblHeliumIsotopes.TabIndex = 0
         Me.lblHeliumIsotopes.Text = "Helium Isotopes"
         Me.lblHeliumIsotopes.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1111,7 +1106,7 @@ Partial Class frmCitadelFitting
         Me.lblOxygenIsotopes.Location = New System.Drawing.Point(178, 55)
         Me.lblOxygenIsotopes.Name = "lblOxygenIsotopes"
         Me.lblOxygenIsotopes.Size = New System.Drawing.Size(93, 16)
-        Me.lblOxygenIsotopes.TabIndex = 309
+        Me.lblOxygenIsotopes.TabIndex = 8
         Me.lblOxygenIsotopes.Text = "Oxygen Isotopes"
         Me.lblOxygenIsotopes.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1129,7 +1124,7 @@ Partial Class frmCitadelFitting
         Me.txtMechanicalParts.Location = New System.Drawing.Point(43, 114)
         Me.txtMechanicalParts.Name = "txtMechanicalParts"
         Me.txtMechanicalParts.Size = New System.Drawing.Size(93, 20)
-        Me.txtMechanicalParts.TabIndex = 287
+        Me.txtMechanicalParts.TabIndex = 13
         Me.txtMechanicalParts.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtNitrogenIsotopes
@@ -1137,42 +1132,23 @@ Partial Class frmCitadelFitting
         Me.txtNitrogenIsotopes.Location = New System.Drawing.Point(43, 71)
         Me.txtNitrogenIsotopes.Name = "txtNitrogenIsotopes"
         Me.txtNitrogenIsotopes.Size = New System.Drawing.Size(93, 20)
-        Me.txtNitrogenIsotopes.TabIndex = 281
+        Me.txtNitrogenIsotopes.TabIndex = 7
         Me.txtNitrogenIsotopes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtCharters
-        '
-        Me.txtCharters.Location = New System.Drawing.Point(450, 28)
-        Me.txtCharters.Name = "txtCharters"
-        Me.txtCharters.Size = New System.Drawing.Size(93, 20)
-        Me.txtCharters.TabIndex = 315
-        Me.txtCharters.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.txtCharters.Visible = False
         '
         'txtLiquidOzone
         '
         Me.txtLiquidOzone.Location = New System.Drawing.Point(313, 157)
         Me.txtLiquidOzone.Name = "txtLiquidOzone"
         Me.txtLiquidOzone.Size = New System.Drawing.Size(93, 20)
-        Me.txtLiquidOzone.TabIndex = 284
+        Me.txtLiquidOzone.TabIndex = 23
         Me.txtLiquidOzone.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'picPOSCharters
-        '
-        Me.picPOSCharters.BackColor = System.Drawing.Color.Transparent
-        Me.picPOSCharters.Location = New System.Drawing.Point(414, 22)
-        Me.picPOSCharters.Name = "picPOSCharters"
-        Me.picPOSCharters.Size = New System.Drawing.Size(32, 32)
-        Me.picPOSCharters.TabIndex = 316
-        Me.picPOSCharters.TabStop = False
-        Me.picPOSCharters.Visible = False
         '
         'txtCoolant
         '
         Me.txtCoolant.Location = New System.Drawing.Point(315, 114)
         Me.txtCoolant.Name = "txtCoolant"
         Me.txtCoolant.Size = New System.Drawing.Size(93, 20)
-        Me.txtCoolant.TabIndex = 288
+        Me.txtCoolant.TabIndex = 17
         Me.txtCoolant.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtOxygen
@@ -1180,7 +1156,7 @@ Partial Class frmCitadelFitting
         Me.txtOxygen.Location = New System.Drawing.Point(178, 157)
         Me.txtOxygen.Name = "txtOxygen"
         Me.txtOxygen.Size = New System.Drawing.Size(93, 20)
-        Me.txtOxygen.TabIndex = 312
+        Me.txtOxygen.TabIndex = 21
         Me.txtOxygen.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtEnrichedUranium
@@ -1188,7 +1164,7 @@ Partial Class frmCitadelFitting
         Me.txtEnrichedUranium.Location = New System.Drawing.Point(43, 157)
         Me.txtEnrichedUranium.Name = "txtEnrichedUranium"
         Me.txtEnrichedUranium.Size = New System.Drawing.Size(93, 20)
-        Me.txtEnrichedUranium.TabIndex = 289
+        Me.txtEnrichedUranium.TabIndex = 19
         Me.txtEnrichedUranium.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtStrontiumClathrates
@@ -1196,7 +1172,7 @@ Partial Class frmCitadelFitting
         Me.txtStrontiumClathrates.Location = New System.Drawing.Point(315, 71)
         Me.txtStrontiumClathrates.Name = "txtStrontiumClathrates"
         Me.txtStrontiumClathrates.Size = New System.Drawing.Size(93, 20)
-        Me.txtStrontiumClathrates.TabIndex = 285
+        Me.txtStrontiumClathrates.TabIndex = 11
         Me.txtStrontiumClathrates.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'picCoolant
@@ -1222,7 +1198,7 @@ Partial Class frmCitadelFitting
         Me.txtHeavyWater.Location = New System.Drawing.Point(315, 28)
         Me.txtHeavyWater.Name = "txtHeavyWater"
         Me.txtHeavyWater.Size = New System.Drawing.Size(93, 20)
-        Me.txtHeavyWater.TabIndex = 283
+        Me.txtHeavyWater.TabIndex = 5
         Me.txtHeavyWater.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'picNitrogenIsotopes
@@ -1239,7 +1215,7 @@ Partial Class frmCitadelFitting
         Me.txtRobotics.Location = New System.Drawing.Point(178, 114)
         Me.txtRobotics.Name = "txtRobotics"
         Me.txtRobotics.Size = New System.Drawing.Size(93, 20)
-        Me.txtRobotics.TabIndex = 286
+        Me.txtRobotics.TabIndex = 15
         Me.txtRobotics.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'picHydrogenIsotopes
@@ -1301,7 +1277,7 @@ Partial Class frmCitadelFitting
         Me.txtOxygenIsotopes.Location = New System.Drawing.Point(178, 71)
         Me.txtOxygenIsotopes.Name = "txtOxygenIsotopes"
         Me.txtOxygenIsotopes.Size = New System.Drawing.Size(93, 20)
-        Me.txtOxygenIsotopes.TabIndex = 282
+        Me.txtOxygenIsotopes.TabIndex = 9
         Me.txtOxygenIsotopes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'picLiquidOzone
@@ -1327,7 +1303,7 @@ Partial Class frmCitadelFitting
         Me.txtHydrogenIsotopes.Location = New System.Drawing.Point(178, 28)
         Me.txtHydrogenIsotopes.Name = "txtHydrogenIsotopes"
         Me.txtHydrogenIsotopes.Size = New System.Drawing.Size(93, 20)
-        Me.txtHydrogenIsotopes.TabIndex = 280
+        Me.txtHydrogenIsotopes.TabIndex = 3
         Me.txtHydrogenIsotopes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtHeliumIsotopes
@@ -1335,15 +1311,15 @@ Partial Class frmCitadelFitting
         Me.txtHeliumIsotopes.Location = New System.Drawing.Point(43, 28)
         Me.txtHeliumIsotopes.Name = "txtHeliumIsotopes"
         Me.txtHeliumIsotopes.Size = New System.Drawing.Size(93, 20)
-        Me.txtHeliumIsotopes.TabIndex = 279
+        Me.txtHeliumIsotopes.TabIndex = 1
         Me.txtHeliumIsotopes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'btnSaveFuelBlockInfo
         '
-        Me.btnSaveFuelBlockInfo.Location = New System.Drawing.Point(447, 92)
+        Me.btnSaveFuelBlockInfo.Location = New System.Drawing.Point(444, 133)
         Me.btnSaveFuelBlockInfo.Name = "btnSaveFuelBlockInfo"
         Me.btnSaveFuelBlockInfo.Size = New System.Drawing.Size(125, 34)
-        Me.btnSaveFuelBlockInfo.TabIndex = 319
+        Me.btnSaveFuelBlockInfo.TabIndex = 4
         Me.btnSaveFuelBlockInfo.Text = "Save Fuel Block Info"
         Me.btnSaveFuelBlockInfo.UseVisualStyleBackColor = True
         '
@@ -1354,15 +1330,15 @@ Partial Class frmCitadelFitting
         Me.gbFuelBlocks2.Controls.Add(Me.lblHeliumFuelBlockBPME)
         Me.gbFuelBlocks2.Controls.Add(Me.txtHeliumFuelBlockBPME)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHeliumFuelBlockBuy)
-        Me.gbFuelBlocks2.Controls.Add(Me.lblHeliumFuelBlockBuildPrice)
-        Me.gbFuelBlocks2.Controls.Add(Me.txtHeliumFuelBlockBuyPrice)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHeliumFuelBlockBuild)
+        Me.gbFuelBlocks2.Controls.Add(Me.txtHeliumFuelBlockBuyPrice)
+        Me.gbFuelBlocks2.Controls.Add(Me.lblHeliumFuelBlockBuildPrice)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHydrogenFuelBlock)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHydrogenFuelBlockBPME)
         Me.gbFuelBlocks2.Controls.Add(Me.picHydrogenFuelBlock)
         Me.gbFuelBlocks2.Controls.Add(Me.txtHydrogenFuelBlockBPME)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHydrogenBlockBuy)
-        Me.gbFuelBlocks2.Controls.Add(Me.lblHyrogenBlockBuild)
+        Me.gbFuelBlocks2.Controls.Add(Me.lblHydrogenFuelBlockBuild)
         Me.gbFuelBlocks2.Controls.Add(Me.txtHydrogenFuelBlockBuyPrice)
         Me.gbFuelBlocks2.Controls.Add(Me.lblHydrogenFuelBlockBuildPrice)
         Me.gbFuelBlocks2.Controls.Add(Me.lblNitrogenFuelBlock)
@@ -1384,7 +1360,7 @@ Partial Class frmCitadelFitting
         Me.gbFuelBlocks2.Location = New System.Drawing.Point(13, 14)
         Me.gbFuelBlocks2.Name = "gbFuelBlocks2"
         Me.gbFuelBlocks2.Size = New System.Drawing.Size(420, 205)
-        Me.gbFuelBlocks2.TabIndex = 318
+        Me.gbFuelBlocks2.TabIndex = 0
         Me.gbFuelBlocks2.TabStop = False
         '
         'picHeliumFuelBlock
@@ -1396,12 +1372,21 @@ Partial Class frmCitadelFitting
         Me.picHeliumFuelBlock.TabIndex = 222
         Me.picHeliumFuelBlock.TabStop = False
         '
+        'lblHeliumFuelBlock
+        '
+        Me.lblHeliumFuelBlock.Location = New System.Drawing.Point(103, 18)
+        Me.lblHeliumFuelBlock.Name = "lblHeliumFuelBlock"
+        Me.lblHeliumFuelBlock.Size = New System.Drawing.Size(76, 13)
+        Me.lblHeliumFuelBlock.TabIndex = 0
+        Me.lblHeliumFuelBlock.Text = "Helium"
+        Me.lblHeliumFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'lblHeliumFuelBlockBPME
         '
         Me.lblHeliumFuelBlockBPME.Location = New System.Drawing.Point(38, 79)
         Me.lblHeliumFuelBlockBPME.Name = "lblHeliumFuelBlockBPME"
         Me.lblHeliumFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
-        Me.lblHeliumFuelBlockBPME.TabIndex = 231
+        Me.lblHeliumFuelBlockBPME.TabIndex = 5
         Me.lblHeliumFuelBlockBPME.Text = "Fuel Block BP ME:"
         '
         'txtHeliumFuelBlockBPME
@@ -1409,7 +1394,7 @@ Partial Class frmCitadelFitting
         Me.txtHeliumFuelBlockBPME.Location = New System.Drawing.Point(141, 76)
         Me.txtHeliumFuelBlockBPME.Name = "txtHeliumFuelBlockBPME"
         Me.txtHeliumFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
-        Me.txtHeliumFuelBlockBPME.TabIndex = 230
+        Me.txtHeliumFuelBlockBPME.TabIndex = 6
         Me.txtHeliumFuelBlockBPME.Text = "0"
         Me.txtHeliumFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1419,45 +1404,54 @@ Partial Class frmCitadelFitting
         Me.lblHeliumFuelBlockBuy.Location = New System.Drawing.Point(76, 36)
         Me.lblHeliumFuelBlockBuy.Name = "lblHeliumFuelBlockBuy"
         Me.lblHeliumFuelBlockBuy.Size = New System.Drawing.Size(28, 13)
-        Me.lblHeliumFuelBlockBuy.TabIndex = 244
+        Me.lblHeliumFuelBlockBuy.TabIndex = 1
         Me.lblHeliumFuelBlockBuy.Text = "Buy:"
         Me.lblHeliumFuelBlockBuy.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
-        'lblHeliumFuelBlockBuildPrice
+        'lblHeliumFuelBlockBuild
         '
-        Me.lblHeliumFuelBlockBuildPrice.AutoSize = True
-        Me.lblHeliumFuelBlockBuildPrice.Location = New System.Drawing.Point(71, 57)
-        Me.lblHeliumFuelBlockBuildPrice.Name = "lblHeliumFuelBlockBuildPrice"
-        Me.lblHeliumFuelBlockBuildPrice.Size = New System.Drawing.Size(33, 13)
-        Me.lblHeliumFuelBlockBuildPrice.TabIndex = 245
-        Me.lblHeliumFuelBlockBuildPrice.Text = "Build:"
-        Me.lblHeliumFuelBlockBuildPrice.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        Me.lblHeliumFuelBlockBuild.AutoSize = True
+        Me.lblHeliumFuelBlockBuild.Location = New System.Drawing.Point(71, 57)
+        Me.lblHeliumFuelBlockBuild.Name = "lblHeliumFuelBlockBuild"
+        Me.lblHeliumFuelBlockBuild.Size = New System.Drawing.Size(33, 13)
+        Me.lblHeliumFuelBlockBuild.TabIndex = 3
+        Me.lblHeliumFuelBlockBuild.Text = "Build:"
+        Me.lblHeliumFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'txtHeliumFuelBlockBuyPrice
         '
         Me.txtHeliumFuelBlockBuyPrice.Location = New System.Drawing.Point(106, 32)
         Me.txtHeliumFuelBlockBuyPrice.Name = "txtHeliumFuelBlockBuyPrice"
         Me.txtHeliumFuelBlockBuyPrice.Size = New System.Drawing.Size(76, 20)
-        Me.txtHeliumFuelBlockBuyPrice.TabIndex = 220
+        Me.txtHeliumFuelBlockBuyPrice.TabIndex = 2
         Me.txtHeliumFuelBlockBuyPrice.Text = "0.00"
         Me.txtHeliumFuelBlockBuyPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'lblHeliumFuelBlockBuild
+        'lblHeliumFuelBlockBuildPrice
         '
-        Me.lblHeliumFuelBlockBuild.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblHeliumFuelBlockBuild.Location = New System.Drawing.Point(106, 54)
-        Me.lblHeliumFuelBlockBuild.Name = "lblHeliumFuelBlockBuild"
-        Me.lblHeliumFuelBlockBuild.Size = New System.Drawing.Size(76, 20)
-        Me.lblHeliumFuelBlockBuild.TabIndex = 243
-        Me.lblHeliumFuelBlockBuild.Text = "0.00"
-        Me.lblHeliumFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblHeliumFuelBlockBuildPrice.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblHeliumFuelBlockBuildPrice.Location = New System.Drawing.Point(106, 54)
+        Me.lblHeliumFuelBlockBuildPrice.Name = "lblHeliumFuelBlockBuildPrice"
+        Me.lblHeliumFuelBlockBuildPrice.Size = New System.Drawing.Size(76, 20)
+        Me.lblHeliumFuelBlockBuildPrice.TabIndex = 4
+        Me.lblHeliumFuelBlockBuildPrice.Text = "0.00"
+        Me.lblHeliumFuelBlockBuildPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblHydrogenFuelBlock
+        '
+        Me.lblHydrogenFuelBlock.Location = New System.Drawing.Point(310, 18)
+        Me.lblHydrogenFuelBlock.Name = "lblHydrogenFuelBlock"
+        Me.lblHydrogenFuelBlock.Size = New System.Drawing.Size(76, 13)
+        Me.lblHydrogenFuelBlock.TabIndex = 7
+        Me.lblHydrogenFuelBlock.Text = "Hydrogen"
+        Me.lblHydrogenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'lblHydrogenFuelBlockBPME
         '
         Me.lblHydrogenFuelBlockBPME.Location = New System.Drawing.Point(245, 79)
         Me.lblHydrogenFuelBlockBPME.Name = "lblHydrogenFuelBlockBPME"
         Me.lblHydrogenFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
-        Me.lblHydrogenFuelBlockBPME.TabIndex = 253
+        Me.lblHydrogenFuelBlockBPME.TabIndex = 12
         Me.lblHydrogenFuelBlockBPME.Text = "Fuel Block BP ME:"
         '
         'picHydrogenFuelBlock
@@ -1474,7 +1468,7 @@ Partial Class frmCitadelFitting
         Me.txtHydrogenFuelBlockBPME.Location = New System.Drawing.Point(348, 76)
         Me.txtHydrogenFuelBlockBPME.Name = "txtHydrogenFuelBlockBPME"
         Me.txtHydrogenFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
-        Me.txtHydrogenFuelBlockBPME.TabIndex = 252
+        Me.txtHydrogenFuelBlockBPME.TabIndex = 13
         Me.txtHydrogenFuelBlockBPME.Text = "0"
         Me.txtHydrogenFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1484,26 +1478,26 @@ Partial Class frmCitadelFitting
         Me.lblHydrogenBlockBuy.Location = New System.Drawing.Point(283, 36)
         Me.lblHydrogenBlockBuy.Name = "lblHydrogenBlockBuy"
         Me.lblHydrogenBlockBuy.Size = New System.Drawing.Size(28, 13)
-        Me.lblHydrogenBlockBuy.TabIndex = 255
+        Me.lblHydrogenBlockBuy.TabIndex = 8
         Me.lblHydrogenBlockBuy.Text = "Buy:"
         Me.lblHydrogenBlockBuy.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
-        'lblHyrogenBlockBuild
+        'lblHydrogenFuelBlockBuild
         '
-        Me.lblHyrogenBlockBuild.AutoSize = True
-        Me.lblHyrogenBlockBuild.Location = New System.Drawing.Point(278, 57)
-        Me.lblHyrogenBlockBuild.Name = "lblHyrogenBlockBuild"
-        Me.lblHyrogenBlockBuild.Size = New System.Drawing.Size(33, 13)
-        Me.lblHyrogenBlockBuild.TabIndex = 256
-        Me.lblHyrogenBlockBuild.Text = "Build:"
-        Me.lblHyrogenBlockBuild.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        Me.lblHydrogenFuelBlockBuild.AutoSize = True
+        Me.lblHydrogenFuelBlockBuild.Location = New System.Drawing.Point(278, 57)
+        Me.lblHydrogenFuelBlockBuild.Name = "lblHydrogenFuelBlockBuild"
+        Me.lblHydrogenFuelBlockBuild.Size = New System.Drawing.Size(33, 13)
+        Me.lblHydrogenFuelBlockBuild.TabIndex = 10
+        Me.lblHydrogenFuelBlockBuild.Text = "Build:"
+        Me.lblHydrogenFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'txtHydrogenFuelBlockBuyPrice
         '
         Me.txtHydrogenFuelBlockBuyPrice.Location = New System.Drawing.Point(313, 32)
         Me.txtHydrogenFuelBlockBuyPrice.Name = "txtHydrogenFuelBlockBuyPrice"
         Me.txtHydrogenFuelBlockBuyPrice.Size = New System.Drawing.Size(76, 20)
-        Me.txtHydrogenFuelBlockBuyPrice.TabIndex = 246
+        Me.txtHydrogenFuelBlockBuyPrice.TabIndex = 9
         Me.txtHydrogenFuelBlockBuyPrice.Text = "0.00"
         Me.txtHydrogenFuelBlockBuyPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1513,16 +1507,25 @@ Partial Class frmCitadelFitting
         Me.lblHydrogenFuelBlockBuildPrice.Location = New System.Drawing.Point(313, 54)
         Me.lblHydrogenFuelBlockBuildPrice.Name = "lblHydrogenFuelBlockBuildPrice"
         Me.lblHydrogenFuelBlockBuildPrice.Size = New System.Drawing.Size(76, 20)
-        Me.lblHydrogenFuelBlockBuildPrice.TabIndex = 254
+        Me.lblHydrogenFuelBlockBuildPrice.TabIndex = 11
         Me.lblHydrogenFuelBlockBuildPrice.Text = "0.00"
         Me.lblHydrogenFuelBlockBuildPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblNitrogenFuelBlock
+        '
+        Me.lblNitrogenFuelBlock.Location = New System.Drawing.Point(102, 108)
+        Me.lblNitrogenFuelBlock.Name = "lblNitrogenFuelBlock"
+        Me.lblNitrogenFuelBlock.Size = New System.Drawing.Size(76, 13)
+        Me.lblNitrogenFuelBlock.TabIndex = 14
+        Me.lblNitrogenFuelBlock.Text = "Nitrogen"
+        Me.lblNitrogenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'lblNitrogenFuelBlockBPME
         '
         Me.lblNitrogenFuelBlockBPME.Location = New System.Drawing.Point(37, 169)
         Me.lblNitrogenFuelBlockBPME.Name = "lblNitrogenFuelBlockBPME"
         Me.lblNitrogenFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
-        Me.lblNitrogenFuelBlockBPME.TabIndex = 264
+        Me.lblNitrogenFuelBlockBPME.TabIndex = 19
         Me.lblNitrogenFuelBlockBPME.Text = "Fuel Block BP ME:"
         '
         'picNitrogenFuelBlock
@@ -1539,7 +1542,7 @@ Partial Class frmCitadelFitting
         Me.txtNitrogenFuelBlockBPME.Location = New System.Drawing.Point(140, 166)
         Me.txtNitrogenFuelBlockBPME.Name = "txtNitrogenFuelBlockBPME"
         Me.txtNitrogenFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
-        Me.txtNitrogenFuelBlockBPME.TabIndex = 263
+        Me.txtNitrogenFuelBlockBPME.TabIndex = 20
         Me.txtNitrogenFuelBlockBPME.Text = "0"
         Me.txtNitrogenFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1549,7 +1552,7 @@ Partial Class frmCitadelFitting
         Me.lblNitrogenFuelBlockBuy.Location = New System.Drawing.Point(75, 126)
         Me.lblNitrogenFuelBlockBuy.Name = "lblNitrogenFuelBlockBuy"
         Me.lblNitrogenFuelBlockBuy.Size = New System.Drawing.Size(28, 13)
-        Me.lblNitrogenFuelBlockBuy.TabIndex = 266
+        Me.lblNitrogenFuelBlockBuy.TabIndex = 15
         Me.lblNitrogenFuelBlockBuy.Text = "Buy:"
         Me.lblNitrogenFuelBlockBuy.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1559,7 +1562,7 @@ Partial Class frmCitadelFitting
         Me.lblNitrogenFuelBlockBuild.Location = New System.Drawing.Point(70, 147)
         Me.lblNitrogenFuelBlockBuild.Name = "lblNitrogenFuelBlockBuild"
         Me.lblNitrogenFuelBlockBuild.Size = New System.Drawing.Size(33, 13)
-        Me.lblNitrogenFuelBlockBuild.TabIndex = 267
+        Me.lblNitrogenFuelBlockBuild.TabIndex = 17
         Me.lblNitrogenFuelBlockBuild.Text = "Build:"
         Me.lblNitrogenFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1568,7 +1571,7 @@ Partial Class frmCitadelFitting
         Me.txtNitrogenFuelBlockBuyPrice.Location = New System.Drawing.Point(105, 122)
         Me.txtNitrogenFuelBlockBuyPrice.Name = "txtNitrogenFuelBlockBuyPrice"
         Me.txtNitrogenFuelBlockBuyPrice.Size = New System.Drawing.Size(76, 20)
-        Me.txtNitrogenFuelBlockBuyPrice.TabIndex = 257
+        Me.txtNitrogenFuelBlockBuyPrice.TabIndex = 16
         Me.txtNitrogenFuelBlockBuyPrice.Text = "0.00"
         Me.txtNitrogenFuelBlockBuyPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1578,16 +1581,25 @@ Partial Class frmCitadelFitting
         Me.lblNitrogenFuelBlockBuildPrice.Location = New System.Drawing.Point(105, 144)
         Me.lblNitrogenFuelBlockBuildPrice.Name = "lblNitrogenFuelBlockBuildPrice"
         Me.lblNitrogenFuelBlockBuildPrice.Size = New System.Drawing.Size(76, 20)
-        Me.lblNitrogenFuelBlockBuildPrice.TabIndex = 265
+        Me.lblNitrogenFuelBlockBuildPrice.TabIndex = 18
         Me.lblNitrogenFuelBlockBuildPrice.Text = "0.00"
         Me.lblNitrogenFuelBlockBuildPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblOxygenFuelBlock
+        '
+        Me.lblOxygenFuelBlock.Location = New System.Drawing.Point(310, 108)
+        Me.lblOxygenFuelBlock.Name = "lblOxygenFuelBlock"
+        Me.lblOxygenFuelBlock.Size = New System.Drawing.Size(76, 13)
+        Me.lblOxygenFuelBlock.TabIndex = 21
+        Me.lblOxygenFuelBlock.Text = "Oxygen"
+        Me.lblOxygenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'lblOxygenFuelBlockBPME
         '
         Me.lblOxygenFuelBlockBPME.Location = New System.Drawing.Point(245, 169)
         Me.lblOxygenFuelBlockBPME.Name = "lblOxygenFuelBlockBPME"
         Me.lblOxygenFuelBlockBPME.Size = New System.Drawing.Size(97, 15)
-        Me.lblOxygenFuelBlockBPME.TabIndex = 275
+        Me.lblOxygenFuelBlockBPME.TabIndex = 26
         Me.lblOxygenFuelBlockBPME.Text = "Fuel Block BP ME:"
         '
         'picOxygenFuelBlock
@@ -1604,7 +1616,7 @@ Partial Class frmCitadelFitting
         Me.txtOxygenFuelBlockBPME.Location = New System.Drawing.Point(348, 166)
         Me.txtOxygenFuelBlockBPME.Name = "txtOxygenFuelBlockBPME"
         Me.txtOxygenFuelBlockBPME.Size = New System.Drawing.Size(41, 20)
-        Me.txtOxygenFuelBlockBPME.TabIndex = 274
+        Me.txtOxygenFuelBlockBPME.TabIndex = 27
         Me.txtOxygenFuelBlockBPME.Text = "0"
         Me.txtOxygenFuelBlockBPME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1614,7 +1626,7 @@ Partial Class frmCitadelFitting
         Me.lblOxygenFuelBlockBuy.Location = New System.Drawing.Point(283, 126)
         Me.lblOxygenFuelBlockBuy.Name = "lblOxygenFuelBlockBuy"
         Me.lblOxygenFuelBlockBuy.Size = New System.Drawing.Size(28, 13)
-        Me.lblOxygenFuelBlockBuy.TabIndex = 277
+        Me.lblOxygenFuelBlockBuy.TabIndex = 22
         Me.lblOxygenFuelBlockBuy.Text = "Buy:"
         Me.lblOxygenFuelBlockBuy.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1624,7 +1636,7 @@ Partial Class frmCitadelFitting
         Me.lblOxygenFuelBlockBuild.Location = New System.Drawing.Point(278, 147)
         Me.lblOxygenFuelBlockBuild.Name = "lblOxygenFuelBlockBuild"
         Me.lblOxygenFuelBlockBuild.Size = New System.Drawing.Size(33, 13)
-        Me.lblOxygenFuelBlockBuild.TabIndex = 278
+        Me.lblOxygenFuelBlockBuild.TabIndex = 24
         Me.lblOxygenFuelBlockBuild.Text = "Build:"
         Me.lblOxygenFuelBlockBuild.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
@@ -1633,7 +1645,7 @@ Partial Class frmCitadelFitting
         Me.txtOxygenFuelBlockBuyPrice.Location = New System.Drawing.Point(313, 122)
         Me.txtOxygenFuelBlockBuyPrice.Name = "txtOxygenFuelBlockBuyPrice"
         Me.txtOxygenFuelBlockBuyPrice.Size = New System.Drawing.Size(76, 20)
-        Me.txtOxygenFuelBlockBuyPrice.TabIndex = 268
+        Me.txtOxygenFuelBlockBuyPrice.TabIndex = 23
         Me.txtOxygenFuelBlockBuyPrice.Text = "0.00"
         Me.txtOxygenFuelBlockBuyPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -1643,7 +1655,7 @@ Partial Class frmCitadelFitting
         Me.lblOxygenFuelBlockBuildPrice.Location = New System.Drawing.Point(313, 144)
         Me.lblOxygenFuelBlockBuildPrice.Name = "lblOxygenFuelBlockBuildPrice"
         Me.lblOxygenFuelBlockBuildPrice.Size = New System.Drawing.Size(76, 20)
-        Me.lblOxygenFuelBlockBuildPrice.TabIndex = 276
+        Me.lblOxygenFuelBlockBuildPrice.TabIndex = 25
         Me.lblOxygenFuelBlockBuildPrice.Text = "0.00"
         Me.lblOxygenFuelBlockBuildPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
@@ -1652,10 +1664,10 @@ Partial Class frmCitadelFitting
         Me.gbFuelBlockOptions.Controls.Add(Me.rbtnBuyBlocks)
         Me.gbFuelBlockOptions.Controls.Add(Me.rbtnBuildBlocks)
         Me.gbFuelBlockOptions.Controls.Add(Me.chkAutoUpdateFuelPrice)
-        Me.gbFuelBlockOptions.Location = New System.Drawing.Point(448, 131)
+        Me.gbFuelBlockOptions.Location = New System.Drawing.Point(444, 173)
         Me.gbFuelBlockOptions.Name = "gbFuelBlockOptions"
-        Me.gbFuelBlockOptions.Size = New System.Drawing.Size(124, 88)
-        Me.gbFuelBlockOptions.TabIndex = 228
+        Me.gbFuelBlockOptions.Size = New System.Drawing.Size(125, 64)
+        Me.gbFuelBlockOptions.TabIndex = 5
         Me.gbFuelBlockOptions.TabStop = False
         Me.gbFuelBlockOptions.Text = "Options"
         '
@@ -1665,7 +1677,7 @@ Partial Class frmCitadelFitting
         Me.rbtnBuyBlocks.Location = New System.Drawing.Point(15, 18)
         Me.rbtnBuyBlocks.Name = "rbtnBuyBlocks"
         Me.rbtnBuyBlocks.Size = New System.Drawing.Size(78, 17)
-        Me.rbtnBuyBlocks.TabIndex = 127
+        Me.rbtnBuyBlocks.TabIndex = 0
         Me.rbtnBuyBlocks.TabStop = True
         Me.rbtnBuyBlocks.Text = "Buy Blocks"
         Me.rbtnBuyBlocks.UseVisualStyleBackColor = True
@@ -1676,7 +1688,7 @@ Partial Class frmCitadelFitting
         Me.rbtnBuildBlocks.Location = New System.Drawing.Point(15, 39)
         Me.rbtnBuildBlocks.Name = "rbtnBuildBlocks"
         Me.rbtnBuildBlocks.Size = New System.Drawing.Size(83, 17)
-        Me.rbtnBuildBlocks.TabIndex = 128
+        Me.rbtnBuildBlocks.TabIndex = 1
         Me.rbtnBuildBlocks.TabStop = True
         Me.rbtnBuildBlocks.Text = "Build Blocks"
         Me.rbtnBuildBlocks.UseVisualStyleBackColor = True
@@ -1687,27 +1699,28 @@ Partial Class frmCitadelFitting
         Me.chkAutoUpdateFuelPrice.Location = New System.Drawing.Point(15, 63)
         Me.chkAutoUpdateFuelPrice.Name = "chkAutoUpdateFuelPrice"
         Me.chkAutoUpdateFuelPrice.Size = New System.Drawing.Size(86, 17)
-        Me.chkAutoUpdateFuelPrice.TabIndex = 62
+        Me.chkAutoUpdateFuelPrice.TabIndex = 2
         Me.chkAutoUpdateFuelPrice.Text = "Auto Update"
         Me.chkAutoUpdateFuelPrice.UseVisualStyleBackColor = True
+        Me.chkAutoUpdateFuelPrice.Visible = False
         '
-        'btnUpdatePrices
+        'btnSavePrices
         '
-        Me.btnUpdatePrices.Location = New System.Drawing.Point(447, 56)
-        Me.btnUpdatePrices.Name = "btnUpdatePrices"
-        Me.btnUpdatePrices.Size = New System.Drawing.Size(125, 34)
-        Me.btnUpdatePrices.TabIndex = 233
-        Me.btnUpdatePrices.Text = "Update Prices"
-        Me.btnUpdatePrices.UseVisualStyleBackColor = True
+        Me.btnSavePrices.Location = New System.Drawing.Point(444, 57)
+        Me.btnSavePrices.Name = "btnSavePrices"
+        Me.btnSavePrices.Size = New System.Drawing.Size(125, 34)
+        Me.btnSavePrices.TabIndex = 3
+        Me.btnSavePrices.Text = "Save Prices"
+        Me.btnSavePrices.UseVisualStyleBackColor = True
         '
-        'btnRefreshBlockData
+        'btnUpdateBuildCost
         '
-        Me.btnRefreshBlockData.Location = New System.Drawing.Point(447, 20)
-        Me.btnRefreshBlockData.Name = "btnRefreshBlockData"
-        Me.btnRefreshBlockData.Size = New System.Drawing.Size(125, 34)
-        Me.btnRefreshBlockData.TabIndex = 232
-        Me.btnRefreshBlockData.Text = "Refresh"
-        Me.btnRefreshBlockData.UseVisualStyleBackColor = True
+        Me.btnUpdateBuildCost.Location = New System.Drawing.Point(444, 95)
+        Me.btnUpdateBuildCost.Name = "btnUpdateBuildCost"
+        Me.btnUpdateBuildCost.Size = New System.Drawing.Size(125, 34)
+        Me.btnUpdateBuildCost.TabIndex = 2
+        Me.btnUpdateBuildCost.Text = "Update Build Cost"
+        Me.btnUpdateBuildCost.UseVisualStyleBackColor = True
         '
         'lblLauncherSlots
         '
@@ -1715,7 +1728,7 @@ Partial Class frmCitadelFitting
         Me.lblLauncherSlots.Location = New System.Drawing.Point(6, 182)
         Me.lblLauncherSlots.Name = "lblLauncherSlots"
         Me.lblLauncherSlots.Size = New System.Drawing.Size(155, 18)
-        Me.lblLauncherSlots.TabIndex = 63
+        Me.lblLauncherSlots.TabIndex = 8
         Me.lblLauncherSlots.Text = "Launcher Slots:"
         Me.lblLauncherSlots.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
@@ -1733,7 +1746,7 @@ Partial Class frmCitadelFitting
         Me.gbFilterOptions.Location = New System.Drawing.Point(6, 72)
         Me.gbFilterOptions.Name = "gbFilterOptions"
         Me.gbFilterOptions.Size = New System.Drawing.Size(342, 85)
-        Me.gbFilterOptions.TabIndex = 51
+        Me.gbFilterOptions.TabIndex = 6
         Me.gbFilterOptions.TabStop = False
         Me.gbFilterOptions.Text = "Item View Type:"
         '
@@ -1743,7 +1756,7 @@ Partial Class frmCitadelFitting
         Me.chkRigTypeViewDrilling.Location = New System.Drawing.Point(219, 62)
         Me.chkRigTypeViewDrilling.Name = "chkRigTypeViewDrilling"
         Me.chkRigTypeViewDrilling.Size = New System.Drawing.Size(81, 17)
-        Me.chkRigTypeViewDrilling.TabIndex = 63
+        Me.chkRigTypeViewDrilling.TabIndex = 8
         Me.chkRigTypeViewDrilling.Text = "Drilling Rigs"
         Me.chkRigTypeViewDrilling.UseVisualStyleBackColor = True
         '
@@ -1753,7 +1766,7 @@ Partial Class frmCitadelFitting
         Me.chkRigTypeViewReaction.Location = New System.Drawing.Point(109, 62)
         Me.chkRigTypeViewReaction.Name = "chkRigTypeViewReaction"
         Me.chkRigTypeViewReaction.Size = New System.Drawing.Size(93, 17)
-        Me.chkRigTypeViewReaction.TabIndex = 62
+        Me.chkRigTypeViewReaction.TabIndex = 7
         Me.chkRigTypeViewReaction.Text = "Reaction Rigs"
         Me.chkRigTypeViewReaction.UseVisualStyleBackColor = True
         '
@@ -1763,7 +1776,7 @@ Partial Class frmCitadelFitting
         Me.chkRigTypeViewCombat.Location = New System.Drawing.Point(17, 62)
         Me.chkRigTypeViewCombat.Name = "chkRigTypeViewCombat"
         Me.chkRigTypeViewCombat.Size = New System.Drawing.Size(86, 17)
-        Me.chkRigTypeViewCombat.TabIndex = 61
+        Me.chkRigTypeViewCombat.TabIndex = 6
         Me.chkRigTypeViewCombat.Text = "Combat Rigs"
         Me.chkRigTypeViewCombat.UseVisualStyleBackColor = True
         '
@@ -1773,7 +1786,7 @@ Partial Class frmCitadelFitting
         Me.chkRigTypeViewReprocessing.Location = New System.Drawing.Point(219, 40)
         Me.chkRigTypeViewReprocessing.Name = "chkRigTypeViewReprocessing"
         Me.chkRigTypeViewReprocessing.Size = New System.Drawing.Size(115, 17)
-        Me.chkRigTypeViewReprocessing.TabIndex = 60
+        Me.chkRigTypeViewReprocessing.TabIndex = 5
         Me.chkRigTypeViewReprocessing.Text = "Reprocessing Rigs"
         Me.chkRigTypeViewReprocessing.UseVisualStyleBackColor = True
         '
@@ -1783,7 +1796,7 @@ Partial Class frmCitadelFitting
         Me.chkRigTypeViewEngineering.Location = New System.Drawing.Point(109, 40)
         Me.chkRigTypeViewEngineering.Name = "chkRigTypeViewEngineering"
         Me.chkRigTypeViewEngineering.Size = New System.Drawing.Size(106, 17)
-        Me.chkRigTypeViewEngineering.TabIndex = 59
+        Me.chkRigTypeViewEngineering.TabIndex = 4
         Me.chkRigTypeViewEngineering.Text = "Engineering Rigs"
         Me.chkRigTypeViewEngineering.UseVisualStyleBackColor = True
         '
@@ -1793,7 +1806,7 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeLow.Location = New System.Drawing.Point(219, 18)
         Me.chkItemViewTypeLow.Name = "chkItemViewTypeLow"
         Me.chkItemViewTypeLow.Size = New System.Drawing.Size(72, 17)
-        Me.chkItemViewTypeLow.TabIndex = 54
+        Me.chkItemViewTypeLow.TabIndex = 2
         Me.chkItemViewTypeLow.Text = "Low Slots"
         Me.chkItemViewTypeLow.UseVisualStyleBackColor = True
         '
@@ -1803,7 +1816,7 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeMedium.Location = New System.Drawing.Point(109, 18)
         Me.chkItemViewTypeMedium.Name = "chkItemViewTypeMedium"
         Me.chkItemViewTypeMedium.Size = New System.Drawing.Size(89, 17)
-        Me.chkItemViewTypeMedium.TabIndex = 53
+        Me.chkItemViewTypeMedium.TabIndex = 1
         Me.chkItemViewTypeMedium.Text = "Medium Slots"
         Me.chkItemViewTypeMedium.UseVisualStyleBackColor = True
         '
@@ -1813,7 +1826,7 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeHigh.Location = New System.Drawing.Point(17, 18)
         Me.chkItemViewTypeHigh.Name = "chkItemViewTypeHigh"
         Me.chkItemViewTypeHigh.Size = New System.Drawing.Size(74, 17)
-        Me.chkItemViewTypeHigh.TabIndex = 52
+        Me.chkItemViewTypeHigh.TabIndex = 0
         Me.chkItemViewTypeHigh.Text = "High Slots"
         Me.chkItemViewTypeHigh.UseVisualStyleBackColor = True
         '
@@ -1823,12 +1836,13 @@ Partial Class frmCitadelFitting
         Me.chkItemViewTypeServices.Location = New System.Drawing.Point(17, 40)
         Me.chkItemViewTypeServices.Name = "chkItemViewTypeServices"
         Me.chkItemViewTypeServices.Size = New System.Drawing.Size(67, 17)
-        Me.chkItemViewTypeServices.TabIndex = 51
+        Me.chkItemViewTypeServices.TabIndex = 3
         Me.chkItemViewTypeServices.Text = "Services"
         Me.chkItemViewTypeServices.UseVisualStyleBackColor = True
         '
         'gbStatsandOptions
         '
+        Me.gbStatsandOptions.Controls.Add(Me.chkIncludeFuelCosts)
         Me.gbStatsandOptions.Controls.Add(Me.gbOptions)
         Me.gbStatsandOptions.Controls.Add(Me.lblLauncherSlots)
         Me.gbStatsandOptions.Controls.Add(Me.gbIncludeFuelBlocks)
@@ -1843,7 +1857,7 @@ Partial Class frmCitadelFitting
         Me.gbStatsandOptions.Location = New System.Drawing.Point(959, 18)
         Me.gbStatsandOptions.Name = "gbStatsandOptions"
         Me.gbStatsandOptions.Size = New System.Drawing.Size(167, 589)
-        Me.gbStatsandOptions.TabIndex = 59
+        Me.gbStatsandOptions.TabIndex = 10
         Me.gbStatsandOptions.TabStop = False
         '
         'gbOptions
@@ -1855,7 +1869,7 @@ Partial Class frmCitadelFitting
         Me.gbOptions.Location = New System.Drawing.Point(6, 520)
         Me.gbOptions.Name = "gbOptions"
         Me.gbOptions.Size = New System.Drawing.Size(155, 63)
-        Me.gbOptions.TabIndex = 79
+        Me.gbOptions.TabIndex = 11
         Me.gbOptions.TabStop = False
         Me.gbOptions.Text = "Options"
         '
@@ -1865,7 +1879,7 @@ Partial Class frmCitadelFitting
         Me.lblSystemSecurity.Location = New System.Drawing.Point(3, 18)
         Me.lblSystemSecurity.Name = "lblSystemSecurity"
         Me.lblSystemSecurity.Size = New System.Drawing.Size(85, 13)
-        Me.lblSystemSecurity.TabIndex = 81
+        Me.lblSystemSecurity.TabIndex = 0
         Me.lblSystemSecurity.Text = "System Security:"
         '
         'chkNullSec
@@ -1874,7 +1888,7 @@ Partial Class frmCitadelFitting
         Me.chkNullSec.Location = New System.Drawing.Point(103, 34)
         Me.chkNullSec.Name = "chkNullSec"
         Me.chkNullSec.Size = New System.Drawing.Size(44, 17)
-        Me.chkNullSec.TabIndex = 80
+        Me.chkNullSec.TabIndex = 3
         Me.chkNullSec.Text = "Null"
         Me.chkNullSec.UseVisualStyleBackColor = True
         '
@@ -1884,7 +1898,7 @@ Partial Class frmCitadelFitting
         Me.chkLowSec.Location = New System.Drawing.Point(56, 34)
         Me.chkLowSec.Name = "chkLowSec"
         Me.chkLowSec.Size = New System.Drawing.Size(46, 17)
-        Me.chkLowSec.TabIndex = 79
+        Me.chkLowSec.TabIndex = 2
         Me.chkLowSec.Text = "Low"
         Me.chkLowSec.UseVisualStyleBackColor = True
         '
@@ -1894,7 +1908,7 @@ Partial Class frmCitadelFitting
         Me.chkHighSec.Location = New System.Drawing.Point(7, 34)
         Me.chkHighSec.Name = "chkHighSec"
         Me.chkHighSec.Size = New System.Drawing.Size(48, 17)
-        Me.chkHighSec.TabIndex = 78
+        Me.chkHighSec.TabIndex = 1
         Me.chkHighSec.Text = "High"
         Me.chkHighSec.UseVisualStyleBackColor = True
         '
@@ -1910,20 +1924,20 @@ Partial Class frmCitadelFitting
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblServiceModuleBPH)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblServiceModuleFCPH)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblFuelCost)
-        Me.gbIncludeFuelBlocks.Controls.Add(Me.chkIncludeFuelCosts)
+        Me.gbIncludeFuelBlocks.Enabled = False
         Me.gbIncludeFuelBlocks.Location = New System.Drawing.Point(6, 310)
         Me.gbIncludeFuelBlocks.Name = "gbIncludeFuelBlocks"
         Me.gbIncludeFuelBlocks.Size = New System.Drawing.Size(155, 204)
-        Me.gbIncludeFuelBlocks.TabIndex = 73
+        Me.gbIncludeFuelBlocks.TabIndex = 10
         Me.gbIncludeFuelBlocks.TabStop = False
         '
         'rbtnOxygenFuelBlock
         '
         Me.rbtnOxygenFuelBlock.AutoSize = True
-        Me.rbtnOxygenFuelBlock.Location = New System.Drawing.Point(9, 181)
+        Me.rbtnOxygenFuelBlock.Location = New System.Drawing.Point(10, 180)
         Me.rbtnOxygenFuelBlock.Name = "rbtnOxygenFuelBlock"
         Me.rbtnOxygenFuelBlock.Size = New System.Drawing.Size(114, 17)
-        Me.rbtnOxygenFuelBlock.TabIndex = 77
+        Me.rbtnOxygenFuelBlock.TabIndex = 9
         Me.rbtnOxygenFuelBlock.TabStop = True
         Me.rbtnOxygenFuelBlock.Text = "Oxygen Fuel Block"
         Me.rbtnOxygenFuelBlock.UseVisualStyleBackColor = True
@@ -1931,10 +1945,10 @@ Partial Class frmCitadelFitting
         'rbtnNitrogenFuelBlock
         '
         Me.rbtnNitrogenFuelBlock.AutoSize = True
-        Me.rbtnNitrogenFuelBlock.Location = New System.Drawing.Point(9, 162)
+        Me.rbtnNitrogenFuelBlock.Location = New System.Drawing.Point(10, 161)
         Me.rbtnNitrogenFuelBlock.Name = "rbtnNitrogenFuelBlock"
         Me.rbtnNitrogenFuelBlock.Size = New System.Drawing.Size(118, 17)
-        Me.rbtnNitrogenFuelBlock.TabIndex = 76
+        Me.rbtnNitrogenFuelBlock.TabIndex = 8
         Me.rbtnNitrogenFuelBlock.TabStop = True
         Me.rbtnNitrogenFuelBlock.Text = "Nitrogen Fuel Block"
         Me.rbtnNitrogenFuelBlock.UseVisualStyleBackColor = True
@@ -1942,10 +1956,10 @@ Partial Class frmCitadelFitting
         'rbtnHydrogenFuelBlock
         '
         Me.rbtnHydrogenFuelBlock.AutoSize = True
-        Me.rbtnHydrogenFuelBlock.Location = New System.Drawing.Point(9, 143)
+        Me.rbtnHydrogenFuelBlock.Location = New System.Drawing.Point(10, 142)
         Me.rbtnHydrogenFuelBlock.Name = "rbtnHydrogenFuelBlock"
         Me.rbtnHydrogenFuelBlock.Size = New System.Drawing.Size(124, 17)
-        Me.rbtnHydrogenFuelBlock.TabIndex = 75
+        Me.rbtnHydrogenFuelBlock.TabIndex = 7
         Me.rbtnHydrogenFuelBlock.TabStop = True
         Me.rbtnHydrogenFuelBlock.Text = "Hydrogen Fuel Block"
         Me.rbtnHydrogenFuelBlock.UseVisualStyleBackColor = True
@@ -1953,10 +1967,10 @@ Partial Class frmCitadelFitting
         'rbtnHeliumFuelBlock
         '
         Me.rbtnHeliumFuelBlock.AutoSize = True
-        Me.rbtnHeliumFuelBlock.Location = New System.Drawing.Point(9, 124)
+        Me.rbtnHeliumFuelBlock.Location = New System.Drawing.Point(10, 123)
         Me.rbtnHeliumFuelBlock.Name = "rbtnHeliumFuelBlock"
         Me.rbtnHeliumFuelBlock.Size = New System.Drawing.Size(110, 17)
-        Me.rbtnHeliumFuelBlock.TabIndex = 74
+        Me.rbtnHeliumFuelBlock.TabIndex = 6
         Me.rbtnHeliumFuelBlock.TabStop = True
         Me.rbtnHeliumFuelBlock.Text = "Helium Fuel Block"
         Me.rbtnHeliumFuelBlock.UseVisualStyleBackColor = True
@@ -1964,54 +1978,54 @@ Partial Class frmCitadelFitting
         'lblServiceModuleOnlineAmt
         '
         Me.lblServiceModuleOnlineAmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(6, 102)
+        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(7, 101)
         Me.lblServiceModuleOnlineAmt.Name = "lblServiceModuleOnlineAmt"
         Me.lblServiceModuleOnlineAmt.Size = New System.Drawing.Size(140, 16)
-        Me.lblServiceModuleOnlineAmt.TabIndex = 73
+        Me.lblServiceModuleOnlineAmt.TabIndex = 5
         Me.lblServiceModuleOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblOnlineAmt
         '
-        Me.lblOnlineAmt.Location = New System.Drawing.Point(6, 86)
+        Me.lblOnlineAmt.Location = New System.Drawing.Point(7, 85)
         Me.lblOnlineAmt.Name = "lblOnlineAmt"
         Me.lblOnlineAmt.Size = New System.Drawing.Size(140, 16)
-        Me.lblOnlineAmt.TabIndex = 72
+        Me.lblOnlineAmt.TabIndex = 4
         Me.lblOnlineAmt.Text = "Online Fuel Amount"
         Me.lblOnlineAmt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'lblFuelBPH
         '
-        Me.lblFuelBPH.Location = New System.Drawing.Point(6, 22)
+        Me.lblFuelBPH.Location = New System.Drawing.Point(7, 21)
         Me.lblFuelBPH.Name = "lblFuelBPH"
         Me.lblFuelBPH.Size = New System.Drawing.Size(140, 16)
-        Me.lblFuelBPH.TabIndex = 68
+        Me.lblFuelBPH.TabIndex = 0
         Me.lblFuelBPH.Text = "Fuel Blocks per Hour"
         Me.lblFuelBPH.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'lblServiceModuleBPH
         '
         Me.lblServiceModuleBPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(6, 38)
+        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(7, 37)
         Me.lblServiceModuleBPH.Name = "lblServiceModuleBPH"
         Me.lblServiceModuleBPH.Size = New System.Drawing.Size(140, 16)
-        Me.lblServiceModuleBPH.TabIndex = 69
+        Me.lblServiceModuleBPH.TabIndex = 1
         Me.lblServiceModuleBPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblServiceModuleFCPH
         '
         Me.lblServiceModuleFCPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(6, 70)
+        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(7, 69)
         Me.lblServiceModuleFCPH.Name = "lblServiceModuleFCPH"
         Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(140, 16)
-        Me.lblServiceModuleFCPH.TabIndex = 71
+        Me.lblServiceModuleFCPH.TabIndex = 3
         Me.lblServiceModuleFCPH.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblFuelCost
         '
-        Me.lblFuelCost.Location = New System.Drawing.Point(6, 54)
+        Me.lblFuelCost.Location = New System.Drawing.Point(7, 53)
         Me.lblFuelCost.Name = "lblFuelCost"
         Me.lblFuelCost.Size = New System.Drawing.Size(140, 16)
-        Me.lblFuelCost.TabIndex = 70
+        Me.lblFuelCost.TabIndex = 2
         Me.lblFuelCost.Text = "Fuel Cost per Hour"
         Me.lblFuelCost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
@@ -2021,7 +2035,7 @@ Partial Class frmCitadelFitting
         Me.lblCapacitor.Location = New System.Drawing.Point(6, 153)
         Me.lblCapacitor.Name = "lblCapacitor"
         Me.lblCapacitor.Size = New System.Drawing.Size(155, 16)
-        Me.lblCapacitor.TabIndex = 67
+        Me.lblCapacitor.TabIndex = 7
         Me.lblCapacitor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblCapacitor1
@@ -2029,7 +2043,7 @@ Partial Class frmCitadelFitting
         Me.lblCapacitor1.Location = New System.Drawing.Point(6, 137)
         Me.lblCapacitor1.Name = "lblCapacitor1"
         Me.lblCapacitor1.Size = New System.Drawing.Size(155, 16)
-        Me.lblCapacitor1.TabIndex = 66
+        Me.lblCapacitor1.TabIndex = 6
         Me.lblCapacitor1.Text = "Capacitor:"
         Me.lblCapacitor1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
@@ -2039,7 +2053,7 @@ Partial Class frmCitadelFitting
         Me.lblCalibration.Location = New System.Drawing.Point(6, 114)
         Me.lblCalibration.Name = "lblCalibration"
         Me.lblCalibration.Size = New System.Drawing.Size(155, 16)
-        Me.lblCalibration.TabIndex = 65
+        Me.lblCalibration.TabIndex = 5
         Me.lblCalibration.Text = "400 / 400"
         Me.lblCalibration.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -2049,7 +2063,7 @@ Partial Class frmCitadelFitting
         Me.lblCalibration1.Location = New System.Drawing.Point(6, 100)
         Me.lblCalibration1.Name = "lblCalibration1"
         Me.lblCalibration1.Size = New System.Drawing.Size(59, 13)
-        Me.lblCalibration1.TabIndex = 64
+        Me.lblCalibration1.TabIndex = 4
         Me.lblCalibration1.Text = "Calibration:"
         '
         'lblCPU
@@ -2058,7 +2072,7 @@ Partial Class frmCitadelFitting
         Me.lblCPU.Location = New System.Drawing.Point(6, 76)
         Me.lblCPU.Name = "lblCPU"
         Me.lblCPU.Size = New System.Drawing.Size(155, 16)
-        Me.lblCPU.TabIndex = 63
+        Me.lblCPU.TabIndex = 3
         Me.lblCPU.Text = "15,000,000 / 15,000,000"
         Me.lblCPU.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -2068,7 +2082,7 @@ Partial Class frmCitadelFitting
         Me.lblPowerGrid.Location = New System.Drawing.Point(6, 38)
         Me.lblPowerGrid.Name = "lblPowerGrid"
         Me.lblPowerGrid.Size = New System.Drawing.Size(155, 16)
-        Me.lblPowerGrid.TabIndex = 62
+        Me.lblPowerGrid.TabIndex = 1
         Me.lblPowerGrid.Text = "15,000,000 / 15,000,000"
         Me.lblPowerGrid.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -2078,7 +2092,7 @@ Partial Class frmCitadelFitting
         Me.lblCPU1.Location = New System.Drawing.Point(6, 62)
         Me.lblCPU1.Name = "lblCPU1"
         Me.lblCPU1.Size = New System.Drawing.Size(32, 13)
-        Me.lblCPU1.TabIndex = 61
+        Me.lblCPU1.TabIndex = 2
         Me.lblCPU1.Text = "CPU:"
         '
         'lblPowerGrid1
@@ -2087,24 +2101,24 @@ Partial Class frmCitadelFitting
         Me.lblPowerGrid1.Location = New System.Drawing.Point(6, 24)
         Me.lblPowerGrid1.Name = "lblPowerGrid1"
         Me.lblPowerGrid1.Size = New System.Drawing.Size(62, 13)
-        Me.lblPowerGrid1.TabIndex = 60
+        Me.lblPowerGrid1.TabIndex = 0
         Me.lblPowerGrid1.Text = "Power Grid:"
         '
-        'btnSaveUpdatePrices
+        'btnSaveFitting
         '
-        Me.btnSaveUpdatePrices.Location = New System.Drawing.Point(93, 35)
-        Me.btnSaveUpdatePrices.Name = "btnSaveUpdatePrices"
-        Me.btnSaveUpdatePrices.Size = New System.Drawing.Size(81, 30)
-        Me.btnSaveUpdatePrices.TabIndex = 48
-        Me.btnSaveUpdatePrices.Text = "Save Fitting"
-        Me.btnSaveUpdatePrices.UseVisualStyleBackColor = True
+        Me.btnSaveFitting.Location = New System.Drawing.Point(93, 35)
+        Me.btnSaveFitting.Name = "btnSaveFitting"
+        Me.btnSaveFitting.Size = New System.Drawing.Size(81, 30)
+        Me.btnSaveFitting.TabIndex = 3
+        Me.btnSaveFitting.Text = "Save Fitting"
+        Me.btnSaveFitting.UseVisualStyleBackColor = True
         '
         'btnSaveSettings
         '
         Me.btnSaveSettings.Location = New System.Drawing.Point(180, 35)
         Me.btnSaveSettings.Name = "btnSaveSettings"
         Me.btnSaveSettings.Size = New System.Drawing.Size(81, 30)
-        Me.btnSaveSettings.TabIndex = 60
+        Me.btnSaveSettings.TabIndex = 4
         Me.btnSaveSettings.Text = "Save Settings"
         Me.btnSaveSettings.UseVisualStyleBackColor = True
         '
@@ -2113,7 +2127,7 @@ Partial Class frmCitadelFitting
         Me.btnCloseForm.Location = New System.Drawing.Point(267, 35)
         Me.btnCloseForm.Name = "btnCloseForm"
         Me.btnCloseForm.Size = New System.Drawing.Size(81, 30)
-        Me.btnCloseForm.TabIndex = 61
+        Me.btnCloseForm.TabIndex = 5
         Me.btnCloseForm.Text = "Close"
         Me.btnCloseForm.UseVisualStyleBackColor = True
         '
@@ -2125,7 +2139,7 @@ Partial Class frmCitadelFitting
         Me.gbTextFilter.Location = New System.Drawing.Point(6, 159)
         Me.gbTextFilter.Name = "gbTextFilter"
         Me.gbTextFilter.Size = New System.Drawing.Size(342, 45)
-        Me.gbTextFilter.TabIndex = 62
+        Me.gbTextFilter.TabIndex = 7
         Me.gbTextFilter.TabStop = False
         Me.gbTextFilter.Text = "Text Search:"
         '
@@ -2134,7 +2148,7 @@ Partial Class frmCitadelFitting
         Me.btnItemFilter.Location = New System.Drawing.Point(252, 17)
         Me.btnItemFilter.Name = "btnItemFilter"
         Me.btnItemFilter.Size = New System.Drawing.Size(39, 21)
-        Me.btnItemFilter.TabIndex = 4
+        Me.btnItemFilter.TabIndex = 1
         Me.btnItemFilter.Text = "Filter"
         Me.btnItemFilter.UseVisualStyleBackColor = True
         '
@@ -2143,7 +2157,7 @@ Partial Class frmCitadelFitting
         Me.btnResetItemFilter.Location = New System.Drawing.Point(297, 17)
         Me.btnResetItemFilter.Name = "btnResetItemFilter"
         Me.btnResetItemFilter.Size = New System.Drawing.Size(39, 21)
-        Me.btnResetItemFilter.TabIndex = 3
+        Me.btnResetItemFilter.TabIndex = 2
         Me.btnResetItemFilter.Text = "Clear"
         Me.btnResetItemFilter.UseVisualStyleBackColor = True
         '
@@ -2152,7 +2166,7 @@ Partial Class frmCitadelFitting
         Me.txtItemFilter.Location = New System.Drawing.Point(6, 17)
         Me.txtItemFilter.Name = "txtItemFilter"
         Me.txtItemFilter.Size = New System.Drawing.Size(240, 20)
-        Me.txtItemFilter.TabIndex = 2
+        Me.txtItemFilter.TabIndex = 0
         '
         'EventLog1
         '
@@ -2170,43 +2184,7 @@ Partial Class frmCitadelFitting
         Me.pbFloat.TabStop = False
         Me.pbFloat.Visible = False
         '
-        'lblHydrogenFuelBlock
-        '
-        Me.lblHydrogenFuelBlock.Location = New System.Drawing.Point(310, 18)
-        Me.lblHydrogenFuelBlock.Name = "lblHydrogenFuelBlock"
-        Me.lblHydrogenFuelBlock.Size = New System.Drawing.Size(76, 13)
-        Me.lblHydrogenFuelBlock.TabIndex = 249
-        Me.lblHydrogenFuelBlock.Text = "Hydrogen"
-        Me.lblHydrogenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblOxygenFuelBlock
-        '
-        Me.lblOxygenFuelBlock.Location = New System.Drawing.Point(310, 108)
-        Me.lblOxygenFuelBlock.Name = "lblOxygenFuelBlock"
-        Me.lblOxygenFuelBlock.Size = New System.Drawing.Size(76, 13)
-        Me.lblOxygenFuelBlock.TabIndex = 271
-        Me.lblOxygenFuelBlock.Text = "Oxygen"
-        Me.lblOxygenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblNitrogenFuelBlock
-        '
-        Me.lblNitrogenFuelBlock.Location = New System.Drawing.Point(102, 108)
-        Me.lblNitrogenFuelBlock.Name = "lblNitrogenFuelBlock"
-        Me.lblNitrogenFuelBlock.Size = New System.Drawing.Size(76, 13)
-        Me.lblNitrogenFuelBlock.TabIndex = 260
-        Me.lblNitrogenFuelBlock.Text = "Nitrogen"
-        Me.lblNitrogenFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'lblHeliumFuelBlock
-        '
-        Me.lblHeliumFuelBlock.Location = New System.Drawing.Point(103, 18)
-        Me.lblHeliumFuelBlock.Name = "lblHeliumFuelBlock"
-        Me.lblHeliumFuelBlock.Size = New System.Drawing.Size(76, 13)
-        Me.lblHeliumFuelBlock.TabIndex = 225
-        Me.lblHeliumFuelBlock.Text = "Helium"
-        Me.lblHeliumFuelBlock.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'frmCitadelFitting
+        'frmUpwellStructureFitting
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
@@ -2219,13 +2197,13 @@ Partial Class frmCitadelFitting
         Me.Controls.Add(Me.gbStatsandOptions)
         Me.Controls.Add(Me.gbFilterOptions)
         Me.Controls.Add(Me.tabUpwellStructure)
-        Me.Controls.Add(Me.btnSaveUpdatePrices)
-        Me.Controls.Add(Me.btnToggleAllPriceItems)
+        Me.Controls.Add(Me.btnSaveFitting)
+        Me.Controls.Add(Me.btnStripFitting)
         Me.Controls.Add(Me.cmbUpwellStructureName)
         Me.Controls.Add(Me.lblSelectedUpwellStructure)
         Me.Controls.Add(Me.ServiceModuleListView)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
-        Me.Name = "frmCitadelFitting"
+        Me.Name = "frmUpwellStructureFitting"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Upwell Structure Fitting"
         Me.tabUpwellStructure.ResumeLayout(False)
@@ -2270,7 +2248,6 @@ Partial Class frmCitadelFitting
         Me.gbFuelPrices.ResumeLayout(False)
         Me.gbFuelPrices.PerformLayout()
         CType(Me.picHeliumIsotopes, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.picPOSCharters, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picCoolant, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picOxygen, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picNitrogenIsotopes, System.ComponentModel.ISupportInitialize).EndInit()
@@ -2346,18 +2323,18 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblSelectedUpwellStructure As Label
     Friend WithEvents cmbUpwellStructureName As ComboBox
     Friend WithEvents chkIncludeFuelCosts As CheckBox
-    Friend WithEvents btnToggleAllPriceItems As Button
+    Friend WithEvents btnStripFitting As Button
     Friend WithEvents tabUpwellStructure As TabControl
     Friend WithEvents tabFitting As TabPage
     Friend WithEvents tabFuelandBonuses As TabPage
     Friend WithEvents gbFuelBlocks As GroupBox
-    Friend WithEvents lblHeliumFuelBlockBuild As Label
-    Friend WithEvents txtHeliumFuelBlockBuyPrice As TextBox
     Friend WithEvents lblHeliumFuelBlockBuildPrice As Label
+    Friend WithEvents txtHeliumFuelBlockBuyPrice As TextBox
+    Friend WithEvents lblHeliumFuelBlockBuild As Label
     Friend WithEvents lblHeliumFuelBlockBuy As Label
     Friend WithEvents txtHeliumFuelBlockBPME As TextBox
-    Friend WithEvents btnUpdatePrices As Button
-    Friend WithEvents btnRefreshBlockData As Button
+    Friend WithEvents btnSavePrices As Button
+    Friend WithEvents btnUpdateBuildCost As Button
     Friend WithEvents picHeliumFuelBlock As PictureBox
     Friend WithEvents lblHeliumFuelBlockBPME As Label
     Friend WithEvents rbtnBuildBlocks As RadioButton
@@ -2376,7 +2353,7 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblCalibration1 As Label
     Friend WithEvents lblCapacitor As Label
     Friend WithEvents lblCapacitor1 As Label
-    Friend WithEvents btnSaveUpdatePrices As Button
+    Friend WithEvents btnSaveFitting As Button
     Friend WithEvents btnSaveSettings As Button
     Friend WithEvents chkRigTypeViewCombat As CheckBox
     Friend WithEvents chkRigTypeViewReprocessing As CheckBox
@@ -2409,7 +2386,7 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblNitrogenFuelBlockBPME As Label
     Friend WithEvents lblHydrogenFuelBlockBuildPrice As Label
     Friend WithEvents txtHydrogenFuelBlockBuyPrice As TextBox
-    Friend WithEvents lblHyrogenBlockBuild As Label
+    Friend WithEvents lblHydrogenFuelBlockBuild As Label
     Friend WithEvents lblHydrogenBlockBuy As Label
     Friend WithEvents txtHydrogenFuelBlockBPME As TextBox
     Friend WithEvents picHydrogenFuelBlock As PictureBox
@@ -2428,9 +2405,6 @@ Partial Class frmCitadelFitting
     Friend WithEvents lstUpwellStructureBonuses As ListView
     Friend WithEvents gbFacilityBonuses As GroupBox
     Friend WithEvents gbFuelBlocks2 As GroupBox
-    Friend WithEvents txtCharters As TextBox
-    Friend WithEvents lblCharters As Label
-    Friend WithEvents picPOSCharters As PictureBox
     Friend WithEvents txtHeliumIsotopes As TextBox
     Friend WithEvents txtOxygen As TextBox
     Friend WithEvents picHeliumIsotopes As PictureBox
@@ -2482,4 +2456,6 @@ Partial Class frmCitadelFitting
     Friend WithEvents lblOxygenFuelBlock As Label
     Friend WithEvents lblHeliumFuelBlock As Label
     Friend WithEvents lblNitrogenFuelBlock As Label
+    Friend WithEvents btnRefreshPrices As Button
+    Friend WithEvents MainToolTip As ToolTip
 End Class
