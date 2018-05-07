@@ -1000,7 +1000,7 @@ Public Class ProgramSettings
     Private Const StructureBonusPopoutViewerSettingsFileName As String = "StructureBonusPopoutViewerSettings"
 
     ' Application Registration Information
-    Private Const AppRegistrationInformationSettingsFileName As String = "AppRegistrationInformation"
+    Public Const AppRegistrationInformationSettingsFileName As String = "AppRegistrationInformation"
     Private AppRegistrationInformationSettings As AppRegistrationInformationSettings
 
     ' For BP List Viewer
@@ -1336,13 +1336,13 @@ Public Class ProgramSettings
         Dim TempSettings As AppRegistrationInformationSettings = Nothing
 
         Try
-            If FileExists(SettingsFolder, AppRegistrationInformationSettingsFileName) Then
+            If FileExists("", AppRegistrationInformationSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .ClientID = CStr(GetSettingValue(SettingsFolder, AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "ClientID", ""))
-                    .SecretKey = CStr(GetSettingValue(SettingsFolder, AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "SecretKey", ""))
-                    .Port = CInt(GetSettingValue(SettingsFolder, AppRegistrationInformationSettingsFileName, SettingTypes.TypeInteger, AppRegistrationInformationSettingsFileName, "Port", 0))
-                    .Scopes = CStr(GetSettingValue(SettingsFolder, AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "Scopes", ""))
+                    .ClientID = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "ClientID", ""))
+                    .SecretKey = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "SecretKey", ""))
+                    .Port = CInt(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeInteger, AppRegistrationInformationSettingsFileName, "Port", 0))
+                    .Scopes = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "Scopes", ""))
                 End With
             Else
                 ' Load defaults 
@@ -1378,8 +1378,8 @@ Public Class ProgramSettings
     End Function
 
     ' Saves the Shopping List Settings to XML
-    Public Sub SaveAppRegistrationInformationSettings(SentSettings As AppRegistrationInformationSettings)
-        Dim AppRegistrationInformationSettingsList(7) As Setting
+    Public Function SaveAppRegistrationInformationSettings(SentSettings As AppRegistrationInformationSettings) As Boolean
+        Dim AppRegistrationInformationSettingsList(3) As Setting
 
         Try
             AppRegistrationInformationSettingsList(0) = New Setting("ClientID", CStr(SentSettings.ClientID))
@@ -1387,13 +1387,15 @@ Public Class ProgramSettings
             AppRegistrationInformationSettingsList(2) = New Setting("Port", CStr(SentSettings.Port))
             AppRegistrationInformationSettingsList(3) = New Setting("Scopes", CStr(SentSettings.Scopes))
 
-            Call WriteSettingsToFile(SettingsFolder, AppRegistrationInformationSettingsFileName, AppRegistrationInformationSettingsList, AppRegistrationInformationSettingsFileName)
+            Call WriteSettingsToFile("", AppRegistrationInformationSettingsFileName, AppRegistrationInformationSettingsList, AppRegistrationInformationSettingsFileName)
+            Return True
 
         Catch ex As Exception
             MsgBox("An error occured when saving Application Registration Information. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+            Return False
         End Try
 
-    End Sub
+    End Function
 
     ' Returns the Shopping List Settings
     Public Function GetAppRegistrationInformationSettings() As AppRegistrationInformationSettings

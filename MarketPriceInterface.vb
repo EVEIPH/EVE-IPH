@@ -25,179 +25,8 @@ Public Class MarketPriceInterface
         Dim RegionID As Long
     End Structure
 
-    ' EVE MarketData - Updates the item price averages for the region, days, and typeid sent in the cache database - update only each day
-    Public Sub UpdateEMDPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long, UpdateDays As Integer)
-        Dim SQL As String
-        Dim i, j As Integer
-        Dim readerAvgPrices As SQLiteDataReader
-        Dim UpdateIDList As New List(Of Long)
-        Dim CleanupIDs As New List(Of Long)
-        Dim UniqueSentIDs As New List(Of Long)
-        Dim UniqueUpdatedPrices As New List(Of Long)
-        Dim CurrentDateTime As Date = Now
-
-        Dim API As New EVEMarketDataAPI
-        Dim UpdatedAvgPrices As New List(Of EVEMarketDataPriceAverage)
-        Dim SQLTypeIDList As String = ""
-
-        ' Clean up sent ID's and make sure we have a set of unique ids
-        For i = 0 To SentTypeIDs.Count - 1
-            If Not UniqueSentIDs.Contains(SentTypeIDs(i)) Then
-                UniqueSentIDs.Add(SentTypeIDs(i))
-            End If
-        Next
-
-        ' Check the list of Type ID's and see if we ran an update for the ID and days entered in the past day
-        For i = 0 To UniqueSentIDs.Count - 1
-            SQL = "SELECT 'X' FROM EMD_UPDATE_HISTORY WHERE TYPE_ID =" & CStr(UniqueSentIDs(i)) & " AND REGION_ID = " & CStr(UpdateRegionID)
-            SQL = SQL & " AND DateTime(UPDATE_LAST_RAN) >= DateTime('" & Format(DateAdd(DateInterval.Day, -1, CurrentDateTime), SQLiteDateFormat) & "')"
-            SQL = SQL & " AND DAYS = " & UpdateDays
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerAvgPrices = DBCommand.ExecuteReader
-
-            If Not readerAvgPrices.Read Then
-                ' Then the record needs to be updated, so insert it to the list
-                UpdateIDList.Add(UniqueSentIDs(i))
-            End If
-        Next
-
-        ' Convert list to array of longs
-        If UpdateIDList.Count = 0 Then
-            ' No updates required
-            Exit Sub
-        End If
-
-        ' TypeID list for the records
-        For i = 0 To UpdateIDList.Count - 1
-            SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
-        Next
-
-        ' Now that we have a list of ids, get them updated - note return data might not include all typeids
-        UpdatedAvgPrices = API.GetPriceAverages(UpdateIDList, UpdateRegionID, UpdateDays)
-
-        ' If this errored, then don't update and notify user it's not working
-        If API.GetErrorCode <> 0 Then
-            If Not ShownPriceUpdateError Then
-                MsgBox("Unable to update all Price volume data at this time.", vbInformation, Application.ProductName)
-                ShownPriceUpdateError = True
-            End If
-        End If
-
-        ' Get a unique list of typeID's that were updated to check later
-        ' Clean up sent ID's and make sure we have a set of unique ids
-        For i = 0 To UpdatedAvgPrices.Count - 1
-            If Not UniqueUpdatedPrices.Contains(UpdatedAvgPrices(i).typeID) Then
-                UniqueUpdatedPrices.Add(UpdatedAvgPrices(i).typeID)
-            End If
-        Next
-
-        ' Even if we errored, update any of the data we did get
-        If UpdatedAvgPrices.Count <> 0 Then
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' First delete any records older than 90 days for these typeIDs
-            SQLTypeIDList = " (" & SQLTypeIDList.Substring(0, Len(SQLTypeIDList) - 1) & ") "
-            SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID IN " & SQLTypeIDList
-            SQL = SQL & "AND REGION_ID = " & CStr(UpdateRegionID)
-            SQL = SQL & " AND DATETIME(PRICE_HISTORY_DATE) <= DateTime('" & Format(DateAdd(DateInterval.Day, -90, CurrentDateTime), SQLiteDateFormat) & "')"
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Insert these records to the database 
-            For i = 0 To UpdatedAvgPrices.Count - 1
-
-                ' Delete the record and insert a fresh one if in there
-                SQL = "DELETE FROM EMD_ITEM_PRICE_HISTORY WHERE TYPE_ID = " & CStr(UpdatedAvgPrices(i).typeID)
-                SQL = SQL & " AND REGION_ID = " & CStr(UpdatedAvgPrices(i).regionID)
-                SQL = SQL & " AND PRICE_HISTORY_DATE = '" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "'"
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Insert new record - this will make sure any null added records that get updated are current
-                SQL = "INSERT INTO EMD_ITEM_PRICE_HISTORY VALUES ("
-                SQL = SQL & CStr(UpdatedAvgPrices(i).typeID) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).regionID) & ","
-                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).pricedate, SQLiteDateFormat) & "',"
-                SQL = SQL & CStr(UpdatedAvgPrices(i).lowPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).highPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).avgPrice) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).orders) & ","
-                SQL = SQL & CStr(UpdatedAvgPrices(i).volume) & ")"
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Next
-
-            ' We just did a set of updates, so update the update history for the unique typeIDs
-            For i = 0 To UniqueUpdatedPrices.Count - 1
-                ' Delete any records there
-                SQL = "DELETE FROM EMD_UPDATE_HISTORY WHERE TYPE_ID = " & CStr(UniqueUpdatedPrices(i))
-                SQL = SQL & " AND REGION_ID = " & CStr(UpdateRegionID)
-                SQL = SQL & " AND DAYS = " & UpdateDays
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Insert the new record
-                SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(UniqueUpdatedPrices(i)) & ","
-                SQL = SQL & UpdateDays & ","
-                SQL = SQL & CStr(UpdateRegionID) & ","
-                SQL = SQL & "'" & Format(UpdatedAvgPrices(i).UpdateRan, SQLiteDateFormat) & "')"
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Next
-
-            Call EVEDB.CommitSQLiteTransaction()
-
-        End If
-
-        ' If there are any ID's that we sent and got nothing back from, 
-        ' then insert update the update history table and try again tomorrow
-        If UniqueUpdatedPrices.Count <> UpdateIDList.Count Then
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' Save the missed ID's here
-            j = 0
-            SQLTypeIDList = ""
-
-            ' Build the Type ID list
-            For i = 0 To UpdateIDList.Count - 1
-                TypeIDToFind = UpdateIDList(i)
-                If Not UpdatedAvgPrices.Exists(AddressOf FindItem) Then
-                    SQLTypeIDList = SQLTypeIDList & CStr(UpdateIDList(i)) & ","
-                    CleanupIDs.Add(UpdateIDList(i))
-                    j += 1
-                End If
-            Next
-
-            ' If we have items in the list, process them
-            If SQLTypeIDList <> "" Then
-
-                ' Process the missed records one by one
-                For i = 0 To CleanupIDs.Count - 1
-                    ' If the record is not there, then insert
-                    SQL = "SELECT * FROM EMD_UPDATE_HISTORY WHERE TYPE_ID = " & CStr(CleanupIDs(i))
-                    SQL = SQL & " AND REGION_ID = " & CStr(UpdateRegionID)
-                    SQL = SQL & " AND DAYS = " & CStr(UpdateDays)
-
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    readerAvgPrices = DBCommand.ExecuteReader
-
-                    If Not readerAvgPrices.HasRows Then
-                        ' Insert the record showing we ran an update for this ID
-                        SQL = "INSERT INTO EMD_UPDATE_HISTORY VALUES (" & CStr(CleanupIDs(i)) & ","
-                        SQL = SQL & CStr(UpdateDays) & ","
-                        SQL = SQL & CStr(UpdateRegionID) & ","
-                        SQL = SQL & "'" & Format(CurrentDateTime, SQLiteDateFormat) & "')"
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    End If
-                Next
-            End If
-
-            Call EVEDB.CommitSQLiteTransaction()
-
-        End If
-
-    End Sub
-
-    ' Updates all the price history from CREST
-    Public Function UpdateCRESTPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long) As Boolean
+    ' Updates all the price history from ESI
+    Public Function UpdateESIPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long) As Boolean
         Dim Pairs As New List(Of ItemRegionPairs)
         Dim ReturnValue As Boolean = True
 
@@ -217,16 +46,16 @@ Public Class MarketPriceInterface
 
         Try
             If Pairs.Count > 0 Then
-                Dim CREST As New EVECREST
+                Dim ESIData As New ESI
                 Dim NumberofThreads As Integer = 0
                 ' How many records per thread do we need?
-                Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / CREST.GetMaximumConnections))
+                Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / ESIData.GetMaximumConnections))
                 If Splits = 1 Then
                     ' If the return is 1, then we have less than the max connections
                     ' so just set up enough pairs for 1 run each
                     NumberofThreads = Pairs.Count
                 Else
-                    NumberofThreads = CREST.GetMaximumConnections
+                    NumberofThreads = ESIData.GetMaximumConnections
                 End If
 
                 ' For processing
@@ -300,7 +129,7 @@ Public Class MarketPriceInterface
 
     End Function
 
-    ' For use with threading to speed up the CREST calls
+    ' For use with threading to speed up the ESI calls
     Private Sub UpdateMarketHistory(ByVal PairsList As Object)
         Dim BatchStart As DateTime = Now
         Dim BatchCounter As Integer = 0
@@ -308,8 +137,9 @@ Public Class MarketPriceInterface
         Dim TotalTimes As New List(Of Double)
         Dim DownloadTime As New List(Of Double)
         Dim ProcessingTime As New List(Of Double)
-        Dim CRESTHistory As New EVECREST
-        Dim MaxRequestsperSecond As Integer = CRESTHistory.GetRatePerSecond
+        Dim ESIHistory As New ESI
+        Dim ESIData As New ESI
+        Dim MaxRequestsperSecond As Integer = ESIHistory.GetRatePerSecond
 
         Dim Pairs As List(Of ItemRegionPairs) = CType(PairsList, List(Of ItemRegionPairs))
 
@@ -317,13 +147,13 @@ Public Class MarketPriceInterface
             For i = 0 To Pairs.Count - 1
 
                 ' Update the prices then check limiting if needed - Note, the internets suggests opening new threads with new db connections but I can't do transactions in each thread, which slows it down and this seems to work fine.
-                PricesUpdated = CRESTHistory.UpdateMarketHistory(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, True)
+                PricesUpdated = ESIData.UpdateMarketHistory(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, True)
 
                 ' Only do limiting if we actually update something 
                 If PricesUpdated Then
                     BatchCounter += 1
 
-                    If CRESTHistory.LimitCRESTCalls(BatchStart, Pairs.Count, BatchCounter) Then
+                    If ESIHistory.LimitESICalls(BatchStart, Pairs.Count, BatchCounter) Then
                         ' Reset
                         BatchCounter = 0
                         BatchStart = Now
@@ -339,7 +169,7 @@ Public Class MarketPriceInterface
 
     End Sub
 
-    ' Uses CREST to update market prices
+    ' Uses ESI to update market prices
     Public Function UpdateMarketOrders(ByVal CacheItems As List(Of TypeIDRegion)) As Boolean
         Dim ReturnValue As Boolean = True
         Dim Pairs As New List(Of ItemRegionPairs)
@@ -356,16 +186,16 @@ Public Class MarketPriceInterface
         Next
 
         If Pairs.Count > 0 Then
-            Dim CREST As New EVECREST
+            Dim ESIData As New ESI
             Dim NumberofThreads As Integer = 0
             ' How many records per thread do we need?
-            Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / CREST.GetMaximumConnections))
+            Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / ESIData.GetMaximumConnections))
             If Splits = 1 Then
                 ' If the return is 1, then we have less than the max connections
                 ' so just set up enough pairs for 1 run each
                 NumberofThreads = Pairs.Count
             Else
-                NumberofThreads = CREST.GetMaximumConnections
+                NumberofThreads = ESIData.GetMaximumConnections
             End If
 
             ' For processing
@@ -470,7 +300,7 @@ Public Class MarketPriceInterface
 
     End Function
 
-    ' For use with threading to speed up the CREST calls for market orders
+    ' For use with threading to speed up the ESI calls for market orders
     Private Sub UpdateMarketOrders(PairsList As Object)
         Dim BatchStart As DateTime = Now
         Dim BatchCounter As Integer = 0
@@ -478,8 +308,8 @@ Public Class MarketPriceInterface
         Dim TotalTimes As New List(Of Double)
         Dim DownloadTime As New List(Of Double)
         Dim ProcessingTime As New List(Of Double)
-        Dim CREST As New EVECREST(True)
-        Dim MaxRequestsperSecond As Integer = CREST.GetRatePerSecond
+        Dim ESIData As New ESI
+        Dim MaxRequestsperSecond As Integer = ESIData.GetRatePerSecond
 
         Dim Pairs As List(Of ItemRegionPairs) = CType(PairsList, List(Of ItemRegionPairs))
 
@@ -487,13 +317,13 @@ Public Class MarketPriceInterface
             For i = 0 To Pairs.Count - 1
 
                 ' Update the prices then check limiting if needed - ignore cache lookup, the list we get will be updateable
-                PricesUpdated = CREST.UpdateMarketOrders(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
+                PricesUpdated = ESIData.UpdateMarketOrders(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
 
                 ' Only do limiting if we actually update something 
                 If PricesUpdated Then
                     BatchCounter += 1
 
-                    If CREST.LimitCRESTCalls(BatchStart, Pairs.Count, BatchCounter) Then
+                    If ESIData.LimitESICalls(BatchStart, Pairs.Count, BatchCounter) Then
                         ' Reset
                         BatchCounter = 0
                         BatchStart = Now
@@ -554,7 +384,7 @@ Public Class MarketPriceInterface
     End Function
 
     ' Updates the class referenced toolbar 
-    Private Sub IncrementToolStripProgressBar(inValue As integer)
+    Private Sub IncrementToolStripProgressBar(inValue As Integer)
 
         If IsNothing(RefProgressBar) Then
             Exit Sub
@@ -570,14 +400,5 @@ Public Class MarketPriceInterface
         End If
 
     End Sub
-
-    ' Predicate for finding an item in a list EVE Market Data of items
-    Private Function FindItem(ByVal Item As EVEMarketDataPriceAverage) As Boolean
-        If Item.typeID = TypeIDToFind Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
 
 End Class

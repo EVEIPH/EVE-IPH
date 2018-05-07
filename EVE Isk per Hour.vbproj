@@ -124,17 +124,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MoreLinq.Portable, Version=1.4.18916.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <HintPath>packages\MoreLinq.Portable.1.4.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\MoreLinq.Portable.dll</HintPath>
+      <HintPath>..\Installer Files\MoreLinq.Portable.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\Installer Files\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite, Version=1.0.79.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Dependencies\System.Data.SQLite.dll</HintPath>
+      <HintPath>..\Installer Files\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -158,21 +158,15 @@
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Blueprint.vb" />
+    <Compile Include="CacheBox.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="EngineeringCitadel.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
-    <Compile Include="EVEEffects.vb" />
     <Compile Include="frmBonusPopout.Designer.vb">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
     </Compile>
     <Compile Include="frmBonusPopout.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmLoadCharacterESI.Designer.vb">
-      <DependentUpon>frmLoadCharacterESI.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmLoadCharacterESI.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmLoadESIAuthorization.Designer.vb">
@@ -259,9 +253,7 @@
     <Compile Include="frmSelectManufacturingTabColumns.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CorporationFacilities.vb" />
     <Compile Include="EVEBlueprints.vb" />
-    <Compile Include="EVECREST.vb" />
     <Compile Include="frmMLPLCalc.Designer.vb">
       <DependentUpon>frmMLPLCalc.vb</DependentUpon>
     </Compile>
@@ -291,9 +283,7 @@
     <Compile Include="ControlArrayUtils.vb" />
     <Compile Include="Corporation.vb" />
     <Compile Include="DecryptorList.vb" />
-    <Compile Include="EVEAPI.vb" />
     <Compile Include="EVECentralAPI.vb" />
-    <Compile Include="EVEMarketDataAPI.vb" />
     <Compile Include="frmAbout.Designer.vb">
       <DependentUpon>frmAbout.vb</DependentUpon>
     </Compile>
@@ -352,12 +342,6 @@
       <DependentUpon>frmInventionMonitor.vb</DependentUpon>
     </Compile>
     <Compile Include="frmInventionMonitor.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmLoadCharacterAPI.Designer.vb">
-      <DependentUpon>frmLoadCharacterAPI.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmLoadCharacterAPI.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMain.Designer.vb">
@@ -457,11 +441,11 @@
       <SubType>Component</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
-    <Compile Include="NPCStandings.vb" />
+    <Compile Include="EVENPCStandings.vb" />
     <Compile Include="ProgramSettings.vb" />
     <Compile Include="ProgramUpdater.vb" />
     <Compile Include="RefiningReprocessing.vb" />
-    <Compile Include="ResearchAgents.vb" />
+    <Compile Include="EVEResearchAgents.vb" />
     <Compile Include="ShoppingList.vb" />
     <Compile Include="SplashScreen.Designer.vb">
       <DependentUpon>SplashScreen.vb</DependentUpon>
@@ -469,10 +453,10 @@
     <Compile Include="SplashScreen.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmCRESTStatus.Designer.vb">
-      <DependentUpon>frmCRESTStatus.vb</DependentUpon>
+    <Compile Include="frmStatus.Designer.vb">
+      <DependentUpon>frmStatus.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmCRESTStatus.vb">
+    <Compile Include="frmStatus.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="StationLocation.vb" />
@@ -492,9 +476,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmBonusPopout.resx">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmLoadCharacterESI.resx">
-      <DependentUpon>frmLoadCharacterESI.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmLoadESIAuthorization.resx">
       <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
@@ -581,10 +562,6 @@
       <DependentUpon>frmInventionMonitor.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmLoadCharacterAPI.resx">
-      <DependentUpon>frmLoadCharacterAPI.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.vb</DependentUpon>
       <SubType>Designer</SubType>
@@ -640,8 +617,8 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmCRESTStatus.resx">
-      <DependentUpon>frmCRESTStatus.vb</DependentUpon>
+    <EmbeddedResource Include="frmStatus.resx">
+      <DependentUpon>frmStatus.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TimePicker.resx">

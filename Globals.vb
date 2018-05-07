@@ -7,8 +7,8 @@ Imports System.IO
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "YC 119.3"
-    Public Const VersionNumber As String = "3.3.*"
+    Public Const SDEVersion As String = "March2018Release_1.0"
+    Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -22,6 +22,11 @@ Public Module Public_Variables
 
     Public SelectedCharacter As New Character
     Public SelectedBlueprint As Blueprint
+
+    Public DummyAccountLoaded As Boolean
+    Public Const DefaultDummyCharacterCode As Integer = -2 ' To save the dummy character, use a unqiue code for IS_DEFAULT value
+    Public Const DefaultCharacterCode As Integer = -1 ' For everyone else
+    Public Const DummyCharacterID As Long = 0
 
     ' Variable to hold error tracking data when the error is hard to find - used for debugging only but mostly this is set to empty string
     Public ErrorTracker As String
@@ -48,7 +53,7 @@ Public Module Public_Variables
     Public Const BPImageFilePath As String = "EVEIPH Images\"
     Public Const UpdatePath As String = "Updates\"
 
-    Public Const SQLiteDBFileName As String = "EVEIPH DB.s3db"
+    Public Const SQLiteDBFileName As String = "EVEIPH DB.sqlite"
 
     ' For updates
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
@@ -222,8 +227,6 @@ Public Module Public_Variables
     Public NoFacility As New IndustryFacility
 
     Public Const None As String = "None" ' For decryptors and facilities
-
-    Public APIAdded As Boolean ' To flag if a new api was added, then we can use to reload apis if needed in other areas (eg industry jobs)
 
     Public MiningUpgradesCollection As New List(Of String)
 
@@ -632,24 +635,35 @@ Public Module Public_Variables
 
 #End Region
 
-#Region "API Stuff"
-
+#Region "Character Loading"
     ' Loads the character for the program
     Public Sub LoadCharacter(RefreshAssets As Boolean, RefreshBPs As Boolean)
+        Dim ApplicationRegistered As Boolean
 
         ' Try to load the character
-        If Not SelectedCharacter.LoadDefaultCharacter(False, RefreshAssets, RefreshBPs) Then
+        If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
+
+            ' See if the application is registered
+            Dim ESITest As New ESI
+            If ESITest.AppRegistered Then
+                ApplicationRegistered = True
+            Else
+                ApplicationRegistered = False
+            End If
 
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
             ' Check for chars (corp chars do not count)
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM API WHERE API_TYPE IN ('Account','Character') AND CHARACTER_ID <> 0", EVEDB.DBREf)
+            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
 
-            If CInt(CMDCount.ExecuteScalar()) = 0 Then
-                ' No Characters selected, open the add char form
-                Dim f1 = New frmLoadCharacterAPI
-                f1.ShowDialog()
-                If SelectedCharacter.Name <> None Then
-                    ' Need to set a default, open that form
+            If CInt(CMDCount.ExecuteScalar()) = 0 Or Not ApplicationRegistered Then
+                If Not ApplicationRegistered Then
+                    ' No Characters selected and not registered, open ESI authorization form for new access, where they select a default char, or dummy
+                    Dim f1 As New frmLoadESIAuthorization
+                    f1.ShowDialog()
+                End If
+
+                ' If they didn't skip this and load dummy, then let them select a character default
+                If Not DummyAccountLoaded Then
                     Dim f2 = New frmSetCharacterDefault
                     f2.ShowDialog()
                 End If
@@ -659,132 +673,26 @@ Public Module Public_Variables
                 f2.ShowDialog()
             End If
 
-            ' Now load the default character if they didn't X out. Don't refresh data, we just loaded it
-            If DefaultCharSelected Then
-                Call SelectedCharacter.LoadDefaultCharacter(False, RefreshAssets, RefreshBPs)
-            End If
-
         End If
 
     End Sub
 
-    ' Saves the sent data to the DB for later queries
-    Public Sub SaveAccountAPIData(ByVal InsertData As Character, ByVal KeyType As String)
-        Dim readerCharacter As SQLiteDataReader
-        Dim SQL As String
+    ' Loads a default character from name sent
+    Public Sub LoadSelectedCharacter(CharacterName As String, Optional PlaySound As Boolean = True)
 
-        ' Character Data
-        With InsertData
-            ' Find out of the data exists, and insert if not
-            If KeyType <> CorporationAPITypeName Then
-                SQL = "SELECT * FROM API WHERE CHARACTER_ID = " & InsertData.ID
-                SQL = SQL & " AND API_TYPE NOT IN ('Old Key', 'Corporation')"
-            Else ' Corp Key
-                SQL = "SELECT * FROM API WHERE CORPORATION_ID = " & InsertData.CharacterCorporation.CorporationID
-                SQL = SQL & " AND API_TYPE = 'Corporation'"
-            End If
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+        ' Update them all to 0 first
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0")
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "'")
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerCharacter = DBCommand.ExecuteReader
-
-            If Not readerCharacter.Read Then
-                ' Insert character data
-                SQL = "INSERT INTO API (KEY_ID, API_KEY, CHARACTER_ID, CHARACTER_NAME, CORPORATION_ID, "
-                SQL = SQL & "CORPORATION_NAME, CACHED_UNTIL, IS_DEFAULT, OVERRIDE_SKILLS, ACCESS_MASK, KEY_EXPIRATION_DATE, API_TYPE) "
-                SQL = SQL & "VALUES (" & .KeyID & ",'" & .APIKey & "'," & .ID & ",'" & FormatDBString(.Name) & "',"
-                SQL = SQL & .CharacterCorporation.CorporationID & ",'" & FormatDBString(.CharacterCorporation.CorporationName)
-                SQL = SQL & "','" & Format(.CachedUntil, SQLiteDateFormat) & "'," & CInt(InsertData.IsDefault) & ",0,"
-                SQL = SQL & .AccessMask & ",'" & Format(.APIExpiration, SQLiteDateFormat) & "','" & KeyType & "')"
-
-                ' Inserting a new char won't have skills overrideen
-                ' Since we have the data, save the override skill flag
-                UserApplicationSettings.AllowSkillOverride = False
-
-            Else
-                ' Update character data
-                SQL = "UPDATE API SET "
-                SQL = SQL & "KEY_ID = " & .KeyID & ", API_KEY = '" & .APIKey & "', "
-                SQL = SQL & "CHARACTER_NAME = '" & FormatDBString(.Name) & "', CORPORATION_ID = " & .CharacterCorporation.CorporationID & ", "
-                SQL = SQL & "CORPORATION_NAME = '" & FormatDBString(.CharacterCorporation.CorporationName) & "', IS_DEFAULT = " & CInt(InsertData.IsDefault) & ", "
-                SQL = SQL & "CACHED_UNTIL = '" & Format(.CachedUntil, SQLiteDateFormat) & "', " ' Cached assets set when they are accessed
-                SQL = SQL & "ACCESS_MASK = " & .AccessMask & ", KEY_EXPIRATION_DATE = '" & Format(.APIExpiration, SQLiteDateFormat) & "', "
-                SQL = SQL & "API_TYPE = '" & KeyType & "' "
-                If KeyType <> CorporationAPITypeName Then
-                    ' Update character
-                    SQL = SQL & "WHERE CHARACTER_ID = " & InsertData.ID & " "
-                    SQL = SQL & "AND API_TYPE NOT IN ('Old Key', 'Corporation')"
-                Else ' Corp Key
-                    SQL = SQL & "WHERE CORPORATION_ID = " & InsertData.CharacterCorporation.CorporationID & " "
-                    SQL = SQL & "AND API_TYPE = 'Corporation'"
-                End If
-
-                ' Since we have the data, save the override skill flag
-                UserApplicationSettings.AllowSkillOverride = CBool(If(readerCharacter.IsDBNull(9), 0, readerCharacter.GetInt32(9)))
-
-            End If
-
-        End With
-
-        Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-        ' Update the Access mask of all keys to prevent duplicates
-        SQL = "UPDATE API SET ACCESS_MASK = " & InsertData.AccessMask & " WHERE KEY_ID = " & InsertData.KeyID
-        Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-        readerCharacter.Close()
-        readerCharacter = Nothing
-        DBCommand = Nothing
-
-    End Sub
-
-    ' Updates the key in the DB with data sent
-    Public Function UpdateAccountAPIData(ByVal KeyID As Long, ByVal AccountAPIKey As String, ByVal APIType As String, Optional ByVal ID As Long = 0, Optional IsDefault As Boolean = False) As Boolean
-        Dim TempCharacter() As Character ' char or corp
-        Dim API As New EVEAPI
-        Dim TempErrorText As String = ""
-        Dim TempKeyType As String = ""
-
-        ' Get the data for this character
-        TempCharacter = API.GetAccountCharacters(KeyID, AccountAPIKey, TempKeyType, ID)
-        TempErrorText = API.GetErrorText
-
-        If TempKeyType = "" Then
-            TempKeyType = APIType
+        ' Load the character as default for program and reload additional API data
+        Call SelectedCharacter.LoadDefaultCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
+        If PlaySound Then
+            Call PlayNotifySound()
         End If
+        Application.UseWaitCursor = False
 
-        ' Errorcheck api
-        If NoAPIError(TempErrorText, TempKeyType) Then
-            If IsDefault Then
-                TempCharacter(0).IsDefault = True
-            Else
-                TempCharacter(0).IsDefault = False
-            End If
-
-            ' Save the new data for the character
-            Call SaveAccountAPIData(TempCharacter(0), TempKeyType)
-            Return True
-        Else
-            ' If it's an expired key, update the data in the API including a cache date that is set by CCP (I think is to not allow expired keys to keep banging the api)
-            Call UpdateIfExpiredKeyData(API.GetAPIErrorData, KeyID, AccountAPIKey)
-            Return False
-        End If
-
-    End Function
-
-    ' Updates the DB with a cachedate and key expiration if the key is expired
-    Public Sub UpdateIfExpiredKeyData(APIError As EVEAPI.ErrorData, KeyID As Long, APIKey As String)
-        If APIError.ErrorText = "Key has expired. Contact key owner for access renewal." Then
-            Dim SQL As String
-
-            SQL = "UPDATE API SET KEY_EXPIRATION_DATE = '" & ExpiredKey & "' "
-            If APIError.CacheDate <> NoDate Then
-                SQL = SQL & ", CACHED_UNTIL = '" & Format(APIError.CacheDate, SQLiteDateFormat) & "' "
-            End If
-            SQL = SQL & "WHERE KEY_ID = " & CStr(KeyID) & " AND API_KEY = '" & APIKey & "' "
-
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-        End If
     End Sub
 
 #End Region
@@ -1614,16 +1522,16 @@ InvalidDate:
     End Sub
 
     ' Function to get the regionID from the name sent
-    Public Function GetRegionID(ByVal RegionName As String) As Long
+    Public Function GetRegionID(ByVal RegionName As String) As Integer
         Dim readerRegion As SQLiteDataReader
-        Dim ReturnID As Long
+        Dim ReturnID As Integer
 
         ' Get the region ID
         DBCommand = New SQLiteCommand("SELECT regionID FROM REGIONS WHERE regionName ='" & FormatDBString(RegionName) & "'", EVEDB.DBREf)
         readerRegion = DBCommand.ExecuteReader
 
         If readerRegion.Read Then
-            ReturnID = readerRegion.GetInt64(0)
+            ReturnID = readerRegion.GetInt32(0)
         Else
             ReturnID = 0
         End If
@@ -1635,16 +1543,60 @@ InvalidDate:
 
     End Function
 
-    Public Function GetSolarSystemID(ByVal SystemName As String) As Long
+    ' Function to get the regionID from systemid sent
+    Public Function GetRegionID(ByVal solarSystemID As Integer) As Integer
+        Dim readerRegion As SQLiteDataReader
+        Dim ReturnID As Integer
+
+        ' Get the region ID
+        DBCommand = New SQLiteCommand("SELECT regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(solarSystemID), EVEDB.DBREf)
+        readerRegion = DBCommand.ExecuteReader
+
+        If readerRegion.Read Then
+            ReturnID = readerRegion.GetInt32(0)
+        Else
+            ReturnID = 0
+        End If
+
+        readerRegion.Close()
+        DBCommand = Nothing
+
+        Return ReturnID
+
+    End Function
+
+    ' Function to get the regionID from the name sent
+    Public Function GetRegionName(ByVal RegionID As Integer) As String
+        Dim readerRegion As SQLiteDataReader
+        Dim ReturnName As String
+
+        ' Get the region ID
+        DBCommand = New SQLiteCommand("SELECT regionName FROM REGIONS WHERE regionID = " & CStr(RegionID), EVEDB.DBREf)
+        readerRegion = DBCommand.ExecuteReader
+
+        If readerRegion.Read Then
+            ReturnName = readerRegion.GetString(0)
+        Else
+            ReturnName = ""
+        End If
+
+        readerRegion.Close()
+        DBCommand = Nothing
+
+        Return ReturnName
+
+    End Function
+
+    Public Function GetSolarSystemID(ByVal SystemName As String) As Integer
         ' Look up Solar System ID
         Dim rsSystem As SQLiteDataReader
-        Dim SSID As Long
+        Dim SSID As Integer
 
         DBCommand = New SQLiteCommand("SELECT solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & SystemName & "'", EVEDB.DBREf)
         rsSystem = DBCommand.ExecuteReader
 
         If rsSystem.Read() Then
-            SSID = rsSystem.GetInt64(0)
+            SSID = rsSystem.GetInt32(0)
         Else
             SSID = 0
         End If
@@ -1653,6 +1605,27 @@ InvalidDate:
         DBCommand = Nothing
 
         Return SSID
+
+    End Function
+
+    Public Function GetSolarSystemName(ByVal SystemID As Integer) As String
+        ' Look up Solar System Name
+        Dim rsSystem As SQLiteDataReader
+        Dim SSName As String
+
+        DBCommand = New SQLiteCommand("SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(SystemID), EVEDB.DBREf)
+        rsSystem = DBCommand.ExecuteReader
+
+        If rsSystem.Read() Then
+            SSName = rsSystem.GetString(0)
+        Else
+            SSName = ""
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Return SSName
 
     End Function
 
@@ -1674,6 +1647,69 @@ InvalidDate:
         DBCommand = Nothing
 
         Return security
+
+    End Function
+
+    Public Function GetSolarSystemSecurityLevel(ByVal SystemID As Integer) As Double
+        ' Look up Solar System ID
+        Dim rsSystem As SQLiteDataReader
+        Dim security As Double
+
+        DBCommand = New SQLiteCommand("SELECT SECURITY FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(SystemID), EVEDB.DBREf)
+        rsSystem = DBCommand.ExecuteReader
+
+        If rsSystem.Read() Then
+            security = rsSystem.GetDouble(0)
+        Else
+            security = Nothing
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Return security
+
+    End Function
+
+    Public Function GetActivityID(ByVal ActivityName As String) As Integer
+        ' Look up the Activity ID for the ID sent
+        Dim rsSystem As SQLiteDataReader
+        Dim AID As Integer
+
+        DBCommand = New SQLiteCommand("SELECT activityID FROM RAM_ACTIVITIES WHERE UPPER(activityName) = '" & UCase(ActivityName) & "'", EVEDB.DBREf)
+        rsSystem = DBCommand.ExecuteReader
+
+        If rsSystem.Read() Then
+            AID = rsSystem.GetInt32(0)
+        Else
+            AID = 0
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Return AID
+
+    End Function
+
+    Public Function GetActivityName(ByVal ActivityID As Integer) As String
+        ' Look up the Activity Name for the ID sent
+        Dim rsSystem As SQLiteDataReader
+        Dim AName As String
+
+        DBCommand = New SQLiteCommand("SELECT activityName FROM RAM_ACTIVITIES WHERE activityID = " & CStr(ActivityID), EVEDB.DBREf)
+        rsSystem = DBCommand.ExecuteReader
+
+        If rsSystem.Read() Then
+            AName = rsSystem.GetString(0)
+        Else
+            AName = ""
+        End If
+
+        rsSystem.Close()
+        DBCommand = Nothing
+
+        Return AName
 
     End Function
 
@@ -1774,19 +1810,6 @@ InvalidDate:
         End If
 
         Return True
-
-    End Function
-
-    ' Returns a bit string for the number sent
-    Public Function GetBits(ByVal inNumber As Long) As String
-        Dim BS As String = ""
-
-        While inNumber > 0
-            BS = inNumber Mod 2 & BS
-            inNumber = inNumber \ 2
-        End While
-
-        Return BS
 
     End Function
 

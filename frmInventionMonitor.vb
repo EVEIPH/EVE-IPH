@@ -46,21 +46,21 @@ Public Class frmInventionMonitor
         Call ClearForm()
 
         ' See if they can load the jobs at all
-        If Not SelectedCharacter.JobsAccess Then
-            fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." & _
-                Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
-            fAccessError.Text = "API: No Industry Jobs Loaded"
+        'If Not SelectedCharacter.JobsAccess Then
+        '    fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." & _
+        '        Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
+        '    fAccessError.Text = "API: No Industry Jobs Loaded"
 
-            fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
-            fAccessError.ShowDialog()
+        '    fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
+        '    fAccessError.ShowDialog()
 
-            gbInventionMonitor.Enabled = False
-            lstInventionItems.Enabled = False
-        Else
-            gbInventionMonitor.Enabled = True
-            lstInventionItems.Enabled = True
-            Call ResetForm()
-        End If
+        '    gbInventionMonitor.Enabled = False
+        '    lstInventionItems.Enabled = False
+        'Else
+        '    gbInventionMonitor.Enabled = True
+        '    lstInventionItems.Enabled = True
+        '    Call ResetForm()
+        'End If
 
     End Sub
 
@@ -243,15 +243,15 @@ Public Class frmInventionMonitor
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        ' Update jobs from API
-        If rbtnPersonalJobs.Checked Or rbtnBothJobs.Checked Then
-            ' Load the personal jobs
-            Call SelectedCharacter.GetIndustryJobs.LoadIndustryJobs(ScanType.Personal, True)
-        End If
+        '' Update jobs from API
+        'If rbtnPersonalJobs.Checked Or rbtnBothJobs.Checked Then
+        '    ' Load the personal jobs
+        '    Call SelectedCharacter.GetIndustryJobs.LoadIndustryJobs(ScanType.Personal, True)
+        'End If
 
-        If rbtnBothJobs.Checked Or rbtnCorpJobs.Checked Then
-            Call SelectedCharacter.CharacterCorporation.GetIndustryJobs.LoadIndustryJobs(ScanType.Corporation, True)
-        End If
+        'If rbtnBothJobs.Checked Or rbtnCorpJobs.Checked Then
+        '    Call SelectedCharacter.CharacterCorporation.GetIndustryJobs.LoadIndustryJobs(ScanType.Corporation, True)
+        'End If
 
         Application.UseWaitCursor = False
         Application.DoEvents()

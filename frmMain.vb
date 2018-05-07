@@ -291,7 +291,7 @@ Public Class frmMain
 
         Dim ErrorData As ErrObject = Nothing
         Dim UserAppDataPath As String = ""
-        Dim CREST As New EVECREST
+        Dim ESIData As New ESI
 
         ErrorTracker = ""
 
@@ -366,7 +366,7 @@ Public Class frmMain
             Timecheck = Now
             Call SetProgress("Updating Industry Facilities...")
             Application.DoEvents()
-            Call CREST.UpdateIndustryFacilties(Nothing, Nothing, True)
+            Call ESIData.UpdateIndustryFacilties(Nothing, Nothing, True)
             Timecheck = Now
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -380,7 +380,7 @@ Public Class frmMain
             Application.DoEvents()
             Timecheck = Now
             Call SetProgress("Updating Avg/Adj Market Prices...")
-            Call CREST.UpdateAdjAvgMarketPrices()
+            Call ESIData.UpdateAdjAvgMarketPrices()
             Application.UseWaitCursor = False
             Application.DoEvents()
         End If
@@ -436,14 +436,14 @@ Public Class frmMain
         SelectedTower = AllSettings.LoadPOSSettings
 
         ' Load the character
-        Call SetProgress("Loading Character Data from API...")
+        Call SetProgress("Loading Character Data from ESI...")
         Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
 
         ' Only allow selecting a default if there are accounts to set it to
-        If NonDummyAccountsLoaded() Then
-            mnuSelectDefaultChar.Enabled = True
-        Else
+        If DummyAccountLoaded Then
             mnuSelectDefaultChar.Enabled = False
+        Else
+            mnuSelectDefaultChar.Enabled = True
         End If
 
         Call LoadCharacterNamesinMenu()
@@ -799,23 +799,6 @@ Public Class frmMain
 
     End Sub
 
-    Private Function NonDummyAccountsLoaded() As Boolean
-        Dim SQL As String
-        Dim numChars As Long
-
-        SQL = "SELECT COUNT(*) FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        numChars = CLng(DBCommand.ExecuteScalar())
-
-        If numChars = 0 Then
-            Return False
-        Else
-            Return True
-        End If
-
-    End Function
-
 #End Region
 
 #Region "Form Functions/Procedures"
@@ -948,7 +931,7 @@ Public Class frmMain
 
         Call TypeID.Add(SelectedBlueprint.GetItemID)
         PriceHistoryUpdateCount = 0
-        If Not MH.UpdateCRESTPriceHistory(TypeID, RegionID) Then
+        If Not MH.UpdateESIPriceHistory(TypeID, RegionID) Then
             Call MsgBox("Some prices did not update. Please try again.", vbInformation, Application.ProductName)
         End If
 
@@ -964,191 +947,13 @@ Public Class frmMain
 
 #End Region
 
-    ' Keypress, Keyup, and Lost focus functions for manual ME/TE/Tax boxes
-    Private Sub OutpostMETETaxText_KeyPress(e As System.Windows.Forms.KeyPressEventArgs)
-        ' only let them enter the right things
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-                Exit Sub
-            End If
-        End If
-    End Sub
-
-    Private Sub OutpostMETETaxText_KeyUp(ByVal UpdateType As String, ByRef ManualTextBox As TextBox, ByRef SelectedFacility As IndustryFacility,
-                                         ByRef FacilityTypeCombo As ComboBox, ByRef SaveButton As Button, ByRef DefaultLabel As Label)
-        Dim Temp As String
-        Dim TempValue As Decimal
-
-        ' Get rid of the percent sign if it exists
-        Temp = Replace(ManualTextBox.Text, "%", "")
-
-        If Not IsNumeric(Temp) Then
-            Temp = "0.0"
-            ManualTextBox.Text = "0.0%"
-        End If
-
-        TempValue = (100 - CDec(Temp)) / 100
-
-        ' If it's an outpost, then save the ME/TE/Tax for this in the current facility
-        'If FacilityTypeCombo.Text = OutpostFacility Then
-        '    If UpdateType = "ME" Then
-        '        SelectedFacility.MaterialMultiplier = TempValue
-        '    ElseIf UpdateType = "TE" Then
-        '        SelectedFacility.TimeMultiplier = TempValue
-        '    Else
-        '        SelectedFacility.TaxRate = CDbl(1 - TempValue) ' Tax rate is a straight multiplication, not multiplied with other bonuses
-        '    End If
-
-        'End If
-
-        ' They changed the value, so enable save
-        SaveButton.Enabled = True
-        ' changed so not the default
-        DefaultLabel.Visible = False
-
-    End Sub
-
-    Private Sub OutpostMETETaxText_LostFocus(ByRef ManualTextBox As TextBox, ByRef FacilityTypeCombo As ComboBox,
-                                             ByRef MaterialMultiplier As Double, ByVal BPTab As Boolean)
-        'If Trim(Replace(ManualTextBox.Text, "%", "")) = "" And FacilityTypeCombo.Text = OutpostFacility Then
-        '    ManualTextBox.Text = FormatPercent(MaterialMultiplier, 1)
-        'End If
-
-        'If Not ManualTextBox.Text.Contains("%") Then
-        '    ' Format with percent sign
-        '    ManualTextBox.Text = FormatPercent(CDbl(ManualTextBox.Text) / 100, 1)
-        'End If
-
-        If BPTab Then
-            Call RefreshBP(True)
-        End If
-    End Sub
-
-    ' Loads all the facilities
-    'Private Sub SetAllFacilities(LoadDefault As Boolean)
-
-    '    If Not LoadDefault Then
-    '        ' Need to set the settings for each based on the current selected facility then load it from that
-    '        Call SelectedBPManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPManufacturingFacility, LoadDefault)
-    '        Call SelectedBPCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalManufacturingFacility, LoadDefault)
-    '        Call SelectedBPSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSuperManufacturingFacility, LoadDefault)
-    '        Call SelectedBPT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3CruiserManufacturingFacility, LoadDefault)
-    '        Call SelectedBPT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPT3DestroyerManufacturingFacility, LoadDefault)
-    '        Call SelectedBPBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPBoosterManufacturingFacility, LoadDefault)
-    '        Call SelectedBPSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPSubsystemManufacturingFacility, LoadDefault)
-    '        Call SelectedBPComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPComponentManufacturingFacility, LoadDefault)
-    '        Call SelectedBPCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedBPCapitalComponentManufacturingFacility, LoadDefault)
-    '        Call SelectedBPCopyFacility.LoadFacilitySettingsfromFacility(SelectedBPCopyFacility, LoadDefault)
-    '        Call SelectedBPInventionFacility.LoadFacilitySettingsfromFacility(SelectedBPInventionFacility, LoadDefault)
-    '        Call SelectedBPT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedBPT3InventionFacility, LoadDefault)
-    '        Call SelectedBPNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedBPNoPOSFacility, LoadDefault)
-
-    '        ' Load these as special cases
-    '        Call SelectedBPPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSFuelBlockFacility, LoadDefault)
-    '        Call SelectedBPPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSLargeShipFacility, LoadDefault)
-    '        Call SelectedBPPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedBPPOSModuleFacility, LoadDefault)
-
-    '        ' Load up the Manufacturing Tab facilities
-    '        Call SelectedCalcBaseManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBaseManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcCapitalManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcSuperManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSuperManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcT3CruiserManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3CruiserManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3DestroyerManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcBoosterManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcBoosterManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcSubsystemManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcSubsystemManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcComponentManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacilitySettingsfromFacility(SelectedCalcCapitalComponentManufacturingFacility, LoadDefault)
-    '        Call SelectedCalcCopyFacility.LoadFacilitySettingsfromFacility(SelectedCalcCopyFacility, LoadDefault)
-    '        Call SelectedCalcInventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcInventionFacility, LoadDefault)
-    '        Call SelectedCalcT3InventionFacility.LoadFacilitySettingsfromFacility(SelectedCalcT3InventionFacility, LoadDefault)
-    '        Call SelectedCalcNoPOSFacility.LoadFacilitySettingsfromFacility(SelectedCalcNoPOSFacility, LoadDefault)
-    '        Call SelectedCalcPOSFuelBlockFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSFuelBlockFacility, LoadDefault)
-    '        Call SelectedCalcPOSLargeShipFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSLargeShipFacility, LoadDefault)
-    '        Call SelectedCalcPOSModuleFacility.LoadFacilitySettingsfromFacility(SelectedCalcPOSModuleFacility, LoadDefault)
-
-    '    Else
-    '        Call SelectedBPManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Manufacturing, BPTab), LoadDefault)
-    '        DefaultBPManufacturingFacility = CType(SelectedBPManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPCapitalManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.CapitalManufacturing, BPTab), LoadDefault)
-    '        DefaultBPCapitalManufacturingFacility = CType(SelectedBPCapitalManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPSuperManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.SuperManufacturing, BPTab), LoadDefault)
-    '        DefaultBPSuperManufacturingFacility = CType(SelectedBPSuperManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPT3CruiserManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3CruiserManufacturing, BPTab), LoadDefault)
-    '        DefaultBPT3CruiserManufacturingFacility = CType(SelectedBPT3CruiserManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPT3DestroyerManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3DestroyerManufacturing, BPTab), LoadDefault)
-    '        DefaultBPT3DestroyerManufacturingFacility = CType(SelectedBPT3DestroyerManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPBoosterManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.BoosterManufacturing, BPTab), LoadDefault)
-    '        DefaultBPBoosterManufacturingFacility = CType(SelectedBPBoosterManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPSubsystemManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.SubsystemManufacturing, BPTab), LoadDefault)
-    '        DefaultBPSubsystemManufacturingFacility = CType(SelectedBPSubsystemManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPComponentManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.ComponentManufacturing, BPTab), LoadDefault)
-    '        DefaultBPComponentManufacturingFacility = CType(SelectedBPComponentManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPCapitalComponentManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.CapitalComponentManufacturing, BPTab), LoadDefault)
-    '        DefaultBPCapitalComponentManufacturingFacility = CType(SelectedBPCapitalComponentManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedBPCopyFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Copying, BPTab), LoadDefault)
-    '        DefaultBPCopyFacility = CType(SelectedBPCopyFacility.Clone, IndustryFacility)
-    '        Call SelectedBPInventionFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Invention, BPTab), LoadDefault)
-    '        DefaultBPInventionFacility = CType(SelectedBPInventionFacility.Clone, IndustryFacility)
-    '        Call SelectedBPT3InventionFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3Invention, BPTab), LoadDefault)
-    '        DefaultBPT3InventionFacility = CType(SelectedBPT3InventionFacility.Clone, IndustryFacility)
-    '        Call SelectedBPNoPOSFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.NoPOSManufacturing, BPTab), LoadDefault)
-    '        DefaultBPNoPOSFacility = CType(SelectedBPNoPOSFacility.Clone, IndustryFacility)
-
-    '        ' Load these as special cases
-    '        Call SelectedBPPOSFuelBlockFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSFuelBlockManufacturing, BPTab), LoadDefault)
-    '        DefaultBPPOSFuelBlockFacility = CType(SelectedBPPOSFuelBlockFacility.Clone, IndustryFacility)
-    '        Call SelectedBPPOSLargeShipFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSLargeShipManufacturing, BPTab), LoadDefault)
-    '        DefaultBPPOSLargeShipFacility = CType(SelectedBPPOSLargeShipFacility.Clone, IndustryFacility)
-    '        Call SelectedBPPOSModuleFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSModuleManufacturing, BPTab), LoadDefault)
-    '        DefaultBPPOSModuleFacility = CType(SelectedBPPOSModuleFacility.Clone, IndustryFacility)
-
-    '        ' Load up the Manufacturing Tab facilities
-    '        Call SelectedCalcBaseManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Manufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcBaseManufacturingFacility = CType(SelectedCalcBaseManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcCapitalManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.CapitalManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcCapitalManufacturingFacility = CType(SelectedCalcCapitalManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcSuperManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.SuperManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcSuperManufacturingFacility = CType(SelectedCalcSuperManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcT3CruiserManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3CruiserManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcT3CruiserManufacturingFacility = CType(SelectedCalcT3CruiserManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcT3DestroyerManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3DestroyerManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcT3DestroyerManufacturingFacility = CType(SelectedCalcT3DestroyerManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcBoosterManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.BoosterManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcBoosterManufacturingFacility = CType(SelectedCalcBoosterManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcSubsystemManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.SubsystemManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcSubsystemManufacturingFacility = CType(SelectedCalcSubsystemManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcComponentManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.ComponentManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcComponentManufacturingFacility = CType(SelectedCalcComponentManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcCapitalComponentManufacturingFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.CapitalComponentManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcCapitalComponentManufacturingFacility = CType(SelectedCalcCapitalComponentManufacturingFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcCopyFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Copying, CalcTab), LoadDefault)
-    '        DefaultCalcCopyFacility = CType(SelectedCalcCopyFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcInventionFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.Invention, CalcTab), LoadDefault)
-    '        DefaultCalcInventionFacility = CType(SelectedCalcInventionFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcT3InventionFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.T3Invention, CalcTab), LoadDefault)
-    '        DefaultCalcT3InventionFacility = CType(SelectedCalcT3InventionFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcNoPOSFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.NoPOSManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcNoPOSFacility = CType(SelectedCalcNoPOSFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcPOSFuelBlockFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSFuelBlockManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcPOSFuelBlockFacility = CType(SelectedCalcPOSFuelBlockFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcPOSLargeShipFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSLargeShipManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcPOSLargeShipFacility = CType(SelectedCalcPOSLargeShipFacility.Clone, IndustryFacility)
-    '        Call SelectedCalcPOSModuleFacility.LoadFacility(AllSettings.LoadFacilitySettings(IndustryType.POSModuleManufacturing, CalcTab), LoadDefault)
-    '        DefaultCalcPOSModuleFacility = CType(SelectedCalcPOSModuleFacility.Clone, IndustryFacility)
-    '    End If
-
-    'End Sub
-
     Private Sub LoadCharacterNamesinMenu()
         ' Default character set, now set the menu name on the panel
         mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
         ' Also, load all characters we have
         Dim rsCharacters As SQLiteDataReader
-        Dim SQL As String = "SELECT API.CHARACTER_NAME, CASE WHEN GENDER IS NULL THEN 'Male' ELSE GENDER END AS GENDER "
-        SQL = SQL & "FROM API LEFT JOIN CHARACTER_SHEET on API.CHARACTER_ID = CHARACTER_SHEET.CHARACTER_ID  "
-        SQL = SQL & "WHERE API_TYPE <> 'Corporation' ORDER BY API.CHARACTER_NAME"
+        Dim SQL As String = "SELECT CHARACTER_NAME, CASE WHEN GENDER IS NULL THEN 'male' ELSE GENDER END AS GENDER "
+        SQL = SQL & "FROM ESI_CHARACTER_DATA ORDER BY CHARACTER_NAME"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCharacters = DBCommand.ExecuteReader
 
@@ -1395,21 +1200,7 @@ Public Class frmMain
         mnuCharacter.Text = "Character Loaded: " & tsCharacter20.Text
     End Sub
 
-    ' Loads a default character from name sent
-    Private Sub LoadSelectedCharacter(CharacterName As String)
 
-        Application.UseWaitCursor = True
-        Application.DoEvents()
-        ' Update them all to 0 first
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = 0 WHERE API_TYPE <> 'Corporation'")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "' AND API_TYPE NOT IN ('Corporation', 'Old Key')")
-
-        ' Load the character as default for program and reload additional API data
-        Call SelectedCharacter.LoadDefaultCharacter(True, UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
-        Call PlayNotifySound()
-        Application.UseWaitCursor = False
-
-    End Sub
 
     '' Sets the categories that must be made in a station/outpost
     'Private Sub SetNoPOSGroupIDs()
@@ -1869,13 +1660,16 @@ Public Class frmMain
         Dim Response As MsgBoxResult
         Dim SQL As String
 
-        Response = MsgBox("This will reset all data for the program including API, Blueprints, Assets, Industry Jobs, and Price data." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+        Response = MsgBox("This will reset all data for the program including ESI Tokens, Blueprints, Assets, Industry Jobs, and Price data." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
 
         If Response = vbYes Then
             Application.UseWaitCursor = True
             Application.DoEvents()
 
-            SQL = "DELETE FROM API"
+            SQL = "DELETE FROM ESI_CHARACTER_DATA"
+            EVEDB.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM ESI_CORPORATION_DATA"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM CHARACTER_STANDINGS"
@@ -1929,8 +1723,7 @@ Public Class frmMain
 
             MsgBox("All Data Reset", vbInformation, Application.ProductName)
 
-            ' Load the API selection
-            Dim f1 As New frmLoadCharacterAPI
+            Dim f1 As New frmSetCharacterDefault
             f1.ShowDialog()
 
             If CharactersLoaded Then
@@ -1995,11 +1788,11 @@ Public Class frmMain
     Private Sub ResetCRESTDates()
         Dim SQL As String
 
-        ' Simple update, just set all the CREST cache dates to null
-        SQL = "DELETE FROM CREST_CACHE_DATES"
+        ' Simple update, just set all the ESI cache dates to null
+        SQL = "DELETE FROM ESI_PUBLIC_CACHE_DATES"
         EVEDB.ExecuteNonQuerySQL(SQL)
 
-        MsgBox("CREST cache dates reset", vbInformation, Application.ProductName)
+        MsgBox("ESI cache dates reset", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -2009,11 +1802,11 @@ Public Class frmMain
         Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_FACILITIES")
         Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STATION_FACILITIES WHERE OUTPOST <> 0")
 
-        ' Simple update, just set all the CREST cache dates to null
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_INDUSTRY_FACILITIES_CACHED_UNTIL = NULL")
+        ' Simple update, just set all the ESI cache dates to null
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_FACILITIES_CACHED_UNTIL = NULL")
 
-        MsgBox("CREST Industry Facilities reset", vbInformation, Application.ProductName)
+        MsgBox("ESI Industry Facilities reset", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -2021,9 +1814,9 @@ Public Class frmMain
 
         ' Simple update, just set all the data back to zero
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE CREST_CACHE_DATES SET CREST_MARKET_PRICES_CACHED_UNTIL = NULL")
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET MARKET_PRICES_CACHED_UNTIL = NULL")
 
-        MsgBox("CREST Adjusted Market Prices reset", vbInformation, Application.ProductName)
+        MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -2088,7 +1881,7 @@ Public Class frmMain
             SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID =" & SelectedCharacter.ID
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE API SET RESEARCH_AGENTS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
+            SQL = "UPDATE ESI_CHARACTER_DATA SET RESEARCH_AGENTS_CACHE_DATE = NULL WHERE CHARACTER_ID = " & CStr(SelectedCharacter.ID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
@@ -2112,7 +1905,7 @@ Public Class frmMain
             SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID =" & SelectedCharacter.ID & " AND JobType =" & ScanType.Personal
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE API SET INDUSTRY_JOBS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
+            SQL = "UPDATE ESI_CHARACTER_DATA SET INDUSTRY_JOBS_CACHE_DATE = NULL WHERE CHARACTER_ID =" & CStr(SelectedCharacter.ID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
@@ -2157,20 +1950,19 @@ Public Class frmMain
             SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.ID
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = NULL WHERE CHARACTER_ID =" & SelectedCharacter.ID & " AND API_TYPE NOT IN ('Corporation','Old Key')"
+            SQL = "UPDATE ESI_CHARACTER_DATA SET ASSETS_CACHE_DATE = NULL WHERE CHARACTER_ID =" & CStr(SelectedCharacter.ID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Corp
             SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.CharacterCorporation.CorporationID
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = NULL WHERE CORPORATION_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL = SQL & " AND API_TYPE = 'Corporation'"
+            SQL = "UPDATE ESI_CORPORATION_DATA SET ASSETS_CACHE_DATE = NULL WHERE CORPORATION_ID =" & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Reload the asset variables for the character, which will load nothing but clear the assets out
-            Call SelectedCharacter.GetAssets().LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
-            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
+            Call SelectedCharacter.GetAssets().LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -2252,7 +2044,7 @@ Public Class frmMain
     End Sub
 
     Private Sub mnuSelectionAddChar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionAddChar.Click
-        Dim f1 = New frmLoadCharacterAPI
+        Dim f1 = New frmSetCharacterDefault
         f1.ShowDialog()
 
         If CharactersLoaded Then
@@ -2263,36 +2055,32 @@ Public Class frmMain
             Call LoadCharacterNamesinMenu()
 
             ' Only allow selecting a default if there are accounts to set it to
-            If NonDummyAccountsLoaded() Then
+            If DummyAccountLoaded Then
+                mnuSelectDefaultChar.Enabled = False
+            Else
                 mnuSelectDefaultChar.Enabled = True
                 ' Reload the list
                 Call LoadCharacterNamesinMenu()
-            Else
-                mnuSelectDefaultChar.Enabled = False
             End If
         End If
 
         ' Reinit form
         Call ResetTabs()
+
     End Sub
 
-    Private Sub mnuSelectionAddESICharacter_Click(sender As Object, e As EventArgs) Handles mnuSelectionAddESICharacter.Click
-        Dim f1 = New frmLoadESIAuthorization
-        f1.ShowDialog()
-    End Sub
-
-    Private Sub mnuSelectionManageAPI_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionManageAPI.Click
+    Private Sub mnuSelectionManageCharacters_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionManageCharacters.Click
         Dim f1 As New frmManageAccounts
 
-        frmManageAccounts.ShowDialog()
+        Call f1.ShowDialog()
 
         ' Only allow selecting a default if there are accounts to set it to
-        If NonDummyAccountsLoaded() Then
+        If DummyAccountLoaded Then
+            mnuSelectDefaultChar.Enabled = False
+        Else
             mnuSelectDefaultChar.Enabled = True
             ' Reload the list
             Call LoadCharacterNamesinMenu()
-        Else
-            mnuSelectDefaultChar.Enabled = False
         End If
 
         ' Default character set, now set the panel if it changed
@@ -2750,15 +2538,15 @@ Public Class frmMain
 
     ' Function runs the CREST update for system indicies
     Private Sub UpdateCRESTIndustryFacilities()
-        Dim CREST As New EVECREST
-        Dim f1 As New frmCRESTStatus
+        Dim ESIData As New ESI
+        Dim f1 As New frmStatus
 
         Application.UseWaitCursor = True
         Call f1.Show()
         Application.DoEvents()
 
         ' Always do indicies first since facilities has a field it uses
-        If CREST.UpdateIndustryFacilties(f1.lblCRESTStatus, f1.pgCREST) Then
+        If ESIData.UpdateIndustryFacilties(f1.lblStatus, f1.pgStatus) Then
             ' Reload the industry facilities now
             Call BlueprintTabFacility.MY_InitializeFacilities(FacilityView.FullControls)
 
@@ -2777,13 +2565,13 @@ Public Class frmMain
 
     ' Function runs the CREST update for market prices
     Private Sub UpdateCRESTMarketPrices()
-        Dim CREST As New EVECREST
-        Dim f1 As New frmCRESTStatus
+        Dim ESIData As New ESI
+        Dim f1 As New frmStatus
 
         Application.UseWaitCursor = True
         Call f1.Show()
         Application.DoEvents()
-        If CREST.UpdateAdjAvgMarketPrices(f1.lblCRESTStatus, f1.pgCREST) Then
+        If ESIData.UpdateAdjAvgMarketPrices(f1.lblStatus, f1.pgStatus) Then
 
             ' Update all the prices in the program
             Call UpdateProgramPrices()
@@ -9990,7 +9778,7 @@ ExitSub:
 
             pnlStatus.Text = "Downloading prices..."
 
-            ' Update the CREST prices cache
+            ' Update the ESI prices cache
             If Not MP.UpdateMarketOrders(Items) Then
                 ' Update Failed, don't reload everything
                 Call MsgBox("Some prices did not update. Please try again.", vbInformation, Application.ProductName)
@@ -10139,9 +9927,9 @@ ExitSub:
 
                 ' See if we limit to buy/sell only
                 If LimittoBuy Then
-                    SQL = SQL & "AND ORDER_TYPE = 'BUY'"
+                    SQL = SQL & "AND IS_BUY_ORDER <> 0"
                 ElseIf LimittoSell Then
-                    SQL = SQL & "AND ORDER_TYPE = 'SELL'"
+                    SQL = SQL & "AND IS_BUY_ORDER = 0"
                 End If
             End If
 
@@ -17476,7 +17264,7 @@ CheckTechs:
 
                     ' Update the prices
                     Dim timecheck As Date = Now
-                    If Not MH.UpdateCRESTPriceHistory(UpdateTypeIDs, MarketRegionID) Then
+                    If Not MH.UpdateESIPriceHistory(UpdateTypeIDs, MarketRegionID) Then
                         Call MsgBox("Price update timed out for some items. Please try again.", vbInformation, Application.ProductName)
                     End If
 
@@ -18299,13 +18087,13 @@ ExitCalc:
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
 
-        SQL = "SELECT ORDER_TYPE, SUM(VOLUME_REMAINING) FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
         SQL = SQL & "GROUP BY ORDER_TYPE"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
         While rsItems.Read
-            If rsItems.GetString(0) = "SELL" Then
+            If rsItems.GetInt32(0) = 0 Then
                 SellOrders = rsItems.GetInt64(1)
             Else
                 BuyOrders = rsItems.GetInt64(1)

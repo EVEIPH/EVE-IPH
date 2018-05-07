@@ -823,9 +823,11 @@ Public Class frmShoppingList
                 If Not IsNothing(frmShoppingAssets) Then
                     If Not frmShoppingAssets.IsDisposed Then
                         If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
+                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
                         Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
+                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+                                                                   UserApplicationSettings.LoadAssetsonStartup)
                         End If
                         frmShoppingAssets.RefreshTree()
                     End If
@@ -834,9 +836,11 @@ Public Class frmShoppingList
                 If Not IsNothing(frmDefaultAssets) Then
                     If Not frmDefaultAssets.IsDisposed Then
                         If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Corporation, UserApplicationSettings.LoadAssetsonStartup)
+                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
                         Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, UserApplicationSettings.LoadAssetsonStartup)
+                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+                                                                   UserApplicationSettings.LoadAssetsonStartup)
                         End If
                         frmDefaultAssets.RefreshTree()
                     End If

@@ -408,14 +408,14 @@ Public Class frmSettings
 
                 ' If they didn't have this checked before, refresh assets
                 If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
-                    Call SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, True)
-                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(ScanType.Corporation, True)
+                    Call SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
                 End If
 
                 ' Same with blueprints
                 If .LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(ScanType.Personal, True)
-                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(ScanType.Corporation, True)
+                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
+                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
                 End If
 
                 ' Now set these

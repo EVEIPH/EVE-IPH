@@ -1,4 +1,4 @@
-﻿Public NotInheritable Class frmCRESTStatus
+﻿Public NotInheritable Class frmStatus
 
     Private Sub frmCRESTStatus_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         'Set up the dialog text at runtime according to the application's assembly information.  

@@ -1,5 +1,5 @@
 
-Imports System.Xml ' For API Calls  
+Imports System.Xml
 
 ' Class for querying data from EVE Central
 ' Can only query Eve Central 100 records at a time 

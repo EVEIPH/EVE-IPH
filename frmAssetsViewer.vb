@@ -117,7 +117,7 @@ Public Class frmAssetsViewer
         End Select
 
         ' For this window, get the asset locations saved for the character
-        SavedLocationIDs = SelectedCharacter.GetAssetLocationIDs(WindowForm)
+        SavedLocationIDs = SelectedCharacter.Assets.GetAssetLocationIDs(WindowForm, SelectedCharacter.ID, SelectedCharacter.CharacterCorporation)
 
         ' For the disabling of the price update form
         PriceCheckT1Enabled = True
@@ -814,9 +814,10 @@ Public Class frmAssetsViewer
 
         ' New scan, so run update and reload assets
         If BPScanType = ScanType.Personal Then
-            SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, True)
+            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
         Else
-            SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(ScanType.Corporation, True)
+            SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+                                                                        SelectedCharacter.CharacterTokenData, True)
         End If
 
         ' Reload the tree

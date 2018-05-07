@@ -1,5 +1,7 @@
 ﻿
-Public Class NPCStandings
+Imports System.Data.SQLite
+
+Public Class EVENPCStandings
 
     Private NPCStandings As List(Of NPCStanding)
     Private StandingToFind As NPCStanding
@@ -127,7 +129,7 @@ Public Class NPCStandings
         TempStanding.NPCType = sentNPCType
         TempStanding.Standing = sentStanding
 
-        Call InsertSTanding(TempStanding)
+        Call InsertStanding(TempStanding)
 
     End Sub
 
@@ -158,6 +160,91 @@ Public Class NPCStandings
         End If
 
     End Function
+
+    ' Updates and Loads the character's standings from DB
+    Public Sub LoadCharacterStandings(ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData)
+        Dim SQL As String
+        Dim readerStandings As SQLiteDataReader
+        Dim Tempstandings As New EVENPCStandings
+
+        ' Don't try to update/load dummy standings
+        If CharacterID = 0 Then
+            Exit Sub
+        End If
+
+        ' First update the standings
+        Call UpdateCharacterStandings(CharacterID, CharacterTokenData)
+
+        ' Load the standings
+        SQL = "SELECT NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING FROM CHARACTER_STANDINGS WHERE CHARACTER_ID=" & CharacterID
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerStandings = DBCommand.ExecuteReader
+
+        While readerStandings.Read
+            ' Insert standing
+            InsertStanding(readerStandings.GetInt64(0), readerStandings.GetString(1), readerStandings.GetString(2), readerStandings.GetDouble(3))
+        End While
+
+        readerStandings.Close()
+        DBCommand = Nothing
+        readerStandings = Nothing
+
+    End Sub
+
+    ' Updates the Character Standings from ESI for the sent character and inserts them into the Database for later queries
+    Private Sub UpdateCharacterStandings(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData)
+        Dim SQL As String
+        Dim i As Integer
+        Dim TempStandings As EVENPCStandings = Nothing
+        Dim rsName As SQLiteDataReader
+
+        Dim ESIData as new ESI
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
+
+        ' Get updated standings
+        If CB.DataUpdateable(CacheDateType.Standings, ID) Then
+            TempStandings = ESIData.GetCharacterStandings(ID, CharacterTokenData, CacheDate)
+
+            If Not IsNothing(TempStandings) Then
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' Delete the old standings data
+                SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & ID
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                ' Insert new standings data
+                For i = 0 To TempStandings.NumStandings - 1
+                    ' Look up name
+                    SQL = "SELECT ITEM_NAME FROM INVENTORY_NAMES WHERE ITEM_ID = " & CStr(TempStandings.GetStandingsList(i).NPCID)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsName = DBCommand.ExecuteReader
+
+                    If rsName.Read Then
+                        TempStandings.GetStandingsList(i).NPCName = rsName.GetString(0)
+                    Else
+                        TempStandings.GetStandingsList(i).NPCName = Unknown
+                    End If
+
+                    SQL = "INSERT INTO CHARACTER_STANDINGS (CHARACTER_ID, NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING) "
+                    SQL = SQL & " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
+                    SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
+                    SQL = SQL & "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
+                    SQL = SQL & "'," & TempStandings.GetStandingsList(i).Standing & ")"
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                Next
+
+                DBCommand = Nothing
+
+                ' Update cache date now that it's all set
+                Call CB.UpdateCacheDate(CacheDateType.Standings, CacheDate, ID)
+
+                Call EVEDB.CommitSQLiteTransaction()
+
+            End If
+        End If
+    End Sub
 
 End Class
 

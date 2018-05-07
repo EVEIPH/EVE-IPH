@@ -57,7 +57,7 @@ Partial Class frmLoadESIAuthorization
         Me.btnRegisterApplication.Location = New System.Drawing.Point(10, 15)
         Me.btnRegisterApplication.Name = "btnRegisterApplication"
         Me.btnRegisterApplication.Size = New System.Drawing.Size(185, 46)
-        Me.btnRegisterApplication.TabIndex = 2
+        Me.btnRegisterApplication.TabIndex = 0
         Me.btnRegisterApplication.Text = "Register Application"
         Me.btnRegisterApplication.UseVisualStyleBackColor = False
         '
@@ -74,7 +74,7 @@ Partial Class frmLoadESIAuthorization
         Me.lblClientID.Location = New System.Drawing.Point(7, 64)
         Me.lblClientID.Name = "lblClientID"
         Me.lblClientID.Size = New System.Drawing.Size(47, 13)
-        Me.lblClientID.TabIndex = 4
+        Me.lblClientID.TabIndex = 2
         Me.lblClientID.Text = "ClientID:"
         '
         'lblSecretKey
@@ -91,7 +91,7 @@ Partial Class frmLoadESIAuthorization
         Me.txtSecretKey.Location = New System.Drawing.Point(10, 119)
         Me.txtSecretKey.Name = "txtSecretKey"
         Me.txtSecretKey.Size = New System.Drawing.Size(299, 20)
-        Me.txtSecretKey.TabIndex = 5
+        Me.txtSecretKey.TabIndex = 7
         '
         'lblPort
         '
@@ -99,7 +99,7 @@ Partial Class frmLoadESIAuthorization
         Me.lblPort.Location = New System.Drawing.Point(256, 64)
         Me.lblPort.Name = "lblPort"
         Me.lblPort.Size = New System.Drawing.Size(29, 13)
-        Me.lblPort.TabIndex = 8
+        Me.lblPort.TabIndex = 4
         Me.lblPort.Text = "Port:"
         '
         'txtPort
@@ -108,16 +108,15 @@ Partial Class frmLoadESIAuthorization
         Me.txtPort.MaxLength = 5
         Me.txtPort.Name = "txtPort"
         Me.txtPort.Size = New System.Drawing.Size(50, 20)
-        Me.txtPort.TabIndex = 7
-        Me.txtPort.Text = "13000"
+        Me.txtPort.TabIndex = 5
         '
         'txtScopes
         '
-        Me.txtScopes.Location = New System.Drawing.Point(9, 158)
+        Me.txtScopes.Location = New System.Drawing.Point(10, 158)
         Me.txtScopes.Multiline = True
         Me.txtScopes.Name = "txtScopes"
         Me.txtScopes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtScopes.Size = New System.Drawing.Size(300, 144)
+        Me.txtScopes.Size = New System.Drawing.Size(299, 144)
         Me.txtScopes.TabIndex = 9
         '
         'lblScopes
@@ -126,7 +125,7 @@ Partial Class frmLoadESIAuthorization
         Me.lblScopes.Location = New System.Drawing.Point(7, 142)
         Me.lblScopes.Name = "lblScopes"
         Me.lblScopes.Size = New System.Drawing.Size(46, 13)
-        Me.lblScopes.TabIndex = 10
+        Me.lblScopes.TabIndex = 8
         Me.lblScopes.Text = "Scopes:"
         '
         'btnSaveApplicationInfo
@@ -134,10 +133,10 @@ Partial Class frmLoadESIAuthorization
         Me.btnSaveApplicationInfo.BackColor = System.Drawing.Color.FromArgb(CType(CType(55, Byte), Integer), CType(CType(55, Byte), Integer), CType(CType(55, Byte), Integer))
         Me.btnSaveApplicationInfo.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold)
         Me.btnSaveApplicationInfo.ForeColor = System.Drawing.Color.White
-        Me.btnSaveApplicationInfo.Location = New System.Drawing.Point(25, 313)
+        Me.btnSaveApplicationInfo.Location = New System.Drawing.Point(10, 313)
         Me.btnSaveApplicationInfo.Name = "btnSaveApplicationInfo"
-        Me.btnSaveApplicationInfo.Size = New System.Drawing.Size(145, 46)
-        Me.btnSaveApplicationInfo.TabIndex = 11
+        Me.btnSaveApplicationInfo.Size = New System.Drawing.Size(150, 46)
+        Me.btnSaveApplicationInfo.TabIndex = 10
         Me.btnSaveApplicationInfo.Text = "Save Data"
         Me.btnSaveApplicationInfo.UseVisualStyleBackColor = False
         '
@@ -149,7 +148,7 @@ Partial Class frmLoadESIAuthorization
         Me.btnLaunchInstructions.Location = New System.Drawing.Point(194, 15)
         Me.btnLaunchInstructions.Name = "btnLaunchInstructions"
         Me.btnLaunchInstructions.Size = New System.Drawing.Size(115, 46)
-        Me.btnLaunchInstructions.TabIndex = 12
+        Me.btnLaunchInstructions.TabIndex = 1
         Me.btnLaunchInstructions.Text = "Instructions"
         Me.btnLaunchInstructions.UseVisualStyleBackColor = False
         '
@@ -170,7 +169,7 @@ Partial Class frmLoadESIAuthorization
         Me.gbRegister.Location = New System.Drawing.Point(12, 12)
         Me.gbRegister.Name = "gbRegister"
         Me.gbRegister.Size = New System.Drawing.Size(320, 365)
-        Me.gbRegister.TabIndex = 13
+        Me.gbRegister.TabIndex = 0
         Me.gbRegister.TabStop = False
         '
         'btnSkipEntry
@@ -178,10 +177,10 @@ Partial Class frmLoadESIAuthorization
         Me.btnSkipEntry.BackColor = System.Drawing.Color.FromArgb(CType(CType(55, Byte), Integer), CType(CType(55, Byte), Integer), CType(CType(55, Byte), Integer))
         Me.btnSkipEntry.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold)
         Me.btnSkipEntry.ForeColor = System.Drawing.Color.White
-        Me.btnSkipEntry.Location = New System.Drawing.Point(170, 313)
+        Me.btnSkipEntry.Location = New System.Drawing.Point(159, 313)
         Me.btnSkipEntry.Name = "btnSkipEntry"
-        Me.btnSkipEntry.Size = New System.Drawing.Size(125, 46)
-        Me.btnSkipEntry.TabIndex = 13
+        Me.btnSkipEntry.Size = New System.Drawing.Size(150, 46)
+        Me.btnSkipEntry.TabIndex = 11
         Me.btnSkipEntry.Text = "Skip Entry"
         Me.btnSkipEntry.UseVisualStyleBackColor = False
         '

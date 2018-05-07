@@ -4,9 +4,12 @@ Imports System.Data.SQLite
 Imports Newtonsoft.Json
 Imports System.Net
 
+Imports System.Xml
+Imports System.Net.Security
+Imports System.Security.Cryptography.X509Certificates
+
 ' Class for all CREST function calls, which will update tables in the DB if past cache time
 Public Class EVECREST
-    'Private Const CRESTRootServerURL = "https://api-sisi.testeveonline.com"
     Private Const CRESTRootServerURL = "https://crest-tq.eveonline.com"
 
     ' URL for each file
@@ -15,11 +18,11 @@ Public Class EVECREST
     Private Const CRESTMarketPrices = "/market/prices/"
 
     ' Cache field names and times
-    Private Const IndustrySystemsField As String = "CREST_INDUSTRY_SYSTEMS_CACHED_UNTIL"
+    Private Const IndustrySystemsField As String = "INDUSTRY_SYSTEMS_CACHED_UNTIL"
     Private Const IndustrySystemsLength As Integer = 1
-    Private Const IndustryFacilitiesField As String = "CREST_INDUSTRY_FACILITIES_CACHED_UNTIL"
+    Private Const IndustryFacilitiesField As String = "INDUSTRY_FACILITIES_CACHED_UNTIL"
     Private Const IndustryFacilitiesLength As Integer = 1
-    Private Const MarketPricesField As String = "CREST_MARKET_PRICES_CACHED_UNTIL"
+    Private Const MarketPricesField As String = "MARKET_PRICES_CACHED_UNTIL"
     Private Const MarketPricesLength As Integer = 23
 
     ' For looking up market order data
@@ -77,308 +80,309 @@ Public Class EVECREST
 
     End Function
 
-    ' Uses the type from a crest call - replace buy-sell with buy or sell
-    ' market/{region_id}/orders/buy-sell/?type=https://crest-tq.eveonline.com/inventory/types/{type_id}/ (cache: x hours)
-    'https://crest-tq.eveonline.com/market/10000002/orders/sell/?type=https://crest-tq.eveonline.com/inventory/types/34/
-    ' Provides the current buy or sell orders on the market region for the type id sent - same as in game view
+    '' Uses the type from a crest call - replace buy-sell with buy or sell
+    '' market/{region_id}/orders/buy-sell/?type=https://crest-tq.eveonline.com/inventory/types/{type_id}/ (cache: x hours)
+    ''https://crest-tq.eveonline.com/market/10000002/orders/sell/?type=https://crest-tq.eveonline.com/inventory/types/34/
+    '' Provides the current buy or sell orders on the market region for the type id sent - same as in game view
 
-    ' Gets the CREST file from CCP for the current Market orders (buy and sell) for the region_id and type_id sent
-    ' Open transaction will open an SQL transaction here instead of the calling function
-    ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
-                                    Optional OpenTransaction As Boolean = True,
-                                    Optional IgnoreCacheLookup As Boolean = False) As Boolean
-        Dim MarketOrdersOutput As MarketOrders
-        Dim SQL As String
-        Dim rsCache As SQLiteDataReader
-        Dim rsCheck As SQLiteDataReader
-        Dim CacheDate As Date = NoDate
-        Dim ReturnCacheDate As Date = NoDate
-        Dim OrderType As String = ""
+    '' Gets the CREST file from CCP for the current Market orders (buy and sell) for the region_id and type_id sent
+    '' Open transaction will open an SQL transaction here instead of the calling function
+    '' Returns boolean if the history was updated or not
+    'Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
+    '                                Optional OpenTransaction As Boolean = True,
+    '                                Optional IgnoreCacheLookup As Boolean = False) As Boolean
+    '    Dim MarketOrdersOutput As MarketOrders
+    '    Dim SQL As String
+    '    Dim rsCache As SQLiteDataReader
+    '    Dim rsCheck As SQLiteDataReader
+    '    Dim CacheDate As Date = NoDate
+    '    Dim ReturnCacheDate As Date = NoDate
+    '    Dim OrderType As String = ""
 
-        If Not IgnoreCacheLookup Then
-            ' First look up the cache date to see if it's time to run the update
-            SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
-            rsCache = DBCommand.ExecuteReader
+    '    If Not IgnoreCacheLookup Then
+    '        ' First look up the cache date to see if it's time to run the update
+    '        SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+    '        DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+    '        rsCache = DBCommand.ExecuteReader
 
-            CacheDate = ProcessCacheDate(rsCache)
+    '        CacheDate = ProcessCacheDate(rsCache)
 
-            rsCache.Close()
-            rsCache = Nothing
-            DBCommand = Nothing
-        Else
-            CacheDate = NoDate
-        End If
+    '        rsCache.Close()
+    '        rsCache = Nothing
+    '        DBCommand = Nothing
+    '    Else
+    '        CacheDate = NoDate
+    '    End If
 
-        ' If it's later than now, update
-        If CacheDate <= Now Then
-            ' Always open here incase we update below
-            If OpenTransaction Then
-                Call MHDB.BeginSQLiteTransaction()
-            End If
+    '    ' If it's later than now, update
+    '    If CacheDate <= Now Then
+    '        ' Always open here incase we update below
+    '        If OpenTransaction Then
+    '            Call MHDB.BeginSQLiteTransaction()
+    '        End If
 
-            ' Delete any records for this type and region since we have a fresh set to load
-            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+    '        ' Delete any records for this type and region since we have a fresh set to load
+    '        Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
 
-            ' Do two loops, one for buy, one for sell
-            For counter = 0 To 1
-                Application.DoEvents()
+    '        ' Do two loops, one for buy, one for sell
+    '        For counter = 0 To 1
+    '            Application.DoEvents()
 
-                If counter = 0 Then
-                    OrderType = "buy"
-                Else
-                    OrderType = "sell"
-                End If
+    '            If counter = 0 Then
+    '                OrderType = "buy"
+    '            Else
+    '                OrderType = "sell"
+    '            End If
 
-                ' Dump the file into the Specializations object
-                MarketOrdersOutput = JsonConvert.DeserializeObject(Of MarketOrders) _
-                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/orders/" & OrderType & "/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
+    '            ' Dump the file into the Specializations object
+    '            MarketOrdersOutput = JsonConvert.DeserializeObject(Of MarketOrders) _
+    '                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/orders/" & OrderType & "/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
 
-                ' Read in the data
-                If Not IsNothing(MarketOrdersOutput) Then
-                    ' Parse the data
-                    If MarketOrdersOutput.items.Count > 0 Then
-                        Application.DoEvents()
+    '            ' Read in the data
+    '            If Not IsNothing(MarketOrdersOutput) Then
+    '                ' Parse the data
+    '                If MarketOrdersOutput.items.Count > 0 Then
+    '                    Application.DoEvents()
 
-                        ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
-                        For i = 0 To MarketOrdersOutput.totalCount - 1
-                            With MarketOrdersOutput.items(i)
-                                Dim StationLocation As SystemRegion
-                                Dim OrderDownloadType As String = ""
+    '                    ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
+    '                    For i = 0 To MarketOrdersOutput.totalCount - 1
+    '                        With MarketOrdersOutput.items(i)
+    '                            Dim StationLocation As SystemRegion
+    '                            Dim OrderDownloadType As String = ""
 
-                                StationLocation = StationsData.FindStationInfo(.location.id)
+    '                            StationLocation = StationsData.FindStationInfo(.location.id)
 
-                                If .buy Then
-                                    OrderDownloadType = "'BUY'"
-                                Else
-                                    OrderDownloadType = "'SELL'"
-                                End If
+    '                            If .buy Then
+    '                                OrderDownloadType = "'BUY'"
+    '                            Else
+    '                                OrderDownloadType = "'SELL'"
+    '                            End If
 
-                                Dim Price As String = ConvertEUDecimaltoUSDecimal(.price)
+    '                            Dim Price As String = ConvertEUDecimaltoUSDecimal(.price)
 
-                                ' Insert all the new records
-                                SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(TypeID) & "," & CStr(StationLocation.RegionID) & ","
-                                SQL = SQL & CStr(StationLocation.SystemID) & ",'" & .issued.Replace("T", " ") & "',"
-                                SQL = SQL & .duration_str & "," & OrderDownloadType & "," & Price & "," & .volumeEntered_str & ","
-                                SQL = SQL & .minVolume_str & "," & .volume_str & ")"
-                                Call MHDB.ExecuteNonQuerySQL(SQL)
+    '                            ' Insert all the new records
+    '                            SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(TypeID) & "," & CStr(StationLocation.RegionID) & ","
+    '                            SQL = SQL & CStr(StationLocation.SystemID) & ",'" & .issued.Replace("T", " ") & "',"
+    '                            SQL = SQL & .duration_str & "," & OrderDownloadType & "," & Price & "," & .volumeEntered_str & ","
+    '                            SQL = SQL & .minVolume_str & "," & .volume_str & ")"
+    '                            Call MHDB.ExecuteNonQuerySQL(SQL)
 
-                            End With
+    '                        End With
 
-                            Application.DoEvents()
-                        Next
+    '                        Application.DoEvents()
+    '                    Next
 
-                    End If
+    '                End If
 
-                Else
-                    ' Json file didn't download
-                    Return False
-                End If
-            Next
+    '            Else
+    '                ' Json file didn't download
+    '                Return False
+    '            End If
+    '        Next
 
-            ' Set the Cache Date for everything queried 
-            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
-            Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
+    '        ' Set the Cache Date for everything queried 
+    '        Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+    '        Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
 
-            ' Done updating
-            If OpenTransaction Then
-                Call MHDB.CommitSQLiteTransaction()
-            End If
+    '        ' Done updating
+    '        If OpenTransaction Then
+    '            Call MHDB.CommitSQLiteTransaction()
+    '        End If
 
-            rsCache = Nothing
-            rsCheck = Nothing
-            DBCommand = Nothing
+    '        rsCache = Nothing
+    '        rsCheck = Nothing
+    '        DBCommand = Nothing
 
-            Return True
+    '        Return True
 
-        Else
-            Return False
-        End If
+    '    Else
+    '        Return False
+    '    End If
 
-        Return True
+    '    Return True
 
-    End Function
+    'End Function
 
     ' For MarketOrders
-    Private Class MarketOrders
-        '{"totalCount_str": "182", "items": [], "pageCount": 1, "pageCount_str": "1", "totalCount": 182}
-        <JsonProperty("totalCount_str")> Public totalCount_str As String
-        <JsonProperty("items")> Public items() As MarketOrder
-        <JsonProperty("pageCount")> Public pageCount As Integer
-        <JsonProperty("pageCount_str")> Public pageCount_str As String
-        <JsonProperty("totalCount")> Public totalCount As Integer
-    End Class
+    'Private Class MarketOrders
+    '    '{"totalCount_str": "182", "items": [], "pageCount": 1, "pageCount_str": "1", "totalCount": 182}
+    '    <JsonProperty("totalCount_str")> Public totalCount_str As String
+    '    <JsonProperty("items")> Public items() As MarketOrder
+    '    <JsonProperty("pageCount")> Public pageCount As Integer
+    '    <JsonProperty("pageCount_str")> Public pageCount_str As String
+    '    <JsonProperty("totalCount")> Public totalCount As Integer
+    'End Class
 
-    ' For Market Orders
-    Private Class MarketOrder
-        '{"volume_str": "838037", "buy": false, "issued": "2015-12-28T15:25:24", "price": 6.3, "volumeEntered": 1700062, "minVolume": 1, "volume": 838037, "range": "region", 
-        '"href": "https://crest-tq.eveonline.com/market/10000002/orders/4379176393/", "duration_str": "7", "location": {}, 
-        '"duration": 7, "minVolume_str": "1", "volumeEntered_str": "1700062", "type": {}, "id": 4379176393, "id_str": "4379176393"}
+    '' For Market Orders
+    'Private Class MarketOrder
+    '    '{"volume_str": "838037", "buy": false, "issued": "2015-12-28T15:25:24", "price": 6.3, "volumeEntered": 1700062, "minVolume": 1, "volume": 838037, "range": "region", 
+    '    '"href": "https://crest-tq.eveonline.com/market/10000002/orders/4379176393/", "duration_str": "7", "location": {}, 
+    '    '"duration": 7, "minVolume_str": "1", "volumeEntered_str": "1700062", "type": {}, "id": 4379176393, "id_str": "4379176393"}
 
-        <JsonProperty("volume_str")> Public volume_str As String
-        <JsonProperty("buy")> Public buy As Boolean
-        <JsonProperty("issued")> Public issued As String ' date
-        <JsonProperty("price")> Public price As String ' for EU processing
-        <JsonProperty("volumeEntered")> Public volumeEntered As Long
-        <JsonProperty("minVolume")> Public minVolume As Integer
-        <JsonProperty("volume")> Public volume As Long
-        <JsonProperty("range")> Public range As String
-        <JsonProperty("href")> Public href As String
-        <JsonProperty("duration_str")> Public duration_str As String
-        <JsonProperty("location")> Public location As MarketLocation
-        <JsonProperty("duration")> Public duration As Integer
-        <JsonProperty("minVolume_str")> Public minVolume_str As String
-        <JsonProperty("volumeEntered_str")> Public volumeEntered_str As String
-        <JsonProperty("type")> Public type As MarketPriceType
-        <JsonProperty("id")> Public id As Long
-        <JsonProperty("id_str")> Public id_str As String
-    End Class
+    '    <JsonProperty("volume_str")> Public volume_str As String
+    '    <JsonProperty("buy")> Public buy As Boolean
+    '    <JsonProperty("issued")> Public issued As String ' date
+    '    <JsonProperty("price")> Public price As String ' for EU processing
+    '    <JsonProperty("volumeEntered")> Public volumeEntered As Long
+    '    <JsonProperty("minVolume")> Public minVolume As Integer
+    '    <JsonProperty("volume")> Public volume As Long
+    '    <JsonProperty("range")> Public range As String
+    '    <JsonProperty("href")> Public href As String
+    '    <JsonProperty("duration_str")> Public duration_str As String
+    '    <JsonProperty("location")> Public location As MarketLocation
+    '    <JsonProperty("duration")> Public duration As Integer
+    '    <JsonProperty("minVolume_str")> Public minVolume_str As String
+    '    <JsonProperty("volumeEntered_str")> Public volumeEntered_str As String
+    '    <JsonProperty("type")> Public type As MarketPriceType
+    '    <JsonProperty("id")> Public id As Long
+    '    <JsonProperty("id_str")> Public id_str As String
+    'End Class
 
-    ' For Market Orders
-    Private Class MarketLocation
-        '"location": {"id_str": "60005596", "href": "https://crest-tq.eveonline.com/universe/locations/60005596/", "id": 60005596, "name": "Itamo VIII - Moon 13 - Core Complexion Inc. Factory"},
-        <JsonProperty("id_str")> Public id_str As String
-        <JsonProperty("href")> Public href As String
-        <JsonProperty("id")> Public id As Long
-        <JsonProperty("name")> Public name As String
-    End Class
+    '' For Market Orders
+    'Private Class MarketLocation
+    '    '"location": {"id_str": "60005596", "href": "https://crest-tq.eveonline.com/universe/locations/60005596/", "id": 60005596, "name": "Itamo VIII - Moon 13 - Core Complexion Inc. Factory"},
+    '    <JsonProperty("id_str")> Public id_str As String
+    '    <JsonProperty("href")> Public href As String
+    '    <JsonProperty("id")> Public id As Long
+    '    <JsonProperty("name")> Public name As String
+    'End Class
 
-    ' market/{region_id}/history/?type=https://crest-tq.eveonline.com/inventory/types/{typeID] (cache: 23 hours)
-    'https://crest-tq.eveonline.com/market/10000002/history/?type=https://crest-tq.eveonline.com/inventory/types/34/
-    ' Provides per day summary of market activity for 13 months for the region_id and type_id sent.
+    '' market/{region_id}/history/?type=https://crest-tq.eveonline.com/inventory/types/{typeID] (cache: 23 hours)
+    ''https://crest-tq.eveonline.com/market/10000002/history/?type=https://crest-tq.eveonline.com/inventory/types/34/
+    '' Provides per day summary of market activity for 13 months for the region_id and type_id sent.
 
-    ' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
-    ' Open transaction will open an SQL transaction here instead of the calling function
-    ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
-                                        Optional ByRef IgnoreCacheLookup As Boolean = False, Optional OpenTransaction As Boolean = False) As Boolean
-        Dim MarketPricesOutput As MarketHistory
-        Dim SQL As String = ""
-        Dim rsCache As SQLiteDataReader
-        Dim rsCheck As SQLiteDataReader
-        Dim CacheDate As Date = NoDate
-        Dim MaxRecordDate As Date = NoDate
-        Dim ReturnCacheDate As Date = NoDate
+    '' Gets the CREST file from CCP for current Market History and updates the EVEIPH DB with the values
+    '' Open transaction will open an SQL transaction here instead of the calling function
+    '' Returns boolean if the history was updated or not
+    'Public Function UpdateMarketHistory(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
+    '                                    Optional ByRef IgnoreCacheLookup As Boolean = False, Optional OpenTransaction As Boolean = False) As Boolean
+    '    Dim MarketPricesOutput As MarketHistory
+    '    Dim SQL As String = ""
+    '    Dim rsCache As SQLiteDataReader
+    '    Dim rsCheck As SQLiteDataReader
+    '    Dim CacheDate As Date = NoDate
+    '    Dim MaxRecordDate As Date = NoDate
+    '    Dim ReturnCacheDate As Date = NoDate
 
-        Try
-            If Not IgnoreCacheLookup Then
-                ' First look up the cache date to see if it's time to run the update
-                SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-                DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
-                rsCache = DBCommand.ExecuteReader
+    '    Try
+    '        If Not IgnoreCacheLookup Then
+    '            ' First look up the cache date to see if it's time to run the update
+    '            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+    '            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+    '            rsCache = DBCommand.ExecuteReader
 
-                CacheDate = ProcessCacheDate(rsCache)
+    '            CacheDate = ProcessCacheDate(rsCache)
 
-                rsCache.Close()
-                rsCache = Nothing
-                DBCommand = Nothing
-            Else
-                CacheDate = NoDate
-            End If
+    '            rsCache.Close()
+    '            rsCache = Nothing
+    '            DBCommand = Nothing
+    '        Else
+    '            CacheDate = NoDate
+    '        End If
 
-            ' If it's later than now, update
-            If CacheDate <= Now Then
-                ' Always open here incase we update below
-                If OpenTransaction Then
-                    Call MHDB.BeginSQLiteTransaction()
-                End If
+    '        ' If it's later than now, update
+    '        If CacheDate <= Now Then
+    '            ' Always open here incase we update below
+    '            If OpenTransaction Then
+    '                Call MHDB.BeginSQLiteTransaction()
+    '            End If
 
-                Application.DoEvents()
-                ' Dump the file into the Specializations object
-                MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
-                    (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/history/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
+    '            Application.DoEvents()
+    '            ' Dump the file into the Specializations object
+    '            MarketPricesOutput = JsonConvert.DeserializeObject(Of MarketHistory) _
+    '                (GetJSONFile(CRESTRootServerURL & "/market/" & CStr(RegionID) & "/history/?type=https://crest-tq.eveonline.com/inventory/types/" & CStr(TypeID) & "/", ReturnCacheDate, "Market History", True))
 
-                ' Read in the data
-                If Not IsNothing(MarketPricesOutput) Then
+    '            ' Read in the data
+    '            If Not IsNothing(MarketPricesOutput) Then
 
-                    If MarketPricesOutput.items.Count > 0 Then
-                        ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
-                        If CacheDate = NoDate Then ' only run this if we don't already have the max date for this typeid
-                            SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-                            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
-                            rsCheck = DBCommand.ExecuteReader
+    '                If MarketPricesOutput.items.Count > 0 Then
+    '                    ' See what the last cache date we have on the records first - any records after or equal to this date we want to update
+    '                    If CacheDate = NoDate Then ' only run this if we don't already have the max date for this typeid
+    '                        SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
+    '                        DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+    '                        rsCheck = DBCommand.ExecuteReader
 
-                            If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
-                                ' The cache date is the date when we run the next update
-                                MaxRecordDate = CDate(rsCheck.GetString(0))
-                            Else
-                                MaxRecordDate = NoDate
-                            End If
-                            rsCheck.Close()
-                        Else
-                            MaxRecordDate = CacheDate
-                        End If
+    '                        If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
+    '                            ' The cache date is the date when we run the next update
+    '                            MaxRecordDate = CDate(rsCheck.GetString(0))
+    '                        Else
+    '                            MaxRecordDate = NoDate
+    '                        End If
+    '                        rsCheck.Close()
+    '                    Else
+    '                        MaxRecordDate = CacheDate
+    '                    End If
 
-                        Application.DoEvents()
-                        Dim i As Integer
+    '                    Application.DoEvents()
+    '                    Dim i As Integer
 
-                        ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
-                        For i = 0 To MarketPricesOutput.totalCount - 1
-                            With MarketPricesOutput.items(i)
-                                Dim LowPrice As String = ConvertEUDecimaltoUSDecimal(.lowPrice)
-                                Dim HighPrice As String = ConvertEUDecimaltoUSDecimal(.highPrice)
-                                Dim AvgPrice As String = ConvertEUDecimaltoUSDecimal(.avgPrice)
+    '                    ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
+    '                    For i = 0 To MarketPricesOutput.totalCount - 1
+    '                        With MarketPricesOutput.items(i)
+    '                            Dim LowPrice As String = ConvertEUDecimaltoUSDecimal(.lowPrice)
+    '                            Dim HighPrice As String = ConvertEUDecimaltoUSDecimal(.highPrice)
+    '                            Dim AvgPrice As String = ConvertEUDecimaltoUSDecimal(.avgPrice)
 
-                                ' only insert the records that are larger than the max date (with no time or 0:00:00 in GMT when records are updated)
-                                If CDate(.date_str.Replace("T", " ")).Date > MaxRecordDate.Date Then
-                                    SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
-                                    SQL = SQL & LowPrice & "," & HighPrice & "," & AvgPrice & "," & .orderCount_str & "," & .volume_str & ")"
-                                    Call MHDB.ExecuteNonQuerySQL(SQL)
-                                End If
-                            End With
+    '                            ' only insert the records that are larger than the max date (with no time or 0:00:00 in GMT when records are updated)
+    '                            If CDate(.date_str.Replace("T", " ")).Date > MaxRecordDate.Date Then
+    '                                SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & .date_str.Replace("T", " ") & "',"
+    '                                SQL = SQL & LowPrice & "," & HighPrice & "," & AvgPrice & "," & .orderCount_str & "," & .volume_str & ")"
+    '                                Call MHDB.ExecuteNonQuerySQL(SQL)
+    '                            End If
+    '                        End With
 
-                            Application.DoEvents()
-                        Next
-                    End If
+    '                        Application.DoEvents()
+    '                    Next
+    '                End If
 
-                    ' Set the Cache Date for everything queried 
-                    Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
-                    Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
+    '                ' Set the Cache Date for everything queried 
+    '                Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+    '                Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_HISTORY_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(ReturnCacheDate, SQLiteDateFormat) & "')")
 
-                    ' Done updating
-                    If OpenTransaction Then
-                        Call MHDB.CommitSQLiteTransaction()
-                    End If
+    '                ' Done updating
+    '                If OpenTransaction Then
+    '                    Call MHDB.CommitSQLiteTransaction()
+    '                End If
 
-                    Return True
+    '                Return True
 
-                End If
-                ' Json file didn't download
-                Return False
-            Else
-                Return False
-            End If
+    '            End If
+    '            ' Json file didn't download
+    '            Return False
+    '        Else
+    '            Return False
+    '        End If
 
-            Return True
-        Catch ex As Exception
-            Return False
-        End Try
+    '        Return True
+    '    Catch ex As Exception
+    '        Return False
+    '    End Try
 
-    End Function
-
-    ' For Market History
-    Private Class MarketHistory
-        '{"totalCount_str": "414", "items": [], "pageCount": 1, "pageCount_str": "1", "totalCount": 414}
-        <JsonProperty("totalCount_str")> Public totalCount_str As String
-        <JsonProperty("items")> Public items() As MarketPriceItems
-        <JsonProperty("pageCount")> Public pageCount As Integer
-        <JsonProperty("pageCount_str")> Public pageCount_str As String
-        <JsonProperty("totalCount")> Public totalCount As Integer
-    End Class
+    'End Function
 
     ' For Market History
-    Private Class MarketPriceItems
-        '{"volume_str": "28662910175", "orderCount": 4312, "lowPrice": 4.98, "highPrice": 5.04, "avgPrice": 5.0, "volume": 28662910175, "orderCount_str": "4312", "date": "2014-02-01T00:00:00"}
-        <JsonProperty("volume_str")> Public volume_str As String
-        <JsonProperty("orderCount")> Public orderCount As Long
-        <JsonProperty("lowPrice")> Public lowPrice As String ' Use string for EU processing
-        <JsonProperty("highPrice")> Public highPrice As String ' Use string for EU processing
-        <JsonProperty("avgPrice")> Public avgPrice As String ' Use string for EU processing
-        <JsonProperty("volume")> Public volume As Long
-        <JsonProperty("orderCount_str")> Public orderCount_str As String
-        <JsonProperty("date")> Public date_str As String
-    End Class
+
+    'Private Class MarketHistory
+    '    '{"totalCount_str": "414", "items": [], "pageCount": 1, "pageCount_str": "1", "totalCount": 414}
+    '    <JsonProperty("totalCount_str")> Public totalCount_str As String
+    '    <JsonProperty("items")> Public items() As MarketPriceItems
+    '    <JsonProperty("pageCount")> Public pageCount As Integer
+    '    <JsonProperty("pageCount_str")> Public pageCount_str As String
+    '    <JsonProperty("totalCount")> Public totalCount As Integer
+    'End Class
+
+    '' For Market History
+    'Private Class MarketPriceItems
+    '    '{"volume_str": "28662910175", "orderCount": 4312, "lowPrice": 4.98, "highPrice": 5.04, "avgPrice": 5.0, "volume": 28662910175, "orderCount_str": "4312", "date": "2014-02-01T00:00:00"}
+    '    <JsonProperty("volume_str")> Public volume_str As String
+    '    <JsonProperty("orderCount")> Public orderCount As Long
+    '    <JsonProperty("lowPrice")> Public lowPrice As String ' Use string for EU processing
+    '    <JsonProperty("highPrice")> Public highPrice As String ' Use string for EU processing
+    '    <JsonProperty("avgPrice")> Public avgPrice As String ' Use string for EU processing
+    '    <JsonProperty("volume")> Public volume As Long
+    '    <JsonProperty("orderCount_str")> Public orderCount_str As String
+    '    <JsonProperty("date")> Public date_str As String
+    'End Class
 
     ' /industry/facilities/ (cache: 1 hour)
     ' vnd.ccp.eve.IndustryFacilityCollection-v1
@@ -459,11 +463,10 @@ Public Class EVECREST
 
                 Next
             Else
-                ' Json file didn't download - try updating the station list (outposts really) through the API
-                Dim API As New EVEAPI
+                ' Json file didn't download - try updating the station list (outposts really)
                 Dim readerRegion As SQLiteDataReader
 
-                FacilitiesList = API.GetOutpostList(CacheDate)
+                FacilitiesList = GetOutpostList(CacheDate)
 
                 ' Update region and tax
                 For i = 0 To FacilitiesList.Count - 1
@@ -510,12 +513,12 @@ Public Class EVECREST
                     With FacilitiesList(i)
                         ' See if this is an outpost or not and add the tag for type to the name
                         Select Case .stationTypeID
-                                ' FACILITY_TYPE_ID	FACILITY_TYPE
-                                ' 21644	Amarr Factory Outpost
-                                ' 21645	Gallente Administrative Outpost
-                                ' 21646	Minmatar Service Outpost
-                                ' 21642	Caldari Research Outpost
-                                ' 12294, 12242, 12295 conquerable stations
+                                    ' FACILITY_TYPE_ID	FACILITY_TYPE
+                                    ' 21644	Amarr Factory Outpost
+                                    ' 21645	Gallente Administrative Outpost
+                                    ' 21646	Minmatar Service Outpost
+                                    ' 21642	Caldari Research Outpost
+                                    ' 12294, 12242, 12295 conquerable stations
                             Case 21644
                                 FacilityName = Format(.stationName) & " (A)"
                             Case 21645
@@ -1257,7 +1260,7 @@ Public Class EVECREST
 
     ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
     ' Note Cache Date is returned in local time, not GMT
-    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String, _
+    Private Function GetJSONFile(ByVal URL As String, ByRef CacheDate As Date, ByVal UpdateType As String,
                                  Optional ByVal IgnoreExceptions As Boolean = False, Optional RecursiveCalls As Integer = 0) As String
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse = Nothing
@@ -1364,7 +1367,7 @@ Public Class EVECREST
         Dim readerData As SQLiteDataReader
         Dim RefreshDate As Date
 
-        SQL = "SELECT " & UpdateField & " FROM CREST_CACHE_DATES"
+        SQL = "SELECT " & UpdateField & " FROM ESI_PUBLIC_CACHE_DATES"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
 
@@ -1396,18 +1399,124 @@ Public Class EVECREST
         Dim readerData As SQLiteDataReader
 
         ' Update the cache for this CREST file
-        SQL = "SELECT " & UpdateField & " FROM CREST_CACHE_DATES"
+        SQL = "SELECT " & UpdateField & " FROM ESI_PUBLIC_CACHE_DATES"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
 
         If readerData.Read Then
-            SQL = "UPDATE CREST_CACHE_DATES SET " & UpdateField & " = '" & Format(CacheDate, SQLiteDateFormat) & "'"
-            evedb.ExecuteNonQuerySQL(SQL)
+            SQL = "UPDATE ESI_PUBLIC_CACHE_DATES SET " & UpdateField & " = '" & Format(CacheDate, SQLiteDateFormat) & "'"
+            EVEDB.ExecuteNonQuerySQL(SQL)
         Else
-            SQL = "INSERT INTO CREST_CACHE_DATES (" & UpdateField & ") VALUES ('" & Format(CacheDate, SQLiteDateFormat) & "')"
-            evedb.ExecuteNonQuerySQL(SQL)
+            SQL = "INSERT INTO ESI_PUBLIC_CACHE_DATES (" & UpdateField & ") VALUES ('" & Format(CacheDate, SQLiteDateFormat) & "')"
+            EVEDB.ExecuteNonQuerySQL(SQL)
         End If
     End Sub
 
-End Class
+    ' Function gets the list of all outposts in the game - refreshed daily
+    Public Function GetOutpostList(ByRef CachedUntilDate As Date) As List(Of Station)
+        ' XML Variables
+        Dim m_xmld As XmlDocument
+        Dim m_nodelist As XmlNodeList
+        Dim m_node As XmlNode
 
+        Dim EVEAPIQuery As String
+
+        Dim ReturnData As New List(Of Station)
+        Dim TempStation As Station
+
+        ' Set up query string
+        EVEAPIQuery = "https://api.eveonline.com" & "/eve/ConquerableStationList.xml.aspx"
+
+        'Create the XML Document
+        m_xmld = QueryEVEAPI(EVEAPIQuery)
+
+        ' Check data
+        If IsNothing(m_xmld) Then
+            Return Nothing
+        End If
+
+        ' Update the cache update to 24 hours from this query
+        'CacheDate = DateAdd(DateInterval.Day, 1, Date.UtcNow)
+        ' Get the cache update
+        m_nodelist = m_xmld.SelectNodes("/eveapi/cachedUntil")
+        ' Should only be one time
+        CachedUntilDate = CDate(m_nodelist.Item(0).InnerText)
+
+        ' Get the list of nodes for characters
+        m_nodelist = m_xmld.SelectNodes("/eveapi/result/rowset/row")
+
+        ' Loop through the nodes for three characters 
+        ' if we are just doing the one, then it will exit with the one
+        For Each m_node In m_nodelist
+
+            With m_node.Attributes
+                TempStation.stationID = CLng(.GetNamedItem("stationID").Value)
+                TempStation.stationName = .GetNamedItem("stationName").Value
+                TempStation.stationTypeID = CLng(.GetNamedItem("stationTypeID").Value)
+                TempStation.solarSystemID = CLng(.GetNamedItem("solarSystemID").Value)
+                TempStation.regionID = 0
+                TempStation.corporationID = CLng(.GetNamedItem("corporationID").Value)
+                TempStation.corporationName = .GetNamedItem("corporationName").Value
+            End With
+
+            ReturnData.Add(TempStation)
+
+        Next
+
+        Return ReturnData
+
+    End Function
+
+    ' Function will take the API Query and send back the XML document for processing, If there is an error with the query, the function will set the error for the API object 
+    Private Function QueryEVEAPI(ByVal EVEAPIQuery As String) As XmlDocument
+        Dim m_xmld As XmlDocument
+        Dim m_nodelist As XmlNodeList
+        Dim m_node As XmlNode
+
+        On Error GoTo ErrorHandler
+
+        'Create the XML Document
+        m_xmld = New XmlDocument
+        'Load the Xml file
+        Call OverrideCertificateValidation()
+        m_xmld.Load(EVEAPIQuery)
+
+        ' Get the cache update
+        m_nodelist = m_xmld.SelectNodes("/eveapi/cachedUntil")
+        ' Should only be one time
+        'APIError.CacheDate = CDate(m_nodelist.Item(0).InnerText) ' Time here is in UTC
+
+        ' First see if the authentication went through
+        m_nodelist = m_xmld.SelectNodes("/eveapi/error")
+        m_node = m_nodelist.Item(0)
+
+        If Not IsNothing(m_node) Then
+            ' Authentication Failed or some other error 
+            'APIError.ErrorCode = CInt(m_node.Attributes.GetNamedItem("code").Value)
+            'APIError.ErrorText = m_nodelist.Item(0).InnerText
+            Return Nothing
+        Else
+            ' All good
+            ' APIError.ErrorCode = 0
+            ' APIError.ErrorText = ""
+            Return m_xmld
+        End If
+
+ErrorHandler:
+        ' A non-api error
+        'APIError.ErrorCode = Err.Number
+        'APIError.ErrorText = Err.Description
+    End Function
+
+    ' For https
+    Public Shared Sub OverrideCertificateValidation()
+        ServicePointManager.ServerCertificateValidationCallback = New RemoteCertificateValidationCallback(AddressOf RemoteCertValidate)
+    End Sub
+
+    ' For https
+    Private Shared Function RemoteCertValidate(ByVal sender As Object, ByVal cert As X509Certificate, ByVal chain As X509Chain, ByVal [error] As System.Net.Security.SslPolicyErrors) As Boolean
+        Return True
+    End Function
+
+
+End Class

@@ -27,7 +27,7 @@ Partial Class frmMain
         Me.mnuStripMain = New System.Windows.Forms.MenuStrip()
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectionAddChar = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuSelectionManageAPI = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuSelectionManageCharacters = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuSelectionExit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
@@ -1005,7 +1005,6 @@ Partial Class frmMain
         Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
         Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
-        Me.mnuSelectionAddESICharacter = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1128,7 +1127,7 @@ Partial Class frmMain
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuSelectionAddESICharacter, Me.mnuSelectionAddChar, Me.mnuSelectionManageAPI, Me.ToolStripSeparator1, Me.mnuSelectionExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuSelectionAddChar, Me.mnuSelectionManageCharacters, Me.ToolStripSeparator1, Me.mnuSelectionExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
         Me.mnuFile.Text = "File"
@@ -1136,24 +1135,24 @@ Partial Class frmMain
         'mnuSelectionAddChar
         '
         Me.mnuSelectionAddChar.Name = "mnuSelectionAddChar"
-        Me.mnuSelectionAddChar.Size = New System.Drawing.Size(173, 22)
+        Me.mnuSelectionAddChar.Size = New System.Drawing.Size(170, 22)
         Me.mnuSelectionAddChar.Text = "Add Characters"
         '
-        'mnuSelectionManageAPI
+        'mnuSelectionManageCharacters
         '
-        Me.mnuSelectionManageAPI.Name = "mnuSelectionManageAPI"
-        Me.mnuSelectionManageAPI.Size = New System.Drawing.Size(173, 22)
-        Me.mnuSelectionManageAPI.Text = "Manage Accounts"
+        Me.mnuSelectionManageCharacters.Name = "mnuSelectionManageCharacters"
+        Me.mnuSelectionManageCharacters.Size = New System.Drawing.Size(170, 22)
+        Me.mnuSelectionManageCharacters.Text = "Manage Accounts"
         '
         'ToolStripSeparator1
         '
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(170, 6)
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(167, 6)
         '
         'mnuSelectionExit
         '
         Me.mnuSelectionExit.Name = "mnuSelectionExit"
-        Me.mnuSelectionExit.Size = New System.Drawing.Size(173, 22)
+        Me.mnuSelectionExit.Size = New System.Drawing.Size(170, 22)
         Me.mnuSelectionExit.Text = "Exit"
         '
         'mnuEdit
@@ -11015,12 +11014,6 @@ Partial Class frmMain
         Me.MyListView1.UseCompatibleStateImageBehavior = False
         Me.MyListView1.View = System.Windows.Forms.View.Details
         '
-        'mnuSelectionAddESICharacter
-        '
-        Me.mnuSelectionAddESICharacter.Name = "mnuSelectionAddESICharacter"
-        Me.mnuSelectionAddESICharacter.Size = New System.Drawing.Size(173, 22)
-        Me.mnuSelectionAddESICharacter.Text = "Add ESI Characters"
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11265,7 +11258,7 @@ Partial Class frmMain
     Friend WithEvents mnuCharacterStandings As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents pnlSkills As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents ToolStripSeparator2 As System.Windows.Forms.ToolStripSeparator
-    Friend WithEvents mnuSelectionManageAPI As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuSelectionManageCharacters As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents SetPOSDataToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultTabSettings As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultBP As System.Windows.Forms.ToolStripMenuItem
@@ -12220,5 +12213,4 @@ Partial Class frmMain
     Friend WithEvents lblBPSimpleCopy As Label
     Friend WithEvents mnuViewAssets As ToolStripMenuItem
     Friend WithEvents BlueprintTabFacility As ManufacturingFacility
-    Friend WithEvents mnuSelectionAddESICharacter As ToolStripMenuItem
 End Class

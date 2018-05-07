@@ -51,9 +51,9 @@ Public Class frmResearchAgents
 
         lstAgents.Items.Clear()
 
-        If SelectedCharacter.ResearchAccess Then
+        '   If SelectedCharacter.ResearchAccess Then
 
-            Application.UseWaitCursor = True
+        Application.UseWaitCursor = True
 
             lstAgents.BeginUpdate()
 
@@ -101,23 +101,23 @@ Public Class frmResearchAgents
             btnRefresh.Enabled = True
             lstAgents.EndUpdate()
             Application.UseWaitCursor = False
-        Else
-            Application.DoEvents()
-            fAccessError.ErrorText = "This API did not allow research agents to be loaded for associated characters." & _
-                Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'Research' under the 'Science & Industry' section to include research agents and then reload the API."
-            fAccessError.Text = "API: No Research Agents Loaded"
-            fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
-            fAccessError.ShowDialog()
-            ' Disable the refresh button
-            btnRefresh.Enabled = False
-        End If
+        'Else
+        '    Application.DoEvents()
+        '    fAccessError.ErrorText = "This API did not allow research agents to be loaded for associated characters." & _
+        '        Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'Research' under the 'Science & Industry' section to include research agents and then reload the API."
+        '    fAccessError.Text = "API: No Research Agents Loaded"
+        '    fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
+        '    fAccessError.ShowDialog()
+        '    ' Disable the refresh button
+        '    btnRefresh.Enabled = False
+        'End If
     End Sub
 
     Private Sub btnRefresh_Click(sender As System.Object, e As System.EventArgs) Handles btnRefresh.Click
         Application.UseWaitCursor = True
 
         ' Reload the agents and update from API if necessary
-        Call SelectedCharacter.GetResearchAgents.LoadResearchAgents(True)
+        Call SelectedCharacter.GetResearchAgents.LoadResearchAgents(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData)
 
         ' Refresh the data
         Call LoadGrid()

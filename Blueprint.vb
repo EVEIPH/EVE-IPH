@@ -368,7 +368,7 @@ Public Class Blueprint
         ' Set the Decryptor data
         InventionDecryptor = NoDecryptor
 
-        ' Implement passing in the runs per copy later based on user API, right now though this is unlimited
+        ' Implement passing in the runs per copy later based on user, right now though this is unlimited
         MaxRunsPerBP = 0
 
         IsComponentBP = ComponentBP

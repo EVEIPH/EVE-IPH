@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Label1.Text" xml:space="preserve">
-    <value>You must log in through EVE Secure Sign On. 
+    <value>You must log in to EVE IPH through EVE Secure Sign On. 
 
 First, you must register EVE IPH as an application. 
 Click Register Application to begin the process or the instructions link on how to get started. 
