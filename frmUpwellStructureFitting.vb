@@ -483,6 +483,7 @@ Public Class frmUpwellStructureFitting
 
     End Function
 
+    ' See if the service is already used or not
     Private Function ServiceFound(TypeID As Integer) As Boolean
         Dim CurrentServiceTypes As New List(Of Integer)
 
@@ -646,6 +647,7 @@ Public Class frmUpwellStructureFitting
 
     End Sub
 
+    ' Strips all modules and services from the fitting
     Private Sub StripFitting()
 
         HighSlot1.Image = Nothing
@@ -1195,6 +1197,7 @@ Public Class frmUpwellStructureFitting
             Dim rsReader As SQLiteDataReader
             Dim DBCommand As SQLiteCommand
 
+            ' query for all types of modules, rigs, and services to fit
             SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
             SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
             SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE, "
@@ -1215,7 +1218,7 @@ Public Class frmUpwellStructureFitting
 
             If chkItemViewTypeServices.Checked Then
                 ' Add the sql
-                Call SQLList.Add("(INVENTORY_TYPES.groupID In (1321, 1322, 1415, 1717)) ")
+                Call SQLList.Add("(INVENTORY_TYPES.groupID In (1321, 1322, 1415, 1717, 1887)) ")
             End If
 
             ' Process high, medium, and low slots together
@@ -1288,12 +1291,19 @@ Public Class frmUpwellStructureFitting
                 Dim EID As Integer = rsReader.GetInt32(3)
                 Dim LVI As New ListViewItem
 
+                Dim AllowinHighSec As Boolean
+                If rsReader.GetInt32(6) <> 0 Then
+                    AllowinHighSec = True
+                Else
+                    AllowinHighSec = False
+                End If
+
                 ' Only add if it can be fit to the selected upwell structure and it meets the space requirements
                 If StructureCanFitItem(SelectedUpwellStructure.TypeID, SelectedUpwellStructure.GroupID, rsReader.GetInt32(0)) _
-                    And ((chkHighSec.Checked = True And rsReader.GetInt32(6) <> 0) Or chkHighSec.Checked = False) Then
+                    And ((chkHighSec.Checked = True And AllowinHighSec) Or chkHighSec.Checked = False) Then
 
                     '& CStr(ItemAttributes.disallowInHighSec) & ") "
-                    If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Then
+                    If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Or GID = 1887 Then
                         LVI.Group = ServiceModuleListView.Groups(0) ' 0 is services
                     ElseIf EID = SlotSizes.HighSlot Then
                         LVI.Group = ServiceModuleListView.Groups(1) ' 1 is high
@@ -1814,53 +1824,53 @@ Public Class frmUpwellStructureFitting
         Dim SQL As String = ""
 
         Try
-            ' Only save mats
-            If rbtnBuildBlocks.Checked Then
-                EVEDB.BeginSQLiteTransaction()
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Helium)
+
+            EVEDB.BeginSQLiteTransaction()
+            ' Buying, so save only the fuel block prices
+            If Not rbtnBuildBlocks.Checked Then
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Helium)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHydrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Hydrogen)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHydrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Hydrogen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Nitrogen)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Nitrogen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Oxygen)
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Oxygen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                EVEDB.CommitSQLiteTransaction()
-            Else ' Buying, so save only the fuel block prices
-                EVEDB.BeginSQLiteTransaction()
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeliumIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16274"
+            Else ' Only save mats
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeliumIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16274"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHydrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17889"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHydrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17889"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtNitrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17888"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17888"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtOxygenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17887"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtOxygenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17887"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtCoolant.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9832"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtCoolant.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9832"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtEnrichedUranium.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 44"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtEnrichedUranium.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 44"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtHeavyWater.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16272"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeavyWater.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16272"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtLiquidOzone.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16273"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtLiquidOzone.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16273"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtMechanicalParts.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3689"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtMechanicalParts.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3689"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtOxygen.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3683"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtOxygen.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3683"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtRobotics.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9848"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtRobotics.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9848"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(txtStrontiumClathrates.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16275"
+                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtStrontiumClathrates.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16275"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                EVEDB.CommitSQLiteTransaction()
             End If
 
             MsgBox("Prices Saved", vbInformation, Me.Text)
+            EVEDB.CommitSQLiteTransaction()
 
             ' Refresh the prices
             Call LoadFuelPrices()
         Catch EX As Exception
             MsgBox("Prices not saved, Error: " & EX.Message, vbExclamation, Me.Text)
+            EVEDB.RollbackSQLiteTransaction()
         End Try
 
     End Sub
@@ -1901,6 +1911,8 @@ Public Class frmUpwellStructureFitting
                 OxygenFuelBlockBPUpdated = False ' Saved, so updated
             End If
         End If
+
+        MsgBox("BP Information Saved", vbInformation, Me.Text)
 
     End Sub
 
@@ -1943,22 +1955,22 @@ Public Class frmUpwellStructureFitting
             FoundTE = reader.GetInt32(2)
 
             Select Case reader.GetInt64(0)
-                Case FuelBlocks.Nitrogen
+                Case FuelBlocks.NitrogenBP
                     txtNitrogenFuelBlockBPME.Text = FoundME
                     OriginalNitrogenFuelBlockBPME = CInt(FoundME)
                     OriginalNitrogenFuelBlockBPTE = FoundTE
                     HasNitrogen = True
-                Case FuelBlocks.Hydrogen
+                Case FuelBlocks.HydrogenBP
                     txtHydrogenFuelBlockBPME.Text = FoundME
                     OriginalHydrogenFuelBlockBPME = CInt(FoundME)
                     OriginalHydrogenFuelBlockBPTE = FoundTE
                     HasHydrogen = True
-                Case FuelBlocks.Helium
+                Case FuelBlocks.HeliumBP
                     txtHeliumFuelBlockBPME.Text = FoundME
                     OriginalHeliumFuelBlockBPME = CInt(FoundME)
                     OriginalHeliumFuelBlockBPTE = FoundTE
                     HasHelium = True
-                Case FuelBlocks.Oxygen
+                Case FuelBlocks.OxygenBP
                     txtOxygenFuelBlockBPME.Text = FoundME
                     OriginalOxygenFuelBlockBPME = CInt(FoundME)
                     OriginalOxygenFuelBlockBPTE = FoundTE
@@ -2036,14 +2048,28 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Function GetFuelBlockBuildCost(FuelBlock As FuelBlocks, bpME As Integer) As Double
+        Dim BuildFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Manufacturing)
+        Dim ComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+        Dim CapComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
+        Dim BPID As Long
 
-        ' Build T1 BP for the block, standard settings - CHECK
-        ' Dim BlockBP = New Blueprint(FUELBLOCK, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0, 
-        'SelectedBPManufacturingFacility, SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-        '  Call BlockBP.BuildItems(False, False, False, False, False)
-        ' Return BlockBP.GetRawItemUnitPrice
+        Select Case FuelBlock
+            Case FuelBlocks.Nitrogen
+                BPID = FuelBlocks.NitrogenBP
+            Case FuelBlocks.Helium
+                BPID = FuelBlocks.HeliumBP
+            Case FuelBlocks.Hydrogen
+                BPID = FuelBlocks.HydrogenBP
+            Case FuelBlocks.Oxygen
+                BPID = FuelBlocks.OxygenBP
+        End Select
 
-        Return 0
+        ' Build T1 BP for the block, standard settings with whatever is on bp tab
+        Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
+                                    BuildFacility, ComponentFacility, CapComponentFacility)
+        Call BlockBP.BuildItems(False, False, False, False, False)
+
+        Return BlockBP.GetRawItemUnitPrice
 
     End Function
 
@@ -3143,6 +3169,8 @@ End Class
 
 Public Enum Services
     StandupBiochemicalReactor = 45539 ' Boosters
+    StandupCompositeReactor = 45537 ' Moon mats
+    StandupHybridReactor = 45538 ' T3 mats
     StandupManufacturingPlant = 35878
     StandupCapitalShipyard = 35881
     StandupSupercapitalShipyard = 35877

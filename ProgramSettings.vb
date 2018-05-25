@@ -9,8 +9,6 @@ Public Module SettingsVariables
     Public AllSettings As New ProgramSettings
     ' User Settings
     Public UserApplicationSettings As ApplicationSettings
-    ' Tower Cost settings
-    Public SelectedTower As PlayerOwnedStationSettings
     ' BP Tab Settings
     Public UserBPTabSettings As BPTabSettings
     ' Market History viewer
@@ -140,74 +138,11 @@ Public Class ProgramSettings
     ' If the user has no implants
     Public DefaultImplantValues As Double = 0
 
-    ' Default Facilities - all Jita 4-4 except for RE, which will be a POS in Jita 
-    Public DefaultManufacturingFacilityID As Long = 60003760
-    Public DefaultManufacturingFacility As String = "Jita IV - Moon 4 - Caldari Navy Assembly Plant"
-    Public DefaultManufacturingFacilityType As String = StationFacility
-    Public DefaultComponentManufacturingFacilityID As Long = 60003760
-    Public DefaultComponentManufacturingFacility As String = "Jita IV - Moon 4 - Caldari Navy Assembly Plant"
-    Public DefaultComponentManufacturingFacilityType As String = StationFacility
-    Public DefaultCapitalComponentManufacturingFacilityID As Long = 60003760
-    Public DefaultCapitalComponentManufacturingFacility As String = "Jita IV - Moon 4 - Caldari Navy Assembly Plant"
-    Public DefaultCapitalComponentManufacturingFacilityType As String = StationFacility
-    Public DefaultCapitalManufacturingFacilityID As Long = 60003043
-    Public DefaultCapitalManufacturingFacility As String = "Akora VI - Moon 7 - Expert Housing Production Plant"
-    Public DefaultCapitalManufacturingFacilityType As String = StationFacility
-    Public DefaultCopyFacilityID As Long = 60001786 ' Wous
-    Public DefaultCopyFacility As String = "Wuos VI - Zainou Biotech Research Center"
-    Public DefaultCopyFacilityType As String = StationFacility
-    Public DefaultInventionFacilityID As Long = 60001786 ' Wous
-    Public DefaultInventionFacility As String = "Wuos VI - Zainou Biotech Research Center"
-    Public DefaultInventionFacilityType As String = StationFacility
-    Public DefaultT3InventionFacilityID As Long = 24567
-    Public DefaultT3InventionFacility As String = "Experimental Laboratory"
-    Public DefaultT3InventionFacilityType As String = POSFacility
-    Public DefaultT3CruiserManufacturingFacilityID As Long = 30389 ' If we are manufacturing a T3 item, then default to the subsystem array in a pos
-    Public DefaultT3CruiserManufacturingFacility As String = "Subsystem Assembly Array"
-    Public DefaultT3CruiserManufacturingFacilityType As String = POSFacility
-    Public DefaultT3DestroyerManufacturingFacilityID As Long = 24653 ' If we are manufacturing a T3 item, then default to the subsystem array in a pos
-    Public DefaultT3DestroyerManufacturingFacility As String = "Advanced Small Ship Assembly Array"
-    Public DefaultT3DestroyerManufacturingFacilityType As String = POSFacility
-    Public DefaultSubsystemManufacturingFacilityID As Long = 30389 ' If we are manufacturing a T3 item, then default to the subsystem array in a pos
-    Public DefaultSubsystemManufacturingFacility As String = "Subsystem Assembly Array"
-    Public DefaultSubsystemManufacturingFacilityType As String = POSFacility
-    Public DefaultSuperManufacturingFacilityID As Long = 24575 ' If we are manufacturing a super, then default to the supercaptial array in a pos
-    Public DefaultSuperManufacturingFacility As String = "Supercapital Ship Assembly Array"
-    Public DefaultSuperManufacturingFacilityType As String = POSFacility
-    Public DefaultBoosterManufacturingFacilityID As Long = 25305 ' Drug lab in a pos
-    Public DefaultBoosterManufacturingFacility As String = "Drug Lab"
-    Public DefaultBoosterManufacturingFacilityType As String = POSFacility
-
-    Public DefaultPOSFuelBlockManufacturingFacilityID As Long = 24660
-    Public DefaultPOSFuelBlockManufacturingFacility As String = "Component Assembly Array" ' Component array in a pos for fuel blocks
-    Public DefaultPOSFuelBlockManufacturingFacilityType As String = POSFacility
-
-    Public DefaultPOSLargeShipManufacturingFacilityID As Long = 29613
-    Public DefaultPOSLargeShipManufacturingFacility As String = "Large Ship Assembly Array" ' Large Ship assembly array in a pos for Large Ships
-    Public DefaultPOSLargeShipManufacturingFacilityType As String = POSFacility
-
-    Public DefaultPOSModuleManufacturingFacilityID As Long = 13780
-    Public DefaultPOSModuleManufacturingFacility As String = "Equipment Assembly Array" ' Equipment assembly array in a pos for all modules
-    Public DefaultPOSModuleManufacturingFacilityType As String = POSFacility
-
     Public FacilityDefaultMM As Double = 1
     Public FacilityDefaultTM As Double = 1
     Public FacilityDefaultCM As Double = 1
     Public FacilityDefaultTax As Double = 0.1 ' Only for processing
     Public OutpostDefaultTax As Double = 0 ' If we are saving the settings, then the only time would be for outposts
-
-    ' For POS data (T3 and general pos)
-    Public FacilityDefaultSolarSystemID As Long = 30000142
-    Public FacilityDefaultSolarSystem As String = "Jita"
-    Public FacilityDefaultRegionID As Long = 10000002
-    Public FacilityDefaultRegion As String = "The Forge"
-    Public FacilityDefaultFWUpgradeLevel As Integer = 0
-
-    ' For Booster and super pos production
-    Public DefaultNullFacilitySolarSystemID As Long = 30003713
-    Public DefaultNullFacilitySolarSystem As String = "G7AQ-7"
-    Public DefaultNullFacilityRegionID As Long = 10000047
-    Public DefaultNullFacilityRegion As String = "Providence"
 
     Public FacilityDefaultActivityCostperSecond As Double = 0
     Public FacilityDefaultIncludeUsage As Boolean = True
@@ -215,7 +150,7 @@ Public Class ProgramSettings
     Public FacilityDefaultIncludeTime As Boolean = False ' Only for Invention, Copy, and RE so let this get set 
 
     ' Set here, but use in Update Prices - 6 hours to refresh prices
-    Public DefaultEVECentralRefreshInterval As Integer = 6
+    Public DefaultEVEMarketerRefreshInterval As Integer = 6
 
     ' BP Tab Default settings
     Public DefaultBPTechChecks As Boolean = True
@@ -295,6 +230,7 @@ Public Class ProgramSettings
     Public DefaultCheckBPTypeBoosters As Boolean = True
     Public DefaultCheckBPTypeDeployables As Boolean = True
     Public DefaultCheckBPTypeCelestials As Boolean = True
+    Public DefaultCheckBPTypeReactions As Boolean = True
     Public DefaultCheckBPTypeStructureModules As Boolean = True
     Public DefaultCheckBPTypeStationParts As Boolean = True
     Public DefaultCheckDecryptorNone As Boolean = True
@@ -917,7 +853,6 @@ Public Class ProgramSettings
 
     ' Local versions of settings
     Private ApplicationSettings As ApplicationSettings
-    Private POSSettings As PlayerOwnedStationSettings
     Private BPSettings As BPTabSettings
     Private ManufacturingSettings As ManufacturingTabSettings
     Private DatacoreSettings As DataCoreTabSettings
@@ -933,24 +868,6 @@ Public Class ProgramSettings
     Private UpwellStructureViewerSettings As UpwellStructureSettings
     Private BPViewSettings As BPViewerSettings
 
-    ' Facilities
-    Private ManufacturingFacilitySettings As FacilitySettings
-    Private ComponentsManufacturingFacilitySettings As FacilitySettings
-    Private CapitalComponentsManufacturingFacilitySettings As FacilitySettings
-    Private CapitalManufacturingFacilitySettings As FacilitySettings
-    Private SuperManufacturingFacilitySettings As FacilitySettings
-    Private T3CruiserManufacturingFacilitySettings As FacilitySettings
-    Private T3DestroyerManufacturingFacilitySettings As FacilitySettings
-    Private SubsystemManufacturingFacilitySettings As FacilitySettings
-    Private BoosterManufacturingFacilitySettings As FacilitySettings
-    Private CopyFacilitySettings As FacilitySettings
-    Private InventionFacilitySettings As FacilitySettings
-    Private T3InventionFacilitySettings As FacilitySettings
-    Private NoPOSFacilitySettings As FacilitySettings
-    Private POSFuelBlockFacilitySettings As FacilitySettings
-    Private POSModuleFacilitySettings As FacilitySettings
-    Private POSLargeShipFacilitySettings As FacilitySettings
-
     ' Multiple versions of Asset windows
     Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
     Private AssetWindowSettingsShoppingList As AssetWindowSettings
@@ -963,7 +880,6 @@ Public Class ProgramSettings
     Private IndustryBeltOreChecksSettings5 As IndustryBeltOreChecks
 
     Private Const AppSettingsFileName As String = "ApplicationSettings"
-    Private Const POSSettingsFileName As String = "POSSettings"
     Private Const BPSettingsFileName As String = "BPTabSettings"
     Private Const ManufacturingSettingsFileName As String = "ManufacturingTabSettings"
     Private Const UpdatePricesFileName As String = "UpdatePricesSettings"
@@ -975,24 +891,6 @@ Public Class ProgramSettings
     Private Const IndustryFlipBeltSettingsFileName As String = "IndustryFlipBeltSettings"
     Private Const ShoppingListSettingsFileName As String = "ShoppingListSettings"
     Private Const BPViewerSettingsFileName As String = "BPViewerSettings"
-
-    Private Const ManufacturingFacilitySettingsFileName As String = "ManufacturingFacilitySettings"
-    Private Const ComponentsManufacturingFacilitySettingsFileName As String = "ComponentsManufacturingFacilitySettings"
-    Private Const CapitalComponentsManufacturingFacilitySettingsFileName As String = "CapitalComponentsManufacturingFacilitySettings"
-    Private Const CapitalManufacturingFacilitySettingsFileName As String = "CapitalManufacturingFacilitySettings"
-    Private Const SuperCapitalManufacturingFacilitySettingsFileName As String = "SuperCapitalManufacturingFacilitySettings"
-    Private Const T3CruiserManufacturingFacilitySettingsFileName As String = "T3CruiserManufacturingFacilitySettings"
-    Private Const T3DestroyerManufacturingFacilitySettingsFileName As String = "T3DestroyerManufacturingFacilitySettings"
-    Private Const SubsystemManufacturingFacilitySettingsFileName As String = "SubsystemManufacturingFacilitySettings"
-    Private Const BoosterManufacturingFacilitySettingsFileName As String = "BoosterManufacturingFacilitySettings"
-    Private Const CopyFacilitySettingsFileName As String = "CopyFacilitySettings"
-    Private Const InventionFacilitySettingsFileName As String = "InventionFacilitySettings"
-    Private Const T3InventionFacilitySettingsFileName As String = "T3InventionFacilitySettings"
-    Private Const NoPoSFacilitySettingsFileName As String = "NoPOSFacilitySettings"
-
-    Private Const POSFuelBlockFacilitySettingsFileName As String = "POSFuelBlockFacilitySettings"
-    Private Const POSLargeShipFacilitySettingsFileName As String = "POSLargeShipFacilitySettings"
-    Private Const POSModuleFacilitySettingsFileName As String = "POSModuleFacilitySettings"
 
     Private Const LPStoreSettingsFileName As String = "LPStoreSettings"
     Private Const MarketHistoryViewerSettingsFileName As String = "MarketHistoryViewerSettings"
@@ -1029,7 +927,6 @@ Public Class ProgramSettings
     Public Sub New()
         ApplicationSettings = Nothing
         MiningSettings = Nothing
-        POSSettings = Nothing
         BPSettings = Nothing
         ManufacturingSettings = Nothing
         DatacoreSettings = Nothing
@@ -1199,7 +1096,7 @@ Public Class ProgramSettings
                     .ShopListIncludeInventMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
-                    .EVECentralRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVECentralRefreshInterval", DefaultEVECentralRefreshInterval))
+                    .EVEMarketerRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVEMarketerRefreshInterval", DefaultEVEMarketerRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                     .IgnoreSVRThresholdValue = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "IgnoreSVRThresholdValue", DefaultIgnoreSVRThresholdValue))
@@ -1262,7 +1159,7 @@ Public Class ProgramSettings
             .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
             .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
-            .EVECentralRefreshInterval = DefaultEVECentralRefreshInterval
+            .EVEMarketerRefreshInterval = DefaultEVEMarketerRefreshInterval
 
             .IgnoreSVRThresholdValue = DefaultIgnoreSVRThresholdValue
             .SVRAveragePriceRegion = DefaultSVRAveragePriceRegion
@@ -1300,7 +1197,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(13) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
             ApplicationSettingsList(14) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
             ApplicationSettingsList(15) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
-            ApplicationSettingsList(16) = New Setting("EVECentralRefreshInterval", CStr(SentSettings.EVECentralRefreshInterval))
+            ApplicationSettingsList(16) = New Setting("EVEMarketerRefreshInterval", CStr(SentSettings.EVEMarketerRefreshInterval))
             ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
             ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
             ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
@@ -1331,7 +1228,7 @@ Public Class ProgramSettings
 
 #Region "Application Registration Information"
 
-    ' Loads the POS tower settings from XML setting file
+    ' Loads the app registration settings from XML setting file
     Public Function LoadAppRegistrationInformationSettings() As AppRegistrationInformationSettings
         Dim TempSettings As AppRegistrationInformationSettings = Nothing
 
@@ -1406,7 +1303,7 @@ Public Class ProgramSettings
 
 #Region "Shopping List Settings"
 
-    ' Loads the POS tower settings from XML setting file
+    ' Loads the shnopping list settings from XML setting file
     Public Function LoadShoppingListSettings() As ShoppingListSettings
         Dim TempSettings As ShoppingListSettings = Nothing
 
@@ -2026,6 +1923,7 @@ Public Class ProgramSettings
                     .CheckBPTypeBoosters = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeBoosters", DefaultCheckBPTypeBoosters))
                     .CheckBPTypeDeployables = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeDeployables", DefaultCheckBPTypeDeployables))
                     .CheckBPTypeCelestials = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeCelestials", DefaultCheckBPTypeCelestials))
+                    .CheckBPTypeReactions = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeReactions", DefaultCheckBPTypeReactions))
                     .CheckBPTypeStructureModules = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStructureModules", DefaultCheckBPTypeStructureModules))
                     .CheckBPTypeStationParts = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStationParts", DefaultCheckBPTypeStationParts))
                     .CheckDecryptorNone = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorNone", DefaultCheckDecryptorNone))
@@ -2209,7 +2107,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(83) As Setting
+        Dim ManufacturingSettingsList(84) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2296,6 +2194,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(81) = New Setting("VolumeThresholdCheck", CStr(SentSettings.VolumeThresholdCheck))
             ManufacturingSettingsList(82) = New Setting("CheckDecryptorOptimal", CStr(SentSettings.CheckDecryptorOptimal))
             ManufacturingSettingsList(83) = New Setting("CheckBPTypeStructureModules", CStr(SentSettings.CheckBPTypeStructureModules))
+            ManufacturingSettingsList(84) = New Setting("CheckBPTypeReactions", CStr(SentSettings.CheckBPTypeReactions))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -4342,709 +4241,6 @@ Public Class ProgramSettings
 
 #End Region
 
-#Region "POS Settings"
-
-    ' Loads the POS tower settings from XML setting file
-    Public Function LoadPOSSettings() As PlayerOwnedStationSettings
-        Dim TempSettings As PlayerOwnedStationSettings = Nothing
-
-        Try
-            If FileExists(SettingsFolder, POSSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .TowerRaceID = CInt(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "TowerRaceID", DefaultTowerRaceID))
-                    .TowerName = CStr(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerName", DefaultTowerName))
-                    .CostperHour = CDbl(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeDouble, POSSettingsFileName, "CostperHour", DefaultCostperHour))
-                    .TowerType = CStr(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerType", DefaultTowerType))
-                    .TowerSize = CStr(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeString, POSSettingsFileName, "TowerSize", DefaultTowerSize))
-                    .FuelBlockBuild = CBool(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeBoolean, POSSettingsFileName, "FuelBlockBuild", DefaultFuelBlockBuild))
-                    .CharterCost = CDbl(GetSettingValue(SettingsFolder, POSSettingsFileName, SettingTypes.TypeInteger, POSSettingsFileName, "CharterCost", DefaultCharterCost))
-                End With
-
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultPOSSettings()
-            End If
-        Catch ex As Exception
-            MsgBox("An error occured when loading POS Tower Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultPOSSettings()
-        End Try
-
-        ' Save them locally and then export
-        POSSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    ' Load defaults 
-    Public Function SetDefaultPOSSettings() As PlayerOwnedStationSettings
-        Dim TempSettings As PlayerOwnedStationSettings = Nothing
-
-        ' Load defaults 
-        TempSettings.TowerRaceID = DefaultTowerRaceID
-        TempSettings.TowerName = DefaultTowerName
-        TempSettings.CostperHour = DefaultCostperHour
-        TempSettings.TowerType = DefaultTowerType
-        TempSettings.TowerSize = DefaultTowerSize
-        TempSettings.FuelBlockBuild = DefaultFuelBlockBuild
-        TempSettings.CharterCost = DefaultCharterCost
-
-        POSSettings = TempSettings
-        Return TempSettings
-
-    End Function
-
-    ' Saves the POS Settings to XML
-    Public Sub SavePOSSettings(SentSettings As PlayerOwnedStationSettings)
-        Dim POSSettingsList(6) As Setting
-
-        Try
-            POSSettingsList(0) = New Setting("TowerRaceID", CStr(SentSettings.TowerRaceID))
-            POSSettingsList(1) = New Setting("TowerName", CStr(SentSettings.TowerName))
-            POSSettingsList(2) = New Setting("CostperHour", CStr(SentSettings.CostperHour))
-            POSSettingsList(3) = New Setting("TowerType", CStr(SentSettings.TowerType))
-            POSSettingsList(4) = New Setting("TowerSize", CStr(SentSettings.TowerSize))
-            POSSettingsList(5) = New Setting("FuelBlockBuild", CStr(SentSettings.FuelBlockBuild))
-            POSSettingsList(6) = New Setting("CharterCost", CStr(SentSettings.CharterCost))
-
-            Call WriteSettingsToFile(SettingsFolder, POSSettingsFileName, POSSettingsList, POSSettingsFileName)
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving POS Tower Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the POS Tower Settings
-    Public Function GetPOSSettings() As PlayerOwnedStationSettings
-        Return POSSettings
-    End Function
-
-#End Region
-
-#Region "Facility Settings"
-
-    ' Loads the Facility settings from XML setting file
-    Public Function LoadFacilitySettings(LoadProductionType As ProductionType, Tab As String) As FacilitySettings
-        Dim TempSettings As FacilitySettings = Nothing
-        Dim FacilityFileName As String = ""
-
-        Select Case LoadProductionType
-            Case ProductionType.Manufacturing
-                FacilityFileName = ManufacturingFacilitySettingsFileName
-            Case ProductionType.ComponentManufacturing
-                FacilityFileName = ComponentsManufacturingFacilitySettingsFileName
-            Case ProductionType.CapitalComponentManufacturing
-                FacilityFileName = CapitalComponentsManufacturingFacilitySettingsFileName
-            Case ProductionType.CapitalManufacturing
-                FacilityFileName = CapitalManufacturingFacilitySettingsFileName
-            Case ProductionType.SuperManufacturing
-                FacilityFileName = SuperCapitalManufacturingFacilitySettingsFileName
-            Case ProductionType.BoosterManufacturing
-                FacilityFileName = BoosterManufacturingFacilitySettingsFileName
-            Case ProductionType.T3CruiserManufacturing
-                FacilityFileName = T3CruiserManufacturingFacilitySettingsFileName
-            Case ProductionType.T3DestroyerManufacturing
-                FacilityFileName = T3DestroyerManufacturingFacilitySettingsFileName
-            Case ProductionType.SubsystemManufacturing
-                FacilityFileName = SubsystemManufacturingFacilitySettingsFileName
-            Case ProductionType.Copying
-                FacilityFileName = CopyFacilitySettingsFileName
-            Case ProductionType.Invention
-                FacilityFileName = InventionFacilitySettingsFileName
-            Case ProductionType.T3Invention
-                FacilityFileName = T3InventionFacilitySettingsFileName
-            Case ProductionType.NoPOSManufacturing
-                FacilityFileName = NoPoSFacilitySettingsFileName
-            Case ProductionType.POSFuelBlockManufacturing
-                FacilityFileName = POSFuelBlockFacilitySettingsFileName
-            Case ProductionType.POSLargeShipManufacturing
-                FacilityFileName = POSLargeShipFacilitySettingsFileName
-            Case ProductionType.POSModuleManufacturing
-                FacilityFileName = POSModuleFacilitySettingsFileName
-        End Select
-
-        FacilityFileName = Tab & FacilityFileName
-
-        Try
-            If FileExists(SettingsFolder, FacilityFileName) Then
-                'Get the settings
-                With TempSettings
-                    Select Case LoadProductionType
-                        Case ProductionType.Manufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "Facility", DefaultBPManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "FacilityType", DefaultManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & ManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & ManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & ManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & ManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.ComponentManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "Facility", DefaultComponentManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "FacilityType", DefaultComponentManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & ComponentsManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & ComponentsManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & ComponentsManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & ComponentsManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & ComponentsManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & ComponentsManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & ComponentsManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.CapitalComponentManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "Facility", DefaultCapitalComponentManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "FacilityType", DefaultCapitalComponentManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.CapitalManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "Facility", DefaultCapitalManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "FacilityType", DefaultCapitalManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CapitalManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CapitalManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CapitalManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CapitalManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CapitalManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.SuperManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "Facility", DefaultSuperManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "FacilityType", DefaultSuperManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SuperCapitalManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.BoosterManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "Facility", DefaultBoosterManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "FacilityType", DefaultBoosterManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & BoosterManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & BoosterManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & BoosterManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & BoosterManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & BoosterManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & BoosterManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & BoosterManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.T3CruiserManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "Facility", DefaultT3CruiserManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "FacilityType", DefaultT3CruiserManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3CruiserManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3CruiserManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3CruiserManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3CruiserManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3CruiserManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.T3DestroyerManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "Facility", DefaultT3DestroyerManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "FacilityType", DefaultT3DestroyerManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3DestroyerManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.SubsystemManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "Facility", DefaultSubsystemManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "FacilityType", DefaultSubsystemManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & SubsystemManufacturingFacilitySettingsFileName, "ProductionType", ProductionType.Manufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & SubsystemManufacturingFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & SubsystemManufacturingFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & SubsystemManufacturingFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & SubsystemManufacturingFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & SubsystemManufacturingFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.Copying
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "Facility", DefaultCopyFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "FacilityType", DefaultCopyFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CopyFacilitySettingsFileName, "ActivityID", IndustryActivities.Copying))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & CopyFacilitySettingsFileName, "ProductionType", ProductionType.Copying), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CopyFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & CopyFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & CopyFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & CopyFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & CopyFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.Invention
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "Facility", DefaultInventionFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "FacilityType", DefaultInventionFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & InventionFacilitySettingsFileName, "ActivityID", IndustryActivities.Invention))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & InventionFacilitySettingsFileName, "ProductionType", ProductionType.Invention), ProductionType)
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & InventionFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & InventionFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & InventionFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & InventionFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & InventionFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.T3Invention
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "Facility", DefaultT3InventionFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "FacilityType", DefaultT3InventionFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3InventionFacilitySettingsFileName, "ActivityID", IndustryActivities.Invention))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & T3InventionFacilitySettingsFileName, "ProductionType", ProductionType.Invention), ProductionType)
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3InventionFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & T3InventionFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & T3InventionFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & T3InventionFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & T3InventionFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.NoPOSManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "Facility", DefaultManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "FacilityType", DefaultManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & NoPoSFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & NoPoSFacilitySettingsFileName, "ProductionType", ProductionType.NoPOSManufacturing), ProductionType)
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & NoPoSFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & NoPoSFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & NoPoSFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & NoPoSFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & NoPoSFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.POSFuelBlockManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "Facility", DefaultPOSFuelBlockManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "FacilityType", DefaultPOSFuelBlockManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSFuelBlockFacilitySettingsFileName, "ProductionType", ProductionType.POSFuelBlockManufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSFuelBlockFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSFuelBlockFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSFuelBlockFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSFuelBlockFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSFuelBlockFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.POSModuleManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "Facility", DefaultPOSModuleManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "FacilityType", DefaultPOSModuleManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSModuleFacilitySettingsFileName, "ProductionType", ProductionType.POSModuleManufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSModuleFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSModuleFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSModuleFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSModuleFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSModuleFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                        Case ProductionType.POSLargeShipManufacturing
-                            .Facility = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "Facility", DefaultPOSLargeShipManufacturingFacility))
-                            .FacilityType = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "FacilityType", DefaultPOSLargeShipManufacturingFacilityType))
-                            .ActivityID = CInt(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ActivityID", IndustryActivities.Manufacturing))
-                            .FacilityProductionType = CType(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeInteger, Tab & POSLargeShipFacilitySettingsFileName, "ProductionType", ProductionType.POSLargeShipManufacturing), ProductionType)
-                            .MaterialMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "MaterialMultiplier", FacilityDefaultMM))
-                            .TimeMultiplier = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TimeMultiplier", FacilityDefaultTM))
-                            .TaxRate = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "TaxRate", OutpostDefaultTax))
-                            .SolarSystemID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSLargeShipFacilitySettingsFileName, "SolarSystemID", FacilityDefaultSolarSystemID))
-                            .SolarSystemName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "SolarSystemName", FacilityDefaultSolarSystem))
-                            .RegionID = CLng(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeLong, Tab & POSLargeShipFacilitySettingsFileName, "RegionID", FacilityDefaultRegionID))
-                            .RegionName = CStr(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeString, Tab & POSLargeShipFacilitySettingsFileName, "RegionName", FacilityDefaultRegion))
-                            .ActivityCostperSecond = CDbl(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeDouble, Tab & POSLargeShipFacilitySettingsFileName, "ActivityCostperSecond", FacilityDefaultActivityCostperSecond))
-                            .IncludeActivityUsage = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityUsage", FacilityDefaultIncludeUsage))
-                            .IncludeActivityCost = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityCost", FacilityDefaultIncludeCost))
-                            .IncludeActivityTime = CBool(GetSettingValue(SettingsFolder, FacilityFileName, SettingTypes.TypeBoolean, Tab & POSLargeShipFacilitySettingsFileName, "IncludeActivityTime", FacilityDefaultIncludeTime))
-                    End Select
-                End With
-            Else
-                ' Load defaults 
-                TempSettings = SetFacilityDefaultSettings(LoadProductionType)
-            End If
-        Catch ex As Exception
-            MsgBox("An error occured when loading Facility Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetFacilityDefaultSettings(LoadProductionType)
-        End Try
-
-        ' Save them locally and then export
-        Select Case LoadProductionType
-            Case ProductionType.Manufacturing
-                ManufacturingFacilitySettings = TempSettings
-            Case ProductionType.ComponentManufacturing
-                ComponentsManufacturingFacilitySettings = TempSettings
-            Case ProductionType.CapitalComponentManufacturing
-                CapitalComponentsManufacturingFacilitySettings = TempSettings
-            Case ProductionType.CapitalManufacturing
-                CapitalManufacturingFacilitySettings = TempSettings
-            Case ProductionType.SuperManufacturing
-                SuperManufacturingFacilitySettings = TempSettings
-            Case ProductionType.BoosterManufacturing
-                BoosterManufacturingFacilitySettings = TempSettings
-            Case ProductionType.T3CruiserManufacturing
-                T3CruiserManufacturingFacilitySettings = TempSettings
-            Case ProductionType.T3DestroyerManufacturing
-                T3DestroyerManufacturingFacilitySettings = TempSettings
-            Case ProductionType.SubsystemManufacturing
-                SubsystemManufacturingFacilitySettings = TempSettings
-            Case ProductionType.Copying
-                CopyFacilitySettings = TempSettings
-            Case ProductionType.Invention
-                InventionFacilitySettings = TempSettings
-            Case ProductionType.T3Invention
-                T3InventionFacilitySettings = TempSettings
-            Case ProductionType.NoPOSManufacturing
-                NoPOSFacilitySettings = TempSettings
-            Case ProductionType.POSFuelBlockManufacturing
-                POSFuelBlockFacilitySettings = TempSettings
-            Case ProductionType.POSLargeShipManufacturing
-                POSLargeShipFacilitySettings = TempSettings
-            Case ProductionType.POSModuleManufacturing
-                POSModuleFacilitySettings = TempSettings
-        End Select
-
-        Return TempSettings
-
-    End Function
-
-    ' Saves the Facility Settings to XML
-    Public Sub FacilitySaveSettings(SentSettings As FacilitySettings, LoadProductionType As ProductionType, Tab As String)
-        Dim FacilitySettingsList(14) As Setting
-
-        Try
-            FacilitySettingsList(0) = New Setting("Facility", CStr(SentSettings.Facility))
-            FacilitySettingsList(1) = New Setting("FacilityType", CStr(SentSettings.FacilityType))
-            FacilitySettingsList(2) = New Setting("ActivityID", CStr(SentSettings.ActivityID))
-            FacilitySettingsList(3) = New Setting("ProductionType", CStr(SentSettings.FacilityProductionType))
-            FacilitySettingsList(4) = New Setting("MaterialMultiplier", CStr(SentSettings.MaterialMultiplier))
-            FacilitySettingsList(5) = New Setting("TimeMultiplier", CStr(SentSettings.TimeMultiplier))
-            FacilitySettingsList(6) = New Setting("TaxRate", CStr(SentSettings.TaxRate))
-            FacilitySettingsList(7) = New Setting("ActivityCostperSecond", CStr(SentSettings.ActivityCostperSecond))
-            FacilitySettingsList(8) = New Setting("SolarSystemID", CStr(SentSettings.SolarSystemID))
-            FacilitySettingsList(9) = New Setting("SolarSystemName", CStr(SentSettings.SolarSystemName))
-            FacilitySettingsList(10) = New Setting("RegionID", CStr(SentSettings.RegionID))
-            FacilitySettingsList(11) = New Setting("RegionName", CStr(SentSettings.RegionName))
-            FacilitySettingsList(12) = New Setting("IncludeActivityUsage", CStr(SentSettings.IncludeActivityUsage))
-            FacilitySettingsList(13) = New Setting("IncludeActivityCost", CStr(SentSettings.IncludeActivityCost))
-            FacilitySettingsList(14) = New Setting("IncludeActivityTime", CStr(SentSettings.IncludeActivityTime))
-
-            Select Case LoadProductionType
-                Case ProductionType.Manufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & ManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & ManufacturingFacilitySettingsFileName)
-                Case ProductionType.ComponentManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & ComponentsManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & ComponentsManufacturingFacilitySettingsFileName)
-                Case ProductionType.CapitalComponentManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & CapitalComponentsManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & CapitalComponentsManufacturingFacilitySettingsFileName)
-                Case ProductionType.SubsystemManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & SubsystemManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SubsystemManufacturingFacilitySettingsFileName)
-                Case ProductionType.SuperManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & SuperCapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & SuperCapitalManufacturingFacilitySettingsFileName)
-                Case ProductionType.T3CruiserManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & T3CruiserManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & T3CruiserManufacturingFacilitySettingsFileName)
-                Case ProductionType.T3DestroyerManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & T3DestroyerManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & T3DestroyerManufacturingFacilitySettingsFileName)
-                Case ProductionType.BoosterManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & BoosterManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & BoosterManufacturingFacilitySettingsFileName)
-                Case ProductionType.CapitalManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & CapitalManufacturingFacilitySettingsFileName, FacilitySettingsList, Tab & CapitalManufacturingFacilitySettingsFileName)
-                Case ProductionType.Copying
-                    Call WriteSettingsToFile(SettingsFolder, Tab & CopyFacilitySettingsFileName, FacilitySettingsList, Tab & CopyFacilitySettingsFileName)
-                Case ProductionType.Invention
-                    Call WriteSettingsToFile(SettingsFolder, Tab & InventionFacilitySettingsFileName, FacilitySettingsList, Tab & InventionFacilitySettingsFileName)
-                Case ProductionType.T3Invention
-                    Call WriteSettingsToFile(SettingsFolder, Tab & T3InventionFacilitySettingsFileName, FacilitySettingsList, Tab & T3InventionFacilitySettingsFileName)
-                Case ProductionType.NoPOSManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & NoPoSFacilitySettingsFileName, FacilitySettingsList, Tab & NoPoSFacilitySettingsFileName)
-                Case ProductionType.POSFuelBlockManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & POSFuelBlockFacilitySettingsFileName, FacilitySettingsList, Tab & POSFuelBlockFacilitySettingsFileName)
-                Case ProductionType.POSLargeShipManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & POSLargeShipFacilitySettingsFileName, FacilitySettingsList, Tab & POSLargeShipFacilitySettingsFileName)
-                Case ProductionType.POSModuleManufacturing
-                    Call WriteSettingsToFile(SettingsFolder, Tab & POSModuleFacilitySettingsFileName, FacilitySettingsList, Tab & POSModuleFacilitySettingsFileName)
-            End Select
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving Manufacturing Facility Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the Facility Settings
-    Public Function GetFacilitySettings(LoadProductionType As ProductionType) As FacilitySettings
-
-        Select Case LoadProductionType
-            Case ProductionType.Manufacturing
-                Return ManufacturingFacilitySettings
-            Case ProductionType.BoosterManufacturing
-                Return BoosterManufacturingFacilitySettings
-            Case ProductionType.CapitalManufacturing
-                Return CapitalManufacturingFacilitySettings
-            Case ProductionType.SubsystemManufacturing
-                Return SubsystemManufacturingFacilitySettings
-            Case ProductionType.SuperManufacturing
-                Return SuperManufacturingFacilitySettings
-            Case ProductionType.T3CruiserManufacturing
-                Return T3CruiserManufacturingFacilitySettings
-            Case ProductionType.T3DestroyerManufacturing
-                Return T3DestroyerManufacturingFacilitySettings
-            Case ProductionType.ComponentManufacturing
-                Return ComponentsManufacturingFacilitySettings
-            Case ProductionType.CapitalComponentManufacturing
-                Return CapitalComponentsManufacturingFacilitySettings
-            Case ProductionType.Copying
-                Return CopyFacilitySettings
-            Case ProductionType.Invention
-                Return InventionFacilitySettings
-            Case ProductionType.T3Invention
-                Return T3InventionFacilitySettings
-            Case ProductionType.NoPOSManufacturing
-                Return NoPOSFacilitySettings
-            Case ProductionType.POSFuelBlockManufacturing
-                Return POSFuelBlockFacilitySettings
-            Case ProductionType.POSLargeShipManufacturing
-                Return POSLargeShipFacilitySettings
-            Case ProductionType.POSModuleManufacturing
-                Return POSModuleFacilitySettings
-        End Select
-
-        Return Nothing
-
-    End Function
-
-    ' Load defaults 
-    Public Function SetFacilityDefaultSettings(LoadProductionType As ProductionType) As FacilitySettings
-        Dim TempSettings As FacilitySettings = Nothing
-
-        ' These are all the same regardless
-        TempSettings.MaterialMultiplier = FacilityDefaultMM
-        TempSettings.TimeMultiplier = FacilityDefaultTM
-        TempSettings.TaxRate = FacilityDefaultTax
-        TempSettings.ActivityCostperSecond = FacilityDefaultActivityCostperSecond
-        TempSettings.IncludeActivityUsage = FacilityDefaultIncludeUsage
-        TempSettings.IncludeActivityCost = FacilityDefaultIncludeCost
-        TempSettings.IncludeActivityTime = FacilityDefaultIncludeTime
-
-        ' For POS settings, use a null setting for boosters and supers, else use highsec (Jita)
-        Select Case LoadProductionType
-            Case ProductionType.SuperManufacturing, ProductionType.BoosterManufacturing
-                TempSettings.SolarSystemID = DefaultNullFacilitySolarSystemID
-                TempSettings.SolarSystemName = DefaultNullFacilitySolarSystem
-                TempSettings.RegionID = DefaultNullFacilityRegionID
-                TempSettings.RegionName = DefaultNullFacilityRegion
-            Case Else
-                TempSettings.SolarSystemID = FacilityDefaultSolarSystemID
-                TempSettings.SolarSystemName = FacilityDefaultSolarSystem
-                TempSettings.RegionID = FacilityDefaultRegionID
-                TempSettings.RegionName = FacilityDefaultRegion
-        End Select
-
-        ' Load defaults 
-        Select Case LoadProductionType
-            Case ProductionType.Manufacturing
-                TempSettings.Facility = DefaultManufacturingFacility
-                TempSettings.FacilityType = DefaultManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.Manufacturing
-                ManufacturingFacilitySettings = TempSettings
-            Case ProductionType.SuperManufacturing
-                TempSettings.Facility = DefaultSuperManufacturingFacility
-                TempSettings.FacilityType = DefaultSuperManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.SuperManufacturing
-                SuperManufacturingFacilitySettings = TempSettings
-            Case ProductionType.BoosterManufacturing
-                TempSettings.Facility = DefaultBoosterManufacturingFacility
-                TempSettings.FacilityType = DefaultBoosterManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.BoosterManufacturing
-                BoosterManufacturingFacilitySettings = TempSettings
-            Case ProductionType.SubsystemManufacturing
-                TempSettings.Facility = DefaultSubsystemManufacturingFacility
-                TempSettings.FacilityType = DefaultSubsystemManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.SubsystemManufacturing
-                SubsystemManufacturingFacilitySettings = TempSettings
-            Case ProductionType.T3CruiserManufacturing
-                TempSettings.Facility = DefaultT3CruiserManufacturingFacility
-                TempSettings.FacilityType = DefaultT3CruiserManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.T3CruiserManufacturing
-                T3CruiserManufacturingFacilitySettings = TempSettings
-            Case ProductionType.T3DestroyerManufacturing
-                TempSettings.Facility = DefaultT3DestroyerManufacturingFacility
-                TempSettings.FacilityType = DefaultT3DestroyerManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.T3DestroyerManufacturing
-                T3DestroyerManufacturingFacilitySettings = TempSettings
-            Case ProductionType.CapitalManufacturing
-                TempSettings.Facility = DefaultCapitalManufacturingFacility
-                TempSettings.FacilityType = DefaultCapitalManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.CapitalManufacturing
-                CapitalManufacturingFacilitySettings = TempSettings
-            Case ProductionType.ComponentManufacturing
-                TempSettings.Facility = DefaultComponentManufacturingFacility
-                TempSettings.FacilityType = DefaultComponentManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.ComponentManufacturing
-                ComponentsManufacturingFacilitySettings = TempSettings
-            Case ProductionType.CapitalComponentManufacturing
-                TempSettings.Facility = DefaultCapitalComponentManufacturingFacility
-                TempSettings.FacilityType = DefaultCapitalComponentManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.CapitalComponentManufacturing
-                CapitalComponentsManufacturingFacilitySettings = TempSettings
-            Case ProductionType.Copying
-                TempSettings.Facility = DefaultCopyFacility
-                TempSettings.FacilityType = DefaultCopyFacilityType
-                TempSettings.ActivityID = IndustryActivities.Copying
-                TempSettings.FacilityProductionType = ProductionType.Copying
-                CopyFacilitySettings = TempSettings
-            Case ProductionType.Invention
-                TempSettings.Facility = DefaultInventionFacility
-                TempSettings.FacilityType = DefaultInventionFacilityType
-                TempSettings.ActivityID = IndustryActivities.Invention
-                TempSettings.FacilityProductionType = ProductionType.Invention
-                InventionFacilitySettings = TempSettings
-            Case ProductionType.T3Invention
-                TempSettings.Facility = DefaultT3InventionFacility
-                TempSettings.FacilityType = DefaultT3InventionFacilityType
-                TempSettings.ActivityID = IndustryActivities.Invention
-                TempSettings.FacilityProductionType = ProductionType.T3Invention
-                InventionFacilitySettings = TempSettings
-            Case ProductionType.NoPOSManufacturing
-                TempSettings.Facility = DefaultManufacturingFacility
-                TempSettings.FacilityType = DefaultManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.NoPOSManufacturing
-                NoPOSFacilitySettings = TempSettings
-            Case ProductionType.POSFuelBlockManufacturing
-                TempSettings.Facility = DefaultPOSFuelBlockManufacturingFacility
-                TempSettings.FacilityType = DefaultPOSFuelBlockManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.POSFuelBlockManufacturing
-                POSFuelBlockFacilitySettings = TempSettings
-            Case ProductionType.POSLargeShipManufacturing
-                TempSettings.Facility = DefaultPOSLargeShipManufacturingFacility
-                TempSettings.FacilityType = DefaultPOSLargeShipManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.POSLargeShipManufacturing
-                POSLargeShipFacilitySettings = TempSettings
-            Case ProductionType.POSModuleManufacturing
-                TempSettings.Facility = DefaultPOSModuleManufacturingFacility
-                TempSettings.FacilityType = DefaultPOSModuleManufacturingFacilityType
-                TempSettings.ActivityID = IndustryActivities.Manufacturing
-                TempSettings.FacilityProductionType = ProductionType.POSModuleManufacturing
-                POSModuleFacilitySettings = TempSettings
-        End Select
-
-        Return TempSettings
-
-    End Function
-
-    ' Deletes all the facility files for the tab sent
-    Public Sub DeleteAllFacilitySettingsFiles(Tab As String)
-
-        File.Delete(SettingsFolder & Tab & ManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & ComponentsManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CapitalComponentsManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CapitalManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & SuperCapitalManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3CruiserManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3DestroyerManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & SubsystemManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & BoosterManufacturingFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & CopyFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & InventionFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & T3InventionFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & NoPoSFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & LPStoreSettingsFileName)
-        File.Delete(SettingsFolder & Tab & MarketHistoryViewerSettingsFileName)
-        File.Delete(SettingsFolder & Tab & UpwellStructureViewerSettingsFileName)
-        File.Delete(SettingsFolder & Tab & StructureBonusPopoutViewerSettingsFileName)
-
-        File.Delete(SettingsFolder & Tab & POSFuelBlockFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & POSLargeShipFacilitySettingsFileName)
-        File.Delete(SettingsFolder & Tab & POSModuleFacilitySettingsFileName)
-
-    End Sub
-
-#End Region
-
 #Region "LP Store Settings"
 
     ' Loads the tab settings
@@ -5579,7 +4775,7 @@ Public Structure ApplicationSettings
     Dim ShopListIncludeCopyMats As Boolean
 
     ' The interval for allowing refresh of prices from EVE Central - no less than 1 hour
-    Dim EVECentralRefreshInterval As Integer
+    Dim EVEMarketerRefreshInterval As Integer
 
     ' Filter variables for svr
     Dim IgnoreSVRThresholdValue As Double
@@ -5771,6 +4967,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckBPTypeCelestials As Boolean
     Dim CheckBPTypeStructureModules As Boolean
     Dim CheckBPTypeStationParts As Boolean
+    Dim CheckBPTypeReactions As Boolean
 
     Dim CheckCapitalComponentsFacility As Boolean
     Dim CheckT3DestroyerFacility As Boolean
@@ -6002,20 +5199,6 @@ Public Structure MiningTabSettings
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
-
-End Structure
-
-' For POS Tower Settings
-Public Structure PlayerOwnedStationSettings
-    ' Form stuff
-    Dim TowerRaceID As Integer
-    Dim TowerName As String
-    Dim CostperHour As Double
-    Dim TowerType As String
-    Dim TowerSize As String
-
-    Dim FuelBlockBuild As Boolean
-    Dim CharterCost As Double
 
 End Structure
 
@@ -6427,29 +5610,6 @@ Public Structure BPViewerSettings
     Dim MediumCheck As Boolean
     Dim LargeCheck As Boolean
     Dim XLCheck As Boolean
-End Structure
-
-' For all types of facilities
-Public Structure FacilitySettings
-    Dim Facility As String ' Will be a station/outpost or a pos module
-    Dim FacilityType As String ' Type of facility (station, outpost, or pos)
-    Dim ActivityID As Integer
-    Dim FacilityProductionType As ProductionType ' What will this facility be used for?
-    Dim MaterialMultiplier As Double ' Allows them to set the ME/TE/Tax for the facility (like in Outposts) when I can't get the info
-    Dim TimeMultiplier As Double
-    Dim TaxRate As Double
-
-    ' For POS, save the location
-    Dim SolarSystemID As Long
-    Dim SolarSystemName As String
-    ' Dim FWUpgradeLevel As Integer
-    Dim RegionID As Long
-    Dim RegionName As String
-    Dim ActivityCostperSecond As Double ' For pos costs
-    Dim IncludeActivityCost As Boolean
-    Dim IncludeActivityTime As Boolean
-    Dim IncludeActivityUsage As Boolean
-
 End Structure
 
 ' Settings on LP Store form

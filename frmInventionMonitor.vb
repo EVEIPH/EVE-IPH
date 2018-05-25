@@ -354,7 +354,7 @@ Public Class frmInventionMonitor
 
     ' Just display the invention chance in the label
     Private Sub DisplayInventionStats()
-        Dim TempBlueprint As Blueprint
+        'Dim TempBlueprint As Blueprint
         Dim InventionSkills As New EVESkillList
         Dim SelectedDecryptor As New Decryptor
 
@@ -365,17 +365,17 @@ Public Class frmInventionMonitor
         gbSkills.Visible = True
 
         ' Build the T2 item as a blueprint and then get stats - CHECK
-        TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter,
-                                        UserApplicationSettings, False, 0, SelectedBPManufacturingFacility,
-                                        SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-        ' Invent the bp
-        Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, SelectedBPCopyFacility, 0)
-        Call TempBlueprint.BuildItems(False, False, False, False, False)
+        'TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter,
+        '                                UserApplicationSettings, False, 0, SelectedBPManufacturingFacility,
+        '                                SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+        '' Invent the bp
+        'Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, SelectedBPCopyFacility, 0)
+        'Call TempBlueprint.BuildItems(False, False, False, False, False)
 
         ' Now get the data from the blueprint
-        lblSuccessChance.Text = FormatPercent(TempBlueprint.GetInventionChance, 2)
+        'lblSuccessChance.Text = FormatPercent(TempBlueprint.GetInventionChance, 2)
         ' Skills
-        InventionSkills = TempBlueprint.GetReqInventionSkills()
+        'InventionSkills = TempBlueprint.GetReqInventionSkills()
 
         ' Set the combos and labels for skills
         SettingComboSkills = True

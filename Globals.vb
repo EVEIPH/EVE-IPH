@@ -42,9 +42,6 @@ Public Module Public_Variables
     Public UserWorkingFolder As String = "" ' Where the DB and updater and anything that changes files will be
     Public UserImagePath As String = "" ' Where the images are kept
 
-    'Public Const PatchNotesURL = "http://www.mediafire.com/download/a6dc16n5ndqi2ki/README.txt"
-    'Public Const XMLUpdateServerURL = "http://www.mediafire.com/download/zazw6acanj1m43x/LatestVersionIPH.xml"
-    'Public Const XMLUpdateTestServerURL = "http://www.mediafire.com/download/zlkpaw8qck4qryw/LatestVersionIPH_Test.xml"
     Public Const PatchNotesURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/Patch%20Notes.txt"
     Public Const XMLUpdateFileURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/LatestVersionIPH.xml"
     Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
@@ -60,13 +57,6 @@ Public Module Public_Variables
     Public Const XMLUpdaterFileName As String = "EVEIPH_Updater.exe" ' For use in the XML files to remove spaces from row names
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
-
-    ' For API loading
-    Public Const NoSkillsLoaded As String = "No Skills Loaded"
-    Public Const NoStandingsLoaded As String = "No Standings Loaded"
-    Public Const NoSkillsStandingsLoaded As String = "No Skills or Standings Loaded"
-    Public Const NoIndyJobsLoaded As String = "No Industry Jobs Loaded"
-    Public Const NoResearchLoaded As String = "No Research Data Loaded"
 
     ' Just because
     Public Const TheForgeTypeID As Long = 10000002
@@ -161,58 +151,8 @@ Public Module Public_Variables
     Public ErrorTest As String = ""
 
     Public PriceQueryCount As Integer ' This will track the number of times the user queries EVE Central - used to warn them for over pinging
-
+    Public CalcHistoryRegionLoaded As Boolean
     Public ShownPriceUpdateError As Boolean ' Only want to show them the error once
-
-    Public Const ActivityManufacturing As String = "Manufacturing"
-    Public Const ActivityComponentManufacturing As String = "Component Manufacturing"
-    Public Const ActivityCapComponentManufacturing As String = "Cap Component Manufacturing"
-    Public Const ActivityCopying As String = "Copying"
-    Public Const ActivityInvention As String = "Invention"
-
-    ' Use these to determine the facility types for these cases - TODO put these in an enum
-    ' These are all the capital ships that use capital parts
-    Public Const CapitalIndustrialShipGroupID As Integer = 883
-    Public Const CarrierGroupID As Integer = 547
-    Public Const DreadnoughtGroupID As Integer = 485
-    Public Const FreighterGroupID As Integer = 513
-    Public Const IndustrialCommandShipGroupID As Integer = 941
-    Public Const JumpFreighterGroupID As Integer = 902
-    Public Const SupercarrierGroupID As Integer = 659
-    Public Const FAXGroupID As Integer = 1538
-    Public Const TitanGroupID As Integer = 30
-    Public Const BoosterGroupID As Integer = 303
-
-    Public Const StrategicCruiserGroupID As Integer = 963
-    Public Const TacticalDestroyerGroupID As Integer = 1305
-    Public Const SubsystemCategoryID As Integer = 32
-
-    ' For looking up pos stuff in facilities
-    Public Const FuelBlockGroupID As Integer = 1136
-    Public Const BattleshipGroupID As Integer = 27
-    Public Const ModuleCategoryID As Integer = 7
-
-    Public Const ShipCategoryID As Integer = 6 ' for loading invention and copying 
-
-    ' T3 Bps for facility updates
-    Public Const StrategicCruiserBPGroupID As Integer = 996
-    Public Const TacticalDestroyerBPGroupID As Integer = 1309
-    Public Const SubsystemBPGroupID As Integer = 973
-
-    Public Const ConstructionComponentsGroupID As Integer = 334 ' Use this for all non-capital components
-    Public Const ComponentCategoryID As Integer = 17
-    Public Const CapitalComponentGroupID As Integer = 873
-    Public Const AdvCapitalComponentGroupID As Integer = 913
-
-    ' Categories (has multiple groups)
-    Public Const StationEggGroupID As Integer = 307 ' This is for loading No POS build items
-    Public Const SovStructureCategoryID As Integer = 3 ' For stations - I don't think this is used anymore (everything can be built at a pos?)
-    Public Const StationPartsGroupID As Integer = 536
-
-    Public Const POSFacility As String = "POS"
-    Public Const StationFacility As String = "Station"
-    Public Const OutpostFacility As String = "Outpost"
-    Public Const StructureFacility As String = "Structure"
 
     Public Const BPO As String = "BPO"
     Public Const BPC As String = "BPC"
@@ -264,212 +204,6 @@ Public Module Public_Variables
     Public Const CSVDataExport As String = "CSV"
     Public Const SSVDataExport As String = "SSV"
 
-    ' TODO - Delete these eventually
-    ' All locally saved facility variables will be here
-    Public SelectedBPManufacturingFacility As New IndustryFacility
-    Public SelectedBPComponentManufacturingFacility As New IndustryFacility
-    Public SelectedBPCapitalComponentManufacturingFacility As New IndustryFacility
-    Public SelectedBPCapitalManufacturingFacility As New IndustryFacility
-    Public SelectedBPSuperManufacturingFacility As New IndustryFacility
-    Public SelectedBPT3CruiserManufacturingFacility As New IndustryFacility
-    Public SelectedBPT3DestroyerManufacturingFacility As New IndustryFacility
-    Public SelectedBPSubsystemManufacturingFacility As New IndustryFacility
-    Public SelectedBPBoosterManufacturingFacility As New IndustryFacility
-    Public SelectedBPInventionFacility As New IndustryFacility
-    Public SelectedBPT3InventionFacility As New IndustryFacility
-    Public SelectedBPCopyFacility As New IndustryFacility
-    Public SelectedBPNoPOSFacility As New IndustryFacility
-
-    ' Special cases for POS Facilities where items can be produced at more than one array
-    Public SelectedBPPOSFuelBlockFacility As New IndustryFacility
-    Public SelectedBPPOSLargeShipFacility As New IndustryFacility
-    Public SelectedBPPOSModuleFacility As New IndustryFacility
-
-    ' Selected manufacturing tab facilities
-    Public SelectedCalcManufacturingFacility As New IndustryFacility
-    Public SelectedCalcComponentManufacturingFacility As New IndustryFacility
-    Public SelectedCalcCapitalComponentManufacturingFacility As New IndustryFacility
-    Public SelectedCalcCapitalManufacturingFacility As New IndustryFacility
-    Public SelectedCalcSuperManufacturingFacility As New IndustryFacility
-    Public SelectedCalcT3CruiserManufacturingFacility As New IndustryFacility
-    Public SelectedCalcT3DestroyerManufacturingFacility As New IndustryFacility
-    Public SelectedCalcSubsystemManufacturingFacility As New IndustryFacility
-    Public SelectedCalcBoosterManufacturingFacility As New IndustryFacility
-    Public SelectedCalcInventionFacility As New IndustryFacility
-    Public SelectedCalcT3InventionFacility As New IndustryFacility
-    Public SelectedCalcCopyFacility As New IndustryFacility
-    Public SelectedCalcNoPOSFacility As New IndustryFacility
-
-    ' Special cases for POS Facilities where items can be produced at more than one array
-    Public SelectedCalcPOSFuelBlockFacility As New IndustryFacility
-    Public SelectedCalcPOSLargeShipFacility As New IndustryFacility
-    Public SelectedCalcPOSModuleFacility As New IndustryFacility
-
-    ' Save the default data for checking if the selected facility is a default and quick reference
-    Public DefaultBPPOSFuelBlockFacility As New IndustryFacility
-    Public DefaultBPPOSLargeShipFacility As New IndustryFacility
-    Public DefaultBPPOSModuleFacility As New IndustryFacility
-
-    Public DefaultBPManufacturingFacility As New IndustryFacility
-    Public DefaultBPComponentManufacturingFacility As New IndustryFacility
-    Public DefaultBPCapitalComponentManufacturingFacility As New IndustryFacility
-    Public DefaultBPCapitalManufacturingFacility As New IndustryFacility
-    Public DefaultBPSuperManufacturingFacility As New IndustryFacility
-    Public DefaultBPT3CruiserManufacturingFacility As New IndustryFacility
-    Public DefaultBPT3DestroyerManufacturingFacility As New IndustryFacility
-    Public DefaultBPSubsystemManufacturingFacility As New IndustryFacility
-    Public DefaultBPBoosterManufacturingFacility As New IndustryFacility
-    Public DefaultBPInventionFacility As New IndustryFacility
-    Public DefaultBPT3InventionFacility As New IndustryFacility
-    Public DefaultBPCopyFacility As New IndustryFacility
-    Public DefaultBPNoPOSFacility As New IndustryFacility
-
-    Public DefaultCalcManufacturingFacility As New IndustryFacility
-    Public DefaultCalcComponentManufacturingFacility As New IndustryFacility
-    Public DefaultCalcCapitalComponentManufacturingFacility As New IndustryFacility
-    Public DefaultCalcCapitalManufacturingFacility As New IndustryFacility
-    Public DefaultCalcSuperManufacturingFacility As New IndustryFacility
-    Public DefaultCalcT3CruiserManufacturingFacility As New IndustryFacility
-    Public DefaultCalcT3DestroyerManufacturingFacility As New IndustryFacility
-    Public DefaultCalcSubsystemManufacturingFacility As New IndustryFacility
-    Public DefaultCalcBoosterManufacturingFacility As New IndustryFacility
-    Public DefaultCalcInventionFacility As New IndustryFacility
-    Public DefaultCalcT3InventionFacility As New IndustryFacility
-    Public DefaultCalcCopyFacility As New IndustryFacility
-    Public DefaultCalcNoPOSFacility As New IndustryFacility
-
-    Public DefaultCalcPOSFuelBlockFacility As New IndustryFacility
-    Public DefaultCalcPOSLargeShipFacility As New IndustryFacility
-    Public DefaultCalcPOSModuleFacility As New IndustryFacility
-
-    ' Delete these eventually
-    Public SelectedCalcBaseManufacturingFacility As New IndustryFacility
-    Public DefaultCalcBaseManufacturingFacility As New IndustryFacility
-
-    '' Facility combos
-    'Public PreviousIndustryType As IndustryType
-    'Public PreviousFacilityType As String
-    'Public PreviousFacilityRegion As String
-    'Public PreviousFacilitySystem As String
-    'Public PreviousFacilityEquipment As String
-    'Public PreviousActivity As String
-    'Public CurrentIndustryType As IndustryType
-    'Public CurrentBPGroupID As Integer
-    'Public CurrentBPCategoryID As Integer
-
-    'Public PreviousCalcBaseIndustryType As IndustryType
-    'Public PreviousCalcBaseFacilityType As String
-    'Public PreviousCalcBaseFacilityRegion As String
-    'Public PreviousCalcBaseFacilitySystem As String
-    'Public PreviousCalcBaseFacilityEquipment As String
-
-    'Public PreviousCalcComponentIndustryType As IndustryType
-    'Public PreviousCalcComponentFacilityType As String
-    'Public PreviousCalcComponentFacilityRegion As String
-    'Public PreviousCalcComponentFacilitySystem As String
-    'Public PreviousCalcComponentFacilityEquipment As String
-
-    'Public PreviousCalcSuperIndustryType As IndustryType
-    'Public PreviousCalcSuperFacilityType As String
-    'Public PreviousCalcSuperFacilityRegion As String
-    'Public PreviousCalcSuperFacilitySystem As String
-    'Public PreviousCalcSuperFacilityEquipment As String
-
-    'Public PreviousCalcCapitalIndustryType As IndustryType
-    'Public PreviousCalcCapitalFacilityType As String
-    'Public PreviousCalcCapitalFacilityRegion As String
-    'Public PreviousCalcCapitalFacilitySystem As String
-    'Public PreviousCalcCapitalFacilityEquipment As String
-
-    'Public PreviousCalcT3IndustryType As IndustryType
-    'Public PreviousCalcT3FacilityType As String
-    'Public PreviousCalcT3FacilityRegion As String
-    'Public PreviousCalcT3FacilitySystem As String
-    'Public PreviousCalcT3FacilityEquipment As String
-
-    'Public PreviousCalcSubsystemIndustryType As IndustryType
-    'Public PreviousCalcSubsystemFacilityType As String
-    'Public PreviousCalcSubsystemFacilityRegion As String
-    'Public PreviousCalcSubsystemFacilitySystem As String
-    'Public PreviousCalcSubsystemFacilityEquipment As String
-
-    'Public PreviousCalcBoosterIndustryType As IndustryType
-    'Public PreviousCalcBoosterFacilityType As String
-    'Public PreviousCalcBoosterFacilityRegion As String
-    'Public PreviousCalcBoosterFacilitySystem As String
-    'Public PreviousCalcBoosterFacilityEquipment As String
-
-    'Public PreviousCalcInventionIndustryType As IndustryType
-    'Public PreviousCalcInventionFacilityType As String
-    'Public PreviousCalcInventionFacilityRegion As String
-    'Public PreviousCalcInventionFacilitySystem As String
-    'Public PreviousCalcInventionFacilityEquipment As String
-
-    'Public PreviousCalcT3InventionIndustryType As IndustryType
-    'Public PreviousCalcT3InventionFacilityType As String
-    'Public PreviousCalcT3InventionFacilityRegion As String
-    'Public PreviousCalcT3InventionFacilitySystem As String
-    'Public PreviousCalcT3InventionFacilityEquipment As String
-
-    'Public PreviousCalcCopyIndustryType As IndustryType
-    'Public PreviousCalcCopyFacilityType As String
-    'Public PreviousCalcCopyFacilityRegion As String
-    'Public PreviousCalcCopyFacilitySystem As String
-    'Public PreviousCalcCopyFacilityEquipment As String
-
-    'Public PreviousCalcREIndustryType As IndustryType
-    'Public PreviousCalcNoPOSFacilityType As String
-    'Public PreviousCalcNoPOSFacilityRegion As String
-    'Public PreviousCalcNoPOSFacilitySystem As String
-    'Public PreviousCalcNoPOSFacilityEquipment As String
-
-    'Public BPFacilityRegionsLoaded As Boolean
-    'Public BPFacilitySystemsLoaded As Boolean
-    'Public BPFacilitiesLoaded As Boolean
-
-    'Public CalcBaseFacilityRegionsLoaded As Boolean
-    'Public CalcBaseFacilitySystemsLoaded As Boolean
-    'Public CalcBaseFacilitiesLoaded As Boolean
-    'Public CalcComponentFacilityRegionsLoaded As Boolean
-    'Public CalcComponentFacilitySystemsLoaded As Boolean
-    'Public CalcComponentFacilitiesLoaded As Boolean
-    'Public CalcInventionFacilityRegionsLoaded As Boolean
-    'Public CalcInventionFacilitySystemsLoaded As Boolean
-    'Public CalcInventionFacilitiesLoaded As Boolean
-    'Public CalcT3InventionFacilityRegionsLoaded As Boolean
-    'Public CalcT3InventionFacilitySystemsLoaded As Boolean
-    'Public CalcT3InventionFacilitiesLoaded As Boolean
-    'Public CalcCopyFacilityRegionsLoaded As Boolean
-    'Public CalcCopyFacilitySystemsLoaded As Boolean
-    'Public CalcCopyFacilitiesLoaded As Boolean
-    'Public CalcNoPOSFacilityRegionsLoaded As Boolean
-    'Public CalcNoPOSFacilitySystemsLoaded As Boolean
-    'Public CalcNoPOSFacilitiesLoaded As Boolean
-    'Public CalcCapitalFacilityRegionsLoaded As Boolean
-    'Public CalcCapitalFacilitySystemsLoaded As Boolean
-    'Public CalcCapitalFacilitiesLoaded As Boolean
-    'Public CalcSuperFacilityRegionsLoaded As Boolean
-    'Public CalcSuperFacilitySystemsLoaded As Boolean
-    'Public CalcSuperFacilitiesLoaded As Boolean
-    'Public CalcT3FacilityRegionsLoaded As Boolean
-    'Public CalcT3FacilitySystemsLoaded As Boolean
-    'Public CalcT3FacilitiesLoaded As Boolean
-    'Public CalcSubsystemFacilityRegionsLoaded As Boolean
-    'Public CalcSubsystemFacilitySystemsLoaded As Boolean
-    'Public CalcSubsystemFacilitiesLoaded As Boolean
-    'Public CalcBoosterFacilityRegionsLoaded As Boolean
-    'Public CalcBoosterFacilitySystemsLoaded As Boolean
-    'Public CalcBoosterFacilitiesLoaded As Boolean
-
-    'Public LoadingFacilityActivities As Boolean
-    'Public LoadingFacilityTypes As Boolean
-    'Public LoadingFacilityRegions As Boolean
-    'Public LoadingFacilitySystems As Boolean
-    'Public LoadingFacilities As Boolean
-    'Public ChangingUsageChecks As Boolean
-
-    ' For making sure they have a bp facility loaded
-    Public FullyLoadedBPFacility As Boolean
     Public SetTaxFeeChecks As Boolean
 
     ' For scanning assets
@@ -937,136 +671,6 @@ InvalidDate:
 
 #End Region
 
-#Region "FW Functions"
-
-    Public Function GetFWUpgradeLevel(SolarSystemName As String) As Integer
-        Dim rsFW As SQLiteDataReader
-
-        ' Format system name
-        If SolarSystemName.Contains("(") Then
-            SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
-        End If
-
-        Dim SQL As String = "SELECT UPGRADE_LEVEL FROM SOLAR_SYSTEMS, FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = solarSystemID AND factionWarzone <> 0 AND solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsFW = DBCommand.ExecuteReader
-
-        If rsFW.Read Then
-            Return rsFW.GetInt32(0)
-        Else
-            Return 0
-        End If
-
-    End Function
-
-    Public Function GetFWUpgradeLevel(FWUpgradeCombo As ComboBox, SolarSystemName As String) As Integer
-        Dim FWUpgradeLevel As Integer
-
-        Dim rsFW As SQLiteDataReader
-        Dim SSID As Long
-
-        ' Format system name
-        If SolarSystemName.Contains("(") Then
-            SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
-        End If
-
-        Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsFW = DBCommand.ExecuteReader
-
-        Dim Warzone As Boolean
-        If rsFW.Read Then
-            Warzone = CBool(rsFW.GetInt32(0))
-            SSID = rsFW.GetInt64(1)
-        Else
-            Warzone = False
-        End If
-
-        If Warzone Then
-            If Not IsNothing(FWUpgradeCombo) Then
-                Select Case FWUpgradeCombo.Text
-                    Case "Level 1"
-                        FWUpgradeLevel = 1
-                    Case "Level 2"
-                        FWUpgradeLevel = 2
-                    Case "Level 3"
-                        FWUpgradeLevel = 3
-                    Case "Level 4"
-                        FWUpgradeLevel = 4
-                    Case "Level 5"
-                        FWUpgradeLevel = 5
-                    Case Else
-                        FWUpgradeLevel = 0
-                End Select
-            Else
-                FWUpgradeLevel = 0
-            End If
-        Else
-            FWUpgradeLevel = 0
-        End If
-
-        Return FWUpgradeLevel
-
-    End Function
-
-    ' Enables the controls for FW settings on the bp tab
-    Public Sub SetFWUpgradeControls(ByRef FWUpgradeLabel As Label, ByRef FWUpgradeCombo As ComboBox,
-                                    ByVal SolarSystemName As String, ByRef FWUpgradeButton As Button)
-        ' Load the faction warfare upgrade
-        Dim rsFW As SQLiteDataReader
-        Dim SSID As Long
-
-        ' Format system name
-        If SolarSystemName.Contains("(") Then
-            SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
-        End If
-
-        Dim SQL As String = "SELECT factionWarzone, solarSystemID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SolarSystemName) & "'"
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsFW = DBCommand.ExecuteReader
-
-        Dim Warzone As Boolean
-        If rsFW.Read Then
-            Warzone = CBool(rsFW.GetInt32(0))
-            SSID = rsFW.GetInt64(1)
-        Else
-            Warzone = False
-        End If
-
-        If Warzone Then
-            FWUpgradeLabel.Enabled = True
-            FWUpgradeCombo.Enabled = True
-            ' look up level
-            Dim rsFWLevel As SQLiteDataReader
-            SQL = "SELECT UPGRADE_LEVEL FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & CStr(SSID)
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsFWLevel = DBCommand.ExecuteReader
-            rsFWLevel.Read()
-
-            If rsFWLevel.HasRows Then
-                If rsFWLevel.GetInt32(0) = 0 Then
-                    FWUpgradeCombo.Text = None
-                Else
-                    FWUpgradeCombo.Text = "Level " & CStr(rsFWLevel.GetInt32(0))
-                End If
-            Else
-                FWUpgradeCombo.Text = None
-            End If
-        Else
-            FWUpgradeLabel.Enabled = False
-            FWUpgradeCombo.Enabled = False
-            FWUpgradeCombo.Text = None
-        End If
-        rsFW.Close()
-
-        If Not IsNothing(FWUpgradeButton) Then
-            FWUpgradeButton.Enabled = False
-        End If
-
-    End Sub
-
-#End Region
-
     Public Function GetBPType(BPTypeValue As Object) As BPType
 
         If IsNothing(BPTypeValue) Then
@@ -1156,13 +760,6 @@ InvalidDate:
         Return CacheDate
 
     End Function
-
-    '' Single function to build the where clause of a options selected for displaying BPs
-    'Public Function BuildBPWhereClause() As String
-
-
-
-    'End Function
 
     ' Sorts the reference listview and column
     Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder)
@@ -1304,10 +901,8 @@ InvalidDate:
     End Function
 
     ' Imports sent blueprint to shopping list
-    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean,
-                                 ManufacturingFacilityMEModifier As Double, ManufacturingFacilityType As String,
+    Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, SLFacility As IndustryFacility,
                                  IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean,
-                                 IncludeActivityCost As Boolean, IncludeActivityTime As Boolean, IncludeActivityUsage As Boolean,
                                  Optional CopyInventionMatsOnly As Boolean = False)
         Dim TempMats As New Materials
         Dim ShoppingItem As New ShoppingListItem
@@ -1324,14 +919,15 @@ InvalidDate:
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .ManufacturingFacilityMEModifier = ManufacturingFacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .ManufacturingFacilityType = ManufacturingFacilityType
+                    .ManufacturingFacilityMEModifier = SLFacility.BaseME ' For full item, components will be saved in blueprint class for ComponentList
+                    .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
                     .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+                    .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    'If ManufacturingFacilityType = POSFacility Then
-                    '    .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                    'End If
+                    If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
+                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    End If
 
                     If BuildBuy Then
                         .BuildType = "Build/Buy"
@@ -1367,14 +963,15 @@ InvalidDate:
                     .Quantity = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .ManufacturingFacilityMEModifier = ManufacturingFacilityMEModifier ' For full item, components will be saved in blueprint class for ComponentList
-                    .ManufacturingFacilityType = ManufacturingFacilityType
+                    .ManufacturingFacilityMEModifier = SLFacility.BaseME  ' For full item, components will be saved in blueprint class for ComponentList
+                    .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
                     .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
+                    .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
 
-                    '' See if we need to add the system on to the end of the build location for POS
-                    'If ManufacturingFacilityType = POSFacility Then
-                    '    .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                    'End If
+                    ' See if we need to add the system on to the end of the build location for POS
+                    If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
+                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    End If
 
                     .BuildType = "Components"
 
@@ -1776,42 +1373,6 @@ InvalidDate:
             PG.Value = PG.Value + 1
         End If
     End Sub
-
-    ' Checks the error sent for EVE API data and shows forms etc based on error
-    Public Function NoAPIError(ByVal ErrorText As String, ByVal KeyType As String) As Boolean
-        Dim fAccessError As New frmAPIError
-
-        If (ErrorText = NoSkillsLoaded Or ErrorText = NoStandingsLoaded Or ErrorText = NoSkillsStandingsLoaded Or ErrorText = "") And KeyType <> "Corporation" And KeyType <> "" Then
-            If ErrorText = NoSkillsStandingsLoaded Then
-                fAccessError.ErrorText = "This API did not allow skills or standings to be loaded for associated characters." &
-                    Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'Standings' under the 'Public Information' section and 'CharacterSheet' under the 'Private Information' section to include skills and standings and then reload the API."
-                fAccessError.Text = "API: No Skills or Standings Loaded"
-            ElseIf ErrorText = NoStandingsLoaded Then
-                fAccessError.ErrorText = "This API did not allow standings to be loaded for associated characters." &
-                    Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'Standings' under the 'Public Information' section to include standings and then reload the API."
-                fAccessError.Text = "API: No Standings Loaded"
-            ElseIf ErrorText = NoSkillsLoaded Then
-                fAccessError.ErrorText = "This API did not allow skills to be loaded for associated characters." &
-                    Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'CharacterSheet' under the 'Private Information' section to include skills and then reload the API."
-                fAccessError.Text = "API: No Skills Loaded"
-            End If
-
-            If ErrorText <> "" Then
-                fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
-                fAccessError.ShowDialog()
-            End If
-
-        ElseIf ErrorText <> "" Then
-            ' Error returned
-            Call TopMostMessageBox.Show("Unable to update " & KeyType & " API data. Error Text: " & ErrorText & Environment.NewLine _
-                                        & Environment.NewLine & "If one of your APIs changed recently, please update it through the Manage Accounts Menu.")
-            Return False
-
-        End If
-
-        Return True
-
-    End Function
 
     ' Checks for program updates
     Public Sub CheckForUpdates(ByVal ShowFinalMessage As Boolean, ByVal ProgramIcon As Icon)
@@ -2491,5 +2052,82 @@ InvalidDate:
         Return ReturnBonus
 
     End Function
+
+    ' Downloads the JSON file sent and saves it to the location, then imports it into a string to return
+    Public Function GetJSONFile(ByVal URL As String, ByVal UpdateType As String, Optional ByVal IgnoreExceptions As Boolean = False, Optional RecursiveCalls As Integer = 0) As String
+        Dim request As HttpWebRequest
+        Dim response As HttpWebResponse = Nothing
+        Dim reader As StreamReader
+
+        Dim Output As String = ""
+
+        Try
+            Dim Start As DateTime = Now
+            Dim myUri As New Uri(URL)
+            '/market/<regionID:integerType>/history/
+            ' Create the web request  
+            request = DirectCast(WebRequest.Create(myUri), HttpWebRequest)
+            ' Settings for speed
+            request.Method = "GET"
+            request.Proxy = GetProxyData()
+            request.PreAuthenticate = True
+            request.Timeout = 10000
+            request.UnsafeAuthenticatedConnectionSharing = True
+
+            ' Get response  
+            response = DirectCast(request.GetResponse(), HttpWebResponse)
+
+            ' Get the response stream into a reader  
+            reader = New StreamReader(response.GetResponseStream())
+
+            ' Read the data
+            Output = reader.ReadToEnd
+
+            ' See if it downloaded a full file
+            If Output.Substring(Len(Output) - 1, 1) <> "]" Then
+                Application.DoEvents()
+                ' Re-run this function - limit to 10 calls
+                If RecursiveCalls <= 10 Then
+                    Dim NumCalls As Integer = RecursiveCalls + 1
+                    Output = GetJSONFile(URL, UpdateType, IgnoreExceptions, NumCalls)
+                End If
+            End If
+
+            reader.Close()
+            response.Close()
+            request = Nothing
+
+        Catch ex As Exception
+            If Not IgnoreExceptions Then
+                MsgBox("Unable to download data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
+                Output = ""
+            End If
+
+            If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
+                Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") _
+                Or ex.Message.Contains("The operation has timed out") Or ex.Message.Contains("503") And Not IgnoreExceptions Then
+                ' Re-run this function - limit to 10 calls if not part of the first load of the program
+                If RecursiveCalls <= 10 And Not FirstLoad Then
+                    Dim NumCalls As Integer = RecursiveCalls + 1
+                    Output = GetJSONFile(URL, UpdateType, IgnoreExceptions, NumCalls)
+                End If
+            End If
+        Finally
+            If Not response Is Nothing Then response.Close()
+        End Try
+
+        Return Output
+
+    End Function
+
+    Public Class TypeIDRegion
+        Public RegionString As String
+        Public TypeIDs As List(Of String)
+
+        Public Sub New()
+            RegionString = ""
+            TypeIDs = New List(Of String)
+        End Sub
+    End Class
 
 End Module

@@ -144,7 +144,7 @@ Public Class Blueprint
     Private BPUserSettings As ApplicationSettings
 
     ' What facility are they using to produce?
-    Private ManufacturingFacility As IndustryFacility
+    Private MainManufacturingFacility As IndustryFacility
     Private ComponentManufacturingFacility As IndustryFacility
     Private CapitalComponentManufacturingFacility As IndustryFacility ' For all capital parts
     Private CopyFacility As IndustryFacility
@@ -276,12 +276,12 @@ Public Class Blueprint
         AIImplantValue = 1 - UserSettings.ManufacturingImplantValue
 
         ' Production facilities
-        ManufacturingFacility = BPProductionFacility
+        MainManufacturingFacility = BPProductionFacility
         ComponentManufacturingFacility = BPComponentProductionFacility
         CapitalComponentManufacturingFacility = BPCapComponentProductionFacility
 
         ' Set the faction warfare bonus for the usage calculations
-        Select Case ManufacturingFacility.FWUpgradeLevel
+        Select Case MainManufacturingFacility.FWUpgradeLevel
             Case 1
                 FWManufacturingCostBonus = 0.9
             Case 2
@@ -461,7 +461,7 @@ Public Class Blueprint
     End Function
 
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
-    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean, _
+    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
                           ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
@@ -546,7 +546,7 @@ Public Class Blueprint
                     Application.DoEvents()
 
                     BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
-                                                       CDbl(AdditionalCosts / ProductionChain.Count), ManufacturingFacility, ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
+                                                       CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -638,7 +638,7 @@ Public Class Blueprint
                     SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES.ITEM_ID "
                     SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
 
-                    DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
 
                     If rsCheck.Read() Then
@@ -649,12 +649,12 @@ Public Class Blueprint
                     End If
 
                     ' Build the T1 component
-                    If GroupID = AdvCapitalComponentGroupID Or GroupID = CapitalComponentGroupID Then
+                    If GroupID = ItemIDs.AdvCapitalComponentGroupID Or GroupID = ItemIDs.CapitalComponentGroupID Then
                         ' Use capital component facility
                         TempComponentFacility = CapitalComponentManufacturingFacility
                     ElseIf IsT1BaseItemforT2(CategoryName) Then
                         ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
-                        TempComponentFacility = ManufacturingFacility
+                        TempComponentFacility = MainManufacturingFacility
                     Else ' Components
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
@@ -676,17 +676,18 @@ Public Class Blueprint
                     .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
                     ' Set the variables
-                    .FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                    '.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
-                    .IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
-                    .IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
-                    .IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+                    .FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                    .FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
+                    .FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
+                    .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
+                    .IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
+                    .IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
 
                     ' See if we need to add the system on to the end of the build location for POS
-                    If BuiltComponentList.GetBuiltItemList(i).FacilityType = POSFacility Then
-                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                    If BuiltComponentList.GetBuiltItemList(i).FacilityType = ManufacturingFacility.POSFacility Then
+                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                     Else
-                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                        BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
                     End If
 
                     Dim ItemPrice As Double = 0
@@ -717,7 +718,7 @@ Public Class Blueprint
                 Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
 
                 ' Get the usage
-                If GroupID = AdvCapitalComponentGroupID Or GroupID = CapitalComponentGroupID Then
+                If GroupID = ItemIDs.AdvCapitalComponentGroupID Or GroupID = ItemIDs.CapitalComponentGroupID Then
                     CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                 Else
                     ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
@@ -748,7 +749,7 @@ Public Class Blueprint
     End Sub
 
     ' Sets the material versions for our blueprint
-    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean, _
+    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
                           ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
         ' Database stuff
         Dim SQL As String
@@ -783,7 +784,7 @@ Public Class Blueprint
         SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS AS ABM "
         SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES ON ABM.MATERIAL_ID = ITEM_PRICES.ITEM_ID, INVENTORY_TYPES "
         SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS ON ALL_BLUEPRINTS.ITEM_ID = ABM.MATERIAL_ID "
-        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY = 1 AND MATERIAL_ID = INVENTORY_TYPES.typeID "
+        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY IN (1,11) AND MATERIAL_ID = INVENTORY_TYPES.typeID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -839,12 +840,12 @@ Public Class Blueprint
                     Dim TempComponentFacility As IndustryFacility
 
                     ' Build the T1 component
-                    If readerBP.GetDouble(9) = AdvCapitalComponentGroupID Or readerBP.GetDouble(9) = CapitalComponentGroupID Then
+                    If readerBP.GetDouble(9) = ItemIDs.AdvCapitalComponentGroupID Or readerBP.GetDouble(9) = ItemIDs.CapitalComponentGroupID Then
                         ' Use capital component facility
                         TempComponentFacility = CapitalComponentManufacturingFacility
                     ElseIf IsT1BaseItemforT2(CurrentMaterialCategory) Then
                         ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
-                        TempComponentFacility = ManufacturingFacility
+                        TempComponentFacility = MainManufacturingFacility
                     Else ' Components
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
@@ -891,7 +892,7 @@ Public Class Blueprint
 
                             ' Get the component usage
                             Select Case ComponentBlueprint.GetItemGroupID
-                                Case AdvCapitalComponentGroupID, CapitalComponentGroupID
+                                Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                                     CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                                 Case Else
                                     ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
@@ -919,17 +920,18 @@ Public Class Blueprint
                             TempBuiltItem.BuildTE = TempTE
                             TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
 
-                            TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                            ' TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
-                            TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
-                            TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
-                            TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+                            TempBuiltItem.FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                            TempBuiltItem.FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
+                            TempBuiltItem.FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
+                            TempBuiltItem.IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
+                            TempBuiltItem.IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
+                            TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
 
                             ' See if we need to add the system on to the end of the build location for POS
-                            If TempBuiltItem.FacilityType = POSFacility Then
-                                TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                            If TempBuiltItem.FacilityType = ManufacturingFacility.POSFacility Then
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                             Else
-                                TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
                             End If
 
                             ' Add the raw mats to build the item
@@ -960,7 +962,7 @@ Public Class Blueprint
 
                         ' Get the component usage
                         Select Case ComponentBlueprint.GetItemGroupID
-                            Case AdvCapitalComponentGroupID, CapitalComponentGroupID
+                            Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                                 CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                             Case Else
                                 ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
@@ -988,17 +990,18 @@ Public Class Blueprint
                         TempBuiltItem.BuildTE = TempTE
                         TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
                         TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
-                        TempBuiltItem.FacilityMEModifier = ComponentBlueprint.ManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                        'TempBuiltItem.FacilityType = ComponentBlueprint.ManufacturingFacility.FacilityType
-                        TempBuiltItem.IncludeActivityCost = ComponentBlueprint.ManufacturingFacility.IncludeActivityCost
-                        TempBuiltItem.IncludeActivityTime = ComponentBlueprint.ManufacturingFacility.IncludeActivityTime
-                        TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.ManufacturingFacility.IncludeActivityUsage
+                        TempBuiltItem.FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                        TempBuiltItem.FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
+                        TempBuiltItem.FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
+                        TempBuiltItem.IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
+                        TempBuiltItem.IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
+                        TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
 
                         ' See if we need to add the system on to the end of the build location for POS
-                        If TempBuiltItem.FacilityType = POSFacility Then
-                            TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
+                        If TempBuiltItem.FacilityType = ManufacturingFacility.POSFacility Then
+                            TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                         Else
-                            TempBuiltItem.FacilityLocation = ComponentBlueprint.ManufacturingFacility.FacilityName
+                            TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
                         End If
 
                         BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
@@ -1422,7 +1425,7 @@ Public Class Blueprint
     Private Function SetBPMaterialModifier() As Double
 
         ' Material modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set
-        Return (1 - (iME / 100)) * ManufacturingFacility.MaterialMultiplier
+        Return (1 - (iME / 100)) * MainManufacturingFacility.MaterialMultiplier
 
     End Function
 
@@ -1464,7 +1467,7 @@ Public Class Blueprint
         Dim Modifier As Double
 
         ' Time modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set, then do the skills
-        Modifier = (1 - (iTE / 100)) * ManufacturingFacility.TimeMultiplier * AIImplantValue * (1 - (IndustrySkill * 0.04)) * (1 - (AdvancedIndustrySkill * 0.03))
+        Modifier = (1 - (iTE / 100)) * MainManufacturingFacility.TimeMultiplier * AIImplantValue * (1 - (IndustrySkill * 0.04)) * (1 - (AdvancedIndustrySkill * 0.03))
 
         Return Modifier
 
@@ -1514,10 +1517,10 @@ Public Class Blueprint
         If IncludeManufacturingUsage Then
             ' baseJobCost = Sum(eachmaterialquantity * adjustedPrice) - set in build function
             ' jobFee = baseJobCost * systemCostIndex * runs
-            JobFee = BaseJobCost * ManufacturingFacility.CostIndex * UserRuns
+            JobFee = BaseJobCost * MainManufacturingFacility.CostIndex * UserRuns
 
             ' facilityUsage = jobFee * taxRate
-            FacilityUsage = JobFee * ManufacturingFacility.TaxRate
+            FacilityUsage = JobFee * MainManufacturingFacility.TaxRate
 
             ' totalInstallationCost = jobFee + facilityUsage
             ManufacturingFacilityUsage = (JobFee + FacilityUsage) * FWManufacturingCostBonus
@@ -1807,15 +1810,12 @@ Public Class Blueprint
     ' Sets the invention chance of the blueprint if set
     Private Function SetInventionChance(ByVal UseTypical As Boolean) As Double
         Dim BaseInventionChance As Double
-
         Dim i As Integer = 0
-        Dim j As Integer = 0
-
         Dim readerLookup As SQLiteDataReader
         Dim SQL As String
 
         Dim EncryptionSkillLevel As Integer
-        Dim DatacoreSkillLevels(1) As Integer ' 
+        Dim DatacoreSkillLevels As New List(Of Integer) ' 
 
         ' Get the base invention chance from the activities for the T1 BPO
         SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
@@ -1844,8 +1844,7 @@ Public Class Blueprint
                 EncryptionSkillLevel = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
             ElseIf (readerLookup(0).ToString <> "Capital Ship Construction") Then
                 ' A datacore skill
-                DatacoreSkillLevels(j) = BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID)
-                j = j + 1
+                DatacoreSkillLevels.Add(BPCharacter.Skills.GetSkillLevel(ReqInventionSkills.GetSkillList(i).TypeID))
             End If
 
             readerLookup.Close()
@@ -1855,8 +1854,12 @@ Public Class Blueprint
         Next
 
         If Not UseTypical Then
-            ' BaseChance * [ 1 + (((ScienceSkill1 + ScienceSkill2) / 30) + (EncryptionSkill / 40 ))]
-            InventionChance = BaseInventionChance * (1 + (((DatacoreSkillLevels(0) + DatacoreSkillLevels(1)) / 30) + (EncryptionSkillLevel / 40))) * InventionDecryptor.ProductionMod
+            Dim TotalScienceSkillLevels As Integer = 0
+            For Each skill In DatacoreSkillLevels
+                TotalScienceSkillLevels += skill
+            Next
+            ' BaseChance * [ 1 + (((ScienceSkill1 + ScienceSkill2 + ...) / 30) + (EncryptionSkill / 40 ))]
+            InventionChance = BaseInventionChance * (1 + (TotalScienceSkillLevels / 30) + (EncryptionSkillLevel / 40)) * InventionDecryptor.ProductionMod
             '(1 + (0.01 * EncryptionSkillLevel) + (0.02 * (DatacoreSkillLevels(0) + DatacoreSkillLevels(1)))) * InventionDecryptor.ProductionMod
         Else
             ' Just use typical invention costs - ie, all level 4 skills
@@ -2011,7 +2014,7 @@ Public Class Blueprint
         ' Look up the sum of the quantity from the sent BPC ID 
         SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS "
         SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES.ITEM_ID "
-        SQL = SQL & "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY = 1 "
+        SQL = SQL & "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY IN (1,11) "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
@@ -2119,7 +2122,7 @@ Public Class Blueprint
 
     ' Returns the manufacturing facility used
     Public Function GetManufacturingFacility() As IndustryFacility
-        Return ManufacturingFacility
+        Return MainManufacturingFacility
     End Function
 
     ' Returns the component manufacturing facility used

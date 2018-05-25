@@ -2202,7 +2202,9 @@ Partial Class frmUpwellStructureFitting
         Me.Controls.Add(Me.cmbUpwellStructureName)
         Me.Controls.Add(Me.lblSelectedUpwellStructure)
         Me.Controls.Add(Me.ServiceModuleListView)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "frmUpwellStructureFitting"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Upwell Structure Fitting"

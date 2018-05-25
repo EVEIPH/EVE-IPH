@@ -59,9 +59,9 @@ Partial Class frmSettings
         Me.gbShoppingList = New System.Windows.Forms.GroupBox()
         Me.chkIncludeShopListInventMats = New System.Windows.Forms.CheckBox()
         Me.chkIncludeShopListCopyMats = New System.Windows.Forms.CheckBox()
-        Me.gbEVECentral = New System.Windows.Forms.GroupBox()
-        Me.txtEVECentralInterval = New System.Windows.Forms.TextBox()
-        Me.chkEVECentralInterval = New System.Windows.Forms.CheckBox()
+        Me.gbEVEMarketer = New System.Windows.Forms.GroupBox()
+        Me.txtEVEMarketerInterval = New System.Windows.Forms.TextBox()
+        Me.chkEVEMarketerInterval = New System.Windows.Forms.CheckBox()
         Me.gbImplants = New System.Windows.Forms.GroupBox()
         Me.gbStartupOptions = New System.Windows.Forms.GroupBox()
         Me.chkRefreshFacilityDataonStartup = New System.Windows.Forms.CheckBox()
@@ -88,7 +88,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.SuspendLayout()
         Me.gbDefaultMEPE.SuspendLayout()
         Me.gbShoppingList.SuspendLayout()
-        Me.gbEVECentral.SuspendLayout()
+        Me.gbEVEMarketer.SuspendLayout()
         Me.gbImplants.SuspendLayout()
         Me.gbStartupOptions.SuspendLayout()
         Me.gbExportOptions.SuspendLayout()
@@ -435,33 +435,33 @@ Partial Class frmSettings
         Me.chkIncludeShopListCopyMats.Text = "Include Copy Mats"
         Me.chkIncludeShopListCopyMats.UseVisualStyleBackColor = True
         '
-        'gbEVECentral
+        'gbEVEMarketer
         '
-        Me.gbEVECentral.Controls.Add(Me.txtEVECentralInterval)
-        Me.gbEVECentral.Controls.Add(Me.chkEVECentralInterval)
-        Me.gbEVECentral.Location = New System.Drawing.Point(246, 142)
-        Me.gbEVECentral.Name = "gbEVECentral"
-        Me.gbEVECentral.Size = New System.Drawing.Size(160, 56)
-        Me.gbEVECentral.TabIndex = 38
-        Me.gbEVECentral.TabStop = False
-        Me.gbEVECentral.Text = "EVE Central Price Updates:"
+        Me.gbEVEMarketer.Controls.Add(Me.txtEVEMarketerInterval)
+        Me.gbEVEMarketer.Controls.Add(Me.chkEVEMarketerInterval)
+        Me.gbEVEMarketer.Location = New System.Drawing.Point(246, 142)
+        Me.gbEVEMarketer.Name = "gbEVEMarketer"
+        Me.gbEVEMarketer.Size = New System.Drawing.Size(160, 56)
+        Me.gbEVEMarketer.TabIndex = 38
+        Me.gbEVEMarketer.TabStop = False
+        Me.gbEVEMarketer.Text = "EVE Marketer Price Updates:"
         '
-        'txtEVECentralInterval
+        'txtEVEMarketerInterval
         '
-        Me.txtEVECentralInterval.Location = New System.Drawing.Point(110, 25)
-        Me.txtEVECentralInterval.Name = "txtEVECentralInterval"
-        Me.txtEVECentralInterval.Size = New System.Drawing.Size(41, 20)
-        Me.txtEVECentralInterval.TabIndex = 24
-        Me.txtEVECentralInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtEVEMarketerInterval.Location = New System.Drawing.Point(110, 25)
+        Me.txtEVEMarketerInterval.Name = "txtEVEMarketerInterval"
+        Me.txtEVEMarketerInterval.Size = New System.Drawing.Size(41, 20)
+        Me.txtEVEMarketerInterval.TabIndex = 24
+        Me.txtEVEMarketerInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
-        'chkEVECentralInterval
+        'chkEVEMarketerInterval
         '
-        Me.chkEVECentralInterval.Location = New System.Drawing.Point(9, 18)
-        Me.chkEVECentralInterval.Name = "chkEVECentralInterval"
-        Me.chkEVECentralInterval.Size = New System.Drawing.Size(105, 34)
-        Me.chkEVECentralInterval.TabIndex = 23
-        Me.chkEVECentralInterval.Text = "Refresh Interval (Hours):"
-        Me.chkEVECentralInterval.UseVisualStyleBackColor = True
+        Me.chkEVEMarketerInterval.Location = New System.Drawing.Point(9, 18)
+        Me.chkEVEMarketerInterval.Name = "chkEVEMarketerInterval"
+        Me.chkEVEMarketerInterval.Size = New System.Drawing.Size(105, 34)
+        Me.chkEVEMarketerInterval.TabIndex = 23
+        Me.chkEVEMarketerInterval.Text = "Refresh Interval (Hours):"
+        Me.chkEVEMarketerInterval.UseVisualStyleBackColor = True
         '
         'gbImplants
         '
@@ -696,7 +696,7 @@ Partial Class frmSettings
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
         Me.Controls.Add(Me.gbImplants)
-        Me.Controls.Add(Me.gbEVECentral)
+        Me.Controls.Add(Me.gbEVEMarketer)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.btnReset)
         Me.Controls.Add(Me.btnSave)
@@ -722,8 +722,8 @@ Partial Class frmSettings
         Me.gbDefaultMEPE.PerformLayout()
         Me.gbShoppingList.ResumeLayout(False)
         Me.gbShoppingList.PerformLayout()
-        Me.gbEVECentral.ResumeLayout(False)
-        Me.gbEVECentral.PerformLayout()
+        Me.gbEVEMarketer.ResumeLayout(False)
+        Me.gbEVEMarketer.PerformLayout()
         Me.gbImplants.ResumeLayout(False)
         Me.gbImplants.PerformLayout()
         Me.gbStartupOptions.ResumeLayout(False)
@@ -767,9 +767,9 @@ Partial Class frmSettings
     Friend WithEvents chkIncludeShopListCopyMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkIncludeShopListInventMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkSuggestBuildwhenBPnotOwned As System.Windows.Forms.CheckBox
-    Friend WithEvents gbEVECentral As System.Windows.Forms.GroupBox
-    Friend WithEvents txtEVECentralInterval As System.Windows.Forms.TextBox
-    Friend WithEvents chkEVECentralInterval As System.Windows.Forms.CheckBox
+    Friend WithEvents gbEVEMarketer As System.Windows.Forms.GroupBox
+    Friend WithEvents txtEVEMarketerInterval As System.Windows.Forms.TextBox
+    Friend WithEvents chkEVEMarketerInterval As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshAssetsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbImplants As System.Windows.Forms.GroupBox
     Friend WithEvents chkDisableSound As System.Windows.Forms.CheckBox

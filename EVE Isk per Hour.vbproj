@@ -163,6 +163,7 @@
     <Compile Include="EngineeringCitadel.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
+    <Compile Include="EVEMarketer.vb" />
     <Compile Include="frmBonusPopout.Designer.vb">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
     </Compile>
@@ -283,7 +284,6 @@
     <Compile Include="ControlArrayUtils.vb" />
     <Compile Include="Corporation.vb" />
     <Compile Include="DecryptorList.vb" />
-    <Compile Include="EVECentralAPI.vb" />
     <Compile Include="frmAbout.Designer.vb">
       <DependentUpon>frmAbout.vb</DependentUpon>
     </Compile>
@@ -372,12 +372,6 @@
       <DependentUpon>frmPatchNotes.vb</DependentUpon>
     </Compile>
     <Compile Include="frmPatchNotes.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmPOSSettings.Designer.vb">
-      <DependentUpon>frmPOSSettings.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmPOSSettings.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmResearchAgents.Designer.vb">
@@ -584,10 +578,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmPatchNotes.resx">
       <DependentUpon>frmPatchNotes.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmPOSSettings.resx">
-      <DependentUpon>frmPOSSettings.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmResearchAgents.resx">

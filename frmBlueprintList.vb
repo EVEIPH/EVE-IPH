@@ -67,6 +67,8 @@ Public Class frmBlueprintList
                     rbtnBPCelestialsBlueprints.Checked = True
                 Case rbtnBPStructureRigsBlueprints.Text
                     rbtnBPStructureRigsBlueprints.Checked = True
+                Case rbtnBPReactionBlueprints.Text
+                    rbtnBPReactionBlueprints.Checked = True
             End Select
 
             chkBPTech1.Checked = .Tech1Check
@@ -76,7 +78,7 @@ Public Class frmBlueprintList
             chkBPStory.Checked = .TechStorylineCheck
             chkBPPirate.Checked = .TechPirateCheck
 
-            chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
+            ' chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
 
             chkBPSmall.Checked = .SmallCheck
             chkBPMedium.Checked = .MediumCheck
@@ -123,6 +125,8 @@ Public Class frmBlueprintList
                 .BlueprintTypeSelection = rbtnBPDeployableBlueprints.Text
             ElseIf rbtnBPStructureRigsBlueprints.Checked Then
                 .BlueprintTypeSelection = rbtnBPStructureRigsBlueprints.Text
+            ElseIf rbtnBPReactionBlueprints.Checked Then
+                .BlueprintTypeSelection = rbtnBPReactionBlueprints.Text
             End If
 
             .Tech1Check = chkBPTech1.Checked
@@ -132,7 +136,7 @@ Public Class frmBlueprintList
             .TechFactionCheck = chkBPNavy.Checked
             .TechPirateCheck = chkBPPirate.Checked
 
-            .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
+            '.IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
 
             .SmallCheck = chkBPSmall.Checked
             .MediumCheck = chkBPMedium.Checked
@@ -217,9 +221,9 @@ Public Class frmBlueprintList
 
         ' Ignore flag
         Dim IgnoreFilter = ""
-        If chkBPIncludeIgnoredBPs.Checked = False Then
-            IgnoreFilter = " AND IGNORE = 0 "
-        End If
+        'If chkBPIncludeIgnoredBPs.Checked = False Then
+        '    IgnoreFilter = " AND IGNORE = 0 "
+        'End If
 
         ' Text search
         Dim TextFilter = ""
@@ -271,7 +275,9 @@ Public Class frmBlueprintList
         ElseIf rbtnBPStructureRigsBlueprints.Checked Then
             Return "AND ITEM_CATEGORY = 'Structure Rigs'"
         ElseIf rbtnBPStructureModuleBlueprints.Checked Then
-            Return " And (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
+            Return "AND (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
+        ElseIf rbtnBPReactionBlueprints.Checked Then
+            Return "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas' "
         ElseIf rbtnBPRigBlueprints.Checked Then
             Return "AND (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
         Else
@@ -448,7 +454,7 @@ Public Class frmBlueprintList
         Call ResetSelectors(True, True, True, True, True, True)
     End Sub
 
-    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeIgnoredBPs.CheckedChanged
+    Private Sub chkBPIncludeIgnoredBPs_CheckedChanged(sender As System.Object, e As System.EventArgs)
         Call ResetSelectors(True, True, True, True, True, True)
     End Sub
 

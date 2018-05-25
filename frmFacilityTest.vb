@@ -11,10 +11,6 @@ Public Class frmFacilityTest
 
         UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
         StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
-
-        ' Add any initialization after the InitializeComponent() call.
-        'Call BPFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID)
-
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
