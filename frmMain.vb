@@ -1272,6 +1272,7 @@ Public Class frmMain
         readerBP.Read()
         RemoveHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
         cmbBPBlueprintSelection.Text = readerBP.GetString(0)
+        SelectedBPText = readerBP.GetString(0)
         AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
         BPTech = readerBP.GetInt32(1)
 
@@ -1346,9 +1347,6 @@ Public Class frmMain
         CurrentBPCategoryID = readerBP.GetInt32(3)
         CurrentBPGroupID = readerBP.GetInt32(2)
         BPHasComponents = DoesBPHaveBuildableComponents(BPID)
-
-        ' Load the manufacturing BP here
-        BPTabFacility.LoadFacility(CurrentBPGroupID, CurrentBPCategoryID, BPTech, BPHasComponents, False, BuildFacility)
 
         ' Common to all settings
         If CompareType <> "" Then ' if "" then let the BP tab handle it
@@ -4208,7 +4206,7 @@ Tabs:
             Dim SQL As String
             Dim BuildType As String = ""
 
-            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
+            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME    FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
             SQL = SQL & "'" & lstBPComponentMats.SelectedItems(0).SubItems(0).Text & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -4224,12 +4222,20 @@ Tabs:
             Dim Runs As Long = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
             Dim GroupID As Integer = rsBP.GetInt32(2)
             Dim CategoryID As Integer = rsBP.GetInt32(3)
-
+            Dim BPName As String = rsBP.GetString(4
+                                                  )
             rsBP.Close()
+
+            Dim SelectedActivity As String = ""
+            If BPName.Contains("Reaction Formula") Then
+                SelectedActivity = ManufacturingFacility.ActivityReactions
+            Else
+                SelectedActivity = ManufacturingFacility.ActivityManufacturing
+            End If
 
             With BPTabFacility
                 Call LoadBPfromEvent(BPID, BuildType, "Raw", SentFromLocation.BlueprintTab,
-                                    .GetSelectedManufacturingFacility(GroupID, CategoryID), .GetFacility(ProductionType.ComponentManufacturing),
+                                    .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
                                     .GetFacility(ProductionType.CapitalComponentManufacturing),
                                     .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
                                     chkBPTaxes.Checked, chkBPBrokerFees.Checked,
@@ -5288,10 +5294,8 @@ Tabs:
         ' See if this has buildable components
         BPHasComponents = DoesBPHaveBuildableComponents(BPTypeID)
 
-        ' Load the facilty based on the groupid and categoryid - if sent from another location, it's already loaded
-        If SentFrom = SentFromLocation.None Then
-            Call BPTabFacility.LoadFacility(ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
-        End If
+        ' Load the facilty based on the groupid and categoryid
+        Call BPTabFacility.LoadFacility(ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
 
         ' Load the image
         Call LoadBlueprintPicture(BPTypeID, ItemType)

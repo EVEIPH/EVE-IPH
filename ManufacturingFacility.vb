@@ -704,14 +704,15 @@ Public Class ManufacturingFacility
         ChangingUsageChecks = False
 
         ' Load the selected facility with set bp
-        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, False)
+        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
 
     End Sub
 
     ' Loads the class facility and objects
     Public Sub LoadFacility(ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer,
-                               ByVal BlueprintTech As Integer, ByVal BPHasComponents As Boolean,
-                               Optional ByVal LoadDefault As Boolean = False, Optional DefaultFacility As IndustryFacility = Nothing)
+                            ByVal BlueprintTech As Integer, ByVal BPHasComponents As Boolean,
+                            Optional ByVal LoadDefault As Boolean = False, Optional DefaultFacility As IndustryFacility = Nothing,
+                            Optional ByVal ComboSelect As Boolean = False)
 
         ' Save these for later use
         SelectedBPCategoryID = ItemCategoryID
@@ -721,7 +722,7 @@ Public Class ManufacturingFacility
 
         ' Process the activities combo if showing full controls
         If SelectedView = FacilityView.FullControls Then
-            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasComponents)
+            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasComponents, ComboSelect)
             PreviousActivity = cmbFacilityActivities.Text
         End If
 
@@ -811,17 +812,28 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, HasComponents As Boolean)
+    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, HasComponents As Boolean, FromComboSelect As Boolean)
 
         LoadingActivities = True
         Dim ActivityText As String = cmbFacilityActivities.Text ' Save what is selected first
         cmbFacilityActivities.BeginUpdate()
 
-        ' If it's a reaction, only load that activity
+        ' If it's a reaction, only load that activity and manufacturing for fuel blocks
         If BPGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or BPGroupID = ItemIDs.ReactionCompositesGroupID Or BPGroupID = ItemIDs.ReactionPolymersGroupID Or BPGroupID = ItemIDs.ReactionsIntermediateGroupID Then
             cmbFacilityActivities.Items.Clear()
             cmbFacilityActivities.Items.Add(ActivityReactions)
-            cmbFacilityActivities.Text = ActivityReactions
+            cmbFacilityActivities.Items.Add(ActivityManufacturing)
+            If FromComboSelect Then
+                ' use what was there
+                cmbFacilityActivities.Text = ActivityText
+            Else
+                ' Start with reactions for a new facility because its a call to load not from combo
+                cmbFacilityActivities.Text = ActivityReactions
+            End If
+
+            cmbFacilityActivities.EndUpdate()
+            LoadingActivities = False
+            Exit Sub
         Else
             Select Case BlueprintTech
                 Case BPTechLevel.T1
@@ -865,12 +877,10 @@ Public Class ManufacturingFacility
         cmbFacilityActivities.EndUpdate()
 
         ' Set default activity text if it's not in the list
-        If Not cmbFacilityActivities.Items.Contains(ActivityReactions) Then
-            If Not cmbFacilityActivities.Items.Contains(ActivityText) Then
-                cmbFacilityActivities.Text = ActivityManufacturing
-            Else
-                cmbFacilityActivities.Text = ActivityText
-            End If
+        If Not cmbFacilityActivities.Items.Contains(ActivityText) Then
+            cmbFacilityActivities.Text = ActivityManufacturing
+        Else
+            cmbFacilityActivities.Text = ActivityText
         End If
 
         LoadingActivities = False
@@ -885,8 +895,8 @@ Public Class ManufacturingFacility
             If SelectedProductionType <> PreviousProductionType Then
                 PreviousProductionType = SelectedProductionType
 
-                ' Load the facility for this activity
-                Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, SelectedBPHasComponents)
+                ' Load the facility for this activity - flag that it was loaded from this combo
+                Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, SelectedBPHasComponents, True, Nothing, True)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -1607,6 +1617,9 @@ Public Class ManufacturingFacility
             ' Check the override, if they want to use a rapid assembly it will override here, otherwise the other facility types should handle it (e.g. super, cap, etc)
             If OverrideFacilityName <> "" And cmbFacilityorArray.Items.Contains(OverrideFacilityName) Then
                 cmbFacilityorArray.Text = OverrideFacilityName
+            ElseIf cmbFacilityorArray.Items.Contains(cmbFacilityorArray.Text) Then
+                ' Leave it as is
+                Application.DoEvents()
             Else
                 cmbFacilityorArray.Text = AutoLoadName
             End If
@@ -2461,14 +2474,14 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityCapComponentManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, False)
                     Else
                         SelectedProductionType = ProductionType.ComponentManufacturing
                         SelectedBPCategoryID = ItemIDs.ComponentCategoryID
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityComponentManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, False)
                     End If
                 Case ProductionType.T3DestroyerManufacturing, ProductionType.T3CruiserManufacturing
                     If chkFacilityToggle.Checked Then
@@ -2476,13 +2489,13 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
+                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, False)
                     Else
                         SelectedBPCategoryID = ItemIDs.ShipCategoryID
                         SelectedBPGroupID = ItemIDs.StrategicCruiserGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
+                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, False)
                     End If
             End Select
         End If
@@ -2831,8 +2844,6 @@ Public Class ManufacturingFacility
                             SelectedIndyType = ProductionType.T3CruiserManufacturing
                         Case ItemIDs.TacticalDestroyerGroupID
                             SelectedIndyType = ProductionType.T3DestroyerManufacturing
-                        Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
-                            SelectedIndyType = ProductionType.Reactions
                         Case Else
                             SelectedIndyType = ProductionType.Manufacturing
 
@@ -3213,9 +3224,11 @@ Public Class ManufacturingFacility
     End Function
 
     ' Gets the facility for manufacturing based on the bp data on initialization or sent bp data
-    Public Function GetSelectedManufacturingFacility(Optional BPGroupID As Integer = 0, Optional BPCategoryID As Integer = 0) As IndustryFacility
+    Public Function GetSelectedManufacturingFacility(Optional BPGroupID As Integer = 0, Optional BPCategoryID As Integer = 0,
+                                                     Optional OverrideActivity As String = "") As IndustryFacility
         Dim TempGroupID As Integer
         Dim TempCategoryID As Integer
+        Dim SelectedActivity As String
 
         ' If either one of the numbers are 0, then use the init data
         If BPGroupID = 0 Or BPCategoryID = 0 Then
@@ -3226,8 +3239,14 @@ Public Class ManufacturingFacility
             TempCategoryID = BPCategoryID
         End If
 
+        If OverrideActivity <> "" Then
+            SelectedActivity = ActivityManufacturing
+        Else
+            SelectedActivity = ActivityManufacturing
+        End If
+
         ' Determine the production type and then pull the correct facility for manufacturing only based on the category and group id not the activity selected
-        Dim PT As ProductionType = GetProductionType(TempGroupID, TempCategoryID, ActivityManufacturing)
+        Dim PT As ProductionType = GetProductionType(TempGroupID, TempCategoryID, SelectedActivity)
 
         Return GetFacility(PT)
 
