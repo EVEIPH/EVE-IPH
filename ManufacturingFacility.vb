@@ -3553,7 +3553,7 @@ Public Class IndustryFacility
     Public SolarSystemID As Long
     Public SolarSystemSecurity As Double
     Public FWUpgradeLevel As Integer ' Level of the FW upgrade for this system (if applies)
-    Public CostIndex As Double ' Cost index for the system and activity from CREST
+    Public CostIndex As Double ' Cost index for the system and activity from ESI
     Public ActivityCostPerSecond As Double ' The cost to conduct the activity for this facility per second - my setting for POS and ECs
     Public IsDefault As Boolean
     Public IncludeActivityCost As Boolean ' This is the total cost of materials to do the activiy

@@ -223,9 +223,9 @@ Public Class frmSettings
             chkRefreshBPsonStartup.Checked = .LoadBPsonStartup
             chkDisableSound.Checked = .DisableSound
 
-            ' CREST
-            chkRefreshFacilityDataonStartup.Checked = .LoadCRESTFacilityDataonStartup
-            chkRefreshMarketDataonStartup.Checked = .LoadCRESTMarketDataonStartup
+            ' ESI
+            chkRefreshFacilityDataonStartup.Checked = .LoadESIFacilityDataonStartup
+            chkRefreshMarketDataonStartup.Checked = .LoadESIMarketDataonStartup
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -402,9 +402,9 @@ Public Class frmSettings
                 .ManufacturingImplantValue = ManufacturingImplantValue
                 .CopyImplantValue = CopyImplantValue
 
-                ' CREST
-                .LoadCRESTFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
-                .LoadCRESTMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
+                ' ESI
+                .LoadESIFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
+                .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
 
                 ' If they didn't have this checked before, refresh assets
                 If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then

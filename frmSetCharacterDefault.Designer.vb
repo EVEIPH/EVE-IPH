@@ -25,7 +25,7 @@ Partial Class frmSetCharacterDefault
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmSetCharacterDefault))
         Me.chkListDefaultChar = New System.Windows.Forms.CheckedListBox()
         Me.btnSelectDefault = New System.Windows.Forms.Button()
-        Me.btnCancel = New System.Windows.Forms.Button()
+        Me.btnClose = New System.Windows.Forms.Button()
         Me.btnEVESSOLogin = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
         Me.SuspendLayout()
@@ -49,14 +49,14 @@ Partial Class frmSetCharacterDefault
         Me.btnSelectDefault.Text = "Select"
         Me.btnSelectDefault.UseVisualStyleBackColor = True
         '
-        'btnCancel
+        'btnClose
         '
-        Me.btnCancel.Location = New System.Drawing.Point(170, 314)
-        Me.btnCancel.Name = "btnCancel"
-        Me.btnCancel.Size = New System.Drawing.Size(99, 26)
-        Me.btnCancel.TabIndex = 5
-        Me.btnCancel.Text = "Cancel"
-        Me.btnCancel.UseVisualStyleBackColor = True
+        Me.btnClose.Location = New System.Drawing.Point(170, 314)
+        Me.btnClose.Name = "btnClose"
+        Me.btnClose.Size = New System.Drawing.Size(99, 26)
+        Me.btnClose.TabIndex = 5
+        Me.btnClose.Text = "Close"
+        Me.btnClose.UseVisualStyleBackColor = True
         '
         'btnEVESSOLogin
         '
@@ -86,7 +86,7 @@ Partial Class frmSetCharacterDefault
         Me.ClientSize = New System.Drawing.Size(311, 352)
         Me.ControlBox = False
         Me.Controls.Add(Me.lblKeyType)
-        Me.Controls.Add(Me.btnCancel)
+        Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.btnEVESSOLogin)
         Me.Controls.Add(Me.btnSelectDefault)
         Me.Controls.Add(Me.chkListDefaultChar)
@@ -102,7 +102,7 @@ Partial Class frmSetCharacterDefault
     End Sub
     Friend WithEvents chkListDefaultChar As System.Windows.Forms.CheckedListBox
     Friend WithEvents btnSelectDefault As System.Windows.Forms.Button
-    Friend WithEvents btnCancel As System.Windows.Forms.Button
+    Friend WithEvents btnClose As System.Windows.Forms.Button
     Friend WithEvents btnEVESSOLogin As Button
     Friend WithEvents lblKeyType As Label
 End Class

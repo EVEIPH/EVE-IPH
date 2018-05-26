@@ -76,8 +76,8 @@ Public Class ProgramSettings
     Public DefaultShowToolTips As Boolean = True
     Public DefaultLoadAssetsonStartup As Boolean = True
     Public DefaultLoadBPsonStartup As Boolean = True
-    Public DefaultRefreshMarketCRESTDataonStartup As Boolean = True
-    Public DefaultRefreshFacilityCRESTDataonStartup As Boolean = True
+    Public DefaultRefreshMarketESIDataonStartup As Boolean = True
+    Public DefaultRefreshFacilityESIDataonStartup As Boolean = True
     Public DefaultDisableSound As Boolean = False
     Public DefaultDNMarkInlineasOwned As Boolean = False
 
@@ -197,7 +197,7 @@ Public Class ProgramSettings
     Public DefaultUPColumnSortType As String = "Ascending"
     Public DefaultRawPriceModifier As Double = 0
     Public DefaultItemsPriceModifier As Double = 0
-    Public DefaultUseCRESTData As Boolean = False
+    Public DefaultUseESIData As Boolean = False
     Public DefaultUsePriceProfile As Boolean = False
     Public DefaultPPRawPriceType As String = "Max Buy"
     Public DefaultPPRawRegion As String = "The Forge"
@@ -1078,8 +1078,8 @@ Public Class ProgramSettings
                     .CheckforUpdatesonStart = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "CheckforUpdatesonStart", DefaultCheckUpdatesOnStart))
                     .LoadAssetsonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadAssetsonStartup", DefaultLoadAssetsonStartup))
                     .LoadBPsonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadbpsonStartup", DefaultLoadBPsonStartup))
-                    .LoadCRESTMarketDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadCRESTMarketDataonStartup", DefaultRefreshMarketCRESTDataonStartup))
-                    .LoadCRESTFacilityDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadCRESTFacilityDataonStartup", DefaultRefreshFacilityCRESTDataonStartup))
+                    .LoadESIMarketDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIMarketDataonStartup", DefaultRefreshMarketESIDataonStartup))
+                    .LoadESIFacilityDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIFacilityDataonStartup", DefaultRefreshFacilityESIDataonStartup))
                     .DataExportFormat = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "DataExportFormat", DefaultDataExportFormat))
                     .AllowSkillOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AllowSkillOverride", DefaultAllowSkillOverride))
                     .ShowToolTips = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShowToolTips", DefaultShowToolTips))
@@ -1136,8 +1136,8 @@ Public Class ProgramSettings
             .ShowToolTips = DefaultShowToolTips
             .LoadAssetsonStartup = DefaultLoadAssetsonStartup
             .LoadBPsonStartup = DefaultLoadBPsonStartup
-            .LoadCRESTMarketDataonStartup = DefaultRefreshMarketCRESTDataonStartup
-            .LoadCRESTFacilityDataonStartup = DefaultRefreshFacilityCRESTDataonStartup
+            .LoadESIMarketDataonStartup = DefaultRefreshMarketESIDataonStartup
+            .LoadESIFacilityDataonStartup = DefaultRefreshFacilityESIDataonStartup
             .DisableSound = DefaultDisableSound
             .ManufacturingImplantValue = DefaultImplantValues
             .RefiningImplantValue = DefaultImplantValues
@@ -1201,8 +1201,8 @@ Public Class ProgramSettings
             ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
             ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
             ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
-            ApplicationSettingsList(20) = New Setting("LoadCRESTFacilityDataonStartup", CStr(SentSettings.LoadCRESTFacilityDataonStartup))
-            ApplicationSettingsList(21) = New Setting("LoadCRESTMarketDataonStartup", CStr(SentSettings.LoadCRESTMarketDataonStartup))
+            ApplicationSettingsList(20) = New Setting("LoadESIFacilityDataonStartup", CStr(SentSettings.LoadESIFacilityDataonStartup))
+            ApplicationSettingsList(21) = New Setting("LoadESIMarketDataonStartup", CStr(SentSettings.LoadESIMarketDataonStartup))
             ApplicationSettingsList(22) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
             ApplicationSettingsList(23) = New Setting("IgnoreSVRThresholdValue", CStr(SentSettings.IgnoreSVRThresholdValue))
             ApplicationSettingsList(24) = New Setting("SVRAveragePriceRegion", CStr(SentSettings.SVRAveragePriceRegion))
@@ -1675,7 +1675,7 @@ Public Class ProgramSettings
                     .RawPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "RawPriceModifier", DefaultRawPriceModifier))
                     .ItemsPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "ItemsPriceModifier", DefaultItemsPriceModifier))
 
-                    .UseCRESTData = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UseCRESTData", DefaultUseCRESTData))
+                    .UseESIData = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UseESIData", DefaultUseESIData))
                     .UsePriceProfile = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UsePriceProfile", DefaultUsePriceProfile))
 
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "ColumnSort", DefaultUPColumnSort))
@@ -1785,7 +1785,7 @@ Public Class ProgramSettings
 
             UpdatePricesSettingsList(51) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
             UpdatePricesSettingsList(52) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
-            UpdatePricesSettingsList(53) = New Setting("UseCRESTData", CStr(PriceSettings.UseCRESTData))
+            UpdatePricesSettingsList(53) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
             UpdatePricesSettingsList(54) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
 
             UpdatePricesSettingsList(55) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
@@ -1865,7 +1865,7 @@ Public Class ProgramSettings
             .ColumnSortType = DefaultUPColumnSortType
             .RawPriceModifier = DefaultRawPriceModifier
             .ItemsPriceModifier = DefaultItemsPriceModifier
-            .UseCRESTData = DefaultUseCRESTData
+            .UseESIData = DefaultUseESIData
             .UsePriceProfile = DefaultUsePriceProfile
             .StructureModules = DefaultPriceChecks
 
@@ -4750,8 +4750,8 @@ Public Structure ApplicationSettings
 
     Dim LoadAssetsonStartup As Boolean
     Dim LoadBPsonStartup As Boolean
-    Dim LoadCRESTMarketDataonStartup As Boolean
-    Dim LoadCRESTFacilityDataonStartup As Boolean
+    Dim LoadESIMarketDataonStartup As Boolean
+    Dim LoadESIFacilityDataonStartup As Boolean
     Dim DisableSound As Boolean
     Dim IncludeInGameLinksinCopyText As Boolean
 
@@ -4931,7 +4931,7 @@ Public Structure UpdatePriceTabSettings
     Dim ItemsPriceModifier As Double
     Dim RawPriceModifier As Double
 
-    Dim UseCRESTData As Boolean
+    Dim UseESIData As Boolean
     Dim UsePriceProfile As Boolean
 
     Dim ColumnSort As Integer

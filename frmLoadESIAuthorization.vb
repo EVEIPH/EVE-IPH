@@ -107,9 +107,7 @@ Public Class frmLoadESIAuthorization
             Exit Sub
         End If
 
-        ' Now open the load character screen
-        Dim f1 As New frmSetCharacterDefault
-        f1.ShowDialog()
+        Me.Hide()
 
     End Sub
 

@@ -46,9 +46,9 @@ Public Module Public_Variables
     Public Const XMLUpdateFileURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/LatestVersionIPH.xml"
     Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
 
-    Public Const AppDataPath As String = "EVEIPH\"
-    Public Const BPImageFilePath As String = "EVEIPH Images\"
-    Public Const UpdatePath As String = "Updates\"
+    Public Const AppDataPath As String = "EVEIPH"
+    Public Const BPImageFilePath As String = "EVEIPH Images"
+    Public Const UpdatePath As String = "EVE IPH Updates"
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.sqlite"
 
@@ -394,6 +394,10 @@ Public Module Public_Variables
                     ' No Characters selected and not registered, open ESI authorization form for new access, where they select a default char, or dummy
                     Dim f1 As New frmLoadESIAuthorization
                     f1.ShowDialog()
+                    f1.Close()
+                    ' If they closed, then it's ready to select a character
+                    Dim f2 As New frmSetCharacterDefault
+                    f2.ShowDialog()
                 End If
 
                 ' If they didn't skip this and load dummy, then let them select a character default

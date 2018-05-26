@@ -58,7 +58,7 @@ Public Class frmSetCharacterDefault
     End Sub
 
     ' Checks if the user selected a default or not. If not, verifies that they don't want to set a default and want to go with dummy
-    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
+    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClose.Click
         Dim NoCharacter As Boolean
 
         ' Only ask if they want to cancel if there isn't a character loaded yet

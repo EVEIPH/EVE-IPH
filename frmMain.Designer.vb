@@ -37,7 +37,7 @@ Partial Class frmMain
         Me.mnuClearBPHistory = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateData = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuUpdateCRESTMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuUpdateESIMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuResetData = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetBlueprintData = New System.Windows.Forms.ToolStripMenuItem()
@@ -46,11 +46,11 @@ Partial Class frmMain
         Me.mnuResetIndustryJobs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetAssets = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetIgnoredBPs = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuResetCRESTDates = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuResetCRESTMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuResetESIDates = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuResetESIMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetMarketHistory = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetMarketOrders = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuResetCRESTIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuResetESIIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuResetAllData = New System.Windows.Forms.ToolStripMenuItem()
         Me.ViewToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -1198,7 +1198,7 @@ Partial Class frmMain
         '
         'mnuUpdateData
         '
-        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateCRESTMarketPrices, Me.ToolStripSeparator6, Me.mnuResetData})
+        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.ToolStripSeparator6, Me.mnuResetData})
         Me.mnuUpdateData.Name = "mnuUpdateData"
         Me.mnuUpdateData.Size = New System.Drawing.Size(43, 20)
         Me.mnuUpdateData.Text = "Data"
@@ -1209,11 +1209,11 @@ Partial Class frmMain
         Me.mnuUpdateIndustryFacilities.Size = New System.Drawing.Size(236, 22)
         Me.mnuUpdateIndustryFacilities.Text = "Update Industry Facilities"
         '
-        'mnuUpdateCRESTMarketPrices
+        'mnuUpdateESIMarketPrices
         '
-        Me.mnuUpdateCRESTMarketPrices.Name = "mnuUpdateCRESTMarketPrices"
-        Me.mnuUpdateCRESTMarketPrices.Size = New System.Drawing.Size(236, 22)
-        Me.mnuUpdateCRESTMarketPrices.Text = "Update Adjusted Market Prices"
+        Me.mnuUpdateESIMarketPrices.Name = "mnuUpdateESIMarketPrices"
+        Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(236, 22)
+        Me.mnuUpdateESIMarketPrices.Text = "Update Adjusted Market Prices"
         '
         'ToolStripSeparator6
         '
@@ -1222,7 +1222,7 @@ Partial Class frmMain
         '
         'mnuResetData
         '
-        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetIgnoredBPs, Me.mnuResetCRESTDates, Me.mnuResetCRESTMarketPrices, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetCRESTIndustryFacilities, Me.ToolStripSeparator4, Me.mnuResetAllData})
+        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetIgnoredBPs, Me.mnuResetESIDates, Me.mnuResetESIMarketPrices, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIIndustryFacilities, Me.ToolStripSeparator4, Me.mnuResetAllData})
         Me.mnuResetData.Name = "mnuResetData"
         Me.mnuResetData.Size = New System.Drawing.Size(236, 22)
         Me.mnuResetData.Text = "Reset Data"
@@ -1263,17 +1263,17 @@ Partial Class frmMain
         Me.mnuResetIgnoredBPs.Size = New System.Drawing.Size(271, 22)
         Me.mnuResetIgnoredBPs.Text = "Reset All Ignored BPs"
         '
-        'mnuResetCRESTDates
+        'mnuResetESIDates
         '
-        Me.mnuResetCRESTDates.Name = "mnuResetCRESTDates"
-        Me.mnuResetCRESTDates.Size = New System.Drawing.Size(271, 22)
-        Me.mnuResetCRESTDates.Text = "Reset All CREST Cache Dates"
+        Me.mnuResetESIDates.Name = "mnuResetESIDates"
+        Me.mnuResetESIDates.Size = New System.Drawing.Size(271, 22)
+        Me.mnuResetESIDates.Text = "Reset All ESI Cache Dates"
         '
-        'mnuResetCRESTMarketPrices
+        'mnuResetESIMarketPrices
         '
-        Me.mnuResetCRESTMarketPrices.Name = "mnuResetCRESTMarketPrices"
-        Me.mnuResetCRESTMarketPrices.Size = New System.Drawing.Size(271, 22)
-        Me.mnuResetCRESTMarketPrices.Text = "Reset Adjusted Market Prices (CREST)"
+        Me.mnuResetESIMarketPrices.Name = "mnuResetESIMarketPrices"
+        Me.mnuResetESIMarketPrices.Size = New System.Drawing.Size(271, 22)
+        Me.mnuResetESIMarketPrices.Text = "Reset Adjusted Market Prices (ESI)"
         '
         'mnuResetMarketHistory
         '
@@ -1287,11 +1287,11 @@ Partial Class frmMain
         Me.mnuResetMarketOrders.Size = New System.Drawing.Size(271, 22)
         Me.mnuResetMarketOrders.Text = "Reset Market Orders"
         '
-        'mnuResetCRESTIndustryFacilities
+        'mnuResetESIIndustryFacilities
         '
-        Me.mnuResetCRESTIndustryFacilities.Name = "mnuResetCRESTIndustryFacilities"
-        Me.mnuResetCRESTIndustryFacilities.Size = New System.Drawing.Size(271, 22)
-        Me.mnuResetCRESTIndustryFacilities.Text = "Reset Industry Facilities (CREST)"
+        Me.mnuResetESIIndustryFacilities.Name = "mnuResetESIIndustryFacilities"
+        Me.mnuResetESIIndustryFacilities.Size = New System.Drawing.Size(271, 22)
+        Me.mnuResetESIIndustryFacilities.Text = "Reset Industry Facilities (ESI)"
         '
         'ToolStripSeparator4
         '
@@ -11945,7 +11945,7 @@ Partial Class frmMain
     Friend WithEvents lblBPRawSVR1 As System.Windows.Forms.Label
     Friend WithEvents mnuUpdateData As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuUpdateIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents mnuUpdateCRESTMarketPrices As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuUpdateESIMarketPrices As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripSeparator6 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents mnuResetData As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetBlueprintData As System.Windows.Forms.ToolStripMenuItem
@@ -11973,7 +11973,7 @@ Partial Class frmMain
     Friend WithEvents lblCalcDecryptorUse As System.Windows.Forms.Label
     Friend WithEvents btnBPSaveBP As System.Windows.Forms.Button
     Friend WithEvents tabCalcFacilityT3Invention As System.Windows.Forms.TabPage
-    Friend WithEvents mnuResetCRESTDates As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuResetESIDates As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents lblCalcBPs As System.Windows.Forms.Label
     Friend WithEvents txtCalcNumBPs As System.Windows.Forms.TextBox
     Friend WithEvents chkCalcAutoCalcT2NumBPs As System.Windows.Forms.CheckBox
@@ -11993,8 +11993,8 @@ Partial Class frmMain
     Friend WithEvents gbMineNumberMiners As System.Windows.Forms.GroupBox
     Friend WithEvents txtMineNumberMiners As System.Windows.Forms.TextBox
     Friend WithEvents lblMineNumberMiners As System.Windows.Forms.Label
-    Friend WithEvents mnuResetCRESTMarketPrices As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents mnuResetCRESTIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuResetESIMarketPrices As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuResetESIIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents IgnoreBlueprintToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultBPFacilities As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultCalcFacilities As System.Windows.Forms.ToolStripMenuItem
