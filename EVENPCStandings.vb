@@ -6,6 +6,8 @@ Public Class EVENPCStandings
     Private NPCStandings As List(Of NPCStanding)
     Private StandingToFind As NPCStanding
 
+    Private IDtoFind As Long
+
     Public Class NPCStanding
         Public NPCID As Long
         Public NPCType As String ' Agent, Faction, or Corporation
@@ -197,9 +199,12 @@ Public Class EVENPCStandings
         Dim SQL As String
         Dim i As Integer
         Dim TempStandings As EVENPCStandings = Nothing
-        Dim rsName As SQLiteDataReader
+        Dim NonFactionIDs As New List(Of Long)
+        Dim ReturnNameData As New List(Of ESINameData)
+        Dim ReturnFactionData As New List(Of ESIFactionData)
+        Dim TempStanding As NPCStanding
 
-        Dim ESIData as new ESI
+        Dim ESIData As New ESI
         Dim CB As New CacheBox
         Dim CacheDate As Date
 
@@ -208,6 +213,41 @@ Public Class EVENPCStandings
             TempStandings = ESIData.GetCharacterStandings(ID, CharacterTokenData, CacheDate)
 
             If Not IsNothing(TempStandings) Then
+                ' Get all the standing names for corps and agents first
+                For Each entry In TempStandings.NPCStandings
+                    If entry.NPCType <> "Faction" Then
+                        NonFactionIDs.Add(entry.NPCID)
+                    End If
+                Next
+
+                ' Get the faction names
+                ReturnFactionData = ESIData.GetFactionData()
+
+                For Each Record In ReturnFactionData
+                    ' Update the Standings list with name
+                    IDtoFind = Record.faction_id
+                    TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
+                    If Not IsNothing(TempStanding) Then
+                        Call TempStandings.NPCStandings.Remove(TempStanding)
+                        TempStanding.NPCName = Record.name
+                        Call TempStandings.NPCStandings.Add(TempStanding)
+                    End If
+                Next
+
+                ' Get the corp and agent names
+                ReturnNameData = ESIData.GetNameData(NonFactionIDs)
+
+                For Each Record In ReturnNameData
+                    ' Update the Standings list with name
+                    IDtoFind = Record.id
+                    TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
+                    If Not IsNothing(TempStanding) Then
+                        Call TempStandings.NPCStandings.Remove(TempStanding)
+                        TempStanding.NPCName = Record.name
+                        Call TempStandings.NPCStandings.Add(TempStanding)
+                    End If
+                Next
+
                 Call EVEDB.BeginSQLiteTransaction()
 
                 ' Delete the old standings data
@@ -216,17 +256,6 @@ Public Class EVENPCStandings
 
                 ' Insert new standings data
                 For i = 0 To TempStandings.NumStandings - 1
-                    ' Look up name
-                    SQL = "SELECT ITEM_NAME FROM INVENTORY_NAMES WHERE ITEM_ID = " & CStr(TempStandings.GetStandingsList(i).NPCID)
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsName = DBCommand.ExecuteReader
-
-                    If rsName.Read Then
-                        TempStandings.GetStandingsList(i).NPCName = rsName.GetString(0)
-                    Else
-                        TempStandings.GetStandingsList(i).NPCName = Unknown
-                    End If
-
                     SQL = "INSERT INTO CHARACTER_STANDINGS (CHARACTER_ID, NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING) "
                     SQL = SQL & " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
                     SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
@@ -245,6 +274,24 @@ Public Class EVENPCStandings
             End If
         End If
     End Sub
+
+    ' Predicate for finding an npc record
+    Private Function FindNPCID(ByVal Item As NPCStanding) As Boolean
+        If Item.NPCID = IDtoFind Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    ' Predicate for finding an npc record
+    Private Function FindFactionID(ByVal Item As ESIFactionData) As Boolean
+        If Item.faction_id = IDtoFind Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
 
 End Class
 

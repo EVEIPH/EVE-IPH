@@ -921,7 +921,6 @@ Public Class ProgramSettings
     Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
 
-    Public Const SettingsFolder As String = "Settings/"
     Private Const XMLfileType As String = ".xml"
 
     Public Sub New()
@@ -950,22 +949,23 @@ Public Class ProgramSettings
 
         ' Create XmlWriterSettings.
         Dim XMLSettings As XmlWriterSettings = New XmlWriterSettings()
+        Dim FilePath As String = Path.Combine(DynamicFilePath, FileFolder)
         XMLSettings.Indent = True
 
         If FileFolder <> "" Then
-            If Not Directory.Exists(FileFolder) Then
+            If Not Directory.Exists(FilePath) Then
                 ' Create the settings folder
-                Directory.CreateDirectory(FileFolder)
+                Directory.CreateDirectory(FilePath)
             End If
         End If
 
         ' Delete and make a fresh copy
-        If File.Exists(FileFolder & FileName & XMLfileType) Then
-            File.Delete(FileFolder & FileName & XMLfileType)
+        If File.Exists(Path.ChangeExtension(Path.Combine(FilePath, FileName), XMLfileType)) Then
+            File.Delete(Path.ChangeExtension(Path.Combine(FilePath, FileName), XMLfileType))
         End If
 
         ' Loop through the settings sent and output each name and value
-        Using writer As XmlWriter = XmlWriter.Create(FileFolder & FileName & XMLfileType, XMLSettings)
+        Using writer As XmlWriter = XmlWriter.Create(Path.ChangeExtension(Path.Combine(FilePath, FileName), XMLfileType), XMLSettings)
             writer.WriteStartDocument()
             writer.WriteStartElement(RootName) ' Root.
 
@@ -986,11 +986,11 @@ Public Class ProgramSettings
                                      DefaultValue As Object) As Object
         Dim m_xmld As New XmlDocument
         Dim m_nodelist As XmlNodeList
-
+        Dim FilePath As String = Path.ChangeExtension(Path.Combine(DynamicFilePath, FileFolder, FileName), XMLfileType)
         Dim TempValue As String
 
         'Load the Xml file
-        m_xmld.Load(FileFolder & FileName & XMLfileType)
+        m_xmld.Load(FilePath)
 
         'Get the settings
 
@@ -1037,7 +1037,7 @@ Public Class ProgramSettings
     ' Just checks if the file exists or not so we don't have to mess with file names
     Private Function FileExists(FileFolder As String, FileName As String) As Boolean
 
-        If File.Exists(FileFolder & FileName & XMLfileType) Then
+        If File.Exists(Path.ChangeExtension(Path.Combine(DynamicFilePath, FileFolder, FileName), XMLfileType)) Then
             Return True
         Else
             Return False

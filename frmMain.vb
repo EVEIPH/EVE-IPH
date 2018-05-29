@@ -271,512 +271,505 @@ Public Class frmMain
 
         MyBase.New()
 
-        Try
+        Dim ErrorData As ErrObject = Nothing
+        Dim ESIData As New ESI
 
-            Dim ErrorData As ErrObject = Nothing
-            Dim UserAppDataPath As String = ""
-            Dim ESIData As New ESI
+        ErrorTracker = ""
 
-            ErrorTracker = ""
+        ' Set developer flag
+        If File.Exists("Developer.txt") Then
+            Developer = True
+        Else
+            Developer = False
+        End If
 
-            ' Set developer flag
-            If File.Exists("Developer.txt") Then
-                Developer = True
-            Else
-                Developer = False
-            End If
+        ' Set test platform
+        If File.Exists("Test.txt") Then
+            TestingVersion = True
+        Else
+            TestingVersion = False
+        End If
 
-            ' Set test platform
-            If File.Exists("Test.txt") Then
-                TestingVersion = True
-            Else
-                TestingVersion = False
-            End If
+        Call SetProgress("Initializing...")
 
-            Call SetProgress("Initializing...")
+        Application.DoEvents()
 
-            Application.DoEvents()
+        ' This call is required by the designer.
+        InitializeComponent()
 
-            ' This call is required by the designer.
-            InitializeComponent()
+        FirstLoad = True
 
-            FirstLoad = True
+        ' Always use US for now and don't take into account user overrided stuff like the system clock format
+        LocalCulture = New CultureInfo("en-US", False)
+        ' Sets the CurrentCulture 
+        Thread.CurrentThread.CurrentCulture = LocalCulture
 
-            ' Always use US for now and don't take into account user overrided stuff like the system clock format
-            LocalCulture = New CultureInfo("en-US", False)
-            ' Sets the CurrentCulture 
-            Thread.CurrentThread.CurrentCulture = LocalCulture
+        ' Add any initialization after the InitializeComponent() call.
 
-            ' Add any initialization after the InitializeComponent() call.
-
-            ' Get user path for application data
-            UserAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+        ' Find out if we are running all in the current folder or with updates and the DB in the appdata folder
+        If File.Exists(SQLiteDBFileName) Then
+            ' Single folder that we are in, so set the path variables to it for updates
+            DynamicFilePath = Path.GetDirectoryName(Application.ExecutablePath)
+            DBFilePath = Path.GetDirectoryName(Application.ExecutablePath)
+        Else
+            ' They ran the installer (or we assume they did) and all the files are updated in the appdata/roaming folder
             ' Set where files will be updated
-            UpdaterFilePath = Path.Combine(UserAppDataPath, UpdatePath)
-            ' Set where the db, main exe, and updater and such will be
-            UserWorkingFolder = "" 'UserAppDataPath & "\" & AppDataPath
-            ' The Image path
-            UserImagePath = BPImageFilePath 'UserAppDataPath & "\" & BPImageFilePath
+            DynamicFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DynamicAppDataPath)
+            DBFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DynamicAppDataPath)
+        End If
 
-            ' Get the user settings then check for updates
-            UserApplicationSettings = AllSettings.LoadApplicationSettings
+        ' Get the user settings then check for updates
+        UserApplicationSettings = AllSettings.LoadApplicationSettings
 
-            ' Check for program updates first
-            If UserApplicationSettings.CheckforUpdatesonStart Then
-                ' Check for program updates
-                Application.UseWaitCursor = True
-                Me.Activate()
-                Call CheckForUpdates(False, Me.Icon)
-                Application.UseWaitCursor = False
-                Application.DoEvents()
-            End If
-
-            ' Initialize stuff
-            Call SetProgress("Initializing Database...")
+        ' Check for program updates first
+        If UserApplicationSettings.CheckforUpdatesonStart Then
+            ' Check for program updates
+            Application.UseWaitCursor = True
+            Me.Activate()
+            Call CheckForUpdates(False, Me.Icon)
+            Application.UseWaitCursor = False
             Application.DoEvents()
-            EVEDB = New DBConnection(SQLiteDBFileName)
-
-            ' For speed on ESI calls
-            ServicePointManager.DefaultConnectionLimit = 20
-            ServicePointManager.UseNagleAlgorithm = False
-            ServicePointManager.Expect100Continue = False
-
-            ' Load the user settings
-            Call SetProgress("Loading User Settings...")
-            UserBPTabSettings = AllSettings.LoadBPSettings
-            UserUpdatePricesTabSettings = AllSettings.LoadUpdatePricesSettings
-            UserManufacturingTabSettings = AllSettings.LoadManufacturingSettings
-            UserDCTabSettings = AllSettings.LoadDatacoreSettings
-            UserReactionTabSettings = AllSettings.LoadReactionSettings
-            UserMiningTabSettings = AllSettings.LoadMiningSettings
-            UserIndustryJobsColumnSettings = AllSettings.LoadIndustryJobsColumnSettings
-            UserManufacturingTabColumnSettings = AllSettings.LoadManufacturingTabColumnSettings
-            UserShoppingListSettings = AllSettings.LoadShoppingListSettings
-            UserMHViewerSettings = AllSettings.LoadMarketHistoryViewerSettingsSettings
-            UserBPViewerSettings = AllSettings.LoadBPViewerSettings
-            UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
-            StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
-
-            UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
-            UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
-            UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Medium)
-            UserIndustryFlipBeltOreCheckSettings3 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Large)
-            UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
-            UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
-
-            UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
-            UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
-            UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
-
-            ' Load the character
-            Call SetProgress("Loading Character Data from ESI...")
-            Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
-
-            ' Only allow selecting a default if there are accounts to set it to
-            If DummyAccountLoaded Then
-                mnuSelectDefaultChar.Enabled = False
-            Else
-                mnuSelectDefaultChar.Enabled = True
-            End If
-
-            Call LoadCharacterNamesinMenu()
-
-            ' Type of skills loaded
-            Call UpdateSkillPanel()
-
-            If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
-                MaximumProductionLines = SelectedCharacter.Skills.GetSkillLevel(3387) + SelectedCharacter.Skills.GetSkillLevel(24625) + 1
-                MaximumLaboratoryLines = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
-            Else
-                MaximumProductionLines = 1
-                MaximumLaboratoryLines = 1
-            End If
-
-            ' ESI Facilities
-            If UserApplicationSettings.LoadESIFacilityDataonStartup Then
-                ' Always do cost indicies first
-                Application.UseWaitCursor = True
-                Call SetProgress("Updating Industry Facilities...")
-                Application.DoEvents()
-                Call ESIData.UpdateIndustryFacilties(Nothing, Nothing, True)
-                Application.UseWaitCursor = False
-                Application.DoEvents()
-            End If
-
-            DBCommand = Nothing
-
-            ' ESI Market Data
-            If UserApplicationSettings.LoadESIMarketDataonStartup Then
-                Application.UseWaitCursor = True
-                Application.DoEvents()
-                Call SetProgress("Updating Avg/Adj Market Prices...")
-                Call ESIData.UpdateAdjAvgMarketPrices()
-                Application.UseWaitCursor = False
-                Application.DoEvents()
-            End If
-
-            If TestingVersion Then
-                Me.Text = Me.Text & " - Testing"
-            End If
-
-            If Developer Then
-                Me.Text = Me.Text & " - Developer"
-                mnuInventionSuccessMonitor.Visible = True
-                mnuFactoryFinder.Visible = True
-                mnuMarketFinder.Visible = True
-                mnuRefinery.Visible = True
-                mnuLPStore.Visible = True
-            Else
-                ' Hide all the development stuff
-                mnuInventionSuccessMonitor.Visible = False
-                mnuFactoryFinder.Visible = False
-                mnuMarketFinder.Visible = False
-                mnuRefinery.Visible = False
-                mnuLPStore.Visible = False
-                tabMain.TabPages.Remove(tabPI)
-                tabMain.TabPages.Remove(tabReactions)
-            End If
-
-            ' Initialize the BP facility
-            Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
-
-            ' Load up the Manufacturing tab facilities
-            Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
-            Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
-            Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
-            Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
-            Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
-            Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
-            Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
-            Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
-            Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
-
-            ' Two facilities with check options - load the one they save
-            If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
-                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
-            Else
-                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
-            End If
-
-            If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
-                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
-            Else
-                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
-            End If
-
-            ' Init Tool tips
-            If UserApplicationSettings.ShowToolTips Then
-                Me.ttBP = New ToolTip(Me.components)
-                Me.ttBP.IsBalloon = True
-            End If
-
-            ' Nothing in shopping List
-            pnlShoppingList.Text = "No Items in Shopping List"
-
-            Call SetProgress("Finalizing Forms...")
-
-            '****************************************
-            '**** Blueprints Tab Initializations ****
-            '****************************************
-            ' Width is now 556, scrollbar is 21 
-            'lstBPComponentMats.Columns.Add("", -2, HorizontalAlignment.Center) ' For check (25 size)
-            lstBPComponentMats.Columns.Add("Material", 225, HorizontalAlignment.Left) 'added 25 temp
-            lstBPComponentMats.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
-            lstBPComponentMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
-            lstBPComponentMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
-            lstBPComponentMats.Columns.Add("Total Cost", 105, HorizontalAlignment.Right)
-
-            ' No check for raw mats since the check will be used to toggle build/buy for each item
-            lstBPRawMats.Columns.Add("Material", 210, HorizontalAlignment.Left)
-            lstBPRawMats.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
-            lstBPRawMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
-            lstBPRawMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
-            lstBPRawMats.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
-
-            ' We haven't checked any tech levels yet
-            TechChecked = False
-
-            Call InitBPTab()
-
-            Call InitInventionTab()
-
-            ' Base Decryptor
-            SelectedDecryptor.MEMod = 0
-            SelectedDecryptor.TEMod = 0
-            SelectedDecryptor.RunMod = 0
-            SelectedDecryptor.ProductionMod = 1
-            SelectedDecryptor.Name = None
-
-            ' For the disabling of the price update form
-            PriceCheckT1Enabled = True
-            PriceCheckT2Enabled = True
-            PriceCheckT3Enabled = True
-            PriceCheckT4Enabled = True
-            PriceCheckT5Enabled = True
-            PriceCheckT6Enabled = True
-
-            ' Tool Tips
-            If UserApplicationSettings.ShowToolTips Then
-                ttBP.SetToolTip(lblBPInventionCost, "Invention Cost for Runs entered = (Datacores + Decryptors) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
-                ttBP.SetToolTip(lblBPRECost, "Invention Cost for Runs entered = (Datacores + Decryptors + Relics) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
-                ttBP.SetToolTip(lblBPCopyCosts, "Total Cost of materials to make enough BPCs for the number of invention jobs needed" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
-                ttBP.SetToolTip(lblBPRuns, "Total number of items to produce. I.e. If you have 5 blueprints with 4 runs each, then enter 20")
-                ttBP.SetToolTip(lblBPTaxes, "Sales Taxes to set up a sell order at an NPC Station")
-                ttBP.SetToolTip(lblBPBrokerFees, "Broker's Fees to set up a sell order at an NPC Station")
-                ttBP.SetToolTip(lblBPTotalCompCost, "Total Cost of Component Materials, InventionCosts, Usage, Taxes and Fees - Double Click for list of costs")
-                ttBP.SetToolTip(lblBPRawTotalCost, "Total Cost of Raw Materials, InventionCosts, Usage, Taxes and Fees - Double Click for list of costs")
-                ttBP.SetToolTip(lblBPPT, "This is the time to build the item (including skill and implant modifiers) from the blueprint after all materials are gathered")
-                ttBP.SetToolTip(lblBPCPTPT, "This is the total time to build the item and components and if selected, time to complete invention and copying")
-                ttBP.SetToolTip(lblBPCanMakeBP, "Double-Click here to see required skills to make this BP")
-                ttBP.SetToolTip(lblBPCanMakeBPAll, "Double-Click here to see required skills to make all the items for this BP")
-                ttBP.SetToolTip(lblBPT2InventStatus, "Double-Click here to see required skills to invent this BP")
-                ttBP.SetToolTip(lblT3InventStatus, "Double-Click here to see required skills to invent this BP")
-                ttBP.SetToolTip(chkBPPricePerUnit, "Show Price per Unit - All price data in this frame will be updated to show the prices for 1 unit")
-                ttBP.SetToolTip(lblBPProductionTime, "Total time to build this blueprint with listed components")
-                ttBP.SetToolTip(lblBPTotalItemPT, "Total time to build selected build components and this blueprint")
-                ttBP.SetToolTip(lblBPComponentMats, "Total list of components, which can be built, and materials to build this blueprint")
-                ttBP.SetToolTip(lblBPRawMats, "Total list of materials to build all components and base materials for this blueprint")
-                ttBP.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
-                ttBP.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
-                ttBP.SetToolTip(lblBPSimpleCopy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
-                ttBP.SetToolTip(lblBPRawProfit, "Double-Click to toggle value between Profit and Profit Percent")
-                ttBP.SetToolTip(lblBPCompProfit, "Double-Click to toggle value between Profit and Profit Percent")
-            End If
-
-            '*******************************************
-            '**** Update Prices Tab Initializations ****
-            '*******************************************
-            ' Create the controls collection class
-            m_ControlsCollection = New ControlsCollection(Me)
-            ' Get Region check boxes (note index starts at 1)
-            RegionCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkRegion"), CheckBox())
-            TechCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkPricesT"), CheckBox())
-            SystemCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkSystems"), CheckBox())
-
-            ' Columns of Update Prices Listview (width = 639) + 21 for scroll = 660
-            lstPricesView.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
-            lstPricesView.Columns.Add("Group", 220, HorizontalAlignment.Left)
-            lstPricesView.Columns.Add("Item", 319, HorizontalAlignment.Left)
-            lstPricesView.Columns.Add("Price", 100, HorizontalAlignment.Right)
-            lstPricesView.Columns.Add("Manufacture", 0, HorizontalAlignment.Right) ' Hidden
-            lstPricesView.Columns.Add("Market ID", 0, HorizontalAlignment.Right) ' Hidden
-            lstPricesView.Columns.Add("Price Type", 0, HorizontalAlignment.Right) ' Hidden
-
-            ' Columns of update prices raw mats in price profiles
-            lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
-            lstRawPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
-            lstRawPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
-            lstRawPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
-            lstRawPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) 'Hidden
-
-            ' Columns of update prices manufactured mats in price profiles
-            lstManufacturedPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
-            lstManufacturedPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
-            lstManufacturedPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
-            lstManufacturedPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
-            lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
-
-            ' Tool Tips
-            If UserApplicationSettings.ShowToolTips Then
-                ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
-                                                                "Sell = Use Sell orders only" & vbCrLf &
-                                                                "Buy & Sell = Use All orders" & vbCrLf &
-                                                                "Min = Minimum" & vbCrLf &
-                                                                "Max = Maximum" & vbCrLf &
-                                                                "Avg = Average" & vbCrLf &
-                                                                "Med = Median" & vbCrLf &
-                                                                "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
-                ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
-                                                                "Sell = Use Sell orders only" & vbCrLf &
-                                                                "Buy & Sell = Use All orders" & vbCrLf &
-                                                                "Min = Minimum" & vbCrLf &
-                                                                "Max = Maximum" & vbCrLf &
-                                                                "Avg = Average" & vbCrLf &
-                                                                "Med = Median" & vbCrLf &
-                                                                "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
-            End If
-
-            FirstSolarSystemComboLoad = True
-            FirstPriceChargeTypesComboLoad = True
-            FirstPriceShipTypesComboLoad = True
-            IgnoreSystemCheckUpdates = False
-            IgnoreRegionCheckUpdates = False
-
-            PriceTypeUpdate = False
-            PriceSystemUpdate = False
-            PriceRegionUpdate = False
-            PriceModifierUpdate = False
-            PreviousPriceType = ""
-            PreviousRegion = ""
-            PreviousSystem = ""
-            PreviousPriceMod = ""
-            TabPressed = False
-            UpdatingCombo = False
-
-            PPRawSystemsLoaded = False
-            PPItemsSystemsLoaded = False
-
-            PriceHistoryUpdateCount = 0
-            PriceOrdersUpdateCount = 0
-            CancelUpdatePrices = False
-            CancelManufacturingTabCalc = False
-
-            Call InitUpdatePricesTab()
-
-            '****************************************
-            '**** Manufacturing Tab Initializations ****
-            '****************************************
-            CalcRelicCheckboxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkCalcRERelic"), CheckBox())
-            CalcDecryptorCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkCalcDecryptor"), CheckBox())
-
-            ' Add the columns based on settings
-            Call RefreshManufacturingTabColumns()
-
-            If UserApplicationSettings.ShowToolTips Then
-                ' Decryptor Tool tips
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor2, "Augmentation - (PM: 0.6, Runs: +9, ME: -2, TE: +1)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor3, "Optimized Augmentation - (PM: 0.9, Runs: +7, ME +2 TE: 0)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor4, "Symmetry - (PM: 1.0, Runs: +2, ME: +1, TE: +4)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor5, "Process - (PM: 1.1, Runs: 0, ME: +3, TE: +3)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor6, "Accelerant - (PM: 1.2, Runs: +1, ME: +2, TE: +5)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor7, "Parity - (PM: 1.5, Runs: +3, ME: +1, TE: -1)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor8, "Attainment - (PM: 1.8, Runs: +4, ME: -1, TE: +2)")
-                ttUpdatePrices.SetToolTip(chkCalcDecryptor9, "Optimized Attainment - (PM: 1.9, Runs: +2, ME: +1, TE: -1)")
-
-                ttUpdatePrices.SetToolTip(txtCalcProdLines, "Will assume Number of BPs is same as Number of Production lines for Calculations")
-                ttUpdatePrices.SetToolTip(chkCalcTaxes, "Sales Taxes to set up a sell order at an NPC Station for the Item")
-                ttUpdatePrices.SetToolTip(chkCalcFees, "Broker's Fees to set up a sell order at an NPC Station for the Item")
-
-                ttUpdatePrices.SetToolTip(txtCalcProdLines, "Enter the number of Manufacturing Lines you have to build items per day for calculations. Calculations will assume the same number of BPs used." & vbCrLf & "Calculations for components will also use this value. Double-Click to enter max runs for this character.")
-                ttUpdatePrices.SetToolTip(txtCalcLabLines, "Enter the number of Laboratory Lines you have to invent per day for calculations. Double-Click to enter max runs for this character.")
-
-                ttUpdatePrices.SetToolTip(txtCalcSVRThreshold, "No results with an SVR lower than the number entered will be returned.")
-
-            End If
-            FirstLoadCalcBPTypes = True
-            FirstManufacturingGridLoad = True
-
-            ' If there is an error in price updates, only show once
-            ShownPriceUpdateError = False
-
-            Call InitManufacturingTab()
-
-            '****************************************
-            '**** Datacores Tab Initializations *****
-            '****************************************
-            DCSkillCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkDC"), CheckBox())
-            DCSkillLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblDatacore"), Label())
-            DCSkillCombos = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "cmbDCSkillLevel"), ComboBox())
-            DCCorpCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkDCCorp"), CheckBox())
-            DCCorpLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblDCCorp"), Label())
-            DCCorpTextboxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "txtDCStanding"), TextBox())
-
-            FirstShowDatacores = True
-            DCRegionsLoaded = False
-            rbtnDCUpdatedPrices.Checked = True
-            TotalSelectedIPH = 0
-
-            txtDCTotalOptIPH.Text = "0.00"
-            txtDCTotalSelectedIPH.Text = "0.00"
-
-            ' Width 1124, 21 for scrollbar, 25 for check
-            lstDC.Columns.Add("", -2, HorizontalAlignment.Center) ' For check
-            lstDC.Columns.Add("Corporation", 120, HorizontalAlignment.Left)
-            lstDC.Columns.Add("Agent", 152, HorizontalAlignment.Left)
-            lstDC.Columns.Add("LVL", 40, HorizontalAlignment.Center)
-            lstDC.Columns.Add("Standing", 60, HorizontalAlignment.Right)
-            lstDC.Columns.Add("Location", 250, HorizontalAlignment.Left) ' System name and security (station name?)
-            lstDC.Columns.Add("DataCore Skill", 166, HorizontalAlignment.Left)
-            lstDC.Columns.Add("DataCore Price", 88, HorizontalAlignment.Right)
-            lstDC.Columns.Add("Price From", 65, HorizontalAlignment.Center) ' Load with system name, region, or multiple
-            lstDC.Columns.Add("Core/Day", 62, HorizontalAlignment.Right)
-            lstDC.Columns.Add("Isk per Hour", 75, HorizontalAlignment.Right)
-            DCIPH_COLUMN = 10 ' For totaling up the price
-
-            If UserApplicationSettings.ShowToolTips Then
-                ttDatacores.SetToolTip(rbtnDCSystemPrices, "Max Buy Order from System used for Datacore Price")
-                ttDatacores.SetToolTip(rbtnDCRegionPrices, "Max Buy Order from Region used for Datacore Price")
-                ttDatacores.SetToolTip(lblDCGreenBackColor, "Green Background: Max IPH Agent")
-                ttDatacores.SetToolTip(lblDCBlueText, "Blue Text: Current Research Agents")
-                ttDatacores.SetToolTip(lblDCGrayText, "Gray Text: Unavailable Research Agent")
-                ttDatacores.SetToolTip(lblDCOrangeText, "Orange Text: Research Agent is in Low Sec")
-                ttDatacores.SetToolTip(lblDCRedText, "Red Text: Research Agent is in Null Sec")
-            End If
-
-            '****************************************
-            '**** Reactions Tab Initializations *****
-            '****************************************
-            ' 922 width, 21 for scroll
-            lstReactions.Columns.Add("Reaction Type", 136, HorizontalAlignment.Left)
-            lstReactions.Columns.Add("Reaction", 210, HorizontalAlignment.Left)
-            lstReactions.Columns.Add("Output Material", 222, HorizontalAlignment.Left)
-            lstReactions.Columns.Add("Output Quantity", 100, HorizontalAlignment.Right)
-            lstReactions.Columns.Add("Material Group", 118, HorizontalAlignment.Left)
-            lstReactions.Columns.Add("Isk per Hour", 115, HorizontalAlignment.Right)
-
-            Call InitReactionsTab()
-
-            ' Tool Tips
-            If UserApplicationSettings.ShowToolTips Then
-                ttReactions.SetToolTip(chkReactionsTaxes, "Include taxes charged for sale of Reaction Products")
-                ttReactions.SetToolTip(chkReactionsFees, "Include Broker Fees charged for placing a buy order for Reaction Products")
-            End If
-
-            ' Set up grid for input mats
-            lstReactionMats.Columns.Add("Material", 117, HorizontalAlignment.Left)
-            'lstReactionMats.Columns.Add("Cost", 50, HorizontalAlignment.Right)
-            lstReactionMats.Columns.Add("Quantity", 52, HorizontalAlignment.Right)
-
-            '****************************************
-            '**** Mining Tab Initializations ********
-            '****************************************
-            lstMineGrid.Columns.Add("Ore ID", 0, HorizontalAlignment.Right) ' Hidden
-            lstMineGrid.Columns.Add("Ore Name", MineOreNameColumnWidth, HorizontalAlignment.Left)
-            lstMineGrid.Columns.Add("Refine Type", 70, HorizontalAlignment.Left)
-            lstMineGrid.Columns.Add("Unit Price", 100, HorizontalAlignment.Right)
-            lstMineGrid.Columns.Add("Refine Yield", MineRefineYieldColumnWidth, HorizontalAlignment.Center)
-            lstMineGrid.Columns.Add("Crystal", MineCrystalColumnWidth, HorizontalAlignment.Left)
-            lstMineGrid.Columns.Add("m3 per Cycle", 75, HorizontalAlignment.Right)
-            lstMineGrid.Columns.Add("Units per Hour", 94, HorizontalAlignment.Right)
-            lstMineGrid.Columns.Add("Isk per Hour", 105, HorizontalAlignment.Right)
-
-            MineProcessingCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkOreProcessing"), CheckBox())
-            MineProcessingLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblOreProcessing"), Label())
-            MineProcessingCombos = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "cmbOreProcessing"), ComboBox())
-
-            Call InitMiningTab()
-
-            ' Tool Tips
-            If UserApplicationSettings.ShowToolTips Then
-                ttMining.SetToolTip(rbtnMineT2Crystals, "Use T2 Crystals when skills and equipment allow")
-                ttMining.SetToolTip(gbMineHauling, "If no hauling, results will take into account Round Trip time to the station based on M3 of Ship and fill times")
-                ttMining.SetToolTip(btnMineSaveAllSettings, "Saves all current options on Mining Screen")
-                ttMining.SetToolTip(chkMineForemanLaserOpBoost, "Click to cycle through No Booster, T1 or T2")
-                ttMining.SetToolTip(chkMineForemanLaserRangeBoost, "Click to cycle through No Booster, T1 or T2")
-                ttMining.SetToolTip(cmbMineIndustReconfig, "Select skill level to include Heavy Water costs per hour, set to 0 to ignore")
-                ttMining.SetToolTip(chkMineRorqDeployedMode, "To include Heavy Water costs for deployed mode, select Industrial Reconfiguration skill other than 0")
-                ttMining.SetToolTip(lblMineExhumers, "For Prospect Mining Frigate, use the Exhumers Combobox to set the Expedition Frigate skill level.")
-            End If
-
-            '****************************************
-            '**** All Tabs **************************
-            '****************************************
-
-            ' For indy jobs viewer
-            FirstIndustryJobsViewerLoad = True
-
-            ' For handling click events
-            UpdatingCheck = False
-
-            ' All set, we are done loading
-            FirstLoad = False
-
-
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-
-        MsgBox("Loaded")
+        End If
+
+        ' Initialize stuff
+        Call SetProgress("Initializing Database...")
+        Application.DoEvents()
+        EVEDB = New DBConnection(Path.Combine(DBFilePath, SQLiteDBFileName))
+
+        ' For speed on ESI calls
+        ServicePointManager.DefaultConnectionLimit = 20
+        ServicePointManager.UseNagleAlgorithm = False
+        ServicePointManager.Expect100Continue = False
+
+        ' Load the user settings
+        Call SetProgress("Loading User Settings...")
+        UserBPTabSettings = AllSettings.LoadBPSettings
+        UserUpdatePricesTabSettings = AllSettings.LoadUpdatePricesSettings
+        UserManufacturingTabSettings = AllSettings.LoadManufacturingSettings
+        UserDCTabSettings = AllSettings.LoadDatacoreSettings
+        UserReactionTabSettings = AllSettings.LoadReactionSettings
+        UserMiningTabSettings = AllSettings.LoadMiningSettings
+        UserIndustryJobsColumnSettings = AllSettings.LoadIndustryJobsColumnSettings
+        UserManufacturingTabColumnSettings = AllSettings.LoadManufacturingTabColumnSettings
+        UserShoppingListSettings = AllSettings.LoadShoppingListSettings
+        UserMHViewerSettings = AllSettings.LoadMarketHistoryViewerSettingsSettings
+        UserBPViewerSettings = AllSettings.LoadBPViewerSettings
+        UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
+        StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
+
+        UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
+        UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
+        UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Medium)
+        UserIndustryFlipBeltOreCheckSettings3 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Large)
+        UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
+        UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
+
+        UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
+        UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
+        UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
+
+        ' Load the character
+        Call SetProgress("Loading Character Data from ESI...")
+        Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
+
+        ' Only allow selecting a default if there are accounts to set it to
+        If DummyAccountLoaded Then
+            mnuSelectDefaultChar.Enabled = False
+        Else
+            mnuSelectDefaultChar.Enabled = True
+        End If
+
+        Call LoadCharacterNamesinMenu()
+
+        ' Type of skills loaded
+        Call UpdateSkillPanel()
+
+        If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
+            MaximumProductionLines = SelectedCharacter.Skills.GetSkillLevel(3387) + SelectedCharacter.Skills.GetSkillLevel(24625) + 1
+            MaximumLaboratoryLines = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
+        Else
+            MaximumProductionLines = 1
+            MaximumLaboratoryLines = 1
+        End If
+
+        ' ESI Facilities
+        If UserApplicationSettings.LoadESIFacilityDataonStartup Then
+            ' Always do cost indicies first
+            Application.UseWaitCursor = True
+            Call SetProgress("Updating Industry Facilities...")
+            Application.DoEvents()
+            Call ESIData.UpdateIndustryFacilties(Nothing, Nothing, True)
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+        End If
+
+        DBCommand = Nothing
+
+        ' ESI Market Data
+        If UserApplicationSettings.LoadESIMarketDataonStartup Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+            Call SetProgress("Updating Avg/Adj Market Prices...")
+            Call ESIData.UpdateAdjAvgMarketPrices()
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+        End If
+
+        If TestingVersion Then
+            Me.Text = Me.Text & " - Testing"
+        End If
+
+        If Developer Then
+            Me.Text = Me.Text & " - Developer"
+            mnuInventionSuccessMonitor.Visible = True
+            mnuFactoryFinder.Visible = True
+            mnuMarketFinder.Visible = True
+            mnuRefinery.Visible = True
+            mnuLPStore.Visible = True
+        Else
+            ' Hide all the development stuff
+            mnuInventionSuccessMonitor.Visible = False
+            mnuFactoryFinder.Visible = False
+            mnuMarketFinder.Visible = False
+            mnuRefinery.Visible = False
+            mnuLPStore.Visible = False
+            tabMain.TabPages.Remove(tabPI)
+            tabMain.TabPages.Remove(tabReactions)
+        End If
+
+        ' Initialize the BP facility
+        Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
+
+        ' Load up the Manufacturing tab facilities
+        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
+        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
+        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
+        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
+        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
+        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
+        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
+        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
+        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
+
+        ' Two facilities with check options - load the one they save
+        If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
+            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
+        Else
+            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
+        End If
+
+        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
+            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
+        Else
+            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
+        End If
+
+        ' Init Tool tips
+        If UserApplicationSettings.ShowToolTips Then
+            Me.ttBP = New ToolTip(Me.components)
+            Me.ttBP.IsBalloon = True
+        End If
+
+        ' Nothing in shopping List
+        pnlShoppingList.Text = "No Items in Shopping List"
+
+        Call SetProgress("Finalizing Forms...")
+
+        '****************************************
+        '**** Blueprints Tab Initializations ****
+        '****************************************
+        ' Width is now 556, scrollbar is 21 
+        'lstBPComponentMats.Columns.Add("", -2, HorizontalAlignment.Center) ' For check (25 size)
+        lstBPComponentMats.Columns.Add("Material", 225, HorizontalAlignment.Left) 'added 25 temp
+        lstBPComponentMats.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
+        lstBPComponentMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
+        lstBPComponentMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
+        lstBPComponentMats.Columns.Add("Total Cost", 105, HorizontalAlignment.Right)
+
+        ' No check for raw mats since the check will be used to toggle build/buy for each item
+        lstBPRawMats.Columns.Add("Material", 210, HorizontalAlignment.Left)
+        lstBPRawMats.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
+        lstBPRawMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
+        lstBPRawMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
+        lstBPRawMats.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
+
+        ' We haven't checked any tech levels yet
+        TechChecked = False
+
+        Call InitBPTab()
+
+        Call InitInventionTab()
+
+        ' Base Decryptor
+        SelectedDecryptor.MEMod = 0
+        SelectedDecryptor.TEMod = 0
+        SelectedDecryptor.RunMod = 0
+        SelectedDecryptor.ProductionMod = 1
+        SelectedDecryptor.Name = None
+
+        ' For the disabling of the price update form
+        PriceCheckT1Enabled = True
+        PriceCheckT2Enabled = True
+        PriceCheckT3Enabled = True
+        PriceCheckT4Enabled = True
+        PriceCheckT5Enabled = True
+        PriceCheckT6Enabled = True
+
+        ' Tool Tips
+        If UserApplicationSettings.ShowToolTips Then
+            ttBP.SetToolTip(lblBPInventionCost, "Invention Cost for Runs entered = (Datacores + Decryptors) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
+            ttBP.SetToolTip(lblBPRECost, "Invention Cost for Runs entered = (Datacores + Decryptors + Relics) / Invented Runs * Runs (based on the probability of success)" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
+            ttBP.SetToolTip(lblBPCopyCosts, "Total Cost of materials to make enough BPCs for the number of invention jobs needed" & vbCrLf & "Double-Click for material list needed for enough successful BPCs for runs entered")
+            ttBP.SetToolTip(lblBPRuns, "Total number of items to produce. I.e. If you have 5 blueprints with 4 runs each, then enter 20")
+            ttBP.SetToolTip(lblBPTaxes, "Sales Taxes to set up a sell order at an NPC Station")
+            ttBP.SetToolTip(lblBPBrokerFees, "Broker's Fees to set up a sell order at an NPC Station")
+            ttBP.SetToolTip(lblBPTotalCompCost, "Total Cost of Component Materials, InventionCosts, Usage, Taxes and Fees - Double Click for list of costs")
+            ttBP.SetToolTip(lblBPRawTotalCost, "Total Cost of Raw Materials, InventionCosts, Usage, Taxes and Fees - Double Click for list of costs")
+            ttBP.SetToolTip(lblBPPT, "This is the time to build the item (including skill and implant modifiers) from the blueprint after all materials are gathered")
+            ttBP.SetToolTip(lblBPCPTPT, "This is the total time to build the item and components and if selected, time to complete invention and copying")
+            ttBP.SetToolTip(lblBPCanMakeBP, "Double-Click here to see required skills to make this BP")
+            ttBP.SetToolTip(lblBPCanMakeBPAll, "Double-Click here to see required skills to make all the items for this BP")
+            ttBP.SetToolTip(lblBPT2InventStatus, "Double-Click here to see required skills to invent this BP")
+            ttBP.SetToolTip(lblT3InventStatus, "Double-Click here to see required skills to invent this BP")
+            ttBP.SetToolTip(chkBPPricePerUnit, "Show Price per Unit - All price data in this frame will be updated to show the prices for 1 unit")
+            ttBP.SetToolTip(lblBPProductionTime, "Total time to build this blueprint with listed components")
+            ttBP.SetToolTip(lblBPTotalItemPT, "Total time to build selected build components and this blueprint")
+            ttBP.SetToolTip(lblBPComponentMats, "Total list of components, which can be built, and materials to build this blueprint")
+            ttBP.SetToolTip(lblBPRawMats, "Total list of materials to build all components and base materials for this blueprint")
+            ttBP.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
+            ttBP.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
+            ttBP.SetToolTip(lblBPSimpleCopy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
+            ttBP.SetToolTip(lblBPRawProfit, "Double-Click to toggle value between Profit and Profit Percent")
+            ttBP.SetToolTip(lblBPCompProfit, "Double-Click to toggle value between Profit and Profit Percent")
+        End If
+
+        '*******************************************
+        '**** Update Prices Tab Initializations ****
+        '*******************************************
+        ' Create the controls collection class
+        m_ControlsCollection = New ControlsCollection(Me)
+        ' Get Region check boxes (note index starts at 1)
+        RegionCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkRegion"), CheckBox())
+        TechCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkPricesT"), CheckBox())
+        SystemCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkSystems"), CheckBox())
+
+        ' Columns of Update Prices Listview (width = 639) + 21 for scroll = 660
+        lstPricesView.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
+        lstPricesView.Columns.Add("Group", 220, HorizontalAlignment.Left)
+        lstPricesView.Columns.Add("Item", 319, HorizontalAlignment.Left)
+        lstPricesView.Columns.Add("Price", 100, HorizontalAlignment.Right)
+        lstPricesView.Columns.Add("Manufacture", 0, HorizontalAlignment.Right) ' Hidden
+        lstPricesView.Columns.Add("Market ID", 0, HorizontalAlignment.Right) ' Hidden
+        lstPricesView.Columns.Add("Price Type", 0, HorizontalAlignment.Right) ' Hidden
+
+        ' Columns of update prices raw mats in price profiles
+        lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
+        lstRawPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
+        lstRawPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
+        lstRawPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
+        lstRawPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) 'Hidden
+
+        ' Columns of update prices manufactured mats in price profiles
+        lstManufacturedPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
+        lstManufacturedPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
+        lstManufacturedPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
+        lstManufacturedPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
+        lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
+
+        ' Tool Tips
+        If UserApplicationSettings.ShowToolTips Then
+            ttUpdatePrices.SetToolTip(cmbRawMatsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
+                                                            "Sell = Use Sell orders only" & vbCrLf &
+                                                            "Buy & Sell = Use All orders" & vbCrLf &
+                                                            "Min = Minimum" & vbCrLf &
+                                                            "Max = Maximum" & vbCrLf &
+                                                            "Avg = Average" & vbCrLf &
+                                                            "Med = Median" & vbCrLf &
+                                                            "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
+            ttUpdatePrices.SetToolTip(cmbItemsSplitPrices, "Buy = Use Buy orders only" & vbCrLf &
+                                                            "Sell = Use Sell orders only" & vbCrLf &
+                                                            "Buy & Sell = Use All orders" & vbCrLf &
+                                                            "Min = Minimum" & vbCrLf &
+                                                            "Max = Maximum" & vbCrLf &
+                                                            "Avg = Average" & vbCrLf &
+                                                            "Med = Median" & vbCrLf &
+                                                            "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
+        End If
+
+        FirstSolarSystemComboLoad = True
+        FirstPriceChargeTypesComboLoad = True
+        FirstPriceShipTypesComboLoad = True
+        IgnoreSystemCheckUpdates = False
+        IgnoreRegionCheckUpdates = False
+
+        PriceTypeUpdate = False
+        PriceSystemUpdate = False
+        PriceRegionUpdate = False
+        PriceModifierUpdate = False
+        PreviousPriceType = ""
+        PreviousRegion = ""
+        PreviousSystem = ""
+        PreviousPriceMod = ""
+        TabPressed = False
+        UpdatingCombo = False
+
+        PPRawSystemsLoaded = False
+        PPItemsSystemsLoaded = False
+
+        PriceHistoryUpdateCount = 0
+        PriceOrdersUpdateCount = 0
+        CancelUpdatePrices = False
+        CancelManufacturingTabCalc = False
+
+        Call InitUpdatePricesTab()
+
+        '****************************************
+        '**** Manufacturing Tab Initializations ****
+        '****************************************
+        CalcRelicCheckboxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkCalcRERelic"), CheckBox())
+        CalcDecryptorCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkCalcDecryptor"), CheckBox())
+
+        ' Add the columns based on settings
+        Call RefreshManufacturingTabColumns()
+
+        If UserApplicationSettings.ShowToolTips Then
+            ' Decryptor Tool tips
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor2, "Augmentation - (PM: 0.6, Runs: +9, ME: -2, TE: +1)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor3, "Optimized Augmentation - (PM: 0.9, Runs: +7, ME +2 TE: 0)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor4, "Symmetry - (PM: 1.0, Runs: +2, ME: +1, TE: +4)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor5, "Process - (PM: 1.1, Runs: 0, ME: +3, TE: +3)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor6, "Accelerant - (PM: 1.2, Runs: +1, ME: +2, TE: +5)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor7, "Parity - (PM: 1.5, Runs: +3, ME: +1, TE: -1)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor8, "Attainment - (PM: 1.8, Runs: +4, ME: -1, TE: +2)")
+            ttUpdatePrices.SetToolTip(chkCalcDecryptor9, "Optimized Attainment - (PM: 1.9, Runs: +2, ME: +1, TE: -1)")
+
+            ttUpdatePrices.SetToolTip(txtCalcProdLines, "Will assume Number of BPs is same as Number of Production lines for Calculations")
+            ttUpdatePrices.SetToolTip(chkCalcTaxes, "Sales Taxes to set up a sell order at an NPC Station for the Item")
+            ttUpdatePrices.SetToolTip(chkCalcFees, "Broker's Fees to set up a sell order at an NPC Station for the Item")
+
+            ttUpdatePrices.SetToolTip(txtCalcProdLines, "Enter the number of Manufacturing Lines you have to build items per day for calculations. Calculations will assume the same number of BPs used." & vbCrLf & "Calculations for components will also use this value. Double-Click to enter max runs for this character.")
+            ttUpdatePrices.SetToolTip(txtCalcLabLines, "Enter the number of Laboratory Lines you have to invent per day for calculations. Double-Click to enter max runs for this character.")
+
+            ttUpdatePrices.SetToolTip(txtCalcSVRThreshold, "No results with an SVR lower than the number entered will be returned.")
+
+        End If
+        FirstLoadCalcBPTypes = True
+        FirstManufacturingGridLoad = True
+
+        ' If there is an error in price updates, only show once
+        ShownPriceUpdateError = False
+
+        Call InitManufacturingTab()
+
+        '****************************************
+        '**** Datacores Tab Initializations *****
+        '****************************************
+        DCSkillCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkDC"), CheckBox())
+        DCSkillLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblDatacore"), Label())
+        DCSkillCombos = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "cmbDCSkillLevel"), ComboBox())
+        DCCorpCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkDCCorp"), CheckBox())
+        DCCorpLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblDCCorp"), Label())
+        DCCorpTextboxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "txtDCStanding"), TextBox())
+
+        FirstShowDatacores = True
+        DCRegionsLoaded = False
+        rbtnDCUpdatedPrices.Checked = True
+        TotalSelectedIPH = 0
+
+        txtDCTotalOptIPH.Text = "0.00"
+        txtDCTotalSelectedIPH.Text = "0.00"
+
+        ' Width 1124, 21 for scrollbar, 25 for check
+        lstDC.Columns.Add("", -2, HorizontalAlignment.Center) ' For check
+        lstDC.Columns.Add("Corporation", 120, HorizontalAlignment.Left)
+        lstDC.Columns.Add("Agent", 152, HorizontalAlignment.Left)
+        lstDC.Columns.Add("LVL", 40, HorizontalAlignment.Center)
+        lstDC.Columns.Add("Standing", 60, HorizontalAlignment.Right)
+        lstDC.Columns.Add("Location", 250, HorizontalAlignment.Left) ' System name and security (station name?)
+        lstDC.Columns.Add("DataCore Skill", 166, HorizontalAlignment.Left)
+        lstDC.Columns.Add("DataCore Price", 88, HorizontalAlignment.Right)
+        lstDC.Columns.Add("Price From", 65, HorizontalAlignment.Center) ' Load with system name, region, or multiple
+        lstDC.Columns.Add("Core/Day", 62, HorizontalAlignment.Right)
+        lstDC.Columns.Add("Isk per Hour", 75, HorizontalAlignment.Right)
+        DCIPH_COLUMN = 10 ' For totaling up the price
+
+        If UserApplicationSettings.ShowToolTips Then
+            ttDatacores.SetToolTip(rbtnDCSystemPrices, "Max Buy Order from System used for Datacore Price")
+            ttDatacores.SetToolTip(rbtnDCRegionPrices, "Max Buy Order from Region used for Datacore Price")
+            ttDatacores.SetToolTip(lblDCGreenBackColor, "Green Background: Max IPH Agent")
+            ttDatacores.SetToolTip(lblDCBlueText, "Blue Text: Current Research Agents")
+            ttDatacores.SetToolTip(lblDCGrayText, "Gray Text: Unavailable Research Agent")
+            ttDatacores.SetToolTip(lblDCOrangeText, "Orange Text: Research Agent is in Low Sec")
+            ttDatacores.SetToolTip(lblDCRedText, "Red Text: Research Agent is in Null Sec")
+        End If
+
+        '****************************************
+        '**** Reactions Tab Initializations *****
+        '****************************************
+        ' 922 width, 21 for scroll
+        lstReactions.Columns.Add("Reaction Type", 136, HorizontalAlignment.Left)
+        lstReactions.Columns.Add("Reaction", 210, HorizontalAlignment.Left)
+        lstReactions.Columns.Add("Output Material", 222, HorizontalAlignment.Left)
+        lstReactions.Columns.Add("Output Quantity", 100, HorizontalAlignment.Right)
+        lstReactions.Columns.Add("Material Group", 118, HorizontalAlignment.Left)
+        lstReactions.Columns.Add("Isk per Hour", 115, HorizontalAlignment.Right)
+
+        Call InitReactionsTab()
+
+        ' Tool Tips
+        If UserApplicationSettings.ShowToolTips Then
+            ttReactions.SetToolTip(chkReactionsTaxes, "Include taxes charged for sale of Reaction Products")
+            ttReactions.SetToolTip(chkReactionsFees, "Include Broker Fees charged for placing a buy order for Reaction Products")
+        End If
+
+        ' Set up grid for input mats
+        lstReactionMats.Columns.Add("Material", 117, HorizontalAlignment.Left)
+        'lstReactionMats.Columns.Add("Cost", 50, HorizontalAlignment.Right)
+        lstReactionMats.Columns.Add("Quantity", 52, HorizontalAlignment.Right)
+
+        '****************************************
+        '**** Mining Tab Initializations ********
+        '****************************************
+        lstMineGrid.Columns.Add("Ore ID", 0, HorizontalAlignment.Right) ' Hidden
+        lstMineGrid.Columns.Add("Ore Name", MineOreNameColumnWidth, HorizontalAlignment.Left)
+        lstMineGrid.Columns.Add("Refine Type", 70, HorizontalAlignment.Left)
+        lstMineGrid.Columns.Add("Unit Price", 100, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Refine Yield", MineRefineYieldColumnWidth, HorizontalAlignment.Center)
+        lstMineGrid.Columns.Add("Crystal", MineCrystalColumnWidth, HorizontalAlignment.Left)
+        lstMineGrid.Columns.Add("m3 per Cycle", 75, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Units per Hour", 94, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Isk per Hour", 105, HorizontalAlignment.Right)
+
+        MineProcessingCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkOreProcessing"), CheckBox())
+        MineProcessingLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblOreProcessing"), Label())
+        MineProcessingCombos = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "cmbOreProcessing"), ComboBox())
+
+        Call InitMiningTab()
+
+        ' Tool Tips
+        If UserApplicationSettings.ShowToolTips Then
+            ttMining.SetToolTip(rbtnMineT2Crystals, "Use T2 Crystals when skills and equipment allow")
+            ttMining.SetToolTip(gbMineHauling, "If no hauling, results will take into account Round Trip time to the station based on M3 of Ship and fill times")
+            ttMining.SetToolTip(btnMineSaveAllSettings, "Saves all current options on Mining Screen")
+            ttMining.SetToolTip(chkMineForemanLaserOpBoost, "Click to cycle through No Booster, T1 or T2")
+            ttMining.SetToolTip(chkMineForemanLaserRangeBoost, "Click to cycle through No Booster, T1 or T2")
+            ttMining.SetToolTip(cmbMineIndustReconfig, "Select skill level to include Heavy Water costs per hour, set to 0 to ignore")
+            ttMining.SetToolTip(chkMineRorqDeployedMode, "To include Heavy Water costs for deployed mode, select Industrial Reconfiguration skill other than 0")
+            ttMining.SetToolTip(lblMineExhumers, "For Prospect Mining Frigate, use the Exhumers Combobox to set the Expedition Frigate skill level.")
+        End If
+
+        '****************************************
+        '**** All Tabs **************************
+        '****************************************
+
+        ' For indy jobs viewer
+        FirstIndustryJobsViewerLoad = True
+
+        ' For handling click events
+        UpdatingCheck = False
+
+        ' All set, we are done loading
+        FirstLoad = False
 
     End Sub
 
@@ -2020,6 +2013,21 @@ Public Class frmMain
             mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
             Call ResetTabs()
             Call LoadCharacterNamesinMenu()
+        End If
+
+    End Sub
+
+    Private Sub mnuRegisterProgram_Click(sender As Object, e As EventArgs) Handles mnuRegisterProgram.Click
+        Dim f1 As New frmLoadESIAuthorization
+        f1.ShowDialog()
+        f1.Close()
+
+        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
+
+        ' If they have the dummy loaded, let them add characters now
+        If DummyAccountLoaded And ApplicationSettings.ClientID <> DummyClient Then
+            Dim f2 As New frmSetCharacterDefault
+            f2.ShowDialog()
         End If
 
     End Sub
@@ -6284,10 +6292,10 @@ ExitForm:
         Dim BPTechImagePath As String = ""
 
         ' Load the image - use absolute value since I use negative bpid's for special bps
-        BPImage = UserImagePath & CStr(Math.Abs(BPID) & "_64.png")
+        BPImage = Path.Combine(UserImagePath, CStr(Math.Abs(BPID)) & "_64.png")
 
         ' Check for the Tech Image
-        If System.IO.File.Exists(BPImage) Then
+        If File.Exists(BPImage) Then
             pictBP.Image = Image.FromFile(BPImage)
         Else
             pictBP.Image = Nothing
@@ -10011,7 +10019,7 @@ ExitSub:
 
         If openFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
             Try
-                BPStream = New System.IO.StreamReader(openFileDialog1.FileName)
+                BPStream = New StreamReader(openFileDialog1.FileName)
 
                 If (BPStream IsNot Nothing) Then
                     ' Read the file line by line here, start with headers
@@ -18349,7 +18357,7 @@ Leave:
                 ImageFile = 0
         End Select
 
-        BPImage = UserImagePath & CStr(ImageFile) & "_64.png"
+        BPImage = Path.Combine(UserImagePath, CStr(ImageFile) & "_64.png")
 
         Return BPImage
 
@@ -18638,17 +18646,17 @@ Leave:
                     cmbMineMiningUpgrade.Text = None
                 End If
                 cmbMineNumLasers.Text = CStr(.NumOreMiners)
-                    cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
-                    rbtnMineMercoxitRig.Enabled = True
-                    rbtnMineIceRig.Enabled = False
-                    If .MercoxitMiningRig Then
-                        rbtnMineMercoxitRig.Checked = True
-                    Else
-                        rbtnMineNoRigs.Checked = True
-                    End If
-                ElseIf .OreType = "Ice" Then
-                    cmbMineShipType.Text = .IceMiningShip
-                    cmbMineMiningLaser.Text = .IceStrip
+                cmbMineNumMiningUpgrades.Text = CStr(.NumOreUpgrades)
+                rbtnMineMercoxitRig.Enabled = True
+                rbtnMineIceRig.Enabled = False
+                If .MercoxitMiningRig Then
+                    rbtnMineMercoxitRig.Checked = True
+                Else
+                    rbtnMineNoRigs.Checked = True
+                End If
+            ElseIf .OreType = "Ice" Then
+                cmbMineShipType.Text = .IceMiningShip
+                cmbMineMiningLaser.Text = .IceStrip
                 If cmbMineMiningUpgrade.Items.Contains(.IceUpgrade) Then
                     cmbMineMiningUpgrade.Text = .IceUpgrade
                 Else
@@ -18656,14 +18664,14 @@ Leave:
                 End If
                 cmbMineNumLasers.Text = CStr(.NumIceMiners)
                 cmbMineNumMiningUpgrades.Text = CStr(.NumIceUpgrades)
-                    rbtnMineMercoxitRig.Enabled = False
-                    rbtnMineIceRig.Enabled = True
-                    If .IceMiningRig Then
-                        rbtnMineIceRig.Checked = True
-                    Else
-                        rbtnMineIceRig.Checked = True
-                    End If
-                ElseIf .OreType = "Gas" Then
+                rbtnMineMercoxitRig.Enabled = False
+                rbtnMineIceRig.Enabled = True
+                If .IceMiningRig Then
+                    rbtnMineIceRig.Checked = True
+                Else
+                    rbtnMineIceRig.Checked = True
+                End If
+            ElseIf .OreType = "Gas" Then
                 cmbMineShipType.Text = .GasMiningShip
                 cmbMineMiningLaser.Text = .GasHarvester
                 cmbMineMiningUpgrade.Text = .GasUpgrade
@@ -19481,7 +19489,7 @@ Leave:
 
             Dim BPImage As String = GetMiningShipImage(ShipName)
 
-            If System.IO.File.Exists(BPImage) Then
+            If File.Exists(BPImage) Then
                 pictMineFleetBoostShip.Image = Image.FromFile(BPImage)
             Else
                 pictMineFleetBoostShip.Image = Nothing
@@ -19509,7 +19517,7 @@ Leave:
 
         Dim BPImage As String = GetMiningShipImage(ShipName)
 
-        If System.IO.File.Exists(BPImage) Then
+        If File.Exists(BPImage) Then
             pictMineSelectedShip.Image = Image.FromFile(BPImage)
         Else
             pictMineSelectedShip.Image = Nothing
@@ -20741,35 +20749,35 @@ Leave:
         End Select
 
         If cmbMineOreType.Text = "Ice" Then
-                ' For Ice, check for duration reduction bonus, implant, and upgrades
-                If cmbMineGasIceHarvesting.Enabled Then
-                    ' Apply the ice harvesting bonus
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
-                End If
+            ' For Ice, check for duration reduction bonus, implant, and upgrades
+            If cmbMineGasIceHarvesting.Enabled Then
+                ' Apply the ice harvesting bonus
+                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
+            End If
 
-                ' Apply the upgrades
-                If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
-                    ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                    Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                    TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-                End If
+            ' Apply the upgrades
+            If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
+                ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
+                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
+                TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+            End If
 
-                ' Finally include the implant value
-                If cmbMineImplant.Text <> None Then
-                    'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-                    TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
-                End If
+            ' Finally include the implant value
+            If cmbMineImplant.Text <> None Then
+                'Inherent Implants 'Yeti' Ice Harvesting IH-1001
+                TempCycleTime = TempCycleTime * (1 - (-1 * GetAttribute("iceHarvestCycleBonus", "Inherent Implants 'Yeti' Ice Harvesting " & cmbMineImplant.Text.Substring(7)) / 100))
+            End If
 
-                ' Apply the rig bonus if selected
-                If rbtnMineIceRig.Checked = True Then
-                    ' 12% cycle reduction
-                    TempCycleTime = TempCycleTime * (1 - 0.12)
-                End If
+            ' Apply the rig bonus if selected
+            If rbtnMineIceRig.Checked = True Then
+                ' 12% cycle reduction
+                TempCycleTime = TempCycleTime * (1 - 0.12)
+            End If
 
-            ElseIf cmbMineOreType.Text = "Gas" Then
-                ' Gas, look for venture ship and implant
+        ElseIf cmbMineOreType.Text = "Gas" Then
+            ' Gas, look for venture ship and implant
 
-                Select Case cmbMineShipType.Text
+            Select Case cmbMineShipType.Text
                 Case Prospect, Venture, Endurance
                     ' 5% reduction to gas cloud harvesting duration per level
                     TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))
@@ -20880,8 +20888,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link T2 - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\43551_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\43551_32.png")
+            If File.Exists(Path.Combine(UserImagePath, "43551_32.png")) Then
+                pictMineLaserOptmize.Image = Image.FromFile(Path.Combine(UserImagePath, "43551_32.png"))
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -20892,8 +20900,8 @@ Leave:
             chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
             chkMineForemanLaserOpBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\42528_32.png") Then
-                pictMineLaserOptmize.Image = Image.FromFile(UserImagePath & "\42528_32.png")
+            If File.Exists(Path.Combine(UserImagePath, "42528_32.png")) Then
+                pictMineLaserOptmize.Image = Image.FromFile(Path.Combine(UserImagePath, "42528_32.png"))
             Else
                 pictMineLaserOptmize.Image = Nothing
             End If
@@ -20906,8 +20914,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link T2 - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.DarkOrange
 
-            If System.IO.File.Exists(UserImagePath & "\43551_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\43551_32.png")
+            If File.Exists(Path.Combine(UserImagePath, "43551_32.png")) Then
+                pictMineRangeLink.Image = Image.FromFile(Path.Combine(UserImagePath, "43551_32.png"))
             Else
                 pictMineRangeLink.Image = Nothing
             End If
@@ -20915,8 +20923,8 @@ Leave:
             chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
             chkMineForemanLaserRangeBoost.ForeColor = Color.Black
 
-            If System.IO.File.Exists(UserImagePath & "\42528_32.png") Then
-                pictMineRangeLink.Image = Image.FromFile(UserImagePath & "\42528_32.png")
+            If File.Exists(Path.Combine(UserImagePath, "42528_32.png")) Then
+                pictMineRangeLink.Image = Image.FromFile(Path.Combine(UserImagePath, "42528_32.png"))
             Else
                 pictMineRangeLink.Image = Nothing
             End If

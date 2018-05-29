@@ -24,6 +24,7 @@ Public Module Public_Variables
     Public SelectedBlueprint As Blueprint
 
     Public DummyAccountLoaded As Boolean
+    Public Const DummyClient As String = "Dummy"
     Public Const DefaultDummyCharacterCode As Integer = -2 ' To save the dummy character, use a unqiue code for IS_DEFAULT value
     Public Const DefaultCharacterCode As Integer = -1 ' For everyone else
     Public Const DummyCharacterID As Long = 0
@@ -38,17 +39,17 @@ Public Module Public_Variables
     Public ManufacturingTabColumnsChanged As Boolean ' To track if thy changed columns
 
     ' File Paths
-    Public UpdaterFilePath As String = "" ' Where the update files are stored
-    Public UserWorkingFolder As String = "" ' Where the DB and updater and anything that changes files will be
-    Public UserImagePath As String = "" ' Where the images are kept
+    Public DynamicFilePath As String = "" ' Where the update and settings files are stored that we can write, create, delete, etc.
+    Public DBFilePath As String = "" ' Where the DB is stored for updates
 
     Public Const PatchNotesURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/Patch%20Notes.txt"
     Public Const XMLUpdateFileURL = "https://raw.githubusercontent.com/EVEIPH/LatestFiles/master/LatestVersionIPH.xml"
     Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
 
-    Public Const AppDataPath As String = "EVEIPH"
-    Public Const BPImageFilePath As String = "EVEIPH Images"
+    Public Const DynamicAppDataPath As String = "EVE IPH"
+    Public Const UserImagePath As String = "EVEIPH Images"
     Public Const UpdatePath As String = "EVE IPH Updates"
+    Public Const SettingsFolder As String = "Settings" ' For saving all settings
 
     Public Const SQLiteDBFileName As String = "EVEIPH DB.sqlite"
 
@@ -194,10 +195,6 @@ Public Module Public_Variables
     Public Const Orca As String = "Orca"
     Public Const Drake As String = "Drake"
     Public Const Rokh As String = "Rokh"
-
-    Public Const CorporationAPITypeName = "Corporation"
-
-    Public Const ExpiredKey = "EXPIRED!"
 
     ' For exporting Data
     Public Const DefaultTextDataExport As String = "Default"
@@ -374,6 +371,8 @@ Public Module Public_Variables
     Public Sub LoadCharacter(RefreshAssets As Boolean, RefreshBPs As Boolean)
         Dim ApplicationRegistered As Boolean
 
+        On Error GoTo 0
+
         ' Try to load the character
         If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
 
@@ -395,9 +394,11 @@ Public Module Public_Variables
                     Dim f1 As New frmLoadESIAuthorization
                     f1.ShowDialog()
                     f1.Close()
-                    ' If they closed, then it's ready to select a character
-                    Dim f2 As New frmSetCharacterDefault
-                    f2.ShowDialog()
+                    ' If they closed, then it's ready to select a character (not a dummy)
+                    If Not DummyAccountLoaded Then
+                        Dim f2 As New frmSetCharacterDefault
+                        f2.ShowDialog()
+                    End If
                 End If
 
                 ' If they didn't skip this and load dummy, then let them select a character default
@@ -1485,19 +1486,18 @@ InvalidDate:
 
     ' Writes a sent message to a log file
     Public Sub WriteMsgToLog(ByVal ErrorMsg As String)
-        Dim FilePath As String = UserWorkingFolder & "EVEIPH.log"
+        Dim FilePath As String = Path.Combine(DynamicFilePath, "EVEIPH.log")
         Dim AllText() As String
 
-        If Not IO.File.Exists(FilePath) Then
-            Dim sw As IO.StreamWriter = IO.File.CreateText(FilePath)
+        If Not File.Exists(FilePath) Then
+            Dim sw As StreamWriter = File.CreateText(FilePath)
             sw.Close()
         End If
 
         ' This is an easier way to get all of the strings in the file.
-        AllText = IO.File.ReadAllLines(FilePath)
+        AllText = File.ReadAllLines(FilePath)
         ' This will append the string to the end of the file.
         My.Computer.FileSystem.WriteAllText(FilePath, CStr(Now) & ", " & ErrorMsg & Environment.NewLine, True)
-
 
     End Sub
 
@@ -1812,7 +1812,10 @@ InvalidDate:
 
         ' For reading in chunks of data
         Dim readBytes(4095) As Byte
-        ' Save in root directory
+        ' Create directory if it doesn't exist already
+        If Not Directory.Exists(Path.GetDirectoryName(FileName)) Then
+            Directory.CreateDirectory(Path.GetDirectoryName(FileName))
+        End If
         Dim writeStream As New FileStream(FileName, FileMode.Create)
         Dim bytesread As Integer
 

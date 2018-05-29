@@ -16,25 +16,20 @@ Public Class ProgramUpdater
     ' When constructed, it will load the settings XML file into the class
     Public Sub New()
 
-        MsgBox("check updatefiles folder")
         ' Create the updates folder
-        If Directory.Exists(UpdaterFilePath) Then
+        If Directory.Exists(Path.Combine(DynamicFilePath, UpdatePath)) Then
             ' Delete what is there and replace
-            Dim ImageDir As New DirectoryInfo(UpdaterFilePath)
+            Dim ImageDir As New DirectoryInfo(Path.Combine(DynamicFilePath, UpdatePath))
             ImageDir.Delete(True)
         End If
 
-        MsgBox("create updatefiles folder)")
-
-        Directory.CreateDirectory(UpdaterFilePath)
-
-        MsgBox("downloading update file xml")
+        Directory.CreateDirectory(Path.Combine(DynamicFilePath, UpdatePath))
 
         ' Get the newest updatefile from server
         If TestingVersion Then
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestFileURL, Path.Combine(UpdaterFilePath, XMLLatestVersionTest))
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateTestFileURL, Path.Combine(DynamicFilePath, UpdatePath, XMLLatestVersionTest))
         Else
-            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateFileURL, Path.Combine(UpdaterFilePath, XMLLatestVersionFileName))
+            ServerXMLLastUpdatePath = DownloadFileFromServer(XMLUpdateFileURL, Path.Combine(DynamicFilePath, UpdatePath, XMLLatestVersionFileName))
         End If
 
     End Sub
@@ -45,7 +40,7 @@ Public Class ProgramUpdater
         On Error Resume Next
 
         ' Delete the updates folder (new one will be made in updater)
-        Dim ImageDir As New DirectoryInfo(UpdaterFilePath)
+        Dim ImageDir As New DirectoryInfo(Path.Combine(DynamicFilePath, UpdatePath))
         ImageDir.Delete(True)
 
     End Sub
@@ -98,25 +93,21 @@ Public Class ProgramUpdater
         Next
 
         On Error Resume Next
-
         ' Don't delete the update file or folder (it will get deleted on startup of this or updater anyway
         ' Perserve the old XML file until we finish the updater - if only the updater needs to be updated, 
         ' then it will copy over the new xml file when it closes
 
-        ' Get the directory path of this program to send to updater
-        Dim ProcInfo As New ProcessStartInfo
-
-        ProcInfo.WindowStyle = ProcessWindowStyle.Normal
-        ProcInfo.FileName = Path.Combine(UserWorkingFolder, UpdaterFileName)
-        ProcInfo.Arguments = String.Empty
-        Process.Start(ProcInfo)
+        ' Open the updater
+        Dim Proc As New Process
+        Proc.StartInfo.FileName = Path.Combine(DynamicFilePath, UpdaterFileName)
+        Proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal
+        Proc.StartInfo.Arguments = Path.GetDirectoryName(Application.ExecutablePath)
+        Proc.Start()
 
         ' Close this program
         End
 
 DownloadError:
-
-        Call WriteMsgToLog(Err.Description)
 
         ' Some sort of problem, we will just update the whole thing and download the new XML file
         If Err.Description <> "" Then
@@ -134,32 +125,38 @@ DownloadError:
         Dim ServerFilePath As String = ""
         Dim fi As FileInfo
 
-        ' Get the local updater MD5, if not found, we run update anyway
-        LocalFileMD5 = MD5CalcFile(Path.Combine(UserWorkingFolder, UpdaterFileName))
+        Try
 
-        If LocalFileMD5 <> ServerFileMD5 Then
-            ' Update the updater file, download the new file
-            ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(UpdaterFilePath, Filename))
+            ' Get the local updater MD5, if not found, we run update anyway
+            LocalFileMD5 = MD5CalcFile(Path.Combine(DynamicFilePath, Filename))
 
-            If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Then
-                ' Try again
-                ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(UpdaterFilePath, Filename))
+            If LocalFileMD5 <> ServerFileMD5 Then
+                ' Update the file, download the new file first
+                ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(DynamicFilePath, UpdatePath, Filename))
 
-                If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Or ServerFilePath = "" Then
-                    ' Download error, just leave because we want this update to go through before running
-                    Return "Download Error"
+                If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Then
+                    ' Try again
+                    ServerFilePath = DownloadFileFromServer(ServerFileURL, Path.Combine(DynamicFilePath, UpdatePath, Filename))
+
+                    If MD5CalcFile(ServerFilePath) <> ServerFileMD5 Or ServerFilePath = "" Then
+                        ' Download error, just leave because we want this update to go through before running
+                        Return "Download Error"
+                    End If
                 End If
+
+                ' Delete the old file, rename the new
+                If File.Exists(Path.Combine(DynamicFilePath, Filename)) Then
+                    File.Delete(Path.Combine(DynamicFilePath, Filename))
+                End If
+
+                ' Move the downloaded file
+                fi = New FileInfo(ServerFilePath)
+                fi.MoveTo(Path.Combine(DynamicFilePath, Filename))
             End If
 
-            ' Delete the old file, rename the new
-            If File.Exists(Path.Combine(UserWorkingFolder, Filename)) Then
-                File.Delete(Path.Combine(UserWorkingFolder, Filename))
-            End If
-
-            ' Move the downloaded file
-            fi = New FileInfo(ServerFilePath)
-            fi.MoveTo(Path.Combine(UserWorkingFolder, Filename))
-        End If
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
 
         Return ""
 
@@ -172,7 +169,6 @@ DownloadError:
         Dim XMLFile As String = ""
 
         Try
-
             If TestingVersion Then
                 XMLFile = XMLLatestVersionTest
             Else
@@ -180,11 +176,11 @@ DownloadError:
             End If
 
             ' Get the hash of the local XML
-            LocalMD5 = MD5CalcFile(Path.Combine(UserWorkingFolder, XMLFile))
+            LocalMD5 = MD5CalcFile(Path.Combine(DynamicFilePath, XMLFile))
 
             If ServerXMLLastUpdatePath <> "" Then
                 ' Get the hash of the server XML
-                ServerMD5 = MD5CalcFile(Path.Combine(UpdaterFilePath, XMLFile))
+                ServerMD5 = MD5CalcFile(Path.Combine(DynamicFilePath, UpdatePath, XMLFile))
             Else
                 Return UpdateCheckResult.UpdateError
             End If
@@ -198,6 +194,8 @@ DownloadError:
 
         Catch ex As Exception
             ' File didn't download, so either try again later or some other error that is unhandled
+            MsgBox(ex.Message)
+            WriteMsgToLog("IsProgramUpdatable" & ex.Message)
             Return UpdateCheckResult.UpdateError
         End Try
     End Function

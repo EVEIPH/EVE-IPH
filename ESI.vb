@@ -89,6 +89,9 @@ Public Class ESI
         If ClientID = "" Then
             AppRegistered = False
         Else
+            If ClientID = DummyClient Then
+                DummyAccountLoaded = True
+            End If
             AppRegistered = True
         End If
 
@@ -156,6 +159,7 @@ Public Class ESI
                 Return AuthToken
             End If
         Catch ex As WebException
+            MsgBox("Web Request failed. Code: " & ErrorCode & ", " & ex.Message)
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
         Catch ex As Exception
             MsgBox("The request failed. " & ex.Message, vbInformation, Application.ProductName)
@@ -204,6 +208,7 @@ Public Class ESI
             Return AccessTokenOutput
         Catch ex As WebException
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+            MsgBox("Web Request failed. Code: " & ErrorCode & ", " & ex.Message)
             Return Nothing
         Catch ex As Exception
             MsgBox("The request failed. " & ex.Message, vbInformation, Application.ProductName)
@@ -337,6 +342,7 @@ Public Class ESI
             Return NoDate
         End If
     End Function
+
 
 #Region "Load Character Data"
 
@@ -678,15 +684,16 @@ Public Class ESI
     End Function
 
     Public Function GetCorporationData(ByVal ID As Long, ByRef DataCacheDate As Date) As ESICorporation
-        Dim Corp As ESICorporation
         Dim ReturnData As String = ""
 
         ' Set up query string
         ReturnData = GetPublicData(ESIPublicURL & "corporations/" & CStr(ID) & TranquilityDataSource, DataCacheDate)
 
-        Corp = JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
-
-        Return Corp
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -1687,7 +1694,6 @@ Public Class ESI
     ' Looks up station data in the static tables, if not there, queries from ESI
     Private Function GetStationData(StationID As Long, CorporationID As Long) As StationData
         Dim rsStation As SQLiteDataReader
-        Dim rsLookup As SQLiteDataReader
         Dim SQL As String
         Dim TempData As StationData
 
@@ -1724,20 +1730,20 @@ Public Class ESI
 
         rsStation.Close()
 
-        ' Try to get the  name now for the corporation of this station
-        SQL = "SELECT ITEM_NAME FROM INVENTORY_NAMES WHERE ITEM_ID = " & CStr(CorporationID)
+        '' Try to get the  name now for the corporation of this station
+        'SQL = "SELECT ITEM_NAME FROM INVENTORY_NAMES WHERE ITEM_ID = " & CStr(CorporationID)
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsLookup = DBCommand.ExecuteReader
+        'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        'rsLookup = DBCommand.ExecuteReader
 
-        If rsLookup.Read Then
-            TempData.OwnedbyCorporationName = rsLookup.GetString(0)
-        Else
-            ' Need to look up from ESI
-            TempData.OwnedbyCorporationName = ""
-        End If
+        'If rsLookup.Read Then
+        '    TempData.OwnedbyCorporationName = rsLookup.GetString(0)
+        'Else
+        ' Need to look up from ESI
+        TempData.OwnedbyCorporationName = ""
+        'End If
 
-        rsLookup.Close()
+        'rsLookup.Close()
 
         Return TempData
 
@@ -1825,6 +1831,19 @@ Public Class ESI
         Dim ID As Long
         Dim Name As String
     End Structure
+
+    Public Function GetFactionData() As List(Of ESIFactionData)
+        Dim PublicData As String
+
+        Try
+            PublicData = GetPublicData(ESIPublicURL & "universe/factions/" & TranquilityDataSource, Nothing)
+
+            Return JsonConvert.DeserializeObject(Of List(Of ESIFactionData))(PublicData)
+        Catch ex As Exception
+            Return Nothing
+        End Try
+
+    End Function
 
     ' Looks up the name for the list of IDs
     Public Function GetNameData(IDList As List(Of Long)) As List(Of ESINameData)
@@ -1970,6 +1989,19 @@ Public Class ESINameData
     <JsonProperty("category")> Public category As String '[ alliance, character, constellation, corporation, inventory_type, region, solar_system, station ]
     <JsonProperty("id")> Public id As Integer
     <JsonProperty("name")> Public name As String
+End Class
+
+Public Class ESIFactionData
+    <JsonProperty("faction_id")> Public faction_id As Integer
+    <JsonProperty("corporation_id")> Public corporation_id As Integer
+    <JsonProperty("description")> Public description As String
+    <JsonProperty("is_unique")> Public is_unique As Boolean
+    <JsonProperty("militia_corporation_id")> Public militia_corporation_id As Integer
+    <JsonProperty("name")> Public name As String
+    <JsonProperty("size_factor")> Public size_factor As Double
+    <JsonProperty("solar_system_id")> Public solar_system_id As Integer
+    <JsonProperty("station_count")> Public station_count As Integer
+    <JsonProperty("station_system_count")> Public station_system_count As Integer
 End Class
 
 #End Region

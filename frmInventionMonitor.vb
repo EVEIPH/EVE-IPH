@@ -1,5 +1,6 @@
 ﻿
 Imports System.Data.SQLite
+Imports System.IO
 
 Public Class frmInventionMonitor
 
@@ -283,7 +284,7 @@ Public Class frmInventionMonitor
             lblSelectedBP.Text = lstInventionItems.SelectedItems(0).SubItems(1).Text
 
             ' Now select the BP image
-            BPImage = UserImagePath & CStr(SelectedBPID & "_64.png")
+            BPImage = Path.Combine(UserImagePath, CStr(SelectedBPID) & "_64.png")
 
             If System.IO.File.Exists(BPImage) Then
                 pictInvention.Image = Image.FromFile(BPImage)

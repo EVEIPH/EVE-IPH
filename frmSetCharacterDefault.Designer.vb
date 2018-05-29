@@ -28,6 +28,7 @@ Partial Class frmSetCharacterDefault
         Me.btnClose = New System.Windows.Forms.Button()
         Me.btnEVESSOLogin = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
+        Me.btnReloadRegistration = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'chkListDefaultChar
@@ -42,16 +43,16 @@ Partial Class frmSetCharacterDefault
         '
         'btnSelectDefault
         '
-        Me.btnSelectDefault.Location = New System.Drawing.Point(42, 314)
+        Me.btnSelectDefault.Location = New System.Drawing.Point(53, 311)
         Me.btnSelectDefault.Name = "btnSelectDefault"
         Me.btnSelectDefault.Size = New System.Drawing.Size(99, 26)
         Me.btnSelectDefault.TabIndex = 4
-        Me.btnSelectDefault.Text = "Select"
+        Me.btnSelectDefault.Text = "Select Default"
         Me.btnSelectDefault.UseVisualStyleBackColor = True
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(170, 314)
+        Me.btnClose.Location = New System.Drawing.Point(158, 311)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(99, 26)
         Me.btnClose.TabIndex = 5
@@ -78,13 +79,24 @@ Partial Class frmSetCharacterDefault
     "cted, then log in to the EVE SSO below to authorize your caracters for use in IP" &
     "H."
         '
+        'btnReloadRegistration
+        '
+        Me.btnReloadRegistration.Location = New System.Drawing.Point(53, 343)
+        Me.btnReloadRegistration.Name = "btnReloadRegistration"
+        Me.btnReloadRegistration.Size = New System.Drawing.Size(204, 26)
+        Me.btnReloadRegistration.TabIndex = 13
+        Me.btnReloadRegistration.Text = "Re-Enter Registration Information"
+        Me.btnReloadRegistration.UseVisualStyleBackColor = True
+        Me.btnReloadRegistration.Visible = False
+        '
         'frmSetCharacterDefault
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(311, 352)
+        Me.ClientSize = New System.Drawing.Size(311, 376)
         Me.ControlBox = False
+        Me.Controls.Add(Me.btnReloadRegistration)
         Me.Controls.Add(Me.lblKeyType)
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.btnEVESSOLogin)
@@ -105,4 +117,5 @@ Partial Class frmSetCharacterDefault
     Friend WithEvents btnClose As System.Windows.Forms.Button
     Friend WithEvents btnEVESSOLogin As Button
     Friend WithEvents lblKeyType As Label
+    Friend WithEvents btnReloadRegistration As Button
 End Class

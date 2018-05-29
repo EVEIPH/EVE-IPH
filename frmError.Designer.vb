@@ -48,7 +48,7 @@ Partial Class frmError
         '
         'btnSendReport
         '
-        Me.btnSendReport.Location = New System.Drawing.Point(159, 266)
+        Me.btnSendReport.Location = New System.Drawing.Point(79, 266)
         Me.btnSendReport.Name = "btnSendReport"
         Me.btnSendReport.Size = New System.Drawing.Size(97, 30)
         Me.btnSendReport.TabIndex = 2

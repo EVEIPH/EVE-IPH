@@ -192,4 +192,22 @@ Public Class frmManageAccounts
             btnDeleteCharacter.Enabled = True
         End If
     End Sub
+
+    Private Sub btnRegisterProgram_Click(sender As Object, e As EventArgs) Handles btnRegisterProgram.Click
+        Dim f1 As New frmLoadESIAuthorization
+        f1.ShowDialog()
+        f1.Close()
+
+        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
+
+        ' If they have the dummy loaded, let them add characters now
+        If DummyAccountLoaded And ApplicationSettings.ClientID <> DummyClient Then
+            Dim f2 As New frmSetCharacterDefault
+            f2.ShowDialog()
+        End If
+
+        Call LoadAccountGrid()
+
+    End Sub
+
 End Class

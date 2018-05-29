@@ -96,6 +96,10 @@ Public Class frmSetCharacterDefault
         If ESIConnection.SetCharacterData() Then
             ' Now update the character list
             Call UpdateCharacterList()
+        Else
+            ' Didn't load, so show the re-enter info button
+            MsgBox("The Character failed to load. Please check application registration information.")
+            btnReloadRegistration.Visible = True
         End If
 
     End Sub
@@ -137,10 +141,25 @@ Public Class frmSetCharacterDefault
             chkListDefaultChar.SetItemChecked(0, True)
         End If
 
+        If numChars >= 1 Then
+            btnSelectDefault.Enabled = True
+            ' Now don't let them cancel
+            btnClose.Enabled = False
+        Else
+            ' Disable select default button until they load one up
+            btnSelectDefault.Enabled = False
+            btnClose.Enabled = True ' They can select a dummy
+        End If
+
         readerCharacters.Close()
         readerCharacters = Nothing
         DBCommand = Nothing
 
     End Sub
 
+    Private Sub btnReloadRegistration_Click(sender As Object, e As EventArgs) Handles btnReloadRegistration.Click
+        Dim f1 As New frmLoadESIAuthorization
+        f1.ShowDialog()
+        f1.Close()
+    End Sub
 End Class

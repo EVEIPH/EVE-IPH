@@ -1,4 +1,6 @@
 ﻿
+Imports System.ComponentModel
+
 Public Class frmLoadESIAuthorization
 
     Public Sub New()
@@ -37,6 +39,10 @@ Public Class frmLoadESIAuthorization
     End Sub
 
     Private Sub btnSkipEntry_Click(sender As Object, e As EventArgs) Handles btnSkipEntry.Click
+        Call ProcessDummyCharacter()
+    End Sub
+
+    Private Sub ProcessDummyCharacter()
         ' Load the dummy
         If SelectedCharacter.LoadDummyCharacter() = TriState.UseDefault Then
             ' They said no, cancel and let them re-choose
@@ -95,15 +101,17 @@ Public Class frmLoadESIAuthorization
             Exit Sub
         End If
 
-        ' Good to go, save it
+        ' Good to go, save it then do a check
         Settings.ClientID = Trim(txtClientID.Text)
         Settings.SecretKey = Trim(txtSecretKey.Text)
         Settings.Port = CInt(Trim(txtPort.Text))
         Settings.Scopes = Trim(txtScopes.Text)
 
         If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
+            ' Good to go!
             Call MsgBox("Registration Information Saved!", vbInformation, Application.ProductName)
         Else
+            Call MsgBox("Settings failed to save.", vbInformation, Application.ProductName)
             Exit Sub
         End If
 
@@ -125,6 +133,20 @@ Public Class frmLoadESIAuthorization
 
     Private Sub txtSecretKey_GotFocus(sender As Object, e As EventArgs) Handles txtSecretKey.GotFocus
         txtSecretKey.SelectAll()
+    End Sub
+
+    Private Sub frmLoadESIAuthorization_Shown(sender As Object, e As EventArgs) Handles Me.Shown
+        Me.Activate()
+    End Sub
+
+    Private Sub frmLoadESIAuthorization_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        ' Let them close the form but only if it's registered, if not, don't complete this
+        Dim ESITest As New ESI
+        If Not ESITest.AppRegistered And Not DummyAccountLoaded Then
+            ' Make them verify they want the dummy
+            e.Cancel = True
+            Call ProcessDummyCharacter()
+        End If
     End Sub
 
 End Class

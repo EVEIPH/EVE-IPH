@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SQLite
+Imports System.IO
 
 Public Class frmUpwellStructureFitting
 
@@ -699,8 +700,8 @@ Public Class frmUpwellStructureFitting
         For Each UPWStructure In StructureDBDataList
             ' Look for the name and then load the render image from the typeID (should be in images folder)
             If UPWStructure.Name = cmbUpwellStructureName.Text Then
-                If System.IO.File.Exists(BPImageFilePath & UPWStructure.TypeID & ".png") Then
-                    StructurePicture.Image = Image.FromFile(BPImageFilePath & UPWStructure.TypeID & ".png")
+                If File.Exists(Path.Combine(UserImagePath, CStr(UPWStructure.TypeID) & ".png")) Then
+                    StructurePicture.Image = Image.FromFile(Path.Combine(UserImagePath, UPWStructure.TypeID & ".png"))
                 Else
                     StructurePicture.Image = Nothing
                 End If
@@ -1168,8 +1169,8 @@ Public Class frmUpwellStructureFitting
                 ' Add to the image list, and put in view with names
                 typeID = CStr(rsReader.GetInt32(0))
                 typeName = rsReader.GetString(1)
-                If IO.File.Exists(BPImageFilePath & typeID & "_64.png") Then
-                    myImage = Image.FromFile(BPImageFilePath & typeID & "_64.png")
+                If File.Exists(Path.Combine(UserImagePath, typeID & "_64.png")) Then
+                    myImage = Image.FromFile(Path.Combine(UserImagePath, typeID & "_64.png"))
 
                     Call FittingImages.Images.Add(typeID, myImage)
                 End If
@@ -2076,26 +2077,26 @@ Public Class frmUpwellStructureFitting
     Private Sub LoadFuelBlockImages()
         ' Just load up all the images dyamically
 
-        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Nitrogen) & "_32.png") Then
-            picNitrogenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Nitrogen) & "_32.png")
+        If File.Exists(Path.Combine(UserImagePath, CStr(FuelBlocks.Nitrogen) & "_32.png")) Then
+            picNitrogenFuelBlock.Image = Image.FromFile(Path.Combine(UserImagePath, CStr(FuelBlocks.Nitrogen) & "_32.png"))
         Else
             picNitrogenFuelBlock.Image = Nothing
         End If
 
-        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Oxygen) & "_32.png") Then
-            picOxygenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Oxygen) & "_32.png")
+        If File.Exists(Path.Combine(UserImagePath, CStr(FuelBlocks.Oxygen) & "_32.png")) Then
+            picOxygenFuelBlock.Image = Image.FromFile(Path.Combine(UserImagePath, CStr(FuelBlocks.Oxygen) & "_32.png"))
         Else
             picOxygenFuelBlock.Image = Nothing
         End If
 
-        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Hydrogen) & "_32.png") Then
-            picHydrogenFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Hydrogen) & "_32.png")
+        If File.Exists(Path.Combine(UserImagePath, CStr(FuelBlocks.Hydrogen) & "_32.png")) Then
+            picHydrogenFuelBlock.Image = Image.FromFile(Path.Combine(UserImagePath, CStr(FuelBlocks.Hydrogen) & "_32.png"))
         Else
             picHydrogenFuelBlock.Image = Nothing
         End If
 
-        If IO.File.Exists(BPImageFilePath & CStr(FuelBlocks.Helium) & "_32.png") Then
-            picHeliumFuelBlock.Image = Image.FromFile(BPImageFilePath & CStr(FuelBlocks.Helium) & "_32.png")
+        If File.Exists(Path.Combine(UserImagePath, CStr(FuelBlocks.Helium) & "_32.png")) Then
+            picHeliumFuelBlock.Image = Image.FromFile(Path.Combine(UserImagePath, CStr(FuelBlocks.Helium) & "_32.png"))
         Else
             picHeliumFuelBlock.Image = Nothing
         End If
@@ -2105,63 +2106,63 @@ Public Class frmUpwellStructureFitting
         picHydrogenFuelBlock.Refresh()
         picHeliumFuelBlock.Refresh()
 
-        If IO.File.Exists(BPImageFilePath & "9832_32.png") Then
-            picCoolant.Image = Image.FromFile(BPImageFilePath & "9832_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "9832_32.png")) Then
+            picCoolant.Image = Image.FromFile(Path.Combine(UserImagePath, "9832_32.png"))
         Else
             picCoolant.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "44_32.png") Then
-            picEnrichedUranium.Image = Image.FromFile(BPImageFilePath & "44_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "44_32.png")) Then
+            picEnrichedUranium.Image = Image.FromFile(Path.Combine(UserImagePath, "44_32.png"))
         Else
             picEnrichedUranium.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "16272_32.png") Then
-            picHeavyWater.Image = Image.FromFile(BPImageFilePath & "16272_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "16272_32.png")) Then
+            picHeavyWater.Image = Image.FromFile(Path.Combine(UserImagePath, "16272_32.png"))
         Else
             picHeavyWater.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "16274_32.png") Then
-            picHeliumIsotopes.Image = Image.FromFile(BPImageFilePath & "16274_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "16274_32.png")) Then
+            picHeliumIsotopes.Image = Image.FromFile(Path.Combine(UserImagePath, "16274_32.png"))
         Else
             picHeliumIsotopes.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "17889_32.png") Then
-            picHydrogenIsotopes.Image = Image.FromFile(BPImageFilePath & "17889_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "17889_32.png")) Then
+            picHydrogenIsotopes.Image = Image.FromFile(Path.Combine(UserImagePath, "17889_32.png"))
         Else
             picHydrogenIsotopes.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "16273_32.png") Then
-            picLiquidOzone.Image = Image.FromFile(BPImageFilePath & "16273_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "16273_32.png")) Then
+            picLiquidOzone.Image = Image.FromFile(Path.Combine(UserImagePath, "16273_32.png"))
         Else
             picLiquidOzone.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "3689_32.png") Then
-            picMechanicalParts.Image = Image.FromFile(BPImageFilePath & "3689_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "3689_32.png")) Then
+            picMechanicalParts.Image = Image.FromFile(Path.Combine(UserImagePath, "3689_32.png"))
         Else
             picMechanicalParts.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "17888_32.png") Then
-            picNitrogenIsotopes.Image = Image.FromFile(BPImageFilePath & "17888_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "17888_32.png")) Then
+            picNitrogenIsotopes.Image = Image.FromFile(Path.Combine(UserImagePath, "17888_32.png"))
         Else
             picNitrogenIsotopes.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "3683_32.png") Then
-            picOxygen.Image = Image.FromFile(BPImageFilePath & "3683_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "3683_32.png")) Then
+            picOxygen.Image = Image.FromFile(Path.Combine(UserImagePath, "3683_32.png"))
         Else
             picOxygen.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "17887_32.png") Then
-            picOxygenIsotopes.Image = Image.FromFile(BPImageFilePath & "17887_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "17887_32.png")) Then
+            picOxygenIsotopes.Image = Image.FromFile(Path.Combine(UserImagePath, "17887_32.png"))
         Else
             picOxygenIsotopes.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "9848_32.png") Then
-            picRobotics.Image = Image.FromFile(BPImageFilePath & "9848_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "9848_32.png")) Then
+            picRobotics.Image = Image.FromFile(Path.Combine(UserImagePath, "9848_32.png"))
         Else
             picRobotics.Image = Nothing
         End If
-        If IO.File.Exists(BPImageFilePath & "16275_32.png") Then
-            picStrontiumClathrates.Image = Image.FromFile(BPImageFilePath & "16275_32.png")
+        If File.Exists(Path.Combine(UserImagePath, "16275_32.png")) Then
+            picStrontiumClathrates.Image = Image.FromFile(Path.Combine(UserImagePath, "16275_32.png"))
         Else
             picStrontiumClathrates.Image = Nothing
         End If

@@ -75,69 +75,70 @@ Public Class Character
         response = MsgBox("If you do not load a character many features will not be available to you. Do you want to continue without loading a character?", vbYesNo, Application.ProductName)
 
         If response = vbYes Then
-            ' Save the app registration information file as nothing so it doesn't try to load again
-            Settings.ClientID = ""
+            Dim SQL As String
+            Dim rsCheck As SQLiteDataReader
+
+            DBCommand = New SQLiteCommand("SELECT 'X' FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = 0", EVEDB.DBREf)
+            rsCheck = DBCommand.ExecuteReader
+
+            ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite
+            If Not rsCheck.HasRows Then
+                ' Now insert this data in the DB for using all the time and set to default"yyyy-MM-dd HH:mm:ss" since it doesn't exist
+                ID = DummyCharacterID
+                Name = "Dummy Character"
+                DOB = NoDate
+                RaceID = 1
+                BloodLineID = 8
+                AncestryLineID = 9
+                Descripton = None
+
+                CharacterTokenData.CharacterID = ID
+                CharacterTokenData.AccessToken = "No Token"
+                CharacterTokenData.TokenExpiration = NoExpiry
+                CharacterTokenData.TokenType = None
+                CharacterTokenData.RefreshToken = "No Token"
+                CharacterTokenData.Scopes = "No Scopes"
+
+                ' Default corp
+                CharacterCorporation = New Corporation()
+
+                With CharacterTokenData
+                    SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
+                    SQL = String.Format(SQL, 0, None, 0, NoExpiry, "M", 1, 8, 9, None, .AccessToken, .TokenExpiration, .TokenType, .RefreshToken, .Scopes, 0, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, 1) ' Dummy is default
+                End With
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                ' Load the dummy skills
+                Skills.LoadDummySkills()
+
+                ' No standings
+                Standings = New EVENPCStandings
+
+                ' No agents
+                DatacoreAgents = New EVEResearchAgents
+
+                ' No Assets
+                Assets = New EVEAssets
+
+                ' No Jobs
+                Jobs = New EVEIndustryJobs
+
+            Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
+                SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = 0"
+                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, DefaultDummyCharacterCode))
+
+                Call LoadDefaultCharacter()
+
+            End If
+
+            ' Finally, save the app registration information file as nothing so it doesn't try to load again
+            Settings.ClientID = DummyClient
             Settings.SecretKey = ""
             Settings.Port = 0
             Settings.Scopes = ""
 
             If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
-                Dim SQL As String
-                Dim rsCheck As SQLiteDataReader
-
-                DBCommand = New SQLiteCommand("SELECT 'X' FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = 0", EVEDB.DBREf)
-                rsCheck = DBCommand.ExecuteReader
-
-                ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite
-                If Not rsCheck.HasRows Then
-                    ' Now insert this data in the DB for using all the time and set to default"yyyy-MM-dd HH:mm:ss" since it doesn't exist
-                    ID = DummyCharacterID
-                    Name = "Dummy Character"
-                    DOB = NoDate
-                    RaceID = 1
-                    BloodLineID = 8
-                    AncestryLineID = 9
-                    Descripton = None
-
-                    CharacterTokenData.CharacterID = ID
-                    CharacterTokenData.AccessToken = "No Token"
-                    CharacterTokenData.TokenExpiration = NoExpiry
-                    CharacterTokenData.TokenType = None
-                    CharacterTokenData.RefreshToken = "No Token"
-                    CharacterTokenData.Scopes = "No Scopes"
-
-                    ' Default corp
-                    CharacterCorporation = New Corporation()
-
-                    With CharacterTokenData
-                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}','{14}')"
-                        SQL = String.Format(SQL, 0, None, 0, NoExpiry, "M", 1, 8, 9, None, .AccessToken, .TokenExpiration, .TokenType, .RefreshToken, .Scopes, 1) ' Dummy is default
-                    End With
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                    ' Load the dummy skills
-                    Skills.LoadDummySkills()
-
-                    ' No standings
-                    Standings = New EVENPCStandings
-
-                    ' No agents
-                    DatacoreAgents = New EVEResearchAgents
-
-                    ' No Assets
-                    Assets = New EVEAssets
-
-                    ' No Jobs
-                    Jobs = New EVEIndustryJobs
-
-                Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
-                    SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = 0"
-                    Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, DefaultDummyCharacterCode))
-
-                    Call LoadDefaultCharacter()
-
-                End If
-
+                DummyAccountLoaded = True
                 Return TriState.True ' both options load a dummy character
             Else
                 Return TriState.False
@@ -209,7 +210,7 @@ Public Class Character
         Dim SQL As String
 
         ' Update the character data first
-        If Not ESIData.SetCharacterData(CharacterID, TokenData) Then
+        If Not ESIData.SetCharacterData(CharacterID, TokenData) And Not DummyAccountLoaded Then
             ' They probably don't have the authorization set (deleted character from thirdparty access page)
             ' https://community.eveonline.com/support/third-party-applications/
             ' For now, delete the record from ESI and have them reload
