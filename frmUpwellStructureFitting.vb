@@ -551,7 +551,7 @@ Public Class frmUpwellStructureFitting
         SQL &= "WHERE UPWELL_STRUCTURES_INSTALLED_MODULES.FACILITY_ID = INVENTORY_TYPES.typeID "
         SQL &= "And FACILITY_VIEW = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureView), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, SentUSName), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureView), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, FormatDBString(SentUSName)), EVEDB.DBREf)
         rsStructure = DBCommand.ExecuteReader
 
         Dim InstalledModules As New List(Of Integer)
@@ -721,7 +721,7 @@ Public Class frmUpwellStructureFitting
         Dim DBCommand As SQLiteCommand
 
         SQL = "Select typeID, groupID FROM INVENTORY_TYPES "
-        SQL &= "WHERE INVENTORY_TYPES.published <> 0 And typeName = '" & LookupName & "'"
+        SQL &= "WHERE INVENTORY_TYPES.published <> 0 And typeName = '" & FormatDBString(LookupName) & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader
@@ -753,7 +753,7 @@ Public Class frmUpwellStructureFitting
         SQL = "Select attributeID, COALESCE(valueint, valuefloat) As Value "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
         SQL &= "WHERE attributeID In (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
-        SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & cmbUpwellStructureName.Text & "'"
+        SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & FormatDBString(cmbUpwellStructureName.Text) & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader

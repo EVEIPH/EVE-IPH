@@ -6856,6 +6856,7 @@ ExitForm:
             chkMinerals.Checked = True
             chkIceProducts.Checked = True
             chkGas.Checked = True
+            chkAbyssalMaterials.Checked = True
             chkBPCs.Checked = True
             chkMisc.Checked = True
             chkAncientRelics.Checked = True
@@ -6876,6 +6877,7 @@ ExitForm:
             chkMinerals.Checked = False
             chkIceProducts.Checked = False
             chkGas.Checked = False
+            chkAbyssalMaterials.Checked = False
             chkBPCs.Checked = False
             chkMisc.Checked = False
             chkAncientRelics.Checked = False
@@ -7293,6 +7295,10 @@ ExitForm:
     End Sub
 
     Private Sub chkGas_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkGas.CheckedChanged
+        Call UpdatePriceList()
+    End Sub
+
+    Private Sub chkAbyssalMaterials_CheckedChanged(sender As Object, e As EventArgs) Handles chkAbyssalMaterials.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -8196,6 +8202,7 @@ ExitForm:
             chkMinerals.Checked = .Minerals
             chkIceProducts.Checked = .IceProducts
             chkGas.Checked = .Gas
+            chkAbyssalMaterials.Checked = .AbyssalMaterials
             chkBPCs.Checked = .BPCs
             chkMisc.Checked = .Misc
             chkAncientRelics.Checked = .AncientRelics
@@ -8550,6 +8557,7 @@ ExitForm:
             .Minerals = chkMinerals.Checked
             .IceProducts = chkIceProducts.Checked
             .Gas = chkGas.Checked
+            .AbyssalMaterials = chkAbyssalMaterials.Checked
             .BPCs = chkBPCs.Checked
             .Misc = chkMisc.Checked
             .AncientRelics = chkAncientRelics.Checked
@@ -8939,7 +8947,7 @@ ExitSub:
             pnlStatus.Text = ""
 
         Else
-            ' First update the EVE Central cache
+            ' First update the EVE Marketer cache
             If Not UpdatePricesCache(SentItems) Then
                 ' Update Failed, don't reload everything
                 Exit Sub
@@ -9192,6 +9200,8 @@ ExitSub:
                     RGN = "Datacores"
                 Case "Harvestable Cloud"
                     RGN = "Gas"
+                Case "Abyssal Materials"
+                    RGN = "Abyssal Materials"
                 Case "Salvaged Materials"
                     RGN = "Salvage"
                 Case "Ancient Salvage"
@@ -9502,12 +9512,16 @@ ExitSub:
             SQL = SQL & "ITEM_GROUP = 'Harvestable Cloud' OR "
             ItemChecked = True
         End If
+        'If chkAbyssalMaterials.Checked Then
+        '    SQL = SQL & "ITEM_GROUP LIKE 'Abyssal%' OR "
+        '    ItemChecked = True
+        'End If
         If chkBPCs.Checked Then
             SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
-            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
+            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Abyssal Materials','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
             ItemChecked = True
         End If
         If chkSalvage.Checked Then

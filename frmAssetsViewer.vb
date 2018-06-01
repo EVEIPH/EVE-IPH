@@ -207,6 +207,7 @@ Public Class frmAssetsViewer
             chkMinerals.Checked = .Minerals
             chkIceProducts.Checked = .IceProducts
             chkGas.Checked = .Gas
+            chkAbyssalMaterials.Checked = .AbyssalMaterials
             chkMisc.Checked = .Misc
             chkBPCs.Checked = .BPCs
             chkAncientRelics.Checked = .AncientRelics
@@ -271,6 +272,8 @@ Public Class frmAssetsViewer
         ElseIf chkIceProducts.Checked Then
             Return True
         ElseIf chkGas.Checked Then
+            Return True
+        ElseIf chkAbyssalMaterials.Checked Then
             Return True
         ElseIf chkMisc.Checked Then
             Return True
@@ -534,12 +537,16 @@ Public Class frmAssetsViewer
                 SQL = SQL & "ITEM_GROUP = 'Harvestable Cloud' OR "
                 ItemChecked = True
             End If
+            'If chkAbyssalMaterials.Checked Then
+            '    SQL = SQL & "ITEM_GROUP = 'Abyssal Materials' OR "
+            '    ItemChecked = True
+            'End If
             If chkBPCs.Checked Then
                 SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
                 ItemChecked = True
             End If
             If chkMisc.Checked Then
-                SQL = SQL & "(" & "ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities', 'Miscellaneous') AND ITEM_NAME NOT IN ('Oxygen','Water')) OR "
+                SQL = SQL & "(" & "ITEM_GROUP IN ('General','Livestock','Abyssal Materials','Radioactive','Biohazard','Commodities', 'Miscellaneous') AND ITEM_NAME NOT IN ('Oxygen','Water')) OR "
                 ItemChecked = True
             End If
             If chkSalvage.Checked Then
@@ -957,6 +964,7 @@ Public Class frmAssetsViewer
             .Minerals = chkMinerals.Checked
             .IceProducts = chkIceProducts.Checked
             .Gas = chkGas.Checked
+            .AbyssalMaterials = chkAbyssalMaterials.Checked
             .Misc = chkMisc.Checked
             .BPCs = chkBPCs.Checked
             .AncientRelics = chkAncientRelics.Checked
@@ -1178,6 +1186,7 @@ Public Class frmAssetsViewer
             chkMinerals.Checked = True
             chkIceProducts.Checked = True
             chkGas.Checked = True
+            chkAbyssalMaterials.Checked = True
             chkMisc.Checked = True
             chkBPCs.Checked = True
             chkAncientRelics.Checked = True
@@ -1198,6 +1207,7 @@ Public Class frmAssetsViewer
             chkMinerals.Checked = False
             chkIceProducts.Checked = False
             chkGas.Checked = False
+            chkAbyssalMaterials.Checked = False
             chkMisc.Checked = False
             chkBPCs.Checked = False
             chkAncientRelics.Checked = False

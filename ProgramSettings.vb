@@ -1645,6 +1645,7 @@ Public Class ProgramSettings
                     .Pirate = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Pirate", DefaultPriceChecks))
                     .Storyline = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
                     .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
+                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AbyssalMaterials", DefaultPriceChecks))
 
                     Dim TempRegions As String = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegions", DefaultPriceRegion))
                     Dim RegionList As New List(Of String)
@@ -1712,7 +1713,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(63) As Setting
+        Dim UpdatePricesSettingsList(64) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1799,6 +1800,7 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(62) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
             UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
+            UpdatePricesSettingsList(64) = New Setting("AbyssalMaterials", CStr(PriceSettings.AbyssalMaterials))
 
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1816,6 +1818,7 @@ Public Class ProgramSettings
             .Minerals = DefaultPriceChecks
             .IceProducts = DefaultPriceChecks
             .Gas = DefaultPriceChecks
+            .AbyssalMaterials = DefaultPriceChecks
             .BPCs = DefaultPriceChecks
             .Misc = DefaultPriceChecks
             .AncientRelics = DefaultPriceChecks
@@ -4051,6 +4054,8 @@ Public Class ProgramSettings
                     .Deployables = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
                     .Implants = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
 
+                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AbyssalMaterials", DefaultAssetItemChecks))
+
                 End With
 
             Else
@@ -4079,7 +4084,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(50) As Setting
+        Dim AssetWindowSettingsList(51) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4146,6 +4151,7 @@ Public Class ProgramSettings
             AssetWindowSettingsList(48) = New Setting("Implants", CStr(ItemsSelected.Implants))
             AssetWindowSettingsList(49) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
             AssetWindowSettingsList(50) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
+            AssetWindowSettingsList(51) = New Setting("AbyssalMaterials", CStr(ItemsSelected.AbyssalMaterials))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4182,6 +4188,7 @@ Public Class ProgramSettings
             .Minerals = DefaultAssetItemChecks
             .IceProducts = DefaultAssetItemChecks
             .Gas = DefaultAssetItemChecks
+            .AbyssalMaterials = DefaultAssetItemChecks
             .Misc = DefaultAssetItemChecks
             .BPCs = DefaultAssetItemChecks
             .AncientRelics = DefaultAssetItemChecks
@@ -4866,6 +4873,7 @@ Public Structure UpdatePriceTabSettings
     Dim Minerals As Boolean
     Dim IceProducts As Boolean
     Dim Gas As Boolean
+    Dim AbyssalMaterials As Boolean
     Dim BPCs As Boolean
     Dim Misc As Boolean
     Dim AncientRelics As Boolean
@@ -5533,6 +5541,7 @@ Public Structure AssetWindowSettings
     Dim Minerals As Boolean
     Dim IceProducts As Boolean
     Dim Gas As Boolean
+    Dim AbyssalMaterials As Boolean
     Dim Misc As Boolean
     Dim BPCs As Boolean
     Dim AncientRelics As Boolean

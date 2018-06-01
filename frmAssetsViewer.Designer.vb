@@ -54,10 +54,12 @@ Partial Class frmAssetsViewer
         Me.rbtnAllItems = New System.Windows.Forms.RadioButton()
         Me.gbManufacturedItems = New System.Windows.Forms.GroupBox()
         Me.gbItems = New System.Windows.Forms.GroupBox()
+        Me.chkStructureModules = New System.Windows.Forms.CheckBox()
         Me.chkImplants = New System.Windows.Forms.CheckBox()
         Me.chkCelestials = New System.Windows.Forms.CheckBox()
         Me.chkTools = New System.Windows.Forms.CheckBox()
         Me.chkFuelBlocks = New System.Windows.Forms.CheckBox()
+        Me.chkStructureRigs = New System.Windows.Forms.CheckBox()
         Me.cmbPriceChargeTypes = New System.Windows.Forms.ComboBox()
         Me.chkDataInterfaces = New System.Windows.Forms.CheckBox()
         Me.chkCharges = New System.Windows.Forms.CheckBox()
@@ -83,7 +85,6 @@ Partial Class frmAssetsViewer
         Me.chkComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapitalComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapT2Components = New System.Windows.Forms.CheckBox()
-        Me.chkStructureRigs = New System.Windows.Forms.CheckBox()
         Me.gbRawMaterials = New System.Windows.Forms.GroupBox()
         Me.chkBPCs = New System.Windows.Forms.CheckBox()
         Me.chkMisc = New System.Windows.Forms.CheckBox()
@@ -112,7 +113,7 @@ Partial Class frmAssetsViewer
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.AssetTree = New System.Windows.Forms.TreeView()
-        Me.chkStructureModules = New System.Windows.Forms.CheckBox()
+        Me.chkAbyssalMaterials = New System.Windows.Forms.CheckBox()
         Me.gbSortOptions.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
         Me.tabMain.SuspendLayout()
@@ -450,6 +451,15 @@ Partial Class frmAssetsViewer
         Me.gbItems.TabStop = False
         Me.gbItems.Text = "Items"
         '
+        'chkStructureModules
+        '
+        Me.chkStructureModules.Location = New System.Drawing.Point(179, 132)
+        Me.chkStructureModules.Name = "chkStructureModules"
+        Me.chkStructureModules.Size = New System.Drawing.Size(69, 34)
+        Me.chkStructureModules.TabIndex = 254
+        Me.chkStructureModules.Text = "Structure Modules"
+        Me.chkStructureModules.UseVisualStyleBackColor = True
+        '
         'chkImplants
         '
         Me.chkImplants.AutoSize = True
@@ -489,6 +499,15 @@ Partial Class frmAssetsViewer
         Me.chkFuelBlocks.TabIndex = 3
         Me.chkFuelBlocks.Text = "Fuel Blocks"
         Me.chkFuelBlocks.UseVisualStyleBackColor = True
+        '
+        'chkStructureRigs
+        '
+        Me.chkStructureRigs.Location = New System.Drawing.Point(179, 163)
+        Me.chkStructureRigs.Name = "chkStructureRigs"
+        Me.chkStructureRigs.Size = New System.Drawing.Size(69, 34)
+        Me.chkStructureRigs.TabIndex = 16
+        Me.chkStructureRigs.Text = "Structure Rigs"
+        Me.chkStructureRigs.UseVisualStyleBackColor = True
         '
         'cmbPriceChargeTypes
         '
@@ -755,17 +774,9 @@ Partial Class frmAssetsViewer
         Me.chkCapT2Components.Text = "Adv. Capital Construction Components"
         Me.chkCapT2Components.UseVisualStyleBackColor = True
         '
-        'chkStructureRigs
-        '
-        Me.chkStructureRigs.Location = New System.Drawing.Point(179, 163)
-        Me.chkStructureRigs.Name = "chkStructureRigs"
-        Me.chkStructureRigs.Size = New System.Drawing.Size(69, 34)
-        Me.chkStructureRigs.TabIndex = 16
-        Me.chkStructureRigs.Text = "Structure Rigs"
-        Me.chkStructureRigs.UseVisualStyleBackColor = True
-        '
         'gbRawMaterials
         '
+        Me.gbRawMaterials.Controls.Add(Me.chkAbyssalMaterials)
         Me.gbRawMaterials.Controls.Add(Me.chkBPCs)
         Me.gbRawMaterials.Controls.Add(Me.chkMisc)
         Me.gbRawMaterials.Controls.Add(Me.chkAsteroids)
@@ -1060,14 +1071,16 @@ Partial Class frmAssetsViewer
         Me.AssetTree.Size = New System.Drawing.Size(346, 662)
         Me.AssetTree.TabIndex = 250
         '
-        'chkStructureModules
+        'chkAbyssalMaterials
         '
-        Me.chkStructureModules.Location = New System.Drawing.Point(179, 132)
-        Me.chkStructureModules.Name = "chkStructureModules"
-        Me.chkStructureModules.Size = New System.Drawing.Size(69, 34)
-        Me.chkStructureModules.TabIndex = 254
-        Me.chkStructureModules.Text = "Structure Modules"
-        Me.chkStructureModules.UseVisualStyleBackColor = True
+        Me.chkAbyssalMaterials.AutoSize = True
+        Me.chkAbyssalMaterials.Location = New System.Drawing.Point(133, 214)
+        Me.chkAbyssalMaterials.Name = "chkAbyssalMaterials"
+        Me.chkAbyssalMaterials.Size = New System.Drawing.Size(107, 17)
+        Me.chkAbyssalMaterials.TabIndex = 22
+        Me.chkAbyssalMaterials.Text = "Abyssal Materials"
+        Me.chkAbyssalMaterials.UseVisualStyleBackColor = True
+        Me.chkAbyssalMaterials.Visible = False
         '
         'frmAssetsViewer
         '
@@ -1202,4 +1215,5 @@ Partial Class frmAssetsViewer
     Friend WithEvents chkDeployables As System.Windows.Forms.CheckBox
     Friend WithEvents chkBPCs As System.Windows.Forms.CheckBox
     Friend WithEvents chkStructureModules As CheckBox
+    Friend WithEvents chkAbyssalMaterials As CheckBox
 End Class

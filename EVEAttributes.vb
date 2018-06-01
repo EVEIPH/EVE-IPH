@@ -26,7 +26,7 @@ Public Class EVEAttributes
         Dim SQL As String
         Dim readerSearch As SQLiteDataReader
 
-        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & TypeName & "'"
+        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSearch = DBCommand.ExecuteReader
