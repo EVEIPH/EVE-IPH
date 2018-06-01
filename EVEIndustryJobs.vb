@@ -59,72 +59,72 @@ Public Class EVEIndustryJobs
             IndyJobs = ESIData.GetIndustryJobs(ID, CharacterTokenData, JobType, CacheDate)
 
             If Not IsNothing(IndyJobs) Then
-                Call EVEDB.BeginSQLiteTransaction()
+                If IndyJobs.Count > 0 Then
+                    Call EVEDB.BeginSQLiteTransaction()
 
-                ' Clear out all the industry jobs for the user
-                SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID = " & CharacterTokenData.CharacterID & " AND JobType = " & CStr(JobType)
+                    ' Clear out all the industry jobs for the user
+                    SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID = " & CharacterTokenData.CharacterID & " AND JobType = " & CStr(JobType)
 
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                ' Insert industry data
-                For i = 0 To IndyJobs.Count - 1
-                    ' First make sure it's not already in there
-                    With IndyJobs(i)
-                        ' Insert it
-                        If .location_id = 0 Then
-                            LocationID = .station_id
-                        Else
-                            LocationID = .location_id
-                        End If
-
-                        If .installer_id = CharacterTokenData.CharacterID Then ' update fields
-                            SQL = "INSERT INTO INDUSTRY_JOBS (jobID, installerID, facilityID, locationID, activityID, "
-                            SQL &= "blueprintID, blueprintTypeID, blueprintLocationID, outputLocationID, "
-                            SQL &= "runs, cost, licensedRuns, probability, productTypeID, status, duration, "
-                            SQL &= "startDate, endDate, pauseDate, completedDate, completedCharacterID, successfulRuns, JobType) VALUES ("
-                            SQL &= .job_id & "," & .installer_id & "," & .facility_id & "," & LocationID & "," & .activity_id & ","
-                            SQL &= .blueprint_id & "," & .blueprint_type_id & "," & .blueprint_location_id & "," & .output_location_id & ","
-                            SQL &= .runs & "," & .cost & "," & .licensed_runs & "," & .probability & "," & .product_type_id & ",'" & .status & "'," & .duration & ","
-                            TempDate = ESIData.FormatESIDate(.start_date)
-                            If TempDate <> NoDate Then
-                                SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
+                    ' Insert industry data
+                    For i = 0 To IndyJobs.Count - 1
+                        ' First make sure it's not already in there
+                        With IndyJobs(i)
+                            ' Insert it
+                            If .location_id = 0 Then
+                                LocationID = .station_id
                             Else
-                                SQL &= "NULL,"
-                            End If
-                            TempDate = ESIData.FormatESIDate(.end_date)
-                            If TempDate <> NoDate Then
-                                SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
-                            Else
-                                SQL &= "NULL,"
-                            End If
-                            TempDate = ESIData.FormatESIDate(.pause_date)
-                            If TempDate <> NoDate Then
-                                SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
-                            Else
-                                SQL &= "NULL,"
-                            End If
-                            TempDate = ESIData.FormatESIDate(.completed_date)
-                            If TempDate <> NoDate Then
-                                SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
-                            Else
-                                SQL &= "NULL,"
+                                LocationID = .location_id
                             End If
 
-                            SQL &= .completed_character_id & "," & .successful_runs & "," & CStr(JobType) & ")"
+                            If .installer_id = CharacterTokenData.CharacterID Then ' update fields
+                                SQL = "INSERT INTO INDUSTRY_JOBS (jobID, installerID, facilityID, locationID, activityID, "
+                                SQL &= "blueprintID, blueprintTypeID, blueprintLocationID, outputLocationID, "
+                                SQL &= "runs, cost, licensedRuns, probability, productTypeID, status, duration, "
+                                SQL &= "startDate, endDate, pauseDate, completedDate, completedCharacterID, successfulRuns, JobType) VALUES ("
+                                SQL &= .job_id & "," & .installer_id & "," & .facility_id & "," & LocationID & "," & .activity_id & ","
+                                SQL &= .blueprint_id & "," & .blueprint_type_id & "," & .blueprint_location_id & "," & .output_location_id & ","
+                                SQL &= .runs & "," & .cost & "," & .licensed_runs & "," & .probability & "," & .product_type_id & ",'" & .status & "'," & .duration & ","
+                                TempDate = ESIData.FormatESIDate(.start_date)
+                                If TempDate <> NoDate Then
+                                    SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
+                                Else
+                                    SQL &= "NULL,"
+                                End If
+                                TempDate = ESIData.FormatESIDate(.end_date)
+                                If TempDate <> NoDate Then
+                                    SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
+                                Else
+                                    SQL &= "NULL,"
+                                End If
+                                TempDate = ESIData.FormatESIDate(.pause_date)
+                                If TempDate <> NoDate Then
+                                    SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
+                                Else
+                                    SQL &= "NULL,"
+                                End If
+                                TempDate = ESIData.FormatESIDate(.completed_date)
+                                If TempDate <> NoDate Then
+                                    SQL &= "'" & Format(TempDate, SQLiteDateFormat) & "',"
+                                Else
+                                    SQL &= "NULL,"
+                                End If
 
-                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                SQL &= .completed_character_id & "," & .successful_runs & "," & CStr(JobType) & ")"
 
-                        End If
-                    End With
-                Next
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                DBCommand = Nothing
+                            End If
+                        End With
+                    Next
 
+                    DBCommand = Nothing
+
+                    Call EVEDB.CommitSQLiteTransaction()
+                End If
                 ' Update cache date now that it's all set
                 Call CB.UpdateCacheDate(CDType, CacheDate, ID)
-
-                Call EVEDB.CommitSQLiteTransaction()
-
             End If
         End If
 

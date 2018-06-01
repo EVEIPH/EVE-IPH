@@ -68,15 +68,15 @@ Public Class frmSetCharacterDefault
             NoCharacter = False
         End If
 
-        If NoCharacter Then
+        If NoCharacter And Not DummyAccountLoaded Then
             ' Load the dummy
-            If SelectedCharacter.LoadDummyCharacter() = TriState.UseDefault Then
+            If SelectedCharacter.LoadDummyCharacter(False) = TriState.UseDefault Then
                 ' They said no, cancel and let them re-choose
                 Exit Sub
-            ElseIf SelectedCharacter.LoadDummyCharacter() = TriState.True Then
+            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.True Then
                 Call MsgBox("Dummy Character Loaded", MsgBoxStyle.OkOnly, Application.ProductName)
                 Me.Hide()
-            ElseIf SelectedCharacter.LoadDummyCharacter() = TriState.False Then
+            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.False Then
                 Call MsgBox("Unable to save Dummy Character", vbInformation, Application.ProductName)
                 Exit Sub
             End If
@@ -98,7 +98,11 @@ Public Class frmSetCharacterDefault
             Call UpdateCharacterList()
         Else
             ' Didn't load, so show the re-enter info button
-            MsgBox("The Character failed to load. Please check application registration information.")
+            If Not DummyAccountLoaded Then
+                MsgBox("The Character failed to load. Please check application registration information.")
+            Else
+                MsgBox("You have not registered IPH. Please register IPH through the ESI developers system and try again.")
+            End If
             btnReloadRegistration.Visible = True
         End If
 
@@ -119,12 +123,12 @@ Public Class frmSetCharacterDefault
 
         SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, DefaultDummyCharacterCode), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
         numChars = CLng(DBCommand.ExecuteScalar())
 
         SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, DefaultDummyCharacterCode), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
         readerCharacters = DBCommand.ExecuteReader()
 
         While readerCharacters.Read()
@@ -162,4 +166,5 @@ Public Class frmSetCharacterDefault
         f1.ShowDialog()
         f1.Close()
     End Sub
+
 End Class

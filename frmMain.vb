@@ -1089,7 +1089,7 @@ Public Class frmMain
     End Sub
 
     Private Sub SetCharToolStripImage(ByRef TS As ToolStripMenuItem, ByVal Gender As String)
-        If Gender = "Male" Then
+        If Gender = Male Then
             TS.Image = My.Resources._46_64_1
         Else
             TS.Image = My.Resources._46_64_2
@@ -8767,6 +8767,23 @@ ExitForm:
                     End If
                 Next
 
+                ' Get the system list string
+                SQL = "SELECT regionID FROM REGIONS "
+                SQL = SQL & "WHERE regionName = '" & SearchRegion & "'"
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerSystems = DBCommand.ExecuteReader
+                If readerSystems.Read Then
+                    SearchRegion = CStr(readerSystems.GetValue(0))
+                Else
+                    MsgBox("Invalid Region Name", vbCritical, Application.ProductName)
+                    GoTo ExitSub
+                End If
+
+                readerSystems.Close()
+                readerSystems = Nothing
+                DBCommand = Nothing
+
             ElseIf SystemChecked Then
                 ' Get the system list string
                 SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
@@ -8784,7 +8801,6 @@ ExitForm:
                 readerSystems.Close()
                 readerSystems = Nothing
                 DBCommand = Nothing
-
             End If
         End If
 
@@ -9250,6 +9266,10 @@ ExitSub:
                         RGN = "Celestials"
                     ElseIf CN = "Structure" Then
                         RGN = "Structures"
+                    ElseIf CN = "Structure Rigs" Then
+                        RGN = "Structure Rigs"
+                    Else
+                        RGN = CN
                     End If
             End Select
         End If
@@ -13040,7 +13060,7 @@ CheckTechs:
                         Case ProductionType.Manufacturing
                             InsertItem.ManufacturingFacility = CalcBaseFacility.GetFacility(BuildType)
                         Case ProductionType.ComponentManufacturing, ProductionType.CapitalComponentManufacturing
-                            InsertItem.ManufacturingFacility = CalcBaseFacility.GetFacility(BuildType)
+                            InsertItem.ManufacturingFacility = CalcComponentsFacility.GetFacility(BuildType)
                         Case ProductionType.BoosterManufacturing
                             InsertItem.ManufacturingFacility = CalcBoostersFacility.GetFacility(BuildType)
                         Case ProductionType.CapitalManufacturing

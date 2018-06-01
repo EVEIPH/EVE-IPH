@@ -68,7 +68,7 @@ Public Class EVEResearchAgents
         Dim SQL As String = ""
         Dim CurrentAgents As List(Of ESIResearchAgent) = Nothing
 
-        Dim ESIData as new ESI
+        Dim ESIData As New ESI
         Dim CB As New CacheBox
         Dim CacheDate As Date
 
@@ -76,30 +76,32 @@ Public Class EVEResearchAgents
         If CB.DataUpdateable(CacheDateType.ResearchAgents, CharacterID) Then
             CurrentAgents = ESIData.GetCurrentResearchAgents(CharacterID, CharacterTokenData, CacheDate)
 
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' Delete all the current records and refresh them
-            SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & CStr(CharacterID)
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
             If Not IsNothing(CurrentAgents) Then
-                ' Insert new data
-                For i = 0 To CurrentAgents.Count - 1
-                    With CurrentAgents(i)
-                        SQL = "INSERT INTO CURRENT_RESEARCH_AGENTS (AGENT_ID, SKILL_TYPE_ID, "
-                        SQL = SQL & "RP_PER_DAY, RESEARCH_START_DATE, REMAINDER_POINTS, CHARACTER_ID) VALUES "
-                        SQL = SQL & "(" & CStr(.agent_id) & "," & CStr(.skill_type_id) & "," & CStr(.points_per_day) & ",'"
-                        SQL = SQL & Format(CDate(CurrentAgents(i).started_at.Replace("T", " ").Replace("Z", "")), SQLiteDateFormat) & "',"
-                        SQL = SQL & CStr(.remainder_points) & "," & CStr(CharacterID) & ")"
-                    End With
+                If CurrentAgents.Count > 0 Then
+                    Call EVEDB.BeginSQLiteTransaction()
 
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                Next
+                    ' Delete all the current records and refresh them
+                    SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & CStr(CharacterID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
+
+                    ' Insert new data
+                    For i = 0 To CurrentAgents.Count - 1
+                        With CurrentAgents(i)
+                            SQL = "INSERT INTO CURRENT_RESEARCH_AGENTS (AGENT_ID, SKILL_TYPE_ID, "
+                            SQL = SQL & "RP_PER_DAY, RESEARCH_START_DATE, REMAINDER_POINTS, CHARACTER_ID) VALUES "
+                            SQL = SQL & "(" & CStr(.agent_id) & "," & CStr(.skill_type_id) & "," & CStr(.points_per_day) & ",'"
+                            SQL = SQL & Format(CDate(CurrentAgents(i).started_at.Replace("T", " ").Replace("Z", "")), SQLiteDateFormat) & "',"
+                            SQL = SQL & CStr(.remainder_points) & "," & CStr(CharacterID) & ")"
+                        End With
+
+                        EVEDB.ExecuteNonQuerySQL(SQL)
+                    Next
+
+                    Call EVEDB.CommitSQLiteTransaction()
+                End If
                 ' All set, update cache date before leaving
                 Call CB.UpdateCacheDate(CacheDateType.ResearchAgents, CacheDate, CharacterID)
-
-                Call EVEDB.CommitSQLiteTransaction()
             End If
         End If
 

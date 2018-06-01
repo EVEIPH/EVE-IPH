@@ -234,7 +234,7 @@ Partial Class ManufacturingFacility
         'txtFacilityManualTax
         '
         Me.txtFacilityManualTax.Location = New System.Drawing.Point(133, 105)
-        Me.txtFacilityManualTax.MaxLength = 5
+        Me.txtFacilityManualTax.MaxLength = 7
         Me.txtFacilityManualTax.Name = "txtFacilityManualTax"
         Me.txtFacilityManualTax.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualTax.TabIndex = 22
@@ -262,7 +262,7 @@ Partial Class ManufacturingFacility
         'txtFacilityManualTE
         '
         Me.txtFacilityManualTE.Location = New System.Drawing.Point(133, 84)
-        Me.txtFacilityManualTE.MaxLength = 5
+        Me.txtFacilityManualTE.MaxLength = 7
         Me.txtFacilityManualTE.Name = "txtFacilityManualTE"
         Me.txtFacilityManualTE.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualTE.TabIndex = 20
@@ -272,7 +272,7 @@ Partial Class ManufacturingFacility
         'txtFacilityManualME
         '
         Me.txtFacilityManualME.Location = New System.Drawing.Point(38, 84)
-        Me.txtFacilityManualME.MaxLength = 5
+        Me.txtFacilityManualME.MaxLength = 7
         Me.txtFacilityManualME.Name = "txtFacilityManualME"
         Me.txtFacilityManualME.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualME.TabIndex = 16
@@ -309,7 +309,7 @@ Partial Class ManufacturingFacility
         'txtFacilityManualCost
         '
         Me.txtFacilityManualCost.Location = New System.Drawing.Point(38, 105)
-        Me.txtFacilityManualCost.MaxLength = 5
+        Me.txtFacilityManualCost.MaxLength = 7
         Me.txtFacilityManualCost.Name = "txtFacilityManualCost"
         Me.txtFacilityManualCost.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualCost.TabIndex = 18

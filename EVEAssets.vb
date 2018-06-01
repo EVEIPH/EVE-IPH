@@ -126,48 +126,49 @@ Public Class EVEAssets
 
             ' Insert the records into the DB
             If Not IsNothing(Assets) Then
-                Call EVEDB.BeginSQLiteTransaction()
+                If Assets.Count > 0 Then
+                    Call EVEDB.BeginSQLiteTransaction()
 
-                ' Clear the current assets in the database
-                SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ID)
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                    ' Clear the current assets in the database
+                    SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                Dim FlagID As Integer = 0
-                Dim rsLookup As SQLiteDataReader
+                    Dim FlagID As Integer = 0
+                    Dim rsLookup As SQLiteDataReader
 
-                For i = 0 To Assets.Count - 1
-                    ' Get the flagID for this location
-                    DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
-                    rsLookup = DBCommand.ExecuteReader
-                    If rsLookup.Read Then
-                        FlagID = rsLookup.GetInt32(0)
-                    Else
-                        FlagID = 0
-                    End If
-                    rsLookup.Close()
+                    For i = 0 To Assets.Count - 1
+                        ' Get the flagID for this location
+                        DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        If rsLookup.Read Then
+                            FlagID = rsLookup.GetInt32(0)
+                        Else
+                            FlagID = 0
+                        End If
+                        rsLookup.Close()
 
-                    ' Insert it
-                    If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
-                        SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
-                        SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ","
-                        SQL &= CStr(Assets(i).type_id) & "," & CStr(Assets(i).quantity) & "," & CStr(FlagID) & ","
-                        SQL &= CInt(Assets(i).is_singleton) & ")"
+                        ' Insert it
+                        If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
+                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
+                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ","
+                            SQL &= CStr(Assets(i).type_id) & "," & CStr(Assets(i).quantity) & "," & CStr(FlagID) & ","
+                            SQL &= CInt(Assets(i).is_singleton) & ")"
 
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    End If
-                Next
-                ' Finally, update all the asset flags to negative values if they are base nodes
-                SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                        End If
+                    Next
+                    ' Finally, update all the asset flags to negative values if they are base nodes
+                    SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    Call EVEDB.CommitSQLiteTransaction()
+
+                    DBCommand = Nothing
+                End If
 
                 ' Update cache date since it's all set now
                 Call CB.UpdateCacheDate(CDType, CacheDate, ID)
-
-                Call EVEDB.CommitSQLiteTransaction()
-
-                DBCommand = Nothing
-
             End If
         End If
 

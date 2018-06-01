@@ -821,7 +821,7 @@ Public Class Blueprint
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
                 ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP
-                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID
+                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & " AND BLUEPRINT_GROUP NOT LIKE '%Reaction Formulas'"
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
 

@@ -44,10 +44,10 @@ Public Class frmLoadESIAuthorization
 
     Private Sub ProcessDummyCharacter()
         ' Load the dummy
-        If SelectedCharacter.LoadDummyCharacter() = TriState.UseDefault Then
+        If SelectedCharacter.LoadDummyCharacter(False) = TriState.UseDefault Then
             ' They said no, cancel and let them re-choose
             Exit Sub
-        ElseIf SelectedCharacter.LoadDummyCharacter() = TriState.True Then
+        ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.True Then
             Call MsgBox("Dummy Character Loaded", MsgBoxStyle.OkOnly, Application.ProductName)
             Me.Hide()
         Else

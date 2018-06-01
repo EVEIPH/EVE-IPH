@@ -247,6 +247,7 @@ Public Class frmBlueprintList
             "
 
         Return query
+
     End Function
 
     Private Function GetExtraJoinFilter() As String

@@ -104,7 +104,7 @@ Public Class ESI
     Private Function GetAuthorizationToken(ByRef ErrorCode As Integer) As String
 
         Try
-            If ClientID <> "" Then
+            If ClientID <> "" And ClientID <> DummyClient Then
                 ' Build the authorization call
                 Dim URL As String = ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://"
                 URL &= LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
@@ -177,6 +177,11 @@ Public Class ESI
     ''' <param name="Refresh">If the token is Authorization or Refresh</param>
     ''' <returns>Access Token Data object</returns>
     Private Function GetAccessToken(Token As String, Refresh As Boolean, ByRef ErrorCode As Integer) As ESITokenData
+
+        If Token = "No Token" Or Token = "" Then
+            Return Nothing
+        End If
+
         Dim WC As New WebClient
         Dim Response As Byte()
         Dim Data As String = ""
@@ -305,7 +310,9 @@ Public Class ESI
 
                 Return Response
             Catch ex As Exception
-                MsgBox("ESI Authorization Error: " & ex.Message, vbInformation, Application.ProductName)
+                If Not ex.Message.Contains("Forbidden") Then
+                    MsgBox("ESI Authorization Error: " & ex.Message, vbInformation, Application.ProductName)
+                End If
                 Return Nothing
             End Try
         Else
@@ -365,7 +372,7 @@ Public Class ESI
                 TokenData = GetAccessToken(SavedTokenData.RefreshToken, True, errorcode)
             End If
 
-            If errorcode = 0 Then
+            If errorcode = 0 And Not IsNothing(TokenData) Then
                 Dim CB As New CacheBox
                 Dim CacheDate As Date
 
@@ -394,12 +401,12 @@ Public Class ESI
 
                         With CharacterData
                             SQL = String.Format(SQL, .PublicData.corporation_id,
-                                        .PublicData.description,
-                                        .VerificationData.Scopes,
-                                        TokenData.access_token,
+                                        FormatDBString(FormatNullString(.PublicData.description)),
+                                        FormatDBString(.VerificationData.Scopes),
+                                        FormatDBString(TokenData.access_token),
                                         Format(TokenExpiration, SQLiteDateFormat),
-                                        TokenData.token_type,
-                                        TokenData.refresh_token,
+                                        FormatDBString(TokenData.token_type),
+                                        FormatDBString(TokenData.refresh_token),
                                         .VerificationData.CharacterID)
 
                         End With
@@ -411,19 +418,19 @@ Public Class ESI
                         SQL &= "VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},{15})"
                         With CharacterData
                             SQL = String.Format(SQL, .VerificationData.CharacterID,
-                                        .VerificationData.CharacterName,
+                                        FormatDBString(.VerificationData.CharacterName),
                                         .PublicData.corporation_id,
                                         Format(CDate(.PublicData.birthday.Replace("T", " ")), SQLiteDateFormat),
-                                        .PublicData.gender,
+                                        FormatDBString(.PublicData.gender),
                                         .PublicData.race_id,
                                         .PublicData.bloodline_id,
-                                        .PublicData.ancestry_id,
-                                        .PublicData.description,
-                                        TokenData.access_token,
+                                        FormatNullInteger(.PublicData.ancestry_id),
+                                        FormatDBString(FormatNullString(.PublicData.description)),
+                                        FormatDBString(TokenData.access_token),
                                         Format(TokenExpiration, SQLiteDateFormat),
-                                        TokenData.token_type,
-                                        TokenData.refresh_token,
-                                        .VerificationData.Scopes,
+                                        FormatDBString(TokenData.token_type),
+                                        FormatDBString(TokenData.refresh_token),
+                                        FormatDBString(.VerificationData.Scopes),
                                         0, 0) ' Don't set default yet or override skills
                         End With
                     End If
@@ -449,7 +456,7 @@ Public Class ESI
                 End If
             End If
         Catch ex As Exception
-            MsgBox("Unable to get authorization and verification data through ESI", vbInformation, Application.ProductName)
+            MsgBox("Unable to get authorization and verification data through ESI: " & ex.Message, vbInformation, Application.ProductName)
         End Try
 
         Return False
@@ -505,18 +512,22 @@ Public Class ESI
 
         ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/skills/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, SkillsCacheDate)
 
-        SkillData = JsonConvert.DeserializeObject(Of ESICharacterSkillsBase)(ReturnData)
+        If Not IsNothing(ReturnData) Then
+            SkillData = JsonConvert.DeserializeObject(Of ESICharacterSkillsBase)(ReturnData)
 
-        For Each entry In SkillData.skills
-            TempSkill = New EVESkill
-            TempSkill.TypeID = entry.skill_id
-            TempSkill.Level = entry.trained_skill_level
-            TempSkill.SkillPoints = entry.skillpoints_in_skill
+            For Each entry In SkillData.skills
+                TempSkill = New EVESkill
+                TempSkill.TypeID = entry.skill_id
+                TempSkill.Level = entry.trained_skill_level
+                TempSkill.SkillPoints = entry.skillpoints_in_skill
 
-            Call ReturnSkills.InsertSkill(TempSkill, True)
-        Next
+                Call ReturnSkills.InsertSkill(TempSkill, True)
+            Next
 
-        Return ReturnSkills
+            Return ReturnSkills
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -531,26 +542,29 @@ Public Class ESI
 
         ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/standings/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, StandingsCacheDate)
 
-        StandingsData = JsonConvert.DeserializeObject(Of List(Of ESICharacterStandingsData))(ReturnData)
+        If Not IsNothing(ReturnData) Then
+            StandingsData = JsonConvert.DeserializeObject(Of List(Of ESICharacterStandingsData))(ReturnData)
 
-        For Each entry In StandingsData
-            Select Case entry.from_type
-                Case "agents"
-                    StandingType = "Agent"
-                Case "faction"
-                    StandingType = "Faction"
-                Case "npc_corp"
-                    StandingType = "Corporation"
-            End Select
-            TempStandingsList.InsertStanding(entry.from_id, StandingType, "", entry.standing)
-        Next
+            For Each entry In StandingsData
+                Select Case entry.from_type
+                    Case "agents"
+                        StandingType = "Agent"
+                    Case "faction"
+                        StandingType = "Faction"
+                    Case "npc_corp"
+                        StandingType = "Corporation"
+                End Select
+                TempStandingsList.InsertStanding(entry.from_id, StandingType, "", entry.standing)
+            Next
 
-        Return TempStandingsList
+            Return TempStandingsList
+        Else
+            Return Nothing
+        End If
 
     End Function
 
     Public Function GetCurrentResearchAgents(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef AgentsCacheDate As Date) As List(Of ESIResearchAgent)
-        Dim ReturnedAgents As New List(Of ESIResearchAgent)
         Dim ReturnData As String
 
         Dim TempTokenData As New ESITokenData
@@ -558,9 +572,11 @@ Public Class ESI
 
         ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/agents_research/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, AgentsCacheDate)
 
-        ReturnedAgents = JsonConvert.DeserializeObject(Of List(Of ESIResearchAgent))(ReturnData)
-
-        Return ReturnedAgents
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of List(Of ESIResearchAgent))(ReturnData)
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -584,61 +600,64 @@ Public Class ESI
                                                   TempTokenData, TokenData.TokenExpiration, BPCacheDate)
         End If
 
-        RawBPData = JsonConvert.DeserializeObject(Of List(Of ESIBlueprint))(ReturnData)
+        If Not IsNothing(ReturnData) Then
+            RawBPData = JsonConvert.DeserializeObject(Of List(Of ESIBlueprint))(ReturnData)
 
-        ' Process the return data
-        For Each BP In RawBPData
-            TempBlueprint.ItemID = BP.item_id
-            TempBlueprint.TypeID = BP.type_id
-            ' Get the typeName for this bp
-            DBCommand = New SQLiteCommand("SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(BP.type_id), EVEDB.DBREf)
-            rsLookup = DBCommand.ExecuteReader
-            If rsLookup.Read Then
-                TempBlueprint.TypeName = rsLookup.GetString(0)
-            Else
-                TempBlueprint.TypeName = Unknown
-            End If
-            rsLookup.Close()
-            TempBlueprint.LocationID = BP.location_id
-            ' Get the flag id for this location
-            DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & BP.location_flag & "'", EVEDB.DBREf)
-            rsLookup = DBCommand.ExecuteReader
-            If rsLookup.Read Then
-                TempBlueprint.FlagID = rsLookup.GetInt32(0)
-            Else
-                TempBlueprint.FlagID = 0
-            End If
-            rsLookup.Close()
-            TempBlueprint.Quantity = BP.quantity
-            TempBlueprint.MaterialEfficiency = BP.material_efficiency
-            TempBlueprint.TimeEfficiency = BP.time_efficiency
-            TempBlueprint.Runs = BP.runs
+            ' Process the return data
+            For Each BP In RawBPData
+                TempBlueprint.ItemID = BP.item_id
+                TempBlueprint.TypeID = BP.type_id
+                ' Get the typeName for this bp
+                DBCommand = New SQLiteCommand("SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(BP.type_id), EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+                If rsLookup.Read Then
+                    TempBlueprint.TypeName = rsLookup.GetString(0)
+                Else
+                    TempBlueprint.TypeName = Unknown
+                End If
+                rsLookup.Close()
+                TempBlueprint.LocationID = BP.location_id
+                ' Get the flag id for this location
+                DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & BP.location_flag & "'", EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+                If rsLookup.Read Then
+                    TempBlueprint.FlagID = rsLookup.GetInt32(0)
+                Else
+                    TempBlueprint.FlagID = 0
+                End If
+                rsLookup.Close()
+                TempBlueprint.Quantity = BP.quantity
+                TempBlueprint.MaterialEfficiency = BP.material_efficiency
+                TempBlueprint.TimeEfficiency = BP.time_efficiency
+                TempBlueprint.Runs = BP.runs
 
-            ' We determine the type of bp from quantity
-            If TempBlueprint.Quantity = BPType.Original Or TempBlueprint.Quantity > 0 Then
-                ' BPO or stack of BPOs
-                TempBlueprint.BPType = BPType.Original
-            ElseIf TempBlueprint.Quantity = BPType.Copy Then
-                ' BPC
-                TempBlueprint.BPType = BPType.Copy
-            Else
-                ' Not sure what this is
-                TempBlueprint.BPType = 0
-            End If
-            TempBlueprint.Owned = False
-            TempBlueprint.Scanned = True ' We just scanned it
-            TempBlueprint.Favorite = False
-            TempBlueprint.AdditionalCosts = 0
+                ' We determine the type of bp from quantity
+                If TempBlueprint.Quantity = BPType.Original Or TempBlueprint.Quantity > 0 Then
+                    ' BPO or stack of BPOs
+                    TempBlueprint.BPType = BPType.Original
+                ElseIf TempBlueprint.Quantity = BPType.Copy Then
+                    ' BPC
+                    TempBlueprint.BPType = BPType.Copy
+                Else
+                    ' Not sure what this is
+                    TempBlueprint.BPType = 0
+                End If
+                TempBlueprint.Owned = False
+                TempBlueprint.Scanned = True ' We just scanned it
+                TempBlueprint.Favorite = False
+                TempBlueprint.AdditionalCosts = 0
 
-            ReturnedBPs.Add(TempBlueprint)
-        Next
+                ReturnedBPs.Add(TempBlueprint)
+            Next
 
-        Return ReturnedBPs
+            Return ReturnedBPs
+        Else
+            Return Nothing
+        End If
 
     End Function
 
     Public Function GetIndustryJobs(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal JobType As ScanType, ByRef JobsCacheDate As Date) As List(Of ESIIndustryJob)
-        Dim JobsData As List(Of ESIIndustryJob)
         Dim ReturnData As String = ""
 
         Dim TempTokenData As New ESITokenData
@@ -653,14 +672,15 @@ Public Class ESI
                                                   TempTokenData, TokenData.TokenExpiration, JobsCacheDate)
         End If
 
-        JobsData = JsonConvert.DeserializeObject(Of List(Of ESIIndustryJob))(ReturnData)
-
-        Return JobsData
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of List(Of ESIIndustryJob))(ReturnData)
+        Else
+            Return Nothing
+        End If
 
     End Function
 
     Public Function GetAssets(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal JobType As ScanType, ByRef AssetsCacheDate As Date) As List(Of ESIAsset)
-        Dim AssetData As List(Of ESIAsset)
         Dim AssetList As New List(Of EVEAsset)
         Dim TempAsset As New EVEAsset
         Dim ReturnData As String = ""
@@ -677,9 +697,11 @@ Public Class ESI
                                                   TempTokenData, TokenData.TokenExpiration, AssetsCacheDate)
         End If
 
-        AssetData = JsonConvert.DeserializeObject(Of List(Of ESIAsset))(ReturnData)
-
-        Return AssetData
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of List(Of ESIAsset))(ReturnData)
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -745,10 +767,9 @@ Public Class ESI
             ' Get the data from ESI
             PublicData = GetPublicData(ESIPublicURL & "markets/" & CStr(RegionID) & "/orders/" & TranquilityDataSource & "&type_id=" & CStr(TypeID), CacheDate)
 
-            MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(PublicData)
+            If Not IsNothing(PublicData) Then
+                MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(PublicData)
 
-            ' Read in the data
-            If Not IsNothing(MarketOrdersOutput) Then
                 ' Parse the data
                 If MarketOrdersOutput.Count > 0 Then
                     Application.DoEvents()
@@ -776,7 +797,6 @@ Public Class ESI
                     Next
 
                 End If
-
             Else
                 ' Json file didn't download
                 Return False
@@ -1798,7 +1818,9 @@ Public Class ESI
             Dim SendIDs As List(Of Long) = IDs.GetRange(Start, EndMark)
             TempNameList = GetNameData(SendIDs)
             ' Get names from ESI
-            NameList.AddRange(TempNameList)
+            If Not IsNothing(TempNameList) Then
+                NameList.AddRange(TempNameList)
+            End If
         Next
 
         For Each item In NameList
@@ -1857,13 +1879,13 @@ Public Class ESI
         IDs = IDs.Substring(0, Len(IDs) - 1) ' strip comma
         IDs &= "]"
 
-        Try
-            PublicData = GetPublicData(ESIPublicURL & "universe/names/" & TranquilityDataSource, Nothing, IDs)
+        PublicData = GetPublicData(ESIPublicURL & "universe/names/" & TranquilityDataSource, Nothing, IDs)
 
+        If Not IsNothing(PublicData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESINameData))(PublicData)
-        Catch ex As Exception
+        Else
             Return Nothing
-        End Try
+        End If
 
     End Function
 
@@ -2057,7 +2079,10 @@ Public Class ESICharacterPublicData
     <JsonProperty("description")> Public description As String
     <JsonProperty("bloodline_id")> Public bloodline_id As Integer
     <JsonProperty("ancestry_id")> Public ancestry_id As Integer
-    <JsonProperty("corporation_id")> Public corporation_id As Long
+    <JsonProperty("corporation_id")> Public corporation_id As Integer
+    <JsonProperty("alliance_id")> Public alliance_id As Integer
+    <JsonProperty("faction_id")> Public faction_id As Integer
+    <JsonProperty("security_status")> Public security_status As Double
 End Class
 
 #End Region

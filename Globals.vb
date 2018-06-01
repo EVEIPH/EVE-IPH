@@ -7,7 +7,7 @@ Imports System.IO
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "March2018Release_1.0"
+    Public Const SDEVersion As String = "Into_The_Abyss_1.0"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -25,9 +25,9 @@ Public Module Public_Variables
 
     Public DummyAccountLoaded As Boolean
     Public Const DummyClient As String = "Dummy"
-    Public Const DefaultDummyCharacterCode As Integer = -2 ' To save the dummy character, use a unqiue code for IS_DEFAULT value
+    Public Const DummyDefaultCharacterCode As Integer = -2 ' To save the dummy character, use a unqiue code for IS_DEFAULT value
     Public Const DefaultCharacterCode As Integer = -1 ' For everyone else
-    Public Const DummyCharacterID As Long = 0
+    Public Const DummyCharacterID As Long = -1
 
     ' Variable to hold error tracking data when the error is hard to find - used for debugging only but mostly this is set to empty string
     Public ErrorTracker As String
@@ -164,6 +164,7 @@ Public Module Public_Variables
     Public Const No As String = "No"
     Public Const Unknown As String = "Unknown"
     Public Const Unlimited As String = "Unlimited"
+    Public Const Male As String = "male"
 
     Public NoFacility As New IndustryFacility
 
@@ -385,7 +386,7 @@ Public Module Public_Variables
             End If
 
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
-            ' Check for chars (corp chars do not count)
+            ' Check for chars 
             Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
 
             If CInt(CMDCount.ExecuteScalar()) = 0 Or Not ApplicationRegistered Then
@@ -394,18 +395,17 @@ Public Module Public_Variables
                     Dim f1 As New frmLoadESIAuthorization
                     f1.ShowDialog()
                     f1.Close()
-                    ' If they closed, then it's ready to select a character (not a dummy)
-                    If Not DummyAccountLoaded Then
-                        Dim f2 As New frmSetCharacterDefault
-                        f2.ShowDialog()
-                    End If
                 End If
 
-                ' If they didn't skip this and load dummy, then let them select a character default
+                ' If they closed, then it's ready to select a character (not a dummy)
                 If Not DummyAccountLoaded Then
-                    Dim f2 = New frmSetCharacterDefault
+                    Dim f2 As New frmSetCharacterDefault
                     f2.ShowDialog()
+                ElseIf CInt(CMDCount.ExecuteScalar()) = 0 Then
+                    ' No character loaded for dummy, so load it up without asking since we are already set to dummy with registration
+                    Call SelectedCharacter.LoadDummyCharacter(True)
                 End If
+
             Else
                 ' Have a set of chars, need to set a default, open that form
                 Dim f2 = New frmSetCharacterDefault
@@ -1510,6 +1510,81 @@ InvalidDate:
         Return inStrVar
     End Function
 
+    ' Formats the value sent to what we want to insert into the table field
+    Public Function BuildInsertFieldString(ByVal inValue As Object) As String
+        Dim CheckNullValue As Object
+        Dim OutputString As String
+
+        ' See if it is null first
+        CheckNullValue = CheckNull(inValue)
+
+        If CStr(CheckNullValue) <> "null" Then
+            ' Not null, so format
+            If inValue.GetType.Name <> "String" Then
+                ' Just a value, so no quotes needed
+                OutputString = CStr(inValue)
+            Else
+                ' String, so check for appostrophes and add quotes
+                OutputString = "'" & FormatDBString(CStr(inValue)) & "'"
+            End If
+        Else
+            OutputString = "NULL"
+        End If
+
+        Return OutputString
+
+    End Function
+
+    Private Function CheckNull(ByVal inVariable As Object) As Object
+        If IsNothing(inVariable) Then
+            Return "null"
+        ElseIf DBNull.Value.Equals(inVariable) Then
+            Return "null"
+        Else
+            Return inVariable
+        End If
+    End Function
+
+    Public Function FormatNullInteger(ByVal inVariable As Object) As Integer
+        If CStr(CheckNull(inVariable)) = "null" Then
+            Return 0
+        Else
+            Return CInt(inVariable)
+        End If
+    End Function
+
+    Public Function FormatNullLong(ByVal inVariable As Object) As Long
+        If CStr(CheckNull(inVariable)) = "null" Then
+            Return 0
+        Else
+            Return CLng(inVariable)
+        End If
+    End Function
+
+    Public Function FormatNullDouble(ByVal inVariable As Object) As Double
+        If CStr(CheckNull(inVariable)) = "null" Then
+            Return 0
+        Else
+            Return CDbl(inVariable)
+        End If
+    End Function
+
+    Public Function FormatNullDate(ByVal inVariable As Object) As Date
+        If CStr(CheckNull(inVariable)) = "null" Then
+            Return NoDate
+        Else
+            Return CDate(inVariable)
+        End If
+    End Function
+
+    Public Function FormatNullString(ByVal inVariable As Object) As String
+        If CStr(CheckNull(inVariable)) = "null" Then
+            Return ""
+        Else
+            Return CStr(inVariable)
+        End If
+    End Function
+
     ' Finds the T1 material for a T2 blueprint
     Public Function GetT1Material(ByVal BlueprintID As Long) As Material
         Dim SQL As String
@@ -1650,12 +1725,11 @@ InvalidDate:
         SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & CorpID & ",0)"
         evedb.ExecuteNonQuerySQL(SQL)
 
-        SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE CHARACTER_ID = " & UserID
-        evedb.ExecuteNonQuerySQL(SQL)
+        SQL = "UPDATE ESI_CHARACTER_DATA SET BLUEPRINTS_CACHE_DATE = '1900-01-01 00:00:00' WHERE CHARACTER_ID = " & UserID
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
-        SQL = "UPDATE API SET BLUEPRINTS_CACHED_UNTIL = '1900-01-01 00:00:00' WHERE API_TYPE = 'Corporation' "
-        SQL = SQL & "AND CORPORATION_ID = " & CorpID
-        evedb.ExecuteNonQuerySQL(SQL)
+        SQL = "UPDATE ESI_CORPORATION_DATA SET BLUEPRINTS_CACHE_DATE = '1900-01-01 00:00:00' WHERE CORPORATION_ID = " & CorpID
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         Call EVEDB.CommitSQLiteTransaction()
 

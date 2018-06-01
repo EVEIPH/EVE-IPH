@@ -212,7 +212,7 @@ Public Class EVENPCStandings
         If CB.DataUpdateable(CacheDateType.Standings, ID) Then
             TempStandings = ESIData.GetCharacterStandings(ID, CharacterTokenData, CacheDate)
 
-            If Not IsNothing(TempStandings) Then
+            If Not IsNothing(TempStandings) And TempStandings.GetStandingsList.Count > 0 Then
                 ' Get all the standing names for corps and agents first
                 For Each entry In TempStandings.NPCStandings
                     If entry.NPCType <> "Faction" Then
@@ -237,16 +237,18 @@ Public Class EVENPCStandings
                 ' Get the corp and agent names
                 ReturnNameData = ESIData.GetNameData(NonFactionIDs)
 
-                For Each Record In ReturnNameData
-                    ' Update the Standings list with name
-                    IDtoFind = Record.id
-                    TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
-                    If Not IsNothing(TempStanding) Then
-                        Call TempStandings.NPCStandings.Remove(TempStanding)
-                        TempStanding.NPCName = Record.name
-                        Call TempStandings.NPCStandings.Add(TempStanding)
-                    End If
-                Next
+                If Not IsNothing(ReturnNameData) Then
+                    For Each Record In ReturnNameData
+                        ' Update the Standings list with name
+                        IDtoFind = Record.id
+                        TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
+                        If Not IsNothing(TempStanding) Then
+                            Call TempStandings.NPCStandings.Remove(TempStanding)
+                            TempStanding.NPCName = Record.name
+                            Call TempStandings.NPCStandings.Add(TempStanding)
+                        End If
+                    Next
+                End If
 
                 Call EVEDB.BeginSQLiteTransaction()
 
@@ -266,12 +268,13 @@ Public Class EVENPCStandings
 
                 DBCommand = Nothing
 
-                ' Update cache date now that it's all set
-                Call CB.UpdateCacheDate(CacheDateType.Standings, CacheDate, ID)
-
                 Call EVEDB.CommitSQLiteTransaction()
 
             End If
+
+            ' Update cache date now that it's all set
+            Call CB.UpdateCacheDate(CacheDateType.Standings, CacheDate, ID)
+
         End If
     End Sub
 

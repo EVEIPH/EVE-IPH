@@ -104,6 +104,8 @@ Public Class ManufacturingFacility
     Public Const OutpostFacility As String = "Outpost"
     Public Const StructureFacility As String = "Structure"
 
+    Private FactionCitadelList As New List(Of Integer)
+
     Private FacilityLabelDefaultColor As Color = SystemColors.Highlight
     Private FacilityLabelNonDefaultColor As Color = SystemColors.ButtonShadow
 
@@ -151,6 +153,13 @@ Public Class ManufacturingFacility
         lblModules.Visible = False
 
         UpdatingManualBoxes = False
+
+        ' For checking facilities later - will remove if we can get locations from ESI
+        FactionCitadelList.Add(47512) ' Moreau Fortizar
+        FactionCitadelList.Add(47513) ' Draccous Fortizar
+        FactionCitadelList.Add(47514) ' Horizion Fortizar
+        FactionCitadelList.Add(47515) ' Marginis Fortizar
+        FactionCitadelList.Add(47516) ' Prometheus Fortizar
 
         FirstLoad = False
 
@@ -1122,6 +1131,12 @@ Public Class ManufacturingFacility
                 SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                 SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
 
+                ' Make sure the region listed has at least one system not in the disallowed anchoring lists
+                ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
+                ' Check both disallowable anchor tables
+                SQL = SQL & "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
+                SQL = SQL & "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
+
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
                 If ItemGroupID = ItemIDs.SupercarrierGroupID Or ItemGroupID = ItemIDs.TitanGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
@@ -1462,6 +1477,7 @@ Public Class ManufacturingFacility
                                  ByRef AutoLoadFacility As Boolean, Optional OverrideFacilityName As String = "")
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
 
         LoadingFacilities = True
 
@@ -1476,7 +1492,7 @@ Public Class ManufacturingFacility
 
             Case FacilityTypes.Station, FacilityTypes.Outpost
                 ' Load the Stations in system for the activity we are doing
-                SQL = "SELECT DISTINCT FACILITY_NAME FROM STATION_FACILITIES WHERE OUTPOST "
+                SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM STATION_FACILITIES WHERE OUTPOST "
 
                 ' Set flag for outpost just to delineate
                 If GetFacilityTypeCode(cmbFacilityType.Text) = FacilityTypes.Station Then
@@ -1509,7 +1525,7 @@ Public Class ManufacturingFacility
             Case FacilityTypes.POS
 
                 ' Load all the array types up into the combo for a POS
-                SQL = "SELECT DISTINCT ARRAY_NAME AS FACILITY_NAME FROM ASSEMBLY_ARRAYS "
+                SQL = "SELECT DISTINCT ARRAY_NAME AS FACILITY_NAME, ARRAY_TYPE_ID FROM ASSEMBLY_ARRAYS "
                 SQL = SQL & "WHERE ACTIVITY_ID = "
 
                 Select Case FacilityActivity
@@ -1539,7 +1555,7 @@ Public Class ManufacturingFacility
 
             Case FacilityTypes.UpwellStructure
                 ' Load all the upwell structures based on the production type
-                SQL = "SELECT typeName as FACILITY_NAME FROM INVENTORY_TYPES, INVENTORY_GROUPS "
+                SQL = "SELECT typeName as FACILITY_NAME, typeID FROM INVENTORY_TYPES, INVENTORY_GROUPS "
                 SQL &= "WHERE INVENTORY_GROUPS.categoryID = 65 "
                 SQL &= "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid "
                 SQL &= "AND INVENTORY_TYPES.published = 1 "
@@ -1598,6 +1614,19 @@ Public Class ManufacturingFacility
                     End If
                 Else
                     ' Allow it
+                    cmbFacilityorArray.Items.Add(rsLoader.GetString(0))
+                End If
+            ElseIf factioncitadellist.Contains(rsLoader.GetInt32(1)) Then
+                ' These are only in nullsec space (if we can look up in ESI then later maybe)
+                SQL = "SELECT security, factionID FROM REGIONS, SOLAR_SYSTEMS WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID "
+                SQL &= "AND factionID IS NULL AND regionName <> 'Wormhole Space' "
+                SQL &= "AND security <= 0.0 AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "'"
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                If rsCheck.Read Then
+                    ' no sov and it's nullsec, so add it
                     cmbFacilityorArray.Items.Add(rsLoader.GetString(0))
                 End If
             Else
@@ -1761,14 +1790,14 @@ Public Class ManufacturingFacility
         If FacilityType <> FacilityTypes.None Then
 
             ' First, see if this facility is a saved facility, and use the values from the table
-            SQL = "SELECT FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
+            SQL = "Select FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
             SQL &= "FROM SAVED_FACILITIES, REGIONS, SOLAR_SYSTEMS, INVENTORY_TYPES "
             SQL &= "WHERE SAVED_FACILITIES.REGION_ID = REGIONS.regionID "
-            SQL &= "AND INVENTORY_TYPES.typeID = FACILITY_TYPE_ID "
-            SQL &= "AND SAVED_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-            SQL &= String.Format("AND CHARACTER_ID = {0} ", CStr(SelectedCharacter.ID))
-            SQL &= String.Format("AND PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} ", CStr(BuildType), CStr(SelectedView))
-            SQL &= "AND REGIONS.regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
+            SQL &= "And INVENTORY_TYPES.typeID = FACILITY_TYPE_ID "
+            SQL &= "And SAVED_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
+            SQL &= String.Format("And CHARACTER_ID = {0} ", CStr(SelectedCharacter.ID))
+            SQL &= String.Format("And PRODUCTION_TYPE = {0} And FACILITY_VIEW = {1} ", CStr(BuildType), CStr(SelectedView))
+            SQL &= "And REGIONS.regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
             SQL &= "AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "' "
             SQL &= "AND typeName = '" & FormatDBString(cmbFacilityorArray.Text) & "' "
 
@@ -1990,7 +2019,7 @@ Public Class ManufacturingFacility
                         ' Look up the bonus while adjusting for the type of space we are in
                         SQL = "SELECT attributeID, "
                         SQL &= "(COALESCE(VALUEFLOAT, VALUEINT) * (SELECT COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1}))/100 AS BONUS "
-                        SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2593,2594,2595,2713,2714) "
+                        SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2593,2594,2595,2713,2714,2653) "
                         SQL &= "AND COALESCE(VALUEFLOAT, VALUEINT) <> 0 AND TYPEID = {0}"
                         SQL = String.Format(SQL, RigID, CInt(securityAttribute))
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -2002,7 +2031,7 @@ Public Class ManufacturingFacility
                                 Case ItemAttributes.attributeEngRigCostBonus
                                     CostMultiplier = CostMultiplier + rsLoader.GetDouble(1)
                                     SelectedFacility.BaseCost = CostMultiplier
-                                Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus
+                                Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
                                     MaterialMultiplier = MaterialMultiplier + rsLoader.GetDouble(1)
                                     SelectedFacility.BaseME = MaterialMultiplier
                                 Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
@@ -3373,42 +3402,6 @@ Public Class ManufacturingFacility
         Call txtFacilityManualTax.SelectAll()
     End Sub
 
-    Private Sub txtFacilityManualME_TextChanged(sender As Object, e As EventArgs) Handles txtFacilityManualME.TextChanged
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.MaterialMultiplier = FormatManualEntry(txtFacilityManualME.Text)
-            ' Format for text box
-            txtFacilityManualME.Text = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
-        End If
-    End Sub
-
-    Private Sub txtFacilityManualTE_TextChanged(sender As Object, e As EventArgs) Handles txtFacilityManualTE.TextChanged
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.TimeMultiplier = FormatManualEntry(txtFacilityManualTE.Text)
-            ' Format for text box
-            txtFacilityManualTE.Text = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
-        End If
-    End Sub
-
-    Private Sub txtFacilityManualCost_TextChanged(sender As Object, e As EventArgs) Handles txtFacilityManualCost.TextChanged
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.CostMultiplier = FormatManualEntry(txtFacilityManualCost.Text)
-            ' Format for text box
-            txtFacilityManualCost.Text = FormatPercent(1 - SelectedFacility.CostMultiplier, 2)
-        End If
-    End Sub
-
-    Private Sub txtFacilityManualTax_TextChanged(sender As Object, e As EventArgs) Handles txtFacilityManualTax.TextChanged
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.TaxRate = FormatManualEntry(txtFacilityManualTax.Text)
-            ' Format for text box
-            txtFacilityManualTax.Text = FormatPercent(1 - SelectedFacility.TaxRate, 2)
-        End If
-    End Sub
-
     Private Function FormatManualEntry(Entry As String) As Double
         Dim EntryText As String
 
@@ -3419,9 +3412,57 @@ Public Class ManufacturingFacility
             EntryText = Entry
         End If
 
-        Return CDbl(Entry) / 100
+        If IsNumeric(EntryText) Then
+            Return CDbl(EntryText) / 100
+        Else
+            Return 0
+        End If
 
     End Function
+
+    Private Sub txtFacilityManualME_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualME.LostFocus
+        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
+            btnFacilitySave.Enabled = True
+            SelectedFacility.MaterialMultiplier = FormatManualEntry(txtFacilityManualME.Text)
+            ' Format for text box
+            UpdatingManualBoxes = True
+            txtFacilityManualME.Text = FormatPercent(SelectedFacility.MaterialMultiplier, 2)
+            UpdatingManualBoxes = False
+        End If
+    End Sub
+
+    Private Sub txtFacilityManualCost_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualCost.LostFocus
+        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
+            btnFacilitySave.Enabled = True
+            SelectedFacility.CostMultiplier = FormatManualEntry(txtFacilityManualCost.Text)
+            ' Format for text box
+            UpdatingManualBoxes = True
+            txtFacilityManualCost.Text = FormatPercent(SelectedFacility.CostMultiplier, 2)
+            UpdatingManualBoxes = False
+        End If
+    End Sub
+
+    Private Sub txtFacilityManualTax_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTax.LostFocus
+        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
+            btnFacilitySave.Enabled = True
+            SelectedFacility.TaxRate = FormatManualEntry(txtFacilityManualTax.Text)
+            ' Format for text box
+            UpdatingManualBoxes = True
+            txtFacilityManualTax.Text = FormatPercent(SelectedFacility.TaxRate, 2)
+            UpdatingManualBoxes = False
+        End If
+    End Sub
+
+    Private Sub txtFacilityManualTE_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTE.LostFocus
+        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
+            btnFacilitySave.Enabled = True
+            SelectedFacility.TimeMultiplier = FormatManualEntry(txtFacilityManualTE.Text)
+            ' Format for text box
+            UpdatingManualBoxes = True
+            txtFacilityManualTE.Text = FormatPercent(SelectedFacility.TimeMultiplier, 2)
+            UpdatingManualBoxes = False
+        End If
+    End Sub
 
 #End Region
 
@@ -3860,18 +3901,18 @@ ExitBlock:
                     ' if what they have now is different from what they started with, then they made a change
                     ' for upwell structures, the base is updated when they make changes to the facility fitting
                     If MaterialMultiplier <> BaseME Then
-                        TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
+                        TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(1 - MaterialMultiplier) & ", "
                     Else
                         TempSQL &= "MATERIAL_MULTIPLIER = NULL, "
                     End If
 
                     If TimeMultiplier <> BaseTE Then
-                        TempSQL &= "TIME_MULTIPLIER = " & CStr(TimeMultiplier) & ", "
+                        TempSQL &= "TIME_MULTIPLIER = " & CStr(1 - TimeMultiplier) & ", "
                     Else
                         TempSQL &= "TIME_MULTIPLIER = NULL, "
                     End If
                     If CostMultiplier <> BaseCost Then
-                        TempSQL &= "COST_MULTIPLIER = " & CStr(CostMultiplier) & ", "
+                        TempSQL &= "COST_MULTIPLIER = " & CStr(1 - CostMultiplier) & " "
                     Else
                         TempSQL &= "COST_MULTIPLIER = NULL "
                     End If

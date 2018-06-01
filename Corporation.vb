@@ -6,10 +6,13 @@ Public Class Corporation
     Private Name As String 'Corp name
     Private ID As Long ' Corp ID
     Public Ticker As String
-    Public MemberCount As Integer
+    Public FactionID As Integer
+    Public AllianceID As Integer
     Public CEOID As Long
     Public CreatorID As Long
-    Public AllianceID As Integer
+    Public HomeStationID As Integer
+    Public Shares As Long
+    Public MemberCount As Integer
     Public Description As String
     Public TaxRate As Double
     Public DateFounded As Date
@@ -51,17 +54,16 @@ Public Class Corporation
             Name = rsData.GetString(1)
             Ticker = rsData.GetString(2)
             MemberCount = rsData.GetInt32(3)
-            If Not IsDBNull(rsData.GetValue(4)) Then
-                AllianceID = rsData.GetInt32(4)
-            Else
-                AllianceID = 0
-            End If
+            'FactionID = FormatNullInteger(rsData.GetValue(4))
+            AllianceID = FormatNullInteger(rsData.GetValue(4))
             CEOID = rsData.GetInt32(5)
             CreatorID = rsData.GetInt32(6)
+            'HomeStationID = FormatNullInteger(rsData.GetValue(8))
+            'Shares = FormatNullLong(rsData.GetValue(9))
             TaxRate = rsData.GetDouble(7)
-            Description = rsData.GetString(8)
-            DateFounded = CDate(rsData.GetString(9))
-            URL = rsData.GetString(10)
+            Description = FormatNullString(rsData.GetValue(8))
+            DateFounded = FormatNullDate(rsData.GetValue(9))
+            URL = FormatNullString(rsData.GetValue(10))
         End While
 
         rsData.Close()
@@ -107,20 +109,59 @@ Public Class Corporation
             If Not IsNothing(CorpData) Then
                 Call EVEDB.BeginSQLiteTransaction()
 
-                ' Delete the old standings data
-                SQL = "DELETE FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
+                ' See if we insert or update
+                Dim rsCheck As SQLiteDataReader
+                ' Load up all the data for the corporation
+                SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                If rsCheck.Read Then
+                    ' Found a record, so update the data
+                    With CorpData
+                        SQL = "UPDATE ESI_CORPORATION_DATA SET "
+                        SQL &= "CORPORATION_NAME = " & BuildInsertFieldString(.name) & ","
+                        SQL &= "TICKER = " & BuildInsertFieldString(.ticker) & ","
+                        SQL &= "MEMBER_COUNT = " & BuildInsertFieldString(.member_count) & ","
+                        'SQL &= "FACTION_ID = " & BuildInsertFieldString(.faction_id) & ","
+                        SQL &= "ALLIANCE_ID = " & BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= "CEO_ID = " & BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= "CREATOR_ID = " & BuildInsertFieldString(.creator_id) & ","
+                        'SQL &= "HOME_STATION_ID = " & BuildInsertFieldString(.home_station_id) & ","
+                        'SQL &= "SHARES = " & BuildInsertFieldString(.shares) & ","
+                        SQL &= "TAX_RATE = " & BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= "DESCRIPTION = " & BuildInsertFieldString(.description) & ","
+                        SQL &= "DATE_FOUNDED = " & BuildInsertFieldString(.date_founded) & ","
+                        SQL &= "URL = " & BuildInsertFieldString(.date_founded) & " "
+                        SQL &= "WHERE CORPORATION_ID = " & CStr(CorporationID)
+                    End With
+                Else
+                    ' New record
+                    With CorpData
+                        SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
+                        SQL &= BuildInsertFieldString(CorporationID) & ","
+                        SQL &= BuildInsertFieldString(.name) & ","
+                        SQL &= BuildInsertFieldString(.ticker) & ","
+                        SQL &= BuildInsertFieldString(.member_count) & ","
+                        'SQL &= BuildInsertFieldString(.faction_id) & ","
+                        SQL &= BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= BuildInsertFieldString(.creator_id) & ","
+                        'SQL &= BuildInsertFieldString(.home_station_id) & ","
+                        ' SQL &= BuildInsertFieldString(.shares) & ","
+                        SQL &= BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= BuildInsertFieldString(.description) & ","
+                        SQL &= BuildInsertFieldString(.date_founded) & ","
+                        SQL &= BuildInsertFieldString(.url) & ","
+                        SQL &= "NULL,NULL,NULL,NULL)"
+                    End With
+
+                End If
+
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                ' Insert new standings data
-                With CorpData
-                    SQL = "INSERT INTO ESI_CORPORATION_DATA (CORPORATION_ID, CORPORATION_NAME, TICKER,  "
-                    SQL &= "MEMBER_COUNT, CEO_ID, CREATOR_ID, TAX_RATE, DESCRIPTION, DATE_FOUNDED, URL)"
-                    SQL &= " VALUES (" & CorporationID & ",'" & FormatDBString(.name) & "','" & .ticker & "'," & .member_count & "," & .ceo_id & ","
-                    SQL &= .creator_id & "," & .tax_rate & ",'" & FormatDBString(.description) & "','" & .date_founded & "','" & .url & "')"
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-                End With
-
-                ' Update after we insert the record
+                ' Update after we update/insert the record
                 Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CorporationID)
 
                 Call EVEDB.CommitSQLiteTransaction()

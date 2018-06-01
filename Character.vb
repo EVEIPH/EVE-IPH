@@ -68,13 +68,15 @@ Public Class Character
     End Sub
 
     ' Saves the dummy character for the program
-    Public Function LoadDummyCharacter() As TriState
+    Public Function LoadDummyCharacter(IgnoreMessages As Boolean) As TriState
         Dim response As Integer
         Dim Settings As AppRegistrationInformationSettings
 
-        response = MsgBox("If you do not load a character many features will not be available to you. Do you want to continue without loading a character?", vbYesNo, Application.ProductName)
+        If Not IgnoreMessages Then
+            response = MsgBox("If you do not load a character many features will not be available to you. Do you want to continue without loading a character?", vbYesNo, Application.ProductName)
+        End If
 
-        If response = vbYes Then
+        If response = vbYes Or IgnoreMessages Then
             Dim SQL As String
             Dim rsCheck As SQLiteDataReader
 
@@ -87,6 +89,7 @@ Public Class Character
                 ID = DummyCharacterID
                 Name = "Dummy Character"
                 DOB = NoDate
+                Gender = Male
                 RaceID = 1
                 BloodLineID = 8
                 AncestryLineID = 9
@@ -104,7 +107,7 @@ Public Class Character
 
                 With CharacterTokenData
                     SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
-                    SQL = String.Format(SQL, 0, None, 0, NoExpiry, "M", 1, 8, 9, None, .AccessToken, .TokenExpiration, .TokenType, .RefreshToken, .Scopes, 0, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, 1) ' Dummy is default
+                    SQL = String.Format(SQL, ID, Name, 0, DOB, Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, .TokenExpiration, .TokenType, .RefreshToken, .Scopes, 0, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, DummyDefaultCharacterCode) ' Dummy is default
                 End With
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -125,7 +128,7 @@ Public Class Character
 
             Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
                 SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = 0"
-                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, DefaultDummyCharacterCode))
+                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, DummyDefaultCharacterCode))
 
                 Call LoadDefaultCharacter()
 
@@ -173,8 +176,7 @@ Public Class Character
             Dim numChars As Long
 
             SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT = {0}"
-
-            DBCommand = New SQLiteCommand(String.Format(SQL, DefaultDummyCharacterCode), EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
             numChars = CLng(DBCommand.ExecuteScalar())
 
             If numChars = 0 Then
