@@ -106,6 +106,7 @@ Public Class ShoppingList
                                 TempBuiltItem.FacilityMEModifier = .FacilityMEModifier
                                 TempBuiltItem.FacilityLocation = .FacilityLocation
                                 TempBuiltItem.FacilityType = .FacilityType
+                                TempBuiltItem.FacilityBuildType = .FacilityBuildType
                                 TempBuiltItem.IncludeActivityCost = .IncludeActivityCost
                                 TempBuiltItem.IncludeActivityTime = .IncludeActivityTime
                                 TempBuiltItem.IncludeActivityUsage = .IncludeActivityUsage
@@ -267,6 +268,7 @@ Public Class ShoppingList
                         ShoppingItem.ManufacturingFacilityMEModifier = FoundItem.FacilityMEModifier
                         ShoppingItem.ManufacturingFacilityLocation = FoundItem.FacilityLocation
                         ShoppingItem.ManufacturingFacilityType = FoundItem.FacilityType
+                        ShoppingItem.ManufacturingFacilityBuildType = FoundItem.FacilityBuildType
                         ShoppingItem.IncludeActivityCost = FoundItem.IncludeActivityCost
                         ShoppingItem.IncludeActivityTime = FoundItem.IncludeActivityTime
                         ShoppingItem.IncludeActivityUsage = FoundItem.IncludeActivityUsage
@@ -327,6 +329,7 @@ Public Class ShoppingList
             UpdateItem.FacilityMEModifier = FoundItem.FacilityMEModifier
             UpdateItem.FacilityLocation = FoundItem.FacilityLocation
             UpdateItem.FacilityType = FoundItem.FacilityType
+            UpdateItem.FacilityBuildType = FoundItem.FacilityBuildType
             UpdateItem.IncludeActivityCost = FoundItem.IncludeActivityCost
             UpdateItem.IncludeActivityTime = FoundItem.IncludeActivityTime
             UpdateItem.IncludeActivityUsage = FoundItem.IncludeActivityUsage
@@ -753,7 +756,7 @@ Public Class ShoppingList
             End If
         End If
 
-        ' Total Build - Need to rebuild every component as if we are only using one bp to get the numbers exact - TODO multi bps
+        ' Total Build - Need to rebuild every component as if we are only using one bp to get the numbers exact
         If Not IsNothing(SentBuildList) Then
             If Not IsNothing(SentBuildList.GetBuiltItemList) Then
                 ' Loop through everything and find all the items to update
@@ -765,6 +768,7 @@ Public Class ShoppingList
                     TempBuiltItem.ItemName = SentBuildList.GetBuiltItemList(i).ItemName
                     TempBuiltItem.BuildME = SentBuildList.GetBuiltItemList(i).BuildME
                     TempBuiltItem.FacilityLocation = SentBuildList.GetBuiltItemList(i).FacilityLocation
+                    TempBuiltItem.FacilityBuildType = SentBuildList.GetBuiltItemList(i).FacilityBuildType
 
                     Call TotalBuildList.SetItemToFind(TempBuiltItem)
                     FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
@@ -775,16 +779,14 @@ Public Class ShoppingList
                         With SentBuildList.GetBuiltItemList(i)
                             ' Get the component facility
                             Dim TempComponentFacility As New IndustryFacility
-                            Dim TempSettings As FacilitySettings = GetFacilitySettings(.ItemName, .FacilityLocation, .FacilityType, 1, .IncludeActivityCost, .IncludeActivityTime, .IncludeActivityUsage)
 
-                            ' Set the component facility
-                            Call TempComponentFacility.LoadFacility(TempSettings, True)
+                            ' Set the component facility (use BP tab for now)
+                            TempComponentFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
 
                             ' Re-run with new quantity
                             Dim TempBP As New Blueprint(.BPTypeID, FoundBuildItem.ItemQuantity + .ItemQuantity, .BuildME, .BuildTE, 1,
-                               UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False,
-                               0, SelectedBPManufacturingTeam, TempComponentFacility, SelectedBPComponentManufacturingTeam,
-                               TempComponentFacility, TempComponentFacility, True)
+                               UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
+                               TempComponentFacility, TempComponentFacility, TempComponentFacility, True)
 
                             Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
@@ -801,13 +803,14 @@ Public Class ShoppingList
                             InsertBuildItem.ItemVolume = TempBP.GetTotalItemVolume
                             InsertBuildItem.BuildMaterials = TempBP.GetRawMaterials
                             InsertBuildItem.FacilityMEModifier = TempBP.GetManufacturingFacility.MaterialMultiplier
-                            InsertBuildItem.FacilityType = TempBP.GetManufacturingFacility.FacilityType
+                            InsertBuildItem.FacilityType = TempBP.GetManufacturingFacility.GetFacilityTypeDescription
+                            InsertBuildItem.FacilityBuildType = TempBP.GetManufacturingFacility.FacilityProductionType
                             InsertBuildItem.IncludeActivityCost = TempBP.GetManufacturingFacility.IncludeActivityCost
                             InsertBuildItem.IncludeActivityTime = TempBP.GetManufacturingFacility.IncludeActivityTime
                             InsertBuildItem.IncludeActivityUsage = TempBP.GetManufacturingFacility.IncludeActivityUsage
 
                             ' See if we need to add the system on to the end of the build location for POS
-                            If InsertBuildItem.FacilityType = POSFacility Then
+                            If InsertBuildItem.FacilityType = ManufacturingFacility.POSFacility Then
                                 InsertBuildItem.FacilityLocation = TempBP.GetManufacturingFacility.FacilityName & " (" & TempBP.GetManufacturingFacility.SolarSystemName & ")"
                             Else
                                 InsertBuildItem.FacilityLocation = TempBP.GetManufacturingFacility.FacilityName
@@ -1445,10 +1448,6 @@ Public Class ShoppingList
 
     End Function
 
-    Private Function ManufacturingFacility() As Object
-        Throw New NotImplementedException
-    End Function
-
 End Class
 
 Public Class ShoppingListItem
@@ -1479,7 +1478,8 @@ Public Class ShoppingListItem
     ' For ME values to update with add/subtract in shopping list, item is either cap component, component, or anything else we are building
     Public ManufacturingFacilityMEModifier As Double
     Public ManufacturingFacilityLocation As String ' This is the name of the station or Array (with system name) where we build the items
-    Public ManufacturingFacilityType As String
+    Public ManufacturingFacilityType As String ' POS, station, etc
+    Public ManufacturingFacilityBuildType As ProductionType
 
     ' Ignore Variables
     Public IgnoredInvention As Boolean
@@ -1525,6 +1525,7 @@ Public Class ShoppingListItem
         ManufacturingFacilityMEModifier = 1
         ManufacturingFacilityLocation = ""
         ManufacturingFacilityType = ""
+        ManufacturingFacilityBuildType = ProductionType.None
 
         IgnoredInvention = False
         IgnoredMinerals = False
@@ -1592,6 +1593,7 @@ Public Class BuiltItemList
             UpdateItem.FacilityMEModifier = AddItem.FacilityMEModifier
             UpdateItem.FacilityLocation = AddItem.FacilityLocation
             UpdateItem.FacilityType = AddItem.FacilityType
+            UpdateItem.FacilityBuildType = AddItem.FacilityBuildType
             UpdateItem.IncludeActivityCost = AddItem.IncludeActivityCost
             UpdateItem.IncludeActivityTime = AddItem.IncludeActivityTime
             UpdateItem.IncludeActivityUsage = AddItem.IncludeActivityUsage
@@ -1709,6 +1711,7 @@ Public Class BuiltItem
     Public FacilityMEModifier As Double
     Public FacilityType As String
     Public FacilityLocation As String
+    Public FacilityBuildType As ProductionType
 
     Public IncludeActivityCost As Boolean
     Public IncludeActivityTime As Boolean
@@ -1726,6 +1729,7 @@ Public Class BuiltItem
         FacilityMEModifier = 1
         FacilityType = ""
         FacilityLocation = ""
+        FacilityBuildType = ProductionType.None
 
         IncludeActivityCost = False
         IncludeActivityTime = False
@@ -1748,6 +1752,7 @@ Public Class BuiltItem
         CopyOfMe.FacilityMEModifier = Me.FacilityMEModifier
         CopyOfMe.FacilityLocation = Me.FacilityLocation
         CopyOfMe.FacilityType = Me.FacilityType
+        CopyOfMe.FacilityBuildType = Me.FacilityBuildType
         CopyOfMe.IncludeActivityUsage = Me.IncludeActivityUsage
         CopyOfMe.IncludeActivityTime = Me.IncludeActivityTime
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost

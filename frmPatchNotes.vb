@@ -2,6 +2,15 @@
 
 Public Class frmPatchNotes
 
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+
+    End Sub
+
     Private Sub OKButton_Click(sender As System.Object, e As System.EventArgs) Handles OKButton.Click
         Me.Hide()
     End Sub
@@ -13,7 +22,7 @@ Public Class frmPatchNotes
         Me.Refresh()
 
         ' Download the patch notes from the server
-        FilePath = DownloadFileFromServer(PatchNotesURL, "Patch Notes.txt")
+        FilePath = DownloadFileFromServer(PatchNotesURL, Path.Combine(DynamicFilePath, "Patch Notes.txt"))
 
         If FilePath = "" Then
             Exit Sub
@@ -30,12 +39,4 @@ Public Class frmPatchNotes
 
     End Sub
 
-    Public Sub New()
-
-        ' This call is required by the designer.
-        InitializeComponent()
-
-        ' Add any initialization after the InitializeComponent() call.
-
-    End Sub
 End Class

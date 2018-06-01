@@ -20,6 +20,7 @@ Public Class frmError
     Private Sub frmError_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
         txtError.Text = frmErrorText
         Me.Activate()
+        Me.TopMost = True
     End Sub
 
     ' Emails my admin email the error message and other information so I don't have to ask for it all the time

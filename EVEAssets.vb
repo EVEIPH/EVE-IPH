@@ -5,11 +5,8 @@ Public Class EVEAssets
 
     Private AssetList As List(Of EVEAsset)
     Private SelectedAssetList As List(Of EVEAsset)
-    Private KeyData As APIKeyData
-    Private CorpID As Long
-
+    Private AssetType As ScanType
     Private CacheDate As Date
-
     Private ItemIDToFind As Long
 
     Protected LocationToFind As LocationInfo
@@ -24,64 +21,37 @@ Public Class EVEAssets
     Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
     Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
+
     Public Class LocationName
         Public ID As Long
         Public Name As String
     End Class
 
-    Public Sub New(Optional ByVal Key As APIKeyData = Nothing, Optional ByVal CorporationID As Long = 0)
+    Public Sub New(Optional ByVal InitalAssetType As ScanType = ScanType.Personal)
 
-        If IsNothing(Key) Then
-            KeyData = New APIKeyData
-        Else
-            KeyData = Key
-        End If
-
+        AssetType = InitalAssetType
         AssetList = New List(Of EVEAsset)
-
-        ' Set for corp industry jobs
-        CorpID = CorporationID
-
-        ' Default to this until we set it
-        CacheDate = NoExpiry
-
+        CacheDate = NoDate
     End Sub
 
-    Public Sub LoadAssets(AssetType As ScanType, ByVal RefreshAssets As Boolean)
+    Public Sub LoadAssets(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData, ByVal RefreshAssets As Boolean)
         Dim SQL As String
         Dim readerAssets As SQLiteDataReader
         Dim readerData As SQLiteDataReader
         Dim TempAsset As New EVEAsset
         Dim Assets As New List(Of EVEAsset)
-        Dim ScanID As Long
 
-        If Not KeyData.Access Then
-            ' They don't have access to the api so leave
-            Exit Sub
-        End If
-
-        ' Update Assets if we have it set first
-        If RefreshAssets Then
-            Call UpdateAssets(AssetType)
-        End If
-
-        ' Set the ID - Corp or Personal ID number
-        If AssetType = ScanType.Personal Then
-            ScanID = KeyData.ID
-        Else
-            ScanID = CorpID
-        End If
+        ' Update asset data first
+        Call UpdateAssets(ID, CharacterTokenData, AssetType, RefreshAssets)
 
         LocationNames = New List(Of LocationName)
         UnknownLocationCounter = 0
 
-        ' Store the cache date
         ' Load the assets - corp or personal
-        ' Look up the asset cache date first, if past the date, update the database
-        CacheDate = GetCacheDate(AssetType)
-
-        ' Load the assets - corp or personal
-        SQL = "SELECT * FROM ASSETS WHERE ID = " & ScanID
+        SQL = "SELECT ID, ItemID, LocationID, TypeID, ASSETS.Quantity, Flag, IsSingleton, "
+        SQL &= "CASE WHEN BP_TYPE IS NULL THEN 0 ELSE BP_TYPE END AS BPType FROM ASSETS "
+        SQL &= "LEFT JOIN ALL_OWNED_BLUEPRINTS ON ID = OWNER_ID AND ItemID = ITEM_ID "
+        SQL &= "WHERE ID = " & ID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
@@ -93,8 +63,8 @@ Public Class EVEAssets
             TempAsset.TypeID = readerAssets.GetInt64(3)
             TempAsset.Quantity = readerAssets.GetInt64(4)
             TempAsset.FlagID = readerAssets.GetInt32(5)
-            TempAsset.Singleton = readerAssets.GetInt32(6)
-            TempAsset.RawQuantity = readerAssets.GetInt32(7)
+            TempAsset.IsSingleton = CBool(readerAssets.GetInt32(6))
+            TempAsset.BPType = CType(readerAssets.GetInt32(7), BPType)
 
             ' Get the location name, update flagID (ref) and set flag text (ref)
             TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText)
@@ -134,78 +104,72 @@ Public Class EVEAssets
 
     End Sub
 
-    Public Sub UpdateAssets(AssetType As ScanType)
-        Dim AssetAPI As New EVEAPI
-        Dim Assets As New List(Of EVEAsset)
+    Public Sub UpdateAssets(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData,
+                            ByVal AssetType As ScanType, ByVal UpdateAssets As Boolean)
+        Dim Assets As New List(Of ESIAsset)
         Dim SQL As String = ""
-        Dim ScanID As Long
 
-        ' Make sure they have access
-        If Not KeyData.Access Then
-            Exit Sub
+        Dim ESIData As New ESI
+        Dim CB As New CacheBox
+
+        Dim CDType As CacheDateType
+
+        If AssetType = ScanType.Personal Then
+            CDType = CacheDateType.PersonalAssets
+        Else
+            CDType = CacheDateType.CorporateAssets
         End If
 
-        ' Look up the asset cache date first, if past the date, update the database
-        CacheDate = GetCacheDate(AssetType)
-
-        ' Only update if we need to 
-        If CacheDate < Date.UtcNow Then
-
-            ' Get the assets
-            Assets = AssetAPI.GetAssets(KeyData, AssetType, CacheDate)
-
-            If Not NoAPIError(AssetAPI.GetErrorText, "Character") Then
-                ' Errored, exit
-                Exit Sub
-            End If
-
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' Update the cache date
-            SQL = "UPDATE API SET ASSETS_CACHED_UNTIL = '" & Format(CacheDate, SQLiteDateFormat)
-
-            If AssetType = ScanType.Personal Then
-                SQL = SQL & "' WHERE CHARACTER_ID = " & KeyData.ID
-                SQL = SQL & " AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-            Else
-                SQL = SQL & "' WHERE CORPORATION_ID = " & CorpID
-                SQL = SQL & " AND API_TYPE = 'Corporation'"
-            End If
-
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Set the ID - Corp or Personal ID number
-            If AssetType = ScanType.Personal Then
-                ScanID = KeyData.ID
-            Else
-                ScanID = CorpID
-            End If
-
-            ' Clear the current assets in the database
-            SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ScanID)
-
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
+        ' Look up the assets cache date first      
+        If CB.DataUpdateable(CDType, ID) Then
+            Assets = ESIData.GetAssets(ID, CharacterTokenData, AssetType, CacheDate)
 
             ' Insert the records into the DB
-            For i = 0 To Assets.Count - 1
-                ' Insert it
-                If Assets(i).LocationID <> ScanID Then ' Don't add assets that are on the character
-                    SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, Singleton, RawQuantity) VALUES "
-                    SQL = SQL & "(" & CStr(ScanID) & "," & CStr(Assets(i).ItemID) & "," & CStr(Assets(i).LocationID) & ","
-                    SQL = SQL & CStr(Assets(i).TypeID) & "," & CStr(Assets(i).Quantity) & "," & CStr(Assets(i).FlagID) & "," & CStr(Assets(i).Singleton) & ","
-                    SQL = SQL & CStr(Assets(i).RawQuantity) & ")"
+            If Not IsNothing(Assets) Then
+                If Assets.Count > 0 Then
+                    Call EVEDB.BeginSQLiteTransaction()
 
+                    ' Clear the current assets in the database
+                    SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
+                    Dim FlagID As Integer = 0
+                    Dim rsLookup As SQLiteDataReader
+
+                    For i = 0 To Assets.Count - 1
+                        ' Get the flagID for this location
+                        DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        If rsLookup.Read Then
+                            FlagID = rsLookup.GetInt32(0)
+                        Else
+                            FlagID = 0
+                        End If
+                        rsLookup.Close()
+
+                        ' Insert it
+                        If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
+                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
+                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ","
+                            SQL &= CStr(Assets(i).type_id) & "," & CStr(Assets(i).quantity) & "," & CStr(FlagID) & ","
+                            SQL &= CInt(Assets(i).is_singleton) & ")"
+
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                        End If
+                    Next
+                    ' Finally, update all the asset flags to negative values if they are base nodes
+                    SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    Call EVEDB.CommitSQLiteTransaction()
+
+                    DBCommand = Nothing
                 End If
-            Next
 
-            ' Finally, update all the asset flags to negative values if they are base nodes
-            SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ScanID)
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Call EVEDB.CommitSQLiteTransaction()
-
+                ' Update cache date since it's all set now
+                Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+            End If
         End If
 
     End Sub
@@ -213,12 +177,6 @@ Public Class EVEAssets
     Public Function GetAssetList() As List(Of EVEAsset)
         Return AssetList
     End Function
-
-    ReadOnly Property CachedUntil() As Date
-        Get
-            Return CacheDate
-        End Get
-    End Property
 
     Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String) As String
         Dim SQL As String
@@ -285,10 +243,6 @@ Public Class EVEAssets
                     If FoundLocation IsNot Nothing Then
                         LocationName = FoundLocation.Name
                     Else
-                        ' Look up the Citadel name from 3rd party
-                        Dim CitadelLookup As New EVECREST
-                        LocationName = CitadelLookup.GetCitadelName(CStr(LocationID))
-
                         If LocationName = "" Then
                             UnknownLocationCounter += 1
                             ' Not found, so add a counter to it to deliniate unknown locations
@@ -418,7 +372,7 @@ Public Class EVEAssets
                 BaseLocationNode = AnchorNode.Nodes.Find(TempAsset.LocationName, True)(0)
 
                 ' Add the subnode to the tree without the name yet, wait for the search for children before marking
-                If (TempAsset.TypeCategory = "Ship" And CorpID = 0 And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
+                If (TempAsset.TypeCategory = "Ship" And AssetType = ScanType.Corporation And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
 
                     ' Check corp deliveries first since a ship could be a delivery
                     If TempAsset.FlagText = CorpDelivery Then
@@ -607,7 +561,7 @@ Public Class EVEAssets
 
         If SentAsset.TypeCategory = "Blueprint" Then
             ' Add onto the name what type of BP it is -1 is original, -2 is copy - if the bp is packaged, singleton = 0 and is a bpo
-            If SentAsset.RawQuantity = BPType.Original Or SentAsset.Singleton = 0 Then
+            If SentAsset.BPType = BPType.Original Then
                 ItemName = SentAsset.TypeName & " (Original)"
             Else
                 ItemName = SentAsset.TypeName & " (Copy)"
@@ -699,7 +653,7 @@ Public Class EVEAssets
             For Each Asset In FindAssets
                 If Not FoundAssets.Contains(Asset) Then
                     ' If it's a blueprint, see if we are only looking at BPCs
-                    If (Asset.TypeCategory = "Blueprint" And Asset.RawQuantity = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint" Then
+                    If (Asset.TypeCategory = "Blueprint" And Asset.BPType = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint" Then
                         FoundAssets.Add(Asset)
                     End If
                 End If
@@ -885,45 +839,6 @@ Public Class EVEAssets
 
     End Class
 
-    Private Function GetCacheDate(AssetType As ScanType) As Date
-        Dim RefreshDate As Date ' To check the update of the API.
-        Dim readerAssets As SQLiteDataReader
-
-        Dim SQL As String = ""
-
-        ' Look up the asset cache date first, if past the date, update the database
-        SQL = "SELECT ASSETS_CACHED_UNTIL FROM API "
-        If AssetType = ScanType.Personal Then
-            SQL = SQL & "WHERE CHARACTER_ID = " & KeyData.ID
-            SQL = SQL & " AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-        Else
-            SQL = SQL & "WHERE CORPORATION_ID = " & CorpID
-            SQL = SQL & " AND API_TYPE = 'Corporation'"
-        End If
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerAssets = DBCommand.ExecuteReader
-
-        If readerAssets.Read Then
-            If Not IsDBNull(readerAssets.GetValue(0)) Then
-                If readerAssets.GetString(0) = "" Then
-                    RefreshDate = NoDate
-                Else
-                    RefreshDate = CDate(readerAssets.GetString(0))
-                End If
-            Else
-                RefreshDate = NoDate
-            End If
-        Else
-            RefreshDate = NoDate
-        End If
-
-        readerAssets.Close()
-
-        Return RefreshDate
-
-    End Function
-
     Public Function GetAssetCount() As Long
         Return AssetList.Count
     End Function
@@ -937,12 +852,45 @@ Public Class EVEAssets
         End If
     End Function
 
+    ' Gets the user's saved location IDs from the table
+    Public Function GetAssetLocationIDs(Location As AssetWindow, ID As Long, CharacterCorporation As Corporation) As List(Of LocationInfo)
+        Dim TempLocation As LocationInfo
+        Dim ReturnLocations As New List(Of LocationInfo)
+        Dim SQL As String
+        Dim readerLocations As SQLiteDataReader
+
+        ' Since a lot of locations will bog down the settings loading, load locations from a table
+        SQL = "SELECT ID, LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(Location)
+        SQL = SQL & " AND ID IN (" & CStr(ID) & "," & CStr(CharacterCorporation.CorporationID) & ")"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerLocations = DBCommand.ExecuteReader
+
+        While readerLocations.Read
+            TempLocation = New LocationInfo
+            TempLocation.AccountID = readerLocations.GetInt64(0)
+            TempLocation.LocationID = readerLocations.GetInt64(1)
+            TempLocation.FlagID = readerLocations.GetInt32(2)
+
+            ReturnLocations.Add(TempLocation)
+        End While
+
+        Return ReturnLocations
+
+    End Function
+
+    ReadOnly Property CachedUntil() As Date
+        Get
+            Return CacheDate
+        End Get
+    End Property
+
 End Class
 
 Public Class EVEAsset
-    Public ItemID As Long
     Public LocationID As Long ' Can be a station, system, or another item id
     Public LocationName As String ' Station or system name
+    Public ItemID As Long
     Public TypeID As Long
     Public TypeName As String
     Public TypeGroup As String
@@ -950,8 +898,8 @@ Public Class EVEAsset
     Public Quantity As Long
     Public FlagID As Integer
     Public FlagText As String ' Name of flag
-    Public Singleton As Integer
-    Public RawQuantity As Integer ' This is the BP type
+    Public IsSingleton As Boolean ' True is unpacked (not stackable), False is packed (stackable)
+    Public BPType As BPType ' if it's a blueprint, then will look up the data for the character for all blueprints and set
 
     Public Sub New()
         ItemID = 0
@@ -960,12 +908,11 @@ Public Class EVEAsset
         TypeID = 0
         TypeName = ""
         TypeGroup = ""
-
         Quantity = 0
         FlagID = 0
         FlagText = ""
-        Singleton = 0
-        RawQuantity = 0
+        IsSingleton = True
+        BPType = 0
     End Sub
 
 End Class

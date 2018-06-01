@@ -698,7 +698,7 @@ Public Class frmBlueprintManagement
                 Case 16
                     BPList.SubItems.Add("Navy")
                 Case Else
-                    BPList.SubItems.Add("Unkonwn")
+                    BPList.SubItems.Add(Unknown)
             End Select
 
             BPList.SubItems.Add(CStr(readerBP.GetDouble(9))) ' ME
@@ -741,7 +741,7 @@ Public Class frmBlueprintManagement
                     If rsLookup.Read Then
                         BPList.SubItems.Add(CStr(rsLookup.GetInt32(0)))
                     Else
-                        BPList.SubItems.Add("Unknown")
+                        BPList.SubItems.Add(Unknown)
                     End If
 
                     rsLookup.Close()
@@ -755,7 +755,7 @@ Public Class frmBlueprintManagement
                     If rsLookup.Read Then
                         BPList.SubItems.Add(CStr(rsLookup.GetInt32(0)))
                     Else
-                        BPList.SubItems.Add("Unknown")
+                        BPList.SubItems.Add(Unknown)
                     End If
 
                     rsLookup.Close()
@@ -889,6 +889,8 @@ Public Class frmBlueprintManagement
                 WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Structure Rigs' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
+            ElseIf .rbtnReactionBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE BLUEPRINT_GROUP LIKE '%Reaction Formulas' "
             ElseIf .rbtnRigBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
             End If
@@ -1127,6 +1129,8 @@ Public Class frmBlueprintManagement
                 WhereClause = WhereClause & "WHERE (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
             ElseIf .rbtnStructureRigsBlueprints.Checked Then
                 WhereClause = WhereClause & "WHERE ITEM_CATEGORY = 'Stucture Rigs' "
+            ElseIf .rbtnReactionBlueprints.Checked Then
+                WhereClause = WhereClause & "WHERE BLUEPRINT_GROUP LIKE '%Reaction Formulas' "
             ElseIf .rbtnStructureModulesBlueprints.Checked Then
                 WhereClause = WhereClause & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
             ElseIf .rbtnRigBlueprints.Checked Then
@@ -1374,7 +1378,7 @@ Public Class frmBlueprintManagement
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
-            Call SelectedCharacter.GetBlueprints.LoadBlueprints(ScanType.Personal, True)
+            Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
             MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
             rbtnScannedPersonalBPs.Checked = True ' Auto load
             Me.Cursor = Cursors.Default
@@ -1394,7 +1398,7 @@ Public Class frmBlueprintManagement
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
-            Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(ScanType.Corporation, True)
+            Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
             MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
             rbtnScannedCorpBPs.Checked = True ' Auto load
             Me.Cursor = Cursors.Default
@@ -1497,7 +1501,7 @@ Public Class frmBlueprintManagement
             End If
 
             Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), item.SubItems(2).Text, TempME, TempTE, TempBPType,
-                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), 0, chkMarkasFavorite.Checked,
+                              CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), chkMarkasFavorite.Checked,
                               chkMarkasIgnored.Checked, 0, rbtnRemoveAllSettings.Checked)
 
         Next
@@ -1648,8 +1652,9 @@ Public Class frmBlueprintManagement
         openFileDialog1.RestoreDirectory = True
 
         If openFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+            Call EVEDB.BeginSQLiteTransaction()
             Try
-                BPStream = New System.IO.StreamReader(openFileDialog1.FileName)
+                BPStream = New StreamReader(openFileDialog1.FileName)
 
                 If (BPStream IsNot Nothing) Then
                     ' Read the file line by line here, start with headers
@@ -1658,8 +1663,7 @@ Public Class frmBlueprintManagement
 
                     If Line IsNot Nothing Then
                         ' Start the session and delete all the records out of the table for this user
-                        Call EVEDB.BeginSQLiteTransaction()
-                        Call evedb.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
+                        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
                     Else
                         ' Leave loop
                         Exit Try
@@ -1678,12 +1682,10 @@ Public Class frmBlueprintManagement
                         ' Parse it
                         ParsedLine = Line.Split(New Char() {","c}, StringSplitOptions.RemoveEmptyEntries)
 
-                        Dim UserID As String = ParsedLine(0)
-
-                        ' Only load BP's that have a user ID set
-                        If UserID <> "0" Then
+                        ' Only load BP's that are marked as something other than 'Unowned'
+                        If ParsedLine(11) <> UnownedBP Then
                             SQL = "INSERT INTO OWNED_BLUEPRINTS VALUES ("
-                            SQL = SQL & UserID & "," ' API ID
+                            SQL = SQL & ParsedLine(0) & "," ' API ID
                             SQL = SQL & ParsedLine(1) & "," ' Location ID
                             SQL = SQL & ParsedLine(2) & "," ' Item ID
                             SQL = SQL & ParsedLine(3) & "," ' Blueprint ID
@@ -1725,7 +1727,7 @@ Public Class frmBlueprintManagement
 
                             ' Scanned SQL
                             If TempScanned Then
-                                If CLng(UserID) = SelectedCharacter.CharacterCorporation.CorporationID Then
+                                If CLng(ParsedLine(0)) = SelectedCharacter.CharacterCorporation.CorporationID Then
                                     SQL = SQL & "2," ' Corp BP
                                 Else
                                     SQL = SQL & "1,"
@@ -1951,8 +1953,8 @@ Public Class frmBlueprintManagement
 
             Dim TempRuns As Integer
 
-            UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CurrentRow.SubItems(3).Text, MEValue, TEValue, TempBPType, _
-                              CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), TempRuns, SetasFavorite, SetasIgnore)
+            UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CurrentRow.SubItems(3).Text, MEValue, TEValue, TempBPType,
+                              CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), SetasFavorite, SetasIgnore)
 
             Call PlayNotifySound()
 

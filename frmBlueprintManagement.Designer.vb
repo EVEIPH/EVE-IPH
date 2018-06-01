@@ -70,7 +70,6 @@ Partial Class frmBlueprintManagement
         Me.rbtnStructureBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnCelestialsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
-        Me.rbtnStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnAmmoChargeBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnDeployableBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnAllBPTypes = New System.Windows.Forms.RadioButton()
@@ -82,6 +81,7 @@ Partial Class frmBlueprintManagement
         Me.rbtnDroneBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnComponentBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnShipBlueprints = New System.Windows.Forms.RadioButton()
+        Me.rbtnStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
         Me.gbBPSelect = New System.Windows.Forms.GroupBox()
         Me.chkNotIgnored = New System.Windows.Forms.CheckBox()
         Me.chkNotOwned = New System.Windows.Forms.CheckBox()
@@ -112,6 +112,7 @@ Partial Class frmBlueprintManagement
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
         Me.lstBPs = New EVE_Isk_per_Hour.MyListView()
+        Me.rbtnReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.gbBPFilter.SuspendLayout()
         Me.gbBlueprintTech.SuspendLayout()
         Me.gbBackup.SuspendLayout()
@@ -572,6 +573,7 @@ Partial Class frmBlueprintManagement
         '
         'gbBlueprintType
         '
+        Me.gbBlueprintType.Controls.Add(Me.rbtnReactionBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnStructureBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnCelestialsBlueprints)
         Me.gbBlueprintType.Controls.Add(Me.rbtnStructureModulesBlueprints)
@@ -597,7 +599,7 @@ Partial Class frmBlueprintManagement
         'rbtnStructureBlueprints
         '
         Me.rbtnStructureBlueprints.AutoSize = True
-        Me.rbtnStructureBlueprints.Location = New System.Drawing.Point(6, 103)
+        Me.rbtnStructureBlueprints.Location = New System.Drawing.Point(6, 87)
         Me.rbtnStructureBlueprints.Name = "rbtnStructureBlueprints"
         Me.rbtnStructureBlueprints.Size = New System.Drawing.Size(73, 17)
         Me.rbtnStructureBlueprints.TabIndex = 14
@@ -608,7 +610,7 @@ Partial Class frmBlueprintManagement
         'rbtnCelestialsBlueprints
         '
         Me.rbtnCelestialsBlueprints.AutoSize = True
-        Me.rbtnCelestialsBlueprints.Location = New System.Drawing.Point(227, 82)
+        Me.rbtnCelestialsBlueprints.Location = New System.Drawing.Point(227, 70)
         Me.rbtnCelestialsBlueprints.Name = "rbtnCelestialsBlueprints"
         Me.rbtnCelestialsBlueprints.Size = New System.Drawing.Size(64, 17)
         Me.rbtnCelestialsBlueprints.TabIndex = 19
@@ -619,7 +621,7 @@ Partial Class frmBlueprintManagement
         'rbtnStructureModulesBlueprints
         '
         Me.rbtnStructureModulesBlueprints.AutoSize = True
-        Me.rbtnStructureModulesBlueprints.Location = New System.Drawing.Point(116, 103)
+        Me.rbtnStructureModulesBlueprints.Location = New System.Drawing.Point(116, 87)
         Me.rbtnStructureModulesBlueprints.Name = "rbtnStructureModulesBlueprints"
         Me.rbtnStructureModulesBlueprints.Size = New System.Drawing.Size(111, 17)
         Me.rbtnStructureModulesBlueprints.TabIndex = 66
@@ -627,21 +629,10 @@ Partial Class frmBlueprintManagement
         Me.rbtnStructureModulesBlueprints.Text = "Structure Modules"
         Me.rbtnStructureModulesBlueprints.UseVisualStyleBackColor = True
         '
-        'rbtnStructureRigsBlueprints
-        '
-        Me.rbtnStructureRigsBlueprints.AutoSize = True
-        Me.rbtnStructureRigsBlueprints.Location = New System.Drawing.Point(227, 103)
-        Me.rbtnStructureRigsBlueprints.Name = "rbtnStructureRigsBlueprints"
-        Me.rbtnStructureRigsBlueprints.Size = New System.Drawing.Size(92, 17)
-        Me.rbtnStructureRigsBlueprints.TabIndex = 18
-        Me.rbtnStructureRigsBlueprints.TabStop = True
-        Me.rbtnStructureRigsBlueprints.Text = "Structure Rigs"
-        Me.rbtnStructureRigsBlueprints.UseVisualStyleBackColor = True
-        '
         'rbtnAmmoChargeBlueprints
         '
         Me.rbtnAmmoChargeBlueprints.AutoSize = True
-        Me.rbtnAmmoChargeBlueprints.Location = New System.Drawing.Point(6, 40)
+        Me.rbtnAmmoChargeBlueprints.Location = New System.Drawing.Point(6, 36)
         Me.rbtnAmmoChargeBlueprints.Name = "rbtnAmmoChargeBlueprints"
         Me.rbtnAmmoChargeBlueprints.Size = New System.Drawing.Size(98, 17)
         Me.rbtnAmmoChargeBlueprints.TabIndex = 11
@@ -652,7 +643,7 @@ Partial Class frmBlueprintManagement
         'rbtnDeployableBlueprints
         '
         Me.rbtnDeployableBlueprints.AutoSize = True
-        Me.rbtnDeployableBlueprints.Location = New System.Drawing.Point(116, 61)
+        Me.rbtnDeployableBlueprints.Location = New System.Drawing.Point(116, 53)
         Me.rbtnDeployableBlueprints.Name = "rbtnDeployableBlueprints"
         Me.rbtnDeployableBlueprints.Size = New System.Drawing.Size(78, 17)
         Me.rbtnDeployableBlueprints.TabIndex = 17
@@ -674,7 +665,7 @@ Partial Class frmBlueprintManagement
         'rbtnRigBlueprints
         '
         Me.rbtnRigBlueprints.AutoSize = True
-        Me.rbtnRigBlueprints.Location = New System.Drawing.Point(227, 40)
+        Me.rbtnRigBlueprints.Location = New System.Drawing.Point(227, 36)
         Me.rbtnRigBlueprints.Name = "rbtnRigBlueprints"
         Me.rbtnRigBlueprints.Size = New System.Drawing.Size(46, 17)
         Me.rbtnRigBlueprints.TabIndex = 10
@@ -685,7 +676,7 @@ Partial Class frmBlueprintManagement
         'rbtnBoosterBlueprints
         '
         Me.rbtnBoosterBlueprints.AutoSize = True
-        Me.rbtnBoosterBlueprints.Location = New System.Drawing.Point(6, 82)
+        Me.rbtnBoosterBlueprints.Location = New System.Drawing.Point(6, 70)
         Me.rbtnBoosterBlueprints.Name = "rbtnBoosterBlueprints"
         Me.rbtnBoosterBlueprints.Size = New System.Drawing.Size(66, 17)
         Me.rbtnBoosterBlueprints.TabIndex = 15
@@ -696,7 +687,7 @@ Partial Class frmBlueprintManagement
         'rbtnSubsystemBlueprints
         '
         Me.rbtnSubsystemBlueprints.AutoSize = True
-        Me.rbtnSubsystemBlueprints.Location = New System.Drawing.Point(6, 61)
+        Me.rbtnSubsystemBlueprints.Location = New System.Drawing.Point(6, 53)
         Me.rbtnSubsystemBlueprints.Name = "rbtnSubsystemBlueprints"
         Me.rbtnSubsystemBlueprints.Size = New System.Drawing.Size(81, 17)
         Me.rbtnSubsystemBlueprints.TabIndex = 13
@@ -718,7 +709,7 @@ Partial Class frmBlueprintManagement
         'rbtnMiscBlueprints
         '
         Me.rbtnMiscBlueprints.AutoSize = True
-        Me.rbtnMiscBlueprints.Location = New System.Drawing.Point(116, 82)
+        Me.rbtnMiscBlueprints.Location = New System.Drawing.Point(6, 104)
         Me.rbtnMiscBlueprints.Name = "rbtnMiscBlueprints"
         Me.rbtnMiscBlueprints.Size = New System.Drawing.Size(50, 17)
         Me.rbtnMiscBlueprints.TabIndex = 16
@@ -729,7 +720,7 @@ Partial Class frmBlueprintManagement
         'rbtnDroneBlueprints
         '
         Me.rbtnDroneBlueprints.AutoSize = True
-        Me.rbtnDroneBlueprints.Location = New System.Drawing.Point(116, 40)
+        Me.rbtnDroneBlueprints.Location = New System.Drawing.Point(116, 36)
         Me.rbtnDroneBlueprints.Name = "rbtnDroneBlueprints"
         Me.rbtnDroneBlueprints.Size = New System.Drawing.Size(59, 17)
         Me.rbtnDroneBlueprints.TabIndex = 9
@@ -740,7 +731,7 @@ Partial Class frmBlueprintManagement
         'rbtnComponentBlueprints
         '
         Me.rbtnComponentBlueprints.AutoSize = True
-        Me.rbtnComponentBlueprints.Location = New System.Drawing.Point(227, 61)
+        Me.rbtnComponentBlueprints.Location = New System.Drawing.Point(227, 53)
         Me.rbtnComponentBlueprints.Name = "rbtnComponentBlueprints"
         Me.rbtnComponentBlueprints.Size = New System.Drawing.Size(84, 17)
         Me.rbtnComponentBlueprints.TabIndex = 12
@@ -758,6 +749,17 @@ Partial Class frmBlueprintManagement
         Me.rbtnShipBlueprints.TabStop = True
         Me.rbtnShipBlueprints.Text = "Ships"
         Me.rbtnShipBlueprints.UseVisualStyleBackColor = True
+        '
+        'rbtnStructureRigsBlueprints
+        '
+        Me.rbtnStructureRigsBlueprints.AutoSize = True
+        Me.rbtnStructureRigsBlueprints.Location = New System.Drawing.Point(227, 87)
+        Me.rbtnStructureRigsBlueprints.Name = "rbtnStructureRigsBlueprints"
+        Me.rbtnStructureRigsBlueprints.Size = New System.Drawing.Size(92, 17)
+        Me.rbtnStructureRigsBlueprints.TabIndex = 18
+        Me.rbtnStructureRigsBlueprints.TabStop = True
+        Me.rbtnStructureRigsBlueprints.Text = "Structure Rigs"
+        Me.rbtnStructureRigsBlueprints.UseVisualStyleBackColor = True
         '
         'gbBPSelect
         '
@@ -1065,6 +1067,17 @@ Partial Class frmBlueprintManagement
         Me.lstBPs.UseCompatibleStateImageBehavior = False
         Me.lstBPs.View = System.Windows.Forms.View.Details
         '
+        'rbtnReactionBlueprints
+        '
+        Me.rbtnReactionBlueprints.AutoSize = True
+        Me.rbtnReactionBlueprints.Location = New System.Drawing.Point(116, 70)
+        Me.rbtnReactionBlueprints.Name = "rbtnReactionBlueprints"
+        Me.rbtnReactionBlueprints.Size = New System.Drawing.Size(73, 17)
+        Me.rbtnReactionBlueprints.TabIndex = 67
+        Me.rbtnReactionBlueprints.TabStop = True
+        Me.rbtnReactionBlueprints.Text = "Reactions"
+        Me.rbtnReactionBlueprints.UseVisualStyleBackColor = True
+        '
         'frmBlueprintManagement
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -1194,4 +1207,5 @@ Partial Class frmBlueprintManagement
     Friend WithEvents chkNotIgnored As System.Windows.Forms.CheckBox
     Friend WithEvents rbtnRemoveAllSettings As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnStructureModulesBlueprints As RadioButton
+    Friend WithEvents rbtnReactionBlueprints As RadioButton
 End Class

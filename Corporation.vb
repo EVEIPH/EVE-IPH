@@ -1,140 +1,175 @@
 ﻿
 Imports System.Data.SQLite
 
-' Corporation class will handle all processing for corporation data. 
-
 Public Class Corporation
 
-    Private KeyID As Long
-    Private APIKey As String
-    Private Name As String
+    Private Name As String 'Corp name
     Private ID As Long ' Corp ID
-    Private CorpMemberID As Long ' The corp member id we are associating with this corp
+    Public Ticker As String
+    Public FactionID As Integer
+    Public AllianceID As Integer
+    Public CEOID As Long
+    Public CreatorID As Long
+    Public HomeStationID As Integer
+    Public Shares As Long
+    Public MemberCount As Integer
+    Public Description As String
+    Public TaxRate As Double
+    Public DateFounded As Date
+    Public URL As String
 
-    Private KeyData As APIKeyData
-
-    Private Jobs As EVEIndustryJobs
-    ' Private Facilities As CorporationFacilities ' Maybe use later
     Private Assets As EVEAssets
+    Public AssetAccess As Boolean
     Private Blueprints As EVEBlueprints
+    Public BlueprintAccess As Boolean
+    Private Jobs As EVEIndustryJobs
+    Public JobsAccess As Boolean
 
-    Private AccessMask As Long
+    Public Sub New()
 
-    Private AssetsAccess As Boolean
-    Private IndustryJobsAccess As Boolean
-
-    Public Sub New(Optional ByVal CorpID As Long = 0, Optional ByVal CorpName As String = "No Corp", Optional ByVal MemberID As Long = 0)
-
-        ID = CorpID
-        Name = CorpName
-        CorpMemberID = MemberID
-
-        KeyID = 0
-        APIKey = ""
-        AccessMask = 0
-        AssetsAccess = False
-        IndustryJobsAccess = False
-
-        KeyData = New APIKeyData
+        AssetAccess = False
+        BlueprintAccess = False
+        JobsAccess = False
 
     End Sub
 
-    ' Load the API and key from the DB if a corp key exists. 
-    Public Sub LoadCorpAPIData(RefreshAssets As Boolean, RefreshBlueprints As Boolean)
-        Dim rsAPI As SQLiteDataReader
-        Dim SQL As String
-        Dim RefreshDate As Date
-        Dim UpdatedNewData As Boolean
+    ' Loads the corporation data from token information sent
+    Public Sub LoadCorporationData(ByVal CorporationID As Long, ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData,
+                                   RefreshAssets As Boolean, RefreshBlueprints As Boolean)
+        Dim SQL As String = ""
+        Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT KEY_ID, API_KEY, CACHED_UNTIL, API_TYPE FROM API WHERE API_TYPE = '" & CorporationAPITypeName & "' "
-        SQL = SQL & "AND CORPORATION_ID =" & ID & " AND CORPORATION_NAME ='" & FormatDBString(Name) & "'"
+        ' Get the public data about corporation and update it
+        Call UpdateCorporationData(CorporationID, CharacterTokenData)
+
+        ' Load up all the data for the corporation
+        SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsAPI = DBCommand.ExecuteReader
+        rsData = DBCommand.ExecuteReader
 
-        ' If the key exists, then update it first
-        If rsAPI.Read Then
-            ' RefreshDate is in UTC time
-            RefreshDate = CDate(rsAPI.GetString(2))
+        While rsData.Read
+            ' Save data
+            ID = CorporationID
+            Name = rsData.GetString(1)
+            Ticker = rsData.GetString(2)
+            MemberCount = rsData.GetInt32(3)
+            'FactionID = FormatNullInteger(rsData.GetValue(4))
+            AllianceID = FormatNullInteger(rsData.GetValue(4))
+            CEOID = rsData.GetInt32(5)
+            CreatorID = rsData.GetInt32(6)
+            'HomeStationID = FormatNullInteger(rsData.GetValue(8))
+            'Shares = FormatNullLong(rsData.GetValue(9))
+            TaxRate = rsData.GetDouble(7)
+            Description = FormatNullString(rsData.GetValue(8))
+            DateFounded = FormatNullDate(rsData.GetValue(9))
+            URL = FormatNullString(rsData.GetValue(10))
+        End While
 
-            ' See if we want to refresh the corp data
-            If RefreshDate < DateTime.UtcNow Then
-                UpdatedNewData = UpdateAccountAPIData(rsAPI.GetInt64(0), rsAPI.GetString(1), rsAPI.GetString(3))
-            Else
-                ' Data wasn't updated, so don't run API updates on other API data either
-                UpdatedNewData = False
+        rsData.Close()
+        DBCommand = Nothing
+        rsData = Nothing
+
+        ' Industry Jobs
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationIndustryJobsScope) Then
+            JobsAccess = True
+            Jobs = New EVEIndustryJobs()
+            Call Jobs.UpdateIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+        End If
+
+        ' Blueprints
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationBlueprintsScope) Then
+            BlueprintAccess = True
+            Blueprints = New EVEBlueprints()
+            Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, ScanType.Corporation, RefreshBlueprints)
+        End If
+
+        ' Assets
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationAssetScope) Then
+            AssetAccess = True
+            Assets = New EVEAssets(ScanType.Corporation)
+            Call Assets.LoadAssets(CorporationID, CharacterTokenData, RefreshAssets)
+        End If
+
+    End Sub
+
+    ' Updates the public informaton about the corporation in DB
+    Private Sub UpdateCorporationData(ByVal CorporationID As Long, ByVal CharacterTokenData As SavedTokenData)
+        Dim SQL As String
+        Dim CorpData As ESICorporation = Nothing
+
+        Dim ESIData As New ESI
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
+
+        ' Update the corp data if we can
+        If CB.DataUpdateable(CacheDateType.PublicCorporationData, CorporationID) Then
+            CorpData = ESIData.GetCorporationData(CorporationID, CacheDate)
+
+            If Not IsNothing(CorpData) Then
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' See if we insert or update
+                Dim rsCheck As SQLiteDataReader
+                ' Load up all the data for the corporation
+                SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                If rsCheck.Read Then
+                    ' Found a record, so update the data
+                    With CorpData
+                        SQL = "UPDATE ESI_CORPORATION_DATA SET "
+                        SQL &= "CORPORATION_NAME = " & BuildInsertFieldString(.name) & ","
+                        SQL &= "TICKER = " & BuildInsertFieldString(.ticker) & ","
+                        SQL &= "MEMBER_COUNT = " & BuildInsertFieldString(.member_count) & ","
+                        'SQL &= "FACTION_ID = " & BuildInsertFieldString(.faction_id) & ","
+                        SQL &= "ALLIANCE_ID = " & BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= "CEO_ID = " & BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= "CREATOR_ID = " & BuildInsertFieldString(.creator_id) & ","
+                        'SQL &= "HOME_STATION_ID = " & BuildInsertFieldString(.home_station_id) & ","
+                        'SQL &= "SHARES = " & BuildInsertFieldString(.shares) & ","
+                        SQL &= "TAX_RATE = " & BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= "DESCRIPTION = " & BuildInsertFieldString(.description) & ","
+                        SQL &= "DATE_FOUNDED = " & BuildInsertFieldString(.date_founded) & ","
+                        SQL &= "URL = " & BuildInsertFieldString(.date_founded) & " "
+                        SQL &= "WHERE CORPORATION_ID = " & CStr(CorporationID)
+                    End With
+                Else
+                    ' New record
+                    With CorpData
+                        SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
+                        SQL &= BuildInsertFieldString(CorporationID) & ","
+                        SQL &= BuildInsertFieldString(.name) & ","
+                        SQL &= BuildInsertFieldString(.ticker) & ","
+                        SQL &= BuildInsertFieldString(.member_count) & ","
+                        'SQL &= BuildInsertFieldString(.faction_id) & ","
+                        SQL &= BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= BuildInsertFieldString(.creator_id) & ","
+                        'SQL &= BuildInsertFieldString(.home_station_id) & ","
+                        ' SQL &= BuildInsertFieldString(.shares) & ","
+                        SQL &= BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= BuildInsertFieldString(.description) & ","
+                        SQL &= BuildInsertFieldString(.date_founded) & ","
+                        SQL &= BuildInsertFieldString(.url) & ","
+                        SQL &= "NULL,NULL,NULL,NULL)"
+                    End With
+
+                End If
+
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                ' Update after we update/insert the record
+                Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CorporationID)
+
+                Call EVEDB.CommitSQLiteTransaction()
+
+                DBCommand = Nothing
+
             End If
         End If
-
-        rsAPI.Close()
-
-        SQL = "SELECT KEY_ID, API_KEY, ACCESS_MASK "
-        SQL = SQL & "FROM API WHERE API_TYPE = '" & CorporationAPITypeName & "' "
-        SQL = SQL & "AND CORPORATION_ID =" & ID & " AND CORPORATION_NAME ='" & FormatDBString(Name) & "'"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsAPI = DBCommand.ExecuteReader
-
-        If rsAPI.Read Then
-            KeyID = rsAPI.GetInt64(0)
-            APIKey = rsAPI.GetString(1)
-            AccessMask = rsAPI.GetInt64(2)
-        End If
-
-        ' Now that we have the API, set the access variables
-        Call SetAPIAccess()
-
-        KeyData.ID = CorpMemberID
-        KeyData.KeyID = KeyID
-        KeyData.APIKey = APIKey
-
-        ' Load industry jobs here 
-        KeyData.Access = IndustryJobsAccess
-        Jobs = New EVEIndustryJobs(KeyData, ID)
-        Call Jobs.LoadIndustryJobs(ScanType.Corporation, UpdatedNewData)
-
-        '' Load corp facilities
-        'KeyData.Access = IndustryJobsAccess ' Temp
-        'Facilities = New CorporationFacilities(KeyData, ID)
-        'Call Facilities.LoadCorpFacilities(UpdatedNewData)
-
-        ' Wait on loading assets until they look at them due to long refresh time
-        KeyData.Access = AssetsAccess
-        Assets = New EVEAssets(KeyData, ID)
-        Call Assets.LoadAssets(ScanType.Corporation, RefreshAssets)
-
-        ' Load the Blueprints but don't update due to long api cache times
-        KeyData.Access = AssetsAccess
-        Blueprints = New EVEBlueprints(KeyData, ID)
-        Call Blueprints.LoadBlueprints(ScanType.Corporation, RefreshBlueprints)
-
-        rsAPI.Close()
-
-    End Sub
-
-    ' Sets the Access variables for the corp key
-    Private Sub SetAPIAccess()
-        Dim BitString As String
-        Dim BitLen As Integer
-
-        ' Access mask is a bitmask 
-        BitString = GetBits(AccessMask)
-
-        BitLen = Len(BitString)
-
-        ' Just do a bool cast on the bits for any API access stuff we want
-        If BitLen >= AccessMaskBitLocs.AssetList Then
-            AssetsAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.AssetList, 1))
-        Else
-            AssetsAccess = False
-        End If
-
-        If BitLen >= AccessMaskBitLocs.IndustryJobs Then
-            IndustryJobsAccess = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
-        Else
-            IndustryJobsAccess = False
-        End If
-
     End Sub
 
     Public Function GetIndustryJobs() As EVEIndustryJobs
@@ -148,18 +183,6 @@ Public Class Corporation
     Public Function GetBlueprints() As EVEBlueprints
         Return Blueprints
     End Function
-
-    ReadOnly Property JobsAccess() As Boolean
-        Get
-            Return IndustryJobsAccess
-        End Get
-    End Property
-
-    ReadOnly Property AssetAccess() As Boolean
-        Get
-            Return AssetsAccess
-        End Get
-    End Property
 
     ReadOnly Property CorporationID() As Long
         Get

@@ -176,20 +176,18 @@ Public Class frmCharacterSkills
     End Sub
 
     Private Sub RefreshTree()
-        Dim API As New EVEAPI
+        ' Dim API As New EVEAPI
         Dim TempCharacter(0) As Character
         Dim Response As MsgBoxResult = Nothing
         Dim TempKeyType As String = ""
 
         ' Update the skills if they can be updated
-        If SelectedCharacter.CachedUntil < DateTime.UtcNow Then
-            Me.Cursor = Cursors.WaitCursor
-            ' Just refresh the skills from API
-            SelectedCharacter.LoadCharacterSheet(False, True, Trim(txtSkillNameFilter.Text))
-            ' Refresh
-            Call LoadSkillsInTree(chkSkillOverride.Checked)
-            Me.Cursor = Cursors.Default
-        End If
+        Cursor = Cursors.WaitCursor
+        ' Just refresh the skills from API
+        SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, False, Trim(txtSkillNameFilter.Text))
+        ' Refresh
+        Call LoadSkillsInTree(chkSkillOverride.Checked)
+        Cursor = Cursors.Default
 
         If SkillOverridden Then
             Response = CheckSave()
@@ -268,7 +266,7 @@ Public Class frmCharacterSkills
         lblCharacterName.Text = SelectedCharacter.Name
 
         ' Load whatever is in the database
-        SelectedCharacter.LoadCharacterSheet(LoadAllSkillsforOverride, False)
+        Call SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, LoadAllSkillsforOverride)
 
         If Not IsNothing(SelectedCharacter.Skills) Then
             ' Fill the tree
@@ -454,7 +452,7 @@ Public Class frmCharacterSkills
         Call LoadSkillsInTree(chkSkillOverride.Checked)
 
         ' Finally reload the skills for the program - whatever changes were done just load them from DB
-        Call SelectedCharacter.LoadCharacterSheet(False, False)
+        Call SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, False)
 
         MsgBox("Settings Saved", vbInformation, Application.ProductName)
 

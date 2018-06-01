@@ -27,7 +27,6 @@ Partial Class frmBlueprintList
         Me.lblIntro = New System.Windows.Forms.Label()
         Me.btnClose = New System.Windows.Forms.Button()
         Me.grpBPType = New System.Windows.Forms.GroupBox()
-        Me.chkBPIncludeIgnoredBPs = New System.Windows.Forms.CheckBox()
         Me.rbtnBPStructureModuleBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPFavoriteBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
@@ -62,6 +61,7 @@ Partial Class frmBlueprintList
         Me.txtBPItemFilter = New System.Windows.Forms.TextBox()
         Me.btnClearItemFilter = New System.Windows.Forms.Button()
         Me.lblBPFilter = New System.Windows.Forms.Label()
+        Me.rbtnBPReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.grpBPType.SuspendLayout()
         Me.grpBPSize.SuspendLayout()
         Me.grpBPTechLevel.SuspendLayout()
@@ -93,7 +93,7 @@ Partial Class frmBlueprintList
         '
         'grpBPType
         '
-        Me.grpBPType.Controls.Add(Me.chkBPIncludeIgnoredBPs)
+        Me.grpBPType.Controls.Add(Me.rbtnBPReactionBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPStructureModuleBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPFavoriteBlueprints)
         Me.grpBPType.Controls.Add(Me.rbtnBPStructureRigsBlueprints)
@@ -117,16 +117,6 @@ Partial Class frmBlueprintList
         Me.grpBPType.TabIndex = 3
         Me.grpBPType.TabStop = False
         Me.grpBPType.Text = "Blueprint Type"
-        '
-        'chkBPIncludeIgnoredBPs
-        '
-        Me.chkBPIncludeIgnoredBPs.AutoSize = True
-        Me.chkBPIncludeIgnoredBPs.Location = New System.Drawing.Point(145, 162)
-        Me.chkBPIncludeIgnoredBPs.Name = "chkBPIncludeIgnoredBPs"
-        Me.chkBPIncludeIgnoredBPs.Size = New System.Drawing.Size(84, 17)
-        Me.chkBPIncludeIgnoredBPs.TabIndex = 65
-        Me.chkBPIncludeIgnoredBPs.Text = "Ignored BPs"
-        Me.chkBPIncludeIgnoredBPs.UseVisualStyleBackColor = True
         '
         'rbtnBPStructureModuleBlueprints
         '
@@ -161,7 +151,7 @@ Partial Class frmBlueprintList
         'rbtnBPMiscBlueprints
         '
         Me.rbtnBPMiscBlueprints.AutoSize = True
-        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(145, 126)
+        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(145, 162)
         Me.rbtnBPMiscBlueprints.Name = "rbtnBPMiscBlueprints"
         Me.rbtnBPMiscBlueprints.Size = New System.Drawing.Size(92, 17)
         Me.rbtnBPMiscBlueprints.TabIndex = 13
@@ -480,6 +470,16 @@ Partial Class frmBlueprintList
         Me.lblBPFilter.TabIndex = 20
         Me.lblBPFilter.Text = "BP Filter:"
         '
+        'rbtnBPReactionBlueprints
+        '
+        Me.rbtnBPReactionBlueprints.AutoSize = True
+        Me.rbtnBPReactionBlueprints.Location = New System.Drawing.Point(145, 126)
+        Me.rbtnBPReactionBlueprints.Name = "rbtnBPReactionBlueprints"
+        Me.rbtnBPReactionBlueprints.Size = New System.Drawing.Size(73, 17)
+        Me.rbtnBPReactionBlueprints.TabIndex = 17
+        Me.rbtnBPReactionBlueprints.Text = "Reactions"
+        Me.rbtnBPReactionBlueprints.UseVisualStyleBackColor = True
+        '
         'frmBlueprintList
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -548,5 +548,5 @@ End Sub
     Friend WithEvents txtBPItemFilter As TextBox
     Friend WithEvents btnClearItemFilter As Button
     Friend WithEvents lblBPFilter As Label
-    Friend WithEvents chkBPIncludeIgnoredBPs As CheckBox
+    Friend WithEvents rbtnBPReactionBlueprints As RadioButton
 End Class

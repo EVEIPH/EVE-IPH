@@ -6,47 +6,11 @@ Public Class frmSetCharacterDefault
 
     Public Sub New()
 
-        Dim readerCharacters As SQLiteDataReader
-
-        Dim SQL As String
-        Dim numChars As Long
-        Dim i As Integer = 0
-
         ' This call is required by the designer.
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        ' Load up the grid with characters on this computer
-        CharactersLoaded = False
-        DefaultCharSelected = False
-
-        SQL = "SELECT COUNT(*) FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        numChars = CLng(DBCommand.ExecuteScalar())
-
-        SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM API WHERE CHARACTER_NAME <> 'None' AND API_TYPE NOT IN ('Corporation', 'Old Key')"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerCharacters = DBCommand.ExecuteReader()
-
-        While readerCharacters.Read()
-            chkListDefaultChar.Items.Add(readerCharacters.GetString(0))
-            ' If there is a default already, check it
-            If CInt(readerCharacters.GetValue(1)) <> 0 Then
-                chkListDefaultChar.SetItemChecked(i, True)
-            End If
-            i += 1
-        End While
-
-        ' If only one character, then check it
-        If numChars = 1 Then
-            chkListDefaultChar.SetItemChecked(0, True)
-        End If
-
-        readerCharacters.Close()
-        readerCharacters = Nothing
-        DBCommand = Nothing
+        Call UpdateCharacterList()
 
     End Sub
 
@@ -70,12 +34,7 @@ Public Class frmSetCharacterDefault
         Application.DoEvents()
 
         ' If we get here, just clear out the old default and set the new one
-        ' Update them all to 0 first
-        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = 0 WHERE API_TYPE <> 'Corporation'")
-        Call evedb.ExecuteNonQuerySQL("UPDATE API SET IS_DEFAULT = -1 WHERE CHARACTER_NAME = '" & FormatDBString(SelectedCharacterName) & "' AND API_TYPE NOT IN ('Corporation', 'Old Key')")
-
-        ' Load the character as default for program and reload additional API data
-        Call SelectedCharacter.LoadDefaultCharacter(True, UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
+        Call LoadSelectedCharacter(SelectedCharacterName, False)
 
         DefaultCharSelected = True
         MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
@@ -99,8 +58,7 @@ Public Class frmSetCharacterDefault
     End Sub
 
     ' Checks if the user selected a default or not. If not, verifies that they don't want to set a default and want to go with dummy
-    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
-        Dim Response As MsgBoxResult
+    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClose.Click
         Dim NoCharacter As Boolean
 
         ' Only ask if they want to cancel if there isn't a character loaded yet
@@ -110,14 +68,17 @@ Public Class frmSetCharacterDefault
             NoCharacter = False
         End If
 
-        If NoCharacter Then
-            Response = MsgBox("Are you sure you do not want to select a default character?", vbYesNo, Application.ProductName)
-
-            If Response = vbYes Then
-                ' Load the dummy
-                Call SelectedCharacter.LoadDummyCharacter()
+        If NoCharacter And Not DummyAccountLoaded Then
+            ' Load the dummy
+            If SelectedCharacter.LoadDummyCharacter(False) = TriState.UseDefault Then
+                ' They said no, cancel and let them re-choose
+                Exit Sub
+            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.True Then
                 Call MsgBox("Dummy Character Loaded", MsgBoxStyle.OkOnly, Application.ProductName)
                 Me.Hide()
+            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.False Then
+                Call MsgBox("Unable to save Dummy Character", vbInformation, Application.ProductName)
+                Exit Sub
             End If
         Else
             Me.Hide()
@@ -126,6 +87,84 @@ Public Class frmSetCharacterDefault
 
     Private Sub frmSetCharacterDefault_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
         Me.Activate()
+    End Sub
+
+    Private Sub btnEVESSOLogin_Click(sender As Object, e As EventArgs) Handles btnEVESSOLogin.Click
+        Dim ESIConnection As New ESI
+
+        ' Set the new character data first. This will load the data in the table or update it if they choose a character already loaded
+        If ESIConnection.SetCharacterData() Then
+            ' Now update the character list
+            Call UpdateCharacterList()
+        Else
+            ' Didn't load, so show the re-enter info button
+            If Not DummyAccountLoaded Then
+                MsgBox("The Character failed to load. Please check application registration information.")
+            Else
+                MsgBox("You have not registered IPH. Please register IPH through the ESI developers system and try again.")
+            End If
+            btnReloadRegistration.Visible = True
+        End If
+
+    End Sub
+
+    ' Update the list with the current loaded characters in the table
+    Private Sub UpdateCharacterList()
+        Dim readerCharacters As SQLiteDataReader
+        Dim SQL As String
+        Dim numChars As Long
+        Dim i As Integer = 0
+
+        ' Load up the grid with characters on this computer
+        CharactersLoaded = False
+        DefaultCharSelected = False
+
+        chkListDefaultChar.Items.Clear()
+
+        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
+        numChars = CLng(DBCommand.ExecuteScalar())
+
+        SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
+        readerCharacters = DBCommand.ExecuteReader()
+
+        While readerCharacters.Read()
+            chkListDefaultChar.Items.Add(readerCharacters.GetString(0))
+            ' If there is a default already, check it
+            If CInt(readerCharacters.GetValue(1)) <> 0 Then
+                chkListDefaultChar.SetItemChecked(i, True)
+            End If
+            i += 1
+        End While
+
+        ' If only one character, then check it
+        If numChars = 1 Then
+            chkListDefaultChar.SetItemChecked(0, True)
+        End If
+
+        If numChars >= 1 Then
+            btnSelectDefault.Enabled = True
+            ' Now don't let them cancel
+            btnClose.Enabled = False
+        Else
+            ' Disable select default button until they load one up
+            btnSelectDefault.Enabled = False
+            btnClose.Enabled = True ' They can select a dummy
+        End If
+
+        readerCharacters.Close()
+        readerCharacters = Nothing
+        DBCommand = Nothing
+
+    End Sub
+
+    Private Sub btnReloadRegistration_Click(sender As Object, e As EventArgs) Handles btnReloadRegistration.Click
+        Dim f1 As New frmLoadESIAuthorization
+        f1.ShowDialog()
+        f1.Close()
     End Sub
 
 End Class

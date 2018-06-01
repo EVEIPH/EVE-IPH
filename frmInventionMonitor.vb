@@ -1,5 +1,6 @@
 ﻿
 Imports System.Data.SQLite
+Imports System.IO
 
 Public Class frmInventionMonitor
 
@@ -46,21 +47,21 @@ Public Class frmInventionMonitor
         Call ClearForm()
 
         ' See if they can load the jobs at all
-        If Not SelectedCharacter.JobsAccess Then
-            fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." & _
-                Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
-            fAccessError.Text = "API: No Industry Jobs Loaded"
+        'If Not SelectedCharacter.JobsAccess Then
+        '    fAccessError.ErrorText = "This API did not allow industry jobs to be loaded for this character." & _
+        '        Environment.NewLine & Environment.NewLine & "Please ensure your Customizable API includes 'IndustryJobs' under the 'Science & Industry' section to include industry jobs and then reload the API."
+        '    fAccessError.Text = "API: No Industry Jobs Loaded"
 
-            fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
-            fAccessError.ShowDialog()
+        '    fAccessError.ErrorLink = "https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=589962"
+        '    fAccessError.ShowDialog()
 
-            gbInventionMonitor.Enabled = False
-            lstInventionItems.Enabled = False
-        Else
-            gbInventionMonitor.Enabled = True
-            lstInventionItems.Enabled = True
-            Call ResetForm()
-        End If
+        '    gbInventionMonitor.Enabled = False
+        '    lstInventionItems.Enabled = False
+        'Else
+        '    gbInventionMonitor.Enabled = True
+        '    lstInventionItems.Enabled = True
+        '    Call ResetForm()
+        'End If
 
     End Sub
 
@@ -243,15 +244,15 @@ Public Class frmInventionMonitor
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        ' Update jobs from API
-        If rbtnPersonalJobs.Checked Or rbtnBothJobs.Checked Then
-            ' Load the personal jobs
-            Call SelectedCharacter.GetIndustryJobs.LoadIndustryJobs(ScanType.Personal, True)
-        End If
+        '' Update jobs from API
+        'If rbtnPersonalJobs.Checked Or rbtnBothJobs.Checked Then
+        '    ' Load the personal jobs
+        '    Call SelectedCharacter.GetIndustryJobs.LoadIndustryJobs(ScanType.Personal, True)
+        'End If
 
-        If rbtnBothJobs.Checked Or rbtnCorpJobs.Checked Then
-            Call SelectedCharacter.CharacterCorporation.GetIndustryJobs.LoadIndustryJobs(ScanType.Corporation, True)
-        End If
+        'If rbtnBothJobs.Checked Or rbtnCorpJobs.Checked Then
+        '    Call SelectedCharacter.CharacterCorporation.GetIndustryJobs.LoadIndustryJobs(ScanType.Corporation, True)
+        'End If
 
         Application.UseWaitCursor = False
         Application.DoEvents()
@@ -283,7 +284,7 @@ Public Class frmInventionMonitor
             lblSelectedBP.Text = lstInventionItems.SelectedItems(0).SubItems(1).Text
 
             ' Now select the BP image
-            BPImage = UserImagePath & CStr(SelectedBPID & "_64.png")
+            BPImage = Path.Combine(UserImagePath, CStr(SelectedBPID) & "_64.png")
 
             If System.IO.File.Exists(BPImage) Then
                 pictInvention.Image = Image.FromFile(BPImage)
@@ -354,7 +355,7 @@ Public Class frmInventionMonitor
 
     ' Just display the invention chance in the label
     Private Sub DisplayInventionStats()
-        Dim TempBlueprint As Blueprint
+        'Dim TempBlueprint As Blueprint
         Dim InventionSkills As New EVESkillList
         Dim SelectedDecryptor As New Decryptor
 
@@ -365,17 +366,17 @@ Public Class frmInventionMonitor
         gbSkills.Visible = True
 
         ' Build the T2 item as a blueprint and then get stats - CHECK
-        TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter, _
-                                        UserApplicationSettings, False, 0, NoTeam, SelectedBPManufacturingFacility, NoTeam, _
-                                        SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
-        ' Invent the bp
-        Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, NoTeam, SelectedBPCopyFacility, NoTeam, 0)
-        Call TempBlueprint.BuildItems(False, False, False, False, False)
+        'TempBlueprint = New Blueprint(CLng(lstInventionItems.SelectedItems(0).SubItems(0).Text), 1, 0, 0, 1, 1, SelectedCharacter,
+        '                                UserApplicationSettings, False, 0, SelectedBPManufacturingFacility,
+        '                                SelectedBPComponentManufacturingFacility, SelectedBPCapitalComponentManufacturingFacility)
+        '' Invent the bp
+        'Call TempBlueprint.InventBlueprint(1, SelectedDecryptor, SelectedBPInventionFacility, SelectedBPCopyFacility, 0)
+        'Call TempBlueprint.BuildItems(False, False, False, False, False)
 
         ' Now get the data from the blueprint
-        lblSuccessChance.Text = FormatPercent(TempBlueprint.GetInventionChance, 2)
+        'lblSuccessChance.Text = FormatPercent(TempBlueprint.GetInventionChance, 2)
         ' Skills
-        InventionSkills = TempBlueprint.GetReqInventionSkills()
+        'InventionSkills = TempBlueprint.GetReqInventionSkills()
 
         ' Set the combos and labels for skills
         SettingComboSkills = True

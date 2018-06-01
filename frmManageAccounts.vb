@@ -29,8 +29,7 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub LoadAccountGrid()
-        Dim readerAccounts As SQLiteDataReader
-        Dim readerChars As SQLiteDataReader
+        Dim rsAccounts As SQLiteDataReader
         Dim SQL As String
         Dim lstViewRow As ListViewItem
         Dim CharList As String = ""
@@ -38,58 +37,33 @@ Public Class frmManageAccounts
         ' Until there is a key able to set a default to, don't enable the select default button
         btnSelectDefaultChar.Enabled = False
 
-        lblDefaultChar.Text = "Default Character: " & SelectedCharacter.Name
-        lblDefaultChar.Left = CInt((Me.Width / 2) - (lblDefaultChar.Width / 2))
-
         Application.UseWaitCursor = True
 
-        SQL = "SELECT API_TYPE, KEY_ID, API_KEY, ACCESS_MASK, KEY_EXPIRATION_DATE, CORPORATION_NAME FROM API WHERE KEY_ID <> 0 "
-        SQL = SQL & "GROUP BY KEY_EXPIRATION_DATE, API_TYPE, KEY_ID, API_KEY, ACCESS_MASK"
+        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES "
+        SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
+        SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerAccounts = DBCommand.ExecuteReader
+        rsAccounts = DBCommand.ExecuteReader
 
         lstAccounts.Items.Clear()
         lstAccounts.BeginUpdate()
 
-        While readerAccounts.Read
+        While rsAccounts.Read
 
             ' Insert into table
-            lstViewRow = New ListViewItem(readerAccounts.GetString(0)) ' API Type
+            lstViewRow = New ListViewItem(CStr(rsAccounts.GetInt32(0))) ' CHAR ID (Hidden)
             'The remaining columns are subitems  
-            lstViewRow.SubItems.Add(CStr(CLng(readerAccounts.GetValue(1)))) ' KeyID
-            lstViewRow.SubItems.Add(readerAccounts.GetString(2)) ' API
+            lstViewRow.SubItems.Add(rsAccounts.GetString(1)) ' NAME
+            lstViewRow.SubItems.Add(rsAccounts.GetString(2)) ' CORP NAME
 
-            If readerAccounts.GetString(0) <> CorporationAPITypeName Then
-                ' Get the characters for this key
-                SQL = "SELECT CHARACTER_NAME FROM API WHERE KEY_ID=" & CStr(readerAccounts.GetValue(1)) & " AND API_KEY = '" & CStr(readerAccounts.GetString(2)) & "'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerChars = DBCommand.ExecuteReader
-
-                While readerChars.Read
-                    CharList = CharList & readerChars.GetString(0) & ", "
-                End While
-
-                ' Strip comma
-                CharList = CharList.Substring(0, Len(CharList) - 2)
-
-                ' Have account APIs to use, so enable the set default button
-                btnSelectDefaultChar.Enabled = True
-
-            Else ' use corp name
-                CharList = readerAccounts.GetString(5)
-            End If
-
-            lstViewRow.SubItems.Add(CharList) ' Characters
-            lstViewRow.SubItems.Add(CStr(CDbl(readerAccounts.GetValue(3)))) ' Mask
-            ' Expiration Date
-            If readerAccounts.GetString(4) = ExpiredKey Then
-                lstViewRow.SubItems.Add(ExpiredKey)
-            ElseIf CDate(readerAccounts.GetString(4)) = NoExpiry Then
-                lstViewRow.SubItems.Add("Never")
+            If rsAccounts.GetInt32(3) <> 0 Then
+                lstViewRow.SubItems.Add("True")
             Else
-                lstViewRow.SubItems.Add(CStr(CDate(readerAccounts.GetString(4))))
+                lstViewRow.SubItems.Add("False")
             End If
+
+            lstViewRow.SubItems.Add(rsAccounts.GetString(4)) ' SCOPES (Hidden)
 
             Call lstAccounts.Items.Add(lstViewRow)
 
@@ -97,207 +71,91 @@ Public Class frmManageAccounts
 
         End While
 
+        rsAccounts.Close()
+
         lstAccounts.EndUpdate()
 
-        SQL = "SELECT COUNT(*) FROM API WHERE API_TYPE <> 'Old Key'"
+        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerChars = DBCommand.ExecuteReader
+        rsAccounts = DBCommand.ExecuteReader
 
-        readerChars.Read()
+        rsAccounts.Read()
 
         ' Don't enable default setting if there aren't any new api keys
-        If CInt(readerChars.GetValue(0)) = 0 Then
+        If CInt(rsAccounts.GetValue(0)) = 0 Then
             btnSelectDefaultChar.Enabled = False
+        Else
+            btnSelectDefaultChar.Enabled = True
         End If
 
         Application.UseWaitCursor = False
 
     End Sub
 
-    Private Sub lstAccounts_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lstAccounts.SelectedIndexChanged
-        Dim SelectedAccessMask As Long
-        Dim BitString As String
-        Dim BitLen As Integer
-
+    Private Sub lstAccounts_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As EventArgs) Handles lstAccounts.SelectedIndexChanged
         If lstAccounts.SelectedItems.Count > 0 Then
-            btnDeleteKey.Enabled = True
-            btnUpdateKey.Enabled = True
+            ' Load the scopes for the character (hidden in the list of the account)
+            Dim ScopeList As String = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
 
-            ' Take the selected row and update the check boxes based on the access mask
-            SelectedAccessMask = CLng(lstAccounts.SelectedItems(0).SubItems(4).Text)
+            Call LoadScopes(ScopeList)
 
-            ' Access mask is a bitmask 
-            BitString = GetBits(SelectedAccessMask)
+            btnDeleteCharacter.Enabled = True
 
-            BitLen = Len(BitString)
-
-            If lstAccounts.SelectedItems(0).SubItems(0).Text <> CorporationAPITypeName Then
-
-                chkAccessCharacterSheet.Enabled = True
-                chkAccessSIResearch.Enabled = True
-                chkAccessStandings.Enabled = True
-
-                ' Just do a bool cast on the bits for any API access stuff we want
-                If BitLen >= AccessMaskBitLocs.CharacterSheet Then
-                    chkAccessCharacterSheet.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.CharacterSheet, 1))
-                Else
-                    chkAccessCharacterSheet.Checked = False
-                End If
-
-                If BitLen >= AccessMaskBitLocs.Standings Then
-                    chkAccessStandings.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.Standings, 1))
-                Else
-                    chkAccessStandings.Checked = False
-                End If
-
-                If BitLen >= AccessMaskBitLocs.AssetList Then
-                    chkAccessAssets.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.AssetList, 1))
-                Else
-                    chkAccessAssets.Checked = False
-                End If
-
-                If BitLen >= AccessMaskBitLocs.IndustryJobs Then
-                    chkAccessSIIndustryJobs.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
-                Else
-                    chkAccessSIIndustryJobs.Checked = False
-                End If
-
-                If BitLen >= AccessMaskBitLocs.Research Then
-                    chkAccessSIResearch.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.Research, 1))
-                Else
-                    chkAccessSIResearch.Checked = False
-                End If
-            Else
-                ' Corp key
-                chkAccessCharacterSheet.Enabled = False
-                chkAccessCharacterSheet.Checked = False
-                chkAccessSIResearch.Enabled = False
-                chkAccessSIResearch.Checked = False
-                chkAccessStandings.Enabled = False
-                chkAccessStandings.Checked = False
-
-                If BitLen >= AccessMaskBitLocs.IndustryJobs Then
-                    chkAccessSIIndustryJobs.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.IndustryJobs, 1))
-                Else
-                    chkAccessSIIndustryJobs.Checked = False
-                End If
-
-                If BitLen >= AccessMaskBitLocs.AssetList Then
-                    chkAccessAssets.Checked = CBool(BitString.Substring(BitLen - AccessMaskBitLocs.AssetList, 1))
-                Else
-                    chkAccessAssets.Checked = False
-                End If
-
-            End If
         End If
     End Sub
 
-    Private Sub btnUpdateKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnUpdateKey.Click
-        Dim fLoadAPI As New frmLoadCharacterAPI
+    Private Sub LoadScopes(ScopeList As String)
+        ' Parse it for entry
+        Dim ParsedScopes As String()
 
-        If lstAccounts.SelectedItems.Count > 0 Then
-            fLoadAPI.PreDefinedID = lstAccounts.SelectedItems.Item(0).SubItems(1).Text
-            fLoadAPI.PreDefinedKey = lstAccounts.SelectedItems.Item(0).SubItems(2).Text
-        End If
+        ParsedScopes = ScopeList.Split(New Char() {" "c}, StringSplitOptions.RemoveEmptyEntries)
 
-        fLoadAPI.ShowDialog()
+        ' Clear the list
+        lstScopes.Items.Clear()
 
-        ' Reload accounts
-        Call LoadAccountGrid()
-
+        For Each Scope In ParsedScopes
+            lstScopes.Items.Add(Scope)
+        Next
     End Sub
 
-    Private Sub btnDeleteKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDeleteKey.Click
-        Dim DKeyID As Long
-        Dim DKey As String
+    Private Sub btnDeleteKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDeleteCharacter.Click
         Dim SQL As String
-        Dim rsAPI As SQLiteDataReader
-        Dim CorpID As Long
 
         If lstAccounts.SelectedItems.Count > 0 Then
-            DKeyID = CLng(lstAccounts.SelectedItems.Item(0).SubItems(1).Text)
-            DKey = lstAccounts.SelectedItems.Item(0).SubItems(2).Text
-
-            Me.Cursor = Cursors.WaitCursor
-            Application.DoEvents()
+            Dim CharacterID As Integer = CInt(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
 
             Call EVEDB.BeginSQLiteTransaction()
 
-            ' Find out what type of key it is - corp or personal
-            If lstAccounts.SelectedItems.Item(0).SubItems(0).Text = "Corporation" Then
-                ' Just delete assets and jobs for this corporation ID
-                SQL = "SELECT CORPORATION_ID FROM API WHERE KEY_ID = " & DKeyID
+            ' Delete all the information associated with this key FIX (SKILLS, STANDINGS, ASSETS, JOBS, AGENTS)
+            SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsAPI = DBCommand.ExecuteReader
-                rsAPI.Read()
+            SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & CStr(CharacterID)
 
-                ' Get the corp id first, then use that to 
-                CorpID = rsAPI.GetInt64(0)
+            SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
-                ' Now look up all the accounts that have this corp ID to delete all associated corp jobs
-                SQL = "SELECT CHARACTER_ID FROM API WHERE CORPORATION_ID = " & CorpID
+            SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsAPI = DBCommand.ExecuteReader
 
-                While rsAPI.Read
-                    SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & rsAPI.GetInt64(0) & " AND JobType = " & ScanType.Corporation
-                    evedb.ExecuteNonQuerySQL(SQL)
-                End While
+            SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
-                SQL = "DELETE FROM ASSETS WHERE ID = " & CorpID
-                evedb.ExecuteNonQuerySQL(SQL)
+            SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
-                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CorpID
-                evedb.ExecuteNonQuerySQL(SQL)
-
-            Else ' Need to delete any stored skills, standings, agents, assets, and jobs for all characters
-                SQL = "SELECT CHARACTER_ID FROM API WHERE KEY_ID = " & DKeyID
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsAPI = DBCommand.ExecuteReader
-
-                While rsAPI.Read
-                    ' Delete all the information associated with this key FIX (SKILLS, STANDINGS, ASSETS, JOBS, AGENTS)
-                    SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                    SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                    SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                    SQL = "DELETE FROM ASSETS WHERE ID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                    SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                    SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & rsAPI.GetInt64(0)
-                    evedb.ExecuteNonQuerySQL(SQL)
-
-                End While
-
-            End If
-
-            SQL = "DELETE FROM API WHERE KEY_ID = " & DKeyID & " AND API_KEY = '" & DKey & "'"
-            evedb.ExecuteNonQuerySQL(SQL)
-
-            ' If it's the account we have loaded, and we just deleted the key, then reset the selected character
-            If lstAccounts.SelectedItems.Item(0).SubItems(0).Text <> CorporationAPITypeName And _
-                InStr(lstAccounts.SelectedItems.Item(0).SubItems(3).Text, SelectedCharacter.Name) <> 0 Then
-                SelectedCharacter = New Character
-            End If
+            SQL = "DELETE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterID)
+            EVEDB.ExecuteNonQuerySQL(SQL)
 
             Call EVEDB.CommitSQLiteTransaction()
 
             ' Reload the characters - this will do the default selection, etc
             Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
 
-            MsgBox("Character API Deleted", vbInformation, Application.ProductName)
+            MsgBox("Character Deleted", vbInformation, Application.ProductName)
+
         End If
 
         ' Reload accounts
@@ -307,8 +165,8 @@ Public Class frmManageAccounts
 
     End Sub
 
-    Private Sub btnAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAdd.Click
-        Dim fLoadAPI As New frmLoadCharacterAPI
+    Private Sub btnAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAddCharacter.Click
+        Dim fLoadAPI As New frmSetCharacterDefault
         fLoadAPI.ShowDialog()
 
         lstAccounts.Items.Clear()
@@ -322,6 +180,31 @@ Public Class frmManageAccounts
         Dim fDefault As New frmSetCharacterDefault
 
         fDefault.ShowDialog()
+
+        Call LoadAccountGrid()
+
+    End Sub
+
+    Private Sub lstAccounts_ItemSelectionChanged(sender As Object, e As ListViewItemSelectionChangedEventArgs) Handles lstAccounts.ItemSelectionChanged
+        If lstAccounts.SelectedItems.Count = 0 Then
+            btnDeleteCharacter.Enabled = False
+        Else
+            btnDeleteCharacter.Enabled = True
+        End If
+    End Sub
+
+    Private Sub btnRegisterProgram_Click(sender As Object, e As EventArgs) Handles btnRegisterProgram.Click
+        Dim f1 As New frmLoadESIAuthorization
+        f1.ShowDialog()
+        f1.Close()
+
+        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
+
+        ' If they have the dummy loaded, let them add characters now
+        If DummyAccountLoaded And ApplicationSettings.ClientID <> DummyClient Then
+            Dim f2 As New frmSetCharacterDefault
+            f2.ShowDialog()
+        End If
 
         Call LoadAccountGrid()
 

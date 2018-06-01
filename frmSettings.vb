@@ -74,7 +74,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub txtEVECentralInterval_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtEVECentralInterval.KeyPress
+    Private Sub txtEVEMarketerInterval_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtEVEMarketerInterval.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             ' Only integer values
@@ -138,13 +138,13 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkEVECentralInterval_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkEVECentralInterval.CheckedChanged
-        If chkEVECentralInterval.Checked = True Then
-            txtEVECentralInterval.Enabled = True
-            txtEVECentralInterval.Focus()
+    Private Sub chkEVEMarketerInterval_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkEVEMarketerInterval.CheckedChanged
+        If chkEVEMarketerInterval.Checked = True Then
+            txtEVEMarketerInterval.Enabled = True
+            txtEVEMarketerInterval.Focus()
         Else
-            txtEVECentralInterval.Enabled = False
-            txtEVECentralInterval.Text = FormatNumber(Defaults.DefaultEVECentralRefreshInterval, 0)
+            txtEVEMarketerInterval.Enabled = False
+            txtEVEMarketerInterval.Text = FormatNumber(Defaults.DefaultEVEMarketerRefreshInterval, 0)
         End If
         btnSave.Text = "Save"
     End Sub
@@ -223,10 +223,9 @@ Public Class frmSettings
             chkRefreshBPsonStartup.Checked = .LoadBPsonStartup
             chkDisableSound.Checked = .DisableSound
 
-            ' CREST
-            chkRefreshFacilityDataonStartup.Checked = .LoadCRESTFacilityDataonStartup
-            chkRefreshMarketDataonStartup.Checked = .LoadCRESTMarketDataonStartup
-            chkRefreshTeamDataonStartup.Checked = .LoadCRESTTeamDataonStartup
+            ' ESI
+            chkRefreshFacilityDataonStartup.Checked = .LoadESIFacilityDataonStartup
+            chkRefreshMarketDataonStartup.Checked = .LoadESIMarketDataonStartup
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -328,14 +327,14 @@ Public Class frmSettings
                 txtDefaultTE.Enabled = True
             End If
 
-            If .EVECentralRefreshInterval <> Defaults.DefaultEVECentralRefreshInterval Then
-                chkEVECentralInterval.Checked = True
-                txtEVECentralInterval.Enabled = True
-                txtEVECentralInterval.Text = CStr(.EVECentralRefreshInterval)
+            If .EVEMarketerRefreshInterval <> Defaults.DefaultEVEMarketerRefreshInterval Then
+                chkEVEMarketerInterval.Checked = True
+                txtEVEMarketerInterval.Enabled = True
+                txtEVEMarketerInterval.Text = CStr(.EVEMarketerRefreshInterval)
             Else
-                chkEVECentralInterval.Checked = False
-                txtEVECentralInterval.Enabled = False
-                txtEVECentralInterval.Text = CStr(Defaults.DefaultEVECentralRefreshInterval)
+                chkEVEMarketerInterval.Checked = False
+                txtEVEMarketerInterval.Enabled = False
+                txtEVEMarketerInterval.Text = CStr(Defaults.DefaultEVEMarketerRefreshInterval)
             End If
 
             cmbSVRRegion.Text = .SVRAveragePriceRegion
@@ -396,26 +395,27 @@ Public Class frmSettings
                     .DataExportFormat = rbtnExportSSV.Text
                 End If
                 .ShowToolTips = CBool(chkShowToolTips.Checked)
+                ' Disable sound here - only works for update dings, not all sound
                 .DisableSound = CBool(chkDisableSound.Checked)
+
                 .RefiningImplantValue = RefineImplantValue
                 .ManufacturingImplantValue = ManufacturingImplantValue
                 .CopyImplantValue = CopyImplantValue
 
-                ' CREST
-                .LoadCRESTFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
-                .LoadCRESTMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
-                .LoadCRESTTeamDataonStartup = chkRefreshTeamDataonStartup.Checked
+                ' ESI
+                .LoadESIFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
+                .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
 
                 ' If they didn't have this checked before, refresh assets
                 If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
-                    Call SelectedCharacter.GetAssets.LoadAssets(ScanType.Personal, True)
-                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(ScanType.Corporation, True)
+                    Call SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
                 End If
 
                 ' Same with blueprints
                 If .LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(ScanType.Personal, True)
-                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(ScanType.Corporation, True)
+                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
+                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
                 End If
 
                 ' Now set these
@@ -439,7 +439,7 @@ Public Class frmSettings
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
-                .EVECentralRefreshInterval = CInt(txtEVECentralInterval.Text)
+                .EVEMarketerRefreshInterval = CInt(txtEVEMarketerInterval.Text)
 
                 .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 
@@ -515,19 +515,19 @@ Public Class frmSettings
             GoTo InvalidData
         End If
 
-        If (Not IsNumeric(txtEVECentralInterval.Text) Or Trim(txtEVECentralInterval.Text) = "") And chkEVECentralInterval.Checked Then
-            TempTextBox = txtEVECentralInterval
-            TempCheckBox = chkEVECentralInterval
+        If (Not IsNumeric(txtEVEMarketerInterval.Text) Or Trim(txtEVEMarketerInterval.Text) = "") And chkEVEMarketerInterval.Checked Then
+            TempTextBox = txtEVEMarketerInterval
+            TempCheckBox = chkEVEMarketerInterval
             GoTo InvalidData
-        ElseIf CInt(txtEVECentralInterval.Text) <= 0 Then
+        ElseIf CInt(txtEVEMarketerInterval.Text) <= 0 Then
             MsgBox("Cannot set EVE Central Update Interval less than 1 Hour", vbExclamation, Application.ProductName)
-            txtEVECentralInterval.Focus()
-            Call txtEVECentralInterval.SelectAll()
+            txtEVEMarketerInterval.Focus()
+            Call txtEVEMarketerInterval.SelectAll()
             Return False
-        ElseIf CInt(txtEVECentralInterval.Text) > 99 Then
+        ElseIf CInt(txtEVEMarketerInterval.Text) > 99 Then
             MsgBox("Cannot set EVE Central Update Interval greater than 99 hours", vbExclamation, Application.ProductName)
-            txtEVECentralInterval.Focus()
-            Call txtEVECentralInterval.SelectAll()
+            txtEVEMarketerInterval.Focus()
+            Call txtEVEMarketerInterval.SelectAll()
             Return False
         End If
 
@@ -567,15 +567,6 @@ InvalidData:
 
     End Sub
 
-    Private Sub btnEditPOS_Click(sender As System.Object, e As System.EventArgs)
-        Dim f1 As New frmPOSSettings
-        f1.ShowDialog()
-    End Sub
-
-    Private Sub chkRefreshTeamDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshTeamDataonStartup.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
     Private Sub chkRefreshMarketDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshMarketDataonStartup.CheckedChanged
         btnSave.Text = "Save"
     End Sub
@@ -593,10 +584,6 @@ InvalidData:
     End Sub
 
     Private Sub rbtnExportSSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportSSV.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub chkLinkBPTabTeamstoSystem_CheckedChanged(sender As System.Object, e As System.EventArgs)
         btnSave.Text = "Save"
     End Sub
 

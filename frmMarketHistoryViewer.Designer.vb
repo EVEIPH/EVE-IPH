@@ -297,7 +297,9 @@ Partial Class frmMarketHistoryViewer
         Me.Controls.Add(Me.gbDataOptions)
         Me.Controls.Add(Me.gbDateSelect)
         Me.Controls.Add(Me.chrtMarketHistory)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "frmMarketHistoryViewer"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Market Viewer"
