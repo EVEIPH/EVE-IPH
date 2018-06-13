@@ -2029,13 +2029,13 @@ Public Class ManufacturingFacility
                             ' Adjust MM, TM, CM by attribute and set the base to this as well, override whatever they had before
                             Select Case rsLoader.GetInt32(0)
                                 Case ItemAttributes.attributeEngRigCostBonus
-                                    CostMultiplier = CostMultiplier + rsLoader.GetDouble(1)
+                                    CostMultiplier = CostMultiplier * (1 + rsLoader.GetDouble(1))
                                     SelectedFacility.BaseCost = CostMultiplier
                                 Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
-                                    MaterialMultiplier = MaterialMultiplier + rsLoader.GetDouble(1)
+                                    MaterialMultiplier = MaterialMultiplier * (1 + rsLoader.GetDouble(1))
                                     SelectedFacility.BaseME = MaterialMultiplier
                                 Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
-                                    TimeMultiplier = TimeMultiplier + rsLoader.GetDouble(1)
+                                    TimeMultiplier = TimeMultiplier * (1 + rsLoader.GetDouble(1))
                                     SelectedFacility.BaseTE = TimeMultiplier
                             End Select
                         End While
