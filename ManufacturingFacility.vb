@@ -1951,7 +1951,7 @@ Public Class ManufacturingFacility
                 If IsDBNull(rsLoader.GetValue(5)) Then
                     CostMultiplier = rsStats.GetDouble(2)
                 Else
-                    CostMultiplier = rsLoader.GetDouble(4)
+                    CostMultiplier = rsLoader.GetDouble(5)
                 End If
 
                 rsStats.Close()
