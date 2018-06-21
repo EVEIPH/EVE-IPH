@@ -484,15 +484,10 @@ Public Class frmIndustryJobsViewer
         While rsCharacter.Read
             With TokenData
                 .CharacterID = rsCharacter.GetInt32(0)
-                .AccessToken = rsCharacter.GetString(1)
-                .TokenExpiration = CDate(rsCharacter.GetString(2))
-                .RefreshToken = rsCharacter.GetString(3)
-                .TokenType = rsCharacter.GetString(4)
-                .Scopes = rsCharacter.GetString(5)
 
                 TempCharacter = New Character
                 ' Loading a character will update the jobs and skills
-                TempCharacter.LoadCharacterData(.CharacterID, TokenData, False, False)
+                TempCharacter.LoadCharacterData(TokenData, False, False)
 
                 Application.DoEvents()
             End With

@@ -14,6 +14,15 @@ Public Class frmManageAccounts
         ListColumnClicked = 0
         ListColumnSortOrder = SortOrder.None
 
+        If AppRegistered() Then
+            btnAddCharacter.Enabled = True
+            btnSelectDefaultChar.Enabled = True
+        Else
+            'Disable until they register
+            btnAddCharacter.Enabled = False
+            btnSelectDefaultChar.Enabled = False
+        End If
+
     End Sub
 
     Private Sub lstAccounts_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstAccounts.ColumnClick
@@ -42,6 +51,7 @@ Public Class frmManageAccounts
         SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES "
         SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
         SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
+        SQL &= "AND CHARACTER_ID <> " & CStr(DummyCharacterID)
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsAccounts = DBCommand.ExecuteReader
@@ -83,7 +93,7 @@ Public Class frmManageAccounts
         rsAccounts.Read()
 
         ' Don't enable default setting if there aren't any new api keys
-        If CInt(rsAccounts.GetValue(0)) = 0 Then
+        If CInt(rsAccounts.GetValue(0)) = 0 Or Not AppRegistered() Then
             btnSelectDefaultChar.Enabled = False
         Else
             btnSelectDefaultChar.Enabled = True
@@ -200,10 +210,12 @@ Public Class frmManageAccounts
 
         Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
 
-        ' If they have the dummy loaded, let them add characters now
-        If DummyAccountLoaded And ApplicationSettings.ClientID <> DummyClient Then
+        ' If they registered the program, let them add characters now
+        If AppRegistered() Then
             Dim f2 As New frmSetCharacterDefault
             f2.ShowDialog()
+            btnSelectDefaultChar.Enabled = True
+            btnAddCharacter.Enabled = True
         End If
 
         Call LoadAccountGrid()

@@ -372,11 +372,11 @@ Public Class frmMain
         Call SetProgress("Loading Character Data from ESI...")
         Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
 
-        ' Only allow selecting a default if there are accounts to set it to
-        If DummyAccountLoaded Then
-            mnuSelectDefaultChar.Enabled = False
+        ' Only allow selecting a character if they registered the program
+        If AppRegistered() Then
+            mnuSelectionAddChar.Enabled = True
         Else
-            mnuSelectDefaultChar.Enabled = True
+            mnuSelectionAddChar.Enabled = False
         End If
 
         Call LoadCharacterNamesinMenu()
@@ -887,7 +887,7 @@ Public Class frmMain
         Dim readerAverage As SQLiteDataReader
         Dim ItemsperDay As Double
 
-        ' The amount of items we can build in 24 hours (include fractions) divided that by the average volume (volume/avgdays)
+        ' The amount of items we can build in 24 hours (include fractions) divided by the average volume (volume/avgdays)
         ' The data is stored as a record per day, so just count up the number of records in the time period (days - might not be the same as days shown)
         ' and divide by the sum of the volumes over that time period
         SQL = "SELECT SUM(TOTAL_VOLUME_FILLED)/COUNT(PRICE_HISTORY_DATE) FROM MARKET_HISTORY "
@@ -945,7 +945,7 @@ Public Class frmMain
 
 #End Region
 
-    Private Sub LoadCharacterNamesinMenu()
+    Public Sub LoadCharacterNamesinMenu()
         ' Default character set, now set the menu name on the panel
         mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
         ' Also, load all characters we have
@@ -1099,103 +1099,143 @@ Public Class frmMain
 
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
     Private Sub ToolStripMenuItem1_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter1.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter1.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter1.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem2_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter2.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter2.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter2.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem3_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter3.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter3.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter3.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem4_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter4.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter4.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter4.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem5_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter5.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter5.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter5.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem6_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter6.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter6.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter6.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem7_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter7.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter7.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter7.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem8_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter8.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter8.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter8.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem9_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter9.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter9.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter9.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem10_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter10.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter10.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter10.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem11_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter11.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter11.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter11.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem12_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter12.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter12.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter12.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem13_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter13.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter13.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter13.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem14_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter14.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter14.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter14.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem15_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter15.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter15.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter15.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem16_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter16.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter16.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter16.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem17_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter17.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter17.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter17.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem18_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter18.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter18.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter18.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem19_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter19.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter19.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter19.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem20_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter20.Click
+        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter20.Text)
         mnuCharacter.Text = "Character Loaded: " & tsCharacter20.Text
+        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub frmMain_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles MyBase.Load
@@ -1645,23 +1685,20 @@ Public Class frmMain
             Call ResetESIIndustryFacilities()
             Call ResetESIAdjustedMarketPrices()
 
-            CharactersLoaded = False ' Just deleted all the data
             FirstLoad = True ' Temporarily just to get screen to show correctly
 
             Application.UseWaitCursor = False
             Application.DoEvents()
 
+            Call SelectedCharacter.LoadDummyCharacter(True)
+
             MsgBox("All Data Reset", vbInformation, Application.ProductName)
 
-            Dim f1 As New frmSetCharacterDefault
-            f1.ShowDialog()
+            ' Need to set a default, open that form
+            Dim f2 = New frmSetCharacterDefault
+            f2.ShowDialog()
 
-            If CharactersLoaded Then
-                ' Need to set a default, open that form
-                Dim f2 = New frmSetCharacterDefault
-                f2.ShowDialog()
-                mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
-            End If
+            Call LoadCharacterNamesinMenu()
 
             ' Reset the tabs
             Call ResetTabs()
@@ -1968,25 +2005,19 @@ Public Class frmMain
     End Sub
 
     Private Sub mnuSelectionAddChar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionAddChar.Click
-        Dim f1 = New frmSetCharacterDefault
-        f1.ShowDialog()
 
-        If CharactersLoaded Then
-            ' Open up the default select box here
-            Dim f2 = New frmSetCharacterDefault
-            f2.ShowDialog()
-            ' reload all the names
-            Call LoadCharacterNamesinMenu()
+        ' Open up the default select box here
+        Dim f2 = New frmSetCharacterDefault
+        f2.ShowDialog()
 
-            ' Only allow selecting a default if there are accounts to set it to
-            If DummyAccountLoaded Then
-                mnuSelectDefaultChar.Enabled = False
-            Else
-                mnuSelectDefaultChar.Enabled = True
-                ' Reload the list
-                Call LoadCharacterNamesinMenu()
-            End If
+        ' Only allow selecting a default if they are registered
+        If AppRegistered() Then
+            mnuSelectDefaultChar.Enabled = True
+        Else
+            mnuSelectDefaultChar.Enabled = False
         End If
+
+        Call LoadCharacterNamesinMenu()
 
         ' Reinit form
         Call ResetTabs()
@@ -1998,11 +2029,13 @@ Public Class frmMain
 
         Call f1.ShowDialog()
 
-        ' Only allow selecting a default if there are accounts to set it to
-        If DummyAccountLoaded Then
-            mnuSelectDefaultChar.Enabled = False
-        Else
+        ' Only allow selecting a default if they registered the program
+        If AppRegistered() Then
+            mnuSelectionAddChar.Enabled = True
             mnuSelectDefaultChar.Enabled = True
+        Else
+            mnuSelectionAddChar.Enabled = False
+            mnuSelectDefaultChar.Enabled = False
             ' Reload the list
             Call LoadCharacterNamesinMenu()
         End If
@@ -2010,7 +2043,6 @@ Public Class frmMain
         ' Default character set, now set the panel if it changed
         If SelectedCharacter.Name <> mnuCharacter.Text.Substring(mnuCharacter.Text.IndexOf(":") + 2) Then
             ' If we returned, we got a default character set
-            mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
             Call ResetTabs()
             Call LoadCharacterNamesinMenu()
         End If
@@ -2024,10 +2056,12 @@ Public Class frmMain
 
         Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
 
-        ' If they have the dummy loaded, let them add characters now
-        If DummyAccountLoaded And ApplicationSettings.ClientID <> DummyClient Then
+        ' If they registered the program, let them add characters now
+        If AppRegistered() Then
+            mnuSelectionAddChar.Enabled = True
             Dim f2 As New frmSetCharacterDefault
             f2.ShowDialog()
+            Call LoadCharacterNamesinMenu()
         End If
 
     End Sub
@@ -2091,10 +2125,9 @@ Public Class frmMain
         Dim PreviousChar As String
 
         PreviousChar = SelectedCharacter.Name
-
         f1.ShowDialog()
         ' If we returned, we got a default character set
-        mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
+        Call LoadCharacterNamesinMenu()
 
         ' If they cancel or choose the same one, don't re load everything
         If PreviousChar <> SelectedCharacter.Name Then
@@ -2208,6 +2241,7 @@ Public Class frmMain
         End If
 
         Me.Cursor = Cursors.Default
+
     End Sub
 
     Private Sub mnuRestoreDefaultBP_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultBP.Click

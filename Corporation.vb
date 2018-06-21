@@ -3,8 +3,8 @@ Imports System.Data.SQLite
 
 Public Class Corporation
 
-    Private Name As String 'Corp name
-    Private ID As Long ' Corp ID
+    Public Name As String 'Corp name
+    Public CorporationID As Long ' Corp ID
     Public Ticker As String
     Public FactionID As Integer
     Public AllianceID As Integer
@@ -21,71 +21,93 @@ Public Class Corporation
     Private Assets As EVEAssets
     Public AssetAccess As Boolean
     Private Blueprints As EVEBlueprints
-    Public BlueprintAccess As Boolean
+    Public BlueprintsAccess As Boolean
     Private Jobs As EVEIndustryJobs
     Public JobsAccess As Boolean
 
     Public Sub New()
 
         AssetAccess = False
-        BlueprintAccess = False
+        BlueprintsAccess = False
         JobsAccess = False
+
+        Assets = New EVEAssets
+        Blueprints = New EVEBlueprints
+        Jobs = New EVEIndustryJobs
 
     End Sub
 
     ' Loads the corporation data from token information sent
-    Public Sub LoadCorporationData(ByVal CorporationID As Long, ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData,
+    Public Sub LoadCorporationData(ByVal CorpID As Long, ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData,
                                    RefreshAssets As Boolean, RefreshBlueprints As Boolean)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
+        Dim CorpRoles As New List(Of String)
 
         ' Get the public data about corporation and update it
-        Call UpdateCorporationData(CorporationID, CharacterTokenData)
+        Call UpdateCorporationData(CorpID)
 
         ' Load up all the data for the corporation
-        SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
+        SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorpID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
         While rsData.Read
             ' Save data
-            ID = CorporationID
+            CorporationID = CorpID
             Name = rsData.GetString(1)
             Ticker = rsData.GetString(2)
             MemberCount = rsData.GetInt32(3)
-            'FactionID = FormatNullInteger(rsData.GetValue(4))
-            AllianceID = FormatNullInteger(rsData.GetValue(4))
-            CEOID = rsData.GetInt32(5)
-            CreatorID = rsData.GetInt32(6)
-            'HomeStationID = FormatNullInteger(rsData.GetValue(8))
-            'Shares = FormatNullLong(rsData.GetValue(9))
-            TaxRate = rsData.GetDouble(7)
-            Description = FormatNullString(rsData.GetValue(8))
-            DateFounded = FormatNullDate(rsData.GetValue(9))
-            URL = FormatNullString(rsData.GetValue(10))
+            FactionID = FormatNullInteger(rsData.GetValue(4))
+            AllianceID = FormatNullInteger(rsData.GetValue(5))
+            CEOID = rsData.GetInt32(6)
+            CreatorID = rsData.GetInt32(7)
+            HomeStationID = FormatNullInteger(rsData.GetValue(8))
+            Shares = FormatNullLong(rsData.GetValue(9))
+            TaxRate = rsData.GetDouble(10)
+            Description = FormatNullString(rsData.GetValue(11))
+            DateFounded = FormatNullDate(rsData.GetValue(12))
+            URL = FormatNullString(rsData.GetValue(13))
         End While
 
         rsData.Close()
         DBCommand = Nothing
         rsData = Nothing
 
-        ' Industry Jobs
-        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationIndustryJobsScope) Then
-            JobsAccess = True
-            Jobs = New EVEIndustryJobs()
-            Call Jobs.UpdateIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+        Dim FactoryManager As Boolean = False
+        Dim Director As Boolean = False
+
+        ' See what permissions we have access to in the corporation for this character and only query those we can see
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationMembership) Then
+            Dim CharacterCorpRoles As List(Of String) = GetCorporationRoles(CharacterID, CorporationID, CharacterTokenData)
+
+            For Each Role In CharacterCorpRoles
+                Select Case Role
+                    Case "Factory_Manager"
+                        FactoryManager = True
+                    Case "Director"
+                        Director = True
+                End Select
+            Next
         End If
 
-        ' Blueprints
-        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationBlueprintsScope) Then
-            BlueprintAccess = True
+        ' Industry Jobs - needs FactoryManager role
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationIndustryJobsScope) And FactoryManager Then
+            JobsAccess = True
+            Jobs = New EVEIndustryJobs()
+            Call Jobs.LoadIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+        End If
+
+        ' Blueprints - needs Director role
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationBlueprintsScope) And Director Then
+            BlueprintsAccess = True
             Blueprints = New EVEBlueprints()
             Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, ScanType.Corporation, RefreshBlueprints)
         End If
 
-        ' Assets
-        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationAssetScope) Then
+        ' Assets - needs Director role
+        If CharacterTokenData.Scopes.Contains(ESI.ESICorporationAssetScope) And Director Then
             AssetAccess = True
             Assets = New EVEAssets(ScanType.Corporation)
             Call Assets.LoadAssets(CorporationID, CharacterTokenData, RefreshAssets)
@@ -94,83 +116,112 @@ Public Class Corporation
     End Sub
 
     ' Updates the public informaton about the corporation in DB
-    Private Sub UpdateCorporationData(ByVal CorporationID As Long, ByVal CharacterTokenData As SavedTokenData)
-        Dim SQL As String
-        Dim CorpData As ESICorporation = Nothing
-
+    Private Sub UpdateCorporationData(ByVal CorporationID As Long)
         Dim ESIData As New ESI
         Dim CB As New CacheBox
         Dim CacheDate As Date
 
         ' Update the corp data if we can
         If CB.DataUpdateable(CacheDateType.PublicCorporationData, CorporationID) Then
-            CorpData = ESIData.GetCorporationData(CorporationID, CacheDate)
-
-            If Not IsNothing(CorpData) Then
-                Call EVEDB.BeginSQLiteTransaction()
-
-                ' See if we insert or update
-                Dim rsCheck As SQLiteDataReader
-                ' Load up all the data for the corporation
-                SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CorporationID
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsCheck = DBCommand.ExecuteReader
-
-                If rsCheck.Read Then
-                    ' Found a record, so update the data
-                    With CorpData
-                        SQL = "UPDATE ESI_CORPORATION_DATA SET "
-                        SQL &= "CORPORATION_NAME = " & BuildInsertFieldString(.name) & ","
-                        SQL &= "TICKER = " & BuildInsertFieldString(.ticker) & ","
-                        SQL &= "MEMBER_COUNT = " & BuildInsertFieldString(.member_count) & ","
-                        'SQL &= "FACTION_ID = " & BuildInsertFieldString(.faction_id) & ","
-                        SQL &= "ALLIANCE_ID = " & BuildInsertFieldString(.alliance_id) & ","
-                        SQL &= "CEO_ID = " & BuildInsertFieldString(.ceo_id) & ","
-                        SQL &= "CREATOR_ID = " & BuildInsertFieldString(.creator_id) & ","
-                        'SQL &= "HOME_STATION_ID = " & BuildInsertFieldString(.home_station_id) & ","
-                        'SQL &= "SHARES = " & BuildInsertFieldString(.shares) & ","
-                        SQL &= "TAX_RATE = " & BuildInsertFieldString(.tax_rate) & ","
-                        SQL &= "DESCRIPTION = " & BuildInsertFieldString(.description) & ","
-                        SQL &= "DATE_FOUNDED = " & BuildInsertFieldString(.date_founded) & ","
-                        SQL &= "URL = " & BuildInsertFieldString(.date_founded) & " "
-                        SQL &= "WHERE CORPORATION_ID = " & CStr(CorporationID)
-                    End With
-                Else
-                    ' New record
-                    With CorpData
-                        SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
-                        SQL &= BuildInsertFieldString(CorporationID) & ","
-                        SQL &= BuildInsertFieldString(.name) & ","
-                        SQL &= BuildInsertFieldString(.ticker) & ","
-                        SQL &= BuildInsertFieldString(.member_count) & ","
-                        'SQL &= BuildInsertFieldString(.faction_id) & ","
-                        SQL &= BuildInsertFieldString(.alliance_id) & ","
-                        SQL &= BuildInsertFieldString(.ceo_id) & ","
-                        SQL &= BuildInsertFieldString(.creator_id) & ","
-                        'SQL &= BuildInsertFieldString(.home_station_id) & ","
-                        ' SQL &= BuildInsertFieldString(.shares) & ","
-                        SQL &= BuildInsertFieldString(.tax_rate) & ","
-                        SQL &= BuildInsertFieldString(.description) & ","
-                        SQL &= BuildInsertFieldString(.date_founded) & ","
-                        SQL &= BuildInsertFieldString(.url) & ","
-                        SQL &= "NULL,NULL,NULL,NULL)"
-                    End With
-
-                End If
-
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Update after we update/insert the record
-                Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CorporationID)
-
-                Call EVEDB.CommitSQLiteTransaction()
-
-                DBCommand = Nothing
-
-            End If
+            Call ESIData.SetCorporationData(CorporationID, CacheDate)
+            ' Update after we update/insert the record
+            Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CorporationID)
         End If
+
     End Sub
+
+    ' Loads the dummy corporation into the dummy character
+    Public Sub LoadDummyCorporationData()
+        Dim SQL As String = ""
+
+        ' Delete the dummy information if in there
+        Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = {0}", DummyCorporationID))
+
+        ' Load the variables
+        CorporationID = DummyCorporationID
+        Name = None
+        Ticker = None
+        MemberCount = 1
+        FactionID = 0
+        AllianceID = 0
+        CEOID = 0
+        CreatorID = 0
+        HomeStationID = 0
+        Shares = 0
+        TaxRate = 0
+        Description = ""
+        DateFounded = NoDate
+        URL = ""
+
+        SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
+        SQL &= BuildInsertFieldString(CorporationID) & ","
+        SQL &= BuildInsertFieldString(Name) & ","
+        SQL &= BuildInsertFieldString(Ticker) & ","
+        SQL &= BuildInsertFieldString(MemberCount) & ","
+        SQL &= BuildInsertFieldString(FactionID) & ","
+        SQL &= BuildInsertFieldString(AllianceID) & ","
+        SQL &= BuildInsertFieldString(CEOID) & ","
+        SQL &= BuildInsertFieldString(CreatorID) & ","
+        SQL &= BuildInsertFieldString(HomeStationID) & ","
+        SQL &= BuildInsertFieldString(Shares) & ","
+        SQL &= BuildInsertFieldString(TaxRate) & ","
+        SQL &= BuildInsertFieldString(Description) & ","
+        SQL &= BuildInsertFieldString(NoDate) & ","
+        SQL &= BuildInsertFieldString(URL) & ","
+        SQL &= BuildInsertFieldString(NoExpiry) & "," ' Set this here too to stop calls to update dummy corp through ESI
+        SQL &= BuildInsertFieldString(NoExpiry) & ","
+        SQL &= BuildInsertFieldString(NoExpiry) & ","
+        SQL &= BuildInsertFieldString(NoExpiry) & ","
+        SQL &= BuildInsertFieldString(NoExpiry) & ")"
+
+        ' Insert the dummy corp
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+    End Sub
+
+    Private Function GetCorporationRoles(CharacterID As Long, CorporationID As Long, TokenData As SavedTokenData) As List(Of String)
+        Dim RoleESI As New ESI
+        Dim RoleData As List(Of ESICorporationRoles)
+        Dim ReturnRoles As New List(Of String)
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
+
+        Dim rsRoles As SQLiteDataReader
+        Dim SQL As String = ""
+
+        If CB.DataUpdateable(CacheDateType.CorporateRoles, CorporationID) Then
+            ' Get all the roles for all characters in corporation. Note, the roles can only be pulled for a character with personel manager
+            RoleData = RoleESI.GetCorpRoles(CharacterID, CorporationID, TokenData, CacheDate)
+
+            If Not IsNothing(RoleData) Then
+                Call EVEDB.BeginSQLiteTransaction()
+                ' Check roles - for places they can carry out the role
+                ' Grantable is that they can give the role to others
+                For Each Character In RoleData
+                    ' Delete current role data and update
+                    Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}", CorporationID, Character.character_id))
+                    ' Insert only role data (read access) for later checks
+                    For Each Role In Character.roles
+                        Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_CORPORATION_ROLES VALUES ({0}, {1},'{2}','Roles')", CorporationID, Character.character_id, FormatDBString(Role)))
+                    Next
+                Next
+                Call EVEDB.CommitSQLiteTransaction()
+            End If
+            Call CB.UpdateCacheDate(CacheDateType.CorporateRoles, CacheDate, CorporationID)
+        End If
+
+        ' Look up roles for the character sent in DB
+        SQL = "SELECT ROLE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}"
+        DBCommand = New SQLiteCommand(String.Format(SQL, CorporationID, CharacterID), EVEDB.DBREf)
+        rsRoles = DBCommand.ExecuteReader
+
+        While rsRoles.Read
+            ReturnRoles.Add(rsRoles.GetString(0))
+        End While
+
+        Return ReturnRoles
+
+    End Function
 
     Public Function GetIndustryJobs() As EVEIndustryJobs
         Return Jobs
@@ -183,17 +234,5 @@ Public Class Corporation
     Public Function GetBlueprints() As EVEBlueprints
         Return Blueprints
     End Function
-
-    ReadOnly Property CorporationID() As Long
-        Get
-            Return ID
-        End Get
-    End Property
-
-    ReadOnly Property CorporationName() As String
-        Get
-            Return Name
-        End Get
-    End Property
 
 End Class

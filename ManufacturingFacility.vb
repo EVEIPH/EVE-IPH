@@ -1430,18 +1430,7 @@ Public Class ManufacturingFacility
                 SelectedFacility.FullyLoaded = True
                 ' Facility is loaded, so save it to default and dynamic variable
                 Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
-                ' Load the bp on bp tab
-                If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
-                    Dim SentFrom As SentFromLocation
-                    If SelectedLocation = ProgramLocation.BlueprintTab Then
-                        SentFrom = SentFromLocation.BlueprintTab
-                    ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
-                        SentFrom = SentFromLocation.ManufacturingTab
-                    End If
-                    With SelectedBlueprint
-                        Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
-                    End With
-                End If
+                Call UpdateBlueprint()
             Else
                 Call SetFacilityBonusBoxes(False)
                 SelectedFacility.FullyLoaded = False
@@ -1710,18 +1699,7 @@ Public Class ManufacturingFacility
                                           GetFacilityTypeCode(cmbFacilityType.Text), cmbFacilityorArray.Text)
 
             PreviousEquipment = cmbFacilityorArray.Text
-            ' Load the bp on bp tab
-            If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
-                Dim SentFrom As SentFromLocation
-                If SelectedLocation = ProgramLocation.BlueprintTab Then
-                    SentFrom = SentFromLocation.BlueprintTab
-                ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
-                    SentFrom = SentFromLocation.ManufacturingTab
-                End If
-                With SelectedBlueprint
-                    Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
-                End With
-            End If
+            Call UpdateBlueprint()
         End If
     End Sub
     Private Sub cmbFacilityorArray_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilityorArray.DropDown
@@ -2018,7 +1996,7 @@ Public Class ManufacturingFacility
                     For Each RigID In InstalledModules
                         ' Look up the bonus while adjusting for the type of space we are in
                         SQL = "SELECT attributeID, "
-                        SQL &= "(COALESCE(VALUEFLOAT, VALUEINT) * (SELECT COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1}))/100 AS BONUS "
+                        SQL &= "ABS((COALESCE(VALUEFLOAT, VALUEINT) * (SELECT COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1}))/100) AS BONUS "
                         SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2593,2594,2595,2713,2714,2653) "
                         SQL &= "AND COALESCE(VALUEFLOAT, VALUEINT) <> 0 AND TYPEID = {0}"
                         SQL = String.Format(SQL, RigID, CInt(securityAttribute))
@@ -2029,13 +2007,13 @@ Public Class ManufacturingFacility
                             ' Adjust MM, TM, CM by attribute and set the base to this as well, override whatever they had before
                             Select Case rsLoader.GetInt32(0)
                                 Case ItemAttributes.attributeEngRigCostBonus
-                                    CostMultiplier = CostMultiplier + rsLoader.GetDouble(1)
+                                    CostMultiplier = CostMultiplier * (1 - rsLoader.GetDouble(1))
                                     SelectedFacility.BaseCost = CostMultiplier
                                 Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
-                                    MaterialMultiplier = MaterialMultiplier + rsLoader.GetDouble(1)
+                                    MaterialMultiplier = MaterialMultiplier * (1 - rsLoader.GetDouble(1))
                                     SelectedFacility.BaseME = MaterialMultiplier
                                 Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
-                                    TimeMultiplier = TimeMultiplier + rsLoader.GetDouble(1)
+                                    TimeMultiplier = TimeMultiplier * (1 - rsLoader.GetDouble(1))
                                     SelectedFacility.BaseTE = TimeMultiplier
                             End Select
                         End While
@@ -2125,6 +2103,7 @@ Public Class ManufacturingFacility
 
         End With
 
+        ' Always display the bonus, not the multiplier
         Dim MMText As String = FormatPercent(1 - MaterialMultiplier, 2)
         Dim TMText As String = FormatPercent(1 - TimeMultiplier, 2)
         Dim CostText As String = FormatPercent(1 - CostMultiplier, 2)
@@ -2490,6 +2469,10 @@ Public Class ManufacturingFacility
             Call SetFacility(SelectedFacility, SelectedFacility.FacilityProductionType, True, True)
 
         End If
+
+        ' Update the blueprint if we can after a save
+        Call UpdateBlueprint()
+
     End Sub
 
     ' Load the facility for the check - either components or cap components OR T3 destroyers or T3 cruisers (only need to do this with limited controls)
@@ -2970,6 +2953,22 @@ Public Class ManufacturingFacility
 
     End Sub
 
+    ' Updates the blueprint on the bp tab if it's that facility
+    Private Sub UpdateBlueprint()
+        ' Load the bp on bp tab
+        If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
+            Dim SentFrom As SentFromLocation
+            If SelectedLocation = ProgramLocation.BlueprintTab Then
+                SentFrom = SentFromLocation.BlueprintTab
+            ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
+                SentFrom = SentFromLocation.ManufacturingTab
+            End If
+            With SelectedBlueprint
+                Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+            End With
+        End If
+    End Sub
+
 #End Region
 
 #Region "Faction Warfare Functions"
@@ -3354,10 +3353,23 @@ Public Class ManufacturingFacility
                 e.Handled = True
             End If
         End If
+
+    End Sub
+
+    Private Sub txtFacilityManualME_KeyDown(sender As Object, e As KeyEventArgs) Handles txtFacilityManualME.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Call SetManualTextBoxValue(BoxType._ME)
+            Call UpdateBlueprint()
+        End If
     End Sub
 
     Private Sub txtFacilityManualME_GotFocus(sender As Object, e As EventArgs) Handles txtFacilityManualME.GotFocus
         Call txtFacilityManualCost.SelectAll()
+    End Sub
+
+    Private Sub txtFacilityManualME_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualME.LostFocus
+        Call SetManualTextBoxValue(BoxType._ME)
+        Call UpdateBlueprint()
     End Sub
 
     Private Sub txtFacilityManualTE_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTE.KeyPress
@@ -3370,8 +3382,20 @@ Public Class ManufacturingFacility
         End If
     End Sub
 
+    Private Sub txtFacilityManualTE_KeyDown(sender As Object, e As KeyEventArgs) Handles txtFacilityManualTE.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Call SetManualTextBoxValue(BoxType._TE)
+            Call UpdateBlueprint()
+        End If
+    End Sub
+
     Private Sub txtFacilityManualTE_GotFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTE.GotFocus
         Call txtFacilityManualTE.SelectAll()
+    End Sub
+
+    Private Sub txtFacilityManualTE_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTE.LostFocus
+        Call SetManualTextBoxValue(BoxType._TE)
+        Call UpdateBlueprint()
     End Sub
 
     Private Sub txtFacilityManualCost_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualCost.KeyPress
@@ -3384,8 +3408,20 @@ Public Class ManufacturingFacility
         End If
     End Sub
 
+    Private Sub txtFacilityManualCost_KeyDown(sender As Object, e As KeyEventArgs) Handles txtFacilityManualCost.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Call SetManualTextBoxValue(BoxType._Cost)
+            Call UpdateBlueprint()
+        End If
+    End Sub
+
     Private Sub txtFacilityManualCost_GotFocus(sender As Object, e As EventArgs) Handles txtFacilityManualCost.GotFocus
         Call txtFacilityManualCost.SelectAll()
+    End Sub
+
+    Private Sub txtFacilityManualCost_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualCost.LostFocus
+        Call SetManualTextBoxValue(BoxType._Cost)
+        Call UpdateBlueprint()
     End Sub
 
     Private Sub txtFacilityManualTax_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTax.KeyPress
@@ -3398,8 +3434,20 @@ Public Class ManufacturingFacility
         End If
     End Sub
 
+    Private Sub txtFacilityManualTax_KeyDown(sender As Object, e As KeyEventArgs) Handles txtFacilityManualTax.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Call SetManualTextBoxValue(BoxType._Tax)
+            Call UpdateBlueprint()
+        End If
+    End Sub
+
     Private Sub txtFacilityManualTax_GotFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTax.GotFocus
         Call txtFacilityManualTax.SelectAll()
+    End Sub
+
+    Private Sub txtFacilityManualTax_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTax.LostFocus
+        Call SetManualTextBoxValue(BoxType._Tax)
+        Call UpdateBlueprint()
     End Sub
 
     Private Function FormatManualEntry(Entry As String) As Double
@@ -3420,49 +3468,44 @@ Public Class ManufacturingFacility
 
     End Function
 
-    Private Sub txtFacilityManualME_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualME.LostFocus
+    Private Sub SetManualTextBoxValue(Box As BoxType)
+
         If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.MaterialMultiplier = FormatManualEntry(txtFacilityManualME.Text)
             ' Format for text box
             UpdatingManualBoxes = True
-            txtFacilityManualME.Text = FormatPercent(SelectedFacility.MaterialMultiplier, 2)
+            btnFacilitySave.Enabled = True
+
+            Select Case Box
+                Case BoxType._ME
+                    SelectedFacility.MaterialMultiplier = 1 - FormatManualEntry(txtFacilityManualME.Text)
+                    GetFacility(SelectedFacility.FacilityProductionType).MaterialMultiplier = SelectedFacility.MaterialMultiplier
+                    txtFacilityManualME.Text = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
+                Case BoxType._TE
+                    SelectedFacility.TimeMultiplier = 1 - FormatManualEntry(txtFacilityManualTE.Text)
+                    GetFacility(SelectedFacility.FacilityProductionType).TimeMultiplier = SelectedFacility.TimeMultiplier
+                    txtFacilityManualTE.Text = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
+                Case BoxType._Cost
+                    SelectedFacility.CostMultiplier = 1 - FormatManualEntry(txtFacilityManualCost.Text)
+                    GetFacility(SelectedFacility.FacilityProductionType).CostMultiplier = SelectedFacility.CostMultiplier
+                    txtFacilityManualCost.Text = FormatPercent(1 - SelectedFacility.CostMultiplier, 2)
+                Case BoxType._Tax
+                    SelectedFacility.TaxRate = FormatManualEntry(txtFacilityManualTax.Text)
+                    GetFacility(SelectedFacility.FacilityProductionType).TaxRate = SelectedFacility.TaxRate
+                    txtFacilityManualTax.Text = FormatPercent(SelectedFacility.TaxRate, 2)
+            End Select
+
             UpdatingManualBoxes = False
+
         End If
+
     End Sub
 
-    Private Sub txtFacilityManualCost_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualCost.LostFocus
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.CostMultiplier = FormatManualEntry(txtFacilityManualCost.Text)
-            ' Format for text box
-            UpdatingManualBoxes = True
-            txtFacilityManualCost.Text = FormatPercent(SelectedFacility.CostMultiplier, 2)
-            UpdatingManualBoxes = False
-        End If
-    End Sub
-
-    Private Sub txtFacilityManualTax_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTax.LostFocus
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.TaxRate = FormatManualEntry(txtFacilityManualTax.Text)
-            ' Format for text box
-            UpdatingManualBoxes = True
-            txtFacilityManualTax.Text = FormatPercent(SelectedFacility.TaxRate, 2)
-            UpdatingManualBoxes = False
-        End If
-    End Sub
-
-    Private Sub txtFacilityManualTE_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTE.LostFocus
-        If Not FirstLoad And Not IsNothing(SelectedFacility) And Not UpdatingManualBoxes Then
-            btnFacilitySave.Enabled = True
-            SelectedFacility.TimeMultiplier = FormatManualEntry(txtFacilityManualTE.Text)
-            ' Format for text box
-            UpdatingManualBoxes = True
-            txtFacilityManualTE.Text = FormatPercent(SelectedFacility.TimeMultiplier, 2)
-            UpdatingManualBoxes = False
-        End If
-    End Sub
+    Private Enum BoxType
+        _ME = 0
+        _TE = 1
+        _Cost = 2
+        _Tax = 3
+    End Enum
 
 #End Region
 
@@ -3901,18 +3944,18 @@ ExitBlock:
                     ' if what they have now is different from what they started with, then they made a change
                     ' for upwell structures, the base is updated when they make changes to the facility fitting
                     If MaterialMultiplier <> BaseME Then
-                        TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(1 - MaterialMultiplier) & ", "
+                        TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
                     Else
                         TempSQL &= "MATERIAL_MULTIPLIER = NULL, "
                     End If
 
                     If TimeMultiplier <> BaseTE Then
-                        TempSQL &= "TIME_MULTIPLIER = " & CStr(1 - TimeMultiplier) & ", "
+                        TempSQL &= "TIME_MULTIPLIER = " & CStr(TimeMultiplier) & ", "
                     Else
                         TempSQL &= "TIME_MULTIPLIER = NULL, "
                     End If
                     If CostMultiplier <> BaseCost Then
-                        TempSQL &= "COST_MULTIPLIER = " & CStr(1 - CostMultiplier) & " "
+                        TempSQL &= "COST_MULTIPLIER = " & CStr(CostMultiplier) & " "
                     Else
                         TempSQL &= "COST_MULTIPLIER = NULL "
                     End If

@@ -176,6 +176,12 @@
     <Compile Include="frmLoadESIAuthorization.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmMETE.Designer.vb">
+      <DependentUpon>frmMETE.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMETE.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmUpwellStructureFitting.designer.vb">
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
     </Compile>
@@ -255,12 +261,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="EVEBlueprints.vb" />
-    <Compile Include="frmMLPLCalc.Designer.vb">
-      <DependentUpon>frmMLPLCalc.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmMLPLCalc.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmRefinery.Designer.vb">
       <DependentUpon>frmRefinery.vb</DependentUpon>
     </Compile>
@@ -440,6 +440,7 @@
     <Compile Include="ProgramUpdater.vb" />
     <Compile Include="RefiningReprocessing.vb" />
     <Compile Include="EVEResearchAgents.vb" />
+    <Compile Include="Settings.vb" />
     <Compile Include="ShoppingList.vb" />
     <Compile Include="SplashScreen.Designer.vb">
       <DependentUpon>SplashScreen.vb</DependentUpon>
@@ -474,6 +475,9 @@
     <EmbeddedResource Include="frmLoadESIAuthorization.resx">
       <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmMETE.resx">
+      <DependentUpon>frmMETE.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmUpwellStructureFitting.resx">
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
     </EmbeddedResource>
@@ -499,10 +503,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmSelectManufacturingTabColumns.resx">
       <DependentUpon>frmSelectManufacturingTabColumns.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmMLPLCalc.resx">
-      <DependentUpon>frmMLPLCalc.vb</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmRefinery.resx">
       <DependentUpon>frmRefinery.vb</DependentUpon>

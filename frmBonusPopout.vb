@@ -1,5 +1,8 @@
 ﻿
 Public Class frmBonusPopout
+    Private ColumnClicked As Integer
+    Private ColumnSortType As SortOrder
+
     Public Sub New()
 
         ' This call is required by the designer.
@@ -66,5 +69,9 @@ Public Class frmBonusPopout
 
         Application.DoEvents()
 
+    End Sub
+
+    Private Sub lstUpwellStructureBonuses_ColumnClick(sender As Object, e As ColumnClickEventArgs) Handles lstUpwellStructureBonuses.ColumnClick
+        Call ListViewColumnSorter(e.Column, CType(lstUpwellStructureBonuses, ListView), ColumnClicked, ColumnSortType)
     End Sub
 End Class

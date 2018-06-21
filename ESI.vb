@@ -4,6 +4,7 @@ Imports System.Net.Sockets
 Imports System.Text
 Imports System.Data.SQLite
 Imports System.Collections.Specialized
+Imports System.Threading
 Imports Newtonsoft.Json
 
 Public Module ESIGlobals
@@ -17,13 +18,12 @@ Public Class ESI
     Private Const ESIPublicURL As String = "https://esi.tech.ccp.is/latest/"
     Private Const TranquilityDataSource As String = "?datasource=tranquility"
 
-    Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host. Users can change the port number
+    Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
+    Private Const LocalPort As String = "12500" ' Always use this port
 
     Private ClientID As String
     Private SecretKey As String
-    Private LocalPort As Integer
     Public ScopesString As String
-    Public AppRegistered As Boolean ' if we have app data to run the authorizations
 
     Public Const ESICharacterAssetScope As String = "esi-assets.read_assets"
     Public Const ESICharacterResearchAgentsScope As String = "esi-characters.read_agents_research"
@@ -35,6 +35,7 @@ Public Class ESI
     Public Const ESICorporationAssetScope As String = "esi-assets.read_corporation_assets"
     Public Const ESICorporationBlueprintsScope As String = "esi-corporations.read_blueprints"
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
+    Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
 
     ' Cache field names and times
     Private Const IndustrySystemsField As String = "INDUSTRY_SYSTEMS_CACHED_UNTIL"
@@ -56,6 +57,11 @@ Public Class ESI
     Private Const ESIMaximumConnections As Integer = 20
 
     Private IDToFind As Long ' for predicate
+    Private RetriedCall As Boolean
+
+    Private AuthThreadReference As Thread ' Reference in case we need to kill this
+    Private AuthStreamText As String ' The return data from the web call
+    Private myListner As TcpListener = New TcpListener(IPAddress.Parse(LocalHost), CInt(LocalPort)) ' Ref to the listener so we can stop it
 
     ' ESI implements the following scopes:
 
@@ -82,70 +88,52 @@ Public Class ESI
         With ApplicationSettings
             ClientID = .ClientID
             SecretKey = .SecretKey
-            LocalPort = .Port
             ScopesString = .Scopes
         End With
 
-        If ClientID = "" Then
-            AppRegistered = False
-        Else
-            If ClientID = DummyClient Then
-                DummyAccountLoaded = True
-            End If
-            AppRegistered = True
-        End If
+        AuthStreamText = ""
+
+        RetriedCall = False
 
     End Sub
+
+    Public Function GetClientID() As String
+        Return ClientID
+    End Function
 
     ''' <summary>
     ''' Opens a connection to EVE SSO server and gets an authorization token to get an access token
     ''' </summary>
     ''' <returns>Authorization Token</returns>
     Private Function GetAuthorizationToken(ByRef ErrorCode As Integer) As String
+        Dim ErrorResponse As String = ""
 
         Try
             If ClientID <> "" And ClientID <> DummyClient Then
-                ' Build the authorization call
-                Dim URL As String = ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://"
-                URL &= LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
-                ' Open the web page
-                Process.Start(URL)
+                Dim StartTime As Date = Now
+                AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
+                AuthThreadReference.Start()
 
-                Dim myListner As TcpListener = New TcpListener(IPAddress.Parse(LocalHost), LocalPort)
-                Dim mySocket As Socket = Nothing
-                Dim myStream As NetworkStream = Nothing
-                Dim myReader As StreamReader = Nothing
-                Dim myWriter As StreamWriter = Nothing
-
-                Dim StreamText As String = ""
-
-                myListner.Start()
-
-                mySocket = myListner.AcceptSocket()
-                myStream = New NetworkStream(mySocket)
-                myReader = New StreamReader(myStream)
-                myWriter = New StreamWriter(myStream)
-                myWriter.AutoFlush = True
-
+                ' Now loop until thread is done, 60 seconds goes by, or cancel clicked
                 Do
-                    StreamText &= myReader.ReadLine & "|"
-
-                    If StreamText.Contains("code") Then
+                    If DateDiff(DateInterval.Second, StartTime, Now) > 60 Then
+                        Call MsgBox("Request timed out. You must complete your login within 60 seconds.", vbInformation, Application.ProductName)
+                        myListner.Stop()
+                        AuthThreadReference.Abort()
+                        Return Nothing
+                    ElseIf CancelESISSOLogin Then
+                        Call MsgBox("Request Canceled", vbInformation, Application.ProductName)
+                        myListner.Stop()
+                        AuthThreadReference.Abort()
+                        Return Nothing
+                    ElseIf Not AuthThreadReference.IsAlive Then
                         Exit Do
                     End If
-                Loop Until myReader.EndOfStream
+                    Application.DoEvents()
+                Loop
 
-                myWriter.Write("Login Successful!" & vbCrLf & vbCrLf & "You can close this window.")
-
-                myWriter.Close()
-                myReader.Close()
-                myStream.Close()
-                mySocket.Close()
-                myListner.Stop()
-
-                Application.DoEvents()
-
-                Dim AuthTokenString As String() = StreamText.Split(New Char() {" "c})
+                ' Process the auth stream now
+                Dim AuthTokenString As String() = AuthStreamText.Split(New Char() {" "c})
                 Dim AuthToken As String = ""
 
                 For i = 0 To AuthTokenString.Count - 1
@@ -159,16 +147,73 @@ Public Class ESI
                 Return AuthToken
             End If
         Catch ex As WebException
-            MsgBox("Web Request failed. Code: " & ErrorCode & ", " & ex.Message)
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+            ErrorResponse = GetErrorResponseBody(ex)
+
+            If ErrorCode >= 500 And Not RetriedCall Then
+                ' Try this call again after waiting a few
+                Threading.Thread.Sleep(2000)
+                RetriedCall = True
+                Call GetAuthorizationToken(0)
+            End If
+            MsgBox("Web Request failed to get Authorization Token. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
-            MsgBox("The request failed. " & ex.Message, vbInformation, Application.ProductName)
+            MsgBox("The request failed to get Authorization Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
         End Try
 
         Return ""
+        RetriedCall = False
 
     End Function
+
+    ''' <summary>
+    ''' Opens the login for EVE SSO and returns the data stream from a successful log in
+    ''' </summary>
+    Private Sub GetAuthorizationfromWeb()
+        Try
+            ' Build the authorization call
+            Dim URL As String = ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://"
+            URL &= LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
+
+            Process.Start(URL)
+
+            Dim mySocket As Socket = Nothing
+            Dim myStream As NetworkStream = Nothing
+            Dim myReader As StreamReader = Nothing
+            Dim myWriter As StreamWriter = Nothing
+
+            myListner.Start()
+
+            mySocket = myListner.AcceptSocket() ' Wait for response
+            Debug.Print("After socket listen")
+            myStream = New NetworkStream(mySocket)
+            myReader = New StreamReader(myStream)
+            myWriter = New StreamWriter(myStream)
+            myWriter.AutoFlush = True
+
+            Do
+                AuthStreamText &= myReader.ReadLine & "|"
+
+                If AuthStreamText.Contains("code") Then
+                    Exit Do
+                End If
+            Loop Until myReader.EndOfStream
+
+            myWriter.Write("Login Successful!" & vbCrLf & vbCrLf & "You can close this window.")
+
+            myWriter.Close()
+            myReader.Close()
+            myStream.Close()
+            mySocket.Close()
+            myListner.Stop()
+
+            Application.DoEvents()
+        Catch ex As Exception
+            Application.DoEvents()
+        End Try
+
+    End Sub
 
     ''' <summary>
     ''' Gets the Access Token data from the EVE server for authorization or refresh tokens.
@@ -182,9 +227,12 @@ Public Class ESI
             Return Nothing
         End If
 
+        Dim AccessTokenOutput As New ESITokenData
+        Dim Success As Boolean = False
         Dim WC As New WebClient
         Dim Response As Byte()
         Dim Data As String = ""
+        Dim ErrorResponse As String = ""
 
         Dim AuthHeader As String = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
 
@@ -206,20 +254,34 @@ Public Class ESI
             ' Convert byte data to string
             Data = Encoding.UTF8.GetString(Response)
 
-            Dim AccessTokenOutput As ESITokenData
             ' Parse the data to the class
             AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            Success = True
 
-            Return AccessTokenOutput
         Catch ex As WebException
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-            MsgBox("Web Request failed. Code: " & ErrorCode & ", " & ex.Message)
-            Return Nothing
+            ErrorResponse = GetErrorResponseBody(ex)
+
+            If ErrorCode >= 500 And Not RetriedCall Then
+                ' Try this call again after waiting a few
+                RetriedCall = True
+                Threading.Thread.Sleep(2000)
+                Call GetAccessToken(Token, Refresh, 0)
+            End If
+
+            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
         Catch ex As Exception
-            MsgBox("The request failed. " & ex.Message, vbInformation, Application.ProductName)
+            MsgBox("The request failed to get Access Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
-            Return Nothing
         End Try
+
+        RetriedCall = False
+
+        If Success Then
+            Return AccessTokenOutput
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -229,8 +291,10 @@ Public Class ESI
     ''' <param name="URL">Full public data URL as a string</param>
     ''' <returns>Byte Array of response or nothing if call fails</returns>
     Private Function GetPublicData(ByVal URL As String, ByRef CacheDate As Date, Optional BodyData As String = "") As String
-        Dim Response As String
+        Dim Response As String = ""
         Dim WC As New WebClient
+        Dim ErrorCode As Integer = 0
+        Dim ErrorResponse As String = ""
 
         WC.Proxy = Nothing
 
@@ -254,10 +318,28 @@ Public Class ESI
             End If
 
             Return Response
+        Catch ex As WebException
+            ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+            ErrorResponse = GetErrorResponseBody(ex)
+
+            If ErrorCode >= 500 And Not RetriedCall Then
+                RetriedCall = True
+                ' Try this call again after waiting a few
+                Threading.Thread.Sleep(2000)
+                Return GetPublicData(URL, CacheDate, BodyData)
+            End If
+            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
         Catch ex As Exception
-            ' Call failed
-            Return Nothing
+            MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
         End Try
+
+        RetriedCall = False
+
+        If Response <> "" Then
+            Return Response
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -266,9 +348,12 @@ Public Class ESI
     ''' authorization token and update the sent variable and DB data if expired.
     ''' </summary>
     ''' <returns>Returns data response as a string</returns>
-    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByRef TokenData As ESITokenData, ByVal TokenExpiration As Date, ByRef CacheDate As Date) As String
+    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByRef TokenData As ESITokenData,
+                                              ByVal TokenExpiration As Date, ByRef CacheDate As Date,
+                                              ByVal CharacterID As Long) As String
         Dim WC As New WebClient
         Dim ErrorCode As Integer = 0
+        Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
         WC.Proxy = Nothing
@@ -277,6 +362,17 @@ Public Class ESI
         If TokenExpiration <= DateTime.UtcNow Then
             ' Update the token
             TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
+            ' Update the token data in the DB for this character
+            Dim SQL As String = ""
+            ' Update data - only stuff that could (reasonably) change
+            SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+            SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+
+            With TokenData
+                SQL = String.Format(SQL, FormatDBString(.access_token),
+                            Format(DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow), SQLiteDateFormat),
+                            FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
+            End With
         End If
 
         If ErrorCode = 0 Then
@@ -309,12 +405,31 @@ Public Class ESI
                 End If
 
                 Return Response
-            Catch ex As Exception
-                If Not ex.Message.Contains("Forbidden") Then
-                    MsgBox("ESI Authorization Error: " & ex.Message, vbInformation, Application.ProductName)
+            Catch ex As WebException
+                ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+                ErrorResponse = GetErrorResponseBody(ex)
+
+                If ErrorResponse = "Character not in corporation" Then
+                    ' Assume this error came from checking on NPC corp roles and just exit with nothing
+                    Exit Try
                 End If
-                Return Nothing
+
+                If ErrorCode >= 500 And Not RetriedCall Then
+                    RetriedCall = True
+                    ' Try this call again after waiting a few
+                    Threading.Thread.Sleep(2000)
+                    Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID)
+                End If
+                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+            Catch ex As Exception
+                MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
             End Try
+        End If
+
+        RetriedCall = False
+
+        If Response <> "" Then
+            Return Response
         Else
             Return Nothing
         End If
@@ -350,7 +465,6 @@ Public Class ESI
         End If
     End Function
 
-
 #Region "Load Character Data"
 
     ''' <summary>
@@ -358,30 +472,42 @@ Public Class ESI
     ''' access for a new character first logging in. If the character has already been loaded, then update the data.
     ''' </summary>
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
-    Public Function SetCharacterData(Optional ByVal CharacterID As Long = -1, Optional SavedTokenData As SavedTokenData = Nothing) As Boolean
+    Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing, Optional IgnoreCacheDate As Boolean = False) As Boolean
         Dim TokenData As ESITokenData
-        Dim CharacterData As ESICharacterData
-        Dim errorcode As Integer = 0
+        Dim CharacterData As New ESICharacterData
+        Dim CharacterID As Long
+        Dim ErrorCode As Integer = 0
+
+        If Not IsNothing(CharacterTokenData) Then
+            CharacterID = CharacterTokenData.CharacterID
+        Else
+            CharacterID = 0
+        End If
 
         Try
-            If CharacterID = -1 Then
+            If CharacterID = 0 Then
                 ' We need to get the token data from the authorization
-                TokenData = GetAccessToken(GetAuthorizationToken(errorcode), False, errorcode)
+                TokenData = GetAccessToken(GetAuthorizationToken(ErrorCode), False, ErrorCode)
+                CharacterTokenData = New SavedTokenData
             Else
                 ' We need to refresh the token data
-                TokenData = GetAccessToken(SavedTokenData.RefreshToken, True, errorcode)
+                TokenData = GetAccessToken(CharacterTokenData.RefreshToken, True, ErrorCode)
+                ' Update the local copy with the new information
+                CharacterTokenData.AccessToken = TokenData.access_token
+                CharacterTokenData.RefreshToken = TokenData.refresh_token
+                CharacterTokenData.TokenType = TokenData.token_type
             End If
 
-            If errorcode = 0 And Not IsNothing(TokenData) Then
+            If ErrorCode = 0 And Not IsNothing(TokenData) Then
                 Dim CB As New CacheBox
                 Dim CacheDate As Date
 
-                If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Then
-                    Dim TokenExpiration As Date
-                    TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
+                ' Set the expiration date to pass
+                CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
 
+                If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Or IgnoreCacheDate Then
                     ' Now with the token data, look up the character data
-                    CharacterData.VerificationData = GetCharacterVerificationData(TokenData, TokenExpiration)
+                    CharacterData.VerificationData = GetCharacterVerificationData(TokenData, CharacterTokenData.TokenExpiration)
                     CharacterData.PublicData = GetCharacterPublicData(CharacterData.VerificationData.CharacterID, CacheDate)
 
                     ' Save it in the table if not there, or update it if they selected the character again
@@ -404,7 +530,7 @@ Public Class ESI
                                         FormatDBString(FormatNullString(.PublicData.description)),
                                         FormatDBString(.VerificationData.Scopes),
                                         FormatDBString(TokenData.access_token),
-                                        Format(TokenExpiration, SQLiteDateFormat),
+                                        Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
                                         FormatDBString(TokenData.token_type),
                                         FormatDBString(TokenData.refresh_token),
                                         .VerificationData.CharacterID)
@@ -427,7 +553,7 @@ Public Class ESI
                                         FormatNullInteger(.PublicData.ancestry_id),
                                         FormatDBString(FormatNullString(.PublicData.description)),
                                         FormatDBString(TokenData.access_token),
-                                        Format(TokenExpiration, SQLiteDateFormat),
+                                        Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
                                         FormatDBString(TokenData.token_type),
                                         FormatDBString(TokenData.refresh_token),
                                         FormatDBString(.VerificationData.Scopes),
@@ -440,17 +566,23 @@ Public Class ESI
                     ' Update public cachedate for character now that we have a record
                     Call CB.UpdateCacheDate(CacheDateType.PublicCharacterData, CacheDate, CLng(CharacterData.VerificationData.CharacterID))
 
-                    If CharacterID = -1 Then
+                    ' While we are here, load the public information of the corporation too
+                    Call SetCorporationData(CharacterData.PublicData.corporation_id, CacheDate)
+
+                    ' Update after we update/insert the record
+                    Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CharacterData.PublicData.corporation_id)
+
+                    If CharacterID = 0 Then
                         MsgBox("Character successfully added to IPH", vbInformation, Application.ProductName)
                     End If
 
                     Return True
                 Else
-                    If errorcode = 0 Then
+                    If ErrorCode = 0 Then
                         ' Just didn't need to update yet
                         Return True
                     End If
-                    If errorcode <> 400 Then
+                    If ErrorCode <> 400 Then
                         MsgBox("Unable to load the selected character to IPH", vbExclamation, Application.ProductName)
                     End If
                 End If
@@ -487,13 +619,70 @@ Public Class ESI
     ''' <param name="ExpirationDate"></param>
     ''' <returns>Character Verification Data object</returns>
     Public Function GetCharacterVerificationData(ByVal TokenData As ESITokenData, ByVal ExpirationDate As Date) As ESICharacterVerificationData
-        Dim Data As ESICharacterVerificationData
-        Dim DataCacheDate As Date
-        Dim PrivateData As String = GetPrivateAuthorizedData(ESIVerifyURL, TokenData, ExpirationDate, DataCacheDate)
+        Dim CacheDate As Date
+        Dim WC As New WebClient
+        Dim ErrorCode As Integer = 0
+        Dim ErrorResponse As String = ""
+        Dim Response As String = ""
 
-        Data = JsonConvert.DeserializeObject(Of ESICharacterVerificationData)(PrivateData)
+        WC.Proxy = Nothing
 
-        Return Data
+        ' See if we update the token data first
+        If ExpirationDate <= DateTime.UtcNow Then
+            ' Update the token
+            TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
+        End If
+
+        If ErrorCode = 0 Then
+            Try
+                Dim Auth_header As String = $"Bearer {TokenData.access_token}"
+
+                WC.Headers(HttpRequestHeader.Authorization) = Auth_header
+                Response = WC.DownloadString(ESIVerifyURL)
+
+                ' Get the expiration date for the cache date
+                Dim myWebHeaderCollection As WebHeaderCollection = WC.ResponseHeaders
+                Dim Expires As String = myWebHeaderCollection.Item("Expires")
+                Dim Pages As Integer = CInt(myWebHeaderCollection.Item("X-Pages"))
+
+                If Not IsNothing(Expires) Then
+                    CacheDate = CDate(Expires.Replace("GMT", "").Substring(InStr(Expires, ",") + 1)) ' Expiration date is in GMT
+                Else
+                    CacheDate = NoExpiry
+                End If
+
+                If Not IsNothing(Pages) Then
+                    If Pages > 1 Then
+                        Dim TempResponse As String = ""
+                        For i = 2 To Pages
+                            TempResponse = WC.DownloadString(ESIVerifyURL & "&page=" & CStr(i))
+                            ' Combine with the original response - strip the end and leading brackets
+                            Response = Response.Substring(0, Len(Response) - 1) & "," & TempResponse.Substring(1)
+                        Next
+                    End If
+                End If
+
+                Return JsonConvert.DeserializeObject(Of ESICharacterVerificationData)(Response)
+
+            Catch ex As WebException
+                ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+                ErrorResponse = GetErrorResponseBody(ex)
+
+                If ErrorCode >= 500 And Not RetriedCall Then
+                    RetriedCall = True
+                    ' Try this call again after waiting a few
+                    Thread.Sleep(2000)
+                    Return GetCharacterVerificationData(TokenData, ExpirationDate)
+                End If
+                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+            Catch ex As Exception
+                MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
+            End Try
+        End If
+
+        RetriedCall = False
+
+        Return Nothing
 
     End Function
 
@@ -510,7 +699,7 @@ Public Class ESI
         Dim TempTokenData As New ESITokenData
         TempTokenData = FormatTokenData(TokenData)
 
-        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/skills/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, SkillsCacheDate)
+        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/skills/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, SkillsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             SkillData = JsonConvert.DeserializeObject(Of ESICharacterSkillsBase)(ReturnData)
@@ -540,7 +729,7 @@ Public Class ESI
         Dim TempTokenData As New ESITokenData
         TempTokenData = FormatTokenData(TokenData)
 
-        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/standings/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, StandingsCacheDate)
+        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/standings/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, StandingsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             StandingsData = JsonConvert.DeserializeObject(Of List(Of ESICharacterStandingsData))(ReturnData)
@@ -570,7 +759,7 @@ Public Class ESI
         Dim TempTokenData As New ESITokenData
         TempTokenData = FormatTokenData(TokenData)
 
-        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/agents_research/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, AgentsCacheDate)
+        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/agents_research/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESIResearchAgent))(ReturnData)
@@ -594,10 +783,10 @@ Public Class ESI
         ' Set up query string
         If ScanType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  TempTokenData, TokenData.TokenExpiration, BPCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, BPCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  TempTokenData, TokenData.TokenExpiration, BPCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, BPCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -666,10 +855,10 @@ Public Class ESI
         ' Set up query string
         If JobType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,' & "&include_completed=true",
-                                                  TempTokenData, TokenData.TokenExpiration, JobsCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, JobsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,
-                                                  TempTokenData, TokenData.TokenExpiration, JobsCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, JobsCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -691,10 +880,10 @@ Public Class ESI
         ' Set up query string
         If JobType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  TempTokenData, TokenData.TokenExpiration, AssetsCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, AssetsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  TempTokenData, TokenData.TokenExpiration, AssetsCacheDate)
+                                                  TempTokenData, TokenData.TokenExpiration, AssetsCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -705,19 +894,96 @@ Public Class ESI
 
     End Function
 
-    Public Function GetCorporationData(ByVal ID As Long, ByRef DataCacheDate As Date) As ESICorporation
-        Dim ReturnData As String = ""
+    Public Function GetCorpRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
+        Dim ReturnData As String
 
-        ' Set up query string
-        ReturnData = GetPublicData(ESIPublicURL & "corporations/" & CStr(ID) & TranquilityDataSource, DataCacheDate)
+        Dim TempTokenData As New ESITokenData
+        TempTokenData = FormatTokenData(TokenData)
+
+        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(CorporationID) & "/roles/" & TranquilityDataSource, TempTokenData, TokenData.TokenExpiration, RolesCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
-            Return JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
+            Return JsonConvert.DeserializeObject(Of List(Of ESICorporationRoles))(ReturnData)
         Else
             Return Nothing
         End If
 
     End Function
+
+    Public Sub SetCorporationData(ByVal ID As Long, ByRef DataCacheDate As Date)
+        Dim ReturnData As String = ""
+        Dim SQL As String = ""
+        Dim CorpData As ESICorporation = Nothing
+
+        ' Set up query string
+        ReturnData = GetPublicData(ESIPublicURL & "corporations/" & CStr(ID) & TranquilityDataSource, DataCacheDate)
+
+        If Not IsNothing(ReturnData) Then
+            CorpData = JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
+
+            If Not IsNothing(CorpData) Then
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' See if we insert or update
+                Dim rsCheck As SQLiteDataReader
+                ' Load up all the data for the corporation
+                SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & ID
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                If rsCheck.Read Then
+                    ' Found a record, so update the data
+                    With CorpData
+                        SQL = "UPDATE ESI_CORPORATION_DATA SET "
+                        SQL &= "CORPORATION_NAME = " & BuildInsertFieldString(.name) & ","
+                        SQL &= "TICKER = " & BuildInsertFieldString(.ticker) & ","
+                        SQL &= "MEMBER_COUNT = " & BuildInsertFieldString(.member_count) & ","
+                        SQL &= "FACTION_ID = " & BuildInsertFieldString(.faction_id) & ","
+                        SQL &= "ALLIANCE_ID = " & BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= "CEO_ID = " & BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= "CREATOR_ID = " & BuildInsertFieldString(.creator_id) & ","
+                        SQL &= "HOME_STATION_ID = " & BuildInsertFieldString(.home_station_id) & ","
+                        SQL &= "SHARES = " & BuildInsertFieldString(.shares) & ","
+                        SQL &= "TAX_RATE = " & BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= "DESCRIPTION = " & BuildInsertFieldString(.description) & ","
+                        SQL &= "DATE_FOUNDED = " & BuildInsertFieldString(.date_founded) & ","
+                        SQL &= "URL = " & BuildInsertFieldString(.date_founded) & " "
+                        SQL &= "WHERE CORPORATION_ID = " & CStr(ID)
+                    End With
+                Else
+                    ' New record
+                    With CorpData
+                        SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
+                        SQL &= BuildInsertFieldString(ID) & ","
+                        SQL &= BuildInsertFieldString(.name) & ","
+                        SQL &= BuildInsertFieldString(.ticker) & ","
+                        SQL &= BuildInsertFieldString(.member_count) & ","
+                        SQL &= BuildInsertFieldString(.faction_id) & ","
+                        SQL &= BuildInsertFieldString(.alliance_id) & ","
+                        SQL &= BuildInsertFieldString(.ceo_id) & ","
+                        SQL &= BuildInsertFieldString(.creator_id) & ","
+                        SQL &= BuildInsertFieldString(.home_station_id) & ","
+                        SQL &= BuildInsertFieldString(.shares) & ","
+                        SQL &= BuildInsertFieldString(.tax_rate) & ","
+                        SQL &= BuildInsertFieldString(.description) & ","
+                        SQL &= BuildInsertFieldString(.date_founded) & ","
+                        SQL &= BuildInsertFieldString(.url) & ","
+                        SQL &= "NULL,NULL,NULL,NULL,NULL)"
+                    End With
+
+                End If
+
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                Call EVEDB.CommitSQLiteTransaction()
+
+                DBCommand = Nothing
+
+            End If
+        End If
+
+    End Sub
 
 #End Region
 
@@ -1854,6 +2120,14 @@ Public Class ESI
         Dim Name As String
     End Structure
 
+    Private Function GetErrorResponseBody(Ex As WebException) As String
+        Dim resp As String = New StreamReader(Ex.Response.GetResponseStream()).ReadToEnd()
+        Dim ErrorData As ESIError = JsonConvert.DeserializeObject(Of ESIError)(resp)
+
+        Return ErrorData.ErrorText
+
+    End Function
+
     Public Function GetFactionData() As List(Of ESIFactionData)
         Dim PublicData As String
 
@@ -1929,6 +2203,12 @@ Public Class ESI
 End Class
 
 #Region "JSON Classes"
+
+Public Class ESIError
+    <JsonProperty("error")> Public ErrorText As String
+    <JsonProperty("sso_status")> Public sso_status As Integer
+    <JsonProperty("timeout")> Public timeout As Integer
+End Class
 
 Public Class ESIMarketOrder
     <JsonProperty("order_id")> Public order_id As Long
@@ -2114,6 +2394,18 @@ Public Class ESIResearchAgent
     <JsonProperty("started_at")> Public started_at As String
     <JsonProperty("points_per_day")> Public points_per_day As Double
     <JsonProperty("remainder_points")> Public remainder_points As Double
+End Class
+
+Public Class ESICorporationRoles
+    <JsonProperty("character_id")> Public character_id As Long
+    <JsonProperty("grantable_roles")> Public grantable_roles As List(Of String)
+    <JsonProperty("grantable_roles_at_base")> Public grantable_roles_at_base As List(Of String)
+    <JsonProperty("grantable_roles_at_hq")> Public grantable_roles_at_hq As List(Of String)
+    <JsonProperty("grantable_roles_at_other")> Public grantable_roles_at_other As List(Of String)
+    <JsonProperty("roles")> Public roles As List(Of String)
+    <JsonProperty("roles_at_base")> Public roles_at_base As List(Of String)
+    <JsonProperty("roles_at_hq")> Public roles_at_hq As List(Of String)
+    <JsonProperty("roles_at_other")> Public roles_at_other As List(Of String)
 End Class
 
 Public Class ESIBlueprint

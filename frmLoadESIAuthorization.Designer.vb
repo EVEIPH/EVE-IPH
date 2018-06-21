@@ -29,8 +29,6 @@ Partial Class frmLoadESIAuthorization
         Me.lblClientID = New System.Windows.Forms.Label()
         Me.lblSecretKey = New System.Windows.Forms.Label()
         Me.txtSecretKey = New System.Windows.Forms.TextBox()
-        Me.lblPort = New System.Windows.Forms.Label()
-        Me.txtPort = New System.Windows.Forms.TextBox()
         Me.txtScopes = New System.Windows.Forms.TextBox()
         Me.lblScopes = New System.Windows.Forms.Label()
         Me.btnSaveApplicationInfo = New System.Windows.Forms.Button()
@@ -65,7 +63,7 @@ Partial Class frmLoadESIAuthorization
         '
         Me.txtClientID.Location = New System.Drawing.Point(10, 80)
         Me.txtClientID.Name = "txtClientID"
-        Me.txtClientID.Size = New System.Drawing.Size(244, 20)
+        Me.txtClientID.Size = New System.Drawing.Size(299, 20)
         Me.txtClientID.TabIndex = 3
         '
         'lblClientID
@@ -92,23 +90,6 @@ Partial Class frmLoadESIAuthorization
         Me.txtSecretKey.Name = "txtSecretKey"
         Me.txtSecretKey.Size = New System.Drawing.Size(299, 20)
         Me.txtSecretKey.TabIndex = 7
-        '
-        'lblPort
-        '
-        Me.lblPort.AutoSize = True
-        Me.lblPort.Location = New System.Drawing.Point(256, 64)
-        Me.lblPort.Name = "lblPort"
-        Me.lblPort.Size = New System.Drawing.Size(29, 13)
-        Me.lblPort.TabIndex = 4
-        Me.lblPort.Text = "Port:"
-        '
-        'txtPort
-        '
-        Me.txtPort.Location = New System.Drawing.Point(259, 80)
-        Me.txtPort.MaxLength = 5
-        Me.txtPort.Name = "txtPort"
-        Me.txtPort.Size = New System.Drawing.Size(50, 20)
-        Me.txtPort.TabIndex = 5
         '
         'txtScopes
         '
@@ -163,9 +144,7 @@ Partial Class frmLoadESIAuthorization
         Me.gbRegister.Controls.Add(Me.lblClientID)
         Me.gbRegister.Controls.Add(Me.btnLaunchInstructions)
         Me.gbRegister.Controls.Add(Me.txtSecretKey)
-        Me.gbRegister.Controls.Add(Me.txtPort)
         Me.gbRegister.Controls.Add(Me.txtScopes)
-        Me.gbRegister.Controls.Add(Me.lblPort)
         Me.gbRegister.Location = New System.Drawing.Point(12, 12)
         Me.gbRegister.Name = "gbRegister"
         Me.gbRegister.Size = New System.Drawing.Size(320, 365)
@@ -209,8 +188,6 @@ Partial Class frmLoadESIAuthorization
     Friend WithEvents lblClientID As Label
     Friend WithEvents lblSecretKey As Label
     Friend WithEvents txtSecretKey As TextBox
-    Friend WithEvents lblPort As Label
-    Friend WithEvents txtPort As TextBox
     Friend WithEvents txtScopes As TextBox
     Friend WithEvents lblScopes As Label
     Friend WithEvents btnSaveApplicationInfo As Button

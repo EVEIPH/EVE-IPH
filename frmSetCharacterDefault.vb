@@ -9,6 +9,8 @@ Public Class frmSetCharacterDefault
         ' This call is required by the designer.
         InitializeComponent()
 
+        CancelESISSOLogin = False
+
         ' Add any initialization after the InitializeComponent() call.
         Call UpdateCharacterList()
 
@@ -38,6 +40,7 @@ Public Class frmSetCharacterDefault
 
         DefaultCharSelected = True
         MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
+
         Me.Cursor = Cursors.Default
         Me.Close()
 
@@ -58,8 +61,10 @@ Public Class frmSetCharacterDefault
     End Sub
 
     ' Checks if the user selected a default or not. If not, verifies that they don't want to set a default and want to go with dummy
-    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClose.Click
+    Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
         Dim NoCharacter As Boolean
+
+        CancelESISSOLogin = True
 
         ' Only ask if they want to cancel if there isn't a character loaded yet
         If SelectedCharacter.ID = 0 Then
@@ -68,7 +73,7 @@ Public Class frmSetCharacterDefault
             NoCharacter = False
         End If
 
-        If NoCharacter And Not DummyAccountLoaded Then
+        If NoCharacter Then
             ' Load the dummy
             If SelectedCharacter.LoadDummyCharacter(False) = TriState.UseDefault Then
                 ' They said no, cancel and let them re-choose
@@ -92,19 +97,28 @@ Public Class frmSetCharacterDefault
     Private Sub btnEVESSOLogin_Click(sender As Object, e As EventArgs) Handles btnEVESSOLogin.Click
         Dim ESIConnection As New ESI
 
+        btnEVESSOLogin.Enabled = False ' Disable until we return
+
         ' Set the new character data first. This will load the data in the table or update it if they choose a character already loaded
         If ESIConnection.SetCharacterData() Then
+            ' Refresh the token data to get new scopes if they added
+            Me.Cursor = Cursors.WaitCursor
+            Call SelectedCharacter.RefreshTokenData()
+            Me.Cursor = Cursors.Default
+            Application.DoEvents()
             ' Now update the character list
             Call UpdateCharacterList()
         Else
             ' Didn't load, so show the re-enter info button
-            If Not DummyAccountLoaded Then
+            If AppRegistered() Then
                 MsgBox("The Character failed to load. Please check application registration information.")
             Else
                 MsgBox("You have not registered IPH. Please register IPH through the ESI developers system and try again.")
             End If
             btnReloadRegistration.Visible = True
         End If
+
+        btnEVESSOLogin.Enabled = True ' Enable for another try if they want
 
     End Sub
 
@@ -116,19 +130,18 @@ Public Class frmSetCharacterDefault
         Dim i As Integer = 0
 
         ' Load up the grid with characters on this computer
-        CharactersLoaded = False
         DefaultCharSelected = False
 
         chkListDefaultChar.Items.Clear()
 
-        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
+        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> {0}"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyCharacterID), EVEDB.DBREf)
         numChars = CLng(DBCommand.ExecuteScalar())
 
-        SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> {0}"
+        SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> {0}"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, DummyCharacterID), EVEDB.DBREf)
         readerCharacters = DBCommand.ExecuteReader()
 
         While readerCharacters.Read()
@@ -147,12 +160,9 @@ Public Class frmSetCharacterDefault
 
         If numChars >= 1 Then
             btnSelectDefault.Enabled = True
-            ' Now don't let them cancel
-            btnClose.Enabled = False
         Else
             ' Disable select default button until they load one up
             btnSelectDefault.Enabled = False
-            btnClose.Enabled = True ' They can select a dummy
         End If
 
         readerCharacters.Close()

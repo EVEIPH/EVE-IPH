@@ -1374,7 +1374,7 @@ Public Class frmBlueprintManagement
     ' Will use CAK and scan for bps in the user's items and store a temp table of these bps for loading in the grid
     Private Sub btnScanPersonalBPs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnScanPersonalBPs.Click
 
-        If SelectedCharacter.AssetsAccess Then
+        If SelectedCharacter.BlueprintsAccess Then
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
@@ -1386,7 +1386,7 @@ Public Class frmBlueprintManagement
             Me.Refresh()
             Application.DoEvents()
         Else
-            MsgBox("You have not enabled access to Assets with this key.", vbExclamation, Application.ProductName)
+            MsgBox("You do not have the scope: " & ESI.ESICharacterBlueprintsScope & " registered for this application. Please update your developer scopes.", vbExclamation, Application.ProductName)
         End If
 
     End Sub
@@ -1394,7 +1394,7 @@ Public Class frmBlueprintManagement
     ' Will use CAK and scan for bps in the corps items and store a temp table of these bps for loading in the grid
     Private Sub btnScanCorpBPs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnScanCorpBPs.Click
 
-        If SelectedCharacter.CharacterCorporation.AssetAccess Then
+        If SelectedCharacter.CharacterCorporation.BlueprintsAccess Then
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
@@ -1406,7 +1406,7 @@ Public Class frmBlueprintManagement
             Me.Refresh()
             Application.DoEvents()
         Else
-            MsgBox("You do not have a corporation key installed with access to Assets.", vbExclamation, Application.ProductName)
+            MsgBox("You do not have the scope: " & ESI.ESICorporationBlueprintsScope & " registered for this application. Please update your developer scopes.", vbExclamation, Application.ProductName)
         End If
 
     End Sub

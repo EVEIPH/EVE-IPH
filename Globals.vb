@@ -23,17 +23,15 @@ Public Module Public_Variables
     Public SelectedCharacter As New Character
     Public SelectedBlueprint As Blueprint
 
-    Public DummyAccountLoaded As Boolean
-    Public Const DummyClient As String = "Dummy"
-    Public Const DummyDefaultCharacterCode As Integer = -2 ' To save the dummy character, use a unqiue code for IS_DEFAULT value
-    Public Const DefaultCharacterCode As Integer = -1 ' For everyone else
+    Public Const DummyClient As String = ""
+    Public Const DefaultCharacterCode As Integer = -1 ' To indicate the default character
     Public Const DummyCharacterID As Long = -1
+    Public Const DummyCorporationID As Long = -1
 
     ' Variable to hold error tracking data when the error is hard to find - used for debugging only but mostly this is set to empty string
     Public ErrorTracker As String
 
     Public DefaultCharSelected As Boolean
-    Public CharactersLoaded As Boolean
     Public FirstLoad As Boolean ' If the program just opened
     Public SkillsUpdated As Boolean ' To track if skills where updated in the skill override screen
     Public ManufacturingTabColumnsChanged As Boolean ' To track if thy changed columns
@@ -171,6 +169,8 @@ Public Module Public_Variables
     Public Const None As String = "None" ' For decryptors and facilities
 
     Public MiningUpgradesCollection As New List(Of String)
+
+    Public CancelESISSOLogin As Boolean
 
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
 
@@ -368,44 +368,20 @@ Public Module Public_Variables
 #End Region
 
 #Region "Character Loading"
+
     ' Loads the character for the program
     Public Sub LoadCharacter(RefreshAssets As Boolean, RefreshBPs As Boolean)
-        Dim ApplicationRegistered As Boolean
-
         On Error GoTo 0
 
         ' Try to load the character
         If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
 
-            ' See if the application is registered
-            Dim ESITest As New ESI
-            If ESITest.AppRegistered Then
-                ApplicationRegistered = True
-            Else
-                ApplicationRegistered = False
-            End If
-
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
-            ' Check for chars 
             Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
 
-            If CInt(CMDCount.ExecuteScalar()) = 0 Or Not ApplicationRegistered Then
-                If Not ApplicationRegistered Then
-                    ' No Characters selected and not registered, open ESI authorization form for new access, where they select a default char, or dummy
-                    Dim f1 As New frmLoadESIAuthorization
-                    f1.ShowDialog()
-                    f1.Close()
-                End If
-
-                ' If they closed, then it's ready to select a character (not a dummy)
-                If Not DummyAccountLoaded Then
-                    Dim f2 As New frmSetCharacterDefault
-                    f2.ShowDialog()
-                ElseIf CInt(CMDCount.ExecuteScalar()) = 0 Then
-                    ' No character loaded for dummy, so load it up without asking since we are already set to dummy with registration
-                    Call SelectedCharacter.LoadDummyCharacter(True)
-                End If
-
+            If CInt(CMDCount.ExecuteScalar()) = 0 Then
+                ' No characters loaded yet so load dummy for all
+                Call SelectedCharacter.LoadDummyCharacter(True)
             Else
                 ' Have a set of chars, need to set a default, open that form
                 Dim f2 = New frmSetCharacterDefault
@@ -419,20 +395,35 @@ Public Module Public_Variables
     ' Loads a default character from name sent
     Public Sub LoadSelectedCharacter(CharacterName As String, Optional PlaySound As Boolean = True)
 
-        Application.UseWaitCursor = True
-        Application.DoEvents()
-        ' Update them all to 0 first
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "'")
+        ' Load only if a new character
+        If SelectedCharacter.Name <> CharacterName Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+            ' Update them all to 0 first
+            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0")
+            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "'")
 
-        ' Load the character as default for program and reload additional API data
-        Call SelectedCharacter.LoadDefaultCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
-        If PlaySound Then
-            Call PlayNotifySound()
+            ' Load the character as default for program and reload additional API data
+            Call SelectedCharacter.LoadDefaultCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
+            If PlaySound Then
+                Call PlayNotifySound()
+            End If
+            Application.UseWaitCursor = False
         End If
-        Application.UseWaitCursor = False
 
     End Sub
+
+    ' Returns boolean if the application has been registered (or the user saved the settings file at least)
+    Public Function AppRegistered() As Boolean
+        Dim ESICheck As New ESI
+
+        If ESICheck.GetClientID = DummyClient Then
+            Return False
+        Else
+            Return True
+        End If
+
+    End Function
 
 #End Region
 
@@ -1520,7 +1511,9 @@ InvalidDate:
 
         If CStr(CheckNullValue) <> "null" Then
             ' Not null, so format
-            If inValue.GetType.Name <> "String" Then
+            If inValue.GetType.Name = "DateTime" Then
+                OutputString = "'" & Format(inValue, SQLiteDateFormat) & "'"
+            ElseIf inValue.GetType.Name <> "String" Then
                 ' Just a value, so no quotes needed
                 OutputString = CStr(inValue)
             Else
@@ -1528,7 +1521,7 @@ InvalidDate:
                 OutputString = "'" & FormatDBString(CStr(inValue)) & "'"
             End If
         Else
-            OutputString = "NULL"
+                OutputString = "NULL"
         End If
 
         Return OutputString

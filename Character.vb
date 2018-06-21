@@ -80,7 +80,8 @@ Public Class Character
             Dim SQL As String
             Dim rsCheck As SQLiteDataReader
 
-            DBCommand = New SQLiteCommand("SELECT 'X' FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = 0", EVEDB.DBREf)
+            SQL = String.Format("SELECT 'X' FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = {0}", CStr(DummyCharacterID))
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
 
             ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite
@@ -102,14 +103,17 @@ Public Class Character
                 CharacterTokenData.RefreshToken = "No Token"
                 CharacterTokenData.Scopes = "No Scopes"
 
-                ' Default corp
-                CharacterCorporation = New Corporation()
+                Dim NoExpireDate As String = Format(NoExpiry, SQLiteDateFormat)
 
                 With CharacterTokenData
                     SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
-                    SQL = String.Format(SQL, ID, Name, 0, DOB, Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, .TokenExpiration, .TokenType, .RefreshToken, .Scopes, 0, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, NoExpiry, DummyDefaultCharacterCode) ' Dummy is default
+                    SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
                 End With
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                ' Load dummy corp
+                CharacterCorporation = New Corporation()
+                CharacterCorporation.LoadDummyCorporationData
 
                 ' Load the dummy skills
                 Skills.LoadDummySkills()
@@ -127,21 +131,17 @@ Public Class Character
                 Jobs = New EVEIndustryJobs
 
             Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
-                SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = 0"
-                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, DummyDefaultCharacterCode))
-
+                SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = {1}"
+                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CStr(DefaultCharacterCode), CStr(DummyCharacterID)))
                 Call LoadDefaultCharacter()
-
             End If
 
             ' Finally, save the app registration information file as nothing so it doesn't try to load again
             Settings.ClientID = DummyClient
             Settings.SecretKey = ""
-            Settings.Port = 0
             Settings.Scopes = ""
 
             If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
-                DummyAccountLoaded = True
                 Return TriState.True ' both options load a dummy character
             Else
                 Return TriState.False
@@ -159,44 +159,19 @@ Public Class Character
         Dim SQL As String
         Dim ESIConnection As New ESI
 
-        ' Make sure the application is registered. If not, exit and run the process to save registration info
-        If Not ESIConnection.AppRegistered Then
-            Return False
-        End If
-
         ' See if we have a character ID loaded
-        SQL = "SELECT CHARACTER_ID, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN, SCOPES "
-        SQL &= "FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> 0"
+        SQL = "SELECT CHARACTER_ID FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> 0"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCharacter = DBCommand.ExecuteReader
 
         If rsCharacter.Read() Then
-
-            ' Check for dummy account first and set the global flag
-            Dim numChars As Long
-
-            SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT = {0}"
-            DBCommand = New SQLiteCommand(String.Format(SQL, DummyDefaultCharacterCode), EVEDB.DBREf)
-            numChars = CLng(DBCommand.ExecuteScalar())
-
-            If numChars = 0 Then
-                DummyAccountLoaded = False
-            Else
-                DummyAccountLoaded = True
-            End If
-
             ' Set the base data, character ID and access token data
             ID = rsCharacter.GetInt64(0)
             CharacterTokenData.CharacterID = ID
-            CharacterTokenData.AccessToken = rsCharacter.GetString(1)
-            CharacterTokenData.TokenExpiration = CDate(rsCharacter.GetString(2))
-            CharacterTokenData.TokenType = rsCharacter.GetString(3)
-            CharacterTokenData.RefreshToken = rsCharacter.GetString(4)
-            CharacterTokenData.Scopes = rsCharacter.GetString(5)
             rsCharacter.Close()
 
-            ' Get the latest data for this character
-            Return LoadCharacterData(ID, CharacterTokenData, LoadBPs, LoadAssets)
+            ' Get the latest data for this character, update token through ref
+            Return LoadCharacterData(CharacterTokenData, LoadBPs, LoadAssets)
 
         Else ' No record in DB
             rsCharacter.Close()
@@ -206,25 +181,16 @@ Public Class Character
     End Function
 
     ' Load the latest data for the character sent or the default if no character sent from the DB - users may not want to load bps or assets 
-    Public Function LoadCharacterData(ByVal CharacterID As Long, ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean) As Boolean
+    Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean) As Boolean
         Dim ESIData As New ESI
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
-
-        ' Update the character data first
-        If Not ESIData.SetCharacterData(CharacterID, TokenData) And Not DummyAccountLoaded Then
-            ' They probably don't have the authorization set (deleted character from thirdparty access page)
-            ' https://community.eveonline.com/support/third-party-applications/
-            ' For now, delete the record from ESI and have them reload
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterID) & " ")
-            Return False
-        End If
 
         SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, "
         SQL = SQL & "CORPORATION_ID, BIRTHDAY, GENDER, RACE_ID, BLOODLINE_ID, ANCESTRY_ID, DESCRIPTION, "
         SQL = SQL & "SCOPES, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN, OVERRIDE_SKILLS, IS_DEFAULT "
         SQL = SQL & "FROM ESI_CHARACTER_DATA "
-        SQL = SQL & "WHERE CHARACTER_ID = " & CStr(CharacterID) & " "
+        SQL = SQL & "WHERE CHARACTER_ID = " & CStr(TokenData.CharacterID) & " "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerCharacter = DBCommand.ExecuteReader
@@ -249,11 +215,14 @@ Public Class Character
                 CharacterTokenData.RefreshToken = .GetString(13)
                 CharacterTokenData.Scopes = .GetString(9)
 
-                UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
-                IsDefault = CBool(.GetInt32(15))
+                ' Refresh the character data first
+                Call RefreshTokenData()
 
                 CharacterCorporation = New Corporation()
                 CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+
+                UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
+                IsDefault = CBool(.GetInt32(15))
 
             End With
 
@@ -263,40 +232,40 @@ Public Class Character
             Call Skills.LoadCharacterSkills(ID, CharacterTokenData)
 
             ' Load the standings for this character
+            Standings = New EVENPCStandings()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterStandingsScope) Then
                 StandingsAccess = True
-                Standings = New EVENPCStandings()
                 Call Standings.LoadCharacterStandings(ID, CharacterTokenData)
             End If
 
             ' Load the character's research agents
+            DatacoreAgents = New EVEResearchAgents()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterResearchAgentsScope) Then
                 ResearchAgentAccess = True
-                DatacoreAgents = New EVEResearchAgents()
                 Call DatacoreAgents.LoadResearchAgents(ID, CharacterTokenData)
             End If
 
             ' Load the character's industry jobs
+            Jobs = New EVEIndustryJobs()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterIndustryJobsScope) Then
                 IndustryJobsAccess = True
-                Jobs = New EVEIndustryJobs()
                 Call Jobs.UpdateIndustryJobs(ID, CharacterTokenData, ScanType.Personal)
             End If
 
             ' Load the Blueprints but don't load if they don't have selected
+            Blueprints = New EVEBlueprints()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterBlueprintsScope) Then
                 BlueprintsAccess = True
                 If LoadBPs Then
-                    Blueprints = New EVEBlueprints()
                     Call Blueprints.LoadBlueprints(ID, CharacterTokenData, ScanType.Personal, LoadBPs)
                 End If
             End If
 
             ' Load in the assets unless they don't want to update
+            Assets = New EVEAssets(ScanType.Personal)
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterAssetScope) Then
                 AssetsAccess = True
                 If LoadAssets Then
-                    Assets = New EVEAssets(ScanType.Personal)
                     Call Assets.LoadAssets(ID, CharacterTokenData, LoadAssets)
                 End If
             End If
@@ -325,5 +294,13 @@ Public Class Character
     Public Function GetBlueprints() As EVEBlueprints
         Return Blueprints
     End Function
+
+    Public Sub RefreshTokenData()
+        ' Refresh the character data first
+        If ID <> DummyCharacterID Then
+            Dim TempESI As New ESI
+            Call TempESI.SetCharacterData(CharacterTokenData, True)
+        End If
+    End Sub
 
 End Class

@@ -37,7 +37,6 @@ Partial Class frmBonusPopout
         Me.lstUpwellStructureBonuses.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.BonusAppliesTo, Me.Activity, Me.Bonuses, Me.Source})
         Me.lstUpwellStructureBonuses.FullRowSelect = True
         Me.lstUpwellStructureBonuses.GridLines = True
-        Me.lstUpwellStructureBonuses.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable
         Me.lstUpwellStructureBonuses.HideSelection = False
         Me.lstUpwellStructureBonuses.Location = New System.Drawing.Point(11, 15)
         Me.lstUpwellStructureBonuses.MultiSelect = False

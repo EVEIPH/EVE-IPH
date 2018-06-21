@@ -21,7 +21,7 @@ Public Class frmLoadESIAuthorization
                 ' Load up all the values
                 txtClientID.Text = .ClientID
                 txtSecretKey.Text = .SecretKey
-                txtPort.Text = CStr(.Port)
+                ' txtPort.Text = CStr(.Port)
                 txtScopes.Text = .Scopes
             End If
         End With
@@ -73,11 +73,11 @@ Public Class frmLoadESIAuthorization
             Exit Sub
         End If
 
-        If Trim(txtPort.Text) = "" Then
-            Call MsgBox("You must enter a Port Number", vbInformation, Application.ProductName)
-            txtPort.Focus()
-            Exit Sub
-        End If
+        'If Trim(txtPort.Text) = "" Then
+        '    Call MsgBox("You must enter a Port Number", vbInformation, Application.ProductName)
+        '    txtPort.Focus()
+        '    Exit Sub
+        'End If
 
         If Trim(txtScopes.Text) = "" Then
             Call MsgBox("You must enter a set of Scopes", vbInformation, Application.ProductName)
@@ -104,11 +104,11 @@ Public Class frmLoadESIAuthorization
         ' Good to go, save it then do a check
         Settings.ClientID = Trim(txtClientID.Text)
         Settings.SecretKey = Trim(txtSecretKey.Text)
-        Settings.Port = CInt(Trim(txtPort.Text))
+        ' Settings.Port = CInt(Trim(txtPort.Text))
         Settings.Scopes = Trim(txtScopes.Text)
 
         If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
-            ' Good to go!
+            ' Data is saved but they need to re-register characters to add updates
             Call MsgBox("Registration Information Saved!", vbInformation, Application.ProductName)
         Else
             Call MsgBox("Settings failed to save.", vbInformation, Application.ProductName)
@@ -121,10 +121,6 @@ Public Class frmLoadESIAuthorization
 
     Private Sub txtClientID_GotFocus(sender As Object, e As EventArgs) Handles txtClientID.GotFocus
         txtClientID.SelectAll()
-    End Sub
-
-    Private Sub txtPort_GotFocus(sender As Object, e As EventArgs) Handles txtPort.GotFocus
-        txtPort.SelectAll()
     End Sub
 
     Private Sub txtScopes_GotFocus(sender As Object, e As EventArgs) Handles txtScopes.GotFocus
@@ -140,13 +136,12 @@ Public Class frmLoadESIAuthorization
     End Sub
 
     Private Sub frmLoadESIAuthorization_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        ' Let them close the form but only if it's registered, if not, don't complete this
-        Dim ESITest As New ESI
-        If Not ESITest.AppRegistered And Not DummyAccountLoaded Then
-            ' Make them verify they want the dummy
-            e.Cancel = True
-            Call ProcessDummyCharacter()
-        End If
+        '' Let them close the form but only if it's registered, if not, don't complete this
+        'If Not AppRegistered() Then
+        '    ' Make them verify they want the dummy
+        '    e.Cancel = True
+        '    Call ProcessDummyCharacter()
+        'End If
     End Sub
 
 End Class

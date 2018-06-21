@@ -1979,7 +1979,7 @@ Public Class frmShoppingList
                     End If
                     ShopListItem.Quantity = CLng(lstItems.SelectedItems(i).SubItems(2).Text)
                     ShopListItem.ItemME = CInt(lstItems.SelectedItems(i).SubItems(3).Text)
-                    ShopListItem.ItemTE = CInt(lstItems.SelectedItems(i).SubItems(12).Text)
+                    ShopListItem.ItemTE = CInt(CBool(lstItems.SelectedItems(i).SubItems(12).Text))
                     ShopListItem.NumBPs = CInt(lstItems.SelectedItems(i).SubItems(4).Text)
                     ShopListItem.BuildType = lstItems.SelectedItems(i).SubItems(5).Text
                     ShopListItem.Decryptor = lstItems.SelectedItems(i).SubItems(6).Text

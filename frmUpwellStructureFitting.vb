@@ -55,6 +55,9 @@ Public Class frmUpwellStructureFitting
 
     Private frmPopout As frmBonusPopout
 
+    Private ColumnClicked As Integer
+    Private ColumnSortType As SortOrder
+
     ' Fuel block IDs
     Private Enum FuelBlocks
         Nitrogen = 4051
@@ -230,12 +233,6 @@ Public Class frmUpwellStructureFitting
         End If
         frmPopout = New frmBonusPopout
 
-        FirstLoad = False
-
-    End Sub
-
-    Private Sub frmCitadelFitting_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
-
         With UserUpwellStructureSettings
             chkItemViewTypeHigh.Checked = .HighSlotsCheck
             chkItemViewTypeMedium.Checked = .MediumSlotsCheck
@@ -245,6 +242,8 @@ Public Class frmUpwellStructureFitting
             chkRigTypeViewReprocessing.Checked = .ReprocessingRigsCheck
             chkRigTypeViewEngineering.Checked = .EngineeringRigsCheck
             chkRigTypeViewCombat.Checked = .CombatRigsCheck
+            chkRigTypeViewReaction.Checked = .ReactionsRigsCheck
+            chkRigTypeViewDrilling.Checked = .DrillingRigsCheck
 
             txtItemFilter.Text = .SearchFilterText
 
@@ -273,6 +272,8 @@ Public Class frmUpwellStructureFitting
             End Select
 
         End With
+
+        FirstLoad = False
 
     End Sub
 
@@ -1118,7 +1119,7 @@ Public Class frmUpwellStructureFitting
             End If
         Else
             If rbtnHeliumFuelBlock.Checked Then
-                Return FormatNumber(NumBlocks * CDbl(lblHeliumFuelBlockBuild.Text))
+                Return FormatNumber(NumBlocks * CDbl(lblHeliumFuelBlockBuildPrice.Text))
             ElseIf rbtnHydrogenFuelBlock.Checked Then
                 Return FormatNumber(NumBlocks * CDbl(lblHydrogenFuelBlockBuildPrice.Text))
             ElseIf rbtnNitrogenFuelBlock.Checked Then
@@ -1639,6 +1640,13 @@ Public Class frmUpwellStructureFitting
                 SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
                 EVEDB.ExecuteNonQuerySQL(SQL)
             Next
+
+            ' If there are rigs fit to this, then delete any saved multipliers they have 
+            If Not IsNothing(RigSlot1.Image) Or Not IsNothing(RigSlot2.Image) Or Not IsNothing(RigSlot3.Image) Then
+                SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
+                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView)))
+            End If
 
             EVEDB.CommitSQLiteTransaction()
 
@@ -3162,6 +3170,10 @@ Public Class frmUpwellStructureFitting
 
     Private Sub HighSlot6_MouseEnter(sender As Object, e As EventArgs) Handles HighSlot6.MouseEnter
         Call ShowToolTipForModule(sender)
+    End Sub
+
+    Private Sub lstUpwellStructureBonuses_ColumnClick(sender As Object, e As ColumnClickEventArgs) Handles lstUpwellStructureBonuses.ColumnClick
+        Call ListViewColumnSorter(e.Column, CType(lstUpwellStructureBonuses, ListView), ColumnClicked, ColumnSortType)
     End Sub
 
 #End Region

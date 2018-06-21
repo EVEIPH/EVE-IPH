@@ -31,20 +31,15 @@ Public Class EVEBlueprints
 
         While readerBlueprints.Read
 
-            If IsDBNull(readerBlueprints.GetValue(0)) Then
-                TempBlueprint.itemID = 0
-            Else
-                TempBlueprint.itemID = readerBlueprints.GetInt64(0)
-            End If
-
-            TempBlueprint.locationID = readerBlueprints.GetInt64(1)
-            TempBlueprint.typeID = readerBlueprints.GetInt64(2)
-            TempBlueprint.typeName = readerBlueprints.GetString(3)
-            TempBlueprint.flagID = readerBlueprints.GetInt32(4)
-            TempBlueprint.quantity = readerBlueprints.GetInt32(5)
-            TempBlueprint.timeEfficiency = readerBlueprints.GetInt32(6)
-            TempBlueprint.materialEfficiency = readerBlueprints.GetInt32(7)
-            TempBlueprint.runs = readerBlueprints.GetInt32(8)
+            TempBlueprint.ItemID = readerBlueprints.GetInt64(0)
+            TempBlueprint.LocationID = readerBlueprints.GetInt64(1)
+            TempBlueprint.TypeID = readerBlueprints.GetInt64(2)
+            TempBlueprint.TypeName = readerBlueprints.GetString(3)
+            TempBlueprint.FlagID = readerBlueprints.GetInt32(4)
+            TempBlueprint.Quantity = readerBlueprints.GetInt32(5)
+            TempBlueprint.TimeEfficiency = readerBlueprints.GetInt32(6)
+            TempBlueprint.MaterialEfficiency = readerBlueprints.GetInt32(7)
+            TempBlueprint.Runs = readerBlueprints.GetInt32(8)
             TempBlueprint.BPType = CType(readerBlueprints.GetInt32(9), BPType)
             TempBlueprint.Owned = CBool(readerBlueprints.GetInt32(10))
             TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(11))

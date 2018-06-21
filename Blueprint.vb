@@ -173,7 +173,7 @@ Public Class Blueprint
 
         SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_NAME, BLUEPRINT_GROUP, ITEM_ID, ITEM_NAME, ITEM_CATEGORY_ID, ITEM_CATEGORY,"
         SQL = SQL & "ITEM_GROUP_ID, ITEM_GROUP, TECH_LEVEL, PORTION_SIZE, BASE_PRODUCTION_TIME,"
-        SQL = SQL & "MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, VOLUME "
+        SQL = SQL & "MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, packagedVolume "
         SQL = SQL & "FROM ALL_BLUEPRINTS INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
         SQL = SQL & "WHERE BLUEPRINT_ID =" & BPBlueprintID
 
@@ -1517,7 +1517,8 @@ Public Class Blueprint
         If IncludeManufacturingUsage Then
             ' baseJobCost = Sum(eachmaterialquantity * adjustedPrice) - set in build function
             ' jobFee = baseJobCost * systemCostIndex * runs
-            JobFee = BaseJobCost * MainManufacturingFacility.CostIndex * UserRuns
+            JobFee = CLng(BaseJobCost * UserRuns) * MainManufacturingFacility.CostIndex
+            JobFee = JobFee * MainManufacturingFacility.CostMultiplier
 
             ' facilityUsage = jobFee * taxRate
             FacilityUsage = JobFee * MainManufacturingFacility.TaxRate

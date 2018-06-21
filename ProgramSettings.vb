@@ -1238,7 +1238,6 @@ Public Class ProgramSettings
                 With TempSettings
                     .ClientID = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "ClientID", ""))
                     .SecretKey = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "SecretKey", ""))
-                    .Port = CInt(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeInteger, AppRegistrationInformationSettingsFileName, "Port", 0))
                     .Scopes = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "Scopes", ""))
                 End With
             Else
@@ -1265,7 +1264,6 @@ Public Class ProgramSettings
         ' Load defaults 
         TempSettings.ClientID = ""
         TempSettings.SecretKey = ""
-        TempSettings.Port = 0
         TempSettings.Scopes = ""
 
         AppRegistrationInformationSettings = TempSettings
@@ -1276,13 +1274,12 @@ Public Class ProgramSettings
 
     ' Saves the Shopping List Settings to XML
     Public Function SaveAppRegistrationInformationSettings(SentSettings As AppRegistrationInformationSettings) As Boolean
-        Dim AppRegistrationInformationSettingsList(3) As Setting
+        Dim AppRegistrationInformationSettingsList(2) As Setting
 
         Try
             AppRegistrationInformationSettingsList(0) = New Setting("ClientID", CStr(SentSettings.ClientID))
             AppRegistrationInformationSettingsList(1) = New Setting("SecretKey", CStr(SentSettings.SecretKey))
-            AppRegistrationInformationSettingsList(2) = New Setting("Port", CStr(SentSettings.Port))
-            AppRegistrationInformationSettingsList(3) = New Setting("Scopes", CStr(SentSettings.Scopes))
+            AppRegistrationInformationSettingsList(2) = New Setting("Scopes", CStr(SentSettings.Scopes))
 
             Call WriteSettingsToFile("", AppRegistrationInformationSettingsFileName, AppRegistrationInformationSettingsList, AppRegistrationInformationSettingsFileName)
             Return True
@@ -5659,14 +5656,16 @@ Public Structure UpwellStructureSettings
     Dim ReprocessingRigsCheck As Boolean
     Dim EngineeringRigsCheck As Boolean
     Dim CombatRigsCheck As Boolean
+    Dim ReactionsRigsCheck As Boolean
+    Dim DrillingRigsCheck As Boolean
+
     Dim IncludeFuelCostsCheck As Boolean
     Dim FuelBlockType As String
     Dim BuyBuildBlockOption As String
     Dim AutoUpdateFuelBlockPricesCheck As Boolean
     Dim SearchFilterText As String
     Dim SelectedStructureName As String
-    Dim ReactionsRigsCheck As Boolean
-    Dim DrillingRigsCheck As Boolean
+
 End Structure
 
 ' For structure bonus viewing
@@ -5683,6 +5682,5 @@ End Structure
 Public Structure AppRegistrationInformationSettings
     Dim ClientID As String
     Dim SecretKey As String
-    Dim Port As Integer
     Dim Scopes As String
 End Structure
