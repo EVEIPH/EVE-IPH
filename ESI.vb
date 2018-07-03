@@ -88,7 +88,7 @@ Public Class ESI
         With ApplicationSettings
             ClientID = .ClientID
             SecretKey = .SecretKey
-            ScopesString = .Scopes
+            ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries))
         End With
 
         AuthStreamText = ""
