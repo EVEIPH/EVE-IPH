@@ -39,7 +39,7 @@ Public Class Corporation
 
     ' Loads the corporation data from token information sent
     Public Sub LoadCorporationData(ByVal CorpID As Long, ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData,
-                                   RefreshAssets As Boolean, RefreshBlueprints As Boolean)
+                                   RefreshAssets As Boolean, RefreshBlueprints As Boolean, Optional ResetData As Boolean = True)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
         Dim CorpRoles As New List(Of String)
@@ -95,22 +95,28 @@ Public Class Corporation
         ' Industry Jobs - needs FactoryManager role
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationIndustryJobsScope) And FactoryManager Then
             JobsAccess = True
-            Jobs = New EVEIndustryJobs()
-            Call Jobs.LoadIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+            If ResetData Then
+                Jobs = New EVEIndustryJobs()
+                Call Jobs.LoadIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+            End If
         End If
 
         ' Blueprints - needs Director role
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationBlueprintsScope) And Director Then
             BlueprintsAccess = True
-            Blueprints = New EVEBlueprints()
-            Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, ScanType.Corporation, RefreshBlueprints)
+            If ResetData Then
+                Blueprints = New EVEBlueprints()
+                Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, ScanType.Corporation, RefreshBlueprints)
+            End If
         End If
 
         ' Assets - needs Director role
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationAssetScope) And Director Then
             AssetAccess = True
-            Assets = New EVEAssets(ScanType.Corporation)
-            Call Assets.LoadAssets(CorporationID, CharacterTokenData, RefreshAssets)
+            If ResetData Then
+                Assets = New EVEAssets(ScanType.Corporation)
+                Call Assets.LoadAssets(CorporationID, CharacterTokenData, RefreshAssets)
+            End If
         End If
 
     End Sub

@@ -993,8 +993,6 @@ Public Class ProgramSettings
         m_xmld.Load(FilePath)
 
         'Get the settings
-
-        ' Get the cache update
         m_nodelist = m_xmld.SelectNodes("/" & RootElement & "/" & ElementString)
 
         If Not IsNothing(m_nodelist.Item(0)) Then

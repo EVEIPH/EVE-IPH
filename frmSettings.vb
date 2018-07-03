@@ -449,7 +449,12 @@ Public Class frmSettings
                 .SVRAveragePriceDuration = cmbSVRAvgPriceDuration.Text
                 .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
 
-                .ProxyAddress = txtProxyAddress.Text
+                If txtProxyAddress.Text <> "" Then
+                    .ProxyAddress = txtProxyAddress.Text
+                Else
+                    .ProxyAddress = ""
+                End If
+
                 If Trim(txtProxyPort.Text) <> "" Then
                     .ProxyPort = CInt(txtProxyPort.Text)
                 Else

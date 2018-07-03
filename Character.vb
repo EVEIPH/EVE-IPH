@@ -216,7 +216,10 @@ Public Class Character
                 CharacterTokenData.Scopes = .GetString(9)
 
                 ' Refresh the character data first
-                Call RefreshTokenData()
+                If ID <> DummyCharacterID Then
+                    Dim TempESI As New ESI
+                    Call TempESI.SetCharacterData(CharacterTokenData, True)
+                End If
 
                 CharacterCorporation = New Corporation()
                 CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
@@ -296,11 +299,26 @@ Public Class Character
     End Function
 
     Public Sub RefreshTokenData()
-        ' Refresh the character data first
-        If ID <> DummyCharacterID Then
-            Dim TempESI As New ESI
-            Call TempESI.SetCharacterData(CharacterTokenData, True)
+        ' Refresh the character token data if it's been updated
+        Dim SQL As String
+        Dim rsToken As SQLiteDataReader
+
+        SQL = "SELECT ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES FROM ESI_CHARACTER_DATA "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsToken = DBCommand.ExecuteReader
+
+        If rsToken.Read Then
+            CharacterTokenData.CharacterID = ID
+            CharacterTokenData.AccessToken = rsToken.GetString(0)
+            CharacterTokenData.TokenExpiration = CDate(rsToken.GetString(1))
+            CharacterTokenData.TokenType = rsToken.GetString(2)
+            CharacterTokenData.RefreshToken = rsToken.GetString(3)
+            CharacterTokenData.Scopes = rsToken.GetString(4)
         End If
+
+        ' Reset the corporation data to set the role flags - set reset data flag to false and don't reload jobs, bps, and assets
+        CharacterCorporation.LoadCorporationData(CharacterCorporation.CorporationID, ID, CharacterTokenData, False, False, False)
+
     End Sub
 
 End Class

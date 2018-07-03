@@ -88,7 +88,8 @@ Public Class ESI
         With ApplicationSettings
             ClientID = .ClientID
             SecretKey = .SecretKey
-            ScopesString = .Scopes
+            ' The scopes as submitted to the web service must be space-delimited, but the file can store them in multiple formats, including CrLF or comma separated - Ben Abraham Fix to issue #110
+            ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries))
         End With
 
         AuthStreamText = ""
@@ -237,7 +238,7 @@ Public Class ESI
         Dim AuthHeader As String = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
 
         WC.Headers(HttpRequestHeader.Authorization) = AuthHeader
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         Dim PostParameters As New NameValueCollection
         If Not Refresh Then
@@ -269,7 +270,7 @@ Public Class ESI
                 Call GetAccessToken(Token, Refresh, 0)
             End If
 
-            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
             MsgBox("The request failed to get Access Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
@@ -296,7 +297,7 @@ Public Class ESI
         Dim ErrorCode As Integer = 0
         Dim ErrorResponse As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         Try
 
@@ -328,7 +329,7 @@ Public Class ESI
                 Threading.Thread.Sleep(2000)
                 Return GetPublicData(URL, CacheDate, BodyData)
             End If
-            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
             MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
         End Try
@@ -356,7 +357,7 @@ Public Class ESI
         Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         ' See if we update the token data first
         If TokenExpiration <= DateTime.UtcNow Then
@@ -625,7 +626,7 @@ Public Class ESI
         Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         ' See if we update the token data first
         If ExpirationDate <= DateTime.UtcNow Then
@@ -674,7 +675,7 @@ Public Class ESI
                     Thread.Sleep(2000)
                     Return GetCharacterVerificationData(TokenData, ExpirationDate)
                 End If
-                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
             Catch ex As Exception
                 MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
             End Try
@@ -854,7 +855,7 @@ Public Class ESI
 
         ' Set up query string
         If JobType = ScanType.Personal Then
-            ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,' & "&include_completed=true",
+            ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource & "&include_completed=true",
                                                   TempTokenData, TokenData.TokenExpiration, JobsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,
