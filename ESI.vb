@@ -88,6 +88,7 @@ Public Class ESI
         With ApplicationSettings
             ClientID = .ClientID
             SecretKey = .SecretKey
+            ' The scopes as submitted to the web service must be space-delimited, but the file can store them in multiple formats, including CrLF or comma separated - Ben Abraham Fix to issue #110
             ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries))
         End With
 
@@ -269,7 +270,7 @@ Public Class ESI
                 Call GetAccessToken(Token, Refresh, 0)
             End If
 
-            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
             MsgBox("The request failed to get Access Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
@@ -328,7 +329,7 @@ Public Class ESI
                 Threading.Thread.Sleep(2000)
                 Return GetPublicData(URL, CacheDate, BodyData)
             End If
-            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
             MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
         End Try
@@ -674,7 +675,7 @@ Public Class ESI
                     Thread.Sleep(2000)
                     Return GetCharacterVerificationData(TokenData, ExpirationDate)
                 End If
-                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & errorresponse)
+                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
             Catch ex As Exception
                 MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
             End Try
