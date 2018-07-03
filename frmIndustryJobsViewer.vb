@@ -1,10 +1,11 @@
 ﻿
+Imports System.ComponentModel
 Imports System.Data.SQLite
 Imports System.Threading
 
 Public Class frmIndustryJobsViewer
 
-    Private ColumnPositions(numIndustryJobColumns) As String ' For saving the column order
+    Private ColumnPositions(NumIndustryJobColumns) As String ' For saving the column order
     Private FirstLoad As Boolean
     Private Updating As Boolean
     Private AddingColumns As Boolean
@@ -76,7 +77,7 @@ Public Class frmIndustryJobsViewer
 
         ' See if they can load the jobs at all
         If Not SelectedCharacter.IndustryJobsAccess Then
-            fAccessError.ErrorText = "Insutry Jobs cannot be loaded for this character." &
+            fAccessError.ErrorText = "Industry Jobs cannot be loaded for this character." &
                 Environment.NewLine & Environment.NewLine & "Please ensure to include ESI access to industry jobs."
             fAccessError.Text = "ESI: No Industry Jobs Loaded"
             fAccessError.ErrorLink = ""
@@ -660,7 +661,7 @@ Public Class frmIndustryJobsViewer
 
     ' Updates the column order when changed
     Private Sub lstIndustryJobs_ColumnReordered(sender As Object, e As System.Windows.Forms.ColumnReorderedEventArgs) Handles lstIndustryJobs.ColumnReordered
-        Dim TempArray(numIndustryJobColumns) As String
+        Dim TempArray(NumIndustryJobColumns) As String
         Dim Minus1 As Boolean = False
 
         e.Cancel = True ' Cancel the event so we can manually update the grid columns
@@ -996,5 +997,9 @@ Public Class frmIndustryJobsViewer
         Return CharIDs
 
     End Function
+
+    Private Sub frmIndustryJobsViewer_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        myTimer.Dispose()
+    End Sub
 
 End Class

@@ -9060,12 +9060,12 @@ ExitSub:
                         SQL = SQL & "MAX(PRICE)"
                         LimittoBuy = True
                     Case "buyMedian"
-                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, "BUY")
+                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, True)
                     Case "buyMin"
                         SQL = SQL & "MIN(PRICE)"
                         LimittoBuy = True
                     Case "buyPercentile"
-                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, "BUY")
+                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, True)
                     Case "sellAvg"
                         SQL = SQL & "AVG(PRICE)"
                         LimittoSell = True
@@ -9073,12 +9073,12 @@ ExitSub:
                         SQL = SQL & "MAX(PRICE)"
                         LimittoSell = True
                     Case "sellMedian"
-                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, "SELL")
+                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, False)
                     Case "sellMin"
                         SQL = SQL & "MIN(PRICE)"
                         LimittoSell = True
                     Case "sellPercentile"
-                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, "SELL")
+                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, False)
                 End Select
 
                 ' Set the main from etc
@@ -9133,8 +9133,8 @@ ExitSub:
     End Sub
 
     ' Queries market orders and calculates the median and returns the median as a string
-    Private Function CalcMedian(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As String
-        Dim MedianList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, OrderType)
+    Private Function CalcMedian(TypeID As Long, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As String
+        Dim MedianList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, IsBuyOrder)
         Dim value As Double
         Dim size As Integer = MedianList.Count
 
@@ -9158,12 +9158,12 @@ ExitSub:
     End Function
 
     ' Queries market orders and calculates the percential price
-    Private Function CalcPercentile(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As String
-        Dim PriceList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, OrderType)
+    Private Function CalcPercentile(TypeID As Long, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As String
+        Dim PriceList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, IsBuyOrder)
         Dim index As Integer
 
         If PriceList.Count > 0 Then
-            If OrderType = "BUY" Then
+            If IsBuyOrder Then
                 ' Get the top 5% 
                 index = CInt(Math.Floor(0.95 * PriceList.Count))
             Else
@@ -9178,7 +9178,7 @@ ExitSub:
     End Function
 
     ' Returns the list of prices for variables sent, sorted ascending
-    Private Function GetMarketOrderPriceList(TypeID As Long, RegionID As String, SystemID As String, OrderType As String) As List(Of Double)
+    Private Function GetMarketOrderPriceList(TypeID As Long, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As List(Of Double)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
         Dim PriceList As New List(Of Double)
@@ -9191,8 +9191,10 @@ ExitSub:
             SQL = SQL & "AND REGION_ID = " & RegionID & " "
         End If
 
-        If OrderType <> "" Then
-            SQL = SQL & "AND ORDER_TYPE = '" & OrderType & "' "
+        If IsBuyOrder Then
+            SQL = SQL & "AND IS_BUY_ORDER <> 0 "
+        Else
+            SQL = SQL & "AND IS_BUY_ORDER = 0 "
         End If
 
         SQL = SQL & "ORDER BY PRICE ASC"
@@ -12809,7 +12811,6 @@ CheckTechs:
         Else
             SVRThresholdValue = CDbl(txtCalcSVRThreshold.Text)
         End If
-
 
         ' Save the refresh value since everytime we load the facility it will change it
         Dim SavedRefreshValue As Boolean = RefreshCalcData

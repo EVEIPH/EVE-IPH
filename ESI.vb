@@ -237,7 +237,7 @@ Public Class ESI
         Dim AuthHeader As String = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
 
         WC.Headers(HttpRequestHeader.Authorization) = AuthHeader
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         Dim PostParameters As New NameValueCollection
         If Not Refresh Then
@@ -296,7 +296,7 @@ Public Class ESI
         Dim ErrorCode As Integer = 0
         Dim ErrorResponse As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         Try
 
@@ -356,7 +356,7 @@ Public Class ESI
         Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         ' See if we update the token data first
         If TokenExpiration <= DateTime.UtcNow Then
@@ -625,7 +625,7 @@ Public Class ESI
         Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
-        WC.Proxy = Nothing
+        WC.Proxy = GetProxyData()
 
         ' See if we update the token data first
         If ExpirationDate <= DateTime.UtcNow Then
@@ -854,7 +854,7 @@ Public Class ESI
 
         ' Set up query string
         If JobType = ScanType.Personal Then
-            ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,' & "&include_completed=true",
+            ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "characters/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource & "&include_completed=true",
                                                   TempTokenData, TokenData.TokenExpiration, JobsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "corporations/" & CStr(ID) & "/industry/jobs/" & TranquilityDataSource,
