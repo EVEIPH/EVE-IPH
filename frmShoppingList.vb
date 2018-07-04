@@ -2314,7 +2314,7 @@ Public Class frmShoppingList
                     End If
                     ShopListItem.Quantity = CLng(CurrentRow.SubItems(2).Text)
                     ShopListItem.ItemME = CInt(CurrentRow.SubItems(3).Text)
-                    ShopListItem.ItemTE = CInt(CurrentRow.SubItems(12).Text)
+                    ShopListItem.ItemTE = CInt(CurrentRow.SubItems(15).Text)
                     ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
                     ShopListItem.BuildType = CurrentRow.SubItems(5).Text
                     ShopListItem.Decryptor = CurrentRow.SubItems(6).Text

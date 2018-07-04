@@ -15649,11 +15649,8 @@ ExitCalc:
                     ' Get the BP variable and send the other settings to shopping list
                     With FoundItem
                         If Not IsNothing(.Blueprint) Then
-                            'Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, .Blueprint.GetManufacturingFacility.MaterialMultiplier,
-                            '                   .Blueprint.GetManufacturingFacility.FacilityType,
-                            '                   chkCalcIgnoreInvention.Checked, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked,
-                            '                   .Blueprint.GetManufacturingFacility.IncludeActivityCost, .Blueprint.GetManufacturingFacility.IncludeActivityTime,
-                            '                   .Blueprint.GetManufacturingFacility.IncludeActivityUsage)
+                            Call AddToShoppingList(.Blueprint, BuildBuy, CopyRaw, BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType()),
+                               chkBPIgnoreInvention.Checked, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked, rbtnBPCopyInvREMats.Checked)
                         Else
                             MsgBox("You must calculate an item before adding it to the shopping list.", MsgBoxStyle.Information, Application.ProductName)
                             Exit Sub

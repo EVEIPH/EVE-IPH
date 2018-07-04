@@ -331,7 +331,9 @@ Public Class ESI
             End If
             MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
-            MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
+            If ex.Message <> "Thread was being aborted." Then
+                MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
+            End If
         End Try
 
         RetriedCall = False
