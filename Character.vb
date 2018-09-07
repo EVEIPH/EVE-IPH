@@ -181,7 +181,8 @@ Public Class Character
     End Function
 
     ' Load the latest data for the character sent or the default if no character sent from the DB - users may not want to load bps or assets 
-    Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean) As Boolean
+    Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean,
+                                      Optional IndustryJobsUpdate As Boolean = False) As Boolean
         Dim ESIData As New ESI
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
@@ -218,11 +219,15 @@ Public Class Character
                 ' Refresh the character data first
                 If ID <> DummyCharacterID Then
                     Dim TempESI As New ESI
-                    Call TempESI.SetCharacterData(CharacterTokenData, True)
+                    ' Only ignore the cache date if we aren't updating industry jobs
+                    Call TempESI.SetCharacterData(CharacterTokenData)
                 End If
 
                 CharacterCorporation = New Corporation()
-                CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+                ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
+                If .GetInt64(2) > 2000000 Then
+                    CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+                End If
 
                 UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
                 IsDefault = CBool(.GetInt32(15))
@@ -233,6 +238,18 @@ Public Class Character
 
             ' Load the character skills
             Call Skills.LoadCharacterSkills(ID, CharacterTokenData)
+
+            ' Load the character's industry jobs
+            Jobs = New EVEIndustryJobs()
+            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterIndustryJobsScope) Then
+                IndustryJobsAccess = True
+                Call Jobs.UpdateIndustryJobs(ID, CharacterTokenData, ScanType.Personal)
+            End If
+
+            If IndustryJobsUpdate Then
+                ' Only refresh skills and industry jobs for update calls from industry jobs
+                Return True
+            End If
 
             ' Load the standings for this character
             Standings = New EVENPCStandings()
@@ -246,13 +263,6 @@ Public Class Character
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterResearchAgentsScope) Then
                 ResearchAgentAccess = True
                 Call DatacoreAgents.LoadResearchAgents(ID, CharacterTokenData)
-            End If
-
-            ' Load the character's industry jobs
-            Jobs = New EVEIndustryJobs()
-            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterIndustryJobsScope) Then
-                IndustryJobsAccess = True
-                Call Jobs.UpdateIndustryJobs(ID, CharacterTokenData, ScanType.Personal)
             End If
 
             ' Load the Blueprints but don't load if they don't have selected

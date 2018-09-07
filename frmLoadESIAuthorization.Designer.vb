@@ -29,12 +29,12 @@ Partial Class frmLoadESIAuthorization
         Me.lblClientID = New System.Windows.Forms.Label()
         Me.lblSecretKey = New System.Windows.Forms.Label()
         Me.txtSecretKey = New System.Windows.Forms.TextBox()
-        Me.txtScopes = New System.Windows.Forms.TextBox()
         Me.lblScopes = New System.Windows.Forms.Label()
         Me.btnSaveApplicationInfo = New System.Windows.Forms.Button()
         Me.btnLaunchInstructions = New System.Windows.Forms.Button()
         Me.gbRegister = New System.Windows.Forms.GroupBox()
         Me.btnSkipEntry = New System.Windows.Forms.Button()
+        Me.txtScopes = New System.Windows.Forms.RichTextBox()
         Me.gbRegister.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -91,15 +91,6 @@ Partial Class frmLoadESIAuthorization
         Me.txtSecretKey.Size = New System.Drawing.Size(299, 20)
         Me.txtSecretKey.TabIndex = 7
         '
-        'txtScopes
-        '
-        Me.txtScopes.Location = New System.Drawing.Point(10, 158)
-        Me.txtScopes.Multiline = True
-        Me.txtScopes.Name = "txtScopes"
-        Me.txtScopes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtScopes.Size = New System.Drawing.Size(299, 144)
-        Me.txtScopes.TabIndex = 9
-        '
         'lblScopes
         '
         Me.lblScopes.AutoSize = True
@@ -135,6 +126,7 @@ Partial Class frmLoadESIAuthorization
         '
         'gbRegister
         '
+        Me.gbRegister.Controls.Add(Me.txtScopes)
         Me.gbRegister.Controls.Add(Me.btnSkipEntry)
         Me.gbRegister.Controls.Add(Me.btnSaveApplicationInfo)
         Me.gbRegister.Controls.Add(Me.lblScopes)
@@ -144,7 +136,6 @@ Partial Class frmLoadESIAuthorization
         Me.gbRegister.Controls.Add(Me.lblClientID)
         Me.gbRegister.Controls.Add(Me.btnLaunchInstructions)
         Me.gbRegister.Controls.Add(Me.txtSecretKey)
-        Me.gbRegister.Controls.Add(Me.txtScopes)
         Me.gbRegister.Location = New System.Drawing.Point(12, 12)
         Me.gbRegister.Name = "gbRegister"
         Me.gbRegister.Size = New System.Drawing.Size(320, 365)
@@ -162,6 +153,15 @@ Partial Class frmLoadESIAuthorization
         Me.btnSkipEntry.TabIndex = 11
         Me.btnSkipEntry.Text = "Skip Entry"
         Me.btnSkipEntry.UseVisualStyleBackColor = False
+        '
+        'txtScopes
+        '
+        Me.txtScopes.Location = New System.Drawing.Point(10, 158)
+        Me.txtScopes.Name = "txtScopes"
+        Me.txtScopes.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical
+        Me.txtScopes.Size = New System.Drawing.Size(299, 149)
+        Me.txtScopes.TabIndex = 2
+        Me.txtScopes.Text = ""
         '
         'frmLoadESIAuthorization
         '
@@ -188,10 +188,10 @@ Partial Class frmLoadESIAuthorization
     Friend WithEvents lblClientID As Label
     Friend WithEvents lblSecretKey As Label
     Friend WithEvents txtSecretKey As TextBox
-    Friend WithEvents txtScopes As TextBox
     Friend WithEvents lblScopes As Label
     Friend WithEvents btnSaveApplicationInfo As Button
     Friend WithEvents btnLaunchInstructions As Button
     Friend WithEvents gbRegister As GroupBox
     Friend WithEvents btnSkipEntry As Button
+    Friend WithEvents txtScopes As RichTextBox
 End Class

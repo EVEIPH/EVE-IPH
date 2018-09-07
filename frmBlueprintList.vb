@@ -289,7 +289,17 @@ Public Class frmBlueprintList
     Private Function GetOwnedJoin() As String
         Dim ownedJoin = ""
         Dim baseJoin = $"JOIN OWNED_BLUEPRINTS o ON b.BLUEPRINT_ID = o.BLUEPRINT_ID "
-        Dim ownedFilter = $" AND o.OWNED <> 0 AND o.USER_ID = {SelectedCharacter.ID}"
+        Dim ownedFilter = ""
+        ' See what ID we use for character bps
+        Dim TempID As Long = 0
+        If UserApplicationSettings.LoadBPsbyChar Then
+            ' Use the ID sent
+            TempID = SelectedCharacter.ID
+        Else
+            TempID = CommonLoadBPsID
+        End If
+
+        ownedFilter = $" AND o.OWNED <> 0 AND o.USER_ID = {TempID}"
 
         If rbtnBPOwnedBlueprints.Checked Then
             ownedJoin = $"{baseJoin} {ownedFilter}"

@@ -61,14 +61,14 @@ Public Class EVESkillList
     End Sub
 
     ' Updates the character skills from ESI
-    Private Sub UpdateCharacterSkills(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData)
+    Private Sub UpdateCharacterSkills(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData, Optional OpenTransaction As Boolean = True)
         Dim SQL As String = ""
         Dim readerCharacter As SQLiteDataReader
         Dim SkillList As String = ""
         Dim TempCharacterSkills As New EVESkillList
 
         ' Get the skills for this character first
-        Dim ESIData as new ESI
+        Dim ESIData As New ESI
         Dim CB As New CacheBox
         Dim CacheDate As Date
 
@@ -89,7 +89,9 @@ Public Class EVESkillList
                 SQL = SQL & " AND OVERRIDE_SKILL <> -1"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                Call EVEDB.BeginSQLiteTransaction()
+                If OpenTransaction Then
+                    Call EVEDB.BeginSQLiteTransaction()
+                End If
 
                 ' Insert new skill data
                 For i = 0 To TempCharacterSkills.GetSkillList.Count - 1
@@ -125,7 +127,9 @@ Public Class EVESkillList
                 ' Update cache date now all entered
                 Call CB.UpdateCacheDate(CacheDateType.Skills, CacheDate, ID)
 
-                Call EVEDB.CommitSQLiteTransaction()
+                If OpenTransaction Then
+                    Call EVEDB.CommitSQLiteTransaction()
+                End If
 
             End If
         End If

@@ -28,6 +28,8 @@ Partial Class frmSettings
         Me.btnSave = New System.Windows.Forms.Button()
         Me.btnCancel = New System.Windows.Forms.Button()
         Me.gbGeneral = New System.Windows.Forms.GroupBox()
+        Me.chkLoadBPsbyChar = New System.Windows.Forms.CheckBox()
+        Me.chkSaveFacilitiesbyChar = New System.Windows.Forms.CheckBox()
         Me.chkLinksInCopyText = New System.Windows.Forms.CheckBox()
         Me.chkDisableSound = New System.Windows.Forms.CheckBox()
         Me.chkDisableSVR = New System.Windows.Forms.CheckBox()
@@ -45,9 +47,12 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
+        Me.rbtnBuildT2T3AdvancedMats = New System.Windows.Forms.RadioButton()
+        Me.rbtnBuildT2T3RawMats = New System.Windows.Forms.RadioButton()
         Me.chkSaveBPRelicsDecryptors = New System.Windows.Forms.CheckBox()
         Me.chkBuildBuyDefault = New System.Windows.Forms.CheckBox()
         Me.chkSuggestBuildwhenBPnotOwned = New System.Windows.Forms.CheckBox()
+        Me.rbtnBuildT2ProcessedMats = New System.Windows.Forms.RadioButton()
         Me.chkBeanCounterCopy = New System.Windows.Forms.CheckBox()
         Me.cmbBeanCounterCopy = New System.Windows.Forms.ComboBox()
         Me.gbDefaultMEPE = New System.Windows.Forms.GroupBox()
@@ -108,7 +113,7 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(349, 327)
+        Me.btnSave.Location = New System.Drawing.Point(349, 367)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
@@ -117,7 +122,7 @@ Partial Class frmSettings
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(559, 327)
+        Me.btnCancel.Location = New System.Drawing.Point(559, 367)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
@@ -126,20 +131,42 @@ Partial Class frmSettings
         '
         'gbGeneral
         '
+        Me.gbGeneral.Controls.Add(Me.chkLoadBPsbyChar)
+        Me.gbGeneral.Controls.Add(Me.chkSaveFacilitiesbyChar)
         Me.gbGeneral.Controls.Add(Me.chkLinksInCopyText)
         Me.gbGeneral.Controls.Add(Me.chkDisableSound)
         Me.gbGeneral.Controls.Add(Me.chkDisableSVR)
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
         Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
         Me.gbGeneral.Name = "gbGeneral"
-        Me.gbGeneral.Size = New System.Drawing.Size(237, 104)
+        Me.gbGeneral.Size = New System.Drawing.Size(237, 160)
         Me.gbGeneral.TabIndex = 4
         Me.gbGeneral.TabStop = False
         Me.gbGeneral.Text = "General:"
         '
+        'chkLoadBPsbyChar
+        '
+        Me.chkLoadBPsbyChar.AutoSize = True
+        Me.chkLoadBPsbyChar.Location = New System.Drawing.Point(17, 124)
+        Me.chkLoadBPsbyChar.Name = "chkLoadBPsbyChar"
+        Me.chkLoadBPsbyChar.Size = New System.Drawing.Size(162, 17)
+        Me.chkLoadBPsbyChar.TabIndex = 40
+        Me.chkLoadBPsbyChar.Text = "Load Blueprints by Character"
+        Me.chkLoadBPsbyChar.UseVisualStyleBackColor = True
+        '
+        'chkSaveFacilitiesbyChar
+        '
+        Me.chkSaveFacilitiesbyChar.AutoSize = True
+        Me.chkSaveFacilitiesbyChar.Location = New System.Drawing.Point(17, 103)
+        Me.chkSaveFacilitiesbyChar.Name = "chkSaveFacilitiesbyChar"
+        Me.chkSaveFacilitiesbyChar.Size = New System.Drawing.Size(185, 17)
+        Me.chkSaveFacilitiesbyChar.TabIndex = 39
+        Me.chkSaveFacilitiesbyChar.Text = "Save Facilities for each Character"
+        Me.chkSaveFacilitiesbyChar.UseVisualStyleBackColor = True
+        '
         'chkLinksInCopyText
         '
-        Me.chkLinksInCopyText.Location = New System.Drawing.Point(17, 38)
+        Me.chkLinksInCopyText.Location = New System.Drawing.Point(17, 40)
         Me.chkLinksInCopyText.Name = "chkLinksInCopyText"
         Me.chkLinksInCopyText.Size = New System.Drawing.Size(214, 17)
         Me.chkLinksInCopyText.TabIndex = 38
@@ -149,7 +176,7 @@ Partial Class frmSettings
         'chkDisableSound
         '
         Me.chkDisableSound.AutoSize = True
-        Me.chkDisableSound.Location = New System.Drawing.Point(17, 78)
+        Me.chkDisableSound.Location = New System.Drawing.Point(17, 82)
         Me.chkDisableSound.Name = "chkDisableSound"
         Me.chkDisableSound.Size = New System.Drawing.Size(95, 17)
         Me.chkDisableSound.TabIndex = 24
@@ -159,7 +186,7 @@ Partial Class frmSettings
         'chkDisableSVR
         '
         Me.chkDisableSVR.AutoSize = True
-        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 58)
+        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 61)
         Me.chkDisableSVR.Name = "chkDisableSVR"
         Me.chkDisableSVR.Size = New System.Drawing.Size(129, 17)
         Me.chkDisableSVR.TabIndex = 0
@@ -179,7 +206,7 @@ Partial Class frmSettings
         'chkRefreshBPsonStartup
         '
         Me.chkRefreshBPsonStartup.AutoSize = True
-        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 60)
+        Me.chkRefreshBPsonStartup.Location = New System.Drawing.Point(17, 59)
         Me.chkRefreshBPsonStartup.Name = "chkRefreshBPsonStartup"
         Me.chkRefreshBPsonStartup.Size = New System.Drawing.Size(85, 17)
         Me.chkRefreshBPsonStartup.TabIndex = 26
@@ -231,9 +258,9 @@ Partial Class frmSettings
         Me.chkBeanCounterRefining.AutoSize = True
         Me.chkBeanCounterRefining.Location = New System.Drawing.Point(9, 64)
         Me.chkBeanCounterRefining.Name = "chkBeanCounterRefining"
-        Me.chkBeanCounterRefining.Size = New System.Drawing.Size(166, 17)
+        Me.chkBeanCounterRefining.Size = New System.Drawing.Size(192, 17)
         Me.chkBeanCounterRefining.TabIndex = 5
-        Me.chkBeanCounterRefining.Text = "Refining Beancounter Implant"
+        Me.chkBeanCounterRefining.Text = "Reprocessing Beancounter Implant"
         Me.chkBeanCounterRefining.UseVisualStyleBackColor = True
         '
         'gbStationStandings
@@ -244,7 +271,7 @@ Partial Class frmSettings
         Me.gbStationStandings.Controls.Add(Me.chkBrokerFactionStanding)
         Me.gbStationStandings.Location = New System.Drawing.Point(246, 200)
         Me.gbStationStandings.Name = "gbStationStandings"
-        Me.gbStationStandings.Size = New System.Drawing.Size(160, 65)
+        Me.gbStationStandings.Size = New System.Drawing.Size(160, 103)
         Me.gbStationStandings.TabIndex = 7
         Me.gbStationStandings.TabStop = False
         Me.gbStationStandings.Text = "Station Standings:"
@@ -287,7 +314,7 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(454, 327)
+        Me.btnReset.Location = New System.Drawing.Point(454, 367)
         Me.btnReset.Name = "btnReset"
         Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
@@ -296,20 +323,45 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
+        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2T3AdvancedMats)
+        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2T3RawMats)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildBuyDefault)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
+        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2ProcessedMats)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 94)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 132)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
         '
+        'rbtnBuildT2T3AdvancedMats
+        '
+        Me.rbtnBuildT2T3AdvancedMats.AutoSize = True
+        Me.rbtnBuildT2T3AdvancedMats.Location = New System.Drawing.Point(9, 70)
+        Me.rbtnBuildT2T3AdvancedMats.Name = "rbtnBuildT2T3AdvancedMats"
+        Me.rbtnBuildT2T3AdvancedMats.Size = New System.Drawing.Size(228, 17)
+        Me.rbtnBuildT2T3AdvancedMats.TabIndex = 41
+        Me.rbtnBuildT2T3AdvancedMats.TabStop = True
+        Me.rbtnBuildT2T3AdvancedMats.Text = "Build T2/T3 with Adv. Moon/Gas Materials"
+        Me.rbtnBuildT2T3AdvancedMats.UseVisualStyleBackColor = True
+        '
+        'rbtnBuildT2T3RawMats
+        '
+        Me.rbtnBuildT2T3RawMats.AutoSize = True
+        Me.rbtnBuildT2T3RawMats.Location = New System.Drawing.Point(9, 110)
+        Me.rbtnBuildT2T3RawMats.Name = "rbtnBuildT2T3RawMats"
+        Me.rbtnBuildT2T3RawMats.Size = New System.Drawing.Size(228, 17)
+        Me.rbtnBuildT2T3RawMats.TabIndex = 40
+        Me.rbtnBuildT2T3RawMats.TabStop = True
+        Me.rbtnBuildT2T3RawMats.Text = "Build T2/T3 with Raw Moon/Gas Materials"
+        Me.rbtnBuildT2T3RawMats.UseVisualStyleBackColor = True
+        '
         'chkSaveBPRelicsDecryptors
         '
         Me.chkSaveBPRelicsDecryptors.AutoSize = True
-        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 66)
+        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 52)
         Me.chkSaveBPRelicsDecryptors.Name = "chkSaveBPRelicsDecryptors"
         Me.chkSaveBPRelicsDecryptors.Size = New System.Drawing.Size(212, 17)
         Me.chkSaveBPRelicsDecryptors.TabIndex = 38
@@ -329,12 +381,23 @@ Partial Class frmSettings
         'chkSuggestBuildwhenBPnotOwned
         '
         Me.chkSuggestBuildwhenBPnotOwned.AutoSize = True
-        Me.chkSuggestBuildwhenBPnotOwned.Location = New System.Drawing.Point(9, 43)
+        Me.chkSuggestBuildwhenBPnotOwned.Location = New System.Drawing.Point(9, 36)
         Me.chkSuggestBuildwhenBPnotOwned.Name = "chkSuggestBuildwhenBPnotOwned"
         Me.chkSuggestBuildwhenBPnotOwned.Size = New System.Drawing.Size(222, 17)
         Me.chkSuggestBuildwhenBPnotOwned.TabIndex = 37
         Me.chkSuggestBuildwhenBPnotOwned.Text = "Suggest Build option when BP not owned"
         Me.chkSuggestBuildwhenBPnotOwned.UseVisualStyleBackColor = True
+        '
+        'rbtnBuildT2ProcessedMats
+        '
+        Me.rbtnBuildT2ProcessedMats.AutoSize = True
+        Me.rbtnBuildT2ProcessedMats.Location = New System.Drawing.Point(9, 90)
+        Me.rbtnBuildT2ProcessedMats.Name = "rbtnBuildT2ProcessedMats"
+        Me.rbtnBuildT2ProcessedMats.Size = New System.Drawing.Size(214, 17)
+        Me.rbtnBuildT2ProcessedMats.TabIndex = 39
+        Me.rbtnBuildT2ProcessedMats.TabStop = True
+        Me.rbtnBuildT2ProcessedMats.Text = "Build T2 with Processed Moon Materials"
+        Me.rbtnBuildT2ProcessedMats.UseVisualStyleBackColor = True
         '
         'chkBeanCounterCopy
         '
@@ -485,9 +548,9 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 121)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 178)
         Me.gbStartupOptions.Name = "gbStartupOptions"
-        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 144)
+        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 126)
         Me.gbStartupOptions.TabIndex = 39
         Me.gbStartupOptions.TabStop = False
         Me.gbStartupOptions.Text = "Startup Options"
@@ -495,7 +558,7 @@ Partial Class frmSettings
         'chkRefreshFacilityDataonStartup
         '
         Me.chkRefreshFacilityDataonStartup.AutoSize = True
-        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 100)
+        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 99)
         Me.chkRefreshFacilityDataonStartup.Name = "chkRefreshFacilityDataonStartup"
         Me.chkRefreshFacilityDataonStartup.Size = New System.Drawing.Size(124, 17)
         Me.chkRefreshFacilityDataonStartup.TabIndex = 29
@@ -517,7 +580,7 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(248, 270)
+        Me.gbExportOptions.Location = New System.Drawing.Point(248, 310)
         Me.gbExportOptions.Name = "gbExportOptions"
         Me.gbExportOptions.Size = New System.Drawing.Size(95, 87)
         Me.gbExportOptions.TabIndex = 38
@@ -566,7 +629,7 @@ Partial Class frmSettings
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.txtSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRThreshold)
-        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 270)
+        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 310)
         Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
         Me.gbCalcAvgPrice.Size = New System.Drawing.Size(237, 87)
         Me.gbCalcAvgPrice.TabIndex = 40
@@ -643,7 +706,7 @@ Partial Class frmSettings
         Me.gbProxySettings.Controls.Add(Me.lblProxyAddress)
         Me.gbProxySettings.Controls.Add(Me.txtProxyPort)
         Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
-        Me.gbProxySettings.Location = New System.Drawing.Point(349, 270)
+        Me.gbProxySettings.Location = New System.Drawing.Point(349, 309)
         Me.gbProxySettings.Name = "gbProxySettings"
         Me.gbProxySettings.Size = New System.Drawing.Size(311, 55)
         Me.gbProxySettings.TabIndex = 41
@@ -689,14 +752,14 @@ Partial Class frmSettings
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(665, 361)
+        Me.ClientSize = New System.Drawing.Size(665, 402)
+        Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
         Me.Controls.Add(Me.gbCalcAvgPrice)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
         Me.Controls.Add(Me.gbImplants)
         Me.Controls.Add(Me.gbEVEMarketer)
-        Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.btnReset)
         Me.Controls.Add(Me.btnSave)
         Me.Controls.Add(Me.btnCancel)
@@ -795,4 +858,9 @@ Partial Class frmSettings
     Friend WithEvents lblProxyAddress As System.Windows.Forms.Label
     Friend WithEvents txtProxyPort As System.Windows.Forms.TextBox
     Friend WithEvents lblProxyPort As System.Windows.Forms.Label
+    Friend WithEvents rbtnBuildT2T3RawMats As RadioButton
+    Friend WithEvents rbtnBuildT2ProcessedMats As RadioButton
+    Friend WithEvents rbtnBuildT2T3AdvancedMats As RadioButton
+    Friend WithEvents chkLoadBPsbyChar As CheckBox
+    Friend WithEvents chkSaveFacilitiesbyChar As CheckBox
 End Class

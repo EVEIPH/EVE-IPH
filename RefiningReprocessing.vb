@@ -1,6 +1,6 @@
 ﻿Imports System.Data.SQLite
 
-Class RefiningReprocessing
+Class Reprocessing
 
     Dim Reprocessing As Integer
     Dim ReprocessingEfficiency As Integer
@@ -28,8 +28,8 @@ Class RefiningReprocessing
     ' NPC Station Tax for Reprocessing 
     ' StationTax = 5.0% − (0.75% * YourCorporationStanding) - You need 5%/0.75% = 6.67 Standing to pay no Station Tax.
 
-    Public Sub New(ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, _
-                   ByVal ScrapMetalProcessingSkill As Integer, ByVal ReprocessingImplantBonus As Double, _
+    Public Sub New(ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer,
+                   ByVal ScrapMetalProcessingSkill As Integer, ByVal ReprocessingImplantBonus As Double,
                    ByVal UserStationEquipment As Double, ByVal UserStationTaxRate As Double, ByVal UserStationStanding As Double)
 
         ' Save all the variables
@@ -57,7 +57,7 @@ Class RefiningReprocessing
     End Sub
 
     ' Returns a material list that would result from reprocessing the Product size of the item 
-    Public Function ReprocessMaterial(ByVal ItemID As Long, ByVal BatchSize As Integer, ByVal NumItems As Long, _
+    Public Function ReprocessMaterial(ByVal ItemID As Long, ByVal BatchSize As Integer, ByVal NumItems As Long,
                                       ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByVal RecursiveReprocess As Boolean) As Materials
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
@@ -74,7 +74,7 @@ Class RefiningReprocessing
 
         ' Open up the Items Material view with this BP's Product ID (T1 Component)
         SQL = "SELECT REPROCESSING.REFINED_MATERIAL_ID, REPROCESSING.REFINED_MATERIAL, REPROCESSING.REFINED_MATERIAL_GROUP, "
-        SQL = SQL & "REPROCESSING.REFINED_MATERIAL_VOLUME, REPROCESSING.REFINED_MATERIAL_QUANTITY, ITEM_PRICES.PRICE "
+        SQL = SQL & "REPROCESSING.REFINED_MATERIAL_VOLUME, REPROCESSING.REFINED_MATERIAL_QUANTITY, ITEM_PRICES.PRICE, ITEM_PRICES.ADJUSTED_PRICE "
         SQL = SQL & "FROM REPROCESSING, ITEM_PRICES "
         SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & ItemID & " "
         SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
@@ -85,7 +85,7 @@ Class RefiningReprocessing
         ' Add all the materials 
         While readerBP.Read
             ' Reprocessing Rate for everything else (including unrefined Alchemy products)
-            ' rate = facilityModifier * (1 + 0.02 * ScrapMetalProcessingLevel) * (1 − StationTax)
+            ' rate = facilityModifier * (1 + 0.02 * ScrapMetalProcessingLevel)
             AdjustedStationYield = StationEquipment * (1 + (0.02 * ScrapMetalProcessing))
 
             If AdjustedStationYield > 1 Then
@@ -95,7 +95,7 @@ Class RefiningReprocessing
             RefinedMatId = CLng(readerBP.GetValue(0))
 
             TotalBatches = CInt(Math.Round(Math.Ceiling(NumItems / BatchSize), 0))
-            NewMaterialQuantity = CLng(Math.Round(CLng(readerBP.GetValue(4)) * TotalBatches * AdjustedStationYield * StationTaxes, 0))
+            NewMaterialQuantity = CLng(Math.Round(CLng(readerBP.GetValue(4)) * TotalBatches * AdjustedStationYield, 0))
 
             If RecursiveReprocess Then
                 ' If this mat is a raw mat, just add it, else call this function again and get total mats from reprocessing the item
@@ -123,7 +123,7 @@ Class RefiningReprocessing
 
             If RecursionMaterials.GetMaterialList.Count = 0 Then
                 ' Add the base material if not inserted as recusive mat
-                TempMaterial = New Material(RefinedMatId, readerBP.GetString(1), readerBP.GetString(2), _
+                TempMaterial = New Material(RefinedMatId, readerBP.GetString(1), readerBP.GetString(2),
                                                 NewMaterialQuantity, readerBP.GetDouble(3), If(readerBP.IsDBNull(5), 0, readerBP.GetDouble(5)), "", "")
                 TempMaterials.InsertMaterial(TempMaterial)
             End If
@@ -147,9 +147,8 @@ Class RefiningReprocessing
 
     End Function
 
-    Public Function RefineOre(ByVal OreID As Long, ByVal OreProcessingSkill As Integer, ByVal TotalOre As Double, _
+    Public Function ReprocessORE(ByVal OreID As Long, ByVal OreProcessingSkill As Integer, ByVal TotalOre As Double,
                               ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByRef TotalYield As Double) As Materials
-        Dim TempYield As Double
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
         Dim SQL As String
@@ -159,15 +158,21 @@ Class RefiningReprocessing
         Dim RefinedMat As Material
         Dim NewMaterialQuantity As Long
 
+        Dim TempCost As Double = 0
+        Dim AdjustedCost As Double = 0
+        Dim ModStationTaxRate As Double = 0
+
+        OreID = 1230
+        TotalOre = 30000
+
         ' Reprocessing Rate for Ore & Ice (including Compressed)
-        ' rate = facilityModifier * (1 + 0.03 * ReprocessingLevel) * (1 + 0.02 * ReprocessingEfficiencyLevel)* (1 + 0.02 * OreSpecificSkillLevel) * implantModifier * (1 − StationTax)
-        ' The facilityModifier is 0.5 for most NPC stations, 0.52 for Reprocessing Arrays anchorable in highsec, 0.54 for Reprocessing Arrays anchorable in lowsec/nullsec and 0.50 to 0.60 in nullsec Outposts. 
+        ' rate = facilityModifier * (1 + 0.03 * ReprocessingLevel) * (1 + 0.02 * ReprocessingEfficiencyLevel)* (1 + 0.02 * OreSpecificSkillLevel) * implantModifier
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
-        TempYield = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
+        TotalYield = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
 
         ' Can't get better than 100%
-        If TempYield > 1 Then
-            TempYield = 1
+        If TotalYield > 1 Then
+            TotalYield = 1
         End If
 
         ' Find the units to refine
@@ -196,11 +201,10 @@ Class RefiningReprocessing
 
         While readerRefine.Read
             ' Calculate the refine amount based on yield
-            NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TempYield * StationTaxes, 0))
-
+            NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
             ' Add the base material
-            RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2), _
-                                            NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
+            RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
+                                      NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
             RefinedMats.InsertMaterial(RefinedMat)
         End While
 
@@ -212,28 +216,25 @@ Class RefiningReprocessing
             RefinedMats.AdjustTaxedPrice(GetSalesBrokerFee(RefinedMats.GetTotalMaterialsCost))
         End If
 
-        ' Reference
-        TotalYield = TempYield * StationTaxes
+        ' Finally, subtract the station's refine tax
+        For Each RefinedMaterial In RefinedMats.GetMaterialList
+            SQL = "SELECT ADJUSTED_PRICE FROM ITEM_PRICES WHERE ITEM_ID = " & RefinedMaterial.GetMaterialTypeID
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerRefine = DBCommand.ExecuteReader
+            readerRefine.Read()
+            ' Adjust the station tax on the material (by reference) - get the total adjusted price times tax rate minus total cost (save total)
+            ModStationTaxRate = StationTax - (0.0075 * StationStanding)
+            TempCost = RefinedMaterial.GetTotalCost - (readerRefine.GetDouble(0) * RefinedMaterial.GetQuantity * ModStationTaxRate)
+            RefinedMaterial.SetTotalCost(TempCost)
+            AdjustedCost += TempCost
+        Next
+
+        ' Finally update the total cost for the list
+        Call RefinedMats.ResetTotalValue(AdjustedCost)
 
         Return RefinedMats
 
     End Function
-
-    '' Takes a mineral type ID and returns a list of materials that can refine that mineral and quantity
-    'Public Function ReverseRefineOre(MineralTypeID As Long, Quantity As Long, OreType As OreType, Compressed As Boolean) As List(Of Material)
-    '    Dim TempYield As Double
-
-    '    ' First look up all the ores that contain this mineral
-
-
-
-
-
-    '    TempYield = CDbl(StationEquipment) * (1 + (0.03 * Reprocessing)) * (1 + (0.02 * ReprocessingEfficiency)) * (1 + (0.02 * 5)) * (1 + ImplantBonus)
-
-
-
-    'End Function
 
     Public Enum OreType
         BaseOre = 0

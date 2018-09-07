@@ -9,6 +9,7 @@ Public Class DBConnection
     Public Sub New(ByVal DBFileName As String)
         DB = New SQLiteConnection
         DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
+        If DB.State = ConnectionState.Open Then DB.Close() ' Check if the DB is open and will lock on re-connection
         DB.Open()
 
         Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = TRUNCATE; PRAGMA count_changes = OFF")

@@ -51,6 +51,7 @@ Partial Class frmShoppingList
         Me.btnSaveListToFile = New System.Windows.Forms.Button()
         Me.btnLoadListFromFile = New System.Windows.Forms.Button()
         Me.gbOptions = New System.Windows.Forms.GroupBox()
+        Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
         Me.chkEveListFormat = New System.Windows.Forms.CheckBox()
         Me.chkBuyorBuyOrder = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysOnTop = New System.Windows.Forms.CheckBox()
@@ -81,7 +82,6 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
-        Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -333,6 +333,15 @@ Partial Class frmShoppingList
         Me.gbOptions.TabStop = False
         Me.gbOptions.Text = "Options:"
         '
+        'chkRebuildItemsfromList
+        '
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(182, 35)
+        Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
+        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(123, 36)
+        Me.chkRebuildItemsfromList.TabIndex = 79
+        Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
+        Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
+        '
         'chkEveListFormat
         '
         Me.chkEveListFormat.AutoSize = True
@@ -350,9 +359,10 @@ Partial Class frmShoppingList
         Me.chkBuyorBuyOrder.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkBuyorBuyOrder.Location = New System.Drawing.Point(6, 75)
         Me.chkBuyorBuyOrder.Name = "chkBuyorBuyOrder"
-        Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(147, 17)
+        Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(183, 17)
         Me.chkBuyorBuyOrder.TabIndex = 13
-        Me.chkBuyorBuyOrder.Text = "Calcuate Buy / Buy Order"
+        Me.chkBuyorBuyOrder.Text = "Calcuate Buy Order / Buy Market"
+        Me.chkBuyorBuyOrder.ThreeState = True
         Me.chkBuyorBuyOrder.UseVisualStyleBackColor = True
         '
         'chkAlwaysOnTop
@@ -629,15 +639,6 @@ Partial Class frmShoppingList
         Me.lstBuild.Tag = "20"
         Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
-        '
-        'chkRebuildItemsfromList
-        '
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(182, 35)
-        Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
-        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(123, 36)
-        Me.chkRebuildItemsfromList.TabIndex = 79
-        Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
-        Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
         '
         'frmShoppingList
         '

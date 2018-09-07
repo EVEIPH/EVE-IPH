@@ -270,11 +270,27 @@ Public Class MarketPriceInterface
     Private Function WaitforUpdatetoComplete(ByRef CancelUpdate As Boolean, ByRef Counter As Integer, ByVal MaxValue As Integer) As Boolean
         Dim StartTime As DateTime = NoDate
         Dim Counting As Boolean = False
+        Dim StillWorking As Boolean = False
 
-        ' Now loop until all the threads are done
         While Counter < MaxValue
+            ' Now loop until all the threads are done
+            For Each T In ThreadsArray
+                If T.ThreadState = ThreadState.Running Then
+                    ' Still working on at least 1 thread, so exit
+                    StillWorking = True
+                    Exit For
+                Else
+                    StillWorking = False
+                End If
+            Next
+
             ' Update the progress bar with data from each thread
             Call IncrementToolStripProgressBar(Counter)
+            Application.DoEvents()
+
+            If Not StillWorking Then
+                Exit While
+            End If
 
             ' If we are at the last 20 records, start a timer for finishing in case it hangs
             If MaxValue - Counter <= 20 And Not Counting Then
@@ -292,8 +308,6 @@ Public Class MarketPriceInterface
                     Return False
                 End If
             End If
-
-            Application.DoEvents()
         End While
 
         Return True

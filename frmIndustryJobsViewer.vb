@@ -11,9 +11,12 @@ Public Class frmIndustryJobsViewer
     Private AddingColumns As Boolean
     Private MovedColumn As Integer
     Private CurrentDateTime As Date
-    Private LoadedCharacters As List(Of IndyCharacter) ' The list of characters to show in the industry jobs list
     Private UserIDToFind As Long
     Private myTimer As Timer
+
+    Private LoadedCharacters As New List(Of IndyCharacter) ' The list of characters to show in the industry jobs list
+
+    Private PauseScreenUpdate As Boolean
 
     Private JobListColumnClicked As Integer
     Private JobListColumnSortOrder As SortOrder
@@ -50,6 +53,8 @@ Public Class frmIndustryJobsViewer
 
         CurrentDateTime = DateTime.UtcNow
 
+        PauseScreenUpdate = False
+
         Dim myCallback As New TimerCallback(AddressOf UpdateTimes)
         myTimer = New Timer(myCallback, lstIndustryJobs, 1000, 1000)
 
@@ -61,10 +66,13 @@ Public Class frmIndustryJobsViewer
         lstCharacters.Columns.Add("Research Jobs", 83, HorizontalAlignment.Left)
         lstCharacters.Columns.Add("CharID", 0, HorizontalAlignment.Left) ' Hidden
 
-        JobListColumnClicked = 0
-        JobListColumnSortOrder = SortOrder.None
-        AcctListColumnClicked = 0
-        AcctListColumnSortOrder = SortOrder.None
+        chkAutoUpdate.Checked = UserIndustryJobsColumnSettings.AutoUpdateJobs
+        JobListColumnClicked = UserIndustryJobsColumnSettings.OrderByColumn
+        If UserIndustryJobsColumnSettings.OrderType = "Ascending" Then
+            JobListColumnSortOrder = SortOrder.Ascending
+        Else
+            JobListColumnSortOrder = SortOrder.Descending
+        End If
 
         FirstLoad = False
 
@@ -112,7 +120,8 @@ Public Class frmIndustryJobsViewer
             rbtnJobHistory.Checked = True
         End If
 
-        Call UpdateJobs(FirstIndustryJobsViewerLoad)
+        ' Only update the API data if they selected it
+        Call UpdateJobs(chkAutoUpdate.Checked)
 
         If FirstIndustryJobsViewerLoad Then
             ' Don't run this if they reopen again, make them manually update
@@ -120,7 +129,22 @@ Public Class frmIndustryJobsViewer
         End If
 
         FirstLoad = False
-        'End If
+
+    End Sub
+
+    ' Updates all the jobs
+    Private Sub UpdateJobs(ByVal RefreshAPI As Boolean)
+        Updating = True
+
+        ' Just refresh the char list and it will update from ESI
+        Call RefreshCharacterList(RefreshAPI)
+        Call RefreshGrid()
+
+        If RefreshAPI Then
+            MsgBox("Industry Jobs updated.", vbInformation, Application.ProductName)
+        End If
+
+        Updating = False
 
     End Sub
 
@@ -135,6 +159,8 @@ Public Class frmIndustryJobsViewer
 
         Dim StartDate As Date
         Dim EndDate As Date
+
+        Dim Status As String = ""
 
         If rbtnCurrentJobs.Checked Then
             Me.Text = "Current Industry Jobs"
@@ -171,7 +197,9 @@ Public Class frmIndustryJobsViewer
         ' Load up the charcters from the table (instead of objects) for speed and ease of loading
         SQL = "SELECT CHARACTER_NAME AS Installer, activityName AS Activity, ABS.BLUEPRINT_NAME as Blueprint, "
         SQL = SQL & "ABS.ITEM_NAME AS 'Output Item', status, startDate, endDate, ABS.ITEM_GROUP AS 'Output Item Type', "
-        SQL = SQL & "SOLAR_SYSTEMS.solarSystemName AS 'Install System', regionName AS 'Install Region', licensedRuns, runs, successfulRuns, "
+        SQL = SQL & " CASE WHEN SOLAR_SYSTEMS.solarSystemName IS NOT NULL THEN SOLAR_SYSTEMS.solarSystemName ELSE 'Unknown System' END AS 'Install System', "
+        SQL = SQL & "CASE WHEN REGIONS.regionName Is Not NULL THEN REGIONS.regionName ELSE 'Unknown Region' END AS 'Install Region',”
+        SQL = SQL & "licensedRuns, runs, successfulRuns, "
         SQL = SQL & "CASE WHEN S1.STATION_NAME IS NOT NULL THEN S1.STATION_NAME ELSE "
         SQL = SQL & "(CASE WHEN C1.STATION_NAME IS NOT NULL THEN C1.STATION_NAME || ' Container' ELSE "
         SQL = SQL & "(CASE WHEN IT2.typeName IS NOT NULL THEN IT2.typeName ELSE "
@@ -181,7 +209,11 @@ Public Class frmIndustryJobsViewer
         SQL = SQL & "(CASE WHEN IT3.typeName IS NOT NULL THEN IT3.typeName ELSE "
         SQL = SQL & "(CASE WHEN S3.STATION_NAME IS NOT NULL THEN S3.STATION_NAME ELSE 'Unknown' END) END) END) END AS 'Output Location', "
         SQL = SQL & "CASE WHEN jobType =1 THEN 'Corporation' ELSE 'Personal' END AS 'Job Type' "
-        SQL = SQL & "FROM INDUSTRY_JOBS, RAM_ACTIVITIES, SOLAR_SYSTEMS, REGIONS, STATIONS, ESI_CHARACTER_DATA, ALL_BLUEPRINTS AS ABS "
+        SQL = SQL & "FROM INDUSTRY_JOBS, RAM_ACTIVITIES, ESI_CHARACTER_DATA, ALL_BLUEPRINTS AS ABS "
+        SQL = SQL & "LEFT JOIN STATIONS ON STATIONS.STATION_ID = INDUSTRY_JOBS.locationID “
+        SQL = SQL & "LEFT JOIN SOLAR_SYSTEMS ON STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID “
+        SQL = SQL & "LEFT JOIN REGIONS ON SOLAR_SYSTEMS.regionID = REGIONS.regionID “
+
         ' Stations
         SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S1 ON S1.STATION_ID = INDUSTRY_JOBS.blueprintLocationID "
         SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S2 ON S2.STATION_ID = INDUSTRY_JOBS.outputLocationID "
@@ -194,11 +226,9 @@ Public Class frmIndustryJobsViewer
         ' POS modules
         SQL = SQL & "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT2 ON IT2.typeID = INDUSTRY_JOBS.blueprintLocationID "
         SQL = SQL & "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT3 ON IT3.typeID = INDUSTRY_JOBS.outputLocationID "
+
         SQL = SQL & "WHERE INDUSTRY_JOBS.activityID = RAM_ACTIVITIES.activityID  "
-        SQL = SQL & "AND SOLAR_SYSTEMS.regionID = REGIONS.regionID "
         SQL = SQL & "AND INDUSTRY_JOBS.blueprintTypeID = ABS.BLUEPRINT_ID "
-        SQL = SQL & "AND INDUSTRY_JOBS.locationID = STATIONS.STATION_ID "
-        SQL = SQL & "AND STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
         SQL = SQL & "AND ESI_CHARACTER_DATA.CHARACTER_ID = INDUSTRY_JOBS.installerID "
 
         If rbtnCurrentJobs.Checked Then
@@ -226,27 +256,45 @@ Public Class frmIndustryJobsViewer
         While rsJobs.Read
             Application.DoEvents()
 
+            Status = rsJobs.GetString(4)
             StartDate = CDate(rsJobs.GetString(5))
             EndDate = CDate(rsJobs.GetString(6))
 
-            ' Job State Flag
-            If EndDate <= CurrentDateTime Then
-                ' Job is done
-                JobState = "Complete"
-                JobStateColor = Color.Green
-            ElseIf StartDate <= CurrentDateTime Then
-                JobState = "In Progress"
-                JobStateColor = Color.DarkOrange
-            Else
-                JobState = "Pending"
-                JobStateColor = Color.Red
-            End If
-
-            'If rsJobs.GetInt32(1) = 101 Then
-            '    ' This has been completed
-            '    JobState = "Completed"
-            '    JobStateColor = Color.DarkGray
-            'End If
+            'active, cancelled, delivered, paused, ready, reverted
+            Select Case Status
+                Case "active"
+                    ' Job State Flag
+                    If EndDate <= CurrentDateTime Then
+                        ' Job is done
+                        JobState = "Complete"
+                        JobStateColor = Color.Green
+                    ElseIf StartDate <= CurrentDateTime Then
+                        JobState = "In Progress"
+                        JobStateColor = Color.DarkOrange
+                    Else
+                        JobState = "Pending"
+                        JobStateColor = Color.Orange
+                    End If
+                Case "delivered"
+                    ' This has been completed
+                    JobState = "Completed"
+                    JobStateColor = Color.DarkGray
+                Case "cancelled"
+                    JobState = "Cancelled"
+                    JobStateColor = Color.Red
+                Case "paused"
+                    JobState = "Paused"
+                    JobStateColor = Color.Gray
+                Case "ready"
+                    JobState = "Ready"
+                    JobStateColor = Color.Blue
+                Case "reverted"
+                    JobState = "Reverted"
+                    JobStateColor = Color.Purple
+                Case Else
+                    JobState = "Unknown"
+                    JobStateColor = Color.DarkRed
+            End Select
 
             lstIndustryJobs.ListViewItemSorter = Nothing
             ' Always add the end time to column 0 for sorting 
@@ -322,7 +370,7 @@ Public Class frmIndustryJobsViewer
         lstIndustryJobs.EndUpdate()
 
         ' Force last sort order to switch to ascending and sort by the user column
-        Call ListViewColumnSorter(UserIndustryJobsColumnSettings.OrderByColumn, lstIndustryJobs, JobListColumnClicked, SortOrder.Descending)
+        Call ListViewColumnSorter(UserIndustryJobsColumnSettings.OrderByColumn, lstIndustryJobs, JobListColumnClicked, JobListColumnSortOrder, True)
 
         Application.UseWaitCursor = False
         Me.Enabled = True
@@ -332,68 +380,22 @@ Public Class frmIndustryJobsViewer
     End Sub
 
     ' Refreshes the user grid with all users in the DB
-    Private Sub RefreshCharacterList(UpdateCharactersfromAPI As Boolean)
+    Private Sub RefreshCharacterList(ByVal UpdateAPIData As Boolean)
         Dim lstCharacterRow As ListViewItem
+        Dim SQL As String
+        Dim rsJobs As SQLiteDataReader
 
         Application.UseWaitCursor = True
         'Me.Cursor = Cursors.WaitCursor
         Me.Enabled = False
         Application.DoEvents()
 
-        ' Load up the chars into the list
-        Call LoadCharacters(UpdateCharactersfromAPI)
-
-        lstCharacters.BeginUpdate()
-        lstCharacters.Items.Clear()
-
-        For i = 0 To LoadedCharacters.Count - 1
-            Application.DoEvents()
-            With LoadedCharacters(i)
-                lstCharacterRow = New ListViewItem("") ' Check
-                lstCharacterRow.SubItems.Add(.Name) ' Name
-                lstCharacterRow.SubItems.Add(.Corporation)
-
-                ' Add the jobs as part of lines i.e 4/10 = 4 jobs of 10 lines
-                lstCharacterRow.SubItems.Add(CStr(.IndustryJobs) & "/" & CStr(.IndustryLines))
-                lstCharacterRow.SubItems.Add(CStr(.ResearchJobs) & "/" & CStr(.ResearchLines))
-
-                ' Add the hidden character ID
-                Dim CharacterID As String = CStr(.Token.CharacterID)
-                lstCharacterRow.SubItems.Add(CharacterID)
-
-                If UserIndustryJobsColumnSettings.SelectedCharacterIDs.Contains(CharacterID) Then
-                    ' In the list so check it
-                    lstCharacterRow.Checked = True
-
-                ElseIf UserIndustryJobsColumnSettings.SelectedCharacterIDs = "" And .Name = SelectedCharacter.Name Then
-                    ' Empty list of selected chars and this is the same as the one we pulled
-                    lstCharacterRow.Checked = True
-                End If
-            End With
-
-            Call lstCharacters.Items.Add(lstCharacterRow)
-
-        Next
-
-        lstCharacters.EndUpdate()
-
-        Me.Enabled = True
-        Application.UseWaitCursor = False
-        ' Me.Cursor = Cursors.Default
-        Application.DoEvents()
-
-    End Sub
-
-    ' Loads the selected characters checked in the list into the variables
-    Private Sub LoadCharacters(UpdateCharactersfromESI As Boolean)
-        Dim SQL As String
-        Dim rsJobs As SQLiteDataReader
-
-        ' Update the data first
-        If UpdateCharactersfromESI Then
-            Call UpdateCharacterIndustryJobsAPI()
+        ' Update the data for each character first if selected
+        If UpdateAPIData Then
+            Call UpdateLoadedCharacterData()
         End If
 
+        ' Now jobs and skills should show correctly
         SQL = "SELECT CHARACTER_NAME, CORPORATION_NAME, CHARACTER_ID, "
         SQL = SQL & "ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES, "
         SQL = SQL & "CASE WHEN RESEARCH_JOBS IS NULL THEN 0 ELSE RESEARCH_JOBS END AS RESEARCH_JOBS, "
@@ -405,7 +407,7 @@ Public Class frmIndustryJobsViewer
         SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID <> 1 GROUP BY installerID) AS J ON J.installerID = CHARACTER_ID "
         SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS INDUSTRY_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS K ON K.CHAR_ID = ECD.CHARACTER_ID "
         SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 1 GROUP BY installerID) AS L ON L.installerID = CHARACTER_ID "
-        SQL &= "WHERE ECD.CORPORATION_ID = ECPD.CORPORATION_ID"
+        SQL &= "WHERE ECD.CORPORATION_ID = ECPD.CORPORATION_ID AND ECD.CHARACTER_ID <> " & CStr(DummyCharacterID)
 
         ' Get all the characters and store them regardless so we only need to do one look up
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -444,57 +446,77 @@ Public Class frmIndustryJobsViewer
 
         End While
 
+        lstCharacters.BeginUpdate()
+        lstCharacters.Items.Clear()
+
+        For i = 0 To LoadedCharacters.Count - 1
+            Application.DoEvents()
+            With LoadedCharacters(i)
+                lstCharacterRow = New ListViewItem("") ' Check
+                lstCharacterRow.SubItems.Add(.Name) ' Name
+                lstCharacterRow.SubItems.Add(.Corporation)
+
+                ' Add the jobs as part of lines i.e 4/10 = 4 jobs of 10 lines
+                lstCharacterRow.SubItems.Add(CStr(.IndustryJobs) & "/" & CStr(.IndustryLines))
+                lstCharacterRow.SubItems.Add(CStr(.ResearchJobs) & "/" & CStr(.ResearchLines))
+
+                ' Add the hidden character ID
+                Dim CharacterID As String = CStr(.Token.CharacterID)
+                lstCharacterRow.SubItems.Add(CharacterID)
+
+                If UserIndustryJobsColumnSettings.SelectedCharacterIDs.Contains(CharacterID) Then
+                    ' In the list so check it
+                    lstCharacterRow.Checked = True
+
+                ElseIf UserIndustryJobsColumnSettings.SelectedCharacterIDs = "" And .Name = SelectedCharacter.Name Then
+                    ' Empty list of selected chars and this is the same as the one we pulled
+                    lstCharacterRow.Checked = True
+                End If
+            End With
+
+            Call lstCharacters.Items.Add(lstCharacterRow)
+
+        Next
+
+        lstCharacters.EndUpdate()
+
+        Me.Enabled = True
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
     End Sub
 
-    ' Updates all the jobs
-    Private Sub UpdateJobs(RunAPIUpdate As Boolean)
-        Updating = True
-
-        ' Just refresh the char list and it will update from ESI
-        Call RefreshCharacterList(RunAPIUpdate)
-        Call RefreshGrid()
-
-        If RunAPIUpdate Then
-            MsgBox("Industry Jobs updated.", vbInformation, Application.ProductName)
-        End If
-
-        Updating = False
-
-    End Sub
-
-    ' Updates only the industry jobs for the characters in the list
-    Private Sub UpdateCharacterIndustryJobsAPI()
-        ' Refresh each of the checked characters' industry data
-        Dim TempCharacter As New Character
-        Dim rsCharacter As SQLiteDataReader
-        Dim TokenData As New SavedTokenData
+    ' Updates the industry jobs and skills for the characters in the list
+    Private Sub UpdateLoadedCharacterData()
         Dim f1 As New frmStatus
         Dim SQL As String
+        Dim rsCharacters As SQLiteDataReader
+
+        Dim TempCharacter As New Character
+        Dim TokenData As New SavedTokenData
 
         f1.lblStatus.Text = "Updating Character data..."
         f1.Show()
         Application.UseWaitCursor = True
         Application.DoEvents()
 
-        SQL = "SELECT CHARACTER_ID, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES FROM ESI_CHARACTER_DATA "
-        SQL &= "WHERE CHARACTER_ID IN (" & GetCharIDs() & ") "
+        ' Pause updates if we are using the update jobs button
+        PauseScreenUpdate = True
 
+        SQL = "SELECT CHARACTER_ID FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsCharacter = DBCommand.ExecuteReader
+        rsCharacters = DBCommand.ExecuteReader
 
-        While rsCharacter.Read
-            With TokenData
-                .CharacterID = rsCharacter.GetInt32(0)
-
-                TempCharacter = New Character
-                ' Loading a character will update the jobs and skills
-                TempCharacter.LoadCharacterData(TokenData, False, False)
-
-                Application.DoEvents()
-            End With
+        ' Get all the character ids loaded and refresh them on skills and jobs
+        While rsCharacters.Read
+            TempCharacter = New Character
+            TokenData.CharacterID = CInt(rsCharacters.GetInt32(0))
+            ' Loading a character will update the jobs and skills
+            TempCharacter.LoadCharacterData(TokenData, False, False, True)
+            Application.DoEvents()
         End While
 
-        DBCommand = Nothing
+        PauseScreenUpdate = False
 
         f1.Dispose()
         f1 = Nothing
@@ -503,6 +525,92 @@ Public Class frmIndustryJobsViewer
         Application.DoEvents()
 
     End Sub
+
+    Private Function GetCharIDs() As String
+        Dim CharIDs As String = ""
+
+        For i = 0 To lstCharacters.CheckedItems.Count - 1
+            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(5).Text) & ","
+        Next
+
+        ' Strip the last comma
+        If CharIDs <> "" Then
+            CharIDs = CharIDs.Substring(0, Len(CharIDs) - 1)
+        End If
+
+        Return CharIDs
+
+    End Function
+
+    Private Delegate Sub ListDelegate(ByVal myJobList As ListView)
+
+    Private Sub UpdateTimes(ByVal sentJobList As Object)
+        Dim TimeToComplete As String
+        Dim EndDate As Date
+
+        If PauseScreenUpdate Then
+            Exit Sub
+        End If
+
+        Dim myJobList As New ListView
+        myJobList = DirectCast(sentJobList, ListView)
+
+        If myJobList.InvokeRequired Then
+            myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
+            Exit Sub
+        End If
+
+        Try
+            ' On each tick just update the time column manually
+            With UserIndustryJobsColumnSettings
+                If .TimeToComplete <> 0 Then ' only if the time to complete column is visible
+                    CurrentDateTime = DateAdd(DateInterval.Second, 1, CurrentDateTime)
+                    Application.DoEvents()
+
+                    For i = 0 To myJobList.Items.Count - 1
+                        ' Only update records with a time
+                        If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
+
+                            EndDate = CDate(myJobList.Items(i).SubItems(0).Text)
+                            TimeToComplete = GetTimeToComplete(EndDate, CurrentDateTime)
+
+                            ' If the time comes back negative, then switch it to blank and reset the job state to 'Complete'
+                            If TimeToComplete = "" Then
+                                TimeToComplete = "0"
+                            End If
+
+                            If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
+                                myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
+                                myJobList.Items(i).SubItems(.JobState).Text = "Complete"
+                                myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
+                            Else
+                                myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
+                            End If
+
+                            myJobList.Update()
+                            Application.DoEvents()
+                        End If
+                    Next
+                End If
+            End With
+        Catch ex As Exception
+            ' Don't do anything, just let it update next go around
+        End Try
+
+        Application.DoEvents()
+
+    End Sub
+
+    Private Function GetTimeToComplete(EndJobDate As Date, CompareDate As Date) As String
+        Dim SecondsDiff As Long
+
+        SecondsDiff = DateDiff(DateInterval.Second, CompareDate, EndJobDate)
+
+        Return FormatTimeToComplete(SecondsDiff)
+
+    End Function
+
+#Region "Click events"
 
     ' Clears the list and rebuilds it with columns they selected
     Private Sub RefreshColumns()
@@ -838,6 +946,7 @@ Public Class frmIndustryJobsViewer
         End If
 
         UserIndustryJobsColumnSettings.SelectedCharacterIDs = GetCharIDs()
+        UserIndustryJobsColumnSettings.AutoUpdateJobs = chkAutoUpdate.Checked
 
         AllSettings.SaveIndustryJobsColumnSettings(UserIndustryJobsColumnSettings)
 
@@ -856,6 +965,7 @@ Public Class frmIndustryJobsViewer
 
     Private Sub btnUpdateJobs_Click(sender As System.Object, e As System.EventArgs) Handles btnUpdateJobs.Click
 
+        ' Always update the data when pushed
         Call UpdateJobs(True)
 
     End Sub
@@ -867,6 +977,12 @@ Public Class frmIndustryJobsViewer
 
     Private Sub lstIndustryJobs_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstIndustryJobs.ColumnClick
         Call ListViewColumnSorter(e.Column, lstIndustryJobs, JobListColumnClicked, JobListColumnSortOrder)
+        UserIndustryJobsColumnSettings.OrderByColumn = JobListColumnClicked
+        If JobListColumnSortOrder = SortOrder.Ascending Then
+            UserIndustryJobsColumnSettings.OrderType = "Ascending"
+        Else
+            UserIndustryJobsColumnSettings.OrderType = "Decending"
+        End If
     End Sub
 
     Private Sub lstCharacters_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstCharacters.ColumnClick
@@ -895,66 +1011,6 @@ Public Class frmIndustryJobsViewer
         End If
     End Sub
 
-    Private Delegate Sub ListDelegate(ByVal myJobList As ListView)
-
-    Private Sub UpdateTimes(ByVal sentJobList As Object)
-        Dim TimeToComplete As String
-        Dim EndDate As Date
-
-        Dim myJobList As New ListView
-        myJobList = DirectCast(sentJobList, ListView)
-
-        If myJobList.InvokeRequired Then
-            myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
-            Exit Sub
-        End If
-
-        ' On each tick just update the time column manually
-        With UserIndustryJobsColumnSettings
-            If .TimeToComplete <> 0 Then ' only if the time to complete column is visible
-                CurrentDateTime = DateAdd(DateInterval.Second, 1, CurrentDateTime)
-                Application.DoEvents()
-
-                For i = 0 To myJobList.Items.Count - 1
-                    ' Only update records with a time
-                    If myJobList.Items(i).SubItems(.JobState).Text <> "Complete" And myJobList.Items(i).SubItems(.JobState).Text <> "Completed" Then
-
-                        EndDate = CDate(myJobList.Items(i).SubItems(0).Text)
-                        TimeToComplete = GetTimeToComplete(EndDate, CurrentDateTime)
-
-                        ' If the time comes back negative, then switch it to blank and reset the job state to 'Complete'
-                        If TimeToComplete = "" Then
-                            TimeToComplete = "0"
-                        End If
-
-                        If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
-                            myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
-                            myJobList.Items(i).SubItems(.JobState).Text = "Complete"
-                            myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
-                        Else
-                            myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
-                        End If
-
-                        myJobList.Update()
-                        Application.DoEvents()
-                    End If
-                Next
-            End If
-        End With
-
-        Application.DoEvents()
-
-    End Sub
-
-    Private Function GetTimeToComplete(EndJobDate As Date, CompareDate As Date) As String
-        Dim SecondsDiff As Long
-
-        SecondsDiff = DateDiff(DateInterval.Second, CompareDate, EndJobDate)
-
-        Return FormatTimeToComplete(SecondsDiff)
-
-    End Function
-
     Private Sub rbtnCurrentJobs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnCurrentJobs.CheckedChanged
         If Not FirstLoad And rbtnCurrentJobs.Checked Then
             Call RefreshGrid()
@@ -967,9 +1023,8 @@ Public Class frmIndustryJobsViewer
         End If
     End Sub
 
-    Protected Overrides Sub Finalize()
-        myTimer.Dispose()
-        MyBase.Finalize()
+    Private Sub chkAutoUpdate_CheckedChanged(sender As Object, e As EventArgs) Handles chkAutoUpdate.CheckedChanged
+        UserIndustryJobsColumnSettings.AutoUpdateJobs = chkAutoUpdate.Checked
     End Sub
 
     Private Sub lstCharacters_ItemChecked(sender As System.Object, e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstCharacters.ItemChecked
@@ -982,24 +1037,17 @@ Public Class frmIndustryJobsViewer
 
     End Sub
 
-    Private Function GetCharIDs() As String
-        Dim CharIDs As String = ""
-
-        For i = 0 To lstCharacters.CheckedItems.Count - 1
-            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(5).Text) & ","
-        Next
-
-        ' Strip the last comma
-        If CharIDs <> "" Then
-            CharIDs = CharIDs.Substring(0, Len(CharIDs) - 1)
-        End If
-
-        Return CharIDs
-
-    End Function
-
     Private Sub frmIndustryJobsViewer_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        PauseScreenUpdate = True
         myTimer.Dispose()
     End Sub
+
+    Protected Overrides Sub Finalize()
+        PauseScreenUpdate = True
+        myTimer.Dispose()
+        MyBase.Finalize()
+    End Sub
+
+#End Region
 
 End Class

@@ -639,7 +639,12 @@ Public Class frmBlueprintManagement
             BPUserID = SelectedCharacter.CharacterCorporation.CorporationID
         Else
             ' Set the correct ID
-            BPUserID = SelectedCharacter.ID
+            If UserApplicationSettings.LoadBPsbyChar Then
+                ' Use the ID sent
+                BPUserID = SelectedCharacter.ID
+            Else
+                BPUserID = CommonLoadBPsID
+            End If
         End If
 
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID)) ' need to search for corp ID too
@@ -782,7 +787,7 @@ Public Class frmBlueprintManagement
             If ScannedValue = 0 Then
                 BPList.BackColor = Color.White
             Else
-                If SelectedCharacter.ID = readerBP.GetInt32(11) Then
+                If SelectedCharacter.ID = readerBP.GetInt32(11) Or readerBP.GetInt32(11) = CommonLoadBPsID Then
                     BPList.BackColor = Color.BlanchedAlmond
                 Else ' must be corp
                     BPList.BackColor = Color.LightGreen
@@ -907,8 +912,14 @@ Public Class frmBlueprintManagement
                 WhereClause = WhereClause & "AND " & TempClause
             End If
         ElseIf rbtnScannedPersonalBPs.Checked Then
-            ' Include personal scanned
-            TempClause = "USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
+            Dim CharID As Long = 0
+            If UserApplicationSettings.LoadBPsbyChar Then
+                ' Use the ID sent
+                CharID = SelectedCharacter.ID
+            Else
+                CharID = CommonLoadBPsID
+            End If
+            TempClause = "USER_ID = " & CharID & " AND SCANNED <> 0 "
             If WhereClause = "" Then
                 WhereClause = "WHERE " & TempClause
             Else
@@ -1381,7 +1392,7 @@ Public Class frmBlueprintManagement
             Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
             MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
             rbtnScannedPersonalBPs.Checked = True ' Auto load
-            Me.Cursor = Cursors.Default
+            Cursor = Cursors.Default
             Application.UseWaitCursor = False
             Me.Refresh()
             Application.DoEvents()
@@ -1663,7 +1674,15 @@ Public Class frmBlueprintManagement
 
                     If Line IsNot Nothing Then
                         ' Start the session and delete all the records out of the table for this user
-                        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
+                        ' See what ID we use for character bps
+                        Dim TempID As Long = 0
+                        If UserApplicationSettings.LoadBPsbyChar Then
+                            ' Use the ID sent
+                            TempID = SelectedCharacter.ID
+                        Else
+                            TempID = CommonLoadBPsID
+                        End If
+                        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & TempID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ")")
                     Else
                         ' Leave loop
                         Exit Try
@@ -1685,7 +1704,15 @@ Public Class frmBlueprintManagement
                         ' Only load BP's that are marked as something other than 'Unowned'
                         If ParsedLine(11) <> UnownedBP Then
                             SQL = "INSERT INTO OWNED_BLUEPRINTS VALUES ("
-                            SQL = SQL & ParsedLine(0) & "," ' API ID
+                            ' See what ID we use for character bps
+                            Dim TempID As Long = 0
+                            If UserApplicationSettings.LoadBPsbyChar Then
+                                ' Use the ID sent
+                                SQL = SQL & ParsedLine(0) & "," ' API ID
+                            Else
+                                SQL = SQL & CommonLoadBPsID & "," ' API ID
+                            End If
+
                             SQL = SQL & ParsedLine(1) & "," ' Location ID
                             SQL = SQL & ParsedLine(2) & "," ' Item ID
                             SQL = SQL & ParsedLine(3) & "," ' Blueprint ID

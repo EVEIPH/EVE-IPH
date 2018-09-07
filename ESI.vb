@@ -88,8 +88,9 @@ Public Class ESI
         With ApplicationSettings
             ClientID = .ClientID
             SecretKey = .SecretKey
-            ' The scopes as submitted to the web service must be space-delimited, but the file can store them in multiple formats, including CrLF or comma separated - Ben Abraham Fix to issue #110
-            ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries))
+            ' Make sure we split out all the double spaces, etc from the scopes string.
+            ' Process the scopes and only leave one space between each
+            ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", "%20", "%2520", vbCr, vbLf, vbCrLf}, StringSplitOptions.RemoveEmptyEntries))
         End With
 
         AuthStreamText = ""
@@ -112,6 +113,8 @@ Public Class ESI
         Try
             If ClientID <> "" And ClientID <> DummyClient Then
                 Dim StartTime As Date = Now
+
+                AuthStreamText = "" ' Reset before call
                 AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
                 AuthThreadReference.Start()
 
@@ -133,19 +136,9 @@ Public Class ESI
                     Application.DoEvents()
                 Loop
 
-                ' Process the auth stream now
-                Dim AuthTokenString As String() = AuthStreamText.Split(New Char() {" "c})
-                Dim AuthToken As String = ""
+                ' Get the authtoken from the stream
+                Return GetAuthToken(AuthStreamText)
 
-                For i = 0 To AuthTokenString.Count - 1
-                    If AuthTokenString(i).Contains("/?code=") Then
-                        ' Strip the header and save the string
-                        Dim Start As Integer = InStr(AuthTokenString(i), "=")
-                        AuthToken = AuthTokenString(i).Substring(Start)
-                    End If
-                Next
-
-                Return AuthToken
             End If
         Catch ex As WebException
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
@@ -174,8 +167,7 @@ Public Class ESI
     Private Sub GetAuthorizationfromWeb()
         Try
             ' Build the authorization call
-            Dim URL As String = ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://"
-            URL &= LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
+            Dim URL As String = GetURL
 
             Process.Start(URL)
 
@@ -250,6 +242,8 @@ Public Class ESI
         End If
 
         Try
+            'Throw New Exception("Test Error - Get Access Token")
+
             Response = WC.UploadValues(ESITokenURL, "POST", PostParameters)
 
             ' Convert byte data to string
@@ -307,6 +301,8 @@ Public Class ESI
                 Response = WC.DownloadString(URL)
             End If
 
+            'Throw New Exception("Test Error - Get Public Data")
+
             ' Get the expiration date for the cache date
             Dim myWebHeaderCollection As WebHeaderCollection = WC.ResponseHeaders
             Dim Expires As String = myWebHeaderCollection.Item("Expires")
@@ -318,7 +314,19 @@ Public Class ESI
                 CacheDate = NoExpiry
             End If
 
+            If Not IsNothing(Pages) Then
+                If Pages > 1 Then
+                    Dim TempResponse As String = ""
+                    For i = 2 To Pages
+                        TempResponse = WC.DownloadString(URL & "&page=" & CStr(i))
+                        ' Combine with the original response - strip the end and leading brackets
+                        Response = Response.Substring(0, Len(Response) - 1) & "," & TempResponse.Substring(1)
+                    Next
+                End If
+            End If
+
             Return Response
+
         Catch ex As WebException
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
             ErrorResponse = GetErrorResponseBody(ex)
@@ -353,7 +361,7 @@ Public Class ESI
     ''' <returns>Returns data response as a string</returns>
     Private Function GetPrivateAuthorizedData(ByVal URL As String, ByRef TokenData As ESITokenData,
                                               ByVal TokenExpiration As Date, ByRef CacheDate As Date,
-                                              ByVal CharacterID As Long) As String
+                                              ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False) As String
         Dim WC As New WebClient
         Dim ErrorCode As Integer = 0
         Dim ErrorResponse As String = ""
@@ -365,6 +373,9 @@ Public Class ESI
         If TokenExpiration <= DateTime.UtcNow Then
             ' Update the token
             TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
+
+            'Throw New Exception("Test Error - Get Private Auth Data")
+
             ' Update the token data in the DB for this character
             Dim SQL As String = ""
             ' Update data - only stuff that could (reasonably) change
@@ -412,8 +423,8 @@ Public Class ESI
                 ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
                 ErrorResponse = GetErrorResponseBody(ex)
 
-                If ErrorResponse = "Character not in corporation" Then
-                    ' Assume this error came from checking on NPC corp roles and just exit with nothing
+                If ErrorResponse = "Character not in corporation" Or ErrorResponse = "Character cannot grant roles" Then
+                    ' Assume this error came from checking on NPC corp roles or a character that doesn't have any roles and just exit with nothing
                     Exit Try
                 End If
 
@@ -421,11 +432,15 @@ Public Class ESI
                     RetriedCall = True
                     ' Try this call again after waiting a few
                     Threading.Thread.Sleep(2000)
-                    Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID)
+                    Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
                 End If
-                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+                If Not SupressErrorMsgs Then
+                    MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+                End If
             Catch ex As Exception
-                MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
+                If Not SupressErrorMsgs Then
+                    MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
+                End If
             End Try
         End If
 
@@ -475,11 +490,15 @@ Public Class ESI
     ''' access for a new character first logging in. If the character has already been loaded, then update the data.
     ''' </summary>
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
-    Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing, Optional IgnoreCacheDate As Boolean = False) As Boolean
+    Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
+                                     Optional ByVal ManualAuthToken As String = "") As Boolean
         Dim TokenData As ESITokenData
         Dim CharacterData As New ESICharacterData
         Dim CharacterID As Long
         Dim ErrorCode As Integer = 0
+
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
 
         If Not IsNothing(CharacterTokenData) Then
             CharacterID = CharacterTokenData.CharacterID
@@ -488,30 +507,39 @@ Public Class ESI
         End If
 
         Try
-            If CharacterID = 0 Then
-                ' We need to get the token data from the authorization
-                TokenData = GetAccessToken(GetAuthorizationToken(ErrorCode), False, ErrorCode)
-                CharacterTokenData = New SavedTokenData
-            Else
-                ' We need to refresh the token data
-                TokenData = GetAccessToken(CharacterTokenData.RefreshToken, True, ErrorCode)
-                ' Update the local copy with the new information
-                CharacterTokenData.AccessToken = TokenData.access_token
-                CharacterTokenData.RefreshToken = TokenData.refresh_token
-                CharacterTokenData.TokenType = TokenData.token_type
-            End If
+            If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Then
+                If CharacterID = 0 Then
+                    ' We need to get the token data from the authorization
+                    If ManualAuthToken <> "" Then
+                        TokenData = GetAccessToken(ManualAuthToken, False, ErrorCode)
+                    Else
+                        TokenData = GetAccessToken(GetAuthorizationToken(ErrorCode), False, ErrorCode)
+                    End If
 
-            If ErrorCode = 0 And Not IsNothing(TokenData) Then
-                Dim CB As New CacheBox
-                Dim CacheDate As Date
+                    CharacterTokenData = New SavedTokenData
+                Else
+                    ' We need to refresh the token data
+                    TokenData = GetAccessToken(CharacterTokenData.RefreshToken, True, ErrorCode)
+                    ' Update the local copy with the new information
+                    CharacterTokenData.AccessToken = TokenData.access_token
+                    CharacterTokenData.RefreshToken = TokenData.refresh_token
+                    CharacterTokenData.TokenType = TokenData.token_type
+                End If
 
-                ' Set the expiration date to pass
-                CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
+                If ErrorCode = 0 And Not IsNothing(TokenData) Then
 
-                If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Or IgnoreCacheDate Then
+                    ' Set the expiration date to pass
+                    CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
+
                     ' Now with the token data, look up the character data
                     CharacterData.VerificationData = GetCharacterVerificationData(TokenData, CharacterTokenData.TokenExpiration)
+                    If IsNothing(CharacterData.VerificationData) Then
+                        Exit Try
+                    End If
                     CharacterData.PublicData = GetCharacterPublicData(CharacterData.VerificationData.CharacterID, CacheDate)
+                    If IsNothing(CharacterData.PublicData) Then
+                        Exit Try
+                    End If
 
                     ' Save it in the table if not there, or update it if they selected the character again
                     Dim rsCheck As SQLiteDataReader
@@ -530,13 +558,13 @@ Public Class ESI
 
                         With CharacterData
                             SQL = String.Format(SQL, .PublicData.corporation_id,
-                                        FormatDBString(FormatNullString(.PublicData.description)),
-                                        FormatDBString(.VerificationData.Scopes),
-                                        FormatDBString(TokenData.access_token),
-                                        Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
-                                        FormatDBString(TokenData.token_type),
-                                        FormatDBString(TokenData.refresh_token),
-                                        .VerificationData.CharacterID)
+                                    FormatDBString(FormatNullString(.PublicData.description)),
+                                    FormatDBString(.VerificationData.Scopes),
+                                    FormatDBString(TokenData.access_token),
+                                    Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
+                                    FormatDBString(TokenData.token_type),
+                                    FormatDBString(TokenData.refresh_token),
+                                    .VerificationData.CharacterID)
 
                         End With
                     Else
@@ -547,20 +575,20 @@ Public Class ESI
                         SQL &= "VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},{15})"
                         With CharacterData
                             SQL = String.Format(SQL, .VerificationData.CharacterID,
-                                        FormatDBString(.VerificationData.CharacterName),
-                                        .PublicData.corporation_id,
-                                        Format(CDate(.PublicData.birthday.Replace("T", " ")), SQLiteDateFormat),
-                                        FormatDBString(.PublicData.gender),
-                                        .PublicData.race_id,
-                                        .PublicData.bloodline_id,
-                                        FormatNullInteger(.PublicData.ancestry_id),
-                                        FormatDBString(FormatNullString(.PublicData.description)),
-                                        FormatDBString(TokenData.access_token),
-                                        Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
-                                        FormatDBString(TokenData.token_type),
-                                        FormatDBString(TokenData.refresh_token),
-                                        FormatDBString(.VerificationData.Scopes),
-                                        0, 0) ' Don't set default yet or override skills
+                                    FormatDBString(.VerificationData.CharacterName),
+                                    .PublicData.corporation_id,
+                                    Format(CDate(.PublicData.birthday.Replace("T", " ")), SQLiteDateFormat),
+                                    FormatDBString(.PublicData.gender),
+                                    .PublicData.race_id,
+                                    .PublicData.bloodline_id,
+                                    FormatNullInteger(.PublicData.ancestry_id),
+                                    FormatDBString(FormatNullString(.PublicData.description)),
+                                    FormatDBString(TokenData.access_token),
+                                    Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
+                                    FormatDBString(TokenData.token_type),
+                                    FormatDBString(TokenData.refresh_token),
+                                    FormatDBString(.VerificationData.Scopes),
+                                    0, 0) ' Don't set default yet or override skills
                         End With
                     End If
 
@@ -581,17 +609,16 @@ Public Class ESI
 
                     Return True
                 Else
-                    If ErrorCode = 0 Then
-                        ' Just didn't need to update yet
-                        Return True
-                    End If
-                    If ErrorCode <> 400 Then
+                    If ErrorCode <> 400 And Not CancelESISSOLogin Then
                         MsgBox("Unable to load the selected character to IPH", vbExclamation, Application.ProductName)
                     End If
                 End If
+            Else
+                ' Just didn't need to update yet
+                Return True
             End If
         Catch ex As Exception
-            MsgBox("Unable to get authorization and verification data through ESI: " & ex.Message, vbInformation, Application.ProductName)
+            MsgBox("Unable to set character data data through ESI: " & ex.Message, vbInformation, Application.ProductName)
         End Try
 
         Return False
@@ -609,9 +636,12 @@ Public Class ESI
 
         PublicData = GetPublicData(ESIPublicURL & "characters/" & CStr(CharacterID) & "/" & TranquilityDataSource, DataCacheDate)
 
-        CharacterData = JsonConvert.DeserializeObject(Of ESICharacterPublicData)(PublicData)
-
-        Return CharacterData
+        If Not IsNothing(PublicData) Then
+            CharacterData = JsonConvert.DeserializeObject(Of ESICharacterPublicData)(PublicData)
+            Return CharacterData
+        Else
+            Return Nothing
+        End If
 
     End Function
 
@@ -642,6 +672,8 @@ Public Class ESI
 
                 WC.Headers(HttpRequestHeader.Authorization) = Auth_header
                 Response = WC.DownloadString(ESIVerifyURL)
+
+                'Throw New Exception("Test Error - Get Character Verification Data")
 
                 ' Get the expiration date for the cache date
                 Dim myWebHeaderCollection As WebHeaderCollection = WC.ResponseHeaders
@@ -691,7 +723,7 @@ Public Class ESI
 
 #End Region
 
-#Region "Scopes Processing"
+#Region "Auth Processing"
 
     Public Function GetCharacterSkills(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef SkillsCacheDate As Date) As EVESkillList
         Dim SkillData As New ESICharacterSkillsBase
@@ -873,8 +905,6 @@ Public Class ESI
     End Function
 
     Public Function GetAssets(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal JobType As ScanType, ByRef AssetsCacheDate As Date) As List(Of ESIAsset)
-        Dim AssetList As New List(Of EVEAsset)
-        Dim TempAsset As New EVEAsset
         Dim ReturnData As String = ""
 
         Dim TempTokenData As New ESITokenData
@@ -925,7 +955,6 @@ Public Class ESI
             CorpData = JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
 
             If Not IsNothing(CorpData) Then
-                Call EVEDB.BeginSQLiteTransaction()
 
                 ' See if we insert or update
                 Dim rsCheck As SQLiteDataReader
@@ -979,14 +1008,33 @@ Public Class ESI
 
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                Call EVEDB.CommitSQLiteTransaction()
-
                 DBCommand = Nothing
 
             End If
         End If
 
     End Sub
+
+    Public Function GetStructureData(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByRef StructureCacheDate As Date) As ESIUniverseStructure
+        Dim ReturnData As String = ""
+
+        Dim TempTokenData As New ESITokenData
+        TempTokenData = FormatTokenData(TokenData)
+
+        ' Set up query string - suppress error messages since this will probably have the most issues
+        ReturnData = GetPrivateAuthorizedData(ESIPublicURL & "universe/structures/" & CStr(ID) & "/" & TranquilityDataSource,
+                                              TempTokenData, TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, True)
+
+        ' Always add 1 day to structure cache dates - these won't change much for our purposes
+        StructureCacheDate = DateAdd(DateInterval.Day, 1, StructureCacheDate)
+
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of ESIUniverseStructure)(ReturnData)
+        Else
+            Return Nothing
+        End If
+
+    End Function
 
 #End Region
 
@@ -1237,56 +1285,58 @@ Public Class ESI
             ' Get the data from ESI
             PublicData = GetPublicData(ESIPublicURL & "markets/prices/" & TranquilityDataSource, CacheDate)
 
-            MarketPricesOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketAdjustedPrice))(PublicData)
+            If Not IsNothing(PublicData) Then
+                MarketPricesOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketAdjustedPrice))(PublicData)
 
-            ' Read in the data
-            If Not IsNothing(MarketPricesOutput) Then
-                If MarketPricesOutput.Count > 0 Then
-                    Call EVEDB.BeginSQLiteTransaction()
+                ' Read in the data
+                If Not IsNothing(MarketPricesOutput) Then
+                    If MarketPricesOutput.Count > 0 Then
+                        Call EVEDB.BeginSQLiteTransaction()
 
-                    ' Clear the old records first
-                    Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+                        ' Clear the old records first
+                        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
 
-                    TempLabel.Text = "Saving Adjusted Market Price Data..."
-                    TempPB.Minimum = 0
-                    TempPB.Value = 0
-                    TempPB.Maximum = MarketPricesOutput.Count - 1
-                    TempPB.Visible = True
-                    Application.DoEvents()
-
-                    ' Now read through all the output items and update them in ITEM_PRICES
-                    For i = 0 To MarketPricesOutput.Count - 1
-                        With MarketPricesOutput(i)
-                            Dim AdjustedPrice As String
-                            If Not IsNothing(.adjusted_Price) Then
-                                AdjustedPrice = ConvertEUDecimaltoUSDecimal(.adjusted_Price)
-                            Else
-                                AdjustedPrice = "0.00"
-                            End If
-
-                            Dim AveragePrice As String
-                            If Not IsNothing(.average_Price) Then
-                                AveragePrice = ConvertEUDecimaltoUSDecimal(.average_Price)
-                            Else
-                                AveragePrice = "0.00"
-                            End If
-                            SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & AdjustedPrice & ", AVERAGE_PRICE = " & AveragePrice
-                            SQL &= " WHERE ITEM_ID = " & CStr(.type_id)
-                            Call EVEDB.ExecuteNonQuerySQL(SQL)
-                        End With
-
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
+                        TempLabel.Text = "Saving Adjusted Market Price Data..."
+                        TempPB.Minimum = 0
+                        TempPB.Value = 0
+                        TempPB.Maximum = MarketPricesOutput.Count - 1
+                        TempPB.Visible = True
                         Application.DoEvents()
 
-                    Next
+                        ' Now read through all the output items and update them in ITEM_PRICES
+                        For i = 0 To MarketPricesOutput.Count - 1
+                            With MarketPricesOutput(i)
+                                Dim AdjustedPrice As String
+                                If Not IsNothing(.adjusted_Price) Then
+                                    AdjustedPrice = ConvertEUDecimaltoUSDecimal(.adjusted_Price)
+                                Else
+                                    AdjustedPrice = "0.00"
+                                End If
 
-                    ' All set, update cache date before leaving
-                    Call CB.UpdateCacheDate(CacheDateType.MarketPrices, CacheDate)
+                                Dim AveragePrice As String
+                                If Not IsNothing(.average_Price) Then
+                                    AveragePrice = ConvertEUDecimaltoUSDecimal(.average_Price)
+                                Else
+                                    AveragePrice = "0.00"
+                                End If
+                                SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & AdjustedPrice & ", AVERAGE_PRICE = " & AveragePrice
+                                SQL &= " WHERE ITEM_ID = " & CStr(.type_id)
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                            End With
 
-                    ' Done updating
-                    Call EVEDB.CommitSQLiteTransaction()
-                    Return True
+                            ' For each record, update the progress bar
+                            Call IncrementProgressBar(TempPB)
+                            Application.DoEvents()
+
+                        Next
+
+                        ' All set, update cache date before leaving
+                        Call CB.UpdateCacheDate(CacheDateType.MarketPrices, CacheDate)
+
+                        ' Done updating
+                        Call EVEDB.CommitSQLiteTransaction()
+                        Return True
+                    End If
                 End If
             End If
             ' Data didn't download
@@ -1297,566 +1347,8 @@ Public Class ESI
 
     End Function
 
-    ' This returns a list of all publicly accessible facilities, including player built outposts in nullsec.
-    Public Function UpdateIndustryFacilties(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing,
-                                            Optional SplashVisible As Boolean = False) As Boolean
-        Dim IndustryFacilitiesOutput As List(Of ESIIndustryFacility)
-        Dim FacilitiesList As New List(Of Station)
-        Dim SQL As String
-        Dim SQLBase As String
-        Dim PublicData As String
-        Dim rsLookup As SQLiteDataReader
-
-        Dim StatusText As String = ""
-
-        Dim SystemIndiciesUpdated As Boolean
-        Dim SuccessfulDownload As Boolean
-
-        Dim TempLabel As Label
-        Dim TempPB As ProgressBar
-
-        Dim FacilityName As String
-        Dim i As Integer
-
-        Dim TempStation As Station
-
-        If IsNothing(UpdateLabel) Then
-            TempLabel = New Label
-        Else
-            TempLabel = UpdateLabel
-        End If
-
-        If IsNothing(PB) Then
-            TempPB = New ProgressBar
-        Else
-            TempPB = PB
-        End If
-
-        ' Before doing anything, update the system indicies
-        SuccessfulDownload = UpdateIndustrySystemsCostIndex(SystemIndiciesUpdated, UpdateLabel, PB)
-
-        Dim CB As New CacheBox
-        Dim CacheDate As Date
-
-        ' Get the current list of agents updated
-        If CB.DataUpdateable(CacheDateType.IndustryFacilities) And SuccessfulDownload Then
-
-            StatusText = "Updating Facility Data..."
-            If SplashVisible Then
-                Call SetProgress(StatusText)
-            Else
-                TempLabel.Text = StatusText
-            End If
-
-            Application.DoEvents()
-            ' Get the data from ESI
-            PublicData = GetPublicData(ESIPublicURL & "industry/facilities/" & TranquilityDataSource, CacheDate)
-
-            IndustryFacilitiesOutput = JsonConvert.DeserializeObject(Of List(Of ESIIndustryFacility))(PublicData)
-            Dim StationNameLookupList As New List(Of FacilityCorpIDPair)
-            Dim CorpNameLookupList As New List(Of FacilityCorpIDPair)
-            Dim TempPair As FacilityCorpIDPair
-
-            ' Read in the data
-            If Not IsNothing(IndustryFacilitiesOutput) Then
-                ' Save this as a list of stations for processing
-                For Each Facility In IndustryFacilitiesOutput
-                    Dim FacilityData As StationData
-
-                    ' Look up static data and set if there, if not save for ESI query later
-                    FacilityData = GetStationData(Facility.facility_id, Facility.owner_id)
-                    If FacilityData.StationName = "" Then
-                        TempPair.FacilityID = Facility.facility_id
-                        TempPair.OwnerID = Facility.owner_id
-                        If Not StationNameLookupList.Contains(TempPair) Then
-                            StationNameLookupList.Add(TempPair)
-                        End If
-                    End If
-                    If FacilityData.OwnedbyCorporationName = "" Then
-                        TempPair.FacilityID = Facility.facility_id
-                        TempPair.OwnerID = Facility.owner_id
-                        If Not CorpNameLookupList.Contains(TempPair) Then
-                            CorpNameLookupList.Add(TempPair)
-                        End If
-                    End If
-
-                    TempStation.stationID = Facility.facility_id
-                    TempStation.stationName = FacilityData.StationName
-                    TempStation.stationTypeID = Facility.type_id
-                    TempStation.solarSystemID = Facility.solar_system_id
-                    TempStation.regionID = Facility.region_id
-                    TempStation.corporationID = Facility.owner_id
-                    TempStation.corporationName = FacilityData.OwnedbyCorporationName
-                    TempStation.tax = Facility.tax
-
-                    ' Add to facilities list
-                    FacilitiesList.Add(TempStation)
-
-                Next
-            End If
-
-            ' Now look up any of the unfound station names and corporation names from ESI
-            Dim StationNames As List(Of NameData) = GetFacilityNameData(StationNameLookupList, NameDataType.Facility)
-            Dim TempFacility As Station
-
-            If Not IsNothing(StationNames) Then
-                For Each StationName In StationNames
-                    ' Look up each one and set it
-                    IDToFind = StationName.IndexID
-                    TempFacility = FacilitiesList.Find(AddressOf FindFacility)
-                    FacilitiesList.Remove(TempFacility)
-                    TempFacility.stationName = StationName.Name
-                    FacilitiesList.Add(TempFacility)
-                Next
-            End If
-
-            Dim CorporationNames As List(Of NameData) = GetFacilityNameData(CorpNameLookupList, NameDataType.Owner)
-            If Not IsNothing(CorporationNames) Then
-                For Each Corp In CorporationNames
-                    ' Look up each one and set it
-                    IDToFind = Corp.IndexID
-                    TempFacility = FacilitiesList.Find(AddressOf FindFacility)
-                    FacilitiesList.Remove(TempFacility)
-                    TempFacility.corporationName = Corp.Name
-                    FacilitiesList.Add(TempFacility)
-                Next
-            End If
-
-            If FacilitiesList.Count > 0 Then
-
-                Call EVEDB.BeginSQLiteTransaction()
-
-                StatusText = "Saving Industry Facilities Data..."
-                If SplashVisible Then
-                    Call SetProgress(StatusText)
-                Else
-                    TempLabel.Text = StatusText
-                End If
-                TempPB.Minimum = 0
-                TempPB.Value = 0
-                TempPB.Maximum = FacilitiesList.Count - 1
-                TempPB.Visible = True
-                Application.DoEvents()
-
-                ' Now read through all the output items and input them into the DB
-                For i = 0 To FacilitiesList.Count - 1
-                    With FacilitiesList(i)
-                        ' See if this is an outpost or not and add the tag for type to the name
-                        Select Case .stationTypeID
-                            ' FACILITY_TYPE_ID	FACILITY_TYPE
-                            ' 21644	Amarr Factory Outpost
-                            ' 21645	Gallente Administrative Outpost
-                            ' 21646	Minmatar Service Outpost
-                            ' 21642	Caldari Research Outpost
-                            ' 12294, 12242, 12295 conquerable stations
-                            Case 21644
-                                FacilityName = Format(.stationName) & " (A)"
-                            Case 21645
-                                FacilityName = Format(.stationName) & " (G)"
-                            Case 21646
-                                FacilityName = Format(.stationName) & " (M)"
-                            Case 21642
-                                FacilityName = Format(.stationName) & " (C)"
-                            Case 12294, 12242, 12295
-                                FacilityName = Format(.stationName) & " (CS)" ' conquerable 
-
-                                ' Also, process this by adding a record to the ram_assembly_line_stations table so we can look them up later
-                                SQL = "SELECT 'X' FROM RAM_ASSEMBLY_LINE_STATIONS WHERE stationID = " & CStr(.stationID)
-
-                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                                rsLookup = DBCommand.ExecuteReader
-
-                                If Not rsLookup.Read Then
-                                    ' Not in there, add the records for the five different assembly line types - copied data from other station type ids like this
-                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},5,10,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
-                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},6,50,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
-                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},7,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
-                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},8,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
-                                    Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO RAM_ASSEMBLY_LINE_STATIONS VALUES ({0},38,20,{1},{2},{3},{4})", .stationID, .stationTypeID, .corporationID, .solarSystemID, .regionID))
-                                End If
-
-                                rsLookup.Close()
-                            Case Else
-                                FacilityName = Format(.stationName)
-                        End Select
-
-                        ' Look up each facility and if found, update it. If not, insert - this way if the ESI is having issues, we won't delete all the station data (which doesn't change much)
-                        SQL = "SELECT 'X' FROM INDUSTRY_FACILITIES WHERE FACILITY_ID = " & CStr(.stationID)
-
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsLookup = DBCommand.ExecuteReader
-
-                        If rsLookup.Read() Then
-                            SQL = "UPDATE INDUSTRY_FACILITIES "
-                            SQL &= "SET FACILITY_NAME = '" & FormatDBString(FacilityName) & "',"
-                            SQL &= "FACILITY_TYPE_ID = " & CStr(.stationTypeID) & ","
-                            SQL &= "FACILITY_TAX = " & CStr(.tax) & ","
-                            SQL &= "SOLAR_SYSTEM_ID = " & CStr(.solarSystemID) & ","
-                            SQL &= "REGION_ID = " & CStr(.regionID) & ","
-                            SQL &= "OWNER_ID = " & CStr(.corporationID) & " "
-                            SQL &= "WHERE FACILITY_ID = " & CStr(.stationID)
-                            ErrorTracker = SQL
-                        Else ' New record, insert
-                            SQL = "INSERT INTO INDUSTRY_FACILITIES VALUES ("
-                            SQL &= CStr(.stationID) & ",'"
-                            SQL &= FormatDBString(FacilityName) & "',"
-                            SQL &= CStr(.stationTypeID) & ","
-                            SQL &= CStr(.tax) & ","
-                            SQL &= CStr(.solarSystemID) & ","
-                            SQL &= CStr(.regionID) & ","
-                            SQL &= CStr(.corporationID) & ")"
-                            ErrorTracker = SQL
-                        End If
-
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                        rsLookup.Close()
-                        DBCommand = Nothing
-
-                    End With
-
-                    ' For each record, update the progress bar
-                    Call IncrementProgressBar(TempPB)
-                    Application.DoEvents()
-                Next
-
-                ' Now that everything is inserted, update the master station table that we can query for anything
-                StatusText = "Updating Stations Data..."
-                If SplashVisible Then
-                    Call SetProgress(StatusText)
-                Else
-                    TempLabel.Text = StatusText
-                End If
-
-                Application.DoEvents()
-
-                ' Find all facilities not already in the stations table and loop through to add them
-                SQL = "SELECT DISTINCT FACILITY_ID "
-                SQLBase = "FROM INDUSTRY_FACILITIES WHERE FACILITY_ID NOT IN (SELECT DISTINCT FACILITY_ID FROM STATION_FACILITIES) "
-                SQLBase &= "AND (FACILITY_ID IN (SELECT stationID FROM RAM_ASSEMBLY_LINE_STATIONS) " ' Stations with assembly lines
-                SQLBase &= "OR FACILITY_TYPE_ID IN (21642,21644,21645,21646,12242,12294,12295)) " ' Outpost types
-
-                Call SetProgressBar(TempPB, "SELECT COUNT(DISTINCT FACILITY_ID) " & SQLBase)
-                Application.DoEvents()
-
-                DBCommand = New SQLiteCommand(SQL & SQLBase, EVEDB.DBREf)
-                rsLookup = DBCommand.ExecuteReader
-
-                While rsLookup.Read
-                    Call SetStationFacilityData(rsLookup.GetInt64(0))
-                    Call IncrementProgressBar(TempPB)
-                End While
-
-                rsLookup.Close()
-                DBCommand = Nothing
-
-                '' Update Tax rates - ignore this until they actually change, NPC is set by CCP and outposts don't get sent through ESI
-                'SQL = "Select DISTINCT FACILITY_ID, FACILITY_TAX FROM INDUSTRY_FACILITIES WHERE OUTPOST = 0"
-                'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                'rsLookup = DBCommand.ExecuteReader
-
-                'While rsLookup.Read
-                '    SQL = "UPDATE STATION_FACILITIES Set FACILITY_TAX = " & CStr(rsLookup.GetDouble(1)) & " WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(0))
-                '    Call evedb.ExecuteNonQuerySQL(SQL)
-                'End While
-
-                'rsLookup.Close()
-                'DBCommand = Nothing
-
-                StatusText = "Refreshing Station Data..."
-                If SplashVisible Then
-                    Call SetProgress(StatusText)
-                Else
-                    TempLabel.Text = StatusText
-                End If
-
-                ' Update the outposts names, which can change and do
-                SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID "
-                SQLBase = "FROM INDUSTRY_FACILITIES WHERE FACILITY_TYPE_ID In (21642,21644,21645,21646,12242,12294,12295) " ' Outpost types
-
-                Call SetProgressBar(TempPB, "SELECT COUNT(DISTINCT FACILITY_ID) " & SQLBase)
-
-                DBCommand = New SQLiteCommand(SQL & SQLBase, EVEDB.DBREf)
-                rsLookup = DBCommand.ExecuteReader
-
-                While rsLookup.Read
-                    SQL = "UPDATE STATION_FACILITIES SET FACILITY_NAME = '" & FormatDBString(rsLookup.GetString(0)) & "' WHERE FACILITY_ID = " & CStr(rsLookup.GetInt64(1))
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    Call IncrementProgressBar(TempPB)
-                End While
-
-                rsLookup.Close()
-                DBCommand = Nothing
-
-                ' Clear out all the outposts from STATIONS to get the most updated data
-                SQL = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN (21642,21644,21645,21646,12242,12294,12295) " ' Outpost types
-                EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Now insert non-SDE stations (Outposts) into the stations table for easy look ups in assets
-                SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_NAME, FACILITY_TYPE_ID, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_SECURITY, REGION_ID "
-                SQLBase = "FROM STATION_FACILITIES WHERE FACILITY_ID NOT IN (SELECT STATION_ID AS FACILITY_ID FROM STATIONS) "
-
-                Call SetProgressBar(TempPB, "SELECT COUNT(DISTINCT FACILITY_ID) " & SQLBase)
-
-                DBCommand = New SQLiteCommand(SQL & SQLBase, EVEDB.DBREf)
-                rsLookup = DBCommand.ExecuteReader
-
-                ' Insert the new data
-                While rsLookup.Read()
-                    ' Get the owner of facility info from above
-                    IDToFind = rsLookup.GetInt64(0)
-                    TempFacility = FacilitiesList.Find(AddressOf FindFacility)
-                    Dim OwnerID As Long = 0
-                    If Not IsNothing(TempFacility) Then
-                        OwnerID = TempFacility.corporationID
-                    End If
-
-                    SQL = "INSERT INTO STATIONS VALUES (" & CStr(rsLookup.GetInt64(0)) & ","
-                    SQL &= "'" & FormatDBString(rsLookup.GetString(1)) & "',"
-                    SQL &= CStr(rsLookup.GetInt64(2)) & ","
-                    SQL &= CStr(rsLookup.GetInt64(3)) & ","
-                    SQL &= CStr(rsLookup.GetFloat(4)) & ","
-                    SQL &= CStr(rsLookup.GetInt64(5)) & ","
-                    SQL &= CStr(OwnerID) & ","
-                    SQL &= "0,0)" ' If we don't know the refinery data then it wasn't in the SDE, so set to zero
-                    ErrorTracker = SQL
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    Call IncrementProgressBar(TempPB)
-                    Application.DoEvents()
-                End While
-
-                Call EVEDB.CommitSQLiteTransaction()
-
-                ' All set, update cache date before leaving
-                Call CB.UpdateCacheDate(CacheDateType.IndustryFacilities, CacheDate)
-
-                ErrorTracker = ""
-
-                StatusText = "Finalizing Data..."
-                If SplashVisible Then
-                    Call SetProgress(StatusText)
-                Else
-                    TempLabel.Text = StatusText
-                End If
-
-                ' Finally, Update the cost indicies for the solar system of the stations every time we update the system indicies (above)
-                If SystemIndiciesUpdated Then
-                    Call EVEDB.BeginSQLiteTransaction()
-                    SQL = "SELECT DISTINCT SOLAR_SYSTEM_ID, ACTIVITY_ID, COST_INDEX FROM INDUSTRY_SYSTEMS_COST_INDICIES"
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsLookup = DBCommand.ExecuteReader
-
-                    While rsLookup.Read
-                        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CStr(rsLookup.GetDouble(2)) & " "
-                        SQL &= " WHERE SOLAR_SYSTEM_ID = " & CStr(rsLookup.GetInt64(0)) & " AND ACTIVITY_ID = " & CStr(rsLookup.GetInt32(1))
-                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    End While
-
-                    rsLookup.Close()
-                    DBCommand = Nothing
-
-                    Call EVEDB.CommitSQLiteTransaction()
-                End If
-
-                Return True
-
-            End If
-
-            Return False
-
-        End If
-
-        Return True
-
-    End Function
-
-    Private Sub SetProgressBar(ByRef PB As ProgressBar, ByVal SQLCount As String)
-        Dim rsCount As SQLiteDataReader
-        DBCommand = New SQLiteCommand(SQLCount, EVEDB.DBREf)
-        rsCount = DBCommand.ExecuteReader
-
-        PB.Visible = False
-        If rsCount.Read Then
-            If rsCount.GetInt32(0) > 0 Then
-                PB.Minimum = 0
-                PB.Value = 0
-                PB.Maximum = rsCount.GetInt32(0) - 1
-                PB.Visible = True
-            End If
-        End If
-
-        Application.DoEvents()
-
-    End Sub
-
-    ' Predicate for finding an ID in a list of facilities
-    Private Function FindFacility(ByVal Facility As Station) As Boolean
-        If Facility.stationID = IDToFind Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
-    ' Predicate for finding an owner ID in a list of facility/corp id pairs
-    Private Function FindOwner(ByVal Pair As FacilityCorpIDPair) As Boolean
-        If Pair.OwnerID = IDToFind Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
-    ' Predicate for finding an owner ID in a list of facility/corp id pairs
-    Private Function FindFacility(ByVal Pair As FacilityCorpIDPair) As Boolean
-        If Pair.FacilityID = IDToFind Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
-    Private Structure FacilityCorpIDPair
-        Dim FacilityID As Long
-        Dim OwnerID As Long
-    End Structure
-
-    ' Sets the Station data sent for the facility ID in the STATION_FACILITIES table
-    ' After all tables updated from ESI calls
-    Private Sub SetStationFacilityData(ByVal FacilityID As Long)
-        Dim SQL As String
-        Dim rsFacility As SQLiteDataReader
-
-        ' Set the query first
-        SQL = "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
-        SQL &= "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
-        SQL &= "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL &= "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
-        SQL &= "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.materialMultiplier AS MATERIAL_MULTIPLIER, "
-        SQL &= "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.timeMultiplier AS TIME_MULTIPLIER, "
-        SQL &= "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.costMultiplier AS COST_MULTIPLIER, "
-        SQL &= "INVENTORY_GROUPS.groupID AS GROUP_ID, 0 AS CATEGORY_ID, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX, 0 AS OUTPOST "
-        SQL &= "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_ASSEMBLY_LINE_STATIONS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
-        SQL &= "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP, INVENTORY_GROUPS "
-        SQL &= "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = INVENTORY_TYPES.typeID "
-        SQL &= "AND INDUSTRY_FACILITIES.REGION_ID = REGIONS.regionID "
-        SQL &= "AND INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.assemblyLineTypeID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.groupID = INVENTORY_GROUPS.groupID "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_ID = RAM_ASSEMBLY_LINE_STATIONS.stationID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.activityID = RAM_ACTIVITIES.activityID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = RAM_ASSEMBLY_LINE_TYPES.activityID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_STATIONS.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID "
-        SQL &= "UNION "
-        SQL &= "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
-        SQL &= "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
-        SQL &= "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL &= "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
-        SQL &= "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.materialMultiplier AS MATERIAL_MULTIPLIER, "
-        SQL &= "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.timeMultiplier AS TIME_MULTIPLIER, "
-        SQL &= "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.costMultiplier AS COST_MULTIPLIER, "
-        SQL &= "0 AS GROUP_ID, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, COST_INDEX, 0 AS OUTPOST "
-        SQL &= "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_ASSEMBLY_LINE_STATIONS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
-        SQL &= "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY, INVENTORY_CATEGORIES "
-        SQL &= "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = INVENTORY_TYPES.typeID "
-        SQL &= "AND INDUSTRY_FACILITIES.REGION_ID = REGIONS.regionID "
-        SQL &= "AND INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.assemblyLineTypeID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.categoryID = INVENTORY_CATEGORIES.categoryID "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_ID = RAM_ASSEMBLY_LINE_STATIONS.stationID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.activityID = RAM_ACTIVITIES.activityID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = RAM_ASSEMBLY_LINE_TYPES.activityID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_STATIONS.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID "
-        SQL &= "UNION "
-        SQL &= "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
-        SQL &= "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
-        SQL &= "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL &= "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
-        SQL &= "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.materialMultiplier AS MATERIAL_MULTIPLIER, "
-        SQL &= "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.timeMultiplier AS TIME_MULTIPLIER, "
-        SQL &= "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.costMultiplier AS COST_MULTIPLIER, "
-        SQL &= "INVENTORY_GROUPS.groupID AS GROUP_ID, 0 AS CATEGORY_ID, COST_INDEX, 1 AS OUTPOST "
-        SQL &= "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_INSTALLATION_TYPE_CONTENTS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
-        SQL &= "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP, INVENTORY_GROUPS "
-        SQL &= "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
-        SQL &= "AND FACILITY_TYPE_ID IN (21642,21644,21645,21646) "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = INVENTORY_TYPES.typeID "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = RAM_INSTALLATION_TYPE_CONTENTS.installationTypeID "
-        SQL &= "AND INDUSTRY_FACILITIES.REGION_ID = REGIONS.regionID "
-        SQL &= "AND INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.assemblyLineTypeID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_GROUP.groupID = INVENTORY_GROUPS.groupID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.activityID = RAM_ACTIVITIES.activityID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = RAM_ASSEMBLY_LINE_TYPES.activityID "
-        SQL &= "AND RAM_INSTALLATION_TYPE_CONTENTS.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID "
-        SQL &= "UNION "
-        SQL &= "SELECT INDUSTRY_FACILITIES.FACILITY_ID, INDUSTRY_FACILITIES.FACILITY_NAME, "
-        SQL &= "SOLAR_SYSTEMS.solarSystemID AS SOLAR_SYSTEM_ID, SOLAR_SYSTEMS.solarSystemName AS SOLAR_SYSTEM_NAME, "
-        SQL &= "SOLAR_SYSTEMS.security AS SOLAR_SYSTEM_SECURITY, REGIONS.regionID AS REGION_ID, REGIONS.regionName AS REGION_NAME, "
-        SQL &= "FACILITY_TYPE_ID, typeName AS FACILITY_TYPE, RAM_ACTIVITIES.activityID AS ACTIVITY_ID, FACILITY_TAX,"
-        SQL &= "baseMaterialMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.materialMultiplier AS MATERIAL_MULTIPLIER, "
-        SQL &= "baseTimeMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.timeMultiplier AS TIME_MULTIPLIER, "
-        SQL &= "baseCostMultiplier * RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.costMultiplier AS COST_MULTIPLIER, "
-        SQL &= "0 AS GROUP_ID, INVENTORY_CATEGORIES.categoryID AS CATEGORY_ID, COST_INDEX, 1 AS OUTPOST "
-        SQL &= "FROM INDUSTRY_FACILITIES, INVENTORY_TYPES, RAM_INSTALLATION_TYPE_CONTENTS, REGIONS, SOLAR_SYSTEMS, INDUSTRY_SYSTEMS_COST_INDICIES, "
-        SQL &= "RAM_ACTIVITIES, RAM_ASSEMBLY_LINE_TYPES, RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY, INVENTORY_CATEGORIES "
-        SQL &= "WHERE INDUSTRY_FACILITIES.FACILITY_ID = " & CStr(FacilityID) & " "
-        SQL &= "AND FACILITY_TYPE_ID IN (21642,21644,21645,21646) "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = INVENTORY_TYPES.typeID "
-        SQL &= "AND INDUSTRY_FACILITIES.FACILITY_TYPE_ID = RAM_INSTALLATION_TYPE_CONTENTS.installationTypeID "
-        SQL &= "AND INDUSTRY_FACILITIES.REGION_ID = REGIONS.regionID "
-        SQL &= "AND INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.assemblyLineTypeID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPE_DETAIL_PER_CATEGORY.categoryID = INVENTORY_CATEGORIES.categoryID "
-        SQL &= "AND RAM_ASSEMBLY_LINE_TYPES.activityID = RAM_ACTIVITIES.activityID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID = INDUSTRY_FACILITIES.SOLAR_SYSTEM_ID "
-        SQL &= "AND INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID = RAM_ASSEMBLY_LINE_TYPES.activityID "
-        SQL &= "AND RAM_INSTALLATION_TYPE_CONTENTS.assemblyLineTypeID = RAM_ASSEMBLY_LINE_TYPES.assemblyLineTypeID "
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsFacility = DBCommand.ExecuteReader
-
-        While rsFacility.Read
-            SQL = "INSERT INTO STATION_FACILITIES VALUES ("
-            SQL &= CStr(rsFacility.GetInt64(0)) & ", " ' Facility ID
-            SQL &= "'" & FormatDBString(rsFacility.GetString(1)) & "', " ' Facility Name
-            SQL &= CStr(rsFacility.GetInt64(2)) & ", " ' Solar System ID
-            SQL &= "'" & FormatDBString(rsFacility.GetString(3)) & "', " ' Solar System Name
-            SQL &= CStr(rsFacility.GetDouble(4)) & ", " ' Solar System Security
-            SQL &= CStr(rsFacility.GetInt64(5)) & ", " ' Region ID
-            SQL &= "'" & FormatDBString(rsFacility.GetString(6)) & "', " ' Region Name
-            SQL &= CStr(rsFacility.GetInt64(7)) & ", " ' Facility Type ID
-            SQL &= "'" & FormatDBString(rsFacility.GetString(8)) & "', " ' Facility Type
-            SQL &= CStr(rsFacility.GetInt64(9)) & ", " ' Activity ID
-            SQL &= CStr(rsFacility.GetDouble(10)) & ", " ' Facility Tax
-            SQL &= CStr(rsFacility.GetDouble(11)) & ", " ' Material Multiplier
-            SQL &= CStr(rsFacility.GetDouble(12)) & ", " ' Time Multiplier
-            SQL &= CStr(rsFacility.GetDouble(13)) & ", " ' Cost Multiplier
-            SQL &= CStr(rsFacility.GetInt64(14)) & ", " ' Group ID
-            SQL &= CStr(rsFacility.GetInt64(15)) & ", " ' Category ID
-            SQL &= CStr(rsFacility.GetDouble(16)) & ", " ' Cost Index
-            Select Case rsFacility.GetInt64(7)
-                Case 12242, 12294, 12295
-                    SQL &= "1)" ' Outpost for conquerable
-                Case Else
-                    SQL &= CStr(rsFacility.GetInt32(17)) & ")" ' Outpost 
-            End Select
-
-            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Application.DoEvents()
-        End While
-
-    End Sub
-
-    ' Lists the cost index for installing industry jobs per type of activity. This does not include wormhole space.
-    ' Make private so we can only run with the update industry facilities function
-    Private Function UpdateIndustrySystemsCostIndex(ByRef IndiciesUpdated As Boolean, Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+    ' Updates the cost index for installing industry jobs per type of activity. This does not include wormhole space.
+    Public Function UpdateIndustrySystemsCostIndex(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
         Dim IndustrySystemsIndex As List(Of ESISystemCostIndices)
         Dim SQL As String
         Dim rsLookup As SQLiteDataReader
@@ -1885,249 +1377,132 @@ Public Class ESI
 
         ' Get the current list of agents updated
         If CB.DataUpdateable(CacheDateType.IndustrySystems) Then
-            IndiciesUpdated = True
             TempLabel.Text = "Downloading System Index Data..."
             Application.DoEvents()
 
             ' Get the data from ESI
             PublicData = GetPublicData(ESIPublicURL & "industry/systems/" & TranquilityDataSource, CacheDate)
 
-            IndustrySystemsIndex = JsonConvert.DeserializeObject(Of List(Of ESISystemCostIndices))(PublicData)
+            If Not IsNothing(PublicData) Then
+                IndustrySystemsIndex = JsonConvert.DeserializeObject(Of List(Of ESISystemCostIndices))(PublicData)
 
-            ' Read in the data
-            If Not IsNothing(IndustrySystemsIndex) Then
-                If IndustrySystemsIndex.Count > 0 Then
-                    Call EVEDB.BeginSQLiteTransaction()
+                ' Read in the data
+                If Not IsNothing(IndustrySystemsIndex) Then
+                    If IndustrySystemsIndex.Count > 0 Then
+                        Call EVEDB.BeginSQLiteTransaction()
 
-                    TempLabel.Text = "Saving System Index Data..."
-                    TempPB.Minimum = 0
-                    TempPB.Value = 0
-                    TempPB.Maximum = IndustrySystemsIndex.Count - 1
-                    TempPB.Visible = True
-                    Application.DoEvents()
+                        TempLabel.Text = "Saving System Index Data..."
+                        TempPB.Minimum = 0
+                        TempPB.Value = 0
+                        TempPB.Maximum = IndustrySystemsIndex.Count - 1
+                        TempPB.Visible = True
+                        Application.DoEvents()
 
-                    ' Now read through all the output items and input them into the DB
-                    For i = 0 To IndustrySystemsIndex.Count - 1
+                        ' Now read through all the output items and input them into the DB
+                        For i = 0 To IndustrySystemsIndex.Count - 1
 
-                        SolarSystemID = IndustrySystemsIndex(i).solar_system_id
-                        SolarSystemName = GetSolarSystemName(SolarSystemID)
+                            SolarSystemID = IndustrySystemsIndex(i).solar_system_id
+                            SolarSystemName = GetSolarSystemName(SolarSystemID)
 
-                        For j = 0 To IndustrySystemsIndex(i).cost_indices.Count - 1
-                            With IndustrySystemsIndex(i).cost_indices(j)
-                                ' Update name
-                                ' copying, duplicating, invention, manufacturing, none, reaction, researching_material_efficiency, researching_technology, researching_time_efficiency, reverse_engineering 
-                                If .activity = "reaction" Then
-                                    .activity = "Reactions"
-                                ElseIf .activity.Contains("_") Then
-                                    .activity = .activity.Replace("_", " ") ' replace underscores with spaces
-                                End If
+                            For j = 0 To IndustrySystemsIndex(i).cost_indices.Count - 1
+                                With IndustrySystemsIndex(i).cost_indices(j)
+                                    ' Update name
+                                    ' copying, duplicating, invention, manufacturing, none, reaction, researching_material_efficiency, researching_technology, researching_time_efficiency, reverse_engineering 
+                                    If .activity = "reaction" Then
+                                        .activity = "Reactions"
+                                    ElseIf .activity.Contains("_") Then
+                                        .activity = .activity.Replace("_", " ") ' replace underscores with spaces
+                                    End If
 
-                                ' Format for title 
-                                .activity = Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(.activity)
+                                    ' Format for title 
+                                    .activity = Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(.activity)
 
-                                ActivityID = GetActivityID(.activity)
-                                ' Look up each system and if found, update it. If not, insert - this way if the ESI is having issues, we won't delete all the station data (which doesn't change much)
-                                SQL = "SELECT 'X' FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " AND ACTIVITY_ID = " & CStr(ActivityID)
+                                    ActivityID = GetActivityID(.activity)
+                                    ' Look up each system and if found, update it. If not, insert - this way if the ESI is having issues, we won't delete all the station data (which doesn't change much)
+                                    SQL = "SELECT 'X' FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " AND ACTIVITY_ID = " & CStr(ActivityID)
 
-                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                                rsLookup = DBCommand.ExecuteReader
+                                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                                    rsLookup = DBCommand.ExecuteReader
 
-                                If rsLookup.Read Then
-                                    ' Update the old
-                                    SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES "
-                                    SQL &= "SET SOLAR_SYSTEM_NAME = '" & FormatDBString(SolarSystemName) & "',"
-                                    SQL &= "ACTIVITY_ID = " & CStr(ActivityID) & ","
-                                    SQL &= "ACTIVITY_NAME = '" & FormatDBString(.activity) & "',"
-                                    SQL &= "COST_INDEX = " & CStr(.cost_index) & " "
-                                    SQL &= "WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " AND ACTIVITY_ID = " & CStr(ActivityID)
-                                Else
-                                    ' Insert the new record
-                                    SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES(" & CStr(SolarSystemID) & ",'" & FormatDBString(SolarSystemName) & "',"
-                                    SQL &= CStr(ActivityID) & ",'" & FormatDBString(.activity) & "'," & CStr(.cost_index) & ")"
-                                End If
+                                    If rsLookup.Read Then
+                                        ' Update the old
+                                        SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES "
+                                        SQL &= "SET SOLAR_SYSTEM_NAME = '" & FormatDBString(SolarSystemName) & "',"
+                                        SQL &= "ACTIVITY_ID = " & CStr(ActivityID) & ","
+                                        SQL &= "ACTIVITY_NAME = '" & FormatDBString(.activity) & "',"
+                                        SQL &= "COST_INDEX = " & CStr(.cost_index) & " "
+                                        SQL &= "WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " AND ACTIVITY_ID = " & CStr(ActivityID)
+                                    Else
+                                        ' Insert the new record
+                                        SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES(" & CStr(SolarSystemID) & ",'" & FormatDBString(SolarSystemName) & "',"
+                                        SQL &= CStr(ActivityID) & ",'" & FormatDBString(.activity) & "'," & CStr(.cost_index) & ")"
+                                    End If
 
-                                Call EVEDB.ExecuteNonQuerySQL(SQL)
-                            End With
+                                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                End With
+                            Next
+
+                            ' For each record, update the progress bar
+                            Call IncrementProgressBar(TempPB)
+                            Application.DoEvents()
                         Next
 
-                        ' For each record, update the progress bar
-                        Call IncrementProgressBar(TempPB)
-                        Application.DoEvents()
-                    Next
+                        TempPB.Visible = False
 
-                    TempPB.Visible = False
+                        ' Rebuild indexes
+                        Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
 
-                    ' Rebuild indexes
-                    Call EVEDB.ExecuteNonQuerySQL("REINDEX IDX_ISCI_SSID_AID")
+                        ' All set, update cache date before leaving
+                        Call CB.UpdateCacheDate(CacheDateType.IndustrySystems, CacheDate)
 
-                    ' All set, update cache date before leaving
-                    Call CB.UpdateCacheDate(CacheDateType.IndustrySystems, CacheDate)
+                        ' Done updating
+                        Call EVEDB.CommitSQLiteTransaction()
 
-                    ' Done updating
-                    Call EVEDB.CommitSQLiteTransaction()
+                        Return True
 
-                    Return True
-
+                    End If
                 End If
             End If
-            ' Json file didn't download
+            ' Json file didn't download or other error
             Return False
-        Else
-            IndiciesUpdated = False
         End If
 
         Return True
 
     End Function
 
-    ' Looks up station data in the static tables, if not there, queries from ESI
-    Private Function GetStationData(StationID As Long, CorporationID As Long) As StationData
-        Dim rsStation As SQLiteDataReader
-        Dim SQL As String
-        Dim TempData As StationData
-
-        SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(StationID)
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsStation = DBCommand.ExecuteReader
-
-        TempData.StationID = StationID
-        TempData.OwnedbyCorporationID = CorporationID
-        TempData.OwnedbyCorporationName = Unknown
-        TempData.StationName = Unknown
-
-        If rsStation.Read Then
-            ' Strip off the (A), (G), (M), (C), (CS)
-            Dim StationName As String = rsStation.GetString(0)
-            If StationName.Contains("(A)") Then
-                StationName = StationName.Substring(0, InStr(StationName, "(A)") - 2)
-            ElseIf StationName.Contains("(C)") Then
-                StationName = StationName.Substring(0, InStr(StationName, "(C)") - 2)
-            ElseIf StationName.Contains("(G)") Then
-                StationName = StationName.Substring(0, InStr(StationName, "(G)") - 2)
-            ElseIf StationName.Contains("(M)") Then
-                StationName = StationName.Substring(0, InStr(StationName, "(M)") - 2)
-            ElseIf StationName.Contains("(CS)") Then
-                StationName = StationName.Substring(0, InStr(StationName, "(CS)") - 2)
-            End If
-
-            TempData.StationName = StationName
-        Else
-            ' Need to look up from ESI
-            TempData.StationName = ""
-        End If
-
-        rsStation.Close()
-
-        '' Try to get the  name now for the corporation of this station
-        'SQL = "SELECT ITEM_NAME FROM INVENTORY_NAMES WHERE ITEM_ID = " & CStr(CorporationID)
-
-        'DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        'rsLookup = DBCommand.ExecuteReader
-
-        'If rsLookup.Read Then
-        '    TempData.OwnedbyCorporationName = rsLookup.GetString(0)
-        'Else
-        ' Need to look up from ESI
-        TempData.OwnedbyCorporationName = ""
-        'End If
-
-        'rsLookup.Close()
-
-        Return TempData
-
-    End Function
-
-    Private Structure StationData
-        Dim StationID As Long
-        Dim StationName As String
-        Dim OwnedbyCorporationID As Long
-        Dim OwnedbyCorporationName As String
-    End Structure
-
 #End Region
 
 #Region "Supporting Functions"
 
-    Private Function GetFacilityNameData(FacilityIDList As List(Of FacilityCorpIDPair), ByVal NameType As NameDataType) As List(Of NameData)
-        Dim IDs As New List(Of Long)
-        Dim NameList As New List(Of ESINameData)
-        Dim TempNameList As List(Of ESINameData)
-        Dim ReturnItem As New NameData
-        Dim ReturnList As New List(Of NameData)
-        Dim TempPair As FacilityCorpIDPair
+    Private Sub SetProgressBar(ByRef PB As ProgressBar, ByVal SQLCount As String)
+        Dim rsCount As SQLiteDataReader
+        DBCommand = New SQLiteCommand(SQLCount, EVEDB.DBREf)
+        rsCount = DBCommand.ExecuteReader
 
-        For Each Item In FacilityIDList
-            If NameType = NameDataType.Owner Then
-                If Not IDs.Contains(Item.OwnerID) Then
-                    IDs.Add(Item.OwnerID)
-                End If
-            Else
-                If Not IDs.Contains(Item.FacilityID) Then
-                    IDs.Add(Item.FacilityID)
-                End If
+        PB.Visible = False
+        If rsCount.Read Then
+            If rsCount.GetInt32(0) > 0 Then
+                PB.Minimum = 0
+                PB.Value = 0
+                PB.Maximum = rsCount.GetInt32(0) - 1
+                PB.Visible = True
             End If
-        Next
-
-        If IDs.Count = 0 Then
-            Return Nothing
         End If
 
-        Dim i As Integer
+        Application.DoEvents()
 
-        ' Only send 1000 ids at a time
-        For i = 0 To CInt(IDs.Count / 1000)
-            Dim Start As Integer = i * 1000
-            Dim EndMark As Integer
-            If Start + 1000 > IDs.Count Then
-                EndMark = IDs.Count - Start
-            Else
-                EndMark = 1000
-            End If
-            Dim SendIDs As List(Of Long) = IDs.GetRange(Start, EndMark)
-            TempNameList = GetNameData(SendIDs)
-            ' Get names from ESI
-            If Not IsNothing(TempNameList) Then
-                NameList.AddRange(TempNameList)
-            End If
-        Next
-
-        For Each item In NameList
-            ' Find facilityid in main list to index from the ownerID
-            IDToFind = item.id
-            If NameType = NameDataType.Owner Then
-                TempPair = FacilityIDList.Find(AddressOf FindOwner)
-            Else
-                TempPair = FacilityIDList.Find(AddressOf FindFacility)
-            End If
-            ' Set the data
-            ReturnItem.IndexID = TempPair.FacilityID
-            ReturnItem.ID = item.id
-            ReturnItem.Name = item.name
-
-            ReturnList.Add(ReturnItem)
-        Next
-
-        Return ReturnList
-
-    End Function
-
-    Private Enum NameDataType
-        Owner = 0
-        Facility = 1
-    End Enum
-
-    Private Structure NameData
-        Dim IndexID As Long
-        Dim ID As Long
-        Dim Name As String
-    End Structure
+    End Sub
 
     Private Function GetErrorResponseBody(Ex As WebException) As String
         Dim resp As String = New StreamReader(Ex.Response.GetResponseStream()).ReadToEnd()
         Dim ErrorData As ESIError = JsonConvert.DeserializeObject(Of ESIError)(resp)
 
-        Return ErrorData.ErrorText
+        If Not IsNothing(ErrorData) Then
+            Return ErrorData.ErrorText
+        Else
+            Return Ex.Message
+        End If
 
     End Function
 
@@ -2199,6 +1574,29 @@ Public Class ESI
             Return False
         End If
 
+    End Function
+
+    ' Returns the URL from all the data for this registration
+    Public Function GetURL() As String
+        Return ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://" & LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
+    End Function
+
+    Public Function GetAuthToken(ByVal StreamText As String) As String
+        Dim AuthToken As String = ""
+
+        ' Process the auth stream now
+        Dim AuthTokenString As String() = StreamText.Split(New Char() {" "c})
+
+        For i = 0 To AuthTokenString.Count - 1
+            If AuthTokenString(i).Contains("/?code=") Then
+                ' Strip the header and save the string
+                Dim Start As Integer = InStr(AuthTokenString(i), "=")
+                AuthToken = AuthTokenString(i).Substring(Start)
+                Exit For
+            End If
+        Next
+
+        Return AuthToken
     End Function
 
 #End Region
@@ -2472,6 +1870,20 @@ Public Class ESICorporation
     <JsonProperty("tax_rate")> Public tax_rate As Double
     <JsonProperty("ticker")> Public ticker As String
     <JsonProperty("url")> Public url As String
+End Class
+
+Public Class ESIUniverseStructure
+    <JsonProperty("name")> Public name As String
+    <JsonProperty("owner_id")> Public owner_id As Integer
+    <JsonProperty("position")> Public position As ESIPosition
+    <JsonProperty("solar_system_id")> Public solar_system_id As Integer
+    <JsonProperty("type_id")> Public type_id As Integer
+End Class
+
+Public Class ESIPostion
+    <JsonProperty("x")> Public x As Double
+    <JsonProperty("y")> Public y As Double
+    <JsonProperty("z")> Public z As Double
 End Class
 
 #End Region

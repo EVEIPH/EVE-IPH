@@ -11,6 +11,9 @@ Public Class frmSetCharacterDefault
 
         CancelESISSOLogin = False
 
+        btnReloadRegistration.Visible = False
+        btnManualLoad.Visible = False
+
         ' Add any initialization after the InitializeComponent() call.
         Call UpdateCharacterList()
 
@@ -36,7 +39,9 @@ Public Class frmSetCharacterDefault
         Application.DoEvents()
 
         ' If we get here, just clear out the old default and set the new one
-        Call LoadSelectedCharacter(SelectedCharacterName, False)
+        Call LoadCharacter(SelectedCharacterName, False)
+        ' Refresh all screens
+        Call frmMain.ResetTabs()
 
         DefaultCharSelected = True
         MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
@@ -62,32 +67,10 @@ Public Class frmSetCharacterDefault
 
     ' Checks if the user selected a default or not. If not, verifies that they don't want to set a default and want to go with dummy
     Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
-        Dim NoCharacter As Boolean
 
         CancelESISSOLogin = True
+        Me.Hide()
 
-        ' Only ask if they want to cancel if there isn't a character loaded yet
-        If SelectedCharacter.ID = 0 Then
-            NoCharacter = True
-        Else
-            NoCharacter = False
-        End If
-
-        If NoCharacter Then
-            ' Load the dummy
-            If SelectedCharacter.LoadDummyCharacter(False) = TriState.UseDefault Then
-                ' They said no, cancel and let them re-choose
-                Exit Sub
-            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.True Then
-                Call MsgBox("Dummy Character Loaded", MsgBoxStyle.OkOnly, Application.ProductName)
-                Me.Hide()
-            ElseIf SelectedCharacter.LoadDummyCharacter(False) = TriState.False Then
-                Call MsgBox("Unable to save Dummy Character", vbInformation, Application.ProductName)
-                Exit Sub
-            End If
-        Else
-            Me.Hide()
-        End If
     End Sub
 
     Private Sub frmSetCharacterDefault_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
@@ -103,7 +86,9 @@ Public Class frmSetCharacterDefault
         If ESIConnection.SetCharacterData() Then
             ' Refresh the token data to get new scopes if they added
             Me.Cursor = Cursors.WaitCursor
-            Call SelectedCharacter.RefreshTokenData()
+            If SelectedCharacter.ID <> DummyCharacterID Then
+                Call SelectedCharacter.RefreshTokenData()
+            End If
             Me.Cursor = Cursors.Default
             Application.DoEvents()
             ' Now update the character list
@@ -111,11 +96,14 @@ Public Class frmSetCharacterDefault
         Else
             ' Didn't load, so show the re-enter info button
             If AppRegistered() Then
-                MsgBox("The Character failed to load. Please check application registration information.")
+                If Not CancelESISSOLogin Then
+                    MsgBox("The Character failed to load. Please check application registration information.")
+                End If
             Else
                 MsgBox("You have not registered IPH. Please register IPH through the ESI developers system and try again.")
             End If
             btnReloadRegistration.Visible = True
+            btnManualLoad.Visible = True
         End If
 
         btnEVESSOLogin.Enabled = True ' Enable for another try if they want
@@ -175,6 +163,17 @@ Public Class frmSetCharacterDefault
         Dim f1 As New frmLoadESIAuthorization
         f1.ShowDialog()
         f1.Close()
+    End Sub
+
+    Private Sub btnManualLoad_Click(sender As Object, e As EventArgs) Handles btnManualLoad.Click
+        ' Show the popup with the URL we are passing to ESI
+        Dim f1 As New frmManualESI
+
+        f1.ShowDialog()
+
+        ' If they return, update the character list anyway
+        Call UpdateCharacterList()
+
     End Sub
 
 End Class

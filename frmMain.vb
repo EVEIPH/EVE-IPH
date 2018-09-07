@@ -116,6 +116,7 @@ Public Class frmMain
 
     ' If we are loading from history
     Private LoadingBPfromHistory As Boolean
+    Private PreviousBPfromHistory As Boolean
 
     ' Updates for threading
     Public PriceHistoryUpdateCount As Integer
@@ -396,9 +397,9 @@ Public Class frmMain
         If UserApplicationSettings.LoadESIFacilityDataonStartup Then
             ' Always do cost indicies first
             Application.UseWaitCursor = True
-            Call SetProgress("Updating Industry Facilities...")
+            Call SetProgress("Updating Industry System Indicies...")
             Application.DoEvents()
-            Call ESIData.UpdateIndustryFacilties(Nothing, Nothing, True)
+            Call ESIData.UpdateIndustrySystemsCostIndex()
             Application.UseWaitCursor = False
             Application.DoEvents()
         End If
@@ -437,32 +438,8 @@ Public Class frmMain
             tabMain.TabPages.Remove(tabReactions)
         End If
 
-        ' Initialize the BP facility
-        Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
-
-        ' Load up the Manufacturing tab facilities
-        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
-        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
-        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
-        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
-        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
-        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
-        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
-        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
-        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
-
-        ' Two facilities with check options - load the one they save
-        If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
-            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
-        Else
-            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
-        End If
-
-        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
-            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
-        Else
-            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, SelectedCharacter.ID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
-        End If
+        ' Load all the forms' facilities
+        Call LoadFacilities()
 
         ' Init Tool tips
         If UserApplicationSettings.ShowToolTips Then
@@ -797,6 +774,47 @@ Public Class frmMain
 
     End Sub
 
+    ' Loads up the facilities for the selectec character
+    Public Sub LoadFacilities()
+
+        ' See what ID we use for the facilities
+        Dim CharID As Long = 0
+        If UserApplicationSettings.SaveFacilitiesbyChar Then
+            ' Use the ID sent
+            CharID = SelectedCharacter.ID
+        Else
+            CharID = CommonLoadBPsID
+        End If
+
+        ' Initialize the BP facility
+        Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
+
+        ' Load up the Manufacturing tab facilities
+        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
+        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
+        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
+        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
+        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
+        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
+        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
+        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
+        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
+
+        ' Two facilities with check options - load the one they save
+        If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
+            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
+        Else
+            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
+        End If
+
+        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
+            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
+        Else
+            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
+        End If
+
+    End Sub
+
 #End Region
 
 #Region "Form Functions/Procedures"
@@ -1097,145 +1115,96 @@ Public Class frmMain
         TS.ImageTransparentColor = Color.White
     End Sub
 
+    Private Sub LoadSelectedCharacter(ToolStripText As String)
+        Me.Cursor = Cursors.WaitCursor
+        Call LoadCharacter(ToolStripText)
+        ' New character so make sure the facilities reflect that
+        Call LoadFacilities()
+        ' Refresh bp in case the facility was different for that bp
+        Call RefreshBP()
+        mnuCharacter.Text = "Character Loaded: " & ToolStripText
+        Me.Cursor = Cursors.Default
+    End Sub
+
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
     Private Sub ToolStripMenuItem1_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter1.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter1.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter1.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem2_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter2.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter2.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter2.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem3_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter3.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter3.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter3.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem4_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter4.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter4.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter4.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem5_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter5.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter5.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter5.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem6_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter6.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter6.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter6.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem7_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter7.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter7.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter7.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem8_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter8.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter8.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter8.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem9_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter9.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter9.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter9.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem10_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter10.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter10.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter10.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem11_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter11.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter11.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter11.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem12_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter12.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter12.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter12.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem13_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter13.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter13.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter13.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem14_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter14.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter14.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter14.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem15_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter15.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter15.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter15.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem16_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter16.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter16.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter16.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem17_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter17.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter17.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter17.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem18_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter18.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter18.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter18.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem19_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter19.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter19.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter19.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub ToolStripMenuItem20_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter20.Click
-        Me.Cursor = Cursors.WaitCursor
         Call LoadSelectedCharacter(tsCharacter20.Text)
-        mnuCharacter.Text = "Character Loaded: " & tsCharacter20.Text
-        Me.Cursor = Cursors.Default
     End Sub
 
     Private Sub frmMain_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles MyBase.Load
@@ -1290,9 +1259,6 @@ Public Class frmMain
                                 AddlCosts As String, PPUCheck As Boolean,
                                 Optional CompareType As String = "")
         Dim BPTech As Integer
-        Dim CurrentBPCategoryID As Integer
-        Dim CurrentBPGroupID As Integer
-        Dim BPHasComponents As Boolean
         Dim DecryptorName As String = None
         Dim BPDecryptor As New Decryptor
         Dim readerBP As SQLiteDataReader
@@ -1301,7 +1267,7 @@ Public Class frmMain
 
         Dim TempLines As Integer = CInt(ManufacturingLines)
 
-        SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
+        SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -1379,11 +1345,6 @@ Public Class frmMain
         If BPTech = 2 Then
             BPTabFacility.UpdateFacility(CType(CopyFacility.Clone, IndustryFacility))
         End If
-
-        ' Reset the current bp selection to override what is there
-        CurrentBPCategoryID = readerBP.GetInt32(3)
-        CurrentBPGroupID = readerBP.GetInt32(2)
-        BPHasComponents = DoesBPHaveBuildableComponents(BPID)
 
         ' Common to all settings
         If CompareType <> "" Then ' if "" then let the BP tab handle it
@@ -1682,7 +1643,7 @@ Public Class frmMain
             Call ResetESIDates()
 
             ' Reset ESI data
-            Call ResetESIIndustryFacilities()
+            Call ResetESIIndustrySystemIndicies()
             Call ResetESIAdjustedMarketPrices()
 
             FirstLoad = True ' Temporarily just to get screen to show correctly
@@ -1757,17 +1718,12 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub ResetESIIndustryFacilities()
-
-        ' Need to delete all outpost data, clear out the industry facilities table and set up for a rebuild
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_FACILITIES")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STATION_FACILITIES WHERE OUTPOST <> 0")
+    Private Sub ResetESIIndustrySystemIndicies()
 
         ' Simple update, just set all the ESI cache dates to null
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_FACILITIES_CACHED_UNTIL = NULL")
 
-        MsgBox("ESI Industry Facilities reset", vbInformation, Application.ProductName)
+        MsgBox("ESI Industry System Indicies reset", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -1943,7 +1899,7 @@ Public Class frmMain
     End Sub
 
     Private Sub mnuResetESIIndustryFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIIndustryFacilities.Click
-        Call ResetESIIndustryFacilities()
+        Call ResetESIIndustrySystemIndicies()
     End Sub
 
     ' Checks the ME and TE boxes to make sure they are ok and errors if not
@@ -2408,7 +2364,7 @@ Public Class frmMain
     End Sub
 
     Private Sub UpdateIndustryFacilitiesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateIndustryFacilities.Click
-        Call UpdateESIIndustryFacilities()
+        Call UpdateESIIndustryIndicies()
     End Sub
 
     Private Sub UpdateMarketPricesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateESIMarketPrices.Click
@@ -2416,7 +2372,7 @@ Public Class frmMain
     End Sub
 
     ' Function runs the ESI update for system indicies
-    Private Sub UpdateESIIndustryFacilities()
+    Private Sub UpdateESIIndustryIndicies()
         Dim ESIData As New ESI
         Dim f1 As New frmStatus
 
@@ -2425,7 +2381,7 @@ Public Class frmMain
         Application.DoEvents()
 
         ' Always do indicies first since facilities has a field it uses
-        If ESIData.UpdateIndustryFacilties(f1.lblStatus, f1.pgStatus) Then
+        If ESIData.UpdateIndustrySystemsCostIndex(f1.lblStatus, f1.pgStatus) Then
             ' Reload the industry facilities now
             Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
 
@@ -2434,7 +2390,7 @@ Public Class frmMain
                 Call RefreshBP(True)
             End If
 
-            MsgBox("Industry System Indicies and Facilities Updated", vbInformation, Application.ProductName)
+            MsgBox("Industry System Indicies Updated", vbInformation, Application.ProductName)
         End If
 
         f1.Dispose()
@@ -3739,9 +3695,6 @@ Tabs:
                 Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
             End If
 
-            ' In both cases, disable the num bps box
-            txtBPNumBPs.Enabled = False
-
         Else ' Set it on the user settings
             If tabBPInventionEquip.Contains(tabInventionCalcs) Then
                 ' Enable all first
@@ -3753,8 +3706,6 @@ Tabs:
                 Call SetInventionEnabled("T3", True)
                 Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
             End If
-
-            txtBPNumBPs.Enabled = True
 
         End If
 
@@ -3775,6 +3726,12 @@ Tabs:
             Call RefreshBP()
         End If
 
+    End Sub
+
+    Private Sub chkBPCompressedOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPCompressedOre.CheckedChanged
+        If Not FirstLoad Then
+            Call RefreshBP()
+        End If
     End Sub
 
     Private Sub chkBPIgnoreMinerals_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreMinerals.CheckedChanged
@@ -4252,7 +4209,7 @@ Tabs:
             Dim SQL As String
             Dim BuildType As String = ""
 
-            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME    FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
+            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
             SQL = SQL & "'" & lstBPComponentMats.SelectedItems(0).SubItems(0).Text & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -4589,6 +4546,15 @@ Tabs:
         Dim SQL As String = ""
         Dim SQLItemType As String = ""
 
+        ' See what ID we use for character bps
+        Dim CharID As Long = 0
+        If UserApplicationSettings.LoadBPsbyChar Then
+            ' Use the ID sent
+            CharID = SelectedCharacter.ID
+        Else
+            CharID = CommonLoadBPsID
+        End If
+
         ' Find what type of blueprint we want
         With Me
             If .rbtnBPAmmoChargeBlueprints.Checked Then
@@ -4624,13 +4590,13 @@ Tabs:
             ElseIf .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
                 SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
-                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
                 SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
                 SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES, "
                 SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
-                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & SelectedCharacter.ID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
                 SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
             End If
@@ -5027,6 +4993,7 @@ Tabs:
         EnterKeyPressed = False
 
         LoadingBPfromHistory = False
+        PreviousBPfromHistory = False
 
         ' Load the combo
         Call LoadBlueprintCombo()
@@ -5273,11 +5240,12 @@ Tabs:
     Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
-        Dim BPTypeID As Integer
+        Dim BPID As Integer
         Dim TempTech As Integer
         Dim ItemType As Integer
         Dim ItemGroupID As Integer
         Dim ItemCategoryID As Integer
+        Dim BPGroup As String
         Dim BPHasComponents As Boolean
 
         ' Set the number of runs to 1 if it's blank
@@ -5312,7 +5280,7 @@ Tabs:
         txtBPME.Enabled = True
         txtBPTE.Enabled = True
 
-        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID "
+        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_GROUP "
         SQL = SQL & "FROM ALL_BLUEPRINTS "
         SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
 
@@ -5326,25 +5294,23 @@ Tabs:
         readerBP = DBCommand.ExecuteReader
 
         If readerBP.Read() Then
-            BPTypeID = readerBP.GetInt32(0)
+            BPID = readerBP.GetInt32(0)
             TempTech = readerBP.GetInt32(1)
             ItemType = readerBP.GetInt32(2)
             ItemGroupID = readerBP.GetInt32(3)
             ItemCategoryID = readerBP.GetInt32(4)
+            BPGroup = readerBP.GetString(5)
         Else
             Exit Sub
         End If
 
         readerBP.Close()
 
-        ' See if this has buildable components
-        BPHasComponents = DoesBPHaveBuildableComponents(BPTypeID)
-
         ' Load the facilty based on the groupid and categoryid
-        Call BPTabFacility.LoadFacility(ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
+        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
 
         ' Load the image
-        Call LoadBlueprintPicture(BPTypeID, ItemType)
+        Call LoadBlueprintPicture(BPID, ItemType)
 
         ' Set for max production lines - bp tab or history (bp tab)
         If SentFrom = SentFromLocation.History Or SentFrom = SentFromLocation.BlueprintTab Then ' We might have different values there and they set on double click
@@ -5358,7 +5324,7 @@ Tabs:
 
             Call ResetDecryptorCombos(TempTech)
 
-        Else ' Sent from manufacturing tab or shopping list
+        ElseIf SentFrom <> SentFromLocation.None Then  ' Sent from manufacturing tab or shopping list
             ' Set up for Reloading the decryptor combo on T2/T3
             ' Allow reloading of Decryptors
             InventionDecryptorsLoaded = False
@@ -5375,10 +5341,27 @@ Tabs:
             RelicsLoaded = False
         End If
 
+        ' If the previous bp was loaded from history and the current bp isn't loaded from history, then reset the facilities to default
+        If PreviousBPfromHistory And SentFrom <> SentFromLocation.History Then
+            PreviousBPfromHistory = False
+            Call BPTabFacility.LoadSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
+            Call BPTabFacility.LoadSelectedFacility(ProductionType.ComponentManufacturing, FacilityView.FullControls, False)
+            Call BPTabFacility.LoadSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
+        End If
+
+        ' See what ID we use for character bps
+        Dim CharID As Long = 0
+        If UserApplicationSettings.LoadBPsbyChar Then
+            ' Use the ID sent
+            CharID = SelectedCharacter.ID
+        Else
+            CharID = CommonLoadBPsID
+        End If
+
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.ID
-        SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND OWNED <> 0 " ' Only load user or api owned bps
+        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & CharID
+        SQL = SQL & " AND BLUEPRINT_ID = " & BPID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -5392,7 +5375,7 @@ Tabs:
             readerBP.Close()
             SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
             SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL = SQL & " AND BLUEPRINT_ID = " & BPTypeID & " AND SCANNED <> 0 AND OWNED <> 0 "
+            SQL = SQL & " AND BLUEPRINT_ID = " & BPID & " AND SCANNED <> 0 AND OWNED <> 0 "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -5514,9 +5497,9 @@ Tabs:
 
             If TempTech = 3 Then
                 ' Load up the relic based on the bp data
-                Call LoadRelicTypes(BPTypeID)
+                Call LoadRelicTypes(BPID)
                 Dim Tempstring As String
-                Tempstring = GetRelicfromInputs(SelectedDecryptor, BPTypeID, OwnedBPRuns)
+                Tempstring = GetRelicfromInputs(SelectedDecryptor, BPID, OwnedBPRuns)
                 If Tempstring <> "" Then
                     LoadingRelics = True
                     ' if found, set it else
@@ -5555,7 +5538,7 @@ Tabs:
         Application.DoEvents()
 
         ' Update the grid
-        Call UpdateBPGrids(BPTypeID, TempTech, NewBP, ItemGroupID, ItemCategoryID, SentFromLocation.BlueprintTab)
+        Call UpdateBPGrids(BPID, TempTech, NewBP, ItemGroupID, ItemCategoryID, SentFromLocation.BlueprintTab)
 
         ' Save the blueprint in the history if it's not already in there
         If Not IsNothing(SelectedBlueprint) And SentFrom <> SentFromLocation.History Then
@@ -6113,8 +6096,7 @@ ExitForm:
             Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY FROM STATIONS WHERE STATION_NAME = '{0}'", BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).FacilityName), EVEDB.DBREf)
                 refinePercent = CType(DBCommand.ExecuteScalar, Double)
             End Using
-        ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.OutpostFacility Or
-                BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StructureFacility Then
+        ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StructureFacility Then
             stationTax = 0.0
             refinePercent = 0.5
         ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.POSFacility Then
@@ -6223,7 +6205,7 @@ ExitForm:
             oreQuantityList = New ListViewItem(item.OreName)
             oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
             oreQuantityList.SubItems.Add("-")
-            Using DBCommand = New SQLiteCommand(String.Format("SELECT AVERAGE_PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREf)
+            Using DBCommand = New SQLiteCommand(String.Format("SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREf)
                 Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
                 oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
                 oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
@@ -6664,6 +6646,7 @@ ExitForm:
         If BPHistory.Count > 0 And LocationID < BPHistory.Count And LocationID >= 0 Then
             With BPHistory(LocationID)
                 LoadingBPfromHistory = True
+                PreviousBPfromHistory = True
                 Call LoadBPfromEvent(.BPID, .BuildType, .Inputs, .SentFrom, .BuildFacility, .ComponentFacility, .CapComponentFacility, .InventionFacility, .CopyFacility, .IncludeTaxes,
                                            .IncludeFees, .MEValue, .TEValue, .SentRuns, .ManufacturingLines, .LabLines, .NumBPs, .AddlCosts, .PPU)
             End With
@@ -6771,12 +6754,6 @@ ExitForm:
 
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-        ' Update the station records for this system
-        SQL = "UPDATE STATION_FACILITIES SET COST_INDEX = " & CostIndex
-        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & TempActivityID
-
-        Call EVEDB.ExecuteNonQuerySQL(SQL)
-
         ' Reload all the facilities to get the change
         Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType)
 
@@ -6801,24 +6778,6 @@ ExitForm:
         txtBPMarketPriceEdit.Visible = True
         txtBPMarketPriceEdit.Focus()
     End Sub
-
-    Private Function DoesBPHaveBuildableComponents(BPID As Long) As Boolean
-        Dim SQL As String
-        Dim readerBP As SQLiteDataReader
-
-        ' See if this has buildable components
-        SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINTS "
-        SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})"
-        DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
-        readerBP = DBCommand.ExecuteReader
-
-        If readerBP.Read Then
-            Return True
-        Else
-            Return False
-        End If
-
-    End Function
 
 #End Region
 
@@ -8940,8 +8899,8 @@ ExitSub:
 
         Dim PriceType As String = "" ' Default
 
+        ' Use CCP Data
         If rbtnPriceSourceCCPData.Checked Then
-
             Dim Items As New List(Of TypeIDRegion)
             ' Loop through each item and set it's pair for query
             For i = 0 To SentItems.Count - 1
@@ -17301,7 +17260,7 @@ Leave:
         Dim SQL As String
         Dim ReactionGroupList As String = ""
 
-        Dim ReprocessingStation As RefiningReprocessing
+        Dim ReprocessingStation As Reprocessing
         Dim RefineOutputName As String
         Dim RefineOutputQuantity As Long
         Dim RefineOutputVolume As Double
@@ -17381,7 +17340,7 @@ Leave:
                     Tax = RefineTax / 100
                 End If
 
-                ReprocessingStation = New RefiningReprocessing(SelectedCharacter.Skills.GetSkillLevel(3385),
+                ReprocessingStation = New Reprocessing(SelectedCharacter.Skills.GetSkillLevel(3385),
                                                               SelectedCharacter.Skills.GetSkillLevel(3389),
                                                               SelectedCharacter.Skills.GetSkillLevel(12196),
                                                               UserApplicationSettings.RefiningImplantValue, Efficiency,
@@ -17922,10 +17881,6 @@ Leave:
         Call UpdateProcessingSkillBoxes(8, chkOreProcessing8.Checked)
     End Sub
 
-    Private Sub chkOreProcessing17_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing17.CheckedChanged
-        Call UpdateProcessingSkillBoxes(17, chkOreProcessing17.Checked)
-    End Sub
-
     Private Sub chkOreProcessing9_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing9.CheckedChanged
         Call UpdateProcessingSkillBoxes(9, chkOreProcessing9.Checked)
     End Sub
@@ -17956,6 +17911,30 @@ Leave:
 
     Private Sub chkOreProcessing16_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing16.CheckedChanged
         Call UpdateProcessingSkillBoxes(16, chkOreProcessing16.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing17_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing17.CheckedChanged
+        Call UpdateProcessingSkillBoxes(17, chkOreProcessing17.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing18_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing18.CheckedChanged
+        Call UpdateProcessingSkillBoxes(18, chkOreProcessing18.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing19_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing19.CheckedChanged
+        Call UpdateProcessingSkillBoxes(19, chkOreProcessing19.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing20_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing20.CheckedChanged
+        Call UpdateProcessingSkillBoxes(20, chkOreProcessing20.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing21_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing21.CheckedChanged
+        Call UpdateProcessingSkillBoxes(21, chkOreProcessing21.Checked)
+    End Sub
+
+    Private Sub chkOreProcessing22_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing22.CheckedChanged
+        Call UpdateProcessingSkillBoxes(22, chkOreProcessing22.Checked)
     End Sub
 
     Private Sub UpdateProcessingSkillBoxes(ByVal Index As Integer, ByVal Checked As Boolean)
@@ -18031,7 +18010,7 @@ Leave:
                 rbtnMineNoRigs.Checked = True
             End If
             rbtnMineMercoxitRig.Enabled = False
-
+            chkMineMoonMining.Enabled = False ' Can't moon mine ice
             ' No ice in wormholes
             chkMineWH.Enabled = False
             chkMineC1.Enabled = False
@@ -18059,6 +18038,7 @@ Leave:
             gbMineMiningDroneM3.Enabled = True
             rbtnMineMercoxitRig.Enabled = True
             rbtnMineIceRig.Enabled = False
+            chkMineMoonMining.Enabled = True ' Moon mining
             If UserMiningTabSettings.MercoxitMiningRig Then
                 rbtnMineMercoxitRig.Checked = True
             Else
@@ -18105,6 +18085,8 @@ Leave:
             gbMineBaseRefineSkills.Enabled = False
             gbMineStationYield.Enabled = False
             gbMineRefining.Enabled = False
+
+            chkMineMoonMining.Enabled = False ' Can't moon mine gas
 
         End If
 
@@ -18337,12 +18319,22 @@ Leave:
         End Select
     End Sub
 
-    Private Sub cmbMineRefineStationTax_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbMineRefineStationTax.GotFocus
-        Call cmbMineRefineStationTax.SelectAll()
-    End Sub
-
     Private Sub txtMineRefineStanding_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtMineRefineStanding.GotFocus
         Call txtMineRefineStanding.SelectAll()
+    End Sub
+
+    Private Sub txtMineRefineStanding_LostFocus(sender As Object, e As EventArgs) Handles txtMineRefineStanding.LostFocus
+        If IsNumeric(txtMineRefineStanding.Text) Then
+            txtMineRefineStanding.Text = FormatNumber(txtMineRefineStanding.Text, 2)
+        End If
+    End Sub
+
+    Private Sub txtMineRefineStanding_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineRefineStanding.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            If IsNumeric(txtMineRefineStanding.Text) Then
+                txtMineRefineStanding.Text = FormatNumber(txtMineRefineStanding.Text, 2)
+            End If
+        End If
     End Sub
 
     Private Sub txtMineRefineStanding_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineRefineStanding.KeyPress
@@ -18355,7 +18347,21 @@ Leave:
         End If
     End Sub
 
-    Private Sub cmbMineRefineStationTax_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles cmbMineRefineStationTax.KeyPress
+    Private Sub txtMineReprocessingTax_LostFocus(sender As Object, e As EventArgs) Handles txtMineReprocessingTax.LostFocus
+        txtMineReprocessingTax.Text = FormatPercent(FormatManualPercentEntry(txtMineReprocessingTax.Text), 1)
+    End Sub
+
+    Private Sub txtMineReprocessingTax_GotFocus(sender As Object, e As EventArgs) Handles txtMineReprocessingTax.GotFocus
+        Call txtMineReprocessingTax.SelectAll()
+    End Sub
+
+    Private Sub txtMineReprocessingTax_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineReprocessingTax.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineReprocessingTax.Text = FormatPercent(FormatManualPercentEntry(txtMineReprocessingTax.Text), 1)
+        End If
+    End Sub
+
+    Private Sub txtminereprocessingtax_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineReprocessingTax.KeyPress
         ' Only allow numbers, decimal, percent or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
@@ -18364,6 +18370,48 @@ Leave:
             End If
         End If
     End Sub
+
+    Private Sub txtMineStationEff_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineStationEff.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineStationEff.Text = FormatPercent(FormatManualPercentEntry(txtMineStationEff.Text), 1)
+        End If
+    End Sub
+
+    Private Sub txtMineStationEff_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineStationEff.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtMineStationEff_GotFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.GotFocus
+        Call txtMineStationEff.SelectAll()
+    End Sub
+
+    Private Sub txtMineStationEff_LostFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.LostFocus
+        txtMineStationEff.Text = FormatPercent(FormatManualPercentEntry(txtMineStationEff.Text), 1)
+    End Sub
+
+    Private Function FormatManualPercentEntry(Entry As String) As Double
+        Dim EntryText As String
+
+        If Entry.Contains("%") Then
+            ' Strip the percent first
+            EntryText = Entry.Substring(0, Len(Entry) - 1)
+        Else
+            EntryText = Entry
+        End If
+
+        If IsNumeric(EntryText) Then
+            Return CDbl(EntryText) / 100
+        Else
+            Return 0
+        End If
+
+    End Function
 
     Private Sub chkMineRefinedOre_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineRefinedOre.CheckedChanged
         Call SetOreRefineChecks()
@@ -18500,6 +18548,10 @@ Leave:
             chkMineWH.Checked = False
         End If
 
+    End Sub
+
+    Private Sub chkchkMineMoonMining_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineMoonMining.CheckedChanged
+        Call UpdateOrebySpaceChecks()
     End Sub
 
 #End Region
@@ -18642,9 +18694,9 @@ Leave:
             Call SetOreRefineChecks()
 
             ' Station numbers
-            cmbMineStationEff.Text = FormatPercent(.RefiningEfficiency, 0)
+            txtMineStationEff.Text = FormatPercent(.RefiningEfficiency, 0)
             txtMineRefineStanding.Text = FormatNumber(.RefineCorpStanding, 2)
-            cmbMineRefineStationTax.Text = FormatPercent(.RefiningTax, 1)
+            txtMineReprocessingTax.Text = FormatPercent(.RefiningTax, 1)
 
             ' Jump Ore
             If .CheckIncludeJumpFuelCosts Then
@@ -18766,7 +18818,7 @@ Leave:
 
             ' Load the ore processing skills
             For i = 1 To MineProcessingCheckBoxes.Count - 1
-                TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(MineProcessingLabels(i).Text))
+                TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(MineProcessingLabels(i).Text & " Processing"))
                 If TempSkillLevel <> 0 Then
                     MineProcessingCombos(i).Text = CStr(TempSkillLevel)
                     MineProcessingCheckBoxes(i).Checked = True
@@ -18826,7 +18878,7 @@ Leave:
         ' Ice Hauling
         Dim IceBlocksPerLoad As Integer
 
-        Dim RefineryYield As Double ' For reference out of refining
+        Dim ReprocessingYield As Double ' For reference out of refining
 
         ' For hauler calcs
         Dim SecondstoFill As Double  ' How much time it took to fill the m3 value with ore
@@ -18853,8 +18905,8 @@ Leave:
         End If
 
         ' Get the refining stuff
-        StationRefineEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
-        StationRefineTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1))
+        StationRefineEfficiency = CDbl(txtMineStationEff.Text.Substring(0, Len(txtMineStationEff.Text) - 1)) / 100
+        StationRefineTax = CDbl(txtMineReprocessingTax.Text.Substring(0, Len(txtMineReprocessingTax.Text) - 1))
 
         If StationRefineTax > 0 Then
             StationRefineTax = StationRefineTax / 100
@@ -18862,19 +18914,15 @@ Leave:
             StationRefineTax = 0
         End If
 
-        ' Refining
-        Dim RefinedMaterials As New Materials
-        Dim RefiningStation As New RefiningReprocessing(CInt(cmbMineRefining.Text),
-                                                        CInt(cmbMineRefineryEff.Text),
-                                                        SelectedCharacter.Skills.GetSkillLevel(12196),
-                                                        UserApplicationSettings.RefiningImplantValue,
-                                                        StationRefineEfficiency, StationRefineTax, CDbl(txtMineRefineStanding.Text))
-
         ' First determine what type of stuff we are mining
         SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
         SQL = SQL & "FROM ORES, ORE_LOCATIONS "
         SQL = SQL & "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
-        SQL = SQL & "AND BELT_TYPE = '" & cmbMineOreType.Text & "' "
+        If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
+            SQL = SQL & "AND (BELT_TYPE = '" & cmbMineOreType.Text & "' OR BELT_TYPE LIKE '%Moon Asteroid%') "
+        Else
+            SQL = SQL & "AND BELT_TYPE = '" & cmbMineOreType.Text & "' "
+        End If
 
         ' See if we want High yield ores
         If IceMining Then
@@ -19085,24 +19133,32 @@ Leave:
                 TempOre.UnitsPerHour = OrePerSecond * 3600
             End If
 
+            ' Refining
+            Dim ReprocessedMaterials As New Materials
+            Dim ReprocessingStation As New Reprocessing(CInt(cmbMineRefining.Text),
+                                                        CInt(cmbMineRefineryEff.Text),
+                                                        SelectedCharacter.Skills.GetSkillLevel(12196),
+                                                        UserApplicationSettings.RefiningImplantValue,
+                                                        StationRefineEfficiency, StationRefineTax, CDbl(txtMineRefineStanding.Text))
+
             ' Only refine ore or ice
             If chkMineRefinedOre.Checked And Not GasMining Then
                 ' Refine total Ore we mined for an hour and save the total isk/hour
-                RefinedMaterials = RefiningStation.RefineOre(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsPerHour,
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield)
+                ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsPerHour,
+                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, ReprocessingYield)
 
-                TempOre.RefineYield = RefineryYield
+                TempOre.RefineYield = ReprocessingYield
 
-                TempOre.IPH = RefinedMaterials.GetTotalMaterialsCost - GetJumpCosts(RefinedMaterials, TempOre, TempOre.UnitsPerHour)
+                TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost - GetJumpCosts(ReprocessedMaterials, TempOre, TempOre.UnitsPerHour)
                 If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
                     ' Add (subtract from total isk) the heavy water cost
                     TempOre.IPH = TempOre.IPH - HeavyWaterCost
                 End If
 
                 ' Calculate the unit price by refining one batch
-                RefinedMaterials = RefiningStation.RefineOre(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsToRefine,
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, RefineryYield)
-                TempOre.OreUnitPrice = RefinedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
+                ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsToRefine,
+                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, ReprocessingYield)
+                TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                 TempOre.RefineType = "Refined"
                 OreList.Add(TempOre)
 
@@ -19450,15 +19506,15 @@ Leave:
 
             ' Refining
             ' Station numbers
-            If cmbMineStationEff.Text.Contains("%") Then
-                .RefiningEfficiency = CDbl(cmbMineStationEff.Text.Substring(0, Len(cmbMineStationEff.Text) - 1)) / 100
+            If txtMineStationEff.Text.Contains("%") Then
+                .RefiningEfficiency = CDbl(txtMineStationEff.Text.Substring(0, Len(txtMineStationEff.Text) - 1)) / 100
             Else
-                .RefiningEfficiency = CDbl(cmbMineStationEff.Text) / 100
+                .RefiningEfficiency = CDbl(txtMineStationEff.Text) / 100
             End If
-            If cmbMineRefineStationTax.Text.Contains("%") Then
-                .RefiningTax = CDbl(cmbMineRefineStationTax.Text.Substring(0, Len(cmbMineRefineStationTax.Text) - 1)) / 100
+            If txtMineReprocessingTax.Text.Contains("%") Then
+                .RefiningTax = CDbl(txtMineReprocessingTax.Text.Substring(0, Len(txtMineReprocessingTax.Text) - 1)) / 100
             Else
-                .RefiningTax = CDbl(cmbMineRefineStationTax.Text) / 100
+                .RefiningTax = CDbl(txtMineReprocessingTax.Text) / 100
             End If
 
             ' Allow them to update the refine standing here as well
@@ -20232,9 +20288,6 @@ Leave:
                 Call EnableOreProcessingGroup(4, True)
                 Call EnableOreProcessingGroup(11, True)
                 Call EnableOreProcessingGroup(12, True)
-
-
-
             End If
 
             If cmbMineRefineryEff.Text = "4" Or cmbMineRefineryEff.Text = "5" Then
@@ -20251,6 +20304,12 @@ Leave:
                 Call EnableOreProcessingGroup(8, True)
                 Call EnableOreProcessingGroup(15, True)
                 Call EnableOreProcessingGroup(16, True)
+                ' Moon mining
+                Call EnableOreProcessingGroup(18, True)
+                Call EnableOreProcessingGroup(19, True)
+                Call EnableOreProcessingGroup(20, True)
+                Call EnableOreProcessingGroup(21, True)
+                Call EnableOreProcessingGroup(22, True)
             End If
 
         ElseIf cmbMineOreType.Text = "Ice" Then
@@ -20468,10 +20527,10 @@ Leave:
             Return False
         End If
 
-        If Not IsNumeric(cmbMineRefineStationTax.Text.Replace("%", "")) Then
+        If Not IsNumeric(txtMineReprocessingTax.Text.Replace("%", "")) Then
             ' Can't query any ore
             MsgBox("Invalid station tax rate value", vbExclamation, Application.ProductName)
-            cmbMineRefineStationTax.Focus()
+            txtMineReprocessingTax.Focus()
             Return False
         End If
 
@@ -20506,8 +20565,23 @@ Leave:
         Dim BonusValue As Double = 1
         Dim TempCrystalType As String = ""
         Dim OreProcessingSkill As Integer
+        Dim OreLookup As String = ""
+        Dim rsOreType As SQLiteDataReader
+        Dim SQL As String
 
-        OreProcessingSkill = GetOreProcessingSkill(OreName)
+        SQL = "SELECT BELT_TYPE FROM ORES WHERE ORE_NAME = '" & OreName & "' "
+        SQL &= "AND BELT_TYPE LIKE '%Moon Asteroids' AND BELT_TYPE <> 'Moon Asteroids'"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsOreType = DBCommand.ExecuteReader
+
+        If rsOreType.Read Then
+            ' These are moon mining ore skills - in the table I labeled them asteroids and on the labels for the skills 'Ore'
+            OreLookup = rsOreType.GetString(0).Replace("Asteroids", "Ore")
+        Else
+            OreLookup = OreName
+        End If
+
+        OreProcessingSkill = GetOreProcessingSkill(OreLookup)
 
         ' See if they have T1 or T2 - and use T1 if they select T2 but can't use them
         If (OreProcessingSkill >= 3 And rbtnMineT1Crystals.Checked And rbtnMineT1Crystals.Enabled = True) _
@@ -20733,16 +20807,15 @@ Leave:
             Case Orca
                 GangBurstBonus = GangBurstBonus * (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
             Case Rorqual
-                ' Rorq bonus applies only if deployed with core on
+                ' Rorq bonus if deployed core
                 If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And chkMineRorqDeployedMode.Enabled Then
                     If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
-                        GangBurstBonus = GangBurstBonus * (1 + (0.3 * CInt(cmbMineBoosterShipSkill.Text))) ' 30% max for Industrial core II
+                        GangBurstBonus = GangBurstBonus * (1 + (0.3)) ' 30% max for Industrial core II
                     Else ' T1
-                        GangBurstBonus = GangBurstBonus * (1 + (0.25 * CInt(cmbMineBoosterShipSkill.Text))) ' 25% max for Industrial core I
+                        GangBurstBonus = GangBurstBonus * (1 + (0.25)) ' 25% max for Industrial core I
                     End If
-                Else
-                    GangBurstBonus = GangBurstBonus * (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% without core
                 End If
+                GangBurstBonus = GangBurstBonus * (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% per level ship bonus
         End Select
 
         Return GangBurstBonus
@@ -20874,19 +20947,21 @@ Leave:
             OreName = "Dark Ochre"
         End If
 
-        For i = 1 To MineProcessingCombos.Count - 1
-            CurrentProcessingLabel = MineProcessingLabels(i).Text.Substring(0, InStr(MineProcessingLabels(i).Text, " ") - 1)
+        If SelectedCharacter.ID <> DummyCharacterID Then
+            For i = 1 To MineProcessingCombos.Count - 1
+                CurrentProcessingLabel = MineProcessingLabels(i).Text
 
-            ' Special processing for Dark Ochre
-            If CurrentProcessingLabel = "Dark" Then
-                CurrentProcessingLabel = "Dark Ochre"
-            End If
+                ' Special processing for Dark Ochre
+                If CurrentProcessingLabel = "Dark" Then
+                    CurrentProcessingLabel = "Dark Ochre"
+                End If
 
-            If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
-                ' Found it, return value
-                Return CInt(MineProcessingCombos(i).Text)
-            End If
-        Next
+                If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
+                    ' Found it, return value
+                    Return CInt(MineProcessingCombos(i).Text)
+                End If
+            Next
+        End If
 
         Return 0
 

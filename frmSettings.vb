@@ -164,6 +164,18 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
+    Private Sub chkDisableSound_CheckedChanged(sender As Object, e As EventArgs) Handles chkDisableSound.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkSaveFacilitiesbyChar_CheckedChanged(sender As Object, e As EventArgs) Handles chkSaveFacilitiesbyChar.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkLoadBPsbyChar_CheckedChanged(sender As Object, e As EventArgs) Handles chkLoadBPsbyChar.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
     Private Sub cmbRefineTax_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers, period or percent and backspace
         If e.KeyChar <> ControlChars.Back Then
@@ -172,6 +184,99 @@ Public Class frmSettings
                 e.Handled = True
             End If
         End If
+    End Sub
+
+    Private Sub chkRefreshMarketDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshMarketDataonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshFacilityDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshFacilityDataonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub rbtnExportDefault_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportDefault.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub rbtnExportCSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportCSV.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub rbtnExportSSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportSSV.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkSaveBPRelicsDecryptors_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSaveBPRelicsDecryptors.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtSVRThreshold.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                btnSave.Text = "Save"
+            End If
+        End If
+    End Sub
+
+    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
+        If Not SVRComboLoaded Then
+            Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
+            SVRComboLoaded = True
+        End If
+    End Sub
+
+    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
+        e.Handled = True
+    End Sub
+
+    Private Sub txtDefaultME_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultME.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtDefaultTE_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultTE.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtProxyPort_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtProxyPort.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            Else
+                btnSave.Text = "Save"
+            End If
+        End If
+    End Sub
+
+    Private Sub txtProxyAddress_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtProxyAddress.TextChanged
+        btnSave.Text = "Save"
     End Sub
 
 #End Region
@@ -222,6 +327,9 @@ Public Class frmSettings
             chkRefreshAssetsonStartup.Checked = .LoadAssetsonStartup
             chkRefreshBPsonStartup.Checked = .LoadBPsonStartup
             chkDisableSound.Checked = .DisableSound
+
+            chkLoadBPsbyChar.Checked = .LoadBPsbyChar
+            chkSaveFacilitiesbyChar.Checked = .SaveFacilitiesbyChar
 
             ' ESI
             chkRefreshFacilityDataonStartup.Checked = .LoadESIFacilityDataonStartup
@@ -298,6 +406,15 @@ Public Class frmSettings
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
+
+            Select Case .BuildT2T3Materials
+                Case BuildMatType.AdvMaterials
+                    rbtnBuildT2T3AdvancedMats.Checked = True
+                Case BuildMatType.ProcessedMaterials
+                    rbtnBuildT2ProcessedMats.Checked = True
+                Case BuildMatType.RawMaterials
+                    rbtnBuildT2T3RawMats.Checked = True
+            End Select
 
             chkDisableSVR.Checked = .DisableSVR
 
@@ -407,20 +524,24 @@ Public Class frmSettings
                 .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
 
                 ' If they didn't have this checked before, refresh assets
-                If .LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
-                    Call SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
-                    Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
-                End If
+                If SelectedCharacter.ID <> DummyCharacterID Then
+                    If UserApplicationSettings.LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
+                        Call SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+                        Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
+                    End If
 
-                ' Same with blueprints
-                If .LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                    Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
-                    Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
+                    ' Same with blueprints
+                    If UserApplicationSettings.LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
+                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
+                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
+                    End If
                 End If
 
                 ' Now set these
                 .LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
                 .LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
+                .SaveFacilitiesbyChar = CBool(chkSaveFacilitiesbyChar.Checked)
+                .LoadBPsbyChar = CBool(chkLoadBPsbyChar.Checked)
 
                 ' Standings
                 .BrokerCorpStanding = CDbl(txtBrokerCorpStanding.Text)
@@ -428,6 +549,15 @@ Public Class frmSettings
 
                 ' Default build/buy
                 .CheckBuildBuy = CBool(chkBuildBuyDefault.Checked)
+
+                ' How they want to build T2/T3 items
+                If rbtnBuildT2T3AdvancedMats.Checked Then
+                    .BuildT2T3Materials = BuildMatType.AdvMaterials
+                ElseIf rbtnBuildT2ProcessedMats.Checked Then
+                    .BuildT2T3Materials = BuildMatType.ProcessedMaterials
+                ElseIf rbtnBuildT2T3RawMats.Checked Then
+                    .BuildT2T3Materials = BuildMatType.RawMaterials
+                End If
 
                 .DefaultBPME = CInt(txtDefaultME.Text)
                 .DefaultBPTE = CInt(txtDefaultTE.Text)
@@ -469,7 +599,7 @@ Public Class frmSettings
             ' Save the data to the local variable
             UserApplicationSettings = TempSettings
 
-            ' Reinit any tabs that have settings changes before displaying dialog
+            ' Re-init any tabs that have settings changes before displaying dialog
             Call frmMain.ResetTabs(False)
             Call frmMain.ResetRefresh()
 
@@ -570,99 +700,6 @@ InvalidData:
         ' Reload the form
         Call LoadFormSettings()
 
-    End Sub
-
-    Private Sub chkRefreshMarketDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshMarketDataonStartup.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub chkRefreshFacilityDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshFacilityDataonStartup.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnExportDefault_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportDefault.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnExportCSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportCSV.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnExportSSV_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnExportSSV.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub chkSaveBPRelicsDecryptors_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSaveBPRelicsDecryptors.CheckedChanged
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtSVRThreshold.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            Else
-                btnSave.Text = "Save"
-            End If
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
-        If Not SVRComboLoaded Then
-            Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
-            SVRComboLoaded = True
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
-        e.Handled = True
-    End Sub
-
-    Private Sub txtDefaultME_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultME.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtDefaultTE_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultTE.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtProxyPort_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtProxyPort.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            Else
-                btnSave.Text = "Save"
-            End If
-        End If
-    End Sub
-
-    Private Sub txtProxyAddress_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtProxyAddress.TextChanged
-        btnSave.Text = "Save"
     End Sub
 
 End Class

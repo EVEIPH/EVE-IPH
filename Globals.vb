@@ -28,6 +28,9 @@ Public Module Public_Variables
     Public Const DummyCharacterID As Long = -1
     Public Const DummyCorporationID As Long = -1
 
+    Public Const CommonSavedFacilitiesID As Integer = -2
+    Public Const CommonLoadBPsID As Integer = -2
+
     ' Variable to hold error tracking data when the error is hard to find - used for debugging only but mostly this is set to empty string
     Public ErrorTracker As String
 
@@ -173,11 +176,6 @@ Public Module Public_Variables
     Public CancelESISSOLogin As Boolean
 
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
-
-    Public Enum StationType
-        Station = 0
-        Outpost = 1
-    End Enum
 
     Public Const POSTaxRate = 0.0 ' was 10% tax on pos usage now it's 0
 
@@ -393,7 +391,7 @@ Public Module Public_Variables
     End Sub
 
     ' Loads a default character from name sent
-    Public Sub LoadSelectedCharacter(CharacterName As String, Optional PlaySound As Boolean = True)
+    Public Sub LoadCharacter(CharacterName As String, Optional PlaySound As Boolean = True)
 
         ' Load only if a new character
         If SelectedCharacter.Name <> CharacterName Then
@@ -408,6 +406,7 @@ Public Module Public_Variables
             If PlaySound Then
                 Call PlayNotifySound()
             End If
+
             Application.UseWaitCursor = False
         End If
 
@@ -758,30 +757,35 @@ InvalidDate:
     End Function
 
     ' Sorts the reference listview and column
-    Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder)
+    Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder,
+                                    Optional UseSentSortType As Boolean = False)
         Dim SortType As SortOrder
 
         Application.UseWaitCursor = True
         Application.DoEvents()
 
         ' Figure out sort order
-        If ColumnIndex = ListPrevColumnClicked Then
-            If ListPrevColumnSortOrder = SortOrder.Ascending Then
-                SortType = SortOrder.Descending
-            Else
-                SortType = SortOrder.Ascending
-            End If
-        Else
-            If ListPrevColumnSortOrder <> SortOrder.None Then
-                ' Swap sort type
+        If Not UseSentSortType Then
+            If ColumnIndex = ListPrevColumnClicked Then
                 If ListPrevColumnSortOrder = SortOrder.Ascending Then
                     SortType = SortOrder.Descending
                 Else
                     SortType = SortOrder.Ascending
                 End If
             Else
-                SortType = SortOrder.Ascending
+                If ListPrevColumnSortOrder <> SortOrder.None Then
+                    ' Swap sort type
+                    If ListPrevColumnSortOrder = SortOrder.Ascending Then
+                        SortType = SortOrder.Descending
+                    Else
+                        SortType = SortOrder.Ascending
+                    End If
+                Else
+                    SortType = SortOrder.Ascending
+                End If
             End If
+        Else
+            SortType = ListPrevColumnSortOrder
         End If
 
         ' Perform the sort with these new sort options.
@@ -1707,18 +1711,16 @@ InvalidDate:
     ' Deletes all data related to blueprints for the selected character and corporation they are part
     Public Sub ResetAllBPData()
         Dim SQL As String
-        Dim UserID As String = CStr(SelectedCharacter.ID)
+
         Dim CorpID As String = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
+        Dim IDList As String = "(" & CorpID & CStr(SelectedCharacter.ID) & "," & "," & CStr(CommonLoadBPsID) & ",0)"
 
         Call EVEDB.BeginSQLiteTransaction()
 
-        SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & UserID & ",0)"
-        evedb.ExecuteNonQuerySQL(SQL)
+        SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & CStr(SelectedCharacter.ID) & "," & CorpID & "," & CStr(CommonLoadBPsID) & ",0)"
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
-        SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & CorpID & ",0)"
-        evedb.ExecuteNonQuerySQL(SQL)
-
-        SQL = "UPDATE ESI_CHARACTER_DATA SET BLUEPRINTS_CACHE_DATE = '1900-01-01 00:00:00' WHERE CHARACTER_ID = " & UserID
+        SQL = "UPDATE ESI_CHARACTER_DATA SET BLUEPRINTS_CACHE_DATE = '1900-01-01 00:00:00' WHERE CHARACTER_ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(CommonLoadBPsID) & ",0)"
         EVEDB.ExecuteNonQuerySQL(SQL)
 
         SQL = "UPDATE ESI_CORPORATION_DATA SET BLUEPRINTS_CACHE_DATE = '1900-01-01 00:00:00' WHERE CORPORATION_ID = " & CorpID
@@ -1776,6 +1778,14 @@ InvalidDate:
             readerBP.Close()
         End If
 
+        ' See what ID we use for character bps
+        Dim CharID As Long = 0
+        If UserApplicationSettings.LoadBPsbyChar Then
+            ' Use the ID sent
+            CharID = SelectedCharacter.ID
+        Else
+            CharID = CommonLoadBPsID
+        End If
 
         EVEDB.BeginSQLiteTransaction()
 
@@ -1784,7 +1794,7 @@ InvalidDate:
 
             ' Look up the BP first to see if it is scanned
             SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS "
-            SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
             SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID) & " AND SCANNED <> 0"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -1795,12 +1805,12 @@ InvalidDate:
             If readerBP.HasRows Then
                 ' Update it
                 SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, Me = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
-                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "And BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
-                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & SelectedCharacter.ID & " And BLUEPRINT_ID=" & BPID
+                SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID=" & CharID & " And BLUEPRINT_ID=" & BPID
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
@@ -1831,7 +1841,7 @@ InvalidDate:
             End If
 
             ' See if the BP is in the DB
-            SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
             SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -1842,7 +1852,7 @@ InvalidDate:
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                SQL = SQL & "VALUES (" & SelectedCharacter.ID & ",0,0," & BPID & ",'" & FormatDBString(TempBPName) & "',1,0,"
+                SQL = SQL & "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(TempBPName) & "',1,0,"
                 SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -1850,7 +1860,7 @@ InvalidDate:
                 ' Update it
                 SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
                 SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
-                SQL = SQL & "WHERE (USER_ID =" & CStr(SelectedCharacter.ID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
@@ -1888,7 +1898,7 @@ InvalidDate:
 
         Try 'Checks if the file exist
             Request = DirectCast(HttpWebRequest.Create(DownloadURL), HttpWebRequest)
-            'Request.Proxy = GetProxyData()
+            Request.Proxy = GetProxyData()
             Request.Credentials = CredentialCache.DefaultCredentials ' Added 9/27 to attempt to fix error: (407) Proxy Authentication Required.
             Request.Timeout = 50000
             Response = CType(Request.GetResponse, HttpWebResponse)
@@ -2203,5 +2213,117 @@ InvalidDate:
             TypeIDs = New List(Of String)
         End Sub
     End Class
+
+    Public Structure StructureIDName
+        Dim ID As Long
+        Dim Name As String
+    End Structure
+
+    ' Updates the stations table with upwell structure data for the list of IDs sent and returns a set of name/ID pairs
+    Public Function UpdateStructureData(IDList As List(Of Long), CharacterTokenData As SavedTokenData) As List(Of StructureIDName)
+        Dim SQL As String = ""
+        Dim rsData As SQLiteDataReader
+        Dim API As New ESI
+        Dim EVEStructure As New ESIUniverseStructure
+        Dim StructureIDstoUpdate As New List(Of Long)
+        Dim TempPair As StructureIDName
+        Dim CacheDate As Date
+        Dim StructurePairs As New List(Of StructureIDName)
+
+        Dim MasterIDList As New List(Of Long)
+
+        ' Make a unique ID list
+        For Each EntryID In IDList
+            If Not MasterIDList.Contains(EntryID) Then
+                MasterIDList.Add(EntryID)
+            End If
+        Next
+
+        For Each StructureID In MasterIDList
+            ' Get the cache date of the facility ID
+            SQL = "SELECT CACHE_DATE, STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsData = DBCommand.ExecuteReader
+
+            If rsData.Read Then
+                ' See if we update it
+                If IsDBNull(rsData.GetValue(0)) Then
+                    ' No data so add it
+                    StructureIDstoUpdate.Add(StructureID)
+                ElseIf DateValue(rsData.GetString(0)) <= DateTime.UtcNow Then
+                    ' Need to update it
+                    StructureIDstoUpdate.Add(StructureID)
+                Else
+                    ' Not going to update it, so save the name and pair data
+                    TempPair.ID = StructureID
+                    TempPair.Name = rsData.GetString(1)
+                    Call StructurePairs.Add(TempPair)
+                End If
+            Else
+                ' Not in the table, so add it
+                StructureIDstoUpdate.Add(StructureID)
+            End If
+            rsData.Close()
+        Next
+
+        For Each StructureID In StructureIDstoUpdate
+            ' Look up each facility and save it in the STATIONS table
+            EVEStructure = API.GetStructureData(StructureID, CharacterTokenData, CacheDate)
+
+            ' Delete the record, if there, then add new data
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM STATIONS WHERE STATION_ID = " & CStr(StructureID))
+
+            If Not IsNothing(EVEStructure) Then
+                ' Lookup the data for the upwell structure from static tables
+                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(EVEStructure.solar_system_id)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsData = DBCommand.ExecuteReader
+
+                If rsData.Read Then
+                    SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
+                    With EVEStructure
+                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, .name, .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat)))
+                    End With
+                End If
+                rsData.Close()
+
+                TempPair.Name = EVEStructure.name
+            Else
+                ' Insert it as unknown so we don't look it up again
+                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
+                With EVEStructure
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(CacheDate, SQLiteDateFormat)))
+                End With
+                TempPair.Name = ""
+            End If
+
+            ' Save the pair
+            TempPair.ID = StructureID
+            Call StructurePairs.Add(TempPair)
+        Next
+
+        DBCommand = Nothing
+        rsData = Nothing
+
+        Return StructurePairs
+
+    End Function
+
+    Public Function BPUsesReactions(MaterialGroup As String, CheckUserSettings As ApplicationSettings) As Boolean
+        ' See what material type this is and if we want to build it (reactions)
+        Select Case MaterialGroup
+            Case "Composite" ' will use intermediate material - or raw material, which we need to set this too for full drill down
+                If CheckUserSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Or CheckUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                    Return True
+                End If
+            Case "Intermediate Materials", "Hybrid Polymers" ' will use mats: "Moon Material", "Harvestable Cloud"
+                If CheckUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                    Return True
+                End If
+        End Select
+
+        Return False
+
+    End Function
 
 End Module

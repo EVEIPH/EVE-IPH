@@ -36,12 +36,13 @@ Partial Class frmIndustryJobsViewer
         Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
         Me.gbInventionJobs = New System.Windows.Forms.GroupBox()
-        Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
         Me.gbJobTimes = New System.Windows.Forms.GroupBox()
         Me.rbtnJobHistory = New System.Windows.Forms.RadioButton()
         Me.rbtnCurrentJobs = New System.Windows.Forms.RadioButton()
         Me.gbButtons = New System.Windows.Forms.GroupBox()
         Me.btnRefreshList = New System.Windows.Forms.Button()
+        Me.chkAutoUpdate = New System.Windows.Forms.CheckBox()
+        Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
         Me.gbIndustryJobType.SuspendLayout()
         Me.gbInventionJobs.SuspendLayout()
         Me.gbJobTimes.SuspendLayout()
@@ -108,7 +109,7 @@ Partial Class frmIndustryJobsViewer
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(167, 57)
+        Me.btnClose.Location = New System.Drawing.Point(219, 57)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(97, 35)
         Me.btnClose.TabIndex = 65
@@ -117,7 +118,7 @@ Partial Class frmIndustryJobsViewer
         '
         'btnUpdateJobs
         '
-        Me.btnUpdateJobs.Location = New System.Drawing.Point(116, 16)
+        Me.btnUpdateJobs.Location = New System.Drawing.Point(13, 57)
         Me.btnUpdateJobs.Name = "btnUpdateJobs"
         Me.btnUpdateJobs.Size = New System.Drawing.Size(97, 35)
         Me.btnUpdateJobs.TabIndex = 66
@@ -126,7 +127,7 @@ Partial Class frmIndustryJobsViewer
         '
         'btnSelectColumns
         '
-        Me.btnSelectColumns.Location = New System.Drawing.Point(219, 16)
+        Me.btnSelectColumns.Location = New System.Drawing.Point(116, 16)
         Me.btnSelectColumns.Name = "btnSelectColumns"
         Me.btnSelectColumns.Size = New System.Drawing.Size(97, 35)
         Me.btnSelectColumns.TabIndex = 67
@@ -135,7 +136,7 @@ Partial Class frmIndustryJobsViewer
         '
         'btnSaveSettings
         '
-        Me.btnSaveSettings.Location = New System.Drawing.Point(64, 57)
+        Me.btnSaveSettings.Location = New System.Drawing.Point(219, 16)
         Me.btnSaveSettings.Name = "btnSaveSettings"
         Me.btnSaveSettings.Size = New System.Drawing.Size(97, 35)
         Me.btnSaveSettings.TabIndex = 68
@@ -159,21 +160,6 @@ Partial Class frmIndustryJobsViewer
         Me.gbInventionJobs.TabIndex = 69
         Me.gbInventionJobs.TabStop = False
         '
-        'lstCharacters
-        '
-        Me.lstCharacters.CheckBoxes = True
-        Me.lstCharacters.FullRowSelect = True
-        Me.lstCharacters.GridLines = True
-        Me.lstCharacters.Location = New System.Drawing.Point(564, 556)
-        Me.lstCharacters.MultiSelect = False
-        Me.lstCharacters.Name = "lstCharacters"
-        Me.lstCharacters.Size = New System.Drawing.Size(510, 95)
-        Me.lstCharacters.TabIndex = 70
-        Me.lstCharacters.TabStop = False
-        Me.lstCharacters.Tag = "20"
-        Me.lstCharacters.UseCompatibleStateImageBehavior = False
-        Me.lstCharacters.View = System.Windows.Forms.View.Details
-        '
         'gbJobTimes
         '
         Me.gbJobTimes.Controls.Add(Me.rbtnJobHistory)
@@ -188,7 +174,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnJobHistory
         '
         Me.rbtnJobHistory.AutoSize = True
-        Me.rbtnJobHistory.Location = New System.Drawing.Point(122, 20)
+        Me.rbtnJobHistory.Location = New System.Drawing.Point(120, 21)
         Me.rbtnJobHistory.Name = "rbtnJobHistory"
         Me.rbtnJobHistory.Size = New System.Drawing.Size(77, 17)
         Me.rbtnJobHistory.TabIndex = 1
@@ -199,7 +185,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnCurrentJobs
         '
         Me.rbtnCurrentJobs.AutoSize = True
-        Me.rbtnCurrentJobs.Location = New System.Drawing.Point(18, 20)
+        Me.rbtnCurrentJobs.Location = New System.Drawing.Point(20, 21)
         Me.rbtnCurrentJobs.Name = "rbtnCurrentJobs"
         Me.rbtnCurrentJobs.Size = New System.Drawing.Size(84, 17)
         Me.rbtnCurrentJobs.TabIndex = 0
@@ -209,6 +195,7 @@ Partial Class frmIndustryJobsViewer
         '
         'gbButtons
         '
+        Me.gbButtons.Controls.Add(Me.chkAutoUpdate)
         Me.gbButtons.Controls.Add(Me.btnRefreshList)
         Me.gbButtons.Controls.Add(Me.btnClose)
         Me.gbButtons.Controls.Add(Me.btnUpdateJobs)
@@ -229,8 +216,33 @@ Partial Class frmIndustryJobsViewer
         Me.btnRefreshList.Text = "Refresh"
         Me.btnRefreshList.UseVisualStyleBackColor = True
         '
+        'chkAutoUpdate
+        '
+        Me.chkAutoUpdate.Location = New System.Drawing.Point(116, 54)
+        Me.chkAutoUpdate.Name = "chkAutoUpdate"
+        Me.chkAutoUpdate.Size = New System.Drawing.Size(97, 43)
+        Me.chkAutoUpdate.TabIndex = 0
+        Me.chkAutoUpdate.Text = "Automatically Update Jobs on Startup"
+        Me.chkAutoUpdate.UseVisualStyleBackColor = True
+        '
+        'lstCharacters
+        '
+        Me.lstCharacters.CheckBoxes = True
+        Me.lstCharacters.FullRowSelect = True
+        Me.lstCharacters.GridLines = True
+        Me.lstCharacters.Location = New System.Drawing.Point(564, 556)
+        Me.lstCharacters.MultiSelect = False
+        Me.lstCharacters.Name = "lstCharacters"
+        Me.lstCharacters.Size = New System.Drawing.Size(510, 95)
+        Me.lstCharacters.TabIndex = 70
+        Me.lstCharacters.TabStop = False
+        Me.lstCharacters.Tag = "20"
+        Me.lstCharacters.UseCompatibleStateImageBehavior = False
+        Me.lstCharacters.View = System.Windows.Forms.View.Details
+        '
         'frmIndustryJobsViewer
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 665)
@@ -268,4 +280,5 @@ Partial Class frmIndustryJobsViewer
     Friend WithEvents rbtnJobHistory As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnCurrentJobs As System.Windows.Forms.RadioButton
     Friend WithEvents lstCharacters As EVE_Isk_per_Hour.MyListView
+    Friend WithEvents chkAutoUpdate As CheckBox
 End Class

@@ -73,12 +73,6 @@ Public Class frmLoadESIAuthorization
             Exit Sub
         End If
 
-        'If Trim(txtPort.Text) = "" Then
-        '    Call MsgBox("You must enter a Port Number", vbInformation, Application.ProductName)
-        '    txtPort.Focus()
-        '    Exit Sub
-        'End If
-
         If Trim(txtScopes.Text) = "" Then
             Call MsgBox("You must enter a set of Scopes", vbInformation, Application.ProductName)
             txtScopes.Focus()
@@ -92,11 +86,10 @@ Public Class frmLoadESIAuthorization
             Exit Sub
         End If
 
-        ' Scopes need to be space, comma, or CR separated
-        If (Not Trim(txtScopes.Text).Contains(" ") And Not Trim(txtScopes.Text).Contains(vbCrLf) And Not Trim(txtScopes.Text).Contains(",")) _
-            And Trim(txtScopes.Text) <> ESICharacterSkillsScope Then
+        ' Scopes need to be space separated - so only do that check, we can format below
+        If Not Trim(txtScopes.Text).Contains(" ") And Trim(txtScopes.Text) <> ESICharacterSkillsScope Then
             ' It's not just one line of entry for character skills, so it should be separated property so we can read it later
-            Call MsgBox("Scopes must be separated by a space, comma, or Carriage Return", vbInformation, Application.ProductName)
+            Call MsgBox("Scopes must be separated by a space.", vbInformation, Application.ProductName)
             txtScopes.Focus()
             Exit Sub
         End If
@@ -104,8 +97,8 @@ Public Class frmLoadESIAuthorization
         ' Good to go, save it then do a check
         Settings.ClientID = Trim(txtClientID.Text)
         Settings.SecretKey = Trim(txtSecretKey.Text)
-        ' Settings.Port = CInt(Trim(txtPort.Text))
-        Settings.Scopes = Trim(txtScopes.Text)
+        ' Process the scopes and only leave one space between each
+        Settings.Scopes = String.Join(" ", txtScopes.Text.Split(New String() {" ", ",", "%20", "%2520", vbCr, vbLf, vbCrLf}, StringSplitOptions.RemoveEmptyEntries))
 
         If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
             ' Data is saved but they need to re-register characters to add updates
@@ -123,7 +116,7 @@ Public Class frmLoadESIAuthorization
         txtClientID.SelectAll()
     End Sub
 
-    Private Sub txtScopes_GotFocus(sender As Object, e As EventArgs) Handles txtScopes.GotFocus
+    Private Sub txtScopes_GotFocus(sender As Object, e As EventArgs)
         txtScopes.SelectAll()
     End Sub
 
@@ -133,15 +126,6 @@ Public Class frmLoadESIAuthorization
 
     Private Sub frmLoadESIAuthorization_Shown(sender As Object, e As EventArgs) Handles Me.Shown
         Me.Activate()
-    End Sub
-
-    Private Sub frmLoadESIAuthorization_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        '' Let them close the form but only if it's registered, if not, don't complete this
-        'If Not AppRegistered() Then
-        '    ' Make them verify they want the dummy
-        '    e.Cancel = True
-        '    Call ProcessDummyCharacter()
-        'End If
     End Sub
 
 End Class

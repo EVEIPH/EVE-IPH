@@ -553,10 +553,10 @@ Public Class frmIndustryBeltFlip
         End If
 
         Dim RefinedMaterials As New Materials
-        Dim RefiningStation As New RefiningReprocessing(SelectedCharacter.Skills.GetSkillLevel(3385), _
-                                                        SelectedCharacter.Skills.GetSkillLevel(3389), _
-                                                        SelectedCharacter.Skills.GetSkillLevel(12196), _
-                                                        UserApplicationSettings.RefiningImplantValue, _
+        Dim RefiningStation As New Reprocessing(SelectedCharacter.Skills.GetSkillLevel(3385),
+                                                        SelectedCharacter.Skills.GetSkillLevel(3389),
+                                                        SelectedCharacter.Skills.GetSkillLevel(12196),
+                                                        UserApplicationSettings.RefiningImplantValue,
                                                         StationEffiency, StationTax, CDbl(txtMineRefineStanding.Text))
 
         Me.Cursor = Cursors.WaitCursor
@@ -660,7 +660,7 @@ Public Class frmIndustryBeltFlip
 
                 If readerBelts.Read Then
                     ' Refine each ore in the ore list, store refined minerals
-                    RefinedMaterials = RefiningStation.RefineOre(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"), _
+                    RefinedMaterials = RefiningStation.ReprocessORE(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
                                     CType(item.SubItems(3).Text, Double), chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, OutputNumber)
 
                     ' Store the refined materials

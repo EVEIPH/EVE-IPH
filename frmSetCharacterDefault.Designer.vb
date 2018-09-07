@@ -26,9 +26,10 @@ Partial Class frmSetCharacterDefault
         Me.chkListDefaultChar = New System.Windows.Forms.CheckedListBox()
         Me.btnSelectDefault = New System.Windows.Forms.Button()
         Me.btnCancel = New System.Windows.Forms.Button()
-        Me.btnEVESSOLogin = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
         Me.btnReloadRegistration = New System.Windows.Forms.Button()
+        Me.btnEVESSOLogin = New System.Windows.Forms.Button()
+        Me.btnManualLoad = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'chkListDefaultChar
@@ -59,16 +60,6 @@ Partial Class frmSetCharacterDefault
         Me.btnCancel.Text = "Cancel"
         Me.btnCancel.UseVisualStyleBackColor = True
         '
-        'btnEVESSOLogin
-        '
-        Me.btnEVESSOLogin.BackgroundImage = CType(resources.GetObject("btnEVESSOLogin.BackgroundImage"), System.Drawing.Image)
-        Me.btnEVESSOLogin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center
-        Me.btnEVESSOLogin.Location = New System.Drawing.Point(20, 54)
-        Me.btnEVESSOLogin.Name = "btnEVESSOLogin"
-        Me.btnEVESSOLogin.Size = New System.Drawing.Size(270, 46)
-        Me.btnEVESSOLogin.TabIndex = 1
-        Me.btnEVESSOLogin.UseVisualStyleBackColor = True
-        '
         'lblKeyType
         '
         Me.lblKeyType.Location = New System.Drawing.Point(20, 9)
@@ -89,20 +80,40 @@ Partial Class frmSetCharacterDefault
         Me.btnReloadRegistration.UseVisualStyleBackColor = True
         Me.btnReloadRegistration.Visible = False
         '
+        'btnEVESSOLogin
+        '
+        Me.btnEVESSOLogin.BackgroundImage = CType(resources.GetObject("btnEVESSOLogin.BackgroundImage"), System.Drawing.Image)
+        Me.btnEVESSOLogin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center
+        Me.btnEVESSOLogin.Location = New System.Drawing.Point(20, 54)
+        Me.btnEVESSOLogin.Name = "btnEVESSOLogin"
+        Me.btnEVESSOLogin.Size = New System.Drawing.Size(270, 46)
+        Me.btnEVESSOLogin.TabIndex = 1
+        Me.btnEVESSOLogin.UseVisualStyleBackColor = True
+        '
+        'btnManualLoad
+        '
+        Me.btnManualLoad.Location = New System.Drawing.Point(29, 375)
+        Me.btnManualLoad.Name = "btnManualLoad"
+        Me.btnManualLoad.Size = New System.Drawing.Size(270, 26)
+        Me.btnManualLoad.TabIndex = 15
+        Me.btnManualLoad.Text = "Still having issues? Click here to manually authorize."
+        Me.btnManualLoad.UseVisualStyleBackColor = True
+        Me.btnManualLoad.Visible = False
+        '
         'frmSetCharacterDefault
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(311, 376)
+        Me.ClientSize = New System.Drawing.Size(311, 412)
         Me.ControlBox = False
+        Me.Controls.Add(Me.btnManualLoad)
         Me.Controls.Add(Me.btnReloadRegistration)
         Me.Controls.Add(Me.lblKeyType)
         Me.Controls.Add(Me.btnCancel)
         Me.Controls.Add(Me.btnEVESSOLogin)
         Me.Controls.Add(Me.btnSelectDefault)
         Me.Controls.Add(Me.chkListDefaultChar)
-        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
@@ -118,4 +129,5 @@ Partial Class frmSetCharacterDefault
     Friend WithEvents btnEVESSOLogin As Button
     Friend WithEvents lblKeyType As Label
     Friend WithEvents btnReloadRegistration As Button
+    Friend WithEvents btnManualLoad As Button
 End Class

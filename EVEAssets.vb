@@ -44,13 +44,28 @@ Public Class EVEAssets
         ' Update asset data first
         Call UpdateAssets(ID, CharacterTokenData, AssetType, RefreshAssets)
 
+        ' Set the cache date, since we may not update the assets
+        If AssetType = ScanType.Personal Then
+            SQL = "SELECT ASSETS_CACHE_DATE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(ID)
+        Else
+            SQL = "SELECT ASSETS_CACHE_DATE FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CStr(ID)
+        End If
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerData = DBCommand.ExecuteReader
+
+        If readerData.Read Then
+            CacheDate = CDate(readerData.GetString(0))
+        Else
+            CacheDate = NoDate
+        End If
+
         LocationNames = New List(Of LocationName)
         UnknownLocationCounter = 0
 
         ' Load the assets - corp or personal
-        SQL = "SELECT ID, ItemID, LocationID, TypeID, ASSETS.Quantity, Flag, IsSingleton, "
-        SQL &= "CASE WHEN BP_TYPE IS NULL THEN 0 ELSE BP_TYPE END AS BPType FROM ASSETS "
-        SQL &= "LEFT JOIN ALL_OWNED_BLUEPRINTS ON ID = OWNER_ID AND ItemID = ITEM_ID "
+        SQL = "SELECT ID, ItemID, LocationID, TypeID, Assets.Quantity, Flag, IsSingleton, "
+        SQL &= "CASE WHEN BP_TYPE Is NULL THEN 0 ELSE BP_TYPE END AS BPType FROM ASSETS "
+        SQL &= "LEFT JOIN ALL_OWNED_BLUEPRINTS ON ID = OWNER_ID And ItemID = ITEM_ID "
         SQL &= "WHERE ID = " & ID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -67,13 +82,13 @@ Public Class EVEAssets
             TempAsset.BPType = CType(readerAssets.GetInt32(7), BPType)
 
             ' Get the location name, update flagID (ref) and set flag text (ref)
-            TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText)
+            TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText, CharacterTokenData)
 
             ' Look up the type name
             SQL = "SELECT typeName, groupName, categoryName "
             SQL = SQL & "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
-            SQL = SQL & "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-            SQL = SQL & "AND INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
+            SQL = SQL & "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
+            SQL = SQL & "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
@@ -139,7 +154,7 @@ Public Class EVEAssets
                     For i = 0 To Assets.Count - 1
                         ' Get the flagID for this location
                         DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
-                        rsLookup = DBCommand.ExecuteReader
+        rsLookup = DBCommand.ExecuteReader
                         If rsLookup.Read Then
                             FlagID = rsLookup.GetInt32(0)
                         Else
@@ -178,7 +193,7 @@ Public Class EVEAssets
         Return AssetList
     End Function
 
-    Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String) As String
+    Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String, ByVal CharacterTokenData As SavedTokenData) As String
         Dim SQL As String
         Dim readerData As SQLiteDataReader
         Dim LocationName As String = ""
@@ -222,19 +237,19 @@ Public Class EVEAssets
 
                 readerData.Close()
             Else
-
                 ' See if it's connected to another record, which will have a name look up
                 SQL = "SELECT locationID FROM ASSETS WHERE itemID = " & CStr(LocationID)
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerData = DBCommand.ExecuteReader
+                readerData.Read()
 
-                If readerData.Read Then
+                If readerData.HasRows Then
                     ' Call this function again to get the location name
-                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt32(0), FlagID, FlagText)
+                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, CharacterTokenData)
                     readerData.Close()
                 Else
-                    ' See if it's a Citadel
+                    ' See if it's a upwell structure that they have access to
                     Dim FoundLocation As LocationName
                     ' See if we looked it up first before downloading
                     LocationIDToFind = LocationID
@@ -243,6 +258,18 @@ Public Class EVEAssets
                     If FoundLocation IsNot Nothing Then
                         LocationName = FoundLocation.Name
                     Else
+                        ' Get the location name from ESI, while updating the data as it's probably an upwell structure
+                        Dim TempLocationData As New List(Of Long)
+                        TempLocationData.Add(LocationID)
+                        Dim LocationDataList As List(Of StructureIDName) = UpdateStructureData(TempLocationData, CharacterTokenData)
+
+                        ' Should only be one name
+                        If LocationDataList.Count > 0 Then
+                            If LocationDataList(0).Name <> "" Then
+                                LocationName = LocationDataList(0).Name
+                            End If
+                        End If
+
                         If LocationName = "" Then
                             UnknownLocationCounter += 1
                             ' Not found, so add a counter to it to deliniate unknown locations
@@ -257,7 +284,6 @@ Public Class EVEAssets
 
                     End If
                 End If
-
             End If
         Else
             LocationName = UnknownLocation
@@ -271,7 +297,7 @@ Public Class EVEAssets
 
         If readerData.Read Then
             ' Found it
-            FlagText = readerData.GetString(0)
+            FlagText = CStr(readerData.GetValue(0))
         Else
             FlagText = "Unknown"
         End If

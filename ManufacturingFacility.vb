@@ -2,9 +2,6 @@
 
 Public Class ManufacturingFacility
 
-    Private EVEDBRef As DBConnection
-    Private EVEDBCommandRef As SQLiteCommand
-
     Private SelectedFacility As IndustryFacility ' This is the active facility for the control, if not loaded will use the default
     Private SelectedView As FacilityView
     Private SelectedLocation As ProgramLocation
@@ -12,7 +9,7 @@ Public Class ManufacturingFacility
     Private SelectedProductionType As ProductionType
 
     Private SelectedBPTech As Integer
-    Private SelectedBPHasComponents As Boolean
+    Private SelectedBPID As Integer
     Private SelectedBPGroupID As Integer
     Private SelectedBPCategoryID As Integer
 
@@ -93,7 +90,7 @@ Public Class ManufacturingFacility
     Public Const ActivityReactions As String = "Reactions"
 
     ' For verifying activity and facility type combos selected something
-    Private Const InitialTypeComboText = "Type"
+    Private Const InitialTypeComboText = "Select Type"
     Private Const InitialActivityComboText = "Select Activity"
     Private Const InitialRegionComboText = "Select Region"
     Private Const InitialSolarSystemComboText = "Select System"
@@ -101,7 +98,6 @@ Public Class ManufacturingFacility
 
     Public Const POSFacility As String = "POS"
     Public Const StationFacility As String = "Station"
-    Public Const OutpostFacility As String = "Outpost"
     Public Const StructureFacility As String = "Structure"
 
     Private FactionCitadelList As New List(Of Integer)
@@ -190,9 +186,6 @@ Public Class ManufacturingFacility
         SelectedLocation = FormLocation
         SelectedProductionType = InitialProductionType
         SelectedCharacterID = SentSelectedCharacterID
-
-        EVEDBRef = EVEDB
-        EVEDBCommandRef = DBCommand
 
         ' Move and show the selected controls depending on the view sent
         Select Case ViewType
@@ -627,64 +620,7 @@ Public Class ManufacturingFacility
                 ' Select what facility to load based on the industry type
                 Call SelectedFacility.InitalizeFacility(InitialProductionType, ViewType)
 
-                'Now save the default and selected facility to the appropriate variable
-                Select Case InitialProductionType
-                    Case ProductionType.Manufacturing
-                        SelectedManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.CapitalComponentManufacturing
-                        SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        ' Load component too so we can click back and forth
-                        Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, ViewType)
-                        SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.ComponentManufacturing
-                        SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        ' Load cap component too so we can click back and forth
-                        Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, ViewType)
-                        SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.CapitalManufacturing
-                        SelectedCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.SuperManufacturing
-                        SelectedSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.T3CruiserManufacturing
-                        SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        ' Load T3 destroyers too so we can click back and forth
-                        Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, ViewType)
-                        SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.SubsystemManufacturing
-                        SelectedSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.BoosterManufacturing
-                        SelectedBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.Copying
-                        SelectedCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.Invention
-                        SelectedInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.Reactions
-                        SelectedReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.T3Invention
-                        SelectedT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                    Case ProductionType.T3DestroyerManufacturing
-                        SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        ' Load T3 cruisers too so we can click back and forth
-                        Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, ViewType)
-                        SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                        DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                End Select
+                Call LoadSelectedFacility(InitialProductionType, ViewType)
 
             Case Else
                 ' Leave, no valid option sent
@@ -713,25 +649,95 @@ Public Class ManufacturingFacility
         ChangingUsageChecks = False
 
         ' Load the selected facility with set bp
-        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
+        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
+
+    End Sub
+
+    Public Sub LoadSelectedFacility(BuildType As ProductionType, ViewType As FacilityView, Optional LoadDualFacilitys As Boolean = True)
+
+        'Now save the default and selected facility to the appropriate variable
+        Select Case BuildType
+            Case ProductionType.Manufacturing
+                SelectedManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.CapitalComponentManufacturing
+                SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                If LoadDualFacilitys Then
+                    ' Load component too so we can click back and forth
+                    Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, ViewType)
+                    SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                End If
+            Case ProductionType.ComponentManufacturing
+                SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                If LoadDualFacilitys Then
+                    ' Load cap component too so we can click back and forth
+                    Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, ViewType)
+                    SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                End If
+            Case ProductionType.CapitalManufacturing
+                SelectedCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.SuperManufacturing
+                SelectedSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3CruiserManufacturing
+                SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                If LoadDualFacilitys Then
+                    ' Load T3 destroyers too so we can click back and forth
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, ViewType)
+                    SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                End If
+            Case ProductionType.SubsystemManufacturing
+                SelectedSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.BoosterManufacturing
+                SelectedBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.Copying
+                SelectedCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.Invention
+                SelectedInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.Reactions
+                SelectedReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3Invention
+                SelectedT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.T3DestroyerManufacturing
+                SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                If LoadDualFacilitys Then
+                    ' Load T3 cruisers too so we can click back and forth
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, ViewType)
+                    SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                End If
+        End Select
 
     End Sub
 
     ' Loads the class facility and objects
-    Public Sub LoadFacility(ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer,
-                            ByVal BlueprintTech As Integer, ByVal BPHasComponents As Boolean,
+    Public Sub LoadFacility(ByVal ItemBPID As Integer, ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer, ByVal BlueprintTech As Integer,
                             Optional ByVal LoadDefault As Boolean = False, Optional DefaultFacility As IndustryFacility = Nothing,
                             Optional ByVal ComboSelect As Boolean = False)
 
         ' Save these for later use
+        SelectedBPID = ItemBPID
         SelectedBPCategoryID = ItemCategoryID
         SelectedBPGroupID = ItemGroupID
         SelectedBPTech = BlueprintTech
-        SelectedBPHasComponents = BPHasComponents
 
         ' Process the activities combo if showing full controls
         If SelectedView = FacilityView.FullControls Then
-            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasComponents, ComboSelect)
+            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasBuildableComponents(SelectedBPID), ComboSelect)
             PreviousActivity = cmbFacilityActivities.Text
         End If
 
@@ -753,7 +759,7 @@ Public Class ManufacturingFacility
         ' Enable the type of facility and set
         LoadingFacilityTypes = True
         cmbFacilityType.Enabled = True
-        cmbFacilityType.Text = GetFacilityNameCode(SelectedFacility.FacilityType)
+        cmbFacilityType.Text = GetFacilityNamefromCode(SelectedFacility.FacilityType)
         LoadingFacilityTypes = False
 
         If SelectedFacility.FacilityType = FacilityTypes.None Then
@@ -821,7 +827,8 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, HasComponents As Boolean, FromComboSelect As Boolean)
+    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer,
+                                      HasComponents As Boolean, FromComboSelect As Boolean)
 
         LoadingActivities = True
         Dim ActivityText As String = cmbFacilityActivities.Text ' Save what is selected first
@@ -881,6 +888,11 @@ Public Class ManufacturingFacility
                     ' Just regular
                     cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
             End Select
+
+            ' If they want to drill down on reacitons, add the reactions facility option
+            If BPUsesReactions(":", UserApplicationSettings) Then
+                cmbFacilityActivities.Items.Add(ActivityReactions)
+            End If
         End If
 
         cmbFacilityActivities.EndUpdate()
@@ -905,7 +917,7 @@ Public Class ManufacturingFacility
                 PreviousProductionType = SelectedProductionType
 
                 ' Load the facility for this activity - flag that it was loaded from this combo
-                Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, SelectedBPHasComponents, True, Nothing, True)
+                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, Nothing, True)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -913,6 +925,9 @@ Public Class ManufacturingFacility
                 PreviousRegion = cmbFacilityRegion.Text
                 PreviousSystem = cmbFacilitySystem.Text
             End If
+
+            ' Make sure the usage is updated
+            Call frmMain.UpdateBPPriceLabels()
 
             Call cmbFacilityType.Focus()
 
@@ -933,11 +948,10 @@ Public Class ManufacturingFacility
 
     ' Loads the facility types in the sent combo
     Public Sub LoadFacilityTypes(FacilityProductionType As ProductionType, FacilityActivity As String)
-        Dim Station As String = GetFacilityNameCode(FacilityTypes.Station)
-        Dim Outpost As String = GetFacilityNameCode(FacilityTypes.Outpost)
-        Dim POS As String = GetFacilityNameCode(FacilityTypes.POS)
-        Dim UpwellStructure As String = GetFacilityNameCode(FacilityTypes.UpwellStructure)
-        Dim NoneFacility As String = GetFacilityNameCode(FacilityTypes.None)
+        Dim Station As String = GetFacilityNamefromCode(FacilityTypes.Station)
+        Dim POS As String = GetFacilityNamefromCode(FacilityTypes.POS)
+        Dim UpwellStructure As String = GetFacilityNamefromCode(FacilityTypes.UpwellStructure)
+        Dim NoneFacility As String = GetFacilityNamefromCode(FacilityTypes.None)
 
         LoadingFacilityTypes = True
         LoadingRegions = True
@@ -953,14 +967,12 @@ Public Class ManufacturingFacility
             Case ActivityCopying, ActivityInvention
                 Select Case FacilityProductionType
                     Case ProductionType.T3Invention
-                        ' Can be invented in outposts and POS
-                        If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
+                        ' Can be invented in POS
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                         If NoneFacility <> "" Then cmbFacilityType.Items.Add(NoneFacility)
                     Case Else
                         If Station <> "" Then cmbFacilityType.Items.Add(Station)
-                        If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                         If NoneFacility <> "" Then cmbFacilityType.Items.Add(NoneFacility)
@@ -972,21 +984,18 @@ Public Class ManufacturingFacility
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case ProductionType.BoosterManufacturing, ProductionType.SubsystemManufacturing, ProductionType.T3CruiserManufacturing, ProductionType.T3DestroyerManufacturing
-                        ' Can be built in outposts and POS
-                        If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
+                        ' Can be built in and POS
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case Else
                         ' Add all
                         If Station <> "" Then cmbFacilityType.Items.Add(Station)
-                        If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                 End Select
             Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
                 ' Can do these anywhere
                 If Station <> "" Then cmbFacilityType.Items.Add(Station)
-                If Outpost <> "" Then cmbFacilityType.Items.Add(Outpost)
                 If POS <> "" Then cmbFacilityType.Items.Add(POS)
                 If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
             Case ActivityReactions
@@ -997,15 +1006,15 @@ Public Class ManufacturingFacility
         ' Only reset if they changed it
         If FacilityProductionType <> PreviousProductionType Or FacilityActivity <> PreviousActivity Then
             ' Reset all other dropdowns
-            cmbFacilityType.Text = "Select Type"
+            cmbFacilityType.Text = InitialTypeComboText
             cmbFacilityRegion.Items.Clear()
-            cmbFacilityRegion.Text = "Select Region"
+            cmbFacilityRegion.Text = InitialRegionComboText
             cmbFacilityRegion.Enabled = False
             cmbFacilitySystem.Items.Clear()
-            cmbFacilitySystem.Text = "Select System"
+            cmbFacilitySystem.Text = InitialSolarSystemComboText
             cmbFacilitySystem.Enabled = False
             cmbFacilityorArray.Items.Clear()
-            cmbFacilityorArray.Text = "Select Facility / Array"
+            cmbFacilityorArray.Text = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
             PreviousProductionType = FacilityProductionType
@@ -1017,7 +1026,7 @@ Public Class ManufacturingFacility
 
         ' Double check the text selected and reset 
         If Not cmbFacilityType.Items.Contains(cmbFacilityType.Text) Then
-            cmbFacilityType.Text = GetFacilityNameCode(FacilityTypes.POS) ' can build almost everything (if not all) in a pos
+            cmbFacilityType.Text = GetFacilityNamefromCode(FacilityTypes.POS) ' can build almost everything (if not all) in a pos
         End If
 
         ' Enable the facility type combo
@@ -1076,6 +1085,9 @@ Public Class ManufacturingFacility
     End Sub
     Private Sub cmbFacilityType_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilityType.LostFocus
         cmbFacilityType.SelectionLength = 0
+        If Trim(cmbFacilityType.Text) = "" Then
+            cmbFacilityType.Text = GetFacilityNamefromCode(PreviousFacilityType)
+        End If
     End Sub
     Private Sub cmbFacilityType_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilityType.KeyPress
         e.Handled = True
@@ -1095,31 +1107,24 @@ Public Class ManufacturingFacility
         ' Load regions from the facilities table - only load regions for our activity type and item group/category
         Select Case cmbFacilityType.Text
 
-            Case OutpostFacility, StationFacility
+            Case StationFacility
 
-                SQL = "SELECT DISTINCT REGION_NAME FROM STATION_FACILITIES WHERE OUTPOST "
-
-                ' Set flag for outpost just to delineate
-                If cmbFacilityType.Text = StationFacility Then
-                    SQL = SQL & " = " & CStr(StationType.Station) & " "
-                Else
-                    SQL = SQL & " = " & CStr(StationType.Outpost) & " "
-                End If
+                SQL = "SELECT DISTINCT REGION_NAME FROM STATION_FACILITIES "
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add only regions with stations that can make what we sent
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Manufacturing)
                     Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for components - All types can be built in stations
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemIDs.ComponentCategoryID, -1, IndustryActivities.Manufacturing)
                     Case ActivityCopying
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Copying)
                     Case ActivityInvention
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                         ' For T3 stuff, need to make sure we only show facilities that can do T3 invention (Caldari Outposts)
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemCategoryID, ItemGroupID, IndustryActivities.Invention)
                 End Select
@@ -1163,10 +1168,10 @@ Public Class ManufacturingFacility
         ' Only turn off everything if it's set to select region
         If NewFacility Then
             cmbFacilitySystem.Items.Clear()
-            cmbFacilitySystem.Text = "Select System"
+            cmbFacilitySystem.Text = InitialSolarSystemComboText
             cmbFacilitySystem.Enabled = False
             cmbFacilityorArray.Items.Clear()
-            cmbFacilityorArray.Text = "Select Facility / Array"
+            cmbFacilityorArray.Text = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
             Call SetDefaultVisuals(False)
@@ -1215,15 +1220,14 @@ Public Class ManufacturingFacility
 
         End If
     End Sub
-    Private Sub cmbFacilityRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbFacilityRegion.KeyPress
-        e.Handled = True
-    End Sub
     Private Sub cmbFacilityRegion_GotFocus(sender As Object, e As EventArgs) Handles cmbFacilityRegion.GotFocus
         Call cmbFacilityRegion.SelectAll()
     End Sub
     Private Sub cmbFacilityRegion_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilityRegion.LostFocus
         cmbFacilitySystem.SelectionLength = 0
-
+        If Trim(cmbFacilityRegion.Text) = "" Then
+            cmbFacilityRegion.Text = PreviousRegion
+        End If
         ' Look up entered item to make sure it's in the list, if not, then auto select
         'If Not cmbFacilityRegion.Items.Contains(cmbFacilityRegion.Text) Then
         '    If SelectedFacility.RegionName <> InitialRegionComboText Then
@@ -1239,6 +1243,9 @@ Public Class ManufacturingFacility
         '    End If
         'End If
     End Sub
+    Private Sub cmbFacilityRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbFacilityRegion.KeyPress
+        e.Handled = True
+    End Sub
 
     ' Based on the selections, load the systems combo
     Public Sub LoadFacilitySystems(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
@@ -1253,20 +1260,12 @@ Public Class ManufacturingFacility
 
         Select Case cmbFacilityType.Text
 
-            Case OutpostFacility, StationFacility
+            Case StationFacility
 
                 SQL = "SELECT DISTINCT INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_NAME AS SSN, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX AS CI "
                 SQL &= "FROM STATION_FACILITIES, INDUSTRY_SYSTEMS_COST_INDICIES "
                 SQL &= "WHERE STATION_FACILITIES.SOLAR_SYSTEM_ID = INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID "
                 SQL &= "AND STATION_FACILITIES.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "
-
-                ' Set flag for outpost just to delineate
-                If cmbFacilityType.Text = StationFacility Then
-                    SQL = SQL & "AND OUTPOST  = " & CStr(StationType.Station) & " "
-                Else
-                    SQL = SQL & "AND OUTPOST  = " & CStr(StationType.Outpost) & " "
-                End If
-
                 SQL &= "AND STATION_FACILITIES.ACTIVITY_ID = "
 
                 Select Case FacilityActivity
@@ -1313,9 +1312,12 @@ Public Class ManufacturingFacility
                 End If
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
+                ' Also, make sure not to include component building in this limitiation as you can build those anywhere
                 If ItemGroupID = ItemIDs.SupercarrierGroupID Or ItemGroupID = ItemIDs.TitanGroupID Then
                     SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
-                ElseIf ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Then
+                ElseIf (ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or
+                    ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID) And
+                    FacilityActivity = ActivityManufacturing Then
                     ' For caps, only show low sec
                     SQL = SQL & " AND security < .45 "
                 End If
@@ -1353,8 +1355,11 @@ Public Class ManufacturingFacility
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
                 If ItemGroupID = ItemIDs.SupercarrierGroupID Or ItemGroupID = ItemIDs.TitanGroupID Then
                     SQL = SQL & "AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
-                ElseIf ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Or
-                    ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID Then
+                ElseIf (ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or
+                    ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Or
+                    ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or
+                    ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID) And
+                    FacilityActivity = ActivityManufacturing Then
                     ' For caps and reactions, only show low sec
                     SQL = SQL & "AND security < .45 "
                 End If
@@ -1376,11 +1381,7 @@ Public Class ManufacturingFacility
         ' Only turn off everything if it's set to select a system
         If NewFacility Then
             cmbFacilityorArray.Items.Clear()
-            If cmbFacilityType.Text = POSFacility Then
-                cmbFacilityorArray.Text = "Select Array"
-            Else
-                cmbFacilityorArray.Text = "Select Facility"
-            End If
+            cmbFacilityorArray.Text = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
             Call SetDefaultVisuals(False)
@@ -1391,7 +1392,7 @@ Public Class ManufacturingFacility
 
         ' Only reset the system if the current selected system is not in list, also if it is in list, enable facilty
         If Not cmbFacilitySystem.Items.Contains(cmbFacilitySystem.Text) Then
-            cmbFacilitySystem.Text = "Select System"
+            cmbFacilitySystem.Text = InitialSolarSystemComboText
         Else
             cmbFacilityorArray.Enabled = True
         End If
@@ -1416,10 +1417,7 @@ Public Class ManufacturingFacility
 
             Call SetFacilityBonusBoxes(False)
 
-            If cmbFacilityType.Text = OutpostFacility Then
-                OverrideFacilityName = ""
-                Autoload = True
-            ElseIf cmbFacilityType.Text = POSFacility Then
+            If cmbFacilityType.Text = POSFacility Then
                 OverrideFacilityName = GetPOSManufacturingFacilityName(SelectedFacility)
             End If
 
@@ -1456,6 +1454,9 @@ Public Class ManufacturingFacility
     End Sub
     Private Sub cmbFacilitySystem_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilitySystem.LostFocus
         cmbFacilitySystem.SelectionLength = 0
+        If Trim(cmbFacilitySystem.Text) = "" Then
+            cmbFacilitySystem.Text = PreviousSystem
+        End If
     End Sub
     Private Sub cmbFacilitySystem_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilitySystem.KeyPress
         e.Handled = True
@@ -1479,31 +1480,24 @@ Public Class ManufacturingFacility
 
         Select Case GetFacilityTypeCode(cmbFacilityType.Text)
 
-            Case FacilityTypes.Station, FacilityTypes.Outpost
+            Case FacilityTypes.Station
                 ' Load the Stations in system for the activity we are doing
-                SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM STATION_FACILITIES WHERE OUTPOST "
-
-                ' Set flag for outpost just to delineate
-                If GetFacilityTypeCode(cmbFacilityType.Text) = FacilityTypes.Station Then
-                    SQL = SQL & " = " & CStr(StationType.Station) & " "
-                Else
-                    SQL = SQL & " = " & CStr(StationType.Outpost) & " "
-                End If
+                SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_ID FROM STATION_FACILITIES "
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         ' Check groups and categories
                         SQL = SQL & GetFacilityCatGroupIDSQL(SelectedBPCategoryID, SelectedBPGroupID, IndustryActivities.Manufacturing)
                     Case ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         ' Add category for components - All types can be built in stations
                         SQL = SQL & GetFacilityCatGroupIDSQL(ItemIDs.ComponentCategoryID, -1, IndustryActivities.Manufacturing)
                     Case ActivityCopying
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
                         SQL = SQL & GetFacilityCatGroupIDSQL(SelectedBPCategoryID, SelectedBPGroupID, IndustryActivities.Copying)
                     Case ActivityInvention
-                        SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                        SQL = SQL & "WHERE ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                         ' For T3 stuff, need to make sure we only show facilities that can do T3 invention (Caldari Outposts)
                         SQL = SQL & GetFacilityCatGroupIDSQL(SelectedBPCategoryID, SelectedBPGroupID, IndustryActivities.Invention)
                 End Select
@@ -1605,7 +1599,7 @@ Public Class ManufacturingFacility
                     ' Allow it
                     cmbFacilityorArray.Items.Add(rsLoader.GetString(0))
                 End If
-            ElseIf factioncitadellist.Contains(rsLoader.GetInt32(1)) Then
+            ElseIf FactionCitadelList.Contains(rsLoader.GetInt32(1)) Then
                 ' These are only in nullsec space (if we can look up in ESI then later maybe)
                 SQL = "SELECT security, factionID FROM REGIONS, SOLAR_SYSTEMS WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID "
                 SQL &= "AND factionID IS NULL AND regionName <> 'Wormhole Space' "
@@ -1652,8 +1646,6 @@ Public Class ManufacturingFacility
                 Select Case GetFacilityTypeCode(cmbFacilityType.Text)
                     Case FacilityTypes.Station
                         cmbFacilityorArray.Text = "Select Station"
-                    Case FacilityTypes.Outpost
-                        cmbFacilityorArray.Text = "Select Outpost"
                     Case FacilityTypes.POS
                         cmbFacilityorArray.Text = "Select Array"
                     Case FacilityTypes.UpwellStructure
@@ -1716,6 +1708,9 @@ Public Class ManufacturingFacility
     End Sub
     Private Sub cmbFacilityorArray_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilityorArray.LostFocus
         cmbFacilityorArray.SelectionLength = 0
+        If Trim(cmbFacilityorArray.Text) = "" Then
+            cmbFacilityorArray.Text = PreviousEquipment
+        End If
     End Sub
     Private Sub cmbFacilityorArray_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilityorArray.KeyPress
         e.Handled = True
@@ -1731,7 +1726,7 @@ Public Class ManufacturingFacility
 
             If Not IsNothing(SelectedBlueprint) Then
                 With SelectedBlueprint
-                    Call LoadFacility(.GetItemGroupID, .GetItemCategoryID, .GetTechLevel, .HasComponents, True)
+                    Call LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, True)
                 End With
             End If
             ' Set the default based on the checkbox 
@@ -1767,13 +1762,21 @@ Public Class ManufacturingFacility
 
         If FacilityType <> FacilityTypes.None Then
 
+            ' See what type of character ID
+            Dim CharID As Long = 0
+            If UserApplicationSettings.SaveFacilitiesbyChar Then
+                CharID = SelectedCharacter.ID
+            Else
+                CharID = CommonSavedFacilitiesID
+            End If
+
             ' First, see if this facility is a saved facility, and use the values from the table
-            SQL = "Select FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
+            SQL = "SELECT FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
             SQL &= "FROM SAVED_FACILITIES, REGIONS, SOLAR_SYSTEMS, INVENTORY_TYPES "
             SQL &= "WHERE SAVED_FACILITIES.REGION_ID = REGIONS.regionID "
             SQL &= "And INVENTORY_TYPES.typeID = FACILITY_TYPE_ID "
             SQL &= "And SAVED_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-            SQL &= String.Format("And CHARACTER_ID = {0} ", CStr(SelectedCharacter.ID))
+            SQL &= String.Format("And CHARACTER_ID = {0} ", CStr(CharID))
             SQL &= String.Format("And PRODUCTION_TYPE = {0} And FACILITY_VIEW = {1} ", CStr(BuildType), CStr(SelectedView))
             SQL &= "And REGIONS.regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
             SQL &= "AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "' "
@@ -1805,28 +1808,21 @@ Public Class ManufacturingFacility
                 ' Not in there for either character or default, so use the defaults from lookup
                 Select Case FacilityType
 
-                    Case FacilityTypes.Outpost, FacilityTypes.Station
+                    Case FacilityTypes.Station
 
                         ' Load the Stations in system for the activity we are doing
-                        SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, NULL, NULL, NULL "
-                        SQL = SQL & "FROM STATION_FACILITIES WHERE OUTPOST  "
-
-                        ' Set flag for outpost just to delineate
-                        If FacilityType = FacilityTypes.Station Then
-                            SQL = SQL & " = " & CStr(StationType.Station) & " "
-                        Else
-                            SQL = SQL & " = " & CStr(StationType.Outpost) & " "
-                        End If
-                        SQL = SQL & "AND FACILITY_NAME = '" & FormatDBString(FacilityName) & "' "
+                        SQL = "SELECT DISTINCT FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX "
+                        SQL = SQL & "FROM STATION_FACILITIES "
+                        SQL = SQL & "WHERE FACILITY_NAME = '" & FormatDBString(FacilityName) & "' "
 
                     Case FacilityTypes.POS
 
-                        SQL = "SELECT ARRAY_TYPE_ID AS FACILITY_ID, ARRAY_TYPE_ID, " & CStr(POSTaxRate) & " as TAX, NULL, NULL, NULL "
+                        SQL = "SELECT ARRAY_TYPE_ID AS FACILITY_ID, ARRAY_TYPE_ID, " & CStr(POSTaxRate) & " as TAX "
                         SQL = SQL & "FROM ASSEMBLY_ARRAYS WHERE ARRAY_NAME = '" & FormatDBString(FacilityName) & "' "
 
                     Case FacilityTypes.UpwellStructure
 
-                        SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID AS FACILITY_ID, UPWELL_STRUCTURE_TYPE_ID, " & CStr(POSTaxRate) & " as TAX, NULL, NULL, NULL "
+                        SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID AS FACILITY_ID, UPWELL_STRUCTURE_TYPE_ID, " & CStr(POSTaxRate) & " as TAX "
                         SQL &= "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
 
                 End Select
@@ -1872,19 +1868,12 @@ Public Class ManufacturingFacility
 
                 ' Pull data for ME/TE/CE
                 Select Case FacilityType
-                    Case FacilityTypes.Outpost, FacilityTypes.Station
+                    Case FacilityTypes.Station
 
                         ' Load the Stations in system for the activity we are doing
                         SQL = "SELECT DISTINCT MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
-                        SQL = SQL & "FROM STATION_FACILITIES WHERE OUTPOST  "
-
-                        ' Set flag for outpost just to delineate
-                        If FacilityType = FacilityTypes.Station Then
-                            SQL = SQL & " = " & CStr(StationType.Station) & " "
-                        Else
-                            SQL = SQL & " = " & CStr(StationType.Outpost) & " "
-                        End If
-                        SQL = SQL & "AND FACILITY_NAME = '" & FormatDBString(FacilityName) & "' "
+                        SQL = SQL & "FROM STATION_FACILITIES "
+                        SQL = SQL & "WHERE FACILITY_NAME = '" & FormatDBString(FacilityName) & "' "
 
                     Case FacilityTypes.POS
 
@@ -1913,32 +1902,18 @@ Public Class ManufacturingFacility
                 rsStats = DBCommand.ExecuteReader
                 rsStats.Read()
 
-                ' If the saved values are there, use those, else use the stats pull data
-                If IsDBNull(rsLoader.GetValue(3)) Then
-                    MaterialMultiplier = rsStats.GetDouble(0)
-                Else
-                    MaterialMultiplier = rsLoader.GetDouble(3)
-                End If
-
-                If IsDBNull(rsLoader.GetValue(4)) Then
-                    TimeMultiplier = rsStats.GetDouble(1)
-                Else
-                    TimeMultiplier = rsLoader.GetDouble(4)
-                End If
-
-                If IsDBNull(rsLoader.GetValue(5)) Then
-                    CostMultiplier = rsStats.GetDouble(2)
-                Else
-                    CostMultiplier = rsLoader.GetDouble(5)
-                End If
+                ' Set multipliers
+                MaterialMultiplier = rsStats.GetDouble(0)
+                TimeMultiplier = rsStats.GetDouble(1)
+                CostMultiplier = rsStats.GetDouble(2)
 
                 rsStats.Close()
-                rsLoader.Close()
-
             Else
                 ' Set the facility to none if not found
                 FacilityType = FacilityTypes.None
             End If
+
+            rsLoader.Close()
 
         End If
 
@@ -1992,27 +1967,49 @@ Public Class ManufacturingFacility
                         securityAttribute = ItemAttributes.nullSecModifier
                     End If
 
+                    ' Get a list of the IDs that we want to use the thukker mat bonus on
+                    Dim ThukkerRigIDs As New List(Of Integer)
+                    Dim AttributeID As Integer = 0
+
+                    SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708"
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsLoader = DBCommand.ExecuteReader
+
+                    While rsLoader.Read
+                        ThukkerRigIDs.Add(rsLoader.GetInt32(0))
+                    End While
+
+                    rsLoader.Close()
+
                     ' Now, adjust the MM, TM, CM based on modules installed
                     For Each RigID In InstalledModules
                         ' Look up the bonus while adjusting for the type of space we are in
-                        SQL = "SELECT attributeID, "
-                        SQL &= "ABS((COALESCE(VALUEFLOAT, VALUEINT) * (SELECT COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1}))/100) AS BONUS "
-                        SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2593,2594,2595,2713,2714,2653) "
-                        SQL &= "AND COALESCE(VALUEFLOAT, VALUEINT) <> 0 AND TYPEID = {0}"
+                        SQL = "Select attributeID, "
+                        SQL &= "ABS((COALESCE(VALUEFLOAT, VALUEINT) * (Select COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} And ATTRIBUTEID = {1}))/100) As BONUS "
+                        SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID In (2593,2594,2595,2713,2714,2653) "
+                        SQL &= "And COALESCE(VALUEFLOAT, VALUEINT) <> 0 And TYPEID = {0}"
                         SQL = String.Format(SQL, RigID, CInt(securityAttribute))
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsLoader = DBCommand.ExecuteReader
 
                         While rsLoader.Read()
+                            AttributeID = rsLoader.GetInt32(0)
                             ' Adjust MM, TM, CM by attribute and set the base to this as well, override whatever they had before
-                            Select Case rsLoader.GetInt32(0)
+                            Select Case AttributeID
                                 Case ItemAttributes.attributeEngRigCostBonus
+                                    ' Cost
                                     CostMultiplier = CostMultiplier * (1 - rsLoader.GetDouble(1))
                                     SelectedFacility.BaseCost = CostMultiplier
                                 Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
-                                    MaterialMultiplier = MaterialMultiplier * (1 - rsLoader.GetDouble(1))
-                                    SelectedFacility.BaseME = MaterialMultiplier
+                                    ' ME - Thukker only applies to cap components and advanced versions, else use the regular bonus
+                                    If (ThukkerRigIDs.Contains(RigID) And AttributeID = ItemAttributes.attributeThukkerEngRigMatBonus _
+                                        And (ItemGroupID = ItemIDs.AdvCapitalComponentGroupID Or ItemGroupID = ItemIDs.CapitalComponentGroupID)) _
+                                        Or Not ThukkerRigIDs.Contains(RigID) And AttributeID <> ItemAttributes.attributeThukkerEngRigMatBonus Then
+                                        MaterialMultiplier = MaterialMultiplier * (1 - rsLoader.GetDouble(1))
+                                        SelectedFacility.BaseME = MaterialMultiplier
+                                    End If
                                 Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
+                                    ' TE
                                     TimeMultiplier = TimeMultiplier * (1 - rsLoader.GetDouble(1))
                                     SelectedFacility.BaseTE = TimeMultiplier
                             End Select
@@ -2109,12 +2106,12 @@ Public Class ManufacturingFacility
         Dim CostText As String = FormatPercent(1 - CostMultiplier, 2)
         Dim TaxText As String = FormatPercent(Tax, 1)
 
-        If FacilityType = FacilityTypes.Outpost Or FacilityType = FacilityTypes.UpwellStructure Then
+        If FacilityType = FacilityTypes.UpwellStructure Then
             txtFacilityManualME.Enabled = True
             txtFacilityManualTE.Enabled = True
             txtFacilityManualTax.Enabled = True
             txtFacilityManualCost.Enabled = True
-        Else ' Disable for non-outpost/citadel
+        Else ' Disable for non-upwell
             txtFacilityManualME.Enabled = False
             txtFacilityManualTE.Enabled = False
             txtFacilityManualTax.Enabled = False
@@ -2392,8 +2389,9 @@ Public Class ManufacturingFacility
                         SentFrom = SentFromLocation.ManufacturingTab
                     End If
                     With SelectedBlueprint
-                        Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+                        'Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
                     End With
+                    Call frmMain.UpdateBPPriceLabels()
                 End If
             End If
 
@@ -2486,14 +2484,14 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityCapComponentManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
                     Else
                         SelectedProductionType = ProductionType.ComponentManufacturing
                         SelectedBPCategoryID = ItemIDs.ComponentCategoryID
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityComponentManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
                     End If
                 Case ProductionType.T3DestroyerManufacturing, ProductionType.T3CruiserManufacturing
                     If chkFacilityToggle.Checked Then
@@ -2501,19 +2499,54 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
                     Else
                         SelectedBPCategoryID = ItemIDs.ShipCategoryID
                         SelectedBPGroupID = ItemIDs.StrategicCruiserGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
                     End If
             End Select
         End If
     End Sub
 
 #Region "Support Functions"
+
+    ' Determines if the BP has buildable components
+    Private Function BPHasBuildableComponents(BPID As Long) As Boolean
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+
+        SQL = "SELECT MATERIAL_ID, MATERIAL_GROUP FROM ALL_BLUEPRINT_MATERIALS "
+        SQL &= "WHERE BLUEPRINT_ID = " & BPID & " AND ACTIVITY IN (1,11) "
+
+        'Look up the material groups for the bp's materials
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+
+        While readerBP.Read
+            ' Look up each one, if any are true then return
+
+        End While
+        If Not BPUsesReactions("", UserApplicationSettings) Then
+
+        End If
+
+        If Not BPUsesReactions(readerBP.GetString(10), BPUserSettings) Then
+            SQLAdd = " AND BLUEPRINT_GROUP NOT LIKE '%Reaction Formulas'"
+        Else
+            SQLAdd = ""
+        End If
+
+        ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
+        SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerME = DBCommand.ExecuteReader
+
+        Return False
+
+    End Function
 
     ' Selects the facility and returns it and sets the activity on the facility found
     Private Function SelectFacility(ByVal BuildType As ProductionType, ByVal IsDefault As Boolean) As IndustryFacility
@@ -2671,10 +2704,10 @@ Public Class ManufacturingFacility
         cmbFacilityRegion.Text = "Select Region"
         cmbFacilityRegion.Enabled = False
         cmbFacilitySystem.Items.Clear()
-        cmbFacilitySystem.Text = "Select System"
+        cmbFacilitySystem.Text = InitialSolarSystemComboText
         cmbFacilitySystem.Enabled = False
         cmbFacilityorArray.Items.Clear()
-        cmbFacilityorArray.Text = "Select Facility / Array"
+        cmbFacilityorArray.Text = InitialFacilityComboText
         chkFacilityIncludeUsage.Enabled = False
 
         If Not IsNothing(chkFacilityIncludeCost) Then
@@ -2719,7 +2752,7 @@ Public Class ManufacturingFacility
     End Function
 
     ' Translates facility code into name
-    Private Function GetFacilityNameCode(FacilityType As FacilityTypes) As String
+    Private Function GetFacilityNamefromCode(FacilityType As FacilityTypes) As String
         Dim rsLookup As SQLiteDataReader
 
         DBCommand = New SQLiteCommand("SELECT FACILITY_TYPE_NAME FROM FACILITY_TYPES WHERE FACILITY_TYPE_ID = " & CInt(FacilityType), EVEDB.DBREf)
@@ -3268,7 +3301,7 @@ Public Class ManufacturingFacility
         End If
 
         If OverrideActivity <> "" Then
-            SelectedActivity = ActivityManufacturing
+            SelectedActivity = OverrideActivity
         Else
             SelectedActivity = ActivityManufacturing
         End If
@@ -3615,7 +3648,6 @@ Public Enum FacilityTypes
     None = -1
     Station = 0
     POS = 1
-    Outpost = 2
     UpwellStructure = 3
 End Enum
 
@@ -3763,15 +3795,19 @@ Public Class IndustryFacility
         SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityTab))
 
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
-        Dim UsedCharID As String = ""
+        Dim CharID As String = ""
+
+        ' See what type of character ID
+        If UserApplicationSettings.SaveFacilitiesbyChar Then
+            CharID = CStr(SelectedCharacter.ID)
+        Else
+            CharID = CStr(CommonSavedFacilitiesID)
+        End If
 
         ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
-        DBCommand = New SQLiteCommand(SQL & String.Format(SQLCharID, CStr(SelectedCharacter.ID)), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL & String.Format(SQLCharID, CStr(CharID)), EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
         rsLoader.Read()
-
-        ' Save for use later if needed
-        UsedCharID = CStr(SelectedCharacter.ID)
 
         If Not rsLoader.HasRows Then
             ' Need to look up the default
@@ -3779,7 +3815,6 @@ Public Class IndustryFacility
             DBCommand = New SQLiteCommand(SQL & String.Format(SQLCharID, "0"), EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
-            UsedCharID = "0"
         End If
 
         ' Should have data one way or another now
@@ -3834,7 +3869,7 @@ Public Class IndustryFacility
                 If FacilityType = FacilityTypes.POS Then
                     SQL = "SELECT DISTINCT ARRAY_NAME, " & CStr(POSTaxRate) & " AS FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
                     SQL = SQL & "FROM ASSEMBLY_ARRAYS WHERE ARRAY_TYPE_ID = " & CStr(FacilityTypeID) & " " ' use typeid for the module used
-                ElseIf FacilityType = FacilityTypes.Station Or FacilityType = FacilityTypes.Outpost Then ' Stations, outposts
+                ElseIf FacilityType = FacilityTypes.Station Then ' Stations
                     SQL = "SELECT DISTINCT FACILITY_NAME, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
                     SQL = SQL & "FROM STATION_FACILITIES WHERE FACILITY_ID = " & CStr(FacilityID) & " "
                 ElseIf FacilityType = FacilityTypes.UpwellStructure Then
@@ -3920,9 +3955,17 @@ ExitBlock:
         Dim rsCheck As SQLiteDataReader
 
         Try
+            ' See what type of character ID
+            Dim CharID As Long = 0
+            If UserApplicationSettings.SaveFacilitiesbyChar Then
+                CharID = CharacterID
+            Else
+                CharID = CommonSavedFacilitiesID
+            End If
+
             ' See if the record exists - only save one set of facilities for now
             SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
-                            CInt(FacilityProductionType), CInt(ViewType), CharacterID)
+                            CInt(FacilityProductionType), CInt(ViewType), CharID)
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
 
@@ -3940,7 +3983,7 @@ ExitBlock:
                 TempSQL &= "INCLUDE_ACTIVITY_USAGE = {8}, "
                 TempSQL &= "FACILITY_TAX = {9}, "
 
-                If FacilityType = FacilityTypes.Outpost Or FacilityType = FacilityTypes.UpwellStructure Then
+                If FacilityType = FacilityTypes.UpwellStructure Then
                     ' if what they have now is different from what they started with, then they made a change
                     ' for upwell structures, the base is updated when they make changes to the facility fitting
                     If MaterialMultiplier <> BaseME Then
@@ -3975,7 +4018,7 @@ ExitBlock:
                 Dim TEValue As String = "NULL"
                 Dim CostValue As String = "NULL"
 
-                If FacilityType = FacilityTypes.Outpost Or FacilityType = FacilityTypes.UpwellStructure Then
+                If FacilityType = FacilityTypes.UpwellStructure Then
                     ' if what they have now is different from what they started with, then they made a change
                     ' for upwell structures, the base is updated when they make changes to the facility fitting
                     If MaterialMultiplier <> BaseME Then
@@ -3992,7 +4035,7 @@ ExitBlock:
 
                 ' Insert
                 SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15})",
-                                CharacterID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, CInt(FacilityType), FacilityTypeID,
+                                CharID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, CInt(FacilityType), FacilityTypeID,
                                 RegionID, SolarSystemID, ActivityCostPerSecond,
                                 CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage),
                                 TaxRate, MEValue, TEValue, CostValue)
@@ -4080,8 +4123,6 @@ ExitBlock:
         Select Case FacilityType
             Case FacilityTypes.POS
                 Return ManufacturingFacility.POSFacility
-            Case FacilityTypes.Outpost
-                Return ManufacturingFacility.OutpostFacility
             Case FacilityTypes.Station
                 Return ManufacturingFacility.StationFacility
             Case FacilityTypes.UpwellStructure

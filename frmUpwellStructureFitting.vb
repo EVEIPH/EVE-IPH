@@ -388,6 +388,7 @@ Public Class frmUpwellStructureFitting
 
     ' Loads the image in the first free slot if available - use for double-click an item
     Private Sub LoadImageInFreeSlot(ByVal ModuleTypeID As Integer, ByVal ModuleName As String, ByVal GroupTag As String, ByVal GroupName As String)
+        Dim DummyImage As New Bitmap(64, 64)
 
         ' Loop through all the picture boxes and add the first one that is empty
         For Each Slot In SlotPictureBoxList
@@ -402,6 +403,10 @@ Public Class frmUpwellStructureFitting
                 ' Set the image info if nothing, then exit
                 If IsNothing(Slot.Image) Then
                     Slot.Image = FittingImages.Images(CStr(ModuleTypeID))
+                    If IsNothing(Slot.Image) Then
+                        Slot.Image = My.Resources.XImage
+                        Slot.BackgroundImage = Nothing
+                    End If
                     Slot.Image.Tag = ModuleTypeID
                     Slot.Tag = GroupName
                     Slot.Text = ModuleName
@@ -1053,6 +1058,7 @@ Public Class frmUpwellStructureFitting
             ReturnItems.Add(Entry)
         End If
 
+        ' Rigs!
         If Not IsNothing(RigSlot1.Image) Then
             Entry.typeID = CInt(RigSlot1.Image.Tag)
             Entry.moduleType = CStr(RigSlot1.Tag)
@@ -1643,9 +1649,18 @@ Public Class frmUpwellStructureFitting
 
             ' If there are rigs fit to this, then delete any saved multipliers they have 
             If Not IsNothing(RigSlot1.Image) Or Not IsNothing(RigSlot2.Image) Or Not IsNothing(RigSlot3.Image) Then
+
+                ' See what type of character ID
+                Dim CharID As Long = 0
+                If UserApplicationSettings.SaveFacilitiesbyChar Then
+                    CharID = SelectedCharacterID
+                Else
+                    CharID = CommonSavedFacilitiesID
+                End If
+
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
                 SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
-                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView)))
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView)))
             End If
 
             EVEDB.CommitSQLiteTransaction()
@@ -1701,7 +1716,6 @@ Public Class frmUpwellStructureFitting
                 ' Engineering Rigs
                 Select Case InstalledModule.moduleType
                     Case "EngineeringRigs"
-
                         SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
                         SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
                         SQL &= "AT.displayName AS BONUS_NAME, "
@@ -1712,7 +1726,23 @@ Public Class frmUpwellStructureFitting
                         SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON ERB.categoryID = INVENTORY_CATEGORIES.categoryID "
                         SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
                         SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
-                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%')"
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%') "
+                        SQL &= "AND (ERB.groupID NOT IN (873,913) OR ERB.groupID IS NULL) "
+                        SQL &= "AND BONUS <> 0 AND TA.typeID = {0} "
+                        ' The rest is for thukker bonus (if it applies)
+                        SQL &= "UNION "
+                        SQL &= "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
+                        SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
+                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "typeName AS BONUS_SOURCE "
+                        SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
+                        SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
+                        SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON ERB.categoryID = INVENTORY_CATEGORIES.categoryID "
+                        SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
+                        SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeThukkerEngRig%' OR attributeName LIKE 'attributeEngRig%') "
+                        SQL &= "AND TA.attributeID <> 2594 AND ERB.groupID IN (873,913) "
 
                     Case "CombatRigs"
 
@@ -1766,7 +1796,7 @@ Public Class frmUpwellStructureFitting
                         Exit For
                 End Select
 
-                SQL &= "AND BONUS <> 0 AND TA.typeID = {0} ORDER BY BONUS "
+                SQL &= "AND BONUS <> 0 AND TA.typeID = {0} "
 
                 DBCommand = New SQLiteCommand(String.Format(SQL, InstalledModule.typeID), EVEDB.DBREf)
                 rsReader = DBCommand.ExecuteReader
@@ -1774,7 +1804,6 @@ Public Class frmUpwellStructureFitting
                 While rsReader.Read
                     ' Insert a row with the data pulled
                     ' Columns: Bonus Applies to, Activity, Bonuses, Bonus Source
-
                     BonusList = New ListViewItem(rsReader.GetString(0)) ' Group or Category bonus is applied
                     BonusList.SubItems.Add(CStr(rsReader.GetString(1))) ' Activity
                     BonusList.SubItems.Add(CStr(rsReader.GetString(2)) & ": " & FormatPercent(rsReader.GetDouble(3), 2)) ' Combine bonus and bonus name

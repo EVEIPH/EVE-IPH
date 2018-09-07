@@ -164,7 +164,6 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityType.Name = "cmbFacilityType"
         Me.cmbFacilityType.Size = New System.Drawing.Size(65, 21)
         Me.cmbFacilityType.TabIndex = 3
-        Me.cmbFacilityType.Text = "Type"
         '
         'cmbLargeShips
         '

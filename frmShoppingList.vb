@@ -185,7 +185,7 @@ Public Class frmShoppingList
         If UserApplicationSettings.ShowToolTips Then
             ttMain.SetToolTip(btnShowAssets, "Show Assets")
             ttMain.SetToolTip(chkFees, "When checked, will total all items listed in buy list as 'Buy Order'.")
-            ttMain.SetToolTip(chkBuyorBuyOrder, "When checked, IPH will attempt to determine whether it is better to buy the item directly off of the market or to set up a buy order.")
+            ttMain.SetToolTip(chkBuyorBuyOrder, "Tri-check, IPH will attempt to determine whether it is better to buy the item directly off of the market or to set up a buy order. Unchecked - buy order, Checked - compare order to market, Tri-check - buy market only")
             ttMain.SetToolTip(chkUsage, "Estimated Usage Fees to build the items in the Items and Components to Build Lists.")
             ttMain.SetToolTip(lblAddlCosts, "Addtional costs you want to add to this shopping list (i.e. BPC costs). This value not affected by taxes or fees.")
             ttMain.SetToolTip(chkUpdateAssetsWhenUsed, "If checked, when updating the list with scanned assets IPH will subtract all used materials from your asset list.")
@@ -233,7 +233,14 @@ Public Class frmShoppingList
         chkUsage.Checked = UserShoppingListSettings.Usage
         chkFees.Checked = UserShoppingListSettings.Fees
         chkAlwaysOnTop.Checked = UserShoppingListSettings.AlwaysonTop
-        chkBuyorBuyOrder.Checked = UserShoppingListSettings.CalcBuyBuyOrder
+        Select Case UserShoppingListSettings.CalcBuyBuyOrder
+            Case 2
+                chkBuyorBuyOrder.CheckState = CheckState.Indeterminate
+            Case 1
+                chkBuyorBuyOrder.Checked = True
+            Case 0
+                chkBuyorBuyOrder.Checked = False
+        End Select
         chkEveListFormat.Checked = UserShoppingListSettings.UseEveFormat
         chkRebuildItemsfromList.Checked = UserShoppingListSettings.ReloadBPsFromFile
 
@@ -429,7 +436,7 @@ Public Class frmShoppingList
                         MaxBuyUnitPrice = StoredPrice
                     End If
 
-                    If chkBuyorBuyOrder.Checked And chkBuyorBuyOrder.Enabled = True And chkFees.Checked Then
+                    If chkBuyorBuyOrder.Checked And chkBuyorBuyOrder.Enabled = True And chkFees.Checked And chkBuyorBuyOrder.CheckState <> CheckState.Indeterminate Then
                         ' Now that we have the prices, compare the two
                         If MinSellUnitPrice <> 0 And MaxBuyUnitPrice <> 0 Then
 
@@ -454,7 +461,7 @@ Public Class frmShoppingList
                             BuyOrderText = Unknown
                             BuyOrderFees = 0
                         End If
-                    ElseIf chkFees.Checked = False Then
+                    ElseIf chkFees.Checked = False Or (chkBuyorBuyOrder.CheckState = CheckState.Indeterminate And chkBuyorBuyOrder.Enabled = True) Then
                         ' User wants to buy all from market, don't apply broker fees
                         BuyOrderText = BuyMarket
                     ElseIf chkFees.Checked = True And chkBuyorBuyOrder.Checked = False Then
@@ -971,7 +978,15 @@ Public Class frmShoppingList
         TempList.UpdateAssetsWhenUsed = chkUpdateAssetsWhenUsed.Checked
         TempList.Usage = chkUsage.Checked
         TempList.Fees = chkFees.Checked
-        TempList.CalcBuyBuyOrder = chkBuyorBuyOrder.Checked
+
+        If chkBuyorBuyOrder.CheckState = CheckState.Indeterminate Then
+            TempList.CalcBuyBuyOrder = 2
+        ElseIf chkBuyorBuyOrder.Checked = True Then
+            TempList.CalcBuyBuyOrder = 1
+        Else
+            TempList.CalcBuyBuyOrder = 0
+        End If
+
         TempList.UseEveFormat = chkEveListFormat.Checked
         TempList.ReloadBPsFromFile = chkRebuildItemsfromList.Checked
 
@@ -1655,7 +1670,7 @@ Public Class frmShoppingList
         End If
     End Sub
 
-    Private Sub chkBuyorBuyOrder_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBuyorBuyOrder.CheckedChanged
+    Private Sub chkBuyorBuyOrder_Click(sender As System.Object, e As System.EventArgs) Handles chkBuyorBuyOrder.Click
         If Not FirstLoad Then
             ' Reload the list
             Call LoadBuyList()

@@ -80,6 +80,8 @@ Public Class ProgramSettings
     Public DefaultRefreshFacilityESIDataonStartup As Boolean = True
     Public DefaultDisableSound As Boolean = False
     Public DefaultDNMarkInlineasOwned As Boolean = False
+    Public DefaultSaveFacilitiesbyChar As Boolean = True
+    Public DefaultLoadBPsbyChar As Boolean = True
 
     Public DefaultBuildBaseInstall As Double = 1000
     Public DefaultBuildBaseHourly As Double = 333
@@ -112,6 +114,8 @@ Public Class ProgramSettings
     Public DefaultCheckBuildBuy As Boolean = False
     Public DefaultIgnoreRareandShipSkinBPs As Boolean = True
     Public DefaultSaveBPRelicsDecryptors As Boolean = False
+
+    Public DefaultBuiltMatsType As Integer = 1 ' use enum BuildMatType
 
     Public DefaultSettingME As Integer = 0
     Public DefaultSettingTE As Integer = 0
@@ -419,6 +423,7 @@ Public Class ProgramSettings
     Public DefaultIndustryColumnWidth As Integer = 100
     Public DefaultOrderByColumn As Integer = 3
     Public DefaultOrderType As String = "Ascending"
+    Public DefaultAutoUpdateJobs As Boolean = True
 
     ' Column Names for industry jobs viewer
     Public Const JobStateColumn As String = "Job State"
@@ -783,7 +788,7 @@ Public Class ProgramSettings
     Private DefaultAlwaysonTop As Boolean = False
     Private DefaultUpdateAssetsWhenUsed As Boolean = False
     Private DefaultFees As Boolean = True
-    Private DefaultCalcBuyBuyOrder As Boolean = True
+    Private DefaultCalcBuyBuyOrder As Integer = 1
     Private DefaultUsage As Boolean = True
     Private DefaultUseEveFormat As Boolean = True
     Private DefaultReloadBPsFromFile As Boolean = True
@@ -1103,6 +1108,9 @@ Public Class ProgramSettings
                     .AutoUpdateSVRonBPTab = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AutoUpdateSVRonBPTab", DefaultAutoUpdateSVRonBPTab))
                     .ProxyAddress = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "ProxyAddress", DefaultProxyAddress))
                     .ProxyPort = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "ProxyPort", DefaultProxyPort))
+                    .BuildT2T3Materials = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType))
+                    .SaveFacilitiesbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveFacilitiesbyChar", DefaultSaveFacilitiesbyChar))
+                    .LoadBPsbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadBPsbyChar", DefaultLoadBPsbyChar))
                 End With
 
             Else
@@ -1166,6 +1174,11 @@ Public Class ProgramSettings
 
             .ProxyAddress = DefaultProxyAddress
             .ProxyPort = DefaultProxyPort
+
+            .LoadBPsbyChar = DefaultLoadBPsbyChar
+            .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
+
+            .BuildT2T3Materials = DefaultBuiltMatsType
         End With
 
         ' Save locally
@@ -1176,7 +1189,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(28) As Setting
+        Dim ApplicationSettingsList(31) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1208,6 +1221,9 @@ Public Class ProgramSettings
             ApplicationSettingsList(26) = New Setting("AutoUpdateSVRonBPTab", CStr(SentSettings.AutoUpdateSVRonBPTab))
             ApplicationSettingsList(27) = New Setting("ProxyAddress", CStr(SentSettings.ProxyAddress))
             ApplicationSettingsList(28) = New Setting("ProxyPort", CStr(SentSettings.ProxyPort))
+            ApplicationSettingsList(29) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
+            ApplicationSettingsList(30) = New Setting("SaveFacilitiesbyChar", CStr(SentSettings.SaveFacilitiesbyChar))
+            ApplicationSettingsList(31) = New Setting("LoadBPsbyChar", CStr(SentSettings.LoadBPsbyChar))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1243,7 +1259,7 @@ Public Class ProgramSettings
                 TempSettings = SetDefaultAppRegistrationInfromationSettings()
             End If
         Catch ex As Exception
-            MsgBox("An error occured when loading Shopping List Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            MsgBox("An error occured when loading Application Registration Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
             ' Load defaults 
             TempSettings = SetDefaultAppRegistrationInfromationSettings()
         End Try
@@ -1310,7 +1326,7 @@ Public Class ProgramSettings
                     .AlwaysonTop = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "AlwaysonTop", DefaultAlwaysonTop))
                     .UpdateAssetsWhenUsed = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "UpdateAssetsWhenUsed", DefaultUpdateAssetsWhenUsed))
                     .Fees = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Fees", DefaultFees))
-                    .CalcBuyBuyOrder = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "CalcBuyBuyOrder", DefaultCalcBuyBuyOrder))
+                    .CalcBuyBuyOrder = CInt(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeInteger, ShoppingListSettingsFileName, "CalcBuyBuyOrder", DefaultCalcBuyBuyOrder))
                     .Usage = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Usage", DefaultUsage))
                     .UseEveFormat = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "UseEveFormat", DefaultUseEveFormat))
                     .ReloadBPsFromFile = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "ReloadBPsFromFile", DefaultReloadBPsFromFile))
@@ -2837,6 +2853,7 @@ Public Class ProgramSettings
                     .OrderType = CStr(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeString, IndustryJobsColumnSettingsFileName, "OrderType", DefaultOrderType))
                     .JobTimes = CStr(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeString, IndustryJobsColumnSettingsFileName, "JobTimes", DefaultJobTimes))
                     .SelectedCharacterIDs = CStr(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeString, IndustryJobsColumnSettingsFileName, "SelectedCharacterIDs", DefaultSelectedCharacterIDs))
+                    .AutoUpdateJobs = CBool(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeBoolean, IndustryJobsColumnSettingsFileName, "AutoUpdateJobs", DefaultAutoUpdateJobs))
 
                 End With
 
@@ -2910,6 +2927,8 @@ Public Class ProgramSettings
 
             .SelectedCharacterIDs = DefaultSelectedCharacterIDs
 
+            .AutoUpdateJobs = DefaultAutoUpdateJobs
+
         End With
 
         ' Save locally
@@ -2920,7 +2939,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryJobsColumnSettings(SentSettings As IndustryJobsColumnSettings)
-        Dim IndustryJobsColumnSettingsList(42) As Setting
+        Dim IndustryJobsColumnSettingsList(43) As Setting
 
         Try
             IndustryJobsColumnSettingsList(0) = New Setting("JobState", CStr(SentSettings.JobState))
@@ -2970,6 +2989,8 @@ Public Class ProgramSettings
 
             IndustryJobsColumnSettingsList(41) = New Setting("JobType", CStr(SentSettings.JobType))
             IndustryJobsColumnSettingsList(42) = New Setting("JobTypeWidth", CStr(SentSettings.JobTypeWidth))
+
+            IndustryJobsColumnSettingsList(43) = New Setting("AutoUpdateJobs", CStr(SentSettings.AutoUpdateJobs))
 
             Call WriteSettingsToFile(SettingsFolder, IndustryJobsColumnSettingsFileName, IndustryJobsColumnSettingsList, IndustryJobsColumnSettingsFileName)
 
@@ -4757,6 +4778,9 @@ Public Structure ApplicationSettings
     Dim DisableSound As Boolean
     Dim IncludeInGameLinksinCopyText As Boolean
 
+    Dim SaveFacilitiesbyChar As Boolean
+    Dim LoadBPsbyChar As Boolean
+
     ' Station Standings for building and selling
     Dim BrokerCorpStanding As Double
     Dim BrokerFactionStanding As Double
@@ -4788,7 +4812,15 @@ Public Structure ApplicationSettings
     Dim ProxyAddress As String
     Dim ProxyPort As Integer
 
+    Dim BuildT2T3Materials As Integer ' How they want to build T2/T3 items (BuildMatType)
+
 End Structure
+
+Public Enum BuildMatType
+    AdvMaterials = 1
+    ProcessedMaterials = 2
+    RawMaterials = 3
+End Enum
 
 ' For BP Tab Settings
 Public Structure BPTabSettings
@@ -5259,6 +5291,9 @@ Public Structure IndustryJobsColumnSettings
     ' List of selected characters, comma separated - default is going to be empty but will automatically choose the selected character
     Dim SelectedCharacterIDs As String
 
+    ' Whether we automatically update jobs every time they open the window - if not checked, they need to hit 'Update Jobs'
+    Dim AutoUpdateJobs As Boolean
+
 End Structure
 
 ' If we show these columns or not
@@ -5591,7 +5626,7 @@ Public Structure ShoppingListSettings
     Dim AlwaysonTop As Boolean
     Dim UpdateAssetsWhenUsed As Boolean
     Dim Fees As Boolean
-    Dim CalcBuyBuyOrder As Boolean
+    Dim CalcBuyBuyOrder As Integer
     Dim Usage As Boolean
     Dim UseEveFormat As Boolean
     Dim ReloadBPsFromFile As Boolean

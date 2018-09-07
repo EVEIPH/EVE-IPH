@@ -170,10 +170,22 @@
     <Compile Include="frmBonusPopout.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmChooseFacility.Designer.vb">
+      <DependentUpon>frmChooseFacility.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmChooseFacility.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmLoadESIAuthorization.Designer.vb">
       <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
     </Compile>
     <Compile Include="frmLoadESIAuthorization.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmManualESI.Designer.vb">
+      <DependentUpon>frmManualESI.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmManualESI.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMETE.Designer.vb">
@@ -186,12 +198,6 @@
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
     </Compile>
     <Compile Include="frmUpwellStructureFitting.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmFacilityTest.Designer.vb">
-      <DependentUpon>frmFacilityTest.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmFacilityTest.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ManufacturingFacility.Designer.vb">
@@ -472,17 +478,20 @@
     <EmbeddedResource Include="frmBonusPopout.resx">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmChooseFacility.resx">
+      <DependentUpon>frmChooseFacility.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmLoadESIAuthorization.resx">
       <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmManualESI.resx">
+      <DependentUpon>frmManualESI.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMETE.resx">
       <DependentUpon>frmMETE.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmUpwellStructureFitting.resx">
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFacilityTest.resx">
-      <DependentUpon>frmFacilityTest.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
@@ -631,6 +640,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <Content Include="Resources\XImage.png" />
+    <None Include="XImage.png" />
     <None Include="Resources\46_64_1.png" />
     <None Include="Resources\46_64_2.png" />
     <None Include="packages.config" />
