@@ -5246,7 +5246,6 @@ Tabs:
         Dim ItemGroupID As Integer
         Dim ItemCategoryID As Integer
         Dim BPGroup As String
-        Dim BPHasComponents As Boolean
 
         ' Set the number of runs to 1 if it's blank
         If Trim(txtBPRuns.Text) = "" Then
@@ -5307,7 +5306,7 @@ Tabs:
         readerBP.Close()
 
         ' Load the facilty based on the groupid and categoryid
-        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech, BPHasComponents)
+        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech)
 
         ' Load the image
         Call LoadBlueprintPicture(BPID, ItemType)
@@ -15599,7 +15598,7 @@ ExitCalc:
                         BuildBuy = True
                     End If
 
-                    If FoundItem.CalcType = "Raw" Or BuildBuy = True Then
+                    If FoundItem.CalcType = "Raw Materials" Or BuildBuy = True Then
                         CopyRaw = True
                     Else
                         CopyRaw = False

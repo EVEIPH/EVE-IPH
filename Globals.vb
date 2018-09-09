@@ -2309,21 +2309,4 @@ InvalidDate:
 
     End Function
 
-    Public Function BPUsesReactions(MaterialGroup As String, CheckUserSettings As ApplicationSettings) As Boolean
-        ' See what material type this is and if we want to build it (reactions)
-        Select Case MaterialGroup
-            Case "Composite" ' will use intermediate material - or raw material, which we need to set this too for full drill down
-                If CheckUserSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Or CheckUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
-                    Return True
-                End If
-            Case "Intermediate Materials", "Hybrid Polymers" ' will use mats: "Moon Material", "Harvestable Cloud"
-                If CheckUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
-                    Return True
-                End If
-        End Select
-
-        Return False
-
-    End Function
-
 End Module

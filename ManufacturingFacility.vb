@@ -491,73 +491,7 @@ Public Class ManufacturingFacility
 
                 ' Set the initial group/category IDs
                 ' also set the activity combo text to show what type of activity this facility is, even if not visible
-                Select Case InitialProductionType
-                    Case ProductionType.Manufacturing
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.FrigateGroupID
-                        SelectedBPTech = BPTechLevel.T2
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.CapitalComponentManufacturing
-                        SelectedBPCategoryID = ItemIDs.CapitalComponentGroupID
-                        SelectedBPGroupID = ItemIDs.None
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityCapComponentManufacturing
-                    Case ProductionType.ComponentManufacturing
-                        SelectedBPCategoryID = ItemIDs.ComponentCategoryID
-                        SelectedBPGroupID = ItemIDs.None
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityComponentManufacturing
-                    Case ProductionType.CapitalManufacturing
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.CarrierGroupID
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.SuperManufacturing
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.SupercarrierGroupID
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.T3CruiserManufacturing
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.StrategicCruiserGroupID
-                        SelectedBPTech = BPTechLevel.T3
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.SubsystemManufacturing
-                        SelectedBPCategoryID = ItemIDs.SubsystemCategoryID
-                        SelectedBPGroupID = ItemIDs.None
-                        SelectedBPTech = BPTechLevel.T3
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.BoosterManufacturing
-                        SelectedBPCategoryID = ItemIDs.None
-                        SelectedBPGroupID = ItemIDs.BoosterGroupID
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                    Case ProductionType.Copying
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.FrigateGroupID
-                        SelectedBPTech = BPTechLevel.T2
-                        cmbFacilityActivities.Text = ActivityCopying
-                    Case ProductionType.Invention
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.FrigateGroupID
-                        SelectedBPTech = BPTechLevel.T2
-                        cmbFacilityActivities.Text = ActivityInvention
-                    Case ProductionType.Reactions
-                        SelectedBPCategoryID = ItemIDs.None
-                        SelectedBPGroupID = ItemIDs.ReactionPolymersGroupID
-                        SelectedBPTech = BPTechLevel.T1
-                        cmbFacilityActivities.Text = ActivityReactions
-                    Case ProductionType.T3Invention
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
-                        SelectedBPTech = BPTechLevel.T3
-                        cmbFacilityActivities.Text = ActivityInvention
-                    Case ProductionType.T3DestroyerManufacturing
-                        SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                        SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
-                        SelectedBPTech = BPTechLevel.T3
-                        cmbFacilityActivities.Text = ActivityManufacturing
-                End Select
+                Call GetFacilityBPItemData(InitialProductionType, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, cmbFacilityActivities.Text)
 
                 ' Load the defaults
                 Call InitializeFacilities(FacilityView.LimitedControls, InitialProductionType)
@@ -615,7 +549,31 @@ Public Class ManufacturingFacility
                 SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
 
+                ' POS Facilities
+                Call SelectedFacility.InitalizeFacility(ProductionType.POSFuelBlockManufacturing, ViewType)
+                SelectedPOSFuelBlockFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultPOSFuelBlockFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                Call SelectedFacility.InitalizeFacility(ProductionType.POSLargeShipManufacturing, ViewType)
+                SelectedPOSLargeShipFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultPOSLargeShipFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                Call SelectedFacility.InitalizeFacility(ProductionType.POSModuleManufacturing, ViewType)
+                SelectedPOSModuleFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                DefaultPOSModuleFacility = CType(SelectedFacility.Clone, IndustryFacility)
+
             Case FacilityView.LimitedControls
+
+                ' Load these if they will be used in manufacturing
+                If InitialProductionType = ProductionType.Manufacturing Then
+                    Call SelectedFacility.InitalizeFacility(ProductionType.POSFuelBlockManufacturing, ViewType)
+                    SelectedPOSFuelBlockFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultPOSFuelBlockFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.POSLargeShipManufacturing, ViewType)
+                    SelectedPOSLargeShipFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultPOSLargeShipFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.POSModuleManufacturing, ViewType)
+                    SelectedPOSModuleFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                    DefaultPOSModuleFacility = CType(SelectedFacility.Clone, IndustryFacility)
+                End If
 
                 ' Select what facility to load based on the industry type
                 Call SelectedFacility.InitalizeFacility(InitialProductionType, ViewType)
@@ -726,8 +684,7 @@ Public Class ManufacturingFacility
 
     ' Loads the class facility and objects
     Public Sub LoadFacility(ByVal ItemBPID As Integer, ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer, ByVal BlueprintTech As Integer,
-                            Optional ByVal LoadDefault As Boolean = False, Optional DefaultFacility As IndustryFacility = Nothing,
-                            Optional ByVal ComboSelect As Boolean = False)
+                            Optional ByVal LoadDefault As Boolean = False, Optional ByVal ComboSelect As Boolean = False)
 
         ' Save these for later use
         SelectedBPID = ItemBPID
@@ -737,7 +694,7 @@ Public Class ManufacturingFacility
 
         ' Process the activities combo if showing full controls
         If SelectedView = FacilityView.FullControls Then
-            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, BPHasBuildableComponents(SelectedBPID), ComboSelect)
+            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, SelectedBPID, ComboSelect)
             PreviousActivity = cmbFacilityActivities.Text
         End If
 
@@ -745,13 +702,8 @@ Public Class ManufacturingFacility
         SelectedProductionType = GetProductionType(ItemGroupID, ItemCategoryID, cmbFacilityActivities.Text)
         Application.DoEvents()
 
-        ' If we get a facility sent, load that, else load it up from the other information
-        If Not IsNothing(DefaultFacility) Then
-            SelectedFacility = DefaultFacility
-        Else
-            ' Look up Facility - activity set to facility inside
-            SelectedFacility = SelectFacility(SelectedProductionType, LoadDefault)
-        End If
+        ' Look up Facility - activity set to facility inside
+        SelectedFacility = SelectFacility(SelectedProductionType, LoadDefault)
 
         ' Facility Type combo, load it if they want to change
         Call LoadFacilityTypes(SelectedProductionType, SelectedFacility.Activity)
@@ -828,9 +780,10 @@ Public Class ManufacturingFacility
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
     Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer,
-                                      HasComponents As Boolean, FromComboSelect As Boolean)
+                                      BPID As Integer, FromComboSelect As Boolean)
 
         LoadingActivities = True
+        Dim HasComponents As Boolean = False
         Dim ActivityText As String = cmbFacilityActivities.Text ' Save what is selected first
         cmbFacilityActivities.BeginUpdate()
 
@@ -873,6 +826,23 @@ Public Class ManufacturingFacility
             End Select
         End If
 
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+
+        ' See if this has buildable components
+        SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINTS "
+        SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})"
+        DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+
+        If readerBP.Read Then
+            HasComponents = True
+        Else
+            HasComponents = False
+        End If
+
+        readerBP.Close()
+
         ' Add components as a manufacturing facility option if this bp has any
         If HasComponents Then
             Select Case BPGroupID
@@ -889,9 +859,32 @@ Public Class ManufacturingFacility
                     cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
             End Select
 
-            ' If they want to drill down on reacitons, add the reactions facility option
-            If BPUsesReactions(":", UserApplicationSettings) Then
-                cmbFacilityActivities.Items.Add(ActivityReactions)
+            SQL = ""
+            If UserApplicationSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Then
+                SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
+                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
+                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})) "
+                SQL &= "AND MATERIAL_GROUP IN ('Composite')"
+            ElseIf UserApplicationSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                SQL = "SELECT * FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
+                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN "
+                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
+                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
+                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})) "
+                SQL &= "AND MATERIAL_GROUP IN ('Composite', 'Hybrid Polymers'))) "
+                SQL &= "AND MATERIAL_GROUP IN ('Intermediate Materials','Harvestable Cloud')"
+            End If
+
+            If SQL <> "" Then
+                DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
+                readerBP = DBCommand.ExecuteReader
+
+                ' If they want to drill down on reacitons, add the reactions facility option
+                If readerBP.Read Then
+                    cmbFacilityActivities.Items.Add(ActivityReactions)
+                End If
+
+                readerBP.Close()
             End If
         End If
 
@@ -917,7 +910,7 @@ Public Class ManufacturingFacility
                 PreviousProductionType = SelectedProductionType
 
                 ' Load the facility for this activity - flag that it was loaded from this combo
-                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, Nothing, True)
+                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, True)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -979,12 +972,8 @@ Public Class ManufacturingFacility
                 End Select
             Case ActivityManufacturing
                 Select Case FacilityProductionType
-                    Case ProductionType.SuperManufacturing
-                        ' Check types, supers can only be built in a pos
-                        If POS <> "" Then cmbFacilityType.Items.Add(POS)
-                        If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
-                    Case ProductionType.BoosterManufacturing, ProductionType.SubsystemManufacturing, ProductionType.T3CruiserManufacturing, ProductionType.T3DestroyerManufacturing
-                        ' Can be built in and POS
+                    Case ProductionType.SuperManufacturing, ProductionType.SubsystemManufacturing, ProductionType.T3CruiserManufacturing, ProductionType.T3DestroyerManufacturing
+                        ' Can be built in and POS and structure
                         If POS <> "" Then cmbFacilityType.Items.Add(POS)
                         If UpwellStructure <> "" Then cmbFacilityType.Items.Add(UpwellStructure)
                     Case Else
@@ -1015,6 +1004,8 @@ Public Class ManufacturingFacility
             cmbFacilitySystem.Enabled = False
             cmbFacilityorArray.Items.Clear()
             cmbFacilityorArray.Text = InitialFacilityComboText
+            ' Reset the facility so it can load later
+            PreviousEquipment = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
             PreviousProductionType = FacilityProductionType
@@ -1172,6 +1163,8 @@ Public Class ManufacturingFacility
             cmbFacilitySystem.Enabled = False
             cmbFacilityorArray.Items.Clear()
             cmbFacilityorArray.Text = InitialFacilityComboText
+            ' Reset the facility so it can load later
+            PreviousEquipment = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
             Call SetDefaultVisuals(False)
@@ -1348,7 +1341,7 @@ Public Class ManufacturingFacility
                 If cmbFacilityRegion.Text = "Wormhole Space" Then
                     SQL = SQL & "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
                 Else
-                    ' For a citadel, load all systems that have records linked
+                    ' For an upwell, load all systems that have records linked
                     SQL = SQL & "AND regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
                 End If
 
@@ -1359,7 +1352,7 @@ Public Class ManufacturingFacility
                     ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Or
                     ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or
                     ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID) And
-                    FacilityActivity = ActivityManufacturing Then
+                    FacilityActivity = ActivityManufacturing Or facilityactivity = ActivityReactions Then
                     ' For caps and reactions, only show low sec
                     SQL = SQL & "AND security < .45 "
                 End If
@@ -1382,6 +1375,8 @@ Public Class ManufacturingFacility
         If NewFacility Then
             cmbFacilityorArray.Items.Clear()
             cmbFacilityorArray.Text = InitialFacilityComboText
+            ' Reset the facility so it can load later
+            PreviousEquipment = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             ' Make sure default is not checked yet
             Call SetDefaultVisuals(False)
@@ -1721,14 +1716,30 @@ Public Class ManufacturingFacility
             LoadingActivities = True ' Don't trigger a combo load yet
             Dim SelectedFacility As New IndustryFacility
             Dim SelectedActivity As String = ""
+            Dim BPID As Integer = 0
+            Dim ItemGroupID As Integer = 0
+            Dim ItemCategoryID As Integer = 0
+            Dim TechLevel As Integer = 0
+            Dim Activity As String = ""
 
             SelectedFacility = SelectFacility(SelectedProductionType, True)
 
             If Not IsNothing(SelectedBlueprint) Then
                 With SelectedBlueprint
-                    Call LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, True)
+                    BPID = .GetBPID
+                    ItemGroupID = .GetItemGroupID
+                    ItemCategoryID = .GetItemCategoryID
+                    TechLevel = .GetTechLevel
                 End With
+            ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
+                BPID = 0 ' this only matters for the activity combo
+                ' For the manufacturing tab, we manually put in the IDs, so get the data first
+                Call GetFacilityBPItemData(SelectedProductionType, ItemGroupID, ItemCategoryID, TechLevel, Activity)
             End If
+
+            ' Load it up
+            Call LoadFacility(BPID, ItemGroupID, ItemCategoryID, TechLevel, True)
+
             ' Set the default based on the checkbox 
             Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
 
@@ -1758,6 +1769,12 @@ Public Class ManufacturingFacility
             SystemName = cmbFacilitySystem.Text.Substring(0, InStr(cmbFacilitySystem.Text, "(") - 2)
         Else
             SystemName = cmbFacilitySystem.Text
+        End If
+
+        ' If this is not a POS, then it can't use POS specific production types
+        If FacilityType <> FacilityTypes.POS And (BuildType = ProductionType.POSFuelBlockManufacturing Or BuildType = ProductionType.POSLargeShipManufacturing Or BuildType = ProductionType.POSModuleManufacturing) Then
+            ' Switch to manufacturing build type
+            BuildType = ProductionType.Manufacturing
         End If
 
         If FacilityType <> FacilityTypes.None Then
@@ -2176,20 +2193,20 @@ Public Class ManufacturingFacility
             Case ProductionType.Manufacturing
                 PreviousFacility = CType(SelectedManufacturingFacility.Clone, IndustryFacility)
                 SelectedManufacturingFacility = CType(SentFacility.Clone, IndustryFacility)
-                ' Set the other three types for pos too
-                If SentFacility.FacilityType = FacilityTypes.POS Then
-                    SentFacility.FacilityName = SelectedPOSFuelBlockFacility.FacilityName
-                    SentFacility.FacilityType = SelectedPOSFuelBlockFacility.FacilityType
-                    SelectedPOSFuelBlockFacility = CType(SentFacility.Clone, IndustryFacility)
+                '' Set the other three types for pos too
+                'If SentFacility.FacilityType = FacilityTypes.POS Then
+                '    SentFacility.FacilityName = SelectedPOSFuelBlockFacility.FacilityName
+                '    SentFacility.FacilityType = SelectedPOSFuelBlockFacility.FacilityType
+                '    SelectedPOSFuelBlockFacility = CType(SentFacility.Clone, IndustryFacility)
 
-                    SentFacility.FacilityName = SelectedPOSLargeShipFacility.FacilityName
-                    SentFacility.FacilityType = SelectedPOSLargeShipFacility.FacilityType
-                    SelectedPOSLargeShipFacility = CType(SentFacility.Clone, IndustryFacility)
+                '    SentFacility.FacilityName = SelectedPOSLargeShipFacility.FacilityName
+                '    SentFacility.FacilityType = SelectedPOSLargeShipFacility.FacilityType
+                '    SelectedPOSLargeShipFacility = CType(SentFacility.Clone, IndustryFacility)
 
-                    SentFacility.FacilityName = SelectedPOSModuleFacility.FacilityName
-                    SentFacility.FacilityType = SelectedPOSModuleFacility.FacilityType
-                    SelectedPOSModuleFacility = CType(SentFacility.Clone, IndustryFacility)
-                End If
+                '    SentFacility.FacilityName = SelectedPOSModuleFacility.FacilityName
+                '    SentFacility.FacilityType = SelectedPOSModuleFacility.FacilityType
+                '    SelectedPOSModuleFacility = CType(SentFacility.Clone, IndustryFacility)
+                'End If
                 If SelectedManufacturingFacility.IsEqual(DefaultManufacturingFacility) Then
                     SelectedManufacturingFacility.IsDefault = True
                     SentFacility.IsDefault = True
@@ -2200,7 +2217,7 @@ Public Class ManufacturingFacility
             Case ProductionType.POSFuelBlockManufacturing
                 PreviousFacility = CType(SelectedPOSFuelBlockFacility.Clone, IndustryFacility)
                 SelectedPOSFuelBlockFacility = SentFacility
-                SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
+                'SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
                 If SelectedPOSFuelBlockFacility.IsEqual(DefaultPOSFuelBlockFacility) Then
                     SelectedPOSFuelBlockFacility.IsDefault = True
                     SentFacility.IsDefault = True
@@ -2211,7 +2228,7 @@ Public Class ManufacturingFacility
             Case ProductionType.POSLargeShipManufacturing
                 PreviousFacility = CType(SelectedPOSLargeShipFacility.Clone, IndustryFacility)
                 SelectedPOSLargeShipFacility = SentFacility
-                SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
+                'SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
                 If SelectedPOSLargeShipFacility.IsEqual(DefaultPOSLargeShipFacility) Then
                     SelectedPOSLargeShipFacility.IsDefault = True
                     SentFacility.IsDefault = True
@@ -2222,7 +2239,7 @@ Public Class ManufacturingFacility
             Case ProductionType.POSModuleManufacturing
                 PreviousFacility = CType(SelectedPOSModuleFacility.Clone, IndustryFacility)
                 SelectedPOSModuleFacility = SentFacility
-                SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
+                'SelectedManufacturingFacility = SentFacility ' This is also the default POS for everything else, so save
                 If SelectedPOSModuleFacility.IsEqual(DefaultPOSModuleFacility) Then
                     SelectedPOSModuleFacility.IsDefault = True
                     SentFacility.IsDefault = True
@@ -2484,14 +2501,14 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityCapComponentManufacturing
-                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
                     Else
                         SelectedProductionType = ProductionType.ComponentManufacturing
                         SelectedBPCategoryID = ItemIDs.ComponentCategoryID
                         SelectedBPGroupID = ItemIDs.None
                         SelectedBPTech = BPTechLevel.T1
                         cmbFacilityActivities.Text = ActivityComponentManufacturing
-                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
                     End If
                 Case ProductionType.T3DestroyerManufacturing, ProductionType.T3CruiserManufacturing
                     If chkFacilityToggle.Checked Then
@@ -2499,13 +2516,13 @@ Public Class ManufacturingFacility
                         SelectedBPGroupID = ItemIDs.TacticalDestroyerGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
                     Else
                         SelectedBPCategoryID = ItemIDs.ShipCategoryID
                         SelectedBPGroupID = ItemIDs.StrategicCruiserGroupID
                         SelectedBPTech = BPTechLevel.T3
                         cmbFacilityActivities.Text = ActivityManufacturing
-                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False)
+                        Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
                     End If
             End Select
         End If
@@ -2513,40 +2530,78 @@ Public Class ManufacturingFacility
 
 #Region "Support Functions"
 
-    ' Determines if the BP has buildable components
-    Private Function BPHasBuildableComponents(BPID As Long) As Boolean
-        Dim SQL As String
-        Dim readerBP As SQLiteDataReader
+    ' Returns references to the GroupID, CategoryID, TechLevel, and Activity Combo Text when sent the production type
+    Private Sub GetFacilityBPItemData(ByVal SentProductionType As ProductionType, ByRef GroupID As Integer,
+                                      ByRef CategoryID As Integer, ByRef TechLevel As Integer, ByRef ActivityComboText As String)
+        Select Case SentProductionType
+            Case ProductionType.Manufacturing
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.FrigateGroupID
+                TechLevel = BPTechLevel.T2
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.CapitalComponentManufacturing
+                CategoryID = ItemIDs.CapitalComponentGroupID
+                GroupID = ItemIDs.None
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityCapComponentManufacturing
+            Case ProductionType.ComponentManufacturing
+                CategoryID = ItemIDs.ComponentCategoryID
+                GroupID = ItemIDs.None
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityComponentManufacturing
+            Case ProductionType.CapitalManufacturing
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.CarrierGroupID
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.SuperManufacturing
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.SupercarrierGroupID
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.T3CruiserManufacturing
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.StrategicCruiserGroupID
+                TechLevel = BPTechLevel.T3
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.SubsystemManufacturing
+                CategoryID = ItemIDs.SubsystemCategoryID
+                GroupID = ItemIDs.None
+                TechLevel = BPTechLevel.T3
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.BoosterManufacturing
+                CategoryID = ItemIDs.BoosterCategoryID
+                GroupID = ItemIDs.BoosterGroupID
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityManufacturing
+            Case ProductionType.Copying
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.FrigateGroupID
+                TechLevel = BPTechLevel.T2
+                ActivityComboText = ActivityCopying
+            Case ProductionType.Invention
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.FrigateGroupID
+                TechLevel = BPTechLevel.T2
+                ActivityComboText = ActivityInvention
+            Case ProductionType.Reactions
+                CategoryID = ItemIDs.None
+                GroupID = ItemIDs.ReactionPolymersGroupID
+                TechLevel = BPTechLevel.T1
+                ActivityComboText = ActivityReactions
+            Case ProductionType.T3Invention
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.TacticalDestroyerGroupID
+                TechLevel = BPTechLevel.T3
+                ActivityComboText = ActivityInvention
+            Case ProductionType.T3DestroyerManufacturing
+                CategoryID = ItemIDs.ShipCategoryID
+                GroupID = ItemIDs.TacticalDestroyerGroupID
+                TechLevel = BPTechLevel.T3
+                ActivityComboText = ActivityManufacturing
+        End Select
 
-        SQL = "SELECT MATERIAL_ID, MATERIAL_GROUP FROM ALL_BLUEPRINT_MATERIALS "
-        SQL &= "WHERE BLUEPRINT_ID = " & BPID & " AND ACTIVITY IN (1,11) "
-
-        'Look up the material groups for the bp's materials
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerBP = DBCommand.ExecuteReader
-
-        While readerBP.Read
-            ' Look up each one, if any are true then return
-
-        End While
-        If Not BPUsesReactions("", UserApplicationSettings) Then
-
-        End If
-
-        If Not BPUsesReactions(readerBP.GetString(10), BPUserSettings) Then
-            SQLAdd = " AND BLUEPRINT_GROUP NOT LIKE '%Reaction Formulas'"
-        Else
-            SQLAdd = ""
-        End If
-
-        ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
-        SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerME = DBCommand.ExecuteReader
-
-        Return False
-
-    End Function
+    End Sub
 
     ' Selects the facility and returns it and sets the activity on the facility found
     Private Function SelectFacility(ByVal BuildType As ProductionType, ByVal IsDefault As Boolean) As IndustryFacility
@@ -3607,6 +3662,7 @@ Public Enum ItemIDs
     FAXGroupID = 1538
     TitanGroupID = 30
     BoosterGroupID = 303
+    BoosterCategoryID = 20
 
     ' T3 items
     StrategicCruiserGroupID = 963

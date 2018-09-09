@@ -210,6 +210,18 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
+    Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2T3AdvancedMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub rbtnBuildT2ProcessedMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2ProcessedMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub rbtnBuildT2T3RawMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2T3RawMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
     Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then

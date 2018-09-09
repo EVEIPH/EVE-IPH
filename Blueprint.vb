@@ -819,8 +819,20 @@ Public Class Blueprint
 
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
+                Dim UsesReactions As Boolean = False
+                ' See what material type this is and if we want to build it (reactions)
+                Select Case readerBP.GetString(10)
+                    Case "Composite" ' will use intermediate material - or raw material, which we need to set this too for full drill down
+                        If BPUserSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Or BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                            UsesReactions = True
+                        End If
+                    Case "Intermediate Materials", "Hybrid Polymers" ' will use mats: "Moon Material", "Harvestable Cloud"
+                        If BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                            UsesReactions = True
+                        End If
+                End Select
 
-                If Not BPUsesReactions(readerBP.GetString(10), BPUserSettings) Then
+                If Not UsesReactions Then
                     SQLAdd = " AND BLUEPRINT_GROUP NOT LIKE '%Reaction Formulas'"
                 Else
                     SQLAdd = ""
