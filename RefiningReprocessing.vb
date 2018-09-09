@@ -162,9 +162,6 @@ Class Reprocessing
         Dim AdjustedCost As Double = 0
         Dim ModStationTaxRate As Double = 0
 
-        OreID = 1230
-        TotalOre = 30000
-
         ' Reprocessing Rate for Ore & Ice (including Compressed)
         ' rate = facilityModifier * (1 + 0.03 * ReprocessingLevel) * (1 + 0.02 * ReprocessingEfficiencyLevel)* (1 + 0.02 * OreSpecificSkillLevel) * implantModifier
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
