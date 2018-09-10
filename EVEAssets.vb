@@ -93,16 +93,38 @@ Public Class EVEAssets
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
 
-            If readerData.Read Then
-                ' Found it
-                TempAsset.TypeName = readerData.GetString(0)
-                TempAsset.TypeGroup = readerData.GetString(1)
-                TempAsset.TypeCategory = readerData.GetString(2)
-            Else
+            Try
+                If readerData.Read Then
+                    ' Found it
+                    If Not IsDBNull(readerData.GetValue(0)) Then
+                        TempAsset.TypeName = readerData.GetString(0)
+                    Else
+                        TempAsset.TypeName = "Unknown Item"
+                    End If
+
+                    If Not IsDBNull(readerData.GetValue(1)) Then
+                        TempAsset.TypeGroup = readerData.GetString(1)
+                    Else
+                        TempAsset.TypeGroup = "Unknown Group"
+                    End If
+
+                    If Not IsDBNull(readerData.GetValue(2)) Then
+                        TempAsset.TypeCategory = readerData.GetString(2)
+                    Else
+                        TempAsset.TypeCategory = "Unknown Category"
+                    End If
+                Else
+                    TempAsset.TypeName = "Unknown Item"
+                    TempAsset.TypeGroup = "Unknown Group"
+                    TempAsset.TypeCategory = "Unknown Category"
+                End If
+            Catch ex As Exception
+
                 TempAsset.TypeName = "Unknown Item"
                 TempAsset.TypeGroup = "Unknown Group"
                 TempAsset.TypeCategory = "Unknown Category"
-            End If
+
+            End Try
 
             readerData.Close()
 
