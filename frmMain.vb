@@ -5,6 +5,7 @@ Imports System.Threading
 Imports System.IO
 Imports System.Net
 Imports MoreLinq.MoreEnumerable
+Imports GoogleAnalyticsTracker.Simple
 
 Public Class frmMain
     Inherits System.Windows.Forms.Form
@@ -299,6 +300,15 @@ Public Class frmMain
         InitializeComponent()
 
         FirstLoad = True
+
+        ' New code to use google analytics to track number of users using IPH (no user information passed outside of OS info below)
+        On Error Resume Next
+        With My.Computer.Info
+            Dim TrackerInterface As New SimpleTrackerEnvironment(.OSPlatform, .OSVersion, .OSFullName)
+            Dim tracker As SimpleTracker = New SimpleTracker("UA-125827521-1", TrackerInterface)
+            Call tracker.TrackEventAsync("Use Tracker", "Initalized IPH", "Version: " & Application.ProductVersion, Nothing)
+        End With
+        On Error GoTo 0
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
@@ -5343,9 +5353,9 @@ Tabs:
         ' If the previous bp was loaded from history and the current bp isn't loaded from history, then reset the facilities to default
         If PreviousBPfromHistory And SentFrom <> SentFromLocation.History Then
             PreviousBPfromHistory = False
-            Call BPTabFacility.LoadSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
-            Call BPTabFacility.LoadSelectedFacility(ProductionType.ComponentManufacturing, FacilityView.FullControls, False)
-            Call BPTabFacility.LoadSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
+            Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
+            Call BPTabFacility.SetSelectedFacility(ProductionType.ComponentManufacturing, FacilityView.FullControls, False)
+            Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
         End If
 
         ' See what ID we use for character bps

@@ -205,34 +205,6 @@ Public Class frmUpwellStructureFitting
             chkNullSec.Enabled = False
         End If
 
-        ' Get all data on structures for DB look ups first
-        Call LoadStructureDBData()
-
-        ' Add all the images to the image list
-        Call LoadFittingImages()
-
-        ' Load the facility default if saved
-        Call LoadStructure(InitUSName)
-
-        ' Load up all the fuel block data on that tab
-        Call LoadFuelBlockDataTab()
-
-        NitrogenFuelBlockBPUpdated = False
-        HeliumFuelBlockBPUpdated = False
-        HydrogenFuelBlockBPUpdated = False
-        OxygenFuelBlockBPUpdated = False
-
-        ' Set tool tips
-        If UserApplicationSettings.ShowToolTips Then
-            With MainToolTip
-                .SetToolTip(btnRefreshPrices, "Refreshes prices on screen (useful if update done in other parts of program)")
-                .SetToolTip(btnSavePrices, "Saves prices entered for buying fuel blocks or materials if building")
-                .SetToolTip(btnUpdateBuildCost, "Updated the build cost after updating a Fuel Block ME value")
-                .SetToolTip(btnSaveFuelBlockInfo, "Saves the Fuel Block BP ME data if changed")
-            End With
-        End If
-        frmPopout = New frmBonusPopout
-
         With UserUpwellStructureSettings
             chkItemViewTypeHigh.Checked = .HighSlotsCheck
             chkItemViewTypeMedium.Checked = .MediumSlotsCheck
@@ -272,6 +244,35 @@ Public Class frmUpwellStructureFitting
             End Select
 
         End With
+
+        ' Get all data on structures for DB look ups first
+        Call LoadStructureDBData()
+
+        ' Add all the images to the image list
+        Call LoadFittingImages()
+
+        ' Load the facility default if saved
+        Call LoadStructure(InitUSName)
+
+        ' Load up all the fuel block data on that tab
+        Call LoadFuelBlockDataTab()
+
+        NitrogenFuelBlockBPUpdated = False
+        HeliumFuelBlockBPUpdated = False
+        HydrogenFuelBlockBPUpdated = False
+        OxygenFuelBlockBPUpdated = False
+
+        ' Set tool tips
+        If UserApplicationSettings.ShowToolTips Then
+            With MainToolTip
+                .SetToolTip(btnRefreshPrices, "Refreshes prices on screen (useful if update done in other parts of program)")
+                .SetToolTip(btnSavePrices, "Saves prices entered for buying fuel blocks or materials if building")
+                .SetToolTip(btnUpdateBuildCost, "Updated the build cost after updating a Fuel Block ME value")
+                .SetToolTip(btnSaveFuelBlockInfo, "Saves the Fuel Block BP ME data if changed")
+            End With
+        End If
+
+        frmPopout = New frmBonusPopout
 
         FirstLoad = False
 
@@ -1647,7 +1648,7 @@ Public Class frmUpwellStructureFitting
                 EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
-            ' If there are rigs fit to this, then delete any saved multipliers they have 
+            ' If there are rigs fit to this, then delete any saved multipliers they have saved manually
             If Not IsNothing(RigSlot1.Image) Or Not IsNothing(RigSlot2.Image) Or Not IsNothing(RigSlot3.Image) Then
 
                 ' See what type of character ID
@@ -1679,6 +1680,7 @@ Public Class frmUpwellStructureFitting
         Dim SQL As String
         Dim SystemSecurityBonus As Double
         Dim rsReader As SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
         Dim BonusList As ListViewItem
@@ -1727,7 +1729,15 @@ Public Class frmUpwellStructureFitting
                         SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
                         SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
                         SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%') "
-                        SQL &= "AND (ERB.groupID NOT IN (873,913) OR ERB.groupID IS NULL) "
+
+                        ' Only include this if it's a Thukker array, else don't limit
+                        DBCommand = New SQLiteCommand("SELECT 'X' FROM INVENTORY_TYPES WHERE typeName LIKE '%Standup%-Set Thukker%' AND typeName NOT LIKE '%Blueprint' AND typeID = " & CStr(InstalledModule.typeID), EVEDB.DBREf)
+                        rsCheck = DBCommand.ExecuteReader
+
+                        If rsCheck.Read Then
+                            SQL &= "AND (ERB.groupID NOT IN (873,913) OR ERB.groupID IS NULL) "
+                        End If
+
                         SQL &= "AND BONUS <> 0 AND TA.typeID = {0} "
                         ' The rest is for thukker bonus (if it applies)
                         SQL &= "UNION "

@@ -57,6 +57,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityActivities = New System.Windows.Forms.ComboBox()
         Me.lblFacilityActivity = New System.Windows.Forms.Label()
         Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
+        Me.btnResetFacility = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -223,7 +224,7 @@ Partial Class ManufacturingFacility
         '
         'btnFacilityFitting
         '
-        Me.btnFacilityFitting.Location = New System.Drawing.Point(206, 90)
+        Me.btnFacilityFitting.Location = New System.Drawing.Point(209, 85)
         Me.btnFacilityFitting.Name = "btnFacilityFitting"
         Me.btnFacilityFitting.Size = New System.Drawing.Size(43, 22)
         Me.btnFacilityFitting.TabIndex = 23
@@ -251,7 +252,7 @@ Partial Class ManufacturingFacility
         '
         'btnFacilitySave
         '
-        Me.btnFacilitySave.Location = New System.Drawing.Point(255, 90)
+        Me.btnFacilitySave.Location = New System.Drawing.Point(255, 85)
         Me.btnFacilitySave.Name = "btnFacilitySave"
         Me.btnFacilitySave.Size = New System.Drawing.Size(40, 22)
         Me.btnFacilitySave.TabIndex = 24
@@ -371,10 +372,21 @@ Partial Class ManufacturingFacility
         Me.lblFacilityActivity.TabIndex = 0
         Me.lblFacilityActivity.Text = "Activity:"
         '
+        'btnResetFacility
+        '
+        Me.btnResetFacility.Location = New System.Drawing.Point(209, 105)
+        Me.btnResetFacility.Name = "btnResetFacility"
+        Me.btnResetFacility.Size = New System.Drawing.Size(86, 22)
+        Me.btnResetFacility.TabIndex = 33
+        Me.btnResetFacility.Text = "Reset Facility"
+        Me.btnResetFacility.UseVisualStyleBackColor = True
+        Me.btnResetFacility.Visible = False
+        '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.btnResetFacility)
         Me.Controls.Add(Me.lblModules)
         Me.Controls.Add(Me.lblFuelBlocks)
         Me.Controls.Add(Me.lblLargeShips)
@@ -448,4 +460,5 @@ Partial Class ManufacturingFacility
     Friend WithEvents cmbFacilityActivities As ComboBox
     Friend WithEvents lblFacilityActivity As Label
     Friend WithEvents mainToolTip As ToolTip
+    Friend WithEvents btnResetFacility As Button
 End Class

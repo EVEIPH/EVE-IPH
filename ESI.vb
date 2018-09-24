@@ -291,9 +291,9 @@ Public Class ESI
         Dim ErrorCode As Integer = 0
         Dim ErrorResponse As String = ""
 
-        WC.Proxy = GetProxyData()
-
         Try
+
+            WC.Proxy = GetProxyData()
 
             If BodyData <> "" Then
                 Response = Encoding.UTF8.GetString(WC.UploadData(URL, Encoding.UTF8.GetBytes(BodyData)))
@@ -346,8 +346,12 @@ Public Class ESI
 
         RetriedCall = False
 
-        If Response <> "" Then
-            Return Response
+        If Not IsNothing(Response) Then
+            If Response <> "" Then
+                Return Response
+            Else
+                Return Nothing
+            End If
         Else
             Return Nothing
         End If
@@ -367,32 +371,33 @@ Public Class ESI
         Dim ErrorResponse As String = ""
         Dim Response As String = ""
 
-        WC.Proxy = GetProxyData()
+        Try
+            ' See if we update the token data first
+            If TokenExpiration <= DateTime.UtcNow Then
 
-        ' See if we update the token data first
-        If TokenExpiration <= DateTime.UtcNow Then
-            ' Update the token
-            TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
+                ' Update the token
+                TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
 
-            'Throw New Exception("Test Error - Get Private Auth Data")
+                'Throw New Exception("Test Error - Get Private Auth Data")
 
-            ' Update the token data in the DB for this character
-            Dim SQL As String = ""
-            ' Update data - only stuff that could (reasonably) change
-            SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-            SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+                ' Update the token data in the DB for this character
+                Dim SQL As String = ""
+                ' Update data - only stuff that could (reasonably) change
+                SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+                SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
 
-            With TokenData
-                SQL = String.Format(SQL, FormatDBString(.access_token),
+                With TokenData
+                    SQL = String.Format(SQL, FormatDBString(.access_token),
                             Format(DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow), SQLiteDateFormat),
                             FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
-            End With
-        End If
+                End With
+            End If
 
-        If ErrorCode = 0 Then
-            Try
+            If ErrorCode = 0 Then
+
                 Dim Auth_header As String = $"Bearer {TokenData.access_token}"
 
+                WC.Proxy = GetProxyData()
                 WC.Headers(HttpRequestHeader.Authorization) = Auth_header
                 Response = WC.DownloadString(URL)
 
@@ -419,30 +424,31 @@ Public Class ESI
                 End If
 
                 Return Response
-            Catch ex As WebException
-                ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-                ErrorResponse = GetErrorResponseBody(ex)
+            End If
 
-                If ErrorResponse = "Character not in corporation" Or ErrorResponse = "Character cannot grant roles" Then
-                    ' Assume this error came from checking on NPC corp roles or a character that doesn't have any roles and just exit with nothing
-                    Exit Try
-                End If
+        Catch ex As WebException
+            ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
+            ErrorResponse = GetErrorResponseBody(ex)
 
-                If ErrorCode >= 500 And Not RetriedCall Then
-                    RetriedCall = True
-                    ' Try this call again after waiting a few
-                    Threading.Thread.Sleep(2000)
-                    Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
-                End If
-                If Not SupressErrorMsgs Then
-                    MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
-                End If
-            Catch ex As Exception
-                If Not SupressErrorMsgs Then
-                    MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
-                End If
-            End Try
-        End If
+            If ErrorResponse = "Character not in corporation" Or ErrorResponse = "Character cannot grant roles" Then
+                ' Assume this error came from checking on NPC corp roles or a character that doesn't have any roles and just exit with nothing
+                Exit Try
+            End If
+
+            If ErrorCode >= 500 And Not RetriedCall Then
+                RetriedCall = True
+                ' Try this call again after waiting a few
+                Threading.Thread.Sleep(2000)
+                Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
+            End If
+            If Not SupressErrorMsgs Then
+                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+            End If
+        Catch ex As Exception
+            If Not SupressErrorMsgs Then
+                MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
+            End If
+        End Try
 
         RetriedCall = False
 
@@ -927,7 +933,7 @@ Public Class ESI
 
     End Function
 
-    Public Function GetCorpRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
+    Public Function GetCorporationRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
         Dim ReturnData As String
 
         Dim TempTokenData As New ESITokenData
@@ -1495,14 +1501,18 @@ Public Class ESI
     End Sub
 
     Private Function GetErrorResponseBody(Ex As WebException) As String
-        Dim resp As String = New StreamReader(Ex.Response.GetResponseStream()).ReadToEnd()
-        Dim ErrorData As ESIError = JsonConvert.DeserializeObject(Of ESIError)(resp)
+        Try
+            Dim resp As String = New StreamReader(Ex.Response.GetResponseStream()).ReadToEnd()
+            Dim ErrorData As ESIError = JsonConvert.DeserializeObject(Of ESIError)(resp)
 
-        If Not IsNothing(ErrorData) Then
-            Return ErrorData.ErrorText
-        Else
-            Return Ex.Message
-        End If
+            If Not IsNothing(ErrorData) Then
+                Return ErrorData.ErrorText
+            Else
+                Return Ex.Message
+            End If
+        Catch tryex As Exception
+            Return "Unknown error"
+        End Try
 
     End Function
 

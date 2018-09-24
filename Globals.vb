@@ -56,6 +56,7 @@ Public Module Public_Variables
 
     ' For updates
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
+    Public Const SQLiteDLL As String = "System.Data.SQLite.DLL"
     Public Const XMLUpdaterFileName As String = "EVEIPH_Updater.exe" ' For use in the XML files to remove spaces from row names
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
@@ -2282,7 +2283,7 @@ InvalidDate:
                 If rsData.Read Then
                     SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
                     With EVEStructure
-                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, .name, .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat)))
+                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat)))
                     End With
                 End If
                 rsData.Close()

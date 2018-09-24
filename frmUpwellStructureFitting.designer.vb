@@ -343,7 +343,7 @@ Partial Class frmUpwellStructureFitting
         'chkIncludeFuelCosts
         '
         Me.chkIncludeFuelCosts.AutoSize = True
-        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(6, 308)
+        Me.chkIncludeFuelCosts.Location = New System.Drawing.Point(6, 193)
         Me.chkIncludeFuelCosts.Name = "chkIncludeFuelCosts"
         Me.chkIncludeFuelCosts.Size = New System.Drawing.Size(113, 17)
         Me.chkIncludeFuelCosts.TabIndex = 9
@@ -1724,7 +1724,7 @@ Partial Class frmUpwellStructureFitting
         'lblLauncherSlots
         '
         Me.lblLauncherSlots.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblLauncherSlots.Location = New System.Drawing.Point(6, 182)
+        Me.lblLauncherSlots.Location = New System.Drawing.Point(6, 169)
         Me.lblLauncherSlots.Name = "lblLauncherSlots"
         Me.lblLauncherSlots.Size = New System.Drawing.Size(155, 18)
         Me.lblLauncherSlots.TabIndex = 8
@@ -1865,7 +1865,7 @@ Partial Class frmUpwellStructureFitting
         Me.gbOptions.Controls.Add(Me.chkNullSec)
         Me.gbOptions.Controls.Add(Me.chkLowSec)
         Me.gbOptions.Controls.Add(Me.chkHighSec)
-        Me.gbOptions.Location = New System.Drawing.Point(6, 520)
+        Me.gbOptions.Location = New System.Drawing.Point(6, 405)
         Me.gbOptions.Name = "gbOptions"
         Me.gbOptions.Size = New System.Drawing.Size(155, 63)
         Me.gbOptions.TabIndex = 11
@@ -1924,7 +1924,7 @@ Partial Class frmUpwellStructureFitting
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblServiceModuleFCPH)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblFuelCost)
         Me.gbIncludeFuelBlocks.Enabled = False
-        Me.gbIncludeFuelBlocks.Location = New System.Drawing.Point(6, 310)
+        Me.gbIncludeFuelBlocks.Location = New System.Drawing.Point(6, 195)
         Me.gbIncludeFuelBlocks.Name = "gbIncludeFuelBlocks"
         Me.gbIncludeFuelBlocks.Size = New System.Drawing.Size(155, 204)
         Me.gbIncludeFuelBlocks.TabIndex = 10
@@ -2031,7 +2031,7 @@ Partial Class frmUpwellStructureFitting
         'lblCapacitor
         '
         Me.lblCapacitor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCapacitor.Location = New System.Drawing.Point(6, 153)
+        Me.lblCapacitor.Location = New System.Drawing.Point(6, 140)
         Me.lblCapacitor.Name = "lblCapacitor"
         Me.lblCapacitor.Size = New System.Drawing.Size(155, 16)
         Me.lblCapacitor.TabIndex = 7
@@ -2039,7 +2039,7 @@ Partial Class frmUpwellStructureFitting
         '
         'lblCapacitor1
         '
-        Me.lblCapacitor1.Location = New System.Drawing.Point(6, 137)
+        Me.lblCapacitor1.Location = New System.Drawing.Point(6, 124)
         Me.lblCapacitor1.Name = "lblCapacitor1"
         Me.lblCapacitor1.Size = New System.Drawing.Size(155, 16)
         Me.lblCapacitor1.TabIndex = 6
@@ -2049,7 +2049,7 @@ Partial Class frmUpwellStructureFitting
         'lblCalibration
         '
         Me.lblCalibration.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalibration.Location = New System.Drawing.Point(6, 114)
+        Me.lblCalibration.Location = New System.Drawing.Point(6, 101)
         Me.lblCalibration.Name = "lblCalibration"
         Me.lblCalibration.Size = New System.Drawing.Size(155, 16)
         Me.lblCalibration.TabIndex = 5
@@ -2059,7 +2059,7 @@ Partial Class frmUpwellStructureFitting
         'lblCalibration1
         '
         Me.lblCalibration1.AutoSize = True
-        Me.lblCalibration1.Location = New System.Drawing.Point(6, 100)
+        Me.lblCalibration1.Location = New System.Drawing.Point(6, 87)
         Me.lblCalibration1.Name = "lblCalibration1"
         Me.lblCalibration1.Size = New System.Drawing.Size(59, 13)
         Me.lblCalibration1.TabIndex = 4
@@ -2068,7 +2068,7 @@ Partial Class frmUpwellStructureFitting
         'lblCPU
         '
         Me.lblCPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCPU.Location = New System.Drawing.Point(6, 76)
+        Me.lblCPU.Location = New System.Drawing.Point(6, 63)
         Me.lblCPU.Name = "lblCPU"
         Me.lblCPU.Size = New System.Drawing.Size(155, 16)
         Me.lblCPU.TabIndex = 3
@@ -2078,7 +2078,7 @@ Partial Class frmUpwellStructureFitting
         'lblPowerGrid
         '
         Me.lblPowerGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblPowerGrid.Location = New System.Drawing.Point(6, 38)
+        Me.lblPowerGrid.Location = New System.Drawing.Point(6, 25)
         Me.lblPowerGrid.Name = "lblPowerGrid"
         Me.lblPowerGrid.Size = New System.Drawing.Size(155, 16)
         Me.lblPowerGrid.TabIndex = 1
@@ -2088,7 +2088,7 @@ Partial Class frmUpwellStructureFitting
         'lblCPU1
         '
         Me.lblCPU1.AutoSize = True
-        Me.lblCPU1.Location = New System.Drawing.Point(6, 62)
+        Me.lblCPU1.Location = New System.Drawing.Point(6, 49)
         Me.lblCPU1.Name = "lblCPU1"
         Me.lblCPU1.Size = New System.Drawing.Size(32, 13)
         Me.lblCPU1.TabIndex = 2
@@ -2097,7 +2097,7 @@ Partial Class frmUpwellStructureFitting
         'lblPowerGrid1
         '
         Me.lblPowerGrid1.AutoSize = True
-        Me.lblPowerGrid1.Location = New System.Drawing.Point(6, 24)
+        Me.lblPowerGrid1.Location = New System.Drawing.Point(6, 11)
         Me.lblPowerGrid1.Name = "lblPowerGrid1"
         Me.lblPowerGrid1.Size = New System.Drawing.Size(62, 13)
         Me.lblPowerGrid1.TabIndex = 0

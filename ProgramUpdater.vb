@@ -76,7 +76,7 @@ Public Class ProgramUpdater
 
         ' Loop through the nodes and find the MD5 and download URL for the updater and any other files necessary to load the updater
         For Each m_node In m_nodelist
-            If m_node.Attributes.GetNamedItem("Name").Value = UpdaterFileName Then
+            If m_node.Attributes.GetNamedItem("Name").Value = UpdaterFileName Or m_node.Attributes.GetNamedItem("Name").Value = SQLiteDLL Then
                 TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
                 TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
                 TempUpdateFile.FileName = UpdaterFileName

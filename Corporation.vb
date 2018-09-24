@@ -197,7 +197,7 @@ Public Class Corporation
 
         If CB.DataUpdateable(CacheDateType.CorporateRoles, CorporationID) Then
             ' Get all the roles for all characters in corporation. Note, the roles can only be pulled for a character with personnel manager
-            RoleData = RoleESI.GetCorpRoles(CharacterID, CorporationID, TokenData, CacheDate)
+            RoleData = RoleESI.GetCorporationRoles(CharacterID, CorporationID, TokenData, CacheDate)
 
             If Not IsNothing(RoleData) Then
                 Call EVEDB.BeginSQLiteTransaction()
