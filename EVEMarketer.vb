@@ -209,7 +209,7 @@ Public Class EMTypeStat
     <JsonProperty("stdDev")> Public stdDev As Double
     <JsonProperty("median")> Public median As Double
     <JsonProperty("fivePercent")> Public fivePercent As Double
-    <JsonProperty("highToLow")> Public highToLow As Double
+    <JsonProperty("highToLow")> Public highToLow As Boolean
     <JsonProperty("generated")> Public generated As Long
 End Class
 
