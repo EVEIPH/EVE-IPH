@@ -624,7 +624,7 @@ Public Class ManufacturingFacility
 
     End Sub
 
-    Public Sub SetSelectedFacility(BuildType As ProductionType, ViewType As FacilityView, Optional LoadDualFacilitys As Boolean = True)
+    Public Sub SetSelectedFacility(BuildType As ProductionType, ViewType As FacilityView, Optional LoadDualFacilities As Boolean = True)
 
         'Now save the default and selected facility to the appropriate variable
         Select Case BuildType
@@ -634,7 +634,7 @@ Public Class ManufacturingFacility
             Case ProductionType.CapitalComponentManufacturing
                 SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                If LoadDualFacilitys Then
+                If LoadDualFacilities Then
                     ' Load component too so we can click back and forth
                     Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, ViewType)
                     SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -643,7 +643,7 @@ Public Class ManufacturingFacility
             Case ProductionType.ComponentManufacturing
                 SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                If LoadDualFacilitys Then
+                If LoadDualFacilities Then
                     ' Load cap component too so we can click back and forth
                     Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, ViewType)
                     SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -658,7 +658,7 @@ Public Class ManufacturingFacility
             Case ProductionType.T3CruiserManufacturing
                 SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                If LoadDualFacilitys Then
+                If LoadDualFacilities Then
                     ' Load T3 destroyers too so we can click back and forth
                     Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, ViewType)
                     SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -685,7 +685,7 @@ Public Class ManufacturingFacility
             Case ProductionType.T3DestroyerManufacturing
                 SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                If LoadDualFacilitys Then
+                If LoadDualFacilities Then
                     ' Load T3 cruisers too so we can click back and forth
                     Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, ViewType)
                     SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -787,8 +787,13 @@ Public Class ManufacturingFacility
         SelectedFacility.FullyLoaded = True
 
         ' Facility is loaded, so save it to default and dynamic variable
-        Call SetSelectedFacility(SelectedProductionType, SelectedView, False)
+        If LoadDefault Then
+            Call SetSelectedFacility(SelectedProductionType, SelectedView, False)
+        End If
         Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
+
+        ' Refresh the blueprint if it's the bp tab
+        Call UpdateBlueprint()
 
     End Sub
 
@@ -924,7 +929,7 @@ Public Class ManufacturingFacility
                 PreviousProductionType = SelectedProductionType
 
                 ' Load the facility for this activity and flag that it was loaded from this combo
-                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True, True)
+                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, True)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -1915,7 +1920,7 @@ Public Class ManufacturingFacility
         ' Now that we have everything, load the full facility into the appropriate selected facility to use later
         With SelectedFacility
             ' First, if this is a citadel, then look up any saved modules and adjust the MM/TM/CM
-            If .FacilityType = FacilityTypes.UpwellStructure Then
+            If FacilityType = FacilityTypes.UpwellStructure Then
                 Dim InstalledModules = New List(Of Integer) ' Reset
                 Dim SystemID As Long = GetSolarSystemID(SystemName)
 
@@ -2440,7 +2445,11 @@ Public Class ManufacturingFacility
 
         ' Reload the facility each time we return - use initialize and just load the one we changed
         If SelectedFacility.IsDefault Then
+            ' If they saved fittings for the default, reset the default values
             Call InitializeFacilities(SelectedView, SelectedProductionType, True)
+        Else
+            ' If it's not the default, just load the facility so we get the changes from the fitting
+            Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
         End If
 
     End Sub
@@ -3093,14 +3102,8 @@ Public Class ManufacturingFacility
     Private Sub UpdateBlueprint()
         ' Load the bp on bp tab
         If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
-            Dim SentFrom As SentFromLocation
-            If SelectedLocation = ProgramLocation.BlueprintTab Then
-                SentFrom = SentFromLocation.BlueprintTab
-            ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
-                SentFrom = SentFromLocation.ManufacturingTab
-            End If
             With SelectedBlueprint
-                Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
+                Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFromLocation.BlueprintTab)
             End With
         End If
     End Sub

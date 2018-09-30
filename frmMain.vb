@@ -6300,11 +6300,13 @@ ExitForm:
                     End If
                 Else
                     ' Remove the old one and replace it with the one we have now
-                    Call BPHistory.RemoveAt(CurrentBPHistoryIndex)
-                    Call BPHistory.Insert(CurrentBPHistoryIndex, TempBPHistoryItem)
+                    If BPHistory.Count > 0 Then
+                        Call BPHistory.RemoveAt(CurrentBPHistoryIndex)
+                        Call BPHistory.Insert(CurrentBPHistoryIndex, TempBPHistoryItem)
+                    End If
                 End If
 
-            End If
+                End If
         End If
 
         Call UpdateBlueprintHistoryButtons()

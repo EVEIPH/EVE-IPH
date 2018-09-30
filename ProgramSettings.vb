@@ -195,7 +195,7 @@ Public Class ProgramSettings
     Public DefaultPriceChecks As Boolean = False
     Public DefaultPriceSystem As String = "Jita"
     Public DefaultPriceRegion As String = ""
-    Public DefaultPriceRawMatsCombo As String = "Min Buy"
+    Public DefaultPriceRawMatsCombo As String = "Min Sell"
     Public DefaultPriceItemsCombo As String = "Min Sell"
     Public DefaultUPColumnSort As Integer = 1
     Public DefaultUPColumnSortType As String = "Ascending"
