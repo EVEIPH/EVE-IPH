@@ -621,6 +621,10 @@ Public Class frmIndustryJobsViewer
 
     End Function
 
+    Private Sub frmIndustryJobsViewer_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        myTimer.Change(Timeout.Infinite, Timeout.Infinite)
+    End Sub
+
 #Region "Click events"
 
     ' Clears the list and rebuilds it with columns they selected
