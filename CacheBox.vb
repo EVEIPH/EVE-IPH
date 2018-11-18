@@ -102,10 +102,10 @@ Public Class CacheBox
                     .FieldName = "PUBLIC_DATA_CACHE_DATE"
                 Case CacheDateType.IndustrySystems
                     .FieldName = "INDUSTRY_SYSTEMS_CACHED_UNTIL"
-                Case CacheDateType.IndustryFacilities
-                    .FieldName = "INDUSTRY_FACILITIES_CACHED_UNTIL"
                 Case CacheDateType.MarketPrices
                     .FieldName = "MARKET_PRICES_CACHED_UNTIL"
+                Case CacheDateType.PublicStructures
+                    .FieldName = "PUBLIC_STRUCTURES_CACHED_UNTIL"
                 Case CacheDateType.CorporateRoles
                     .FieldName = "CORP_ROLES_CACHE_DATE"
                 Case Else
@@ -117,7 +117,7 @@ Public Class CacheBox
             Case CacheDateType.CorporateAssets, CacheDateType.CorporateBlueprints, CacheDateType.CorporateIndyJobs, CacheDateType.PublicCorporationData, CacheDateType.CorporateRoles
                 ReturnData.TableName = "ESI_CORPORATION_DATA"
                 ReturnData.IDName = "CORPORATION_ID"
-            Case CacheDateType.IndustryFacilities, CacheDateType.IndustrySystems, CacheDateType.MarketPrices
+            Case CacheDateType.IndustryFacilities, CacheDateType.IndustrySystems, CacheDateType.MarketPrices, CacheDateType.PublicStructures
                 ReturnData.TableName = "ESI_PUBLIC_CACHE_DATES"
                 ReturnData.IDName = ""
             Case Else
@@ -151,5 +151,6 @@ Public Enum CacheDateType
     IndustrySystems = 11
     IndustryFacilities = 12
     MarketPrices = 13
+    PublicStructures = 15
 
 End Enum

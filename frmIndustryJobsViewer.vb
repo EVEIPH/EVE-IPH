@@ -29,8 +29,10 @@ Public Class frmIndustryJobsViewer
         Dim Corporation As String
         Dim IndustryLines As Integer
         Dim ResearchLines As Integer
+        Dim ReactionLines As Integer
         Dim IndustryJobs As Integer
         Dim ResearchJobs As Integer
+        Dim ReactionJobs As Integer
     End Structure
 
     Private Structure ColumnWidth
@@ -58,12 +60,13 @@ Public Class frmIndustryJobsViewer
         Dim myCallback As New TimerCallback(AddressOf UpdateTimes)
         myTimer = New Timer(myCallback, lstIndustryJobs, 1000, 1000)
 
-        ' Width 510, 21 for scrollbar, 25 for check (464)
+        ' Width 725, 21 for scrollbar, 25 for check (679)
         lstCharacters.Columns.Add("", -2, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Character Name", 100, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Character Corporation", 206, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Industry Jobs", 75, HorizontalAlignment.Left)
-        lstCharacters.Columns.Add("Research Jobs", 83, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Name", 200, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Corporation", 230, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Industry Jobs", 83, HorizontalAlignment.Center)
+        lstCharacters.Columns.Add("Research Jobs", 83, HorizontalAlignment.Center)
+        lstCharacters.Columns.Add("Reaction Jobs", 83, HorizontalAlignment.Center)
         lstCharacters.Columns.Add("CharID", 0, HorizontalAlignment.Left) ' Hidden
 
         chkAutoUpdate.Checked = UserIndustryJobsColumnSettings.AutoUpdateJobs
@@ -92,6 +95,7 @@ Public Class frmIndustryJobsViewer
             fAccessError.ShowDialog()
 
             gbInventionJobs.Enabled = False
+            Exit Sub
         Else
             gbInventionJobs.Enabled = True
 
@@ -170,7 +174,7 @@ Public Class frmIndustryJobsViewer
 
         Application.UseWaitCursor = True
         Me.Cursor = Cursors.WaitCursor
-        Me.Enabled = False
+        gbInventionJobs.Enabled = False
         Application.DoEvents()
 
         ' If they don't select a character, then just clear and exit
@@ -373,7 +377,7 @@ Public Class frmIndustryJobsViewer
         Call ListViewColumnSorter(UserIndustryJobsColumnSettings.OrderByColumn, lstIndustryJobs, JobListColumnClicked, JobListColumnSortOrder, True)
 
         Application.UseWaitCursor = False
-        Me.Enabled = True
+        gbInventionJobs.Enabled = True
         Me.Cursor = Cursors.Default
         Application.DoEvents()
 
@@ -387,7 +391,7 @@ Public Class frmIndustryJobsViewer
 
         Application.UseWaitCursor = True
         'Me.Cursor = Cursors.WaitCursor
-        Me.Enabled = False
+        gbInventionJobs.Enabled = False
         Application.DoEvents()
 
         ' Update the data for each character first if selected
@@ -401,12 +405,16 @@ Public Class frmIndustryJobsViewer
         SQL = SQL & "CASE WHEN RESEARCH_JOBS IS NULL THEN 0 ELSE RESEARCH_JOBS END AS RESEARCH_JOBS, "
         SQL = SQL & "CASE WHEN RESEARCH_LINES IS NULL THEN 1 ELSE RESEARCH_LINES END AS RESEARCH_LINES, "
         SQL = SQL & "CASE WHEN JOB_COUNT IS NULL THEN 0 ELSE JOB_COUNT END AS JOB_COUNT, "
-        SQL = SQL & "CASE WHEN INDUSTRY_LINES IS NULL THEN 1 ELSE INDUSTRY_LINES END AS INDUSTRY_LINES "
+        SQL = SQL & "CASE WHEN INDUSTRY_LINES IS NULL THEN 1 ELSE INDUSTRY_LINES END AS INDUSTRY_LINES, "
+        SQL = SQL & "CASE WHEN REACTION_JOBS IS NULL THEN 0 ELSE REACTION_JOBS END AS REACTION_JOBS, "
+        SQL = SQL & "CASE WHEN REACTION_LINES IS NULL THEN 1 ELSE REACTION_LINES END AS REACTION_LINES "
         SQL = SQL & "FROM ESI_CHARACTER_DATA AS ECD, ESI_CORPORATION_DATA AS ECPD "
         SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS RESEARCH_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3406,24624) GROUP BY CHARACTER_ID) AS I ON I.CHAR_ID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID <> 1 GROUP BY installerID) AS J ON J.installerID = CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID NOT IN (1,11) GROUP BY installerID) AS J ON J.installerID = CHARACTER_ID "
         SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS INDUSTRY_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS K ON K.CHAR_ID = ECD.CHARACTER_ID "
         SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 1 GROUP BY installerID) AS L ON L.installerID = CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT SUM(SKILL_LEVEL) + 1 AS REACTION_LINES, CHARACTER_ID AS CHAR_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (45748,45749) GROUP BY CHARACTER_ID) AS M ON M.CHAR_ID = ECD.CHARACTER_ID "
+        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS REACTION_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 11 GROUP BY installerID) AS N ON N.installerID = CHARACTER_ID "
         SQL &= "WHERE ECD.CORPORATION_ID = ECPD.CORPORATION_ID AND ECD.CHARACTER_ID <> " & CStr(DummyCharacterID)
 
         ' Get all the characters and store them regardless so we only need to do one look up
@@ -436,6 +444,8 @@ Public Class frmIndustryJobsViewer
             TempCharacter.ResearchLines = rsJobs.GetInt32(9)
             TempCharacter.IndustryJobs = rsJobs.GetInt32(10)
             TempCharacter.IndustryLines = rsJobs.GetInt32(11)
+            TempCharacter.ReactionJobs = rsJobs.GetInt32(12)
+            TempCharacter.ReactionLines = rsJobs.GetInt32(13)
 
             ' Add this to the list
             If Not LoadedCharacters.Contains(TempCharacter) Then
@@ -459,6 +469,7 @@ Public Class frmIndustryJobsViewer
                 ' Add the jobs as part of lines i.e 4/10 = 4 jobs of 10 lines
                 lstCharacterRow.SubItems.Add(CStr(.IndustryJobs) & "/" & CStr(.IndustryLines))
                 lstCharacterRow.SubItems.Add(CStr(.ResearchJobs) & "/" & CStr(.ResearchLines))
+                lstCharacterRow.SubItems.Add(CStr(.ReactionJobs) & "/" & CStr(.ReactionLines))
 
                 ' Add the hidden character ID
                 Dim CharacterID As String = CStr(.Token.CharacterID)
@@ -480,7 +491,7 @@ Public Class frmIndustryJobsViewer
 
         lstCharacters.EndUpdate()
 
-        Me.Enabled = True
+        gbInventionJobs.Enabled = True
         Application.UseWaitCursor = False
         Application.DoEvents()
 

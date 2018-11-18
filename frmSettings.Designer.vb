@@ -69,6 +69,7 @@ Partial Class frmSettings
         Me.chkEVEMarketerInterval = New System.Windows.Forms.CheckBox()
         Me.gbImplants = New System.Windows.Forms.GroupBox()
         Me.gbStartupOptions = New System.Windows.Forms.GroupBox()
+        Me.chkRefreshPublicStructureDataonStartup = New System.Windows.Forms.CheckBox()
         Me.chkRefreshFacilityDataonStartup = New System.Windows.Forms.CheckBox()
         Me.chkRefreshMarketDataonStartup = New System.Windows.Forms.CheckBox()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
@@ -139,7 +140,7 @@ Partial Class frmSettings
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
         Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
         Me.gbGeneral.Name = "gbGeneral"
-        Me.gbGeneral.Size = New System.Drawing.Size(237, 160)
+        Me.gbGeneral.Size = New System.Drawing.Size(237, 147)
         Me.gbGeneral.TabIndex = 4
         Me.gbGeneral.TabStop = False
         Me.gbGeneral.Text = "General:"
@@ -543,17 +544,29 @@ Partial Class frmSettings
         '
         'gbStartupOptions
         '
+        Me.gbStartupOptions.Controls.Add(Me.chkRefreshPublicStructureDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshFacilityDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshMarketDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 178)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 165)
         Me.gbStartupOptions.Name = "gbStartupOptions"
-        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 126)
+        Me.gbStartupOptions.Size = New System.Drawing.Size(237, 139)
         Me.gbStartupOptions.TabIndex = 39
         Me.gbStartupOptions.TabStop = False
         Me.gbStartupOptions.Text = "Startup Options"
+        '
+        'chkRefreshPublicStructureDataonStartup
+        '
+        Me.chkRefreshPublicStructureDataonStartup.AutoSize = True
+        Me.chkRefreshPublicStructureDataonStartup.Location = New System.Drawing.Point(17, 119)
+        Me.chkRefreshPublicStructureDataonStartup.Name = "chkRefreshPublicStructureDataonStartup"
+        Me.chkRefreshPublicStructureDataonStartup.Size = New System.Drawing.Size(167, 17)
+        Me.chkRefreshPublicStructureDataonStartup.TabIndex = 30
+        Me.chkRefreshPublicStructureDataonStartup.Text = "Refresh Public Structure Data"
+        Me.chkRefreshPublicStructureDataonStartup.UseVisualStyleBackColor = True
+        Me.chkRefreshPublicStructureDataonStartup.Visible = False
         '
         'chkRefreshFacilityDataonStartup
         '
@@ -863,4 +876,5 @@ Partial Class frmSettings
     Friend WithEvents rbtnBuildT2T3AdvancedMats As RadioButton
     Friend WithEvents chkLoadBPsbyChar As CheckBox
     Friend WithEvents chkSaveFacilitiesbyChar As CheckBox
+    Friend WithEvents chkRefreshPublicStructureDataonStartup As CheckBox
 End Class

@@ -284,7 +284,8 @@ Public Class frmUpwellStructureFitting
         Dim DBCommand As SQLiteCommand
 
         SQL = "SELECT typeID, typeName, INVENTORY_GROUPS.groupID FROM INVENTORY_TYPES, INVENTORY_GROUPS WHERE INVENTORY_GROUPS.categoryID = 65 
-                AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid AND INVENTORY_TYPES.published = 1"
+               AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid AND INVENTORY_TYPES.published = 1 
+               AND INVENTORY_TYPES.groupID NOT IN (1408, 2016, 2017)"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsReader = DBCommand.ExecuteReader

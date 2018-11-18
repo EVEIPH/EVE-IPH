@@ -346,6 +346,7 @@ Public Class frmSettings
             ' ESI
             chkRefreshFacilityDataonStartup.Checked = .LoadESIFacilityDataonStartup
             chkRefreshMarketDataonStartup.Checked = .LoadESIMarketDataonStartup
+            chkRefreshPublicStructureDataonStartup.checked = .LoadESIPublicStructuresonStartup
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -534,6 +535,7 @@ Public Class frmSettings
                 ' ESI
                 .LoadESIFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
                 .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
+                .LoadESIPublicStructuresonStartup = chkRefreshPublicStructureDataonStartup.Checked
 
                 ' If they didn't have this checked before, refresh assets
                 If SelectedCharacter.ID <> DummyCharacterID Then

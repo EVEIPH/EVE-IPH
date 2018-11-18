@@ -11,7 +11,7 @@ Public Class MarketPriceInterface
     Private TrackingRecords As Boolean
 
     ' Keeps an array of threads if we need to abort update
-    Private ThreadsArray As List(Of Threading.Thread) = New List(Of Threading.Thread)
+    Private ThreadsArray As List(Of Thread) = New List(Of Thread)
 
     Public Sub New(ByRef SentPG As ToolStripProgressBar)
         RefProgressBar = SentPG

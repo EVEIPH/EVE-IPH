@@ -40,8 +40,8 @@ Partial Class frmIndustryJobsViewer
         Me.rbtnJobHistory = New System.Windows.Forms.RadioButton()
         Me.rbtnCurrentJobs = New System.Windows.Forms.RadioButton()
         Me.gbButtons = New System.Windows.Forms.GroupBox()
-        Me.btnRefreshList = New System.Windows.Forms.Button()
         Me.chkAutoUpdate = New System.Windows.Forms.CheckBox()
+        Me.btnRefreshList = New System.Windows.Forms.Button()
         Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
         Me.gbIndustryJobType.SuspendLayout()
         Me.gbInventionJobs.SuspendLayout()
@@ -54,10 +54,10 @@ Partial Class frmIndustryJobsViewer
         Me.lstIndustryJobs.AllowColumnReorder = True
         Me.lstIndustryJobs.FullRowSelect = True
         Me.lstIndustryJobs.HideSelection = False
-        Me.lstIndustryJobs.Location = New System.Drawing.Point(6, 11)
+        Me.lstIndustryJobs.Location = New System.Drawing.Point(12, 11)
         Me.lstIndustryJobs.MultiSelect = False
         Me.lstIndustryJobs.Name = "lstIndustryJobs"
-        Me.lstIndustryJobs.Size = New System.Drawing.Size(1068, 532)
+        Me.lstIndustryJobs.Size = New System.Drawing.Size(1068, 489)
         Me.lstIndustryJobs.TabIndex = 9
         Me.lstIndustryJobs.UseCompatibleStateImageBehavior = False
         Me.lstIndustryJobs.View = System.Windows.Forms.View.Details
@@ -67,9 +67,9 @@ Partial Class frmIndustryJobsViewer
         Me.gbIndustryJobType.Controls.Add(Me.rbtnBothJobs)
         Me.gbIndustryJobType.Controls.Add(Me.rbtnCorpJobs)
         Me.gbIndustryJobType.Controls.Add(Me.rbtnPersonalJobs)
-        Me.gbIndustryJobType.Location = New System.Drawing.Point(6, 549)
+        Me.gbIndustryJobType.Location = New System.Drawing.Point(12, 506)
         Me.gbIndustryJobType.Name = "gbIndustryJobType"
-        Me.gbIndustryJobType.Size = New System.Drawing.Size(217, 49)
+        Me.gbIndustryJobType.Size = New System.Drawing.Size(108, 76)
         Me.gbIndustryJobType.TabIndex = 64
         Me.gbIndustryJobType.TabStop = False
         Me.gbIndustryJobType.Text = "Industry Job Type:"
@@ -77,7 +77,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnBothJobs
         '
         Me.rbtnBothJobs.AutoSize = True
-        Me.rbtnBothJobs.Location = New System.Drawing.Point(164, 19)
+        Me.rbtnBothJobs.Location = New System.Drawing.Point(11, 51)
         Me.rbtnBothJobs.Name = "rbtnBothJobs"
         Me.rbtnBothJobs.Size = New System.Drawing.Size(47, 17)
         Me.rbtnBothJobs.TabIndex = 2
@@ -88,7 +88,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnCorpJobs
         '
         Me.rbtnCorpJobs.AutoSize = True
-        Me.rbtnCorpJobs.Location = New System.Drawing.Point(84, 19)
+        Me.rbtnCorpJobs.Location = New System.Drawing.Point(11, 34)
         Me.rbtnCorpJobs.Name = "rbtnCorpJobs"
         Me.rbtnCorpJobs.Size = New System.Drawing.Size(79, 17)
         Me.rbtnCorpJobs.TabIndex = 1
@@ -99,7 +99,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnPersonalJobs
         '
         Me.rbtnPersonalJobs.AutoSize = True
-        Me.rbtnPersonalJobs.Location = New System.Drawing.Point(15, 19)
+        Me.rbtnPersonalJobs.Location = New System.Drawing.Point(11, 17)
         Me.rbtnPersonalJobs.Name = "rbtnPersonalJobs"
         Me.rbtnPersonalJobs.Size = New System.Drawing.Size(66, 17)
         Me.rbtnPersonalJobs.TabIndex = 0
@@ -109,36 +109,36 @@ Partial Class frmIndustryJobsViewer
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(219, 57)
+        Me.btnClose.Location = New System.Drawing.Point(112, 56)
         Me.btnClose.Name = "btnClose"
-        Me.btnClose.Size = New System.Drawing.Size(97, 35)
+        Me.btnClose.Size = New System.Drawing.Size(100, 40)
         Me.btnClose.TabIndex = 65
         Me.btnClose.Text = "Close"
         Me.btnClose.UseVisualStyleBackColor = True
         '
         'btnUpdateJobs
         '
-        Me.btnUpdateJobs.Location = New System.Drawing.Point(13, 57)
+        Me.btnUpdateJobs.Location = New System.Drawing.Point(6, 56)
         Me.btnUpdateJobs.Name = "btnUpdateJobs"
-        Me.btnUpdateJobs.Size = New System.Drawing.Size(97, 35)
+        Me.btnUpdateJobs.Size = New System.Drawing.Size(100, 40)
         Me.btnUpdateJobs.TabIndex = 66
         Me.btnUpdateJobs.Text = "Update Jobs"
         Me.btnUpdateJobs.UseVisualStyleBackColor = True
         '
         'btnSelectColumns
         '
-        Me.btnSelectColumns.Location = New System.Drawing.Point(116, 16)
+        Me.btnSelectColumns.Location = New System.Drawing.Point(6, 101)
         Me.btnSelectColumns.Name = "btnSelectColumns"
-        Me.btnSelectColumns.Size = New System.Drawing.Size(97, 35)
+        Me.btnSelectColumns.Size = New System.Drawing.Size(100, 40)
         Me.btnSelectColumns.TabIndex = 67
         Me.btnSelectColumns.Text = "Select Columns"
         Me.btnSelectColumns.UseVisualStyleBackColor = True
         '
         'btnSaveSettings
         '
-        Me.btnSaveSettings.Location = New System.Drawing.Point(219, 16)
+        Me.btnSaveSettings.Location = New System.Drawing.Point(112, 11)
         Me.btnSaveSettings.Name = "btnSaveSettings"
-        Me.btnSaveSettings.Size = New System.Drawing.Size(97, 35)
+        Me.btnSaveSettings.Size = New System.Drawing.Size(100, 40)
         Me.btnSaveSettings.TabIndex = 68
         Me.btnSaveSettings.Text = "Save Settings"
         Me.btnSaveSettings.UseVisualStyleBackColor = True
@@ -149,11 +149,11 @@ Partial Class frmIndustryJobsViewer
         '
         'gbInventionJobs
         '
+        Me.gbInventionJobs.Controls.Add(Me.gbIndustryJobType)
         Me.gbInventionJobs.Controls.Add(Me.lstCharacters)
         Me.gbInventionJobs.Controls.Add(Me.gbJobTimes)
         Me.gbInventionJobs.Controls.Add(Me.gbButtons)
         Me.gbInventionJobs.Controls.Add(Me.lstIndustryJobs)
-        Me.gbInventionJobs.Controls.Add(Me.gbIndustryJobType)
         Me.gbInventionJobs.Location = New System.Drawing.Point(7, 1)
         Me.gbInventionJobs.Name = "gbInventionJobs"
         Me.gbInventionJobs.Size = New System.Drawing.Size(1080, 659)
@@ -164,9 +164,9 @@ Partial Class frmIndustryJobsViewer
         '
         Me.gbJobTimes.Controls.Add(Me.rbtnJobHistory)
         Me.gbJobTimes.Controls.Add(Me.rbtnCurrentJobs)
-        Me.gbJobTimes.Location = New System.Drawing.Point(6, 603)
+        Me.gbJobTimes.Location = New System.Drawing.Point(12, 588)
         Me.gbJobTimes.Name = "gbJobTimes"
-        Me.gbJobTimes.Size = New System.Drawing.Size(217, 49)
+        Me.gbJobTimes.Size = New System.Drawing.Size(108, 64)
         Me.gbJobTimes.TabIndex = 65
         Me.gbJobTimes.TabStop = False
         Me.gbJobTimes.Text = "Job Display Type:"
@@ -174,7 +174,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnJobHistory
         '
         Me.rbtnJobHistory.AutoSize = True
-        Me.rbtnJobHistory.Location = New System.Drawing.Point(120, 21)
+        Me.rbtnJobHistory.Location = New System.Drawing.Point(12, 39)
         Me.rbtnJobHistory.Name = "rbtnJobHistory"
         Me.rbtnJobHistory.Size = New System.Drawing.Size(77, 17)
         Me.rbtnJobHistory.TabIndex = 1
@@ -185,7 +185,7 @@ Partial Class frmIndustryJobsViewer
         'rbtnCurrentJobs
         '
         Me.rbtnCurrentJobs.AutoSize = True
-        Me.rbtnCurrentJobs.Location = New System.Drawing.Point(20, 21)
+        Me.rbtnCurrentJobs.Location = New System.Drawing.Point(12, 21)
         Me.rbtnCurrentJobs.Name = "rbtnCurrentJobs"
         Me.rbtnCurrentJobs.Size = New System.Drawing.Size(84, 17)
         Me.rbtnCurrentJobs.TabIndex = 0
@@ -201,39 +201,39 @@ Partial Class frmIndustryJobsViewer
         Me.gbButtons.Controls.Add(Me.btnUpdateJobs)
         Me.gbButtons.Controls.Add(Me.btnSelectColumns)
         Me.gbButtons.Controls.Add(Me.btnSaveSettings)
-        Me.gbButtons.Location = New System.Drawing.Point(229, 549)
+        Me.gbButtons.Location = New System.Drawing.Point(126, 506)
         Me.gbButtons.Name = "gbButtons"
-        Me.gbButtons.Size = New System.Drawing.Size(329, 103)
+        Me.gbButtons.Size = New System.Drawing.Size(217, 146)
         Me.gbButtons.TabIndex = 69
         Me.gbButtons.TabStop = False
         '
-        'btnRefreshList
-        '
-        Me.btnRefreshList.Location = New System.Drawing.Point(13, 16)
-        Me.btnRefreshList.Name = "btnRefreshList"
-        Me.btnRefreshList.Size = New System.Drawing.Size(97, 35)
-        Me.btnRefreshList.TabIndex = 70
-        Me.btnRefreshList.Text = "Refresh"
-        Me.btnRefreshList.UseVisualStyleBackColor = True
-        '
         'chkAutoUpdate
         '
-        Me.chkAutoUpdate.Location = New System.Drawing.Point(116, 54)
+        Me.chkAutoUpdate.Location = New System.Drawing.Point(117, 100)
         Me.chkAutoUpdate.Name = "chkAutoUpdate"
-        Me.chkAutoUpdate.Size = New System.Drawing.Size(97, 43)
+        Me.chkAutoUpdate.Size = New System.Drawing.Size(94, 43)
         Me.chkAutoUpdate.TabIndex = 0
         Me.chkAutoUpdate.Text = "Automatically Update Jobs on Startup"
         Me.chkAutoUpdate.UseVisualStyleBackColor = True
+        '
+        'btnRefreshList
+        '
+        Me.btnRefreshList.Location = New System.Drawing.Point(6, 11)
+        Me.btnRefreshList.Name = "btnRefreshList"
+        Me.btnRefreshList.Size = New System.Drawing.Size(100, 40)
+        Me.btnRefreshList.TabIndex = 70
+        Me.btnRefreshList.Text = "Refresh"
+        Me.btnRefreshList.UseVisualStyleBackColor = True
         '
         'lstCharacters
         '
         Me.lstCharacters.CheckBoxes = True
         Me.lstCharacters.FullRowSelect = True
         Me.lstCharacters.GridLines = True
-        Me.lstCharacters.Location = New System.Drawing.Point(564, 556)
+        Me.lstCharacters.Location = New System.Drawing.Point(349, 512)
         Me.lstCharacters.MultiSelect = False
         Me.lstCharacters.Name = "lstCharacters"
-        Me.lstCharacters.Size = New System.Drawing.Size(510, 95)
+        Me.lstCharacters.Size = New System.Drawing.Size(725, 140)
         Me.lstCharacters.TabIndex = 70
         Me.lstCharacters.TabStop = False
         Me.lstCharacters.Tag = "20"

@@ -78,6 +78,7 @@ Public Class ProgramSettings
     Public DefaultLoadBPsonStartup As Boolean = True
     Public DefaultRefreshMarketESIDataonStartup As Boolean = True
     Public DefaultRefreshFacilityESIDataonStartup As Boolean = True
+    Public DefaultRefreshPublicStructureDataonStartup As Boolean = True
     Public DefaultDisableSound As Boolean = False
     Public DefaultDNMarkInlineasOwned As Boolean = False
     Public DefaultSaveFacilitiesbyChar As Boolean = True
@@ -1083,6 +1084,7 @@ Public Class ProgramSettings
                     .LoadBPsonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadbpsonStartup", DefaultLoadBPsonStartup))
                     .LoadESIMarketDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIMarketDataonStartup", DefaultRefreshMarketESIDataonStartup))
                     .LoadESIFacilityDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIFacilityDataonStartup", DefaultRefreshFacilityESIDataonStartup))
+                    .LoadESIPublicStructuresonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIFacilityDataonStartup", DefaultRefreshPublicStructureDataonStartup))
                     .DataExportFormat = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "DataExportFormat", DefaultDataExportFormat))
                     .AllowSkillOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AllowSkillOverride", DefaultAllowSkillOverride))
                     .ShowToolTips = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShowToolTips", DefaultShowToolTips))
@@ -1144,6 +1146,7 @@ Public Class ProgramSettings
             .LoadBPsonStartup = DefaultLoadBPsonStartup
             .LoadESIMarketDataonStartup = DefaultRefreshMarketESIDataonStartup
             .LoadESIFacilityDataonStartup = DefaultRefreshFacilityESIDataonStartup
+            .LoadESIPublicStructuresonStartup = DefaultRefreshPublicStructureDataonStartup
             .DisableSound = DefaultDisableSound
             .ManufacturingImplantValue = DefaultImplantValues
             .RefiningImplantValue = DefaultImplantValues
@@ -1189,7 +1192,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(31) As Setting
+        Dim ApplicationSettingsList(32) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1224,6 +1227,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(29) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
             ApplicationSettingsList(30) = New Setting("SaveFacilitiesbyChar", CStr(SentSettings.SaveFacilitiesbyChar))
             ApplicationSettingsList(31) = New Setting("LoadBPsbyChar", CStr(SentSettings.LoadBPsbyChar))
+            ApplicationSettingsList(32) = New Setting("LoadESIPublicStructuresonStartup", CStr(SentSettings.LoadESIPublicStructuresonStartup))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -4775,6 +4779,7 @@ Public Structure ApplicationSettings
     Dim LoadBPsonStartup As Boolean
     Dim LoadESIMarketDataonStartup As Boolean
     Dim LoadESIFacilityDataonStartup As Boolean
+    Dim LoadESIPublicStructuresonStartup As Boolean
     Dim DisableSound As Boolean
     Dim IncludeInGameLinksinCopyText As Boolean
 

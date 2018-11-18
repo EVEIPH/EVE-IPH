@@ -301,10 +301,11 @@ Public Class frmMain
 
         FirstLoad = True
 
-        ' New code to use google analytics to track number of users using IPH (no user information passed outside of OS info below)
+        ' Use google analytics to track number of users using IPH (no user information passed outside of OS info below)
         On Error Resume Next
         With My.Computer.Info
             Dim TrackerInterface As New SimpleTrackerEnvironment(.OSPlatform, .OSVersion, .OSFullName)
+            'Dim MACAddress As String = GetMacAddress() ' Use this for the User ID
             Dim tracker As SimpleTracker = New SimpleTracker("UA-125827521-1", TrackerInterface)
             Call tracker.TrackEventAsync("Use Tracker", "Initalized IPH", "Version: " & Application.ProductVersion, Nothing)
         End With
@@ -425,6 +426,16 @@ Public Class frmMain
             Application.UseWaitCursor = False
             Application.DoEvents()
         End If
+
+        '' Refresh Public Structures
+        'If UserApplicationSettings.LoadESIPublicStructuresonStartup Then
+        '    Application.UseWaitCursor = True
+        '    Application.DoEvents()
+        '    Call SetProgress("Updating Public Structures Data...")
+        '    Call ESIData.UpdatePublicStructureData()
+        '    Application.UseWaitCursor = False
+        '    Application.DoEvents()
+        'End If
 
         If TestingVersion Then
             Me.Text = Me.Text & " - Testing"
@@ -1747,6 +1758,15 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub mnuResetESIPublicStructures_Click(sender As Object, e As EventArgs) Handles mnuResetESIPublicStructures.Click
+        ' Delete all the public structures
+        Call ResetPublicStructureData()
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET PUBLIC_STRUCTURES_CACHED_UNTIL = NULL")
+
+        MsgBox("ESI Public Structure data reset", vbInformation, Application.ProductName)
+
+    End Sub
+
     Private Sub mnuResetMarketOrders_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetMarketOrders.Click
 
         Application.UseWaitCursor = True
@@ -2151,8 +2171,50 @@ Public Class frmMain
 
     Private Sub mnuUserSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuUserSettings.Click
         Dim f1 = New frmSettings
+        Dim OldFacilitySaveSetting As Boolean = UserApplicationSettings.SaveFacilitiesbyChar
+
         ' Open the settings form
         f1.ShowDialog()
+
+        ' Now that we return, see if the facility setting changed and update as necessary
+        If UserApplicationSettings.SaveFacilitiesbyChar <> OldFacilitySaveSetting Then
+
+            ' If they change the character ID for saving facilities, we need to update the objects
+            If UserApplicationSettings.SaveFacilitiesbyChar Then
+                With SelectedCharacter
+                    Call BPTabFacility.ResetSelectedCharacterID(.ID)
+
+                    Call CalcInventionFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcT3InventionFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcCopyFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcSupersFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcCapitalsFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcSubsystemsFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcReactionsFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcBoostersFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcComponentsFacility.ResetSelectedCharacterID(.ID)
+                    Call CalcT3ShipsFacility.ResetSelectedCharacterID(.ID)
+                End With
+            Else
+                Call BPTabFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+
+                Call CalcInventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcT3InventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcCopyFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcSupersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcCapitalsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcSubsystemsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcReactionsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcBoostersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcComponentsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+                Call CalcT3ShipsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            End If
+
+            ' Finally, refresh the bptab facility
+            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
+
+        End If
+
     End Sub
 
     Private Sub ShowShoppingList()
@@ -2374,15 +2436,6 @@ Public Class frmMain
     End Sub
 
     Private Sub UpdateIndustryFacilitiesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateIndustryFacilities.Click
-        Call UpdateESIIndustryIndicies()
-    End Sub
-
-    Private Sub UpdateMarketPricesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateESIMarketPrices.Click
-        Call UpdateESIMarketPrices()
-    End Sub
-
-    ' Function runs the ESI update for system indicies
-    Private Sub UpdateESIIndustryIndicies()
         Dim ESIData As New ESI
         Dim f1 As New frmStatus
 
@@ -2405,11 +2458,9 @@ Public Class frmMain
 
         f1.Dispose()
         Application.UseWaitCursor = False
-
     End Sub
 
-    ' Function runs the ESI update for market prices
-    Private Sub UpdateESIMarketPrices()
+    Private Sub UpdateMarketPricesToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuUpdateESIMarketPrices.Click
         Dim ESIData As New ESI
         Dim f1 As New frmStatus
 
@@ -2422,6 +2473,21 @@ Public Class frmMain
             Call UpdateProgramPrices()
 
             MsgBox("Market Prices Updated", vbInformation, Application.ProductName)
+        End If
+
+        f1.Dispose()
+        Application.UseWaitCursor = False
+    End Sub
+
+    Private Sub mnuUpdateESIPublicStructures_Click(sender As Object, e As EventArgs) Handles mnuUpdateESIPublicStructures.Click
+        Dim ESIData As New ESI
+        Dim f1 As New frmStatus
+
+        Application.UseWaitCursor = True
+        Call f1.Show()
+        Application.DoEvents()
+        If ESIData.UpdatePublicStructureData(f1.lblStatus, f1.pgStatus) Then
+            MsgBox("Public Structure Data Updated", vbInformation, Application.ProductName)
         End If
 
         f1.Dispose()
@@ -4715,8 +4781,6 @@ Tabs:
             MouseWheelSelection = False
             ComboBoxArrowKeys = False
             BPComboKeyDown = False
-
-            SelectedBPText = ""
         End If
 
     End Sub
@@ -5316,7 +5380,7 @@ Tabs:
         readerBP.Close()
 
         ' Load the facilty based on the groupid and categoryid
-        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech)
+        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech, False)
 
         ' Load the image
         Call LoadBlueprintPicture(BPID, ItemType)
@@ -5654,8 +5718,15 @@ Tabs:
         End If
 
         ' Facility setup
-        Dim ManufacturingFacility As IndustryFacility = BPTabFacility.GetSelectedManufacturingFacility ' This is the facility to manufacture the item in the blueprint
-        Dim ComponentManufacturingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+        Dim ComponentManufacturingFacility As IndustryFacility
+        Dim ManufacturingFacility As IndustryFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
+
+        If SelectedBPText.Contains("Reaction Formula") Then
+            'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
+            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.Manufacturing)
+        Else
+            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+        End If
         Dim CapitalComponentManufacturingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
         Dim CopyFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Copying)
         Dim InventionFacility As New IndustryFacility
@@ -6519,7 +6590,7 @@ ExitForm:
         Dim TTText As String = ""
 
         ' Save all the usage values each time we update to allow updates for changing the facilit
-        BPTabFacility.GetSelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
+        BPTabFacility.GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
         BPTabFacility.GetFacility(ProductionType.ComponentManufacturing).FacilityUsage = SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits
         BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage() / DivideUnits
         BPTabFacility.GetFacility(ProductionType.Invention).FacilityUsage = SelectedBlueprint.GetInventionUsage() / DivideUnits
@@ -8779,7 +8850,7 @@ ExitForm:
                     End If
                 Next
 
-                ' Get the system list string
+                ' Get the search list string
                 SQL = "SELECT regionID FROM REGIONS "
                 SQL = SQL & "WHERE regionName = '" & SearchRegion & "'"
 
@@ -8939,19 +9010,30 @@ ExitSub:
                 Items.Add(Temp)
             Next
 
-            pnlStatus.Text = "Downloading prices..."
+            pnlStatus.Text = "Downloading Station Prices..."
 
             ' Update the ESI prices cache
             If Not MP.UpdateMarketOrders(Items) Then
                 ' Update Failed, don't reload everything
-                Call MsgBox("Some prices did not update. Please try again.", vbInformation, Application.ProductName)
+                Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                pnlStatus.Text = ""
+                Exit Sub
+            End If
+            pnlStatus.Text = ""
+
+            ' Now, based on the region, select the public upwell structures and get each set of market data from those
+            pnlStatus.Text = "Downloading Structure Prices..."
+
+            If Not MP.UpdateMarketOrders(Items) Then
+                ' Update Failed, don't reload everything
+                Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
                 pnlStatus.Text = ""
                 Exit Sub
             End If
             pnlStatus.Text = ""
 
         Else
-            ' First update the EVE Marketer cache
+            ' Update the EVE Marketer cache
             If Not UpdatePricesCache(SentItems) Then
                 ' Update Failed, don't reload everything
                 Exit Sub
@@ -17599,7 +17681,7 @@ Leave:
                     Case "Composite"
                         lstViewRow.BackColor = Color.Wheat
                     Case "Hybrid Polymers"
-                        lstViewRow.BackColor = Color.LightSteelBlue
+                        lstViewRow.BackColor = Color.LightSkyBlue
                     Case "Intermediate Materials"
                         lstViewRow.BackColor = Color.LightCyan
                 End Select
@@ -17656,7 +17738,7 @@ Leave:
             Case "Composite"
                 lstViewRow.BackColor = Color.Wheat
             Case "Hybrid Polymers"
-                lstViewRow.BackColor = Color.LightSteelBlue
+                lstViewRow.BackColor = Color.LightSkyBlue
             Case "Intermediate Materials"
                 lstViewRow.BackColor = Color.LightCyan
         End Select
@@ -21188,6 +21270,7 @@ Leave:
         End Function
 
     End Class
+
 
 #End Region
 

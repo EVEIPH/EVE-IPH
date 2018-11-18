@@ -37,14 +37,6 @@ Public Class ESI
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
 
-    ' Cache field names and times
-    Private Const IndustrySystemsField As String = "INDUSTRY_SYSTEMS_CACHED_UNTIL"
-    Private Const IndustrySystemsLength As Integer = 1
-    Private Const IndustryFacilitiesField As String = "INDUSTRY_FACILITIES_CACHED_UNTIL"
-    Private Const IndustryFacilitiesLength As Integer = 1
-    Private Const MarketPricesField As String = "MARKET_PRICES_CACHED_UNTIL"
-    Private Const MarketPricesLength As Integer = 23
-
     ' Rate limits
     'For your requests, this means you can send an occasional burst of 400 requests all at once. 
     'If you do, you'll hit the rate limit once you try to send your 401st request unless you wait.
@@ -62,6 +54,9 @@ Public Class ESI
     Private AuthThreadReference As Thread ' Reference in case we need to kill this
     Private AuthStreamText As String ' The return data from the web call
     Private myListner As TcpListener = New TcpListener(IPAddress.Parse(LocalHost), CInt(LocalPort)) ' Ref to the listener so we can stop it
+
+    ' Keeps an array of threads if we need to abort update
+    Private ThreadsArray As List(Of Thread) = New List(Of Thread)
 
     ' ESI implements the following scopes:
 
@@ -1148,6 +1143,136 @@ Public Class ESI
 
     End Function
 
+    ' Updates the db with orders from structures for the region sent
+    Public Function UpdateStructureMarketOrders(ByVal RegionID As Long) As Boolean
+        ' Dim MarketOrdersOutput As List(Of ESIMarketOrder)
+        Dim SQL As String
+        ' Dim rsCache As SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
+        Dim CacheDate As Date = NoDate
+        Dim PublicData As String = ""
+
+        Dim StationIDs As New List(Of Long)
+
+
+        ' First, get all the structures in that region
+        ' First look up the cache date to see if it's time to run the update
+        SQL = "SELECT STATION_ID FROM STATIONS AND REGION_ID = " & CStr(RegionID) & " "
+        SQL &= "AND STATION_TYPE_ID IN "
+        SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
+        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65) "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsCheck = DBCommand.ExecuteReader
+
+        If rsCheck.Read Then
+            StationIDs.Add(rsCheck.GetInt64(0))
+        End If
+
+        rsCheck.Close()
+
+        For Each SID In StationIDs
+            ' Need to look up the prices of each one and import
+
+        Next
+
+
+
+
+
+
+
+        '' For looking up market order data
+        'Dim StationsData As New StationLocation
+
+        'If Not IgnoreCacheLookup Then
+        '    ' First look up the cache date to see if it's time to run the update
+        '    SQL = "Select CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " And REGION_ID = " & CStr(RegionID)
+        '    DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+        '    rsCache = DBCommand.ExecuteReader
+
+        '    CacheDate = ProcessCacheDate(rsCache)
+
+        '    rsCache.Close()
+        '    rsCache = Nothing
+        '    DBCommand = Nothing
+        'Else
+        '    CacheDate = NoDate
+        'End If
+
+        '' If it's later than now, update
+        'If CacheDate <= Now Then
+        '    ' Always open here incase we update below
+        '    If OpenTransaction Then
+        '        Call MHDB.BeginSQLiteTransaction()
+        '    End If
+
+        '    ' Delete any records for this type and region since we have a fresh set to load
+        '    'Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " And REGION_ID = " & CStr(RegionID))
+
+        '    '' Get the data from ESI
+        '    'PublicData = API.GetPublicData(ESIPublicURL & "markets/" & CStr(RegionID) & "/orders/" & TranquilityDataSource & "&type_id=" & CStr(TypeID), CacheDate)
+
+        '    If Not IsNothing(PublicData) Then
+        '        'MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(PublicData)
+
+        '        ' Parse the data
+        '        If MarketOrdersOutput.Count > 0 Then
+        '            Application.DoEvents()
+
+        '            ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
+        '            For i = 0 To MarketOrdersOutput.Count - 1
+        '                With MarketOrdersOutput(i)
+        '                    Dim StationLocation As SystemRegion
+        '                    Dim OrderDownloadType As String = ""
+
+        '                    StationLocation = StationsData.FindStationInfo(.location_id)
+
+        '                    'Dim IssueDate As Date = FormatESIDate(.issued)
+
+        '                    ' Insert all the new records
+        '                    SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(.order_id) & "," & CStr(TypeID) & ","
+        '                    SQL &= .location_id & "," & CStr(StationLocation.RegionID) & "," & CStr(StationLocation.SystemID) & ",'"
+        '                    'SQL &= CStr(IssueDate) & "'," & .duration & "," & CStr(CInt(.is_buy_order)) & "," & .price & "," & .volume_total & ","
+        '                    SQL &= .min_volume & "," & .volume_remain & ",'" & .range & "')"
+        '                    Call MHDB.ExecuteNonQuerySQL(SQL)
+
+        '                End With
+
+        '                Application.DoEvents()
+        '            Next
+
+        '        End If
+        '    Else
+        '        ' Json file didn't download
+        '        Return False
+        '    End If
+
+        '    ' Set the Cache Date for everything queried 
+        '    Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
+        '    Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(CacheDate, SQLiteDateFormat) & "')")
+
+        '    ' Done updating
+        '    If OpenTransaction Then
+        '        Call MHDB.CommitSQLiteTransaction()
+        '    End If
+
+        '    rsCache = Nothing
+        '    rsCheck = Nothing
+        '    DBCommand = Nothing
+
+        '    Return True
+
+        'Else
+        '    Return False
+        'End If
+
+        Return True
+
+    End Function
+
+
+
     ' Provides per day summary of market activity for 13 months for the region_id and type_id sent. (cache: 23 hours)
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
@@ -1352,6 +1477,142 @@ Public Class ESI
         Return True
 
     End Function
+
+    ' Downloads all public structure ID's and then refreshes the data on them in the Stations Table.
+    Public Function UpdatePublicStructureData(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+
+        Try
+            Dim TempLabel As Label
+            Dim TempPB As ProgressBar
+            Dim PublicData As String
+            Dim PublicStructureIDs As New List(Of Long)
+            Dim TempList As New List(Of Long)
+
+            If IsNothing(UpdateLabel) Then
+                TempLabel = New Label
+            Else
+                TempLabel = UpdateLabel
+            End If
+
+            If IsNothing(PB) Then
+                TempPB = New ProgressBar
+            Else
+                TempPB = PB
+            End If
+
+            Dim CB As New CacheBox
+            Dim CacheDate As Date
+
+            ' Update public structures only if dummy not selected, since we need a token to update the structure data
+            If CB.DataUpdateable(CacheDateType.PublicStructures) And SelectedCharacter.ID <> DummyCharacterID Then
+
+                TempLabel.Text = "Downloading Public Structure Data..."
+                Application.DoEvents()
+
+                ' Get all the public structure IDs from ESI
+                Dim startdate As Date = Now
+                PublicData = GetPublicData(ESIPublicURL & "universe/structures/" & TranquilityDataSource, CacheDate)
+
+                If Not IsNothing(PublicData) Then
+                    PublicStructureIDs = JsonConvert.DeserializeObject(Of List(Of Long))(PublicData)
+
+                    If Not IsNothing(PublicStructureIDs) Then
+                        If PublicStructureIDs.Count > 0 Then
+
+                            Call EVEDB.BeginSQLiteTransaction()
+
+                            ' Delete all structures from the table first, so that we have a fresh list. Industry jobs and Asset updates will refresh their structures if needed
+                            Call ResetPublicStructureData()
+
+                            ' Set the labels and progress bar if needed
+                            TempLabel.Text = "Saving Public Structure Data..."
+                            TempPB.Visible = False ' don't show this one
+                            Application.DoEvents()
+
+                            ' Now read through all the output items and update them in STATIONS - using a thread per look up
+                            ' Call each thread for the pairs
+                            For Each ID In PublicStructureIDs
+                                Dim Params As New StructureUpdateData
+                                Params.ID = ID
+                                Params.TokenData = SelectedCharacter.CharacterTokenData
+
+                                Dim SDThread As New Thread(AddressOf UpdateSingleStructureData)
+                                SDThread.Start(Params)
+                                ' Save the thread if we need to kill it
+                                ThreadsArray.Add(SDThread)
+                            Next
+
+                            Dim stillworking As Boolean = True
+
+                            Do Until Not stillworking
+                                ' Now loop until all the threads are done
+                                For Each T In ThreadsArray
+                                    If T.ThreadState = ThreadState.Running Then
+                                        ' Still working on at least 1 thread, so exit
+                                        StillWorking = True
+                                        Exit For
+                                    Else
+                                        StillWorking = False
+                                    End If
+                                Next
+                            Loop
+
+                            ' Make sure all threads are not running
+                            Call KillThreads()
+
+                            ' All set, update cache date before leaving - one day from now
+                            Call CB.UpdateCacheDate(CacheDateType.PublicStructures, DateAdd(DateInterval.Day, 1, CacheDate))
+
+                            ' Done updating
+                            Call EVEDB.CommitSQLiteTransaction()
+
+                            Return True
+
+                        End If
+                    End If
+                End If
+
+                ' Data didn't download
+                Return False
+            End If
+
+            Return True
+
+        Catch ex As Exception
+            MsgBox("Failed to update public structure data: " & ex.Message, vbInformation, Application.ProductName)
+
+            Return False
+
+        End Try
+
+    End Function
+
+    Private Sub UpdateSingleStructureData(Parameters As Object)
+        Dim Param As StructureUpdateData
+
+        Param = CType(Parameters, StructureUpdateData)
+
+        Dim TempIDList As New List(Of Long)
+        TempIDList.Add(Param.ID)
+
+        Call UpdateStructureData(TempIDList, Param.TokenData)
+
+    End Sub
+
+    ' Aborts all the threads in threads array
+    Private Sub KillThreads()
+        ' Kill all the threads
+        For i = 0 To ThreadsArray.Count - 1
+            If ThreadsArray(i).IsAlive Then
+                ThreadsArray(i).Abort()
+            End If
+        Next
+    End Sub
+
+    Private Structure StructureUpdateData
+        Dim ID As Long
+        Dim TokenData As SavedTokenData
+    End Structure
 
     ' Updates the cost index for installing industry jobs per type of activity. This does not include wormhole space.
     Public Function UpdateIndustrySystemsCostIndex(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
@@ -1897,15 +2158,3 @@ Public Class ESIPostion
 End Class
 
 #End Region
-
-' For outputing a list of stations
-Public Structure Station
-    Dim stationID As Long
-    Dim stationName As String
-    Dim stationTypeID As Long
-    Dim solarSystemID As Long
-    Dim regionID As Long
-    Dim corporationID As Long
-    Dim corporationName As String
-    Dim tax As Double
-End Structure

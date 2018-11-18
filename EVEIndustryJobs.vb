@@ -83,8 +83,12 @@ Public Class EVEIndustryJobs
                                 SQL &= "blueprintID, blueprintTypeID, blueprintLocationID, outputLocationID, "
                                 SQL &= "runs, cost, licensedRuns, probability, productTypeID, status, duration, "
                                 SQL &= "startDate, endDate, pauseDate, completedDate, completedCharacterID, successfulRuns, JobType) VALUES ("
-                                SQL &= .job_id & "," & .installer_id & "," & .facility_id & "," & LocationID & "," & .activity_id & ","
-                                SQL &= .blueprint_id & "," & .blueprint_type_id & "," & .blueprint_location_id & "," & .output_location_id & ","
+                                SQL &= .job_id & "," & .installer_id & "," & .facility_id & "," & LocationID & ","
+                                ' Bug fix until a decision is made to update SDE or ESI
+                                If .activity_id = 9 Then
+                                    .activity_id = 11
+                                End If
+                                SQL &= .activity_id & "," & .blueprint_id & "," & .blueprint_type_id & "," & .blueprint_location_id & "," & .output_location_id & ","
                                 SQL &= .runs & "," & .cost & "," & .licensed_runs & "," & .probability & "," & .product_type_id & ",'" & .status & "'," & .duration & ","
                                 TempDate = ESIData.FormatESIDate(.start_date)
                                 If TempDate <> NoDate Then

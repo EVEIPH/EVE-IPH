@@ -74,14 +74,16 @@ Public Class ProgramUpdater
         m_xmld.Load(ServerXMLLastUpdatePath)
         m_nodelist = m_xmld.SelectNodes("/EVEIPH/result/rowset/row")
 
-        ' Loop through the nodes and find the MD5 and download URL for the updater and any other files necessary to load the updater
+        ' Loop through the nodes and find the MD5 and download URL for the updater and any other files necessary to load and run the updater program
         For Each m_node In m_nodelist
-            If m_node.Attributes.GetNamedItem("Name").Value = UpdaterFileName Or m_node.Attributes.GetNamedItem("Name").Value = SQLiteDLL Then
-                TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
-                TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
-                TempUpdateFile.FileName = UpdaterFileName
-                UpdateFiles.Add(TempUpdateFile)
-            End If
+            Select Case m_node.Attributes.GetNamedItem("Name").Value
+                Case UpdaterFileName, "System.Data.SQLite.dll", "SQLite.Interop.dll"
+                    ' Add the file to the update list 
+                    TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
+                    TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
+                    TempUpdateFile.FileName = m_node.Attributes.GetNamedItem("Name").Value
+                    UpdateFiles.Add(TempUpdateFile)
+            End Select
         Next
 
         ' Download the two files if necessary

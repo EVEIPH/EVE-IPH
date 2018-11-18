@@ -697,7 +697,7 @@ Public Class ManufacturingFacility
 
     ' Loads the class facility and objects
     Public Sub LoadFacility(ByVal ItemBPID As Integer, ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer, ByVal BlueprintTech As Integer,
-                            Optional ByVal LoadDefault As Boolean = False, Optional ByVal ComboSelect As Boolean = False)
+                            Optional ByVal LoadDefault As Boolean = False, Optional ByVal ComboSelect As Boolean = False, Optional RefreshBP As Boolean = True)
 
         ' Save these for later use
         SelectedBPID = ItemBPID
@@ -793,7 +793,9 @@ Public Class ManufacturingFacility
         Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
 
         ' Refresh the blueprint if it's the bp tab
-        Call UpdateBlueprint()
+        If RefreshBP Then
+            Call UpdateBlueprint()
+        End If
 
     End Sub
 
@@ -1591,7 +1593,7 @@ Public Class ManufacturingFacility
             ElseIf FactionCitadelList.Contains(rsLoader.GetInt32(1)) Then
                 ' These are only in nullsec space (if we can look up in ESI then later maybe)
                 SQL = "SELECT security, factionID FROM REGIONS, SOLAR_SYSTEMS WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID "
-                SQL &= "AND factionID IS NULL AND regionName <> 'Wormhole Space' "
+                SQL &= "AND factionID IS NULL AND regionName NOT LIKE '%-R%' " ' -R region names are wormhole regions
                 SQL &= "AND security <= 0.0 AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -1773,21 +1775,13 @@ Public Class ManufacturingFacility
 
         If FacilityType <> FacilityTypes.None Then
 
-            ' See what type of character ID
-            Dim CharID As Long = 0
-            If UserApplicationSettings.SaveFacilitiesbyChar Then
-                CharID = SelectedCharacter.ID
-            Else
-                CharID = CommonSavedFacilitiesID
-            End If
-
             ' First, see if this facility is a saved facility, and use the values from the table
             SQL = "SELECT FACILITY_ID, FACILITY_TYPE_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
             SQL &= "FROM SAVED_FACILITIES, REGIONS, SOLAR_SYSTEMS, INVENTORY_TYPES "
             SQL &= "WHERE SAVED_FACILITIES.REGION_ID = REGIONS.regionID "
             SQL &= "And INVENTORY_TYPES.typeID = FACILITY_TYPE_ID "
             SQL &= "And SAVED_FACILITIES.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-            SQL &= String.Format("And CHARACTER_ID = {0} ", CStr(CharID))
+            SQL &= String.Format("And CHARACTER_ID = {0} ", CStr(SelectedCharacterID))
             SQL &= String.Format("And PRODUCTION_TYPE = {0} And FACILITY_VIEW = {1} ", CStr(BuildType), CStr(SelectedView))
             SQL &= "And REGIONS.regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
             SQL &= "AND SOLAR_SYSTEMS.solarSystemName = '" & SystemName & "' "
@@ -2052,7 +2046,8 @@ Public Class ManufacturingFacility
 
             ' Now look up if they manually saved the value and override whatever we calculated
             SQL = "SELECT MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER, FACILITY_TAX FROM SAVED_FACILITIES "
-            SQL &= String.Format("WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_VIEW = {2} ", CStr(SelectedCharacter.ID), CStr(BuildType), CStr(SelectedView))
+            SQL &= String.Format("WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_VIEW = {2} AND FACILITY_ID = {3} AND SOLAR_SYSTEM_ID = {4}" _
+                                 , CStr(SelectedCharacterID), CStr(BuildType), CStr(SelectedView), CStr(.FacilityID), CStr(.SolarSystemID))
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
 
@@ -3001,6 +2996,7 @@ Public Class ManufacturingFacility
                             SelectedIndyType = ProductionType.T3CruiserManufacturing
                         Case ItemIDs.TacticalDestroyerGroupID
                             SelectedIndyType = ProductionType.T3DestroyerManufacturing
+
                         Case Else
                             SelectedIndyType = ProductionType.Manufacturing
 
@@ -3047,7 +3043,7 @@ Public Class ManufacturingFacility
 
             ' Manufacturing Facility usage
             RawCostSplit.UsageName = "Manufacturing Facility Usage"
-            RawCostSplit.UsageValue = GetSelectedManufacturingFacility.FacilityUsage
+            RawCostSplit.UsageValue = GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage
             f1.UsageSplits.Add(RawCostSplit)
 
             If SelectedBlueprint.HasComponents Then
@@ -3239,6 +3235,11 @@ Public Class ManufacturingFacility
 
 #Region "Public Functions"
 
+    ' Resets the char id of the facility
+    Public Sub ResetSelectedCharacterID(NewCharacterID As Long)
+        SelectedCharacterID = NewCharacterID
+    End Sub
+
     ' Loads the facility sent into the type of the facility
     Public Sub UpdateFacility(UpdatedFacility As IndustryFacility)
         Select Case UpdatedFacility.FacilityProductionType
@@ -3391,7 +3392,7 @@ Public Class ManufacturingFacility
     End Function
 
     ' Gets the facility for manufacturing based on the bp data on initialization or sent bp data
-    Public Function GetSelectedManufacturingFacility(Optional BPGroupID As Integer = 0, Optional BPCategoryID As Integer = 0,
+    Public Function GetSelectedManufacturingFacility(BPGroupID As Integer, BPCategoryID As Integer,
                                                      Optional OverrideActivity As String = "") As IndustryFacility
         Dim TempGroupID As Integer
         Dim TempCategoryID As Integer
@@ -3409,7 +3410,21 @@ Public Class ManufacturingFacility
         If OverrideActivity <> "" Then
             SelectedActivity = OverrideActivity
         Else
+            ' default setting, if the bp is a reaction, then return the reaction facility not manufacturing
             SelectedActivity = ActivityManufacturing
+
+            Dim rsCheck As SQLiteDataReader
+            'Look up the groups for reactions
+            If SelectedActivity = ActivityManufacturing Then
+                DBCommand = New SQLiteCommand("SELECT DISTINCT ITEM_GROUP_ID FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID IN (SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE '%Reaction Formula%')", EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                While rsCheck.Read
+                    If rsCheck.GetInt32(0) = BPGroupID Then
+                        SelectedActivity = ActivityReactions
+                    End If
+                End While
+            End If
         End If
 
         ' Determine the production type and then pull the correct facility for manufacturing only based on the category and group id not the activity selected
@@ -3616,6 +3631,9 @@ Public Class ManufacturingFacility
                     txtFacilityManualTax.Text = FormatPercent(SelectedFacility.TaxRate, 2)
             End Select
 
+            ' No longer a default
+            Call SetDefaultVisuals(False)
+
             UpdatingManualBoxes = False
 
         End If
@@ -3642,7 +3660,8 @@ Public Class ManufacturingFacility
             End If
         End If
 
-        btnFacilitySave.Enabled = EnableButton
+        ' If we set this to true, then we changed input and it's not default anymore
+        Call SetDefaultVisuals(Not EnableButton)
 
         Return ReturnValue
 
@@ -4065,17 +4084,10 @@ ExitBlock:
         Dim ManualEntries As Boolean = False
 
         Try
-            ' See what type of character ID
-            Dim CharID As Long = 0
-            If UserApplicationSettings.SaveFacilitiesbyChar Then
-                CharID = CharacterID
-            Else
-                CharID = CommonSavedFacilitiesID
-            End If
 
             ' See if the record exists - only save one set of facilities for now
             SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
-                            CInt(FacilityProductionType), CInt(ViewType), CharID)
+                            CInt(FacilityProductionType), CInt(ViewType), CharacterID)
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
 
@@ -4151,7 +4163,7 @@ ExitBlock:
 
                 ' Insert
                 SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15})",
-                                CharID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, CInt(FacilityType), FacilityTypeID,
+                                CharacterID, CInt(FacilityProductionType), CInt(ViewType), FacilityID, CInt(FacilityType), FacilityTypeID,
                                 RegionID, SolarSystemID, ActivityCostPerSecond,
                                 CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage),
                                 TaxRate, MEValue, TEValue, CostValue)
@@ -4163,7 +4175,7 @@ ExitBlock:
             ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
             If ManualEntries Then
                 SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
-                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CInt(FacilityProductionType), SolarSystemID, CInt(ViewType), FacilityID))
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, CInt(ViewType), FacilityID))
             End If
 
             ' Update FW upgrade

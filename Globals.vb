@@ -3,11 +3,12 @@ Imports System.Data.SQLite
 Imports System.Globalization
 Imports System.Net
 Imports System.IO
+Imports System.Management
 
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "Into_The_Abyss_1.0"
+    Public Const SDEVersion As String = "Onslaught 1.0"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -56,7 +57,6 @@ Public Module Public_Variables
 
     ' For updates
     Public Const UpdaterFileName As String = "EVEIPH Updater.exe"
-    Public Const SQLiteDLL As String = "System.Data.SQLite.DLL"
     Public Const XMLUpdaterFileName As String = "EVEIPH_Updater.exe" ' For use in the XML files to remove spaces from row names
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
@@ -1695,6 +1695,14 @@ InvalidDate:
 
     End Sub
 
+    ' Deletes all the public structures from the stations table
+    Public Sub ResetPublicStructureData()
+        Dim SQL As String = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN "
+        SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
+        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65)"
+        Call EVEDB.ExecuteNonQuerySQL(SQL)
+    End Sub
+
     ' Try to catch exceptions when the clipboard errors for whatever reason: 
     Public Sub CopyTextToClipboard(TextToCopy As String)
         Dim ClipboardData = New DataObject
@@ -2309,5 +2317,18 @@ InvalidDate:
         Return StructurePairs
 
     End Function
+
+    '' Gets the MAC address for a unique ID
+    'Public Function GetMacAddress() As String
+    '    Dim cpuID As String = String.Empty
+    '    Dim mc As ManagementClass = New ManagementClass("Win32_NetworkAdapterConfiguration")
+    '    Dim moc As ManagementObjectCollection = mc.GetInstances()
+    '    For Each mo As ManagementObject In moc
+    '        If (cpuID = String.Empty And CBool(mo.Properties("IPEnabled").Value) = True) Then
+    '            cpuID = mo.Properties("MacAddress").Value.ToString()
+    '        End If
+    '    Next
+    '    Return cpuID
+    'End Function
 
 End Module

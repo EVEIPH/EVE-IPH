@@ -39,6 +39,7 @@ Partial Class frmMain
         Me.mnuUpdateData = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateESIMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuUpdateESIPublicStructures = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuResetData = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetBlueprintData = New System.Windows.Forms.ToolStripMenuItem()
@@ -49,6 +50,7 @@ Partial Class frmMain
         Me.mnuResetAssets = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetMarketHistory = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetMarketOrders = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuResetESIPublicStructures = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetESIIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetESIMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetESIDates = New System.Windows.Forms.ToolStripMenuItem()
@@ -364,6 +366,13 @@ Partial Class frmMain
         Me.chkIceProducts = New System.Windows.Forms.CheckBox()
         Me.chkMinerals = New System.Windows.Forms.CheckBox()
         Me.pnlSinglePriceLocationSelect = New System.Windows.Forms.Panel()
+        Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
+        Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
+        Me.chkSystems2 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems4 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems5 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems3 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.gbRegions = New System.Windows.Forms.GroupBox()
         Me.chkRegion67 = New System.Windows.Forms.CheckBox()
         Me.chkRegion45 = New System.Windows.Forms.CheckBox()
@@ -432,13 +441,6 @@ Partial Class frmMain
         Me.chkRegion3 = New System.Windows.Forms.CheckBox()
         Me.chkRegion2 = New System.Windows.Forms.CheckBox()
         Me.chkRegion1 = New System.Windows.Forms.CheckBox()
-        Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
-        Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
-        Me.chkSystems2 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems4 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems5 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems3 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.pnlPriceProfiles = New System.Windows.Forms.Panel()
         Me.tabPriceProfile = New System.Windows.Forms.TabControl()
         Me.tabPriceProfileRaw = New System.Windows.Forms.TabPage()
@@ -1006,7 +1008,6 @@ Partial Class frmMain
         Me.chkMineAmarr = New System.Windows.Forms.CheckBox()
         Me.lstMineGrid = New System.Windows.Forms.ListView()
         Me.tabPI = New System.Windows.Forms.TabPage()
-        Me.MyListView6 = New EVE_Isk_per_Hour.MyListView()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
         Me.chkPILava = New System.Windows.Forms.CheckBox()
@@ -1018,11 +1019,6 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
-        Me.MyListView5 = New EVE_Isk_per_Hour.MyListView()
-        Me.MyListView4 = New EVE_Isk_per_Hour.MyListView()
-        Me.MyListView3 = New EVE_Isk_per_Hour.MyListView()
-        Me.MyListView2 = New EVE_Isk_per_Hour.MyListView()
-        Me.MyListView1 = New EVE_Isk_per_Hour.MyListView()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1052,8 +1048,8 @@ Partial Class frmMain
         Me.gbPricesTech.SuspendLayout()
         Me.gbRawMaterials.SuspendLayout()
         Me.pnlSinglePriceLocationSelect.SuspendLayout()
-        Me.gbRegions.SuspendLayout()
         Me.gbTradeHubSystems.SuspendLayout()
+        Me.gbRegions.SuspendLayout()
         Me.pnlPriceProfiles.SuspendLayout()
         Me.tabPriceProfile.SuspendLayout()
         Me.tabPriceProfileRaw.SuspendLayout()
@@ -1224,7 +1220,7 @@ Partial Class frmMain
         '
         'mnuUpdateData
         '
-        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.ToolStripSeparator6, Me.mnuResetData})
+        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.mnuUpdateESIPublicStructures, Me.ToolStripSeparator6, Me.mnuResetData})
         Me.mnuUpdateData.Name = "mnuUpdateData"
         Me.mnuUpdateData.Size = New System.Drawing.Size(43, 20)
         Me.mnuUpdateData.Text = "Data"
@@ -1241,6 +1237,12 @@ Partial Class frmMain
         Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(236, 22)
         Me.mnuUpdateESIMarketPrices.Text = "Update Adjusted Market Prices"
         '
+        'mnuUpdateESIPublicStructures
+        '
+        Me.mnuUpdateESIPublicStructures.Name = "mnuUpdateESIPublicStructures"
+        Me.mnuUpdateESIPublicStructures.Size = New System.Drawing.Size(236, 22)
+        Me.mnuUpdateESIPublicStructures.Text = "Update Public Structures"
+        '
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
@@ -1248,7 +1250,7 @@ Partial Class frmMain
         '
         'mnuResetData
         '
-        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
+        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIPublicStructures, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
         Me.mnuResetData.Name = "mnuResetData"
         Me.mnuResetData.Size = New System.Drawing.Size(236, 22)
         Me.mnuResetData.Text = "Reset Data"
@@ -1300,6 +1302,12 @@ Partial Class frmMain
         Me.mnuResetMarketOrders.Name = "mnuResetMarketOrders"
         Me.mnuResetMarketOrders.Size = New System.Drawing.Size(258, 22)
         Me.mnuResetMarketOrders.Text = "Reset Market Orders"
+        '
+        'mnuResetESIPublicStructures
+        '
+        Me.mnuResetESIPublicStructures.Name = "mnuResetESIPublicStructures"
+        Me.mnuResetESIPublicStructures.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetESIPublicStructures.Text = "Reset Public Structures"
         '
         'mnuResetESIIndustryFacilities
         '
@@ -4328,6 +4336,82 @@ Partial Class frmMain
         Me.pnlSinglePriceLocationSelect.TabIndex = 15
         Me.pnlSinglePriceLocationSelect.Visible = False
         '
+        'gbTradeHubSystems
+        '
+        Me.gbTradeHubSystems.Controls.Add(Me.cmbPriceSystems)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems2)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems4)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems5)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems3)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems1)
+        Me.gbTradeHubSystems.Location = New System.Drawing.Point(4, 433)
+        Me.gbTradeHubSystems.Name = "gbTradeHubSystems"
+        Me.gbTradeHubSystems.Size = New System.Drawing.Size(455, 45)
+        Me.gbTradeHubSystems.TabIndex = 8
+        Me.gbTradeHubSystems.TabStop = False
+        Me.gbTradeHubSystems.Text = "Trade Hub Systems"
+        '
+        'cmbPriceSystems
+        '
+        Me.cmbPriceSystems.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend
+        Me.cmbPriceSystems.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
+        Me.cmbPriceSystems.FormattingEnabled = True
+        Me.cmbPriceSystems.Location = New System.Drawing.Point(293, 16)
+        Me.cmbPriceSystems.Name = "cmbPriceSystems"
+        Me.cmbPriceSystems.Size = New System.Drawing.Size(156, 21)
+        Me.cmbPriceSystems.TabIndex = 5
+        Me.cmbPriceSystems.Text = "Select System"
+        '
+        'chkSystems2
+        '
+        Me.chkSystems2.AutoSize = True
+        Me.chkSystems2.Location = New System.Drawing.Point(62, 19)
+        Me.chkSystems2.Name = "chkSystems2"
+        Me.chkSystems2.Size = New System.Drawing.Size(53, 17)
+        Me.chkSystems2.TabIndex = 1
+        Me.chkSystems2.Text = "Amarr"
+        Me.chkSystems2.UseVisualStyleBackColor = True
+        '
+        'chkSystems4
+        '
+        Me.chkSystems4.AutoSize = True
+        Me.chkSystems4.Location = New System.Drawing.Point(188, 19)
+        Me.chkSystems4.Name = "chkSystems4"
+        Me.chkSystems4.Size = New System.Drawing.Size(51, 17)
+        Me.chkSystems4.TabIndex = 3
+        Me.chkSystems4.Text = "Rens"
+        Me.chkSystems4.UseVisualStyleBackColor = True
+        '
+        'chkSystems5
+        '
+        Me.chkSystems5.AutoSize = True
+        Me.chkSystems5.Location = New System.Drawing.Point(245, 19)
+        Me.chkSystems5.Name = "chkSystems5"
+        Me.chkSystems5.Size = New System.Drawing.Size(46, 17)
+        Me.chkSystems5.TabIndex = 4
+        Me.chkSystems5.Text = "Hek"
+        Me.chkSystems5.UseVisualStyleBackColor = True
+        '
+        'chkSystems3
+        '
+        Me.chkSystems3.AutoSize = True
+        Me.chkSystems3.Location = New System.Drawing.Point(121, 19)
+        Me.chkSystems3.Name = "chkSystems3"
+        Me.chkSystems3.Size = New System.Drawing.Size(61, 17)
+        Me.chkSystems3.TabIndex = 2
+        Me.chkSystems3.Text = "Dodixie"
+        Me.chkSystems3.UseVisualStyleBackColor = True
+        '
+        'chkSystems1
+        '
+        Me.chkSystems1.AutoSize = True
+        Me.chkSystems1.Location = New System.Drawing.Point(14, 19)
+        Me.chkSystems1.Name = "chkSystems1"
+        Me.chkSystems1.Size = New System.Drawing.Size(42, 17)
+        Me.chkSystems1.TabIndex = 0
+        Me.chkSystems1.Text = "Jita"
+        Me.chkSystems1.UseVisualStyleBackColor = True
+        '
         'gbRegions
         '
         Me.gbRegions.Controls.Add(Me.chkRegion67)
@@ -5073,82 +5157,6 @@ Partial Class frmMain
         Me.chkRegion1.TabIndex = 4
         Me.chkRegion1.Text = "A821-A"
         Me.chkRegion1.UseVisualStyleBackColor = True
-        '
-        'gbTradeHubSystems
-        '
-        Me.gbTradeHubSystems.Controls.Add(Me.cmbPriceSystems)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems2)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems4)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems5)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems3)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems1)
-        Me.gbTradeHubSystems.Location = New System.Drawing.Point(4, 433)
-        Me.gbTradeHubSystems.Name = "gbTradeHubSystems"
-        Me.gbTradeHubSystems.Size = New System.Drawing.Size(455, 45)
-        Me.gbTradeHubSystems.TabIndex = 8
-        Me.gbTradeHubSystems.TabStop = False
-        Me.gbTradeHubSystems.Text = "Trade Hub Systems"
-        '
-        'cmbPriceSystems
-        '
-        Me.cmbPriceSystems.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend
-        Me.cmbPriceSystems.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.cmbPriceSystems.FormattingEnabled = True
-        Me.cmbPriceSystems.Location = New System.Drawing.Point(293, 16)
-        Me.cmbPriceSystems.Name = "cmbPriceSystems"
-        Me.cmbPriceSystems.Size = New System.Drawing.Size(156, 21)
-        Me.cmbPriceSystems.TabIndex = 5
-        Me.cmbPriceSystems.Text = "Select System"
-        '
-        'chkSystems2
-        '
-        Me.chkSystems2.AutoSize = True
-        Me.chkSystems2.Location = New System.Drawing.Point(62, 19)
-        Me.chkSystems2.Name = "chkSystems2"
-        Me.chkSystems2.Size = New System.Drawing.Size(53, 17)
-        Me.chkSystems2.TabIndex = 1
-        Me.chkSystems2.Text = "Amarr"
-        Me.chkSystems2.UseVisualStyleBackColor = True
-        '
-        'chkSystems4
-        '
-        Me.chkSystems4.AutoSize = True
-        Me.chkSystems4.Location = New System.Drawing.Point(188, 19)
-        Me.chkSystems4.Name = "chkSystems4"
-        Me.chkSystems4.Size = New System.Drawing.Size(51, 17)
-        Me.chkSystems4.TabIndex = 3
-        Me.chkSystems4.Text = "Rens"
-        Me.chkSystems4.UseVisualStyleBackColor = True
-        '
-        'chkSystems5
-        '
-        Me.chkSystems5.AutoSize = True
-        Me.chkSystems5.Location = New System.Drawing.Point(245, 19)
-        Me.chkSystems5.Name = "chkSystems5"
-        Me.chkSystems5.Size = New System.Drawing.Size(46, 17)
-        Me.chkSystems5.TabIndex = 4
-        Me.chkSystems5.Text = "Hek"
-        Me.chkSystems5.UseVisualStyleBackColor = True
-        '
-        'chkSystems3
-        '
-        Me.chkSystems3.AutoSize = True
-        Me.chkSystems3.Location = New System.Drawing.Point(121, 19)
-        Me.chkSystems3.Name = "chkSystems3"
-        Me.chkSystems3.Size = New System.Drawing.Size(61, 17)
-        Me.chkSystems3.TabIndex = 2
-        Me.chkSystems3.Text = "Dodixie"
-        Me.chkSystems3.UseVisualStyleBackColor = True
-        '
-        'chkSystems1
-        '
-        Me.chkSystems1.AutoSize = True
-        Me.chkSystems1.Location = New System.Drawing.Point(14, 19)
-        Me.chkSystems1.Name = "chkSystems1"
-        Me.chkSystems1.Size = New System.Drawing.Size(42, 17)
-        Me.chkSystems1.TabIndex = 0
-        Me.chkSystems1.Text = "Jita"
-        Me.chkSystems1.UseVisualStyleBackColor = True
         '
         'pnlPriceProfiles
         '
@@ -6100,7 +6108,7 @@ Partial Class frmMain
         '
         'lblCalcColorCode2
         '
-        Me.lblCalcColorCode2.BackColor = System.Drawing.Color.LightSteelBlue
+        Me.lblCalcColorCode2.BackColor = System.Drawing.Color.LightSkyBlue
         Me.lblCalcColorCode2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.lblCalcColorCode2.ForeColor = System.Drawing.Color.Black
         Me.lblCalcColorCode2.Location = New System.Drawing.Point(60, 10)
@@ -10975,15 +10983,9 @@ Partial Class frmMain
         '
         'tabPI
         '
-        Me.tabPI.Controls.Add(Me.MyListView6)
         Me.tabPI.Controls.Add(Me.btnPISaveSettings)
         Me.tabPI.Controls.Add(Me.gbPIPlanets)
         Me.tabPI.Controls.Add(Me.btnPIReset)
-        Me.tabPI.Controls.Add(Me.MyListView5)
-        Me.tabPI.Controls.Add(Me.MyListView4)
-        Me.tabPI.Controls.Add(Me.MyListView3)
-        Me.tabPI.Controls.Add(Me.MyListView2)
-        Me.tabPI.Controls.Add(Me.MyListView1)
         Me.tabPI.Location = New System.Drawing.Point(4, 22)
         Me.tabPI.Name = "tabPI"
         Me.tabPI.Padding = New System.Windows.Forms.Padding(3)
@@ -10991,20 +10993,6 @@ Partial Class frmMain
         Me.tabPI.TabIndex = 6
         Me.tabPI.Text = "Planetary Interaction"
         Me.tabPI.UseVisualStyleBackColor = True
-        '
-        'MyListView6
-        '
-        Me.MyListView6.FullRowSelect = True
-        Me.MyListView6.GridLines = True
-        Me.MyListView6.HideSelection = False
-        Me.MyListView6.Location = New System.Drawing.Point(9, 294)
-        Me.MyListView6.MultiSelect = False
-        Me.MyListView6.Name = "MyListView6"
-        Me.MyListView6.Size = New System.Drawing.Size(398, 311)
-        Me.MyListView6.TabIndex = 75
-        Me.MyListView6.TabStop = False
-        Me.MyListView6.UseCompatibleStateImageBehavior = False
-        Me.MyListView6.View = System.Windows.Forms.View.Details
         '
         'btnPISaveSettings
         '
@@ -11121,76 +11109,6 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = True
         '
-        'MyListView5
-        '
-        Me.MyListView5.FullRowSelect = True
-        Me.MyListView5.GridLines = True
-        Me.MyListView5.HideSelection = False
-        Me.MyListView5.Location = New System.Drawing.Point(9, 82)
-        Me.MyListView5.MultiSelect = False
-        Me.MyListView5.Name = "MyListView5"
-        Me.MyListView5.Size = New System.Drawing.Size(398, 206)
-        Me.MyListView5.TabIndex = 40
-        Me.MyListView5.TabStop = False
-        Me.MyListView5.UseCompatibleStateImageBehavior = False
-        Me.MyListView5.View = System.Windows.Forms.View.Details
-        '
-        'MyListView4
-        '
-        Me.MyListView4.FullRowSelect = True
-        Me.MyListView4.GridLines = True
-        Me.MyListView4.HideSelection = False
-        Me.MyListView4.Location = New System.Drawing.Point(855, 214)
-        Me.MyListView4.MultiSelect = False
-        Me.MyListView4.Name = "MyListView4"
-        Me.MyListView4.Size = New System.Drawing.Size(279, 391)
-        Me.MyListView4.TabIndex = 39
-        Me.MyListView4.TabStop = False
-        Me.MyListView4.UseCompatibleStateImageBehavior = False
-        Me.MyListView4.View = System.Windows.Forms.View.Details
-        '
-        'MyListView3
-        '
-        Me.MyListView3.FullRowSelect = True
-        Me.MyListView3.GridLines = True
-        Me.MyListView3.HideSelection = False
-        Me.MyListView3.Location = New System.Drawing.Point(413, 214)
-        Me.MyListView3.MultiSelect = False
-        Me.MyListView3.Name = "MyListView3"
-        Me.MyListView3.Size = New System.Drawing.Size(279, 391)
-        Me.MyListView3.TabIndex = 38
-        Me.MyListView3.TabStop = False
-        Me.MyListView3.UseCompatibleStateImageBehavior = False
-        Me.MyListView3.View = System.Windows.Forms.View.Details
-        '
-        'MyListView2
-        '
-        Me.MyListView2.FullRowSelect = True
-        Me.MyListView2.GridLines = True
-        Me.MyListView2.HideSelection = False
-        Me.MyListView2.Location = New System.Drawing.Point(855, 13)
-        Me.MyListView2.MultiSelect = False
-        Me.MyListView2.Name = "MyListView2"
-        Me.MyListView2.Size = New System.Drawing.Size(279, 195)
-        Me.MyListView2.TabIndex = 37
-        Me.MyListView2.TabStop = False
-        Me.MyListView2.UseCompatibleStateImageBehavior = False
-        Me.MyListView2.View = System.Windows.Forms.View.Details
-        '
-        'MyListView1
-        '
-        Me.MyListView1.FullRowSelect = True
-        Me.MyListView1.GridLines = True
-        Me.MyListView1.HideSelection = False
-        Me.MyListView1.Location = New System.Drawing.Point(413, 13)
-        Me.MyListView1.MultiSelect = False
-        Me.MyListView1.Name = "MyListView1"
-        Me.MyListView1.Size = New System.Drawing.Size(279, 195)
-        Me.MyListView1.TabIndex = 36
-        Me.MyListView1.TabStop = False
-        Me.MyListView1.UseCompatibleStateImageBehavior = False
-        Me.MyListView1.View = System.Windows.Forms.View.Details
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11263,10 +11181,10 @@ Partial Class frmMain
         Me.gbRawMaterials.ResumeLayout(False)
         Me.gbRawMaterials.PerformLayout()
         Me.pnlSinglePriceLocationSelect.ResumeLayout(False)
-        Me.gbRegions.ResumeLayout(False)
-        Me.gbRegions.PerformLayout()
         Me.gbTradeHubSystems.ResumeLayout(False)
         Me.gbTradeHubSystems.PerformLayout()
+        Me.gbRegions.ResumeLayout(False)
+        Me.gbRegions.PerformLayout()
         Me.pnlPriceProfiles.ResumeLayout(False)
         Me.tabPriceProfile.ResumeLayout(False)
         Me.tabPriceProfileRaw.ResumeLayout(False)
@@ -12117,7 +12035,6 @@ Partial Class frmMain
     Friend WithEvents chkOreProcessing1 As System.Windows.Forms.CheckBox
     Friend WithEvents mnuRefinery As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents tabPI As System.Windows.Forms.TabPage
-    Friend WithEvents MyListView6 As EVE_Isk_per_Hour.MyListView
     Friend WithEvents btnPISaveSettings As System.Windows.Forms.Button
     Friend WithEvents gbPIPlanets As System.Windows.Forms.GroupBox
     Friend WithEvents chkPILava As System.Windows.Forms.CheckBox
@@ -12129,11 +12046,6 @@ Partial Class frmMain
     Friend WithEvents chkPIStorm As System.Windows.Forms.CheckBox
     Friend WithEvents chkPITemperate As System.Windows.Forms.CheckBox
     Friend WithEvents btnPIReset As System.Windows.Forms.Button
-    Friend WithEvents MyListView5 As EVE_Isk_per_Hour.MyListView
-    Friend WithEvents MyListView4 As EVE_Isk_per_Hour.MyListView
-    Friend WithEvents MyListView3 As EVE_Isk_per_Hour.MyListView
-    Friend WithEvents MyListView2 As EVE_Isk_per_Hour.MyListView
-    Friend WithEvents MyListView1 As EVE_Isk_per_Hour.MyListView
     Friend WithEvents btnBPForward As System.Windows.Forms.Button
     Friend WithEvents btnBPBack As System.Windows.Forms.Button
     Friend WithEvents lblBPRawSVR As System.Windows.Forms.Label
@@ -12418,4 +12330,6 @@ Partial Class frmMain
     Friend WithEvents gbMineBaseRefineSkills As GroupBox
     Friend WithEvents txtMineStationEff As TextBox
     Friend WithEvents txtMineReprocessingTax As TextBox
+    Friend WithEvents mnuUpdateESIPublicStructures As ToolStripMenuItem
+    Friend WithEvents mnuResetESIPublicStructures As ToolStripMenuItem
 End Class
