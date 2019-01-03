@@ -184,6 +184,7 @@ Public Class PriceItem
     Public Manufacture As Boolean
     Public RegionID As String
     Public SystemID As String
+    Public StructureID As String
     Public GroupName As String
     Public PriceModifier As Double
     Public PriceType As String

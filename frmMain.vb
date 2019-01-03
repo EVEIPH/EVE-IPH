@@ -5,7 +5,7 @@ Imports System.Threading
 Imports System.IO
 Imports System.Net
 Imports MoreLinq.MoreEnumerable
-Imports GoogleAnalyticsTracker.Simple
+Imports GoogleAnalyticsClientDotNet
 
 Public Class frmMain
     Inherits System.Windows.Forms.Form
@@ -131,6 +131,7 @@ Public Class frmMain
     Private OwnedBPPE As String
 
     Private UpdatingCheck As Boolean
+    Private UpdatingStructureIDText As Boolean
 
     ' For checks that are enabled
     Private PriceCheckT1Enabled As Boolean
@@ -192,10 +193,6 @@ Public Class frmMain
     Private MiningColumnSortType As SortOrder
     Private ReactionsColumnClicked As Integer
     Private ReactionsColumnSortType As SortOrder
-
-    ' For maximum production and laboratory lines
-    Private MaximumProductionLines As Integer
-    Private MaximumLaboratoryLines As Integer
 
     Private SelectedBPText As String = ""
 
@@ -301,14 +298,22 @@ Public Class frmMain
 
         FirstLoad = True
 
-        ' Use google analytics to track number of users using IPH (no user information passed outside of OS info below)
+        ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
         On Error Resume Next
-        With My.Computer.Info
-            Dim TrackerInterface As New SimpleTrackerEnvironment(.OSPlatform, .OSVersion, .OSFullName)
-            'Dim MACAddress As String = GetMacAddress() ' Use this for the User ID
-            Dim tracker As SimpleTracker = New SimpleTracker("UA-125827521-1", TrackerInterface)
-            Call tracker.TrackEventAsync("Use Tracker", "Initalized IPH", "Version: " & Application.ProductVersion, Nothing)
-        End With
+
+        Dim GATracker As New AnalyticsService()
+        Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
+
+        Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
+        Dim EventData As New ServiceModel.EventParameter
+
+        EventData.Category = "Program Usage"
+        EventData.Action = "Open IPH"
+        EventData.Label = "Initialized"
+        EventData.ClientId = MACAddress
+
+        Call GATracker.TrackEvent(EventData)
+
         On Error GoTo 0
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
@@ -395,14 +400,6 @@ Public Class frmMain
 
         ' Type of skills loaded
         Call UpdateSkillPanel()
-
-        If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
-            MaximumProductionLines = SelectedCharacter.Skills.GetSkillLevel(3387) + SelectedCharacter.Skills.GetSkillLevel(24625) + 1
-            MaximumLaboratoryLines = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
-        Else
-            MaximumProductionLines = 1
-            MaximumLaboratoryLines = 1
-        End If
 
         ' ESI Facilities
         If UserApplicationSettings.LoadESIFacilityDataonStartup Then
@@ -598,7 +595,6 @@ Public Class frmMain
         FirstPriceChargeTypesComboLoad = True
         FirstPriceShipTypesComboLoad = True
         IgnoreSystemCheckUpdates = False
-        IgnoreRegionCheckUpdates = False
 
         PriceTypeUpdate = False
         PriceSystemUpdate = False
@@ -618,6 +614,17 @@ Public Class frmMain
         PriceOrdersUpdateCount = 0
         CancelUpdatePrices = False
         CancelManufacturingTabCalc = False
+
+        ' Set the structure instructions for importing prices from structures
+        lblStructurePriceInstructions.Text = "Some structures may not be 'public' and IPH cannot download prices from them. However, if you have access to a market (e.g Nullsec Trade Hub), follow these steps to import prices for specific structures."
+        lblStructurePriceInstructions.Text &= vbCrLf & vbCrLf
+        lblStructurePriceInstructions.Text &= "1. Make a link of the market hub in the EVE Chat window. You can drag the station name from assets or type the name and select auto-link and then search for 'Station'. Note, if you do not have access search will not work."
+        lblStructurePriceInstructions.Text &= vbCrLf
+        lblStructurePriceInstructions.Text &= "2. Right click the link and select Copy after entering the chat link."
+        lblStructurePriceInstructions.Text &= vbCrLf
+        lblStructurePriceInstructions.Text &= "3. Paste the text into the structure ID textbox - it will format the number for you."
+        lblStructurePriceInstructions.Text &= vbCrLf
+        lblStructurePriceInstructions.Text &= "4. Import prices."
 
         Call InitUpdatePricesTab()
 
@@ -656,6 +663,8 @@ Public Class frmMain
 
         ' If there is an error in price updates, only show once
         ShownPriceUpdateError = False
+
+        UpdatingStructureIDText = False
 
         Call InitManufacturingTab()
 
@@ -2259,15 +2268,6 @@ Public Class frmMain
         ' Update skill override
         Call UpdateSkillPanel()
 
-        ' New Char so load the max lines
-        If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
-            MaximumProductionLines = SelectedCharacter.Skills.GetSkillLevel(3387) + SelectedCharacter.Skills.GetSkillLevel(24525) + 1
-            MaximumLaboratoryLines = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24524) + 1
-        Else
-            MaximumProductionLines = 1
-            MaximumLaboratoryLines = 1
-        End If
-
         Me.Cursor = Cursors.Default
 
     End Sub
@@ -3268,7 +3268,7 @@ Tabs:
 
     Private Sub txtBPLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPLines.DoubleClick
         ' Enter the max lines we have
-        txtBPLines.Text = CStr(MaximumProductionLines)
+        txtBPLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
     End Sub
 
     Private Sub txtBPLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPLines.KeyDown
@@ -3290,7 +3290,7 @@ Tabs:
 
     Private Sub txtBPInventionLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPInventionLines.DoubleClick
         ' Enter the max lines we have
-        txtBPInventionLines.Text = CStr(MaximumLaboratoryLines)
+        txtBPInventionLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
     End Sub
 
     Private Sub txtBPInventionLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPInventionLines.KeyDown
@@ -3312,7 +3312,7 @@ Tabs:
 
     Private Sub txtBPRelicLines_DoubleClick(sender As Object, e As System.EventArgs)
         ' Enter the max lines we have
-        txtBPRelicLines.Text = CStr(MaximumLaboratoryLines)
+        txtBPRelicLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
     End Sub
 
     Private Sub txtBPRelicLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs)
@@ -7275,13 +7275,12 @@ ExitForm:
     Private Sub ClearAllRegionChecks(ByVal Index As Integer)
         Dim i As Integer
 
-        If Not IgnoreRegionCheckUpdates Then
-            For i = 1 To RegionCheckBoxes.Length - 1
-                If i <> Index Then
-                    RegionCheckBoxes(i).Checked = False
-                End If
-            Next i
-        End If
+        For i = 1 To RegionCheckBoxes.Length - 1
+            If i <> Index Then
+                RegionCheckBoxes(i).Checked = False
+            End If
+        Next i
+
     End Sub
 
     Private Sub cmbPriceShipTypes_DropDown(sender As Object, e As System.EventArgs) Handles cmbPriceShipTypes.DropDown
@@ -8253,6 +8252,25 @@ ExitForm:
             Call ClearAllRegionChecks(45)
         End If
     End Sub
+    Private Sub chkRegion68_CheckedChanged(sender As Object, e As EventArgs) Handles chkRegion68.CheckedChanged
+        If chkRegion68.Checked Then
+            txtStructureIDPrices.Enabled = True
+            ' Disable price profiles with structure look up
+            rbtnPriceSettingPriceProfile.Enabled = False
+            If rbtnPriceSettingPriceProfile.Checked Then
+                rbtnPriceSettingSingleSelect.Checked = True
+            End If
+        Else
+            txtStructureIDPrices.Enabled = False
+            rbtnPriceSettingPriceProfile.Enabled = True
+        End If
+
+        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
+            Call ClearSystemChecks()
+            Call ClearAllRegionChecks(68)
+        End If
+
+    End Sub
 #End Region
 
 #End Region
@@ -8418,6 +8436,8 @@ ExitForm:
             Next
             IgnoreSystemCheckUpdates = False
         End If
+
+        txtStructureIDPrices.Text = UserUpdatePricesTabSettings.StructureIDText
 
         UpdatePricesColumnClicked = UserUpdatePricesTabSettings.ColumnSort
         If UserUpdatePricesTabSettings.ColumnSortType = "Ascending" Then
@@ -8625,6 +8645,8 @@ ExitForm:
             TempSettings.SelectedRegions = TempRegions
         End If
 
+        TempSettings.StructureIDText = txtStructureIDPrices.Text
+
         ' Raw items
         ' Manufactured Items
         With TempSettings
@@ -8696,6 +8718,7 @@ ExitForm:
             .PPItemsRegion = cmbItemsDefaultsRegion.Text
             .PPItemsSystem = cmbItemsDefaultsSystem.Text
             .PPItemsPriceMod = CDbl(txtItemsDefaultsPriceMod.Text.Replace("%", "")) / 100
+
         End With
 
         TempSettings.ColumnSort = UpdatePricesColumnClicked
@@ -8762,6 +8785,7 @@ ExitForm:
         Dim TempItem As PriceItem
         Dim SearchRegion As String = ""
         Dim SearchSystem As String = ""
+        Dim SearchStructureID As String = ""
         Dim NumSystems As Integer = 0
 
         RegionChecked = False
@@ -8827,8 +8851,8 @@ ExitForm:
         pnlStatus.Text = "Initializing Query..."
         Application.DoEvents()
 
-        ' Find the checked region
-        If rbtnPriceSettingSingleSelect.Checked Then
+        ' Find the checked region (if not structure ID)
+        If rbtnPriceSettingSingleSelect.Checked And chkRegion68.Checked = False Then
             If RegionChecked Then
                 For i = 1 To (RegionCheckBoxes.Length - 1)
                     If RegionCheckBoxes(i).Checked Then
@@ -8885,6 +8909,8 @@ ExitForm:
                 readerSystems = Nothing
                 DBCommand = Nothing
             End If
+        ElseIf rbtnPriceSettingSingleSelect.Checked Then
+            SearchStructureID = Trim(txtStructureIDPrices.Text)
         End If
 
         ' Build the list of types we want to update and include the type, region/system
@@ -8904,6 +8930,7 @@ ExitForm:
                     If rbtnPriceSettingSingleSelect.Checked Then
                         TempItem.RegionID = SearchRegion
                         TempItem.SystemID = SearchSystem
+                        TempItem.StructureID = SearchStructureID
                         If TempItem.Manufacture Then
                             TempItem.PriceType = cmbItemsSplitPrices.Text
                             TempItem.PriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
@@ -9021,16 +9048,16 @@ ExitSub:
             End If
             pnlStatus.Text = ""
 
-            ' Now, based on the region, select the public upwell structures and get each set of market data from those
-            pnlStatus.Text = "Downloading Structure Prices..."
+            '' Now, based on the region, select the public upwell structures and get each set of market data from those
+            'pnlStatus.Text = "Downloading Structure Prices..."
 
-            If Not MP.UpdateMarketOrders(Items) Then
-                ' Update Failed, don't reload everything
-                Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
-                pnlStatus.Text = ""
-                Exit Sub
-            End If
-            pnlStatus.Text = ""
+            'If Not MP.UpdateMarketOrders(Items) Then
+            '    ' Update Failed, don't reload everything
+            '    Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
+            '    pnlStatus.Text = ""
+            '    Exit Sub
+            'End If
+            'pnlStatus.Text = ""
 
         Else
             ' Update the EVE Marketer cache
@@ -10336,7 +10363,7 @@ CheckTechs:
 
     Private Sub txtCalcProdLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtCalcProdLines.DoubleClick
         ' Enter the max lines we have
-        txtCalcProdLines.Text = CStr(MaximumProductionLines)
+        txtCalcProdLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
     End Sub
 
     Private Sub txtCalcProdLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcProdLines.KeyPress
@@ -10377,7 +10404,7 @@ CheckTechs:
 
     Private Sub txtCalcLabLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtCalcLabLines.DoubleClick
         ' Enter the max lab lines we have
-        txtCalcLabLines.Text = CStr(MaximumLaboratoryLines)
+        txtCalcLabLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
     End Sub
 
     Private Sub txtCalcLabLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcLabLines.KeyPress
@@ -21270,6 +21297,58 @@ Leave:
         End Function
 
     End Class
+
+    Private Sub pictStructureIDHelp_MouseHover(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseHover
+        pnlStructureIDInstructions.Visible = True
+    End Sub
+
+    Private Sub pictStructureIDHelp_MouseLeave(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseLeave
+        pnlStructureIDInstructions.Visible = False
+    End Sub
+
+    Private Sub txtStructureIDPrices_TextChanged(sender As Object, e As EventArgs) Handles txtStructureIDPrices.TextChanged
+        ' Format the text to just show the number, if it doesn't contain the correct text, show 'Invalid Name'
+        Dim FormattedText As String = ""
+
+        If Not UpdatingStructureIDText Then
+            Try
+                If txtStructureIDPrices.Text.Contains("//") Then
+                    ' Find the ID after it - [0054:36] Zifrian > <url=showinfo:35835//1027907881953>Tamo</url>
+                    Dim IDStart As Integer = txtStructureIDPrices.Text.IndexOf("//") + 2
+                    Dim IDEnd As Integer = txtStructureIDPrices.Text.IndexOf(">", IDStart)
+                    FormattedText = txtStructureIDPrices.Text.Substring(IDStart, IDEnd - IDStart)
+                Else
+                    ' Not formatted correctly
+                    FormattedText = "Invalid Name"
+                End If
+            Catch
+                FormattedText = "Invalid Name"
+            End Try
+            UpdatingStructureIDText = True
+            txtStructureIDPrices.Text = FormattedText
+            txtStructureIDPrices.SelectAll()
+            UpdatingStructureIDText = False
+        End If
+
+    End Sub
+
+    Private Sub txtStructureIDPrices_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtStructureIDPrices.KeyPress
+        If e.KeyChar = ControlChars.Back Then
+            UpdatingStructureIDText = True
+        Else
+            UpdatingStructureIDText = False
+        End If
+    End Sub
+
+    Private Sub txtStructureIDPrices_KeyDown(sender As Object, e As KeyEventArgs) Handles txtStructureIDPrices.KeyDown
+        If e.KeyCode = Keys.Delete Then
+            UpdatingStructureIDText = True
+        Else
+            UpdatingStructureIDText = False
+        End If
+    End Sub
+
+
 
 
 #End Region

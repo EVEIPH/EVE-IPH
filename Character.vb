@@ -35,6 +35,10 @@ Public Class Character
     Public BlueprintsAccess As Boolean
     Public Blueprints As EVEBlueprints
 
+    ' For maximum production and laboratory lines
+    Public MaximumProductionLines As Integer
+    Public MaximumLaboratoryLines As Integer
+
     ' All corporation data stored here (assets, jobs, etc)
     Public CharacterCorporation As Corporation
 
@@ -210,11 +214,11 @@ Public Class Character
 
                 ' For ESI access, etc.
                 CharacterTokenData.CharacterID = ID
+                CharacterTokenData.Scopes = .GetString(9)
                 CharacterTokenData.AccessToken = .GetString(10)
                 CharacterTokenData.TokenExpiration = CDate(.GetString(11))
                 CharacterTokenData.TokenType = .GetString(12)
                 CharacterTokenData.RefreshToken = .GetString(13)
-                CharacterTokenData.Scopes = .GetString(9)
 
                 ' Refresh the character data first
                 If ID <> DummyCharacterID Then
@@ -238,6 +242,14 @@ Public Class Character
 
             ' Load the character skills
             Call Skills.LoadCharacterSkills(ID, CharacterTokenData)
+
+            If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
+                MaximumProductionLines = SelectedCharacter.Skills.GetSkillLevel(3387) + SelectedCharacter.Skills.GetSkillLevel(24625) + 1
+                MaximumLaboratoryLines = SelectedCharacter.Skills.GetSkillLevel(3406) + SelectedCharacter.Skills.GetSkillLevel(24624) + 1
+            Else
+                MaximumProductionLines = 1
+                MaximumLaboratoryLines = 1
+            End If
 
             ' Load the character's industry jobs
             Jobs = New EVEIndustryJobs()
@@ -321,8 +333,8 @@ Public Class Character
             CharacterTokenData.CharacterID = ID
             CharacterTokenData.AccessToken = rsToken.GetString(0)
             CharacterTokenData.TokenExpiration = CDate(rsToken.GetString(1))
-            CharacterTokenData.TokenType = rsToken.GetString(2)
-            CharacterTokenData.RefreshToken = rsToken.GetString(3)
+            CharacterTokenData.RefreshToken = rsToken.GetString(2)
+            CharacterTokenData.TokenType = rsToken.GetString(3)
             CharacterTokenData.Scopes = rsToken.GetString(4)
         End If
 

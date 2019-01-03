@@ -15,7 +15,7 @@ Public Class ESI
     Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/oauth/authorize"
     Private Const ESITokenURL As String = "https://login.eveonline.com/oauth/token"
     Private Const ESIVerifyURL As String = "https://login.eveonline.com/oauth/verify"
-    Private Const ESIPublicURL As String = "https://esi.tech.ccp.is/latest/"
+    Private Const ESIPublicURL As String = "https://esi.evetech.net/latest/"
     Private Const TranquilityDataSource As String = "?datasource=tranquility"
 
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
@@ -285,23 +285,44 @@ Public Class ESI
         Dim WC As New WebClient
         Dim ErrorCode As Integer = 0
         Dim ErrorResponse As String = ""
+        Dim RetryCount As Integer = 0
+
+        Dim myWebHeaderCollection As WebHeaderCollection
+        Dim Expires As String = Nothing
+        Dim Pages As Integer = Nothing
+        Dim ESIErrorLimitReset As Integer = 0
+        Dim ESIErrorLimitRemain As Integer = 0
 
         Try
 
-            WC.Proxy = GetProxyData()
+            Do ' Run this once but if it errors with a 420, allow it to run 5 times
 
-            If BodyData <> "" Then
-                Response = Encoding.UTF8.GetString(WC.UploadData(URL, Encoding.UTF8.GetBytes(BodyData)))
-            Else
-                Response = WC.DownloadString(URL)
-            End If
+                WC.Proxy = GetProxyData()
 
-            'Throw New Exception("Test Error - Get Public Data")
+                If BodyData <> "" Then
+                    Response = Encoding.UTF8.GetString(WC.UploadData(URL, Encoding.UTF8.GetBytes(BodyData)))
+                Else
+                    Response = WC.DownloadString(URL)
+                End If
 
-            ' Get the expiration date for the cache date
-            Dim myWebHeaderCollection As WebHeaderCollection = WC.ResponseHeaders
-            Dim Expires As String = myWebHeaderCollection.Item("Expires")
-            Dim Pages As Integer = CInt(myWebHeaderCollection.Item("X-Pages"))
+                'Throw New Exception("Test Error - Get Public Data")
+
+                ' Get the expiration date for the cache date
+                myWebHeaderCollection = WC.ResponseHeaders
+                Expires = myWebHeaderCollection.Item("Expires")
+                Pages = CInt(myWebHeaderCollection.Item("X-Pages"))
+
+                ESIErrorLimitRemain = CInt(myWebHeaderCollection.Item("X-ESI-Error-Limit-Remain")) ' how many errors responses will be returned to you in the current error window
+                ESIErrorLimitReset = CInt(myWebHeaderCollection.Item("X-ESI-Error-Limit-Reset")) ' indicates the number of seconds until the end of the current error window
+
+                ' If we are at max errors, wait until the next window and try again
+                If ESIErrorLimitRemain = 0 Then
+                    ' Wait until the window closes
+                    Thread.Sleep(ESIErrorLimitReset * 1000)
+                    RetryCount += 1
+                End If
+
+            Loop While ESIErrorLimitRemain = 0 And RetryCount < 5
 
             If Not IsNothing(Expires) Then
                 CacheDate = CDate(Expires.Replace("GMT", "").Substring(InStr(Expires, ",") + 1)) ' Expiration date is in GMT
@@ -334,7 +355,7 @@ Public Class ESI
             End If
             MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
         Catch ex As Exception
-            If ex.Message <> "Thread was being aborted." Then
+            If ex.HResult <> -2146233040 Then ' This HR result is for thread aborts. Test out for awhile to see how it works
                 MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
             End If
         End Try
@@ -521,13 +542,13 @@ Public Class ESI
                 Else
                     ' We need to refresh the token data
                     TokenData = GetAccessToken(CharacterTokenData.RefreshToken, True, ErrorCode)
+                End If
+
+                If ErrorCode = 0 And Not IsNothing(TokenData) Then
                     ' Update the local copy with the new information
                     CharacterTokenData.AccessToken = TokenData.access_token
                     CharacterTokenData.RefreshToken = TokenData.refresh_token
                     CharacterTokenData.TokenType = TokenData.token_type
-                End If
-
-                If ErrorCode = 0 And Not IsNothing(TokenData) Then
 
                     ' Set the expiration date to pass
                     CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
@@ -1154,7 +1175,6 @@ Public Class ESI
 
         Dim StationIDs As New List(Of Long)
 
-
         ' First, get all the structures in that region
         ' First look up the cache date to see if it's time to run the update
         SQL = "SELECT STATION_ID FROM STATIONS AND REGION_ID = " & CStr(RegionID) & " "
@@ -1173,7 +1193,7 @@ Public Class ESI
 
         For Each SID In StationIDs
             ' Need to look up the prices of each one and import
-
+            ' New function
         Next
 
 
@@ -1271,7 +1291,9 @@ Public Class ESI
 
     End Function
 
+    Public Function LoadStructureMarketOrders(StructureID As String) As Boolean
 
+    End Function
 
     ' Provides per day summary of market activity for 13 months for the region_id and type_id sent. (cache: 23 hours)
     ' Open transaction will open an SQL transaction here instead of the calling function

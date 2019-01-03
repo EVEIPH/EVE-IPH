@@ -110,6 +110,10 @@ Public Class frmManageAccounts
 
             Call LoadScopes(ScopeList)
 
+            txtAccessToken.Text = ""
+            ' txtAccessTokenExpDate = Format()
+            txtRefreshToken.Text = ""
+
             btnDeleteCharacter.Enabled = True
 
         End If
@@ -222,4 +226,26 @@ Public Class frmManageAccounts
 
     End Sub
 
+    Private Sub btnCopyAll_Click(sender As Object, e As EventArgs) Handles btnCopyAll.Click
+
+    End Sub
+
+    Private Sub txtAccessToken_KeyDown(sender As Object, e As KeyEventArgs) Handles txtAccessToken.KeyDown
+        Select Case e.KeyCode
+            Case Keys.A, Keys.C
+                If e.Modifiers = Keys.Control Then
+                    Application.DoEvents()
+                Else
+                    e.Handled = True
+                End If
+            Case Else
+                e.Handled = True
+        End Select
+    End Sub
+
+
+
+    Private Sub txtAccessToken_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtAccessToken.KeyPress
+        e.Handled = True
+    End Sub
 End Class

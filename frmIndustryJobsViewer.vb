@@ -180,7 +180,7 @@ Public Class frmIndustryJobsViewer
         ' If they don't select a character, then just clear and exit
         If lstCharacters.CheckedItems.Count = 0 Then
             lstIndustryJobs.Items.Clear()
-            Exit Sub
+            GoTo ExitSub
         End If
 
         ' Find out what characters we are querying for
@@ -376,6 +376,7 @@ Public Class frmIndustryJobsViewer
         ' Force last sort order to switch to ascending and sort by the user column
         Call ListViewColumnSorter(UserIndustryJobsColumnSettings.OrderByColumn, lstIndustryJobs, JobListColumnClicked, JobListColumnSortOrder, True)
 
+ExitSub:
         Application.UseWaitCursor = False
         gbInventionJobs.Enabled = True
         Me.Cursor = Cursors.Default
@@ -541,7 +542,7 @@ Public Class frmIndustryJobsViewer
         Dim CharIDs As String = ""
 
         For i = 0 To lstCharacters.CheckedItems.Count - 1
-            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(5).Text) & ","
+            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(6).Text) & ","
         Next
 
         ' Strip the last comma
@@ -622,7 +623,9 @@ Public Class frmIndustryJobsViewer
     End Function
 
     Private Sub frmIndustryJobsViewer_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        On Error Resume Next
         myTimer.Change(Timeout.Infinite, Timeout.Infinite)
+        On Error GoTo 0
     End Sub
 
 #Region "Click events"

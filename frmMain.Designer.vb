@@ -374,6 +374,12 @@ Partial Class frmMain
         Me.chkSystems3 = New System.Windows.Forms.CheckBox()
         Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.gbRegions = New System.Windows.Forms.GroupBox()
+        Me.pnlStructureIDInstructions = New System.Windows.Forms.Panel()
+        Me.lblStructurePriceInstructions = New System.Windows.Forms.Label()
+        Me.lblStructureID = New System.Windows.Forms.Label()
+        Me.pictStructureIDHelp = New System.Windows.Forms.PictureBox()
+        Me.txtStructureIDPrices = New System.Windows.Forms.TextBox()
+        Me.chkRegion68 = New System.Windows.Forms.CheckBox()
         Me.chkRegion67 = New System.Windows.Forms.CheckBox()
         Me.chkRegion45 = New System.Windows.Forms.CheckBox()
         Me.chkRegion46 = New System.Windows.Forms.CheckBox()
@@ -1050,6 +1056,8 @@ Partial Class frmMain
         Me.pnlSinglePriceLocationSelect.SuspendLayout()
         Me.gbTradeHubSystems.SuspendLayout()
         Me.gbRegions.SuspendLayout()
+        Me.pnlStructureIDInstructions.SuspendLayout()
+        CType(Me.pictStructureIDHelp, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlPriceProfiles.SuspendLayout()
         Me.tabPriceProfile.SuspendLayout()
         Me.tabPriceProfileRaw.SuspendLayout()
@@ -4414,6 +4422,10 @@ Partial Class frmMain
         '
         'gbRegions
         '
+        Me.gbRegions.Controls.Add(Me.pnlStructureIDInstructions)
+        Me.gbRegions.Controls.Add(Me.pictStructureIDHelp)
+        Me.gbRegions.Controls.Add(Me.txtStructureIDPrices)
+        Me.gbRegions.Controls.Add(Me.chkRegion68)
         Me.gbRegions.Controls.Add(Me.chkRegion67)
         Me.gbRegions.Controls.Add(Me.chkRegion45)
         Me.gbRegions.Controls.Add(Me.chkRegion46)
@@ -4487,6 +4499,67 @@ Partial Class frmMain
         Me.gbRegions.TabIndex = 7
         Me.gbRegions.TabStop = False
         Me.gbRegions.Text = "Regions"
+        '
+        'pnlStructureIDInstructions
+        '
+        Me.pnlStructureIDInstructions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.pnlStructureIDInstructions.Controls.Add(Me.lblStructurePriceInstructions)
+        Me.pnlStructureIDInstructions.Controls.Add(Me.lblStructureID)
+        Me.pnlStructureIDInstructions.Location = New System.Drawing.Point(139, 186)
+        Me.pnlStructureIDInstructions.Name = "pnlStructureIDInstructions"
+        Me.pnlStructureIDInstructions.Size = New System.Drawing.Size(313, 206)
+        Me.pnlStructureIDInstructions.TabIndex = 43
+        Me.pnlStructureIDInstructions.Visible = False
+        '
+        'lblStructurePriceInstructions
+        '
+        Me.lblStructurePriceInstructions.Location = New System.Drawing.Point(9, 19)
+        Me.lblStructurePriceInstructions.Name = "lblStructurePriceInstructions"
+        Me.lblStructurePriceInstructions.Size = New System.Drawing.Size(297, 177)
+        Me.lblStructurePriceInstructions.TabIndex = 1
+        Me.lblStructurePriceInstructions.Text = "text"
+        Me.lblStructurePriceInstructions.Visible = False
+        '
+        'lblStructureID
+        '
+        Me.lblStructureID.AutoSize = True
+        Me.lblStructureID.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblStructureID.Location = New System.Drawing.Point(9, 4)
+        Me.lblStructureID.Name = "lblStructureID"
+        Me.lblStructureID.Size = New System.Drawing.Size(188, 13)
+        Me.lblStructureID.TabIndex = 0
+        Me.lblStructureID.Text = "Importing Prices from Structures"
+        '
+        'pictStructureIDHelp
+        '
+        Me.pictStructureIDHelp.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.Help_Circle_Blue
+        Me.pictStructureIDHelp.Location = New System.Drawing.Point(283, 403)
+        Me.pictStructureIDHelp.Name = "pictStructureIDHelp"
+        Me.pictStructureIDHelp.Size = New System.Drawing.Size(15, 15)
+        Me.pictStructureIDHelp.TabIndex = 73
+        Me.pictStructureIDHelp.TabStop = False
+        Me.pictStructureIDHelp.Visible = False
+        '
+        'txtStructureIDPrices
+        '
+        Me.txtStructureIDPrices.Enabled = False
+        Me.txtStructureIDPrices.Location = New System.Drawing.Point(112, 401)
+        Me.txtStructureIDPrices.Name = "txtStructureIDPrices"
+        Me.txtStructureIDPrices.Size = New System.Drawing.Size(165, 20)
+        Me.txtStructureIDPrices.TabIndex = 72
+        Me.txtStructureIDPrices.Visible = False
+        '
+        'chkRegion68
+        '
+        Me.chkRegion68.AutoSize = True
+        Me.chkRegion68.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkRegion68.Location = New System.Drawing.Point(14, 403)
+        Me.chkRegion68.Name = "chkRegion68"
+        Me.chkRegion68.Size = New System.Drawing.Size(99, 17)
+        Me.chkRegion68.TabIndex = 71
+        Me.chkRegion68.Text = "Structure ID:"
+        Me.chkRegion68.UseVisualStyleBackColor = True
+        Me.chkRegion68.Visible = False
         '
         'chkRegion67
         '
@@ -11185,6 +11258,9 @@ Partial Class frmMain
         Me.gbTradeHubSystems.PerformLayout()
         Me.gbRegions.ResumeLayout(False)
         Me.gbRegions.PerformLayout()
+        Me.pnlStructureIDInstructions.ResumeLayout(False)
+        Me.pnlStructureIDInstructions.PerformLayout()
+        CType(Me.pictStructureIDHelp, System.ComponentModel.ISupportInitialize).EndInit()
         Me.pnlPriceProfiles.ResumeLayout(False)
         Me.tabPriceProfile.ResumeLayout(False)
         Me.tabPriceProfileRaw.ResumeLayout(False)
@@ -11879,7 +11955,6 @@ Partial Class frmMain
     Friend WithEvents chkIceProducts As System.Windows.Forms.CheckBox
     Friend WithEvents chkMinerals As System.Windows.Forms.CheckBox
     Friend WithEvents gbRegions As System.Windows.Forms.GroupBox
-    Friend WithEvents chkRegion67 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion45 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion46 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion47 As System.Windows.Forms.CheckBox
@@ -11897,11 +11972,6 @@ Partial Class frmMain
     Friend WithEvents chkRegion59 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion60 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion61 As System.Windows.Forms.CheckBox
-    Friend WithEvents chkRegion62 As System.Windows.Forms.CheckBox
-    Friend WithEvents chkRegion63 As System.Windows.Forms.CheckBox
-    Friend WithEvents chkRegion64 As System.Windows.Forms.CheckBox
-    Friend WithEvents chkRegion65 As System.Windows.Forms.CheckBox
-    Friend WithEvents chkRegion66 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion23 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion24 As System.Windows.Forms.CheckBox
     Friend WithEvents chkRegion25 As System.Windows.Forms.CheckBox
@@ -12332,4 +12402,16 @@ Partial Class frmMain
     Friend WithEvents txtMineReprocessingTax As TextBox
     Friend WithEvents mnuUpdateESIPublicStructures As ToolStripMenuItem
     Friend WithEvents mnuResetESIPublicStructures As ToolStripMenuItem
+    Friend WithEvents pictStructureIDHelp As PictureBox
+    Friend WithEvents txtStructureIDPrices As TextBox
+    Friend WithEvents chkRegion68 As CheckBox
+    Friend WithEvents pnlStructureIDInstructions As Panel
+    Friend WithEvents lblStructurePriceInstructions As Label
+    Friend WithEvents lblStructureID As Label
+    Friend WithEvents chkRegion67 As CheckBox
+    Friend WithEvents chkRegion62 As CheckBox
+    Friend WithEvents chkRegion63 As CheckBox
+    Friend WithEvents chkRegion64 As CheckBox
+    Friend WithEvents chkRegion65 As CheckBox
+    Friend WithEvents chkRegion66 As CheckBox
 End Class
