@@ -95,6 +95,8 @@
             TempExportType = CSVDataExport
         ElseIf rbtnExportSSV.Checked Then
             TempExportType = SSVDataExport
+        ElseIf rbtnExportSimple.checked Then
+            TempExportType = SimpleDataExport
         Else
             TempExportType = DefaultTextDataExport
         End If

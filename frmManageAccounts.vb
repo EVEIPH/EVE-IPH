@@ -48,7 +48,7 @@ Public Class frmManageAccounts
 
         Application.UseWaitCursor = True
 
-        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES "
+        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, REFRESH_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME "
         SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
         SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
         SQL &= "AND CHARACTER_ID <> " & CStr(DummyCharacterID)
@@ -74,6 +74,9 @@ Public Class frmManageAccounts
             End If
 
             lstViewRow.SubItems.Add(rsAccounts.GetString(4)) ' SCOPES (Hidden)
+            lstViewRow.SubItems.Add(rsAccounts.GetString(5)) ' Access Token (Hidden)
+            lstViewRow.SubItems.Add(rsAccounts.GetString(6)) ' Refresh Token (Hidden)
+            lstViewRow.SubItems.Add(Convert.ToDateTime(rsAccounts.GetString(7)).ToString) ' Refresh Token (Hidden)
 
             Call lstAccounts.Items.Add(lstViewRow)
 
@@ -110,13 +113,20 @@ Public Class frmManageAccounts
 
             Call LoadScopes(ScopeList)
 
-            txtAccessToken.Text = ""
-            ' txtAccessTokenExpDate = Format()
-            txtRefreshToken.Text = ""
-
+            txtAccessToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
+            txtAccessTokenExpDate.Text = lstAccounts.SelectedItems.Item(0).SubItems(7).Text
+            txtRefreshToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
             btnDeleteCharacter.Enabled = True
-
+            btnCopyAll.Enabled = True
+        Else
+            lstScopes.Items.Clear()
+            txtAccessToken.Text = ""
+            txtAccessTokenExpDate.Text = ""
+            txtAccessTokenExpDate.Text = ""
+            btnDeleteCharacter.Enabled = False
+            btnCopyAll.Enabled = False
         End If
+
     End Sub
 
     Private Sub LoadScopes(ScopeList As String)
@@ -131,6 +141,7 @@ Public Class frmManageAccounts
         For Each Scope In ParsedScopes
             lstScopes.Items.Add(Scope)
         Next
+
     End Sub
 
     Private Sub btnDeleteKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDeleteCharacter.Click
@@ -153,7 +164,6 @@ Public Class frmManageAccounts
             SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(CharacterID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-
             SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & CStr(CharacterID)
             EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -162,6 +172,15 @@ Public Class frmManageAccounts
 
             SQL = "DELETE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterID)
             EVEDB.ExecuteNonQuerySQL(SQL)
+
+            ' Finally see if we have more accounts that are not the dummy - if only the dummy exists, set it to default and load it
+            SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+
+            If CInt(DBCommand.ExecuteScalar()) = 0 Then
+                ' Only the dummy is loaded, so set it to default
+                EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_ID = " & CStr(DummyCharacterID))
+            End If
 
             Call EVEDB.CommitSQLiteTransaction()
 
@@ -227,7 +246,44 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub btnCopyAll_Click(sender As Object, e As EventArgs) Handles btnCopyAll.Click
+        Dim ClipboardData = New DataObject
+        Dim OutputText As String = ""
 
+        OutputText = "Token Data for " & lstAccounts.SelectedItems.Item(0).SubItems(1).Text & vbCrLf
+        OutputText &= "Access Token: " & lstAccounts.SelectedItems.Item(0).SubItems(5).Text & vbCrLf
+        OutputText &= "Refresh Token: " & lstAccounts.SelectedItems.Item(0).SubItems(6).Text & vbCrLf
+        OutputText &= "Access Token Expires: " & lstAccounts.SelectedItems.Item(0).SubItems(7).Text & vbCrLf & vbCrLf
+        OutputText &= "Selected Scopes: " & lstAccounts.SelectedItems.Item(0).SubItems(4).Text.Replace(" ", " " & vbCrLf)
+
+        ' Paste to clipboard
+        Call CopyTextToClipboard(OutputText)
+
+    End Sub
+
+    Private Sub txtRefreshToken_KeyDown(sender As Object, e As KeyEventArgs) Handles txtRefreshToken.KeyDown
+        Select Case e.KeyCode
+            Case Keys.A, Keys.C
+                If e.Modifiers = Keys.Control Then
+                    Application.DoEvents()
+                Else
+                    e.Handled = True
+                End If
+            Case Else
+                e.Handled = True
+        End Select
+    End Sub
+
+    Private Sub txtAccessTokenExpDate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtAccessTokenExpDate.KeyDown
+        Select Case e.KeyCode
+            Case Keys.A, Keys.C
+                If e.Modifiers = Keys.Control Then
+                    Application.DoEvents()
+                Else
+                    e.Handled = True
+                End If
+            Case Else
+                e.Handled = True
+        End Select
     End Sub
 
     Private Sub txtAccessToken_KeyDown(sender As Object, e As KeyEventArgs) Handles txtAccessToken.KeyDown
@@ -243,9 +299,4 @@ Public Class frmManageAccounts
         End Select
     End Sub
 
-
-
-    Private Sub txtAccessToken_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtAccessToken.KeyPress
-        e.Handled = True
-    End Sub
 End Class

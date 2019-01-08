@@ -757,16 +757,9 @@ Public Class ManufacturingFacility
         ' Usage checks
         ChangingUsageChecks = True
 
-        ' Usage always visible
         chkFacilityIncludeUsage.Checked = SelectedFacility.IncludeActivityUsage
-
-        If Not IsNothing(chkFacilityIncludeCost) Then
-            chkFacilityIncludeCost.Checked = SelectedFacility.IncludeActivityCost
-        End If
-
-        If Not IsNothing(chkFacilityIncludeTime) Then
-            chkFacilityIncludeTime.Checked = SelectedFacility.IncludeActivityTime
-        End If
+        chkFacilityIncludeCost.Checked = SelectedFacility.IncludeActivityCost
+        chkFacilityIncludeTime.Checked = SelectedFacility.IncludeActivityTime
 
         ChangingUsageChecks = False
 
@@ -1029,6 +1022,9 @@ Public Class ManufacturingFacility
             PreviousEquipment = InitialFacilityComboText
             cmbFacilityorArray.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
+            chkFacilityIncludeCost.Enabled = False
+            chkFacilityIncludeTime.Enabled = False
+
             PreviousProductionType = FacilityProductionType
             PreviousActivity = FacilityActivity
 
@@ -1191,6 +1187,9 @@ Public Class ManufacturingFacility
             Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
+            chkFacilityIncludeCost.Enabled = False
+            chkFacilityIncludeTime.Enabled = False
+
             Call SetFacilityBonusBoxes(False)
         End If
 
@@ -1403,6 +1402,9 @@ Public Class ManufacturingFacility
             Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
             chkFacilityIncludeUsage.Enabled = False
+            chkFacilityIncludeCost.Enabled = False
+            chkFacilityIncludeTime.Enabled = False
+
             Call SetFacilityBonusBoxes(False)
         End If
 
@@ -1647,11 +1649,15 @@ Public Class ManufacturingFacility
                 btnFacilitySave.Enabled = False
                 Call SetDefaultVisuals(False)
                 chkFacilityIncludeUsage.Enabled = False ' Don't enable the usage either
+                chkFacilityIncludeCost.Enabled = False
+                chkFacilityIncludeTime.Enabled = False
             Else
                 ' Since this is a different system but facility is loaded, enable save
                 btnFacilitySave.Enabled = True
                 Call SetDefaultVisuals(False)
                 chkFacilityIncludeUsage.Enabled = True
+                chkFacilityIncludeCost.Enabled = True
+                chkFacilityIncludeTime.Enabled = True
             End If
 
             AutoLoadFacility = False
@@ -2075,23 +2081,6 @@ Public Class ManufacturingFacility
 
             rsLoader.Close()
 
-            ChangingUsageChecks = True
-
-            '.IncludeActivityUsage = chkFacilityIncludeUsage.Checked ' Use this value when loading from Load Facility (using the selected facility) or from the form dropdown (use the checkbox)
-
-            If Not IsNothing(chkFacilityIncludeCost) And chkFacilityIncludeCost.Visible Then
-                .IncludeActivityCost = chkFacilityIncludeCost.Checked
-            Else
-                .IncludeActivityCost = False
-            End If
-
-            If Not IsNothing(chkFacilityIncludeTime) And chkFacilityIncludeTime.Visible Then
-                .IncludeActivityTime = chkFacilityIncludeTime.Checked
-            Else
-                .IncludeActivityTime = False
-            End If
-            ChangingUsageChecks = False
-
             If FacilityType <> FacilityTypes.None Then
                 ' Quick look up for the solarsystemid and region id, Strip off the system index first
                 SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
@@ -2160,6 +2149,8 @@ Public Class ManufacturingFacility
         ' Make sure the usage check is now enabled and update the box if a value exists
         If FacilityType <> FacilityTypes.None Then
             chkFacilityIncludeUsage.Enabled = True
+            chkFacilityIncludeCost.Enabled = True
+            chkFacilityIncludeTime.Enabled = True
             lblFacilityUsage.Text = FormatNumber(SelectedFacility.FacilityUsage, 2)
         End If
 
@@ -2400,31 +2391,51 @@ Public Class ManufacturingFacility
 
     Private Sub chkFacilityIncludeUsage_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeUsage.CheckedChanged
         If Not ChangingUsageChecks Then
-            ' Re-run the blueprint
-            If SelectedLocation = ProgramLocation.BlueprintTab Then
-                If chkFacilityIncludeUsage.Checked = True Then
-                    SelectedFacility.IncludeActivityUsage = True
-                Else
-                    SelectedFacility.IncludeActivityUsage = False
-                End If
-                ' Facility is loaded, so save it to default and dynamic variable
-                Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
-                If Not IsNothing(SelectedBlueprint) Then
-                    Dim SentFrom As SentFromLocation
-                    If SelectedLocation = ProgramLocation.BlueprintTab Then
-                        SentFrom = SentFromLocation.BlueprintTab
-                    ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
-                        SentFrom = SentFromLocation.ManufacturingTab
-                    End If
-                    With SelectedBlueprint
-                        'Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFrom)
-                    End With
-                    Call frmMain.UpdateBPPriceLabels()
-                End If
+
+            SelectedFacility.IncludeActivityUsage = chkFacilityIncludeUsage.Checked
+
+            ' Facility is loaded, so save it to default and dynamic variable
+            Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
+
+            ' See if we update the price labels on the BP tab
+            If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
+                Call frmMain.UpdateBPPriceLabels()
             End If
 
             lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
 
+        End If
+    End Sub
+
+    Private Sub chkFacilityIncludeCost_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeCost.CheckedChanged
+        If Not ChangingUsageChecks Then
+            If chkFacilityIncludeCost.Checked = True And SelectedFacility.IncludeActivityCost = False _
+            Or chkFacilityIncludeCost.Checked = False And SelectedFacility.IncludeActivityCost = True Then
+                ' Different than what was set, so set default visuals to false
+                Call SetDefaultVisuals(False)
+                SelectedFacility.IncludeActivityCost = chkFacilityIncludeCost.Checked
+                ' Now set the facility
+                Call SetFacility(SelectedFacility, SelectedFacility.FacilityProductionType, True, True)
+            Else
+                ' Same as what was set so set to true
+                Call SetDefaultVisuals(True)
+            End If
+        End If
+    End Sub
+
+    Private Sub chkFacilityIncludeTime_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeTime.CheckedChanged
+        If Not ChangingUsageChecks Then
+            If chkFacilityIncludeTime.Checked = True And SelectedFacility.IncludeActivityTime = False _
+            Or chkFacilityIncludeTime.Checked = False And SelectedFacility.IncludeActivityTime = True Then
+                ' Different than what was set, so set default visuals to false
+                Call SetDefaultVisuals(False)
+                SelectedFacility.IncludeActivityTime = chkFacilityIncludeTime.Checked
+                ' Now set the facility
+                Call SetFacility(SelectedFacility, SelectedFacility.FacilityProductionType, True, True)
+            Else
+                ' Same as what was set so set to true
+                Call SetDefaultVisuals(True)
+            End If
         End If
     End Sub
 

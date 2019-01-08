@@ -28,7 +28,8 @@ Public Class EVESkillList
 
         ' Get all skills and set skill to 0 if they don't have it
         SQL = "SELECT SKILLS.SKILL_TYPE_ID,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_LEVEL END AS SKILL_LEVEL,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.TRAINED_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.TRAINED_SKILL_LEVEL END AS TRAINED_SKILL_LEVEL,"
+        SQL = SQL & "CASE WHEN CHAR_SKILLS.ACTIVE_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.ACTIVE_SKILL_LEVEL END AS ACTIVE_SKILL_LEVEL,"
         SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_POINTS IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_POINTS END AS SKILL_POINTS,"
         SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
         SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
@@ -47,9 +48,9 @@ Public Class EVESkillList
             ' Insert skill
             If UserApplicationSettings.AllowSkillOverride And CBool(rsData.GetInt32(3)) And LoadAllSkillsforOverride Then
                 ' Use the override skill if set, save the old skill level in the override so we can reference it later if needed
-                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(4), rsData.GetInt64(2), CBool(rsData.GetInt32(3)), rsData.GetInt32(1))
+                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(5), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), rsData.GetInt32(1))
             Else ' Just normal skills
-                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(1), rsData.GetInt64(2), CBool(rsData.GetInt32(3)), rsData.GetInt32(4))
+                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(1), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), rsData.GetInt32(5))
             End If
 
         End While
@@ -104,15 +105,16 @@ Public Class EVESkillList
 
                     If Not readerCharacter.HasRows Then
                         ' Insert skill data
-                        SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
-                        SQL = SQL & " VALUES (" & ID & "," & TempCharacterSkills.GetSkillList(i).TypeID & ",'" & TempCharacterSkills.GetSkillList(i).Name & "',"
-                        SQL = SQL & TempCharacterSkills.GetSkillList(i).SkillPoints & "," & TempCharacterSkills.GetSkillList(i).Level & ",0,0)"
+                        SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, TRAINED_SKILL_LEVEL, ACTIVE_SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
+                        SQL &= " VALUES (" & ID & "," & TempCharacterSkills.GetSkillList(i).TypeID & ",'" & TempCharacterSkills.GetSkillList(i).Name & "',"
+                        SQL &= TempCharacterSkills.GetSkillList(i).SkillPoints & "," & TempCharacterSkills.GetSkillList(i).TrainedLevel & "," & TempCharacterSkills.GetSkillList(i).ActiveLevel & ",0,0)"
                     Else
                         ' Update skill data
                         SQL = "UPDATE CHARACTER_SKILLS SET "
-                        SQL = SQL & "SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempCharacterSkills.GetSkillList(i).Name & "',"
-                        SQL = SQL & "SKILL_POINTS = " & TempCharacterSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).Level & " "
-                        SQL = SQL & "WHERE CHARACTER_ID = " & ID & " AND SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID
+                        SQL &= "SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempCharacterSkills.GetSkillList(i).Name & "',"
+                        SQL &= "SKILL_POINTS = " & TempCharacterSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).TrainedLevel & ", "
+                        SQL &= "ACTIVE_SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).ActiveLevel & " "
+                        SQL &= "WHERE CHARACTER_ID = " & ID & " AND SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID
                     End If
 
                     readerCharacter.Close()
@@ -180,7 +182,7 @@ Public Class EVESkillList
                     If Skills(i).Overridden Then
                         Return Skills(i).OverriddenLevel
                     Else
-                        Return Skills(i).Level
+                        Return Skills(i).TrainedLevel
                     End If
                 End If
             Next
@@ -201,7 +203,7 @@ Public Class EVESkillList
                     If Skills(i).Overridden Then
                         Return Skills(i).OverriddenLevel
                     Else
-                        Return Skills(i).Level
+                        Return Skills(i).TrainedLevel
                     End If
                 End If
             Next
@@ -294,7 +296,7 @@ Public Class EVESkillList
     End Sub
 
     ' Inserts a skill into the list
-    Public Sub InsertSkill(ByVal SkillTypeID As Long, ByVal SkillLevel As Integer, ByVal SkillPoints As Long,
+    Public Sub InsertSkill(ByVal SkillTypeID As Long, ByVal TrainedSkillLevel As Integer, ActiveSkillLevel As Integer, ByVal SkillPoints As Long,
                            ByVal SkillOverriden As Boolean, ByVal SkillOverrideLevel As Integer,
                            Optional ByVal SkillName As String = "", Optional ByVal PreReqSkills As EVESkillList = Nothing,
                            Optional ByVal LoadPreReqs As Boolean = False)
@@ -302,7 +304,8 @@ Public Class EVESkillList
         Dim InsertSkill As New EVESkill
 
         InsertSkill.TypeID = SkillTypeID
-        InsertSkill.Level = SkillLevel
+        InsertSkill.TrainedLevel = TrainedSkillLevel
+        InsertSkill.ActiveLevel = ActiveSkillLevel
         InsertSkill.Name = SkillName
         InsertSkill.SkillPoints = SkillPoints
         InsertSkill.Overridden = SkillOverriden
@@ -349,7 +352,7 @@ Public Class EVESkillList
     Private Function FindSkill(ByVal SSkill As EVESkill) As Boolean
 
         If SSkill.TypeID = SkillToFind.TypeID Then
-            If CheckLevelofSkilltoFind And SSkill.Level <= SkillToFind.Level Then
+            If CheckLevelofSkilltoFind And SSkill.TrainedLevel <= SkillToFind.TrainedLevel Then
                 Return True
             ElseIf Not CheckLevelofSkilltoFind Then
                 Return True
@@ -387,7 +390,7 @@ Public Class EVESkillList
                 readerSkills = DBCommand.ExecuteReader
 
                 If readerSkills.Read Then
-                    If CInt(readerSkills.GetValue(0)) = 0 And Not OverRideSkills.Skills(i).Level = 0 Then
+                    If CInt(readerSkills.GetValue(0)) = 0 And Not OverRideSkills.Skills(i).TrainedLevel = 0 Then
                         ' This user doesn't want to save this skill and we need to delete the old one
                         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
                     Else ' It's here and we need to update it
@@ -397,9 +400,9 @@ Public Class EVESkillList
                     End If
                 Else
                     ' Insert the skill but since the user didn't have this, set the skill level to 0
-                    SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
+                    SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, TRAINED_SKILL_LEVEL, ACTIVE_SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
                     SQL = SQL & " VALUES (" & SelectedCharacter.ID & "," & OverRideSkills.Skills(i).TypeID & ",'" & OverRideSkills.Skills(i).Name & "',"
-                    SQL = SQL & OverRideSkills.Skills(i).SkillPoints & ",0," & CInt(OverRideSkills.Skills(i).Overridden) & "," & OverRideSkills.Skills(i).OverriddenLevel & ")"
+                    SQL = SQL & OverRideSkills.Skills(i).SkillPoints & ",0,0," & CInt(OverRideSkills.Skills(i).Overridden) & "," & OverRideSkills.Skills(i).OverriddenLevel & ")"
                 End If
 
                 readerSkills.Close()
@@ -422,7 +425,7 @@ Public Class EVESkillList
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Delete any skills that aren't trained by the character
-            SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & SelectedCharacter.ID & " AND SKILL_LEVEL = 0"
+            SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & SelectedCharacter.ID & " AND TRAINED_SKILL_LEVEL = 0"
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             ' Update all skills to base
@@ -441,21 +444,21 @@ Public Class EVESkillList
         Dim DummySkills As New EVESkillList
 
         ' Add skills for a brand new newbie char 
-        DummySkills.InsertSkill(3300, 2, 1415, False, 0, "Gunnery")
-        DummySkills.InsertSkill(3301, 3, 8000, False, 0, "Small Hybrid Turret")
-        DummySkills.InsertSkill(3302, 3, 8000, False, 0, "Small Projectile Turret")
-        DummySkills.InsertSkill(3303, 3, 8000, False, 0, "Small Energy Turret")
-        DummySkills.InsertSkill(3327, 3, 8000, False, 0, "Spaceship Command")
-        DummySkills.InsertSkill(3328, 2, 2829, False, 0, "Gallente Frigate")
-        DummySkills.InsertSkill(3329, 2, 2829, False, 0, "Minmatar Frigate")
-        DummySkills.InsertSkill(3330, 2, 2829, False, 0, "Caldari Frigate")
-        DummySkills.InsertSkill(3381, 2, 2829, False, 0, "Amarr Frigate")
-        DummySkills.InsertSkill(3386, 2, 1415, False, 0, "Mining")
-        DummySkills.InsertSkill(3402, 3, 8000, False, 0, "Science")
-        DummySkills.InsertSkill(3392, 3, 8000, False, 0, "Mechanics")
-        DummySkills.InsertSkill(3413, 3, 8000, False, 0, "Engineering")
-        DummySkills.InsertSkill(3426, 3, 8000, False, 0, "Electronics")
-        DummySkills.InsertSkill(3449, 3, 8000, False, 0, "Navigation")
+        DummySkills.InsertSkill(3300, 2, 0, 1415, False, 0, "Gunnery")
+        DummySkills.InsertSkill(3301, 3, 0, 8000, False, 0, "Small Hybrid Turret")
+        DummySkills.InsertSkill(3302, 3, 0, 8000, False, 0, "Small Projectile Turret")
+        DummySkills.InsertSkill(3303, 3, 0, 8000, False, 0, "Small Energy Turret")
+        DummySkills.InsertSkill(3327, 3, 0, 8000, False, 0, "Spaceship Command")
+        DummySkills.InsertSkill(3328, 2, 0, 2829, False, 0, "Gallente Frigate")
+        DummySkills.InsertSkill(3329, 2, 0, 2829, False, 0, "Minmatar Frigate")
+        DummySkills.InsertSkill(3330, 2, 0, 2829, False, 0, "Caldari Frigate")
+        DummySkills.InsertSkill(3381, 2, 0, 2829, False, 0, "Amarr Frigate")
+        DummySkills.InsertSkill(3386, 2, 0, 1415, False, 0, "Mining")
+        DummySkills.InsertSkill(3402, 3, 0, 8000, False, 0, "Science")
+        DummySkills.InsertSkill(3392, 3, 0, 8000, False, 0, "Mechanics")
+        DummySkills.InsertSkill(3413, 3, 0, 8000, False, 0, "Engineering")
+        DummySkills.InsertSkill(3426, 3, 0, 8000, False, 0, "Electronics")
+        DummySkills.InsertSkill(3449, 3, 0, 8000, False, 0, "Navigation")
 
         ' Just save the current list as the main skills
         Skills = DummySkills.GetSkillList
@@ -465,35 +468,35 @@ Public Class EVESkillList
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Insert skill records for dummy
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3426,'Electronics',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3426,'Electronics',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3413,'Engineering',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3413,'Engineering',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3386,'Mining',1415,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3386,'Mining',1415,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3392,'Mechanics',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3392,'Mechanics',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3449,'Navigation',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3449,'Navigation',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3402,'Science',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3402,'Science',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3327,'Spaceship Command',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3327,'Spaceship Command',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3381,'Amarr Frigate',2829,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3381,'Amarr Frigate',2829,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3330,'Caldari Frigate',2829,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3330,'Caldari Frigate',2829,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3328,'Gallente Frigate',2829,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3328,'Gallente Frigate',2829,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3329,'Minmatar Frigate',2829,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3329,'Minmatar Frigate',2829,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3300,'Gunnery',1415,2,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3300,'Gunnery',1415,2,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3303,'Small Energy Turret',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3303,'Small Energy Turret',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3301,'Small Hybrid Turret',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3301,'Small Hybrid Turret',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
-        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3302,'Small Projectile Turret',8000,3,0,0)"
+        SQL = "INSERT INTO CHARACTER_SKILLS VALUES (" & CStr(DummyCharacterID) & ",3302,'Small Projectile Turret',8000,3,0,0,0)"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
     End Sub
@@ -505,7 +508,8 @@ Public Class EVESkill
     Public Name As String
     Public Group As String
     Public SkillPoints As Long
-    Public Level As Integer
+    Public TrainedLevel As Integer
+    Public ActiveLevel As Integer
     Public Overridden As Boolean
     Public OverriddenLevel As Integer
     Public PreReqSkills As EVESkillList
@@ -515,7 +519,8 @@ Public Class EVESkill
         Name = ""
         Group = ""
         SkillPoints = 0
-        Level = 0
+        TrainedLevel = 0
+        ActiveLevel = 0
         Overridden = False
         OverriddenLevel = 0
         PreReqSkills = New EVESkillList
@@ -547,7 +552,8 @@ Public Class EVESkill
                 TempSkill.TypeID = CInt(.GetDouble(0))
                 TempSkill.Name = .GetString(1)
                 TempSkill.Group = .GetString(2)
-                TempSkill.Level = CInt(.GetValue(3))
+                TempSkill.TrainedLevel = CInt(.GetValue(3))
+                TempSkill.ActiveLevel = 0
                 TempSkill.SkillPoints = 0
                 TempSkill.OverriddenLevel = 0
                 TempSkill.Overridden = False
@@ -556,7 +562,7 @@ Public Class EVESkill
 
             ' Set the local pre-reqs
             With TempSkill
-                PreReqs.InsertSkill(.TypeID, .Level, .SkillPoints, .Overridden, .OverriddenLevel, .Name, .PreReqSkills, True)
+                PreReqs.InsertSkill(.TypeID, .TrainedLevel, .ActiveLevel, .SkillPoints, .Overridden, .OverriddenLevel, .Name, .PreReqSkills, True)
             End With
         End While
 

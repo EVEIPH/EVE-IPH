@@ -95,11 +95,11 @@ Public Class frmReqSkills
         For i = 0 To SkillList.Count - 1
             TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SkillList(i).TypeID)
 
-            If TempSkillLevel < SkillList(i).Level Then
-                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).Level) & " (" & TempSkillLevel & ")")
+            If TempSkillLevel < SkillList(i).TrainedLevel Then
+                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).TrainedLevel) & " (" & TempSkillLevel & ")")
                 PreReqNode.ForeColor = Color.Red
             Else
-                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).Level))
+                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).TrainedLevel))
                 PreReqNode.ForeColor = Color.Black
             End If
 

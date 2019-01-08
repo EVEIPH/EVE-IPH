@@ -4,6 +4,7 @@ Imports System.Globalization
 Imports System.Net
 Imports System.IO
 Imports System.Management
+Imports System.Security.Cryptography
 
 ' Place to store all public variables and functions
 Public Module Public_Variables
@@ -200,6 +201,7 @@ Public Module Public_Variables
     Public Const DefaultTextDataExport As String = "Default"
     Public Const CSVDataExport As String = "CSV"
     Public Const SSVDataExport As String = "SSV"
+    Public Const SimpleDataExport As String = "Simple"
 
     Public SetTaxFeeChecks As Boolean
 
@@ -378,7 +380,7 @@ Public Module Public_Variables
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
             Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
 
-            If CInt(CMDCount.ExecuteScalar()) = 0 Then
+            If CInt(CMDCount.ExecuteScalar()) = 0 Or Not AppRegistered() Then
                 ' No characters loaded yet so load dummy for all
                 Call SelectedCharacter.LoadDummyCharacter(True)
             Else
@@ -1448,15 +1450,19 @@ InvalidDate:
     Public Function MD5CalcFile(ByVal filepath As String) As String
 
         ' Open file (as read-only) - If it's not there, return ""
-        If IO.File.Exists(filepath) Then
-            Using reader As New System.IO.FileStream(filepath, IO.FileMode.Open, IO.FileAccess.Read)
-                Using md5 As New System.Security.Cryptography.MD5CryptoServiceProvider
+        If File.Exists(filepath) Then
+            Using reader As New FileStream(filepath, FileMode.Open, FileAccess.Read)
+                Using md5 As New MD5CryptoServiceProvider
 
                     ' hash contents of this stream
                     Dim hash() As Byte = md5.ComputeHash(reader)
+                    Dim sb As New Text.StringBuilder(hash.Length * 2)
 
-                    ' return formatted hash
-                    Return ByteArrayToString(hash)
+                    For i As Integer = 0 To hash.Length - 1
+                        sb.Append(hash(i).ToString("X2"))
+                    Next
+
+                    Return sb.ToString().ToLower
 
                 End Using
             End Using
@@ -1467,16 +1473,22 @@ InvalidDate:
 
     End Function
 
-    ' MD5 Hash - utility function to convert a byte array into a hex string
-    Private Function ByteArrayToString(ByVal arrInput() As Byte) As String
+    ' SHA Hash
+    Public Function HashSHA(InputString As String) As String
+        Try
+            Dim sha512 As SHA512 = SHA512Managed.Create()
+            Dim bytes As Byte() = Text.Encoding.UTF8.GetBytes(InputString)
+            Dim hash As Byte() = sha512.ComputeHash(bytes)
+            Dim stringBuilder As New Text.StringBuilder()
 
-        Dim sb As New System.Text.StringBuilder(arrInput.Length * 2)
+            For i As Integer = 0 To hash.Length - 1
+                stringBuilder.Append(hash(i).ToString("X2"))
+            Next
 
-        For i As Integer = 0 To arrInput.Length - 1
-            sb.Append(arrInput(i).ToString("X2"))
-        Next
-
-        Return sb.ToString().ToLower
+            Return stringBuilder.ToString()
+        Catch ex As Exception
+            Return ""
+        End Try
 
     End Function
 

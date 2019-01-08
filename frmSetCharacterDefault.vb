@@ -41,7 +41,9 @@ Public Class frmSetCharacterDefault
         ' If we get here, just clear out the old default and set the new one
         Call LoadCharacter(SelectedCharacterName, False)
         ' Refresh all screens
-        Call frmMain.ResetTabs()
+        If Application.OpenForms().OfType(Of frmMain).Any Then
+            Call frmMain.ResetTabs()
+        End If
 
         DefaultCharSelected = True
         MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
@@ -86,7 +88,7 @@ Public Class frmSetCharacterDefault
         If ESIConnection.SetCharacterData() Then
             ' Refresh the token data to get new scopes if they added
             Me.Cursor = Cursors.WaitCursor
-            If SelectedCharacter.ID <> DummyCharacterID Then
+            If SelectedCharacter.ID <> DummyCharacterID And SelectedCharacter.ID > 0 Then
                 Call SelectedCharacter.RefreshTokenData()
             End If
             Me.Cursor = Cursors.Default

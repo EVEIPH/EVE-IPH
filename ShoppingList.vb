@@ -951,8 +951,7 @@ Public Class ShoppingList
 
     ' Exports the shoppinglist data in CSV format if true, ignores the price volume if true, and sorts the raw mats by the order given
     Public Function GetClipboardList(ByVal ExportFormat As String, ByVal IgnorePriceVolume As Boolean, ByVal MaterialNamesSortOrder() As String,
-                                     ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String, ByVal CopyEveListFormat As Boolean,
-                                     ByVal IncludeLinks As Boolean) As String
+                                     ByVal ItemNamesSortOrder() As String, ByVal BuildItemsSortOrder() As String, ByVal IncludeLinks As Boolean) As String
         Dim i As Integer
         Dim OutputText As String = ""
         Dim TempListText As String
@@ -973,15 +972,6 @@ Public Class ShoppingList
         FullBuildList = GetFullBuildMaterialList() ' GetFullBuildList uses BuildItem for built in pos, and Volume for the facility ME value
         FullBuyList = CType(TotalBuyList.Clone, Materials)
         FullItemList = GetFullItemList()
-
-        ' If using the Eve List Format this will create an output that
-        ' The EVE Client will handle for multi-buy functionality.
-        If CopyEveListFormat Then
-            For j = 0 To FullBuyList.GetMaterialList.Count - 1
-                OutputText += String.Format("{0} {1}{2}", FullBuyList.GetMaterialList(j).GetMaterialName(), FullBuyList.GetMaterialList(j).GetQuantity(), vbCrLf)
-            Next
-            Return OutputText
-        End If
 
         ' Add the Invention mats to buy
         InventionMatList = GetFullInventionList()
@@ -1031,7 +1021,7 @@ Public Class ShoppingList
         TempMatList = New Materials
 
         ' Get the Shopping list for items
-        If Not IsNothing(FullItemList) Then
+        If Not IsNothing(FullItemList) And ExportFormat <> SimpleDataExport Then
             TempListText = FullItemList.GetClipboardList(ExportFormat, IgnorePriceVolume, True, True, UserApplicationSettings.IncludeInGameLinksinCopyText)
             If TempListText <> "No items in List" Then
                 OutputText = "Shopping List for: " & vbCrLf
@@ -1045,11 +1035,13 @@ Public Class ShoppingList
         If IncludeInventionMats Then
             ' Add Invention mats if there are any
             TempListText = InventionMatList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            If TempListText <> "No items in List" Then
+            If TempListText <> "No items in List" And ExportFormat <> SimpleDataExport Then
                 OutputText = OutputText & "Estimated Invention Materials: " & vbCrLf
                 OutputText = OutputText & TempListText
                 ' Spacer
-                OutputText = OutputText & vbCrLf & vbCrLf
+                OutputText = OutputText & vbCrLf
+            ElseIf ExportFormat = SimpleDataExport Then
+                OutputText = OutputText & TempListText
             End If
         End If
 
@@ -1057,11 +1049,13 @@ Public Class ShoppingList
         If IncludeREMats Then
             ' Add RE mats if there are any
             TempListText = REMatList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            If TempListText <> "No items in List" Then
+            If TempListText <> "No items in List" And ExportFormat <> SimpleDataExport Then
                 OutputText = OutputText & "Estimated RE Materials: " & vbCrLf
                 OutputText = OutputText & TempListText
                 ' Spacer
-                OutputText = OutputText & vbCrLf & vbCrLf
+                OutputText = OutputText & vbCrLf
+            ElseIf ExportFormat = SimpleDataExport Then
+                OutputText = OutputText & TempListText
             End If
         End If
 
@@ -1089,11 +1083,13 @@ Public Class ShoppingList
         ' Output the Build List - list the ME for each - assume no decryptor or relic
         If Not IsNothing(FullBuildList) Then
             TempListText = FullBuildList.GetClipboardList(ExportFormat, True, True, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            If TempListText <> "No items in List" Then
+            If TempListText <> "No items in List" And ExportFormat <> SimpleDataExport Then
                 OutputText = OutputText & "Build Items List: " & vbCrLf
                 OutputText = OutputText & TempListText
                 ' Spacer
                 OutputText = OutputText & vbCrLf
+            ElseIf ExportFormat = SimpleDataExport Then
+                OutputText = OutputText & TempListText
             End If
         End If
 
@@ -1116,11 +1112,13 @@ Public Class ShoppingList
         ' Output the Buy list, add the price and volume to it - in Buy lists don't list ME
         If Not IsNothing(FullBuyList) Then
             TempListText = FullBuyList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            If TempListText <> "No materials in List" Then
+            If TempListText <> "No materials in List" And ExportFormat <> SimpleDataExport Then
                 OutputText = OutputText & "Buy Materials List: " & vbCrLf
                 OutputText = OutputText & TempListText
                 ' Spacer
                 OutputText = OutputText & vbCrLf
+            ElseIf ExportFormat = SimpleDataExport Then
+                OutputText = OutputText & TempListText
             End If
         End If
 
@@ -1129,7 +1127,7 @@ Public Class ShoppingList
             OutputText = OutputText & "Total Volume of Built Item(s):," & CStr(FullItemList.GetTotalVolume) & ",m3"
         ElseIf ExportFormat = SSVDataExport Then
             OutputText = OutputText & "Total Volume of Built Item(s):;" & CStr(FullItemList.GetTotalVolume) & ";m3"
-        Else
+        ElseIf ExportFormat = DefaultTextDataExport Then
             OutputText = OutputText & "Total Volume of Built Item(s): " & FormatNumber(FullItemList.GetTotalVolume, 2) & " m3"
         End If
 

@@ -137,7 +137,10 @@ Public Class Character
             Else ' There is a dummy already in the DB, so just set it to default and load like a normal char
                 SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = {0} WHERE CHARACTER_ID = {1}"
                 Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CStr(DefaultCharacterCode), CStr(DummyCharacterID)))
-                Call LoadDefaultCharacter()
+                ' Reset any others if there
+                SQL = "UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0 WHERE CHARACTER_ID <> {0}"
+                Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CStr(DummyCharacterID)))
+                Call LoadDefaultCharacter(False, False, True)
             End If
 
             ' Finally, save the app registration information file as nothing so it doesn't try to load again
@@ -158,10 +161,14 @@ Public Class Character
     End Function
 
     ' Sets the default character for the program if no character ID sent, else it returns the character ID. If we can't find it in DB, then return false
-    Public Function LoadDefaultCharacter(Optional LoadBPs As Boolean = False, Optional LoadAssets As Boolean = False) As Boolean
+    Public Function LoadDefaultCharacter(Optional LoadBPs As Boolean = False, Optional LoadAssets As Boolean = False,
+                                         Optional LoadingDummy As Boolean = False) As Boolean
         Dim rsCharacter As SQLiteDataReader
         Dim SQL As String
-        Dim ESIConnection As New ESI
+
+        If Not AppRegistered() And Not LoadingDummy Then
+            Return False
+        End If
 
         ' See if we have a character ID loaded
         SQL = "SELECT CHARACTER_ID FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> 0"
@@ -187,7 +194,6 @@ Public Class Character
     ' Load the latest data for the character sent or the default if no character sent from the DB - users may not want to load bps or assets 
     Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean,
                                       Optional IndustryJobsUpdate As Boolean = False) As Boolean
-        Dim ESIData As New ESI
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
 
@@ -201,6 +207,13 @@ Public Class Character
         readerCharacter = DBCommand.ExecuteReader
 
         If readerCharacter.Read Then
+            ' Initialize the different character data classes
+            Jobs = New EVEIndustryJobs()
+            Standings = New EVENPCStandings()
+            DatacoreAgents = New EVEResearchAgents()
+            Blueprints = New EVEBlueprints()
+            Assets = New EVEAssets(ScanType.Personal)
+
             ' Query the character data and store
             With readerCharacter
                 ID = .GetInt64(0)
@@ -224,17 +237,25 @@ Public Class Character
                 If ID <> DummyCharacterID Then
                     Dim TempESI As New ESI
                     ' Only ignore the cache date if we aren't updating industry jobs
-                    Call TempESI.SetCharacterData(CharacterTokenData)
-                End If
+                    If TempESI.SetCharacterData(CharacterTokenData) Then
+                        CharacterCorporation = New Corporation()
+                        ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
+                        If .GetInt64(2) > 2000000 Then
+                            CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+                        End If
 
-                CharacterCorporation = New Corporation()
-                ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
-                If .GetInt64(2) > 2000000 Then
-                    CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+                        UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
+                        IsDefault = CBool(.GetInt32(15))
+                    Else
+                        ' Check the error that caused this not to update
+                        If TempESI.ErrorData.ErrorText.Contains("token") Or TempESI.ErrorData.ErrorDescription.Contains("token") Then
+                            ' They have some issue with their token or log
+                            MsgBox("IPH is unable to refresh your character data - " & TempESI.ErrorData.ErrorDescription & vbCrLf & vbCrLf & "Please recheck your registration information and try again.", vbInformation, Application.ProductName)
+                            ' Now leave since everything below will fail
+                            Return True
+                        End If
+                    End If
                 End If
-
-                UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
-                IsDefault = CBool(.GetInt32(15))
 
             End With
 
@@ -252,7 +273,6 @@ Public Class Character
             End If
 
             ' Load the character's industry jobs
-            Jobs = New EVEIndustryJobs()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterIndustryJobsScope) Then
                 IndustryJobsAccess = True
                 Call Jobs.UpdateIndustryJobs(ID, CharacterTokenData, ScanType.Personal)
@@ -264,21 +284,18 @@ Public Class Character
             End If
 
             ' Load the standings for this character
-            Standings = New EVENPCStandings()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterStandingsScope) Then
                 StandingsAccess = True
                 Call Standings.LoadCharacterStandings(ID, CharacterTokenData)
             End If
 
             ' Load the character's research agents
-            DatacoreAgents = New EVEResearchAgents()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterResearchAgentsScope) Then
                 ResearchAgentAccess = True
                 Call DatacoreAgents.LoadResearchAgents(ID, CharacterTokenData)
             End If
 
             ' Load the Blueprints but don't load if they don't have selected
-            Blueprints = New EVEBlueprints()
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterBlueprintsScope) Then
                 BlueprintsAccess = True
                 If LoadBPs Then
@@ -287,7 +304,6 @@ Public Class Character
             End If
 
             ' Load in the assets unless they don't want to update
-            Assets = New EVEAssets(ScanType.Personal)
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterAssetScope) Then
                 AssetsAccess = True
                 If LoadAssets Then

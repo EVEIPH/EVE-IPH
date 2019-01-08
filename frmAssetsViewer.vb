@@ -33,7 +33,6 @@ Public Class frmAssetsViewer
     Private AnchorNode As TreeNode
 
     'Private AssetTreeTest As TriStateTreeView
-
     ' For drawing checkboxes
     Private Const TVIF_STATE As Integer = &H8
     Private Const TVIS_STATEIMAGEMASK As Integer = &HF000

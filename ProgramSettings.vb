@@ -122,7 +122,11 @@ Public Class ProgramSettings
     Public DefaultSettingTE As Integer = 0
 
     Public DefaultDisableSVR As Boolean = False
+    Public DefaultDisableGATracking As Boolean = False
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
+
+    Public DefaultAlphaAccount As Boolean = False
+    Public DefaultUseActiveSkills As Boolean = False
 
     ' SVR Stuff
     Public DefaultIgnoreSVRThresholdValue As Double = 0.0
@@ -449,15 +453,15 @@ Public Class ProgramSettings
     Public Const JobTypeColumn As String = "Job Type"
 
     ' Manufacturing Tab column settings - index 0 is for hidden id column
-    Public DefaultMTItemCategory As Integer = 3
+    Public DefaultMTItemCategory As Integer = 1
     Public DefaultMTItemGroup As Integer = 0
-    Public DefaultMTItemName As Integer = 4
-    Public DefaultMTOwned As Integer = 5
-    Public DefaultMTTech As Integer = 6
-    Public DefaultMTBPME As Integer = 7
-    Public DefaultMTBPTE As Integer = 8
-    Public DefaultMTInputs As Integer = 9
-    Public DefaultMTCompared As Integer = 10
+    Public DefaultMTItemName As Integer = 2
+    Public DefaultMTOwned As Integer = 3
+    Public DefaultMTTech As Integer = 4
+    Public DefaultMTBPME As Integer = 5
+    Public DefaultMTBPTE As Integer = 6
+    Public DefaultMTInputs As Integer = 7
+    Public DefaultMTCompared As Integer = 8
     Public DefaultMTTotalRuns As Integer = 0
     Public DefaultMTSingleInventedBPCRuns As Integer = 0
     Public DefaultMTProductionLines As Integer = 0
@@ -471,10 +475,10 @@ Public Class ProgramSettings
     Public DefaultMTCopyTime As Integer = 0
     Public DefaultMTInventionTime As Integer = 0
     Public DefaultMTItemMarketPrice As Integer = 0
-    Public DefaultMTProfit As Integer = 11
+    Public DefaultMTProfit As Integer = 9
     Public DefaultMTProfitPercentage As Integer = 0
-    Public DefaultMTIskperHour As Integer = 12
-    Public DefaultMTSVR As Integer = 13
+    Public DefaultMTIskperHour As Integer = 10
+    Public DefaultMTSVR As Integer = 11
     Public DefaultMTSVRxIPH As Integer = 0
     Public DefaultMTPriceTrend As Integer = 0
     Public DefaultMTTotalItemsSold As Integer = 0
@@ -484,7 +488,7 @@ Public Class ProgramSettings
     Public DefaultMTCurrentBuyOrders As Integer = 0
     Public DefaultMTItemsinProduction As Integer = 0
     Public DefaultMTItemsinStock As Integer = 0
-    Public DefaultMTTotalCost As Integer = 14
+    Public DefaultMTTotalCost As Integer = 12
     Public DefaultMTBaseJobCost As Integer = 0
     Public DefaultMTNumBPs As Integer = 0
     Public DefaultMTInventionChance As Integer = 0
@@ -792,7 +796,6 @@ Public Class ProgramSettings
     Private DefaultFees As Boolean = True
     Private DefaultCalcBuyBuyOrder As Integer = 1
     Private DefaultUsage As Boolean = True
-    Private DefaultUseEveFormat As Boolean = True
     Private DefaultReloadBPsFromFile As Boolean = True
 
     ' Default Market History Viewer Settings
@@ -1099,6 +1102,7 @@ Public Class ProgramSettings
                     .DefaultBPTE = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "DefaultBPTE", DefaultSettingTE))
                     .CheckBuildBuy = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "CheckBuildBuy", DefaultCheckBuildBuy))
                     .DisableSVR = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSVR", DefaultDisableSVR))
+                    .DisableGATracking = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableGATracking", DefaultDisableGATracking))
                     .ShopListIncludeInventMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
@@ -1114,6 +1118,8 @@ Public Class ProgramSettings
                     .BuildT2T3Materials = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType))
                     .SaveFacilitiesbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveFacilitiesbyChar", DefaultSaveFacilitiesbyChar))
                     .LoadBPsbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadBPsbyChar", DefaultLoadBPsbyChar))
+                    .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultLoadBPsbyChar))
+                    .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultLoadBPsbyChar))
                 End With
 
             Else
@@ -1162,7 +1168,11 @@ Public Class ProgramSettings
             .DefaultBPME = DefaultSettingME
             .DefaultBPTE = DefaultSettingTE
 
+            .AlphaAccount = DefaultAlphaAccount
+            .UseActiveSkillLevels = DefaultUseActiveSkills
+
             .DisableSVR = DefaultDisableSVR
+            .DisableGATracking = DefaultDisableGATracking
             .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
             .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
@@ -1193,7 +1203,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(32) As Setting
+        Dim ApplicationSettingsList(35) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1229,6 +1239,9 @@ Public Class ProgramSettings
             ApplicationSettingsList(30) = New Setting("SaveFacilitiesbyChar", CStr(SentSettings.SaveFacilitiesbyChar))
             ApplicationSettingsList(31) = New Setting("LoadBPsbyChar", CStr(SentSettings.LoadBPsbyChar))
             ApplicationSettingsList(32) = New Setting("LoadESIPublicStructuresonStartup", CStr(SentSettings.LoadESIPublicStructuresonStartup))
+            ApplicationSettingsList(33) = New Setting("DisableGATracking", CStr(SentSettings.DisableGATracking))
+            ApplicationSettingsList(34) = New Setting("AlphaAccount", CStr(SentSettings.AlphaAccount))
+            ApplicationSettingsList(35) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1333,7 +1346,6 @@ Public Class ProgramSettings
                     .Fees = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Fees", DefaultFees))
                     .CalcBuyBuyOrder = CInt(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeInteger, ShoppingListSettingsFileName, "CalcBuyBuyOrder", DefaultCalcBuyBuyOrder))
                     .Usage = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "Usage", DefaultUsage))
-                    .UseEveFormat = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "UseEveFormat", DefaultUseEveFormat))
                     .ReloadBPsFromFile = CBool(GetSettingValue(SettingsFolder, ShoppingListSettingsFileName, SettingTypes.TypeBoolean, ShoppingListSettingsFileName, "ReloadBPsFromFile", DefaultReloadBPsFromFile))
                 End With
 
@@ -1366,7 +1378,6 @@ Public Class ProgramSettings
         TempSettings.Fees = DefaultFees
         TempSettings.CalcBuyBuyOrder = DefaultCalcBuyBuyOrder
         TempSettings.Usage = DefaultUsage
-        TempSettings.UseEveFormat = DefaultUseEveFormat
         TempSettings.ReloadBPsFromFile = DefaultReloadBPsFromFile
 
         ShoppingListTabSettings = TempSettings
@@ -1377,7 +1388,7 @@ Public Class ProgramSettings
 
     ' Saves the Shopping List Settings to XML
     Public Sub SaveShoppingListSettings(SentSettings As ShoppingListSettings)
-        Dim ShoppingListSettingsList(7) As Setting
+        Dim ShoppingListSettingsList(6) As Setting
 
         Try
             ShoppingListSettingsList(0) = New Setting("DataExportFormat", CStr(SentSettings.DataExportFormat))
@@ -1386,8 +1397,7 @@ Public Class ProgramSettings
             ShoppingListSettingsList(3) = New Setting("Fees", CStr(SentSettings.Fees))
             ShoppingListSettingsList(4) = New Setting("CalcBuyBuyOrder", CStr(SentSettings.CalcBuyBuyOrder))
             ShoppingListSettingsList(5) = New Setting("Usage", CStr(SentSettings.Usage))
-            ShoppingListSettingsList(6) = New Setting("UseEveFormat", CStr(SentSettings.UseEveFormat))
-            ShoppingListSettingsList(7) = New Setting("ReloadBPsFromFile", CStr(SentSettings.ReloadBPsFromFile))
+            ShoppingListSettingsList(6) = New Setting("ReloadBPsFromFile", CStr(SentSettings.ReloadBPsFromFile))
 
             Call WriteSettingsToFile(SettingsFolder, ShoppingListSettingsFileName, ShoppingListSettingsList, ShoppingListSettingsFileName)
 
@@ -4808,6 +4818,11 @@ Public Structure ApplicationSettings
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
 
     Dim DisableSVR As Boolean ' For disabling SVR updates
+    Dim DisableGATracking As Boolean ' for disabling tracking app usage through Google Analytics
+
+    ' Character options
+    Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
+    Dim UseActiveSkillLevels As Boolean ' Use active skill levels instead of trained - useful for omega on alpha currently
 
     ' For shopping list
     Dim ShopListIncludeInventMats As Boolean
@@ -5643,7 +5658,6 @@ Public Structure ShoppingListSettings
     Dim Fees As Boolean
     Dim CalcBuyBuyOrder As Integer
     Dim Usage As Boolean
-    Dim UseEveFormat As Boolean
     Dim ReloadBPsFromFile As Boolean
 End Structure
 

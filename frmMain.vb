@@ -298,23 +298,26 @@ Public Class frmMain
 
         FirstLoad = True
 
-        ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
-        On Error Resume Next
+        ' See if they've disabled GA tracking
+        If Not UserApplicationSettings.DisableGATracking Then
+            ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
+            On Error Resume Next
 
-        Dim GATracker As New AnalyticsService()
-        Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
+            Dim GATracker As New AnalyticsService()
+            Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
 
-        Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
-        Dim EventData As New ServiceModel.EventParameter
+            Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
+            Dim EventData As New ServiceModel.EventParameter
 
-        EventData.Category = "Program Usage"
-        EventData.Action = "Open IPH"
-        EventData.Label = "Initialized"
-        EventData.ClientId = MACAddress
+            EventData.Category = "Program Usage"
+            EventData.Action = "Open IPH"
+            EventData.Label = "Initialized"
+            EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
 
-        Call GATracker.TrackEvent(EventData)
+            Call GATracker.TrackEvent(EventData)
 
-        On Error GoTo 0
+            On Error GoTo 0
+        End If
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
@@ -385,10 +388,6 @@ Public Class frmMain
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
-        ' Load the character
-        Call SetProgress("Loading Character Data from ESI...")
-        Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
-
         ' Only allow selecting a character if they registered the program
         If AppRegistered() Then
             mnuSelectionAddChar.Enabled = True
@@ -396,6 +395,9 @@ Public Class frmMain
             mnuSelectionAddChar.Enabled = False
         End If
 
+        ' Load the default character data
+        Call SetProgress("Loading Character Data from ESI...")
+        Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
         Call LoadCharacterNamesinMenu()
 
         ' Type of skills loaded
@@ -424,15 +426,15 @@ Public Class frmMain
             Application.DoEvents()
         End If
 
-        '' Refresh Public Structures
-        'If UserApplicationSettings.LoadESIPublicStructuresonStartup Then
-        '    Application.UseWaitCursor = True
-        '    Application.DoEvents()
-        '    Call SetProgress("Updating Public Structures Data...")
-        '    Call ESIData.UpdatePublicStructureData()
-        '    Application.UseWaitCursor = False
-        '    Application.DoEvents()
-        'End If
+        ' Refresh Public Structures
+        If UserApplicationSettings.LoadESIPublicStructuresonStartup Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+            Call SetProgress("Updating Public Structures Data...")
+            Call ESIData.UpdatePublicStructureMarketsData()
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+        End If
 
         If TestingVersion Then
             Me.Text = Me.Text & " - Testing"
@@ -804,7 +806,7 @@ Public Class frmMain
 
     End Sub
 
-    ' Loads up the facilities for the selectec character
+    ' Loads up the facilities for the selected character
     Public Sub LoadFacilities()
 
         ' See what ID we use for the facilities
@@ -815,13 +817,13 @@ Public Class frmMain
         Else
             CharID = CommonLoadBPsID
         End If
+        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
 
         ' Initialize the BP facility
         Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
 
         ' Load up the Manufacturing tab facilities
         Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
-        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
         Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
         Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
         Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
@@ -1350,10 +1352,21 @@ Public Class frmMain
                 LoadingRelics = False
                 RelicsLoaded = False ' Allow reload on drop down
 
+                ' Check the include cost/time
+                chkBPIncludeT3Costs.Checked = InventionFacility.IncludeActivityCost
+                chkBPIncludeT3Time.Checked = InventionFacility.IncludeActivityTime
+
             Else
                 LoadingInventionDecryptors = True
                 cmbBPInventionDecryptor.Text = BPDecryptor.Name
                 LoadingInventionDecryptors = False
+
+                ' Check the include cost/time
+                chkBPIncludeInventionCosts.Checked = InventionFacility.IncludeActivityCost
+                chkBPIncludeInventionTime.Checked = InventionFacility.IncludeActivityTime
+                chkBPIncludeCopyCosts.Checked = CopyFacility.IncludeActivityCost
+                chkBPIncludeCopyTime.Checked = CopyFacility.IncludeActivityTime
+
             End If
 
             ' Need to calculate the number of bps based on the bp
@@ -1366,14 +1379,16 @@ Public Class frmMain
         End If
 
         ' We need to set each facility individually for later use
-        BPTabFacility.UpdateFacility(CType(BuildFacility.Clone, IndustryFacility))
-        BPTabFacility.UpdateFacility(CType(ComponentFacility.Clone, IndustryFacility))
-        BPTabFacility.UpdateFacility(CType(CapCompentFacility.Clone, IndustryFacility))
-        If BPTech = BPTechLevel.T2 Or BPTech = 3 Then
-            BPTabFacility.UpdateFacility(CType(InventionFacility.Clone, IndustryFacility))
-        End If
-        If BPTech = 2 Then
-            BPTabFacility.UpdateFacility(CType(CopyFacility.Clone, IndustryFacility))
+        If SentFrom <> SentFromLocation.ShoppingList Then ' shopping list doesn't send facilities so just use what is already loaded on bp tab
+            BPTabFacility.UpdateFacility(CType(BuildFacility.Clone, IndustryFacility))
+            BPTabFacility.UpdateFacility(CType(ComponentFacility.Clone, IndustryFacility))
+            BPTabFacility.UpdateFacility(CType(CapCompentFacility.Clone, IndustryFacility))
+            If BPTech = BPTechLevel.T2 Or BPTech = 3 Then
+                BPTabFacility.UpdateFacility(CType(InventionFacility.Clone, IndustryFacility))
+            End If
+            If BPTech = 2 Then
+                BPTabFacility.UpdateFacility(CType(CopyFacility.Clone, IndustryFacility))
+            End If
         End If
 
         ' Common to all settings
@@ -2486,7 +2501,7 @@ Public Class frmMain
         Application.UseWaitCursor = True
         Call f1.Show()
         Application.DoEvents()
-        If ESIData.UpdatePublicStructureData(f1.lblStatus, f1.pgStatus) Then
+        If ESIData.UpdatePublicStructureMarketsData(f1.lblStatus, f1.pgStatus) Then
             MsgBox("Public Structure Data Updated", vbInformation, Application.ProductName)
         End If
 
@@ -3874,66 +3889,56 @@ Tabs:
 
     Private Sub btnCopyMatstoClip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBPCopyMatstoClip.Click
         Dim ClipboardData = New DataObject
-        Dim OutputText As String
+        Dim OutputText As String = ""
         Dim DecryptorText As String = ""
         Dim RelicText As String = ""
         Dim AddlText As String = ""
+        Dim ExportFormat As String = ""
+
+        If cmbBPInventionDecryptor.Text <> None Then
+            DecryptorText = "Decryptor: " & cmbBPInventionDecryptor.Text
+        End If
+
+        If cmbBPRelic.Text <> None Then
+            RelicText = "Relic: " & cmbBPRelic.Text
+        End If
+
+        If RelicText <> "" Then
+            AddlText = ", " & RelicText
+        Else
+            ' Decryptor
+            If DecryptorText <> "" Then
+                AddlText = ", " & DecryptorText
+            End If
+        End If
+
+        AddlText = ")" & Environment.NewLine & Environment.NewLine
 
         If chkBPSimpleCopy.Checked = False Then
-            If cmbBPInventionDecryptor.Text <> None Then
-                DecryptorText = "Decryptor: " & cmbBPInventionDecryptor.Text
-            End If
-
-            If cmbBPRelic.Text <> None Then
-                RelicText = "Relic: " & cmbBPRelic.Text
-            End If
-
-            If RelicText <> "" Then
-                AddlText = ", " & RelicText
-            Else
-                ' Decryptor
-                If DecryptorText <> "" Then
-                    AddlText = ", " & DecryptorText
-                End If
-            End If
-
-            AddlText = ")" & Environment.NewLine & Environment.NewLine
-
-            If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
-                OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-                OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            Else
-                OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
-                OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-            End If
-
-            If UserApplicationSettings.ShopListIncludeInventMats Then
-                If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
-                    OutputText = OutputText & Environment.NewLine & Environment.NewLine & "Invention Materials" & Environment.NewLine & Environment.NewLine
-                    OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(UserApplicationSettings.DataExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
-                End If
-            End If
+            ExportFormat = UserApplicationSettings.DataExportFormat
         Else
-            ' Just copy the materials for use in evepraisal etc.
-            OutputText = ""
-            If (chkBPBuildBuy.Checked And rbtnBPCopyInvREMats.Checked = False) Or rbtnBPRawmatCopy.Checked Then
-                For i = 0 To SelectedBlueprint.GetRawMaterials.GetMaterialList.Count - 1
-                    OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetRawMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetRawMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
-                Next
-            ElseIf rbtnBPComponentCopy.Checked And rbtnBPCopyInvREMats.Checked = False Then
-                For i = 0 To SelectedBlueprint.GetComponentMaterials.GetMaterialList.Count - 1
-                    OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetComponentMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetComponentMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
-                Next
-            End If
+            ExportFormat = SimpleDataExport
+        End If
 
-            If UserApplicationSettings.ShopListIncludeInventMats Or rbtnBPCopyInvREMats.Checked Then
-                If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
-                    For i = 0 To SelectedBlueprint.GetInventionMaterials.GetMaterialList.Count - 1
-                        OutputText += String.Format("{0} {1}{2}", SelectedBlueprint.GetInventionMaterials.GetMaterialList(i).GetMaterialName(), SelectedBlueprint.GetInventionMaterials.GetMaterialList(i).GetQuantity(), vbCrLf)
-                    Next
+        If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
+            If chkBPSimpleCopy.Checked = False Then
+                OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+            End If
+            OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+        Else
+            If chkBPSimpleCopy.Checked = False Then
+                OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+            End If
+            OutputText = OutputText & SelectedBlueprint.GetComponentMaterials.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+        End If
+
+        If UserApplicationSettings.ShopListIncludeInventMats Then
+            If Not IsNothing(SelectedBlueprint.GetInventionMaterials.GetMaterialList) Then
+                If chkBPSimpleCopy.Checked = False Then
+                    OutputText = OutputText & Environment.NewLine & Environment.NewLine & "Invention Materials" & Environment.NewLine & Environment.NewLine
                 End If
+                OutputText = OutputText & SelectedBlueprint.GetInventionMaterials.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
             End If
-
         End If
 
         ' Paste to clipboard
@@ -4313,7 +4318,7 @@ Tabs:
             End If
 
             With BPTabFacility
-                Call LoadBPfromEvent(BPID, BuildType, "Raw", SentFromLocation.BlueprintTab,
+                Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
                                     .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
                                     .GetFacility(ProductionType.CapitalComponentManufacturing),
                                     .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
@@ -4479,7 +4484,8 @@ Tabs:
                     End If
                 Case Keys.Enter
                     If (lstBPList.SelectedIndex > -1) Then
-                        cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
+                        SelectedBPText = lstBPList.SelectedItem.ToString()
+                        cmbBPBlueprintSelection.Text = SelectedBPText
                         lstBPList.Visible = False
                         BPSelected = True
                         Call SelectBlueprint()
@@ -4507,7 +4513,8 @@ Tabs:
     ' Loads the item by clicking on the item selected
     Private Sub lstBPList_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPList.MouseDown
         If lstBPList.SelectedItems.Count <> 0 Then
-            cmbBPBlueprintSelection.Text = lstBPList.SelectedItem.ToString()
+            SelectedBPText = lstBPList.SelectedItem.ToString()
+            cmbBPBlueprintSelection.Text = SelectedBPText
             lstBPList.Visible = False
             Call SelectBlueprint()
             cmbBPBlueprintSelection.Focus()
@@ -5380,13 +5387,13 @@ Tabs:
         readerBP.Close()
 
         ' Load the facilty based on the groupid and categoryid
-        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech, False)
+        Call BPTabFacility.LoadFacility(BPID, ItemGroupID, ItemCategoryID, TempTech, False, False, False)
 
         ' Load the image
         Call LoadBlueprintPicture(BPID, ItemType)
 
-        ' Set for max production lines - bp tab or history (bp tab)
-        If SentFrom = SentFromLocation.History Or SentFrom = SentFromLocation.BlueprintTab Then ' We might have different values there and they set on double click
+        ' Set for max production lines 
+        If SentFrom = SentFromLocation.None Then ' We might have different values there and they set on double click
             ' Reset the entry boxes
             txtBPRuns.Text = "1"
             txtBPNumBPs.Text = "1"
@@ -5397,7 +5404,7 @@ Tabs:
 
             Call ResetDecryptorCombos(TempTech)
 
-        ElseIf SentFrom <> SentFromLocation.None Then  ' Sent from manufacturing tab or shopping list
+        ElseIf SentFrom <> SentFromLocation.None Then  ' Sent from manufacturing tab, bp tab, history, or shopping list
             ' Set up for Reloading the decryptor combo on T2/T3
             ' Allow reloading of Decryptors
             InventionDecryptorsLoaded = False
@@ -5538,8 +5545,8 @@ Tabs:
 
         cmbBPBlueprintSelection.Focus()
 
-        ' Reset the combo for invention, and Load the relic types for BP selected for T3
-        If NewBP Then
+        ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
+        If NewBP And SentFrom = SentFromLocation.None Then
             Dim TempDName As String = ""
             If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
                 ' Load the decryptor based on ME/TE
@@ -13371,6 +13378,10 @@ CheckTechs:
                 btnCalcSaveSettings.Enabled = False
                 btnCalcExportList.Enabled = False
                 gbCalcBPSelect.Enabled = False
+                gbCalcIncludeItems.Enabled = False
+                gbCalcBPRace.Enabled = False
+                gbCalcBPType.Enabled = False
+                gbCalcSizeLimit.Enabled = False
                 gbCalcBPTech.Enabled = False
                 gbCalcCompareType.Enabled = False
                 gbCalcMarketFilters.Enabled = False
@@ -14172,6 +14183,10 @@ ExitCalc:
         btnCalcExportList.Enabled = True
         gbCalcMarketFilters.Enabled = True
         gbCalcBPSelect.Enabled = True
+        gbCalcIncludeItems.Enabled = True
+        gbCalcBPRace.Enabled = True
+        gbCalcBPType.Enabled = True
+        gbCalcSizeLimit.Enabled = True
         gbCalcBPTech.Enabled = True
         gbCalcCompareType.Enabled = True
         gbCalcFilter.Enabled = True
@@ -21206,7 +21221,7 @@ Leave:
             chkMineRorqDeployedMode.ForeColor = Color.Black
         Else
             ' Inactive
-            chkMineRorqDeployedMode.Text = "Industrial Core Inctive"
+            chkMineRorqDeployedMode.Text = "Industrial Core Inactive"
             chkMineRorqDeployedMode.ForeColor = Color.Black
         End If
 

@@ -196,7 +196,7 @@ Public Class frmShoppingList
             ttMain.SetToolTip(btnShowAssets, "Open the Asset Viewer to set the default location(s) for materials to use for updating the Shopping List.")
             ttMain.SetToolTip(lblTIC, "Total of all invention materials in the buy list.")
             ttMain.SetToolTip(lblTCC, "Total of all the copy materials in the buy list.")
-            ttMain.SetToolTip(chkEveListFormat, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
+            ttMain.SetToolTip(rbtnExportSimple, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
             ttMain.SetToolTip(chkRebuildItemsfromList, "When loading a saved shopping list, if checked IPH will rebuild all items with current prices and items. Otherwise it will load exactly what is in the list with current prices.")
         End If
 
@@ -241,7 +241,6 @@ Public Class frmShoppingList
             Case 0
                 chkBuyorBuyOrder.Checked = False
         End Select
-        chkEveListFormat.Checked = UserShoppingListSettings.UseEveFormat
         chkRebuildItemsfromList.Checked = UserShoppingListSettings.ReloadBPsFromFile
 
         If rbtnExportCSV.Text = UserShoppingListSettings.DataExportFormat Then
@@ -250,6 +249,8 @@ Public Class frmShoppingList
             rbtnExportSSV.Checked = True
         ElseIf rbtnExportDefault.Text = UserShoppingListSettings.DataExportFormat Then
             rbtnExportDefault.Checked = True
+        ElseIf rbtnExportSimple.Text = UserShoppingListSettings.DataExportFormat Then
+            rbtnExportSimple.Checked = True
         End If
         chkUpdateAssetsWhenUsed.Checked = UserShoppingListSettings.UpdateAssetsWhenUsed
 
@@ -974,6 +975,8 @@ Public Class frmShoppingList
             TempList.DataExportFormat = rbtnExportCSV.Text
         ElseIf rbtnExportSSV.Checked Then
             TempList.DataExportFormat = rbtnExportSSV.Text
+        ElseIf rbtnExportSimple.Checked Then
+            TempList.DataExportFormat = rbtnExportSimple.Text
         End If
         TempList.UpdateAssetsWhenUsed = chkUpdateAssetsWhenUsed.Checked
         TempList.Usage = chkUsage.Checked
@@ -987,7 +990,6 @@ Public Class frmShoppingList
             TempList.CalcBuyBuyOrder = 0
         End If
 
-        TempList.UseEveFormat = chkEveListFormat.Checked
         TempList.ReloadBPsFromFile = chkRebuildItemsfromList.Checked
 
         ' Save the data in the XML file
@@ -1627,12 +1629,14 @@ Public Class frmShoppingList
             ExportTypeString = CSVDataExport
         ElseIf rbtnExportSSV.Checked Then
             ExportTypeString = SSVDataExport
+        ElseIf rbtnExportSimple.Checked Then
+            ExportTypeString = SimpleDataExport
         Else
             ExportTypeString = DefaultTextDataExport
         End If
 
         ' Paste to clipboard
-        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, chkEveListFormat.Checked, UserApplicationSettings.IncludeInGameLinksinCopyText))
+        Call CopyTextToClipboard(TotalShoppingList.GetClipboardList(ExportTypeString, True, MatList, ItemList, BuildList, UserApplicationSettings.IncludeInGameLinksinCopyText))
 
     End Sub
 

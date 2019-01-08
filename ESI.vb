@@ -58,6 +58,14 @@ Public Class ESI
     ' Keeps an array of threads if we need to abort update
     Private ThreadsArray As List(Of Thread) = New List(Of Thread)
 
+    Public ErrorData As ESIErrorData
+
+    Public Structure ESIErrorData
+        Dim ErrorCode As Integer
+        Dim ErrorText As String
+        Dim ErrorDescription As String
+    End Structure
+
     ' ESI implements the following scopes:
 
     ' Character
@@ -136,8 +144,15 @@ Public Class ESI
 
             End If
         Catch ex As WebException
+            ErrorData = New ESIErrorData
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-            ErrorResponse = GetErrorResponseBody(ex)
+            Dim TempErrorData As New ESIError
+            ErrorResponse = GetErrorResponseBody(ex, TempErrorData)
+
+            ' Save this for use in calling routine
+            ErrorData.ErrorCode = ErrorCode
+            ErrorData.ErrorDescription = TempErrorData.ErrorDescription
+            ErrorData.ErrorText = TempErrorData.ErrorText
 
             If ErrorCode >= 500 And Not RetriedCall Then
                 ' Try this call again after waiting a few
@@ -145,7 +160,7 @@ Public Class ESI
                 RetriedCall = True
                 Call GetAuthorizationToken(0)
             End If
-            MsgBox("Web Request failed to get Authorization Token. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+            MsgBox("Web Request failed to get Authorization Token." & vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ex.Message & vbCrLf & "Description: " & ErrorResponse, vbInformation, Application.ProductName)
         Catch ex As Exception
             MsgBox("The request failed to get Authorization Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
@@ -249,17 +264,26 @@ Public Class ESI
             Success = True
 
         Catch ex As WebException
+            ErrorData = New ESIErrorData
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-            ErrorResponse = GetErrorResponseBody(ex)
+            Dim TempErrorData As New ESIError
+            ErrorResponse = GetErrorResponseBody(ex, TempErrorData)
+
+            ' Save this for use in calling routine
+            ErrorData.ErrorCode = ErrorCode
+            ErrorData.ErrorDescription = TempErrorData.ErrorDescription
+            ErrorData.ErrorText = TempErrorData.ErrorText
 
             If ErrorCode >= 500 And Not RetriedCall Then
                 ' Try this call again after waiting a few
                 RetriedCall = True
-                Threading.Thread.Sleep(2000)
+                Thread.Sleep(2000)
                 Call GetAccessToken(Token, Refresh, 0)
             End If
 
-            MsgBox("Web Request failed to get Access Token. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+            MsgBox("Web Request failed to get Access Token." & vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ex.Message & vbCrLf & "Description: " & ErrorResponse, vbInformation, Application.ProductName)
+
+
         Catch ex As Exception
             MsgBox("The request failed to get Access Token. " & ex.Message, vbInformation, Application.ProductName)
             ErrorCode = -1
@@ -344,8 +368,15 @@ Public Class ESI
             Return Response
 
         Catch ex As WebException
+            ErrorData = New ESIErrorData
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-            ErrorResponse = GetErrorResponseBody(ex)
+            Dim TempErrorData As New ESIError
+            ErrorResponse = GetErrorResponseBody(ex, TempErrorData)
+
+            ' Save this for use in calling routine
+            ErrorData.ErrorCode = ErrorCode
+            ErrorData.ErrorDescription = TempErrorData.ErrorDescription
+            ErrorData.ErrorText = TempErrorData.ErrorText
 
             If ErrorCode >= 500 And Not RetriedCall Then
                 RetriedCall = True
@@ -353,7 +384,7 @@ Public Class ESI
                 Threading.Thread.Sleep(2000)
                 Return GetPublicData(URL, CacheDate, BodyData)
             End If
-            MsgBox("Web Request failed to get Public data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+            MsgBox("Web Request failed to get Public data." & vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ex.Message & vbCrLf & "Description: " & ErrorResponse, vbInformation, Application.ProductName)
         Catch ex As Exception
             If ex.HResult <> -2146233040 Then ' This HR result is for thread aborts. Test out for awhile to see how it works
                 MsgBox("The request failed to get Public data. " & ex.Message, vbInformation, Application.ProductName)
@@ -393,6 +424,10 @@ Public Class ESI
 
                 ' Update the token
                 TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
+
+                If IsNothing(TokenData) Then
+                    Return Nothing
+                End If
 
                 'Throw New Exception("Test Error - Get Private Auth Data")
 
@@ -443,8 +478,15 @@ Public Class ESI
             End If
 
         Catch ex As WebException
+            ErrorData = New ESIErrorData
             ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-            ErrorResponse = GetErrorResponseBody(ex)
+            Dim TempErrorData As New ESIError
+            ErrorResponse = GetErrorResponseBody(ex, TempErrorData)
+
+            ' Save this for use in calling routine
+            ErrorData.ErrorCode = ErrorCode
+            ErrorData.ErrorDescription = TempErrorData.ErrorDescription
+            ErrorData.ErrorText = TempErrorData.ErrorText
 
             If ErrorResponse = "Character not in corporation" Or ErrorResponse = "Character cannot grant roles" Then
                 ' Assume this error came from checking on NPC corp roles or a character that doesn't have any roles and just exit with nothing
@@ -458,7 +500,7 @@ Public Class ESI
                 Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
             End If
             If Not SupressErrorMsgs Then
-                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+                MsgBox("Web Request failed to get Authorized data." & vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ex.Message & vbCrLf & "Description: " & ErrorResponse, vbInformation, Application.ProductName)
             End If
         Catch ex As Exception
             If Not SupressErrorMsgs Then
@@ -542,6 +584,10 @@ Public Class ESI
                 Else
                     ' We need to refresh the token data
                     TokenData = GetAccessToken(CharacterTokenData.RefreshToken, True, ErrorCode)
+                End If
+
+                If IsNothing(TokenData) Then
+                    Return False
                 End If
 
                 If ErrorCode = 0 And Not IsNothing(TokenData) Then
@@ -688,6 +734,10 @@ Public Class ESI
             TokenData = GetAccessToken(TokenData.refresh_token, True, ErrorCode)
         End If
 
+        If IsNothing(TokenData) Then
+            Return Nothing
+        End If
+
         If ErrorCode = 0 Then
             Try
                 Dim Auth_header As String = $"Bearer {TokenData.access_token}"
@@ -722,8 +772,15 @@ Public Class ESI
                 Return JsonConvert.DeserializeObject(Of ESICharacterVerificationData)(Response)
 
             Catch ex As WebException
+                ErrorData = New ESIErrorData
                 ErrorCode = CType(ex.Response, HttpWebResponse).StatusCode
-                ErrorResponse = GetErrorResponseBody(ex)
+                Dim TempErrorData As New ESIError
+                ErrorResponse = GetErrorResponseBody(ex, TempErrorData)
+
+                ' Save this for use in calling routine
+                ErrorData.ErrorCode = ErrorCode
+                ErrorData.ErrorDescription = TempErrorData.ErrorDescription
+                ErrorData.ErrorText = TempErrorData.ErrorText
 
                 If ErrorCode >= 500 And Not RetriedCall Then
                     RetriedCall = True
@@ -731,7 +788,7 @@ Public Class ESI
                     Thread.Sleep(2000)
                     Return GetCharacterVerificationData(TokenData, ExpirationDate)
                 End If
-                MsgBox("Web Request failed to get Authorized data. Code: " & ErrorCode & ", " & ex.Message & " - " & ErrorResponse)
+                MsgBox("Web Request failed to get Authorized data." & vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ex.Message & vbCrLf & "Description: " & ErrorResponse, vbInformation, Application.ProductName)
             Catch ex As Exception
                 MsgBox("The request failed to get Authorized data. " & ex.Message, vbInformation, Application.ProductName)
             End Try
@@ -764,7 +821,8 @@ Public Class ESI
             For Each entry In SkillData.skills
                 TempSkill = New EVESkill
                 TempSkill.TypeID = entry.skill_id
-                TempSkill.Level = entry.trained_skill_level
+                TempSkill.TrainedLevel = entry.trained_skill_level
+                TempSkill.ActiveLevel = entry.active_skill_level
                 TempSkill.SkillPoints = entry.skillpoints_in_skill
 
                 Call ReturnSkills.InsertSkill(TempSkill, True)
@@ -864,7 +922,7 @@ Public Class ESI
                 rsLookup.Close()
                 TempBlueprint.LocationID = BP.location_id
                 ' Get the flag id for this location
-                DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & BP.location_flag & "'", EVEDB.DBREf)
+                DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagName = '" & BP.location_flag & "'", EVEDB.DBREf)
                 rsLookup = DBCommand.ExecuteReader
                 If rsLookup.Read Then
                     TempBlueprint.FlagID = rsLookup.GetInt32(0)
@@ -1293,6 +1351,7 @@ Public Class ESI
 
     Public Function LoadStructureMarketOrders(StructureID As String) As Boolean
 
+        Return True
     End Function
 
     ' Provides per day summary of market activity for 13 months for the region_id and type_id sent. (cache: 23 hours)
@@ -1349,10 +1408,13 @@ Public Class ESI
                             SQL = "SELECT CACHE_DATE FROM MARKET_HISTORY_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
                             DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
                             rsCheck = DBCommand.ExecuteReader
-
-                            If rsCheck.Read And Not IsDBNull(rsCheck.GetValue(0)) Then
-                                ' The cache date is the date when we run the next update
-                                MaxRecordDate = CDate(rsCheck.GetString(0))
+                            If rsCheck.Read() Then
+                                If IsDBNull(rsCheck.GetValue(0)) Then
+                                    MaxRecordDate = NoDate
+                                Else
+                                    ' The cache date is the date when we run the next update
+                                    MaxRecordDate = CDate(rsCheck.GetString(0))
+                                End If
                             Else
                                 MaxRecordDate = NoDate
                             End If
@@ -1500,8 +1562,8 @@ Public Class ESI
 
     End Function
 
-    ' Downloads all public structure ID's and then refreshes the data on them in the Stations Table.
-    Public Function UpdatePublicStructureData(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+    ' Downloads all public structure ID's that have markets and then refreshes the data on them in the Stations Table.
+    Public Function UpdatePublicStructureMarketsData(Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
 
         Try
             Dim TempLabel As Label
@@ -1533,7 +1595,7 @@ Public Class ESI
 
                 ' Get all the public structure IDs from ESI
                 Dim startdate As Date = Now
-                PublicData = GetPublicData(ESIPublicURL & "universe/structures/" & TranquilityDataSource, CacheDate)
+                PublicData = GetPublicData(ESIPublicURL & "universe/structures/" & TranquilityDataSource & "&filter=market", CacheDate)
 
                 If Not IsNothing(PublicData) Then
                     PublicStructureIDs = JsonConvert.DeserializeObject(Of List(Of Long))(PublicData)
@@ -1571,10 +1633,10 @@ Public Class ESI
                                 For Each T In ThreadsArray
                                     If T.ThreadState = ThreadState.Running Then
                                         ' Still working on at least 1 thread, so exit
-                                        StillWorking = True
+                                        stillworking = True
                                         Exit For
                                     Else
-                                        StillWorking = False
+                                        stillworking = False
                                     End If
                                 Next
                             Loop
@@ -1783,13 +1845,16 @@ Public Class ESI
 
     End Sub
 
-    Private Function GetErrorResponseBody(Ex As WebException) As String
+    Private Function GetErrorResponseBody(ByVal Ex As WebException, ByRef RefErrorData As ESIError) As String
         Try
             Dim resp As String = New StreamReader(Ex.Response.GetResponseStream()).ReadToEnd()
             Dim ErrorData As ESIError = JsonConvert.DeserializeObject(Of ESIError)(resp)
 
+            ' save the data for reference
+            RefErrorData = ErrorData
+
             If Not IsNothing(ErrorData) Then
-                Return ErrorData.ErrorText
+                Return ErrorData.ErrorText & " - " & ErrorData.ErrorDescription
             Else
                 Return Ex.Message
             End If
@@ -1900,6 +1965,7 @@ End Class
 
 Public Class ESIError
     <JsonProperty("error")> Public ErrorText As String
+    <JsonProperty("error_description")> Public ErrorDescription As String
     <JsonProperty("sso_status")> Public sso_status As Integer
     <JsonProperty("timeout")> Public timeout As Integer
 End Class

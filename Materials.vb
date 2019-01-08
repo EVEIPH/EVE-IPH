@@ -223,15 +223,13 @@ Public Class Materials
     End Sub
 
     ' Returns the list in a clipboard format with CSV as an option - Include ME will include both the ME and the num Bps
-    Public Function GetClipboardList(ByVal ExportTextFormat As String, ByVal IgnorePriceVolume As Boolean, _
+    Public Function GetClipboardList(ByVal ExportTextFormat As String, ByVal IgnorePriceVolume As Boolean,
                                      ByVal IncludeME As Boolean, ByVal IncludeDecryptorRelic As Boolean, IncludeLinks As Boolean) As String
         Dim i As Integer
         Dim OutputString As String
         Dim MatName As String
         Dim DataInterfaces As String = ""
         Dim OutputME As String
-        Dim DataInterfaceCost As Double
-        Dim DataInterfaceVolume As Double
         Dim RelicDecryptorText As String = ""
         Dim NumBps As String = ""
         Dim Location As String = ""
@@ -242,56 +240,43 @@ Public Class Materials
 
         If Not IsNothing(MaterialList) Then
 
-            If ExportTextFormat = CSVDataExport Then
-                Separator = ", "
-                OutputString = "Material, Quantity, "
-                If IncludeME Then
-                    OutputString = OutputString & "ME, NumBPs, "
-                End If
-                If IncludeDecryptorRelic Then
-                    OutputString = OutputString & "Decryptor/Relic, "
-                End If
-                OutputString = OutputString & "Cost Per Item, Total Cost, Location" & vbCrLf
+            Select Case ExportTextFormat
+                Case CSVDataExport
+                    Separator = ", "
+                    OutputString = "Material, Quantity, "
+                    If IncludeME Then
+                        OutputString = OutputString & "ME, NumBPs, "
+                    End If
+                    If IncludeDecryptorRelic Then
+                        OutputString = OutputString & "Decryptor/Relic, "
+                    End If
+                    OutputString = OutputString & "Cost Per Item, Total Cost, Location" & vbCrLf
 
-            ElseIf ExportTextFormat = SSVDataExport Then
-                Separator = "; "
-                OutputString = "Material; Quantity; "
-                If IncludeME Then
-                    OutputString = OutputString & "ME; NumBPs; "
-                End If
-                If IncludeDecryptorRelic Then
-                    OutputString = OutputString & "Decryptor/Relic; "
-                End If
-                OutputString = OutputString & "Cost Per Item; Total Cost; Location" & vbCrLf
-            Else ' Default
-                OutputString = "Material - Quantity" & vbCrLf
-            End If
+                Case SSVDataExport
+                    Separator = "; "
+                    OutputString = "Material; Quantity; "
+                    If IncludeME Then
+                        OutputString = OutputString & "ME; NumBPs; "
+                    End If
+                    If IncludeDecryptorRelic Then
+                        OutputString = OutputString & "Decryptor/Relic; "
+                    End If
+                    OutputString = OutputString & "Cost Per Item; Total Cost; Location" & vbCrLf
+                Case SimpleDataExport
+                    OutputString = "" ' no header
+                Case Else ' Default
+                    OutputString = "Material - Quantity" & vbCrLf
+            End Select
 
             ' Loop through all materials
             For i = 0 To MaterialList.Count - 1
 
-                If IncludeLinks Then
+                If IncludeLinks And ExportTextFormat <> SimpleDataExport Then
                     ' Format so users can link in game
                     '<a href=showinfo:3348>Warfare Link</a> modules
                     MatName = "<a href=showinfo:" & MaterialList(i).GetMaterialTypeID & ">" & MaterialList(i).GetMaterialName & "</a>"
                 Else
                     MatName = MaterialList(i).GetMaterialName
-                End If
-
-                ' Don't include data interfaces in the final output - this his poorly hacked but hacked nonetheless
-                If MatName.Contains("Data Interface") Then
-                    ' Add a crlf if not set
-                    If DataInterfaces = "" Then
-                        DataInterfaces = vbCrLf
-                    End If
-                    ' Add these to the end of the list if invention materials
-                    DataInterfaces = DataInterfaces & "Uses " & MatName & vbCrLf
-                    DataInterfaceCost = DataInterfaceCost + MaterialList(i).GetTotalCost
-                    DataInterfaceVolume = DataInterfaceCost + MaterialList(i).GetTotalVolume
-                    GoTo SkipFormat
-                Else
-                    DataInterfaceCost = 0
-                    DataInterfaceVolume = 0
                 End If
 
                 If MaterialList(i).GetMaterialGroup.Contains("|") Then
@@ -344,6 +329,9 @@ Public Class Materials
 
                     OutputString = OutputString & vbCrLf
 
+                ElseIf ExportTextFormat = SimpleDataExport Then
+                    ' Just the name and quantity for use in evepraisal etc.
+                    OutputString = OutputString & MatName & " " & MaterialList(i).GetQuantity & vbCrLf
                 Else
                     OutputString = OutputString & MatName
 
@@ -382,24 +370,26 @@ Public Class Materials
 SkipFormat:
             Next
 
-            ' Add total volume and cost to end
-            If Not IgnorePriceVolume Then
+            If ExportTextFormat <> SimpleDataExport Then
+                ' Add total volume and cost to end
+                If Not IgnorePriceVolume Then
 
-                OutputString = OutputString & DataInterfaces
+                    OutputString = OutputString & DataInterfaces
 
-                If ExportTextFormat = CSVDataExport Or ExportTextFormat = SSVDataExport Then
-                    Separator = Trim(Separator) ' Remove space
-                    OutputString = OutputString & vbCrLf & "Total Volume of Materials:" & Separator & CStr(TotalMaterialsVolume - DataInterfaceVolume) & Separator & "m3"
-                    OutputString = OutputString & vbCrLf & "Total Cost of Materials:" & Separator & CStr(TotalMaterialsCost - DataInterfaceCost) & Separator & "ISK"
-                Else
-                    OutputString = OutputString & vbCrLf & "Total Volume of Materials: " & FormatNumber(TotalMaterialsVolume - DataInterfaceVolume, 2) & " m3"
-                    OutputString = OutputString & vbCrLf & "Total Cost of Materials: " & FormatNumber(TotalMaterialsCost - DataInterfaceCost, 2) & " ISK"
+                    If ExportTextFormat = CSVDataExport Or ExportTextFormat = SSVDataExport Then
+                        Separator = Trim(Separator) ' Remove space
+                        OutputString = OutputString & vbCrLf & "Total Volume of Materials:" & Separator & CStr(TotalMaterialsVolume) & Separator & "m3"
+                        OutputString = OutputString & vbCrLf & "Total Cost of Materials:" & Separator & CStr(TotalMaterialsCost) & Separator & "ISK"
+                    Else
+                        OutputString = OutputString & vbCrLf & "Total Volume of Materials: " & FormatNumber(TotalMaterialsVolume, 2) & " m3"
+                        OutputString = OutputString & vbCrLf & "Total Cost of Materials: " & FormatNumber(TotalMaterialsCost, 2) & " ISK"
+                    End If
                 End If
-            End If
 
-            ' Finally, if the export type is ssv, replace periods with commas
-            If ExportTextFormat = SSVDataExport Then
-                OutputString = ConvertUStoEUDecimal(OutputString)
+                ' Finally, if the export type is ssv, replace periods with commas
+                If ExportTextFormat = SSVDataExport Then
+                    OutputString = ConvertUStoEUDecimal(OutputString)
+                End If
             End If
 
             GetClipboardList = OutputString

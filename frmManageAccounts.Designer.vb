@@ -29,6 +29,9 @@ Partial Class frmManageAccounts
         Me.colCorporationName = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.colIsDefault = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.colAccountScopes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.colAccessToken = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.colRefreshToken = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.colAccessTokenExpireDate = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.btnClose = New System.Windows.Forms.Button()
         Me.btnDeleteCharacter = New System.Windows.Forms.Button()
         Me.btnAddCharacter = New System.Windows.Forms.Button()
@@ -44,13 +47,12 @@ Partial Class frmManageAccounts
         Me.txtRefreshToken = New System.Windows.Forms.TextBox()
         Me.txtAccessTokenExpDate = New System.Windows.Forms.TextBox()
         Me.txtAccessToken = New System.Windows.Forms.TextBox()
-        Me.btnExport = New System.Windows.Forms.Button()
         Me.gbAccountData.SuspendLayout()
         Me.SuspendLayout()
         '
         'lstAccounts
         '
-        Me.lstAccounts.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colCharacterID, Me.colCharacterName, Me.colCorporationName, Me.colIsDefault, Me.colAccountScopes})
+        Me.lstAccounts.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colCharacterID, Me.colCharacterName, Me.colCorporationName, Me.colIsDefault, Me.colAccountScopes, Me.colAccessToken, Me.colRefreshToken, Me.colAccessTokenExpireDate})
         Me.lstAccounts.FullRowSelect = True
         Me.lstAccounts.GridLines = True
         Me.lstAccounts.HideSelection = False
@@ -85,6 +87,18 @@ Partial Class frmManageAccounts
         '
         Me.colAccountScopes.Text = "Scopes"
         Me.colAccountScopes.Width = 0
+        '
+        'colAccessToken
+        '
+        Me.colAccessToken.Width = 0
+        '
+        'colRefreshToken
+        '
+        Me.colRefreshToken.Width = 0
+        '
+        'colAccessTokenExpireDate
+        '
+        Me.colAccessTokenExpireDate.Width = 0
         '
         'btnClose
         '
@@ -154,7 +168,6 @@ Partial Class frmManageAccounts
         '
         'gbAccountData
         '
-        Me.gbAccountData.Controls.Add(Me.btnExport)
         Me.gbAccountData.Controls.Add(Me.Label1)
         Me.gbAccountData.Controls.Add(Me.btnCopyAll)
         Me.gbAccountData.Controls.Add(Me.lblRefreshToken)
@@ -179,11 +192,11 @@ Partial Class frmManageAccounts
         '
         'btnCopyAll
         '
-        Me.btnCopyAll.Location = New System.Drawing.Point(434, 102)
+        Me.btnCopyAll.Location = New System.Drawing.Point(402, 102)
         Me.btnCopyAll.Name = "btnCopyAll"
-        Me.btnCopyAll.Size = New System.Drawing.Size(76, 21)
+        Me.btnCopyAll.Size = New System.Drawing.Size(108, 21)
         Me.btnCopyAll.TabIndex = 12
-        Me.btnCopyAll.Text = "Copy All"
+        Me.btnCopyAll.Text = "Copy Token Data"
         Me.btnCopyAll.UseVisualStyleBackColor = True
         '
         'lblRefreshToken
@@ -208,6 +221,7 @@ Partial Class frmManageAccounts
         '
         Me.txtRefreshToken.Location = New System.Drawing.Point(6, 77)
         Me.txtRefreshToken.Name = "txtRefreshToken"
+        Me.txtRefreshToken.ReadOnly = True
         Me.txtRefreshToken.Size = New System.Drawing.Size(504, 20)
         Me.txtRefreshToken.TabIndex = 2
         '
@@ -215,6 +229,7 @@ Partial Class frmManageAccounts
         '
         Me.txtAccessTokenExpDate.Location = New System.Drawing.Point(163, 103)
         Me.txtAccessTokenExpDate.Name = "txtAccessTokenExpDate"
+        Me.txtAccessTokenExpDate.ReadOnly = True
         Me.txtAccessTokenExpDate.Size = New System.Drawing.Size(122, 20)
         Me.txtAccessTokenExpDate.TabIndex = 1
         '
@@ -222,17 +237,9 @@ Partial Class frmManageAccounts
         '
         Me.txtAccessToken.Location = New System.Drawing.Point(6, 34)
         Me.txtAccessToken.Name = "txtAccessToken"
+        Me.txtAccessToken.ReadOnly = True
         Me.txtAccessToken.Size = New System.Drawing.Size(504, 20)
         Me.txtAccessToken.TabIndex = 0
-        '
-        'btnExport
-        '
-        Me.btnExport.Location = New System.Drawing.Point(352, 102)
-        Me.btnExport.Name = "btnExport"
-        Me.btnExport.Size = New System.Drawing.Size(76, 21)
-        Me.btnExport.TabIndex = 14
-        Me.btnExport.Text = "Export All"
-        Me.btnExport.UseVisualStyleBackColor = True
         '
         'frmManageAccounts
         '
@@ -281,5 +288,7 @@ Partial Class frmManageAccounts
     Friend WithEvents btnCopyAll As Button
     Friend WithEvents lblRefreshToken As Label
     Friend WithEvents lblAccessToken As Label
-    Friend WithEvents btnExport As Button
+    Friend WithEvents colAccessToken As ColumnHeader
+    Friend WithEvents colRefreshToken As ColumnHeader
+    Friend WithEvents colAccessTokenExpireDate As ColumnHeader
 End Class

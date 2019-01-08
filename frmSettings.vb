@@ -312,6 +312,9 @@ Public Class frmSettings
             ToolTip1.SetToolTip(rbtnExportSSV, "Exports data in SemiColon Separated Values with commas for decimals")
             ToolTip1.SetToolTip(rbtnExportDefault, "Exports data in basic space or dashes to separate data for easy readability")
             ToolTip1.SetToolTip(chkSaveBPRelicsDecryptors, "When selected, Saving Settings on the BP tab will also save the Decryptor and Relic Types if selected and autoload them for each relevant BP.")
+            ToolTip1.SetToolTip(chkAlphaAccount, "When checked, IPH will calculate costs adding the 2% industry tax on industry and science jobs.")
+            ToolTip1.SetToolTip(chkAlphaAccount, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha).")
+
         End If
 
     End Sub
@@ -430,6 +433,10 @@ Public Class frmSettings
             End Select
 
             chkDisableSVR.Checked = .DisableSVR
+            chkDisableTracking.Checked = .DisableGATracking
+
+            chkAlphaAccount.Checked = .AlphaAccount
+            chkUseActiveSkills.Checked = .UseActiveSkillLevels
 
             chkLinksInCopyText.Checked = .IncludeInGameLinksinCopyText
 
@@ -577,8 +584,12 @@ Public Class frmSettings
                 .DefaultBPTE = CInt(txtDefaultTE.Text)
 
                 .DisableSVR = chkDisableSVR.Checked
+                .DisableGATracking = chkDisableTracking.Checked
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
+
+                .AlphaAccount = chkAlphaAccount.Checked
+                .UseActiveSkillLevels = chkUseActiveSkills.Checked
 
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked

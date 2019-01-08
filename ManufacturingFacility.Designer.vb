@@ -421,7 +421,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbFuelBlocks)
         Me.Controls.Add(Me.cmbModules)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(300, 125)
+        Me.Size = New System.Drawing.Size(412, 343)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

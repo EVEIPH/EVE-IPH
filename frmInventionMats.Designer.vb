@@ -30,6 +30,7 @@ Partial Class frmInventionMats
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
+        Me.rbtnExportSimple = New System.Windows.Forms.RadioButton()
         Me.gbExportOptions.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -66,12 +67,13 @@ Partial Class frmInventionMats
         '
         'gbExportOptions
         '
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportSimple)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(193, 146)
+        Me.gbExportOptions.Location = New System.Drawing.Point(155, 146)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(178, 41)
+        Me.gbExportOptions.Size = New System.Drawing.Size(254, 41)
         Me.gbExportOptions.TabIndex = 75
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
@@ -79,7 +81,7 @@ Partial Class frmInventionMats
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(125, 17)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(132, 17)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -90,7 +92,7 @@ Partial Class frmInventionMats
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(73, 17)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(80, 17)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -101,7 +103,7 @@ Partial Class frmInventionMats
         'rbtnExportDefault
         '
         Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(8, 17)
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(15, 17)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0
@@ -109,8 +111,20 @@ Partial Class frmInventionMats
         Me.rbtnExportDefault.Text = "Default"
         Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
+        'rbtnExportSimple
+        '
+        Me.rbtnExportSimple.AutoSize = True
+        Me.rbtnExportSimple.Location = New System.Drawing.Point(184, 17)
+        Me.rbtnExportSimple.Name = "rbtnExportSimple"
+        Me.rbtnExportSimple.Size = New System.Drawing.Size(56, 17)
+        Me.rbtnExportSimple.TabIndex = 3
+        Me.rbtnExportSimple.TabStop = True
+        Me.rbtnExportSimple.Text = "Simple"
+        Me.rbtnExportSimple.UseVisualStyleBackColor = True
+        '
         'frmInventionMats
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(564, 230)
@@ -137,4 +151,5 @@ Partial Class frmInventionMats
     Friend WithEvents rbtnExportSSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportCSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportDefault As System.Windows.Forms.RadioButton
+    Friend WithEvents rbtnExportSimple As RadioButton
 End Class

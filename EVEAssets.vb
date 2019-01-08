@@ -175,8 +175,8 @@ Public Class EVEAssets
 
                     For i = 0 To Assets.Count - 1
                         ' Get the flagID for this location
-                        DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagText = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
-        rsLookup = DBCommand.ExecuteReader
+                        DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagName = '" & Assets(i).location_flag & "'", EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
                         If rsLookup.Read Then
                             FlagID = rsLookup.GetInt32(0)
                         Else
@@ -195,8 +195,9 @@ Public Class EVEAssets
 
                         End If
                     Next
+
                     ' Finally, update all the asset flags to negative values if they are base nodes
-                    SQL = String.Format("UPDATE ASSETS SET Flag = Flag * -1 WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
+                    SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     Call EVEDB.CommitSQLiteTransaction()

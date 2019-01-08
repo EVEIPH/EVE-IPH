@@ -52,7 +52,6 @@ Partial Class frmShoppingList
         Me.btnLoadListFromFile = New System.Windows.Forms.Button()
         Me.gbOptions = New System.Windows.Forms.GroupBox()
         Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
-        Me.chkEveListFormat = New System.Windows.Forms.CheckBox()
         Me.chkBuyorBuyOrder = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysOnTop = New System.Windows.Forms.CheckBox()
         Me.lblUsage = New System.Windows.Forms.Label()
@@ -73,6 +72,7 @@ Partial Class frmShoppingList
         Me.lblTotalInventionCost = New System.Windows.Forms.Label()
         Me.lblTotalCopyCost = New System.Windows.Forms.Label()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
+        Me.rbtnExportSimple = New System.Windows.Forms.RadioButton()
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
@@ -316,12 +316,12 @@ Partial Class frmShoppingList
         'gbOptions
         '
         Me.gbOptions.Controls.Add(Me.chkRebuildItemsfromList)
-        Me.gbOptions.Controls.Add(Me.chkEveListFormat)
         Me.gbOptions.Controls.Add(Me.chkBuyorBuyOrder)
         Me.gbOptions.Controls.Add(Me.chkAlwaysOnTop)
         Me.gbOptions.Controls.Add(Me.lblUsage)
         Me.gbOptions.Controls.Add(Me.chkUsage)
         Me.gbOptions.Controls.Add(Me.lblFees)
+        Me.gbOptions.Controls.Add(Me.gbExportOptions)
         Me.gbOptions.Controls.Add(Me.txtAddlCosts)
         Me.gbOptions.Controls.Add(Me.chkFees)
         Me.gbOptions.Controls.Add(Me.chkUpdateAssetsWhenUsed)
@@ -335,22 +335,12 @@ Partial Class frmShoppingList
         '
         'chkRebuildItemsfromList
         '
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(182, 35)
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(194, 12)
         Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
         Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(123, 36)
         Me.chkRebuildItemsfromList.TabIndex = 79
         Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
         Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
-        '
-        'chkEveListFormat
-        '
-        Me.chkEveListFormat.AutoSize = True
-        Me.chkEveListFormat.Location = New System.Drawing.Point(182, 15)
-        Me.chkEveListFormat.Name = "chkEveListFormat"
-        Me.chkEveListFormat.Size = New System.Drawing.Size(139, 17)
-        Me.chkEveListFormat.TabIndex = 78
-        Me.chkEveListFormat.Text = "Copy in EVE List Format"
-        Me.chkEveListFormat.UseVisualStyleBackColor = True
         '
         'chkBuyorBuyOrder
         '
@@ -529,20 +519,32 @@ Partial Class frmShoppingList
         '
         'gbExportOptions
         '
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportSimple)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(540, 638)
+        Me.gbExportOptions.Location = New System.Drawing.Point(192, 50)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(185, 41)
+        Me.gbExportOptions.Size = New System.Drawing.Size(123, 86)
         Me.gbExportOptions.TabIndex = 74
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
         '
+        'rbtnExportSimple
+        '
+        Me.rbtnExportSimple.AutoSize = True
+        Me.rbtnExportSimple.Location = New System.Drawing.Point(11, 31)
+        Me.rbtnExportSimple.Name = "rbtnExportSimple"
+        Me.rbtnExportSimple.Size = New System.Drawing.Size(56, 17)
+        Me.rbtnExportSimple.TabIndex = 3
+        Me.rbtnExportSimple.TabStop = True
+        Me.rbtnExportSimple.Text = "Simple"
+        Me.rbtnExportSimple.UseVisualStyleBackColor = True
+        '
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(128, 17)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(11, 65)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -553,7 +555,7 @@ Partial Class frmShoppingList
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(76, 17)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(11, 48)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -564,7 +566,7 @@ Partial Class frmShoppingList
         'rbtnExportDefault
         '
         Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(11, 17)
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(11, 14)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0
@@ -642,14 +644,13 @@ Partial Class frmShoppingList
         '
         'frmShoppingList
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96!, 96!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.AutoSize = true
+        Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
         Me.Controls.Add(Me.lblTIC)
-        Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.lblTotalCopyCost)
         Me.Controls.Add(Me.lblTotalInventionCost)
         Me.Controls.Add(Me.gbUpdateList)
@@ -753,6 +754,6 @@ End Sub
     Friend WithEvents lblTIC As System.Windows.Forms.Label
     Friend WithEvents lblTCC As System.Windows.Forms.Label
     Friend WithEvents lblTotalItemsInList As System.Windows.Forms.Label
-    Friend WithEvents chkEveListFormat As CheckBox
     Friend WithEvents chkRebuildItemsfromList As CheckBox
+    Friend WithEvents rbtnExportSimple As RadioButton
 End Class
