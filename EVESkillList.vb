@@ -8,10 +8,13 @@ Public Class EVESkillList
     Private SkillToFind As EVESkill
     Protected CheckLevelofSkilltoFind As Boolean
 
-    Public Sub New()
+    Private UseActiveSkillType As Boolean
+
+    Public Sub New(UseActiveSkill As Boolean)
         Skills = New List(Of EVESkill)
         SkillToFind = Nothing
         CheckLevelofSkilltoFind = False
+        UseActiveSkillType = UseActiveSkill
     End Sub
 
     ' Loads all character skills into the local object
@@ -44,13 +47,23 @@ Public Class EVESkillList
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
+        Dim SelectedSkillLevel As Integer = 0
+
         While rsData.Read
+            SelectedSkillLevel = 0
+
+            If UseActiveSkillType Then
+                SelectedSkillLevel = rsData.GetInt32(2)
+            Else
+                SelectedSkillLevel = rsData.GetInt32(1)
+            End If
+
             ' Insert skill
             If UserApplicationSettings.AllowSkillOverride And CBool(rsData.GetInt32(3)) And LoadAllSkillsforOverride Then
                 ' Use the override skill if set, save the old skill level in the override so we can reference it later if needed
-                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(5), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), rsData.GetInt32(1))
+                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(5), rsData.GetInt32(1), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), SelectedSkillLevel)
             Else ' Just normal skills
-                InsertSkill(rsData.GetInt64(0), rsData.GetInt32(1), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), rsData.GetInt32(5))
+                InsertSkill(rsData.GetInt64(0), SelectedSkillLevel, rsData.GetInt32(1), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), rsData.GetInt32(5))
             End If
 
         End While
@@ -66,7 +79,7 @@ Public Class EVESkillList
         Dim SQL As String = ""
         Dim readerCharacter As SQLiteDataReader
         Dim SkillList As String = ""
-        Dim TempCharacterSkills As New EVESkillList
+        Dim TempCharacterSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
 
         ' Get the skills for this character first
         Dim ESIData As New ESI
@@ -112,7 +125,7 @@ Public Class EVESkillList
                         ' Update skill data
                         SQL = "UPDATE CHARACTER_SKILLS SET "
                         SQL &= "SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID & ", SKILL_NAME = '" & TempCharacterSkills.GetSkillList(i).Name & "',"
-                        SQL &= "SKILL_POINTS = " & TempCharacterSkills.GetSkillList(i).SkillPoints & ", SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).TrainedLevel & ", "
+                        SQL &= "SKILL_POINTS = " & TempCharacterSkills.GetSkillList(i).SkillPoints & ", TRAINED_SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).TrainedLevel & ", "
                         SQL &= "ACTIVE_SKILL_LEVEL = " & TempCharacterSkills.GetSkillList(i).ActiveLevel & " "
                         SQL &= "WHERE CHARACTER_ID = " & ID & " AND SKILL_TYPE_ID = " & TempCharacterSkills.GetSkillList(i).TypeID
                     End If
@@ -136,6 +149,11 @@ Public Class EVESkillList
             End If
         End If
 
+    End Sub
+
+    ' Sets the flag for using active skills
+    Public Sub SetActiveSkillFlagValue(FlagValue As Boolean)
+        UseActiveSkillType = FlagValue
     End Sub
 
     ' Returns the skill type id for the name of the skill sent
@@ -182,7 +200,7 @@ Public Class EVESkillList
                     If Skills(i).Overridden Then
                         Return Skills(i).OverriddenLevel
                     Else
-                        Return Skills(i).TrainedLevel
+                        Return Skills(i).Level
                     End If
                 End If
             Next
@@ -203,7 +221,7 @@ Public Class EVESkillList
                     If Skills(i).Overridden Then
                         Return Skills(i).OverriddenLevel
                     Else
-                        Return Skills(i).TrainedLevel
+                        Return Skills(i).Level
                     End If
                 End If
             Next
@@ -292,11 +310,17 @@ Public Class EVESkillList
 
     ' Allows inserting a skill by structure
     Public Sub InsertSkill(ByVal InsertSkill As EVESkill, Optional ByVal LoadPreReqs As Boolean = False)
+        ' Set the Level based on skill type chosen
+        If UseActiveSkillType Then
+            InsertSkill.Level = InsertSkill.ActiveLevel
+        Else
+            InsertSkill.Level = InsertSkill.TrainedLevel
+        End If
         Call InsertSkilltoList(InsertSkill, LoadPreReqs)
     End Sub
 
     ' Inserts a skill into the list
-    Public Sub InsertSkill(ByVal SkillTypeID As Long, ByVal TrainedSkillLevel As Integer, ActiveSkillLevel As Integer, ByVal SkillPoints As Long,
+    Public Sub InsertSkill(ByVal SkillTypeID As Long, ByVal Level As Integer, ByVal TrainedSkillLevel As Integer, ActiveSkillLevel As Integer, ByVal SkillPoints As Long,
                            ByVal SkillOverriden As Boolean, ByVal SkillOverrideLevel As Integer,
                            Optional ByVal SkillName As String = "", Optional ByVal PreReqSkills As EVESkillList = Nothing,
                            Optional ByVal LoadPreReqs As Boolean = False)
@@ -304,6 +328,7 @@ Public Class EVESkillList
         Dim InsertSkill As New EVESkill
 
         InsertSkill.TypeID = SkillTypeID
+        InsertSkill.Level = Level
         InsertSkill.TrainedLevel = TrainedSkillLevel
         InsertSkill.ActiveLevel = ActiveSkillLevel
         InsertSkill.Name = SkillName
@@ -352,7 +377,7 @@ Public Class EVESkillList
     Private Function FindSkill(ByVal SSkill As EVESkill) As Boolean
 
         If SSkill.TypeID = SkillToFind.TypeID Then
-            If CheckLevelofSkilltoFind And SSkill.TrainedLevel <= SkillToFind.TrainedLevel Then
+            If CheckLevelofSkilltoFind And SSkill.Level <= SkillToFind.Level Then
                 Return True
             ElseIf Not CheckLevelofSkilltoFind Then
                 Return True
@@ -390,7 +415,7 @@ Public Class EVESkillList
                 readerSkills = DBCommand.ExecuteReader
 
                 If readerSkills.Read Then
-                    If CInt(readerSkills.GetValue(0)) = 0 And Not OverRideSkills.Skills(i).TrainedLevel = 0 Then
+                    If CInt(readerSkills.GetValue(0)) = 0 And Not OverRideSkills.Skills(i).Level = 0 Then
                         ' This user doesn't want to save this skill and we need to delete the old one
                         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
                     Else ' It's here and we need to update it
@@ -441,24 +466,24 @@ Public Class EVESkillList
     ' Loads the skills for a 'Dummy Character' to this character
     Public Sub LoadDummySkills()
         Dim SQL As String
-        Dim DummySkills As New EVESkillList
+        Dim DummySkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
 
         ' Add skills for a brand new newbie char 
-        DummySkills.InsertSkill(3300, 2, 0, 1415, False, 0, "Gunnery")
-        DummySkills.InsertSkill(3301, 3, 0, 8000, False, 0, "Small Hybrid Turret")
-        DummySkills.InsertSkill(3302, 3, 0, 8000, False, 0, "Small Projectile Turret")
-        DummySkills.InsertSkill(3303, 3, 0, 8000, False, 0, "Small Energy Turret")
-        DummySkills.InsertSkill(3327, 3, 0, 8000, False, 0, "Spaceship Command")
-        DummySkills.InsertSkill(3328, 2, 0, 2829, False, 0, "Gallente Frigate")
-        DummySkills.InsertSkill(3329, 2, 0, 2829, False, 0, "Minmatar Frigate")
-        DummySkills.InsertSkill(3330, 2, 0, 2829, False, 0, "Caldari Frigate")
-        DummySkills.InsertSkill(3381, 2, 0, 2829, False, 0, "Amarr Frigate")
-        DummySkills.InsertSkill(3386, 2, 0, 1415, False, 0, "Mining")
-        DummySkills.InsertSkill(3402, 3, 0, 8000, False, 0, "Science")
-        DummySkills.InsertSkill(3392, 3, 0, 8000, False, 0, "Mechanics")
-        DummySkills.InsertSkill(3413, 3, 0, 8000, False, 0, "Engineering")
-        DummySkills.InsertSkill(3426, 3, 0, 8000, False, 0, "Electronics")
-        DummySkills.InsertSkill(3449, 3, 0, 8000, False, 0, "Navigation")
+        DummySkills.InsertSkill(3300, 2, 2, 2, 1415, False, 0, "Gunnery")
+        DummySkills.InsertSkill(3301, 3, 3, 3, 8000, False, 0, "Small Hybrid Turret")
+        DummySkills.InsertSkill(3302, 3, 3, 3, 8000, False, 0, "Small Projectile Turret")
+        DummySkills.InsertSkill(3303, 3, 3, 3, 8000, False, 0, "Small Energy Turret")
+        DummySkills.InsertSkill(3327, 3, 3, 3, 8000, False, 0, "Spaceship Command")
+        DummySkills.InsertSkill(3328, 2, 2, 2, 2829, False, 0, "Gallente Frigate")
+        DummySkills.InsertSkill(3329, 2, 2, 2, 2829, False, 0, "Minmatar Frigate")
+        DummySkills.InsertSkill(3330, 2, 2, 2, 2829, False, 0, "Caldari Frigate")
+        DummySkills.InsertSkill(3381, 2, 2, 2, 2829, False, 0, "Amarr Frigate")
+        DummySkills.InsertSkill(3386, 2, 2, 2, 1415, False, 0, "Mining")
+        DummySkills.InsertSkill(3402, 3, 3, 3, 8000, False, 0, "Science")
+        DummySkills.InsertSkill(3392, 3, 3, 3, 8000, False, 0, "Mechanics")
+        DummySkills.InsertSkill(3413, 3, 3, 3, 8000, False, 0, "Engineering")
+        DummySkills.InsertSkill(3426, 3, 3, 3, 8000, False, 0, "Electronics")
+        DummySkills.InsertSkill(3449, 3, 3, 3, 8000, False, 0, "Navigation")
 
         ' Just save the current list as the main skills
         Skills = DummySkills.GetSkillList
@@ -510,6 +535,7 @@ Public Class EVESkill
     Public SkillPoints As Long
     Public TrainedLevel As Integer
     Public ActiveLevel As Integer
+    Public Level As Integer ' What we use in IPH
     Public Overridden As Boolean
     Public OverriddenLevel As Integer
     Public PreReqSkills As EVESkillList
@@ -521,14 +547,15 @@ Public Class EVESkill
         SkillPoints = 0
         TrainedLevel = 0
         ActiveLevel = 0
+        Level = 0
         Overridden = False
         OverriddenLevel = 0
-        PreReqSkills = New EVESkillList
+        PreReqSkills = New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
     End Sub
 
     Public Sub SetPreReqSkills()
         Dim SQL As String
-        Dim PreReqs As New EVESkillList
+        Dim PreReqs As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
         Dim TempSkill As New EVESkill
         Dim readerSkills As SQLiteDataReader
 
@@ -553,7 +580,8 @@ Public Class EVESkill
                 TempSkill.Name = .GetString(1)
                 TempSkill.Group = .GetString(2)
                 TempSkill.TrainedLevel = CInt(.GetValue(3))
-                TempSkill.ActiveLevel = 0
+                TempSkill.ActiveLevel = CInt(.GetValue(3))
+                TempSkill.Level = CInt(.GetValue(3))
                 TempSkill.SkillPoints = 0
                 TempSkill.OverriddenLevel = 0
                 TempSkill.Overridden = False
@@ -562,7 +590,7 @@ Public Class EVESkill
 
             ' Set the local pre-reqs
             With TempSkill
-                PreReqs.InsertSkill(.TypeID, .TrainedLevel, .ActiveLevel, .SkillPoints, .Overridden, .OverriddenLevel, .Name, .PreReqSkills, True)
+                PreReqs.InsertSkill(.TypeID, .Level, .TrainedLevel, .ActiveLevel, .SkillPoints, .Overridden, .OverriddenLevel, .Name, .PreReqSkills, True)
             End With
         End While
 

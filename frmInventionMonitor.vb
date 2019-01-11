@@ -356,7 +356,7 @@ Public Class frmInventionMonitor
     ' Just display the invention chance in the label
     Private Sub DisplayInventionStats()
         'Dim TempBlueprint As Blueprint
-        Dim InventionSkills As New EVESkillList
+        Dim InventionSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
         Dim SelectedDecryptor As New Decryptor
 
         Dim InventionDecryptors As New DecryptorList()

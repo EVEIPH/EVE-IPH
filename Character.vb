@@ -34,6 +34,9 @@ Public Class Character
     ' Blueprints
     Public BlueprintsAccess As Boolean
     Public Blueprints As EVEBlueprints
+    ' Structures
+    Public PublicStructuresAccess As Boolean
+    Public StructureMarketsAccess As Boolean
 
     ' For maximum production and laboratory lines
     Public MaximumProductionLines As Integer
@@ -59,8 +62,10 @@ Public Class Character
         IndustryJobsAccess = False
         ResearchAgentAccess = False
         BlueprintsAccess = False
+        PublicStructuresAccess = False
+        StructureMarketsAccess = False
 
-        Skills = New EVESkillList
+        Skills = New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
         Standings = New EVENPCStandings
         Jobs = New EVEIndustryJobs
         DatacoreAgents = New EVEResearchAgents
@@ -261,7 +266,8 @@ Public Class Character
 
             readerCharacter.Close()
 
-            ' Load the character skills
+            ' Load the character skills - Reset first
+            Skills = New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
             Call Skills.LoadCharacterSkills(ID, CharacterTokenData)
 
             If Not IsNothing(SelectedCharacter.Skills) Then ' 3387 mass production, 24625 adv mass production, 3406 laboratory efficiency, 24524 adv laboratory operation
@@ -309,6 +315,14 @@ Public Class Character
                 If LoadAssets Then
                     Call Assets.LoadAssets(ID, CharacterTokenData, LoadAssets)
                 End If
+            End If
+
+            ' Set the two structure tags
+            If CharacterTokenData.Scopes.Contains(ESI.ESIUniverseStructuresScope) Then
+                PublicStructuresAccess = True
+            End If
+            If CharacterTokenData.Scopes.Contains(ESI.ESIStructureMarketsScope) Then
+                StructureMarketsAccess = True
             End If
 
             readerCharacter.Close()

@@ -22,8 +22,8 @@ Public Class frmReqSkills
         Dim SkillGroup As String = ""
         Dim CurrentNode As TreeNode = Nothing
         Dim CurrentSubNode As TreeNode = Nothing
-        Dim DisplaySkills As New EVESkillList
-        Dim TempReqComponentSkills As New EVESkillList
+        Dim DisplaySkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
+        Dim TempReqComponentSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
 
         If IsNothing(SelectedBlueprint) Then
             SkillTree.Nodes.Clear()
@@ -95,11 +95,11 @@ Public Class frmReqSkills
         For i = 0 To SkillList.Count - 1
             TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SkillList(i).TypeID)
 
-            If TempSkillLevel < SkillList(i).TrainedLevel Then
-                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).TrainedLevel) & " (" & TempSkillLevel & ")")
+            If TempSkillLevel < SkillList(i).Level Then
+                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).Level) & " (" & TempSkillLevel & ")")
                 PreReqNode.ForeColor = Color.Red
             Else
-                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).TrainedLevel))
+                PreReqNode = SentSubNode.Nodes.Add(SkillList(i).Name & " - " & CStr(SkillList(i).Level))
                 PreReqNode.ForeColor = Color.Black
             End If
 

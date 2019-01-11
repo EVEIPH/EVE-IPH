@@ -1,6 +1,4 @@
 ﻿
-Imports System.Data.SQLite
-
 Public Class frmSettings
 
     Private SSLoaded As Boolean
@@ -8,6 +6,8 @@ Public Class frmSettings
     Private FirstLoad As Boolean
     Private SelectedReset As Boolean
     Private SVRComboLoaded As Boolean
+
+    Private ReloadSkills As Boolean
 
     Private Defaults As New ProgramSettings ' For default constants
 
@@ -190,7 +190,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkRefreshFacilityDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshFacilityDataonStartup.CheckedChanged
+    Private Sub chkRefreshFacilityDataonStartup_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkRefreshSystemCostIndiciesDataonStartup.CheckedChanged
         btnSave.Text = "Save"
     End Sub
 
@@ -305,16 +305,60 @@ Public Class frmSettings
         FirstLoad = True
         SelectedReset = False
         SVRComboLoaded = False
+        ReloadSkills = False
 
         If UserApplicationSettings.ShowToolTips Then
-            ToolTip1.SetToolTip(chkDisableSVR, "If you have issues with SVR updates on the Manufacturing Tab (ie website down, etc), you can disable those queries here.")
-            ToolTip1.SetToolTip(rbtnExportCSV, "Exports data in Common Separated Values with periods for decimals")
-            ToolTip1.SetToolTip(rbtnExportSSV, "Exports data in SemiColon Separated Values with commas for decimals")
-            ToolTip1.SetToolTip(rbtnExportDefault, "Exports data in basic space or dashes to separate data for easy readability")
-            ToolTip1.SetToolTip(chkSaveBPRelicsDecryptors, "When selected, Saving Settings on the BP tab will also save the Decryptor and Relic Types if selected and autoload them for each relevant BP.")
-            ToolTip1.SetToolTip(chkAlphaAccount, "When checked, IPH will calculate costs adding the 2% industry tax on industry and science jobs.")
-            ToolTip1.SetToolTip(chkAlphaAccount, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha).")
+            With ToolTip1
+                ' General
+                .SetToolTip(chkShowToolTips, "Toogles tool tips through out IPH")
+                .SetToolTip(chkLinksInCopyText, "Copying data to the clipboard will contain formatted text that enables in-game links to show when pasted in game")
+                .SetToolTip(chkDisableSVR, "If you have issues with SVR updates on the Manufacturing Tab (ie website down, etc), you can disable those queries here")
+                .SetToolTip(rbtnExportCSV, "Exports data in Common Separated Values with periods for decimals")
+                .SetToolTip(chkDisableSound, "Disables sound functions in IPH")
+                .SetToolTip(chkSaveFacilitiesbyChar, "When checked, saved facilities will only apply to the selected character. If unchecked, all characters will share saved facilities")
+                .SetToolTip(chkLoadBPsbyChar, "When checked, blueprints loaded into IPH will be different for each character. If unchecked, all characters share the same BPs")
+                .SetToolTip(chkDisableTracking, "When checked, IPH will not send anonymous useage data to Google Analytics")
 
+                ' Startup Options
+                .SetToolTip(chkCheckUpdatesStartup, "IPH will check for program updates when the program starts")
+                .SetToolTip(chkRefreshAssetsonStartup, "When checked, IPH will refresh assets (if cache date has past) for the selected character")
+                .SetToolTip(chkRefreshBPsonStartup, "When checked, IPH will refresh blueprints (if cache date has past) for the selected character")
+                .SetToolTip(chkRefreshMarketDataonStartup, "When checked, IPH will refresh average and adjusted market prices (if cache date has past) on startup for use in industry calcuations")
+                .SetToolTip(chkRefreshSystemCostIndiciesDataonStartup, "When checked, IPH will refresh the system industry indicies on startup (if cache date has past) for use in industry calculations")
+                .SetToolTip(chkRefreshPublicStructureDataonStartup, "When checked, IPH will refresh data on public structures (if cache date has past) for use in price updates")
+
+                ' SVR Settings
+                .SetToolTip(lblSVRThreshold, "When set, this will be the default threshold for Sales to Volume Ratio on the BP and Manufacturing tabs")
+                .SetToolTip(lblSVRAvgPrice, "When set, this will be the default days the Sales to Volume Ratio will be averaged over for the BP and Manufacturing tabs")
+                .SetToolTip(lblSVRRegion, "When set, this will be the default region for Sales to Volume Ratio calcuations on the BP and Manufacturing tabs")
+                .SetToolTip(chkAutoUpdateSVRBPTab, "When set, the Sales to Volume Ratio will be updated on the BP tab when a Blueprint is selected")
+
+                ' Export Data
+                .SetToolTip(rbtnExportSSV, "Exports data in SemiColon Separated Values with commas for decimals")
+                .SetToolTip(rbtnExportDefault, "Exports data in basic space or dashes to separate data for easy readability")
+                .SetToolTip(rbtnExportCSV, "Exports data in Comma Separated Values")
+
+                ' Character Options
+                .SetToolTip(chkAlphaAccount, "When checked, IPH will calculate costs adding the 2% industry tax on industry and science jobs")
+                .SetToolTip(chkUseActiveSkills, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha)")
+
+                ' Build Settings
+                .SetToolTip(chkBuildBuyDefault, "When checked, BP builds will use Build/Buy calcuations for final costs")
+                .SetToolTip(chkSuggestBuildwhenBPnotOwned, "If you do not own a component BP and this is checked, then IPH will suggest you build the item anyway if the price is cheaper than buying it")
+                .SetToolTip(chkSaveBPRelicsDecryptors, "When selected, Saving Settings on the BP tab will also save the Decryptor and Relic Types if selected and autoload them for each relevant BP")
+                .SetToolTip(rbtnBuildT2T3AdvancedMats, "When selected, blueprints will be built using Advanced Moon materials (e.g. Fullerides)")
+                .SetToolTip(rbtnBuildT2ProcessedMats, "When selected, blueprints will be built using Processed Moon materials, which are used in reactions to make Advanced Moon Materials")
+                .SetToolTip(rbtnBuildT2T3RawMats, "When selected, blueprints will be built using Raw Moon materials, which are used in reactions to make Processed Moon Materials")
+
+                ' Tips by Group box
+                .SetToolTip(gbImplants, "Select implants to use with selected characters for industry calculations")
+                .SetToolTip(gbDefaultMEPE, "On the BP and Manufacturing tabs, these default ME and TE values will be used for non-owned blueprints")
+                .SetToolTip(gbShoppingList, "If checked, then IPH will send invention or copy materials needed to the shopping list when saving the build information for a blueprint")
+                .SetToolTip(gbEVEMarketer, "The value stored here is the cache date (how often IPH will update) for EVE Marketer prices")
+                .SetToolTip(gbStationStandings, "Station standings affect broker fees and some other industry related fees based on standing. These values here will be used in those calculations.")
+                .SetToolTip(gbProxySettings, "When proxy information is in both the port and address, IPH will use this to connect to CCP servers. Note this information will also be used with the EVE IPH updater")
+
+            End With
         End If
 
     End Sub
@@ -347,9 +391,9 @@ Public Class frmSettings
             chkSaveFacilitiesbyChar.Checked = .SaveFacilitiesbyChar
 
             ' ESI
-            chkRefreshFacilityDataonStartup.Checked = .LoadESIFacilityDataonStartup
+            chkRefreshSystemCostIndiciesDataonStartup.Checked = .LoadESISystemCostIndiciesDataonStartup
             chkRefreshMarketDataonStartup.Checked = .LoadESIMarketDataonStartup
-            chkRefreshPublicStructureDataonStartup.checked = .LoadESIPublicStructuresonStartup
+            chkRefreshPublicStructureDataonStartup.Checked = .LoadESIPublicStructuresonStartup
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -540,7 +584,7 @@ Public Class frmSettings
                 .CopyImplantValue = CopyImplantValue
 
                 ' ESI
-                .LoadESIFacilityDataonStartup = chkRefreshFacilityDataonStartup.Checked
+                .LoadESISystemCostIndiciesDataonStartup = chkRefreshSystemCostIndiciesDataonStartup.Checked
                 .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
                 .LoadESIPublicStructuresonStartup = chkRefreshPublicStructureDataonStartup.Checked
 
@@ -588,8 +632,14 @@ Public Class frmSettings
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
-                .AlphaAccount = chkAlphaAccount.Checked
-                .UseActiveSkillLevels = chkUseActiveSkills.Checked
+                ' Account options, don't allow if dummy account active
+                If SelectedCharacter.ID <> DummyCharacterID Then
+                    .AlphaAccount = chkAlphaAccount.Checked
+                    .UseActiveSkillLevels = chkUseActiveSkills.Checked
+                Else
+                    .AlphaAccount = False
+                    .UseActiveSkillLevels = False
+                End If
 
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
@@ -623,6 +673,13 @@ Public Class frmSettings
 
             ' Save the data to the local variable
             UserApplicationSettings = TempSettings
+
+            ' They changed the active skill levels, update skills now with new application settings
+            If ReloadSkills Then
+                ' Set the flag first
+                Call SelectedCharacter.Skills.SetActiveSkillFlagValue(UserApplicationSettings.UseActiveSkillLevels)
+                Call SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData)
+            End If
 
             ' Re-init any tabs that have settings changes before displaying dialog
             Call frmMain.ResetTabs(False)
@@ -727,4 +784,18 @@ InvalidData:
 
     End Sub
 
+    Private Sub chkAlphaAccount_CheckedChanged(sender As Object, e As EventArgs) Handles chkAlphaAccount.CheckedChanged
+        If chkAlphaAccount.Checked Then
+            ' Force them to use active skills in this case
+            chkUseActiveSkills.Checked = True
+            chkUseActiveSkills.Enabled = False
+        Else
+            chkUseActiveSkills.Enabled = True
+        End If
+    End Sub
+
+    Private Sub chkUseActiveSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkUseActiveSkills.CheckedChanged
+        ' They changed active skills, so reload character skills on exit
+        ReloadSkills = True
+    End Sub
 End Class

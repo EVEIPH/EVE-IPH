@@ -1087,8 +1087,8 @@ Public Class ProgramSettings
                     .LoadAssetsonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadAssetsonStartup", DefaultLoadAssetsonStartup))
                     .LoadBPsonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadbpsonStartup", DefaultLoadBPsonStartup))
                     .LoadESIMarketDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIMarketDataonStartup", DefaultRefreshMarketESIDataonStartup))
-                    .LoadESIFacilityDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIFacilityDataonStartup", DefaultRefreshFacilityESIDataonStartup))
-                    .LoadESIPublicStructuresonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIFacilityDataonStartup", DefaultRefreshPublicStructureDataonStartup))
+                    .LoadESISystemCostIndiciesDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESISystemCostIndiciesDataonStartup", DefaultRefreshFacilityESIDataonStartup))
+                    .LoadESIPublicStructuresonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESISystemCostIndiciesDataonStartup", DefaultRefreshPublicStructureDataonStartup))
                     .DataExportFormat = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "DataExportFormat", DefaultDataExportFormat))
                     .AllowSkillOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AllowSkillOverride", DefaultAllowSkillOverride))
                     .ShowToolTips = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShowToolTips", DefaultShowToolTips))
@@ -1152,7 +1152,7 @@ Public Class ProgramSettings
             .LoadAssetsonStartup = DefaultLoadAssetsonStartup
             .LoadBPsonStartup = DefaultLoadBPsonStartup
             .LoadESIMarketDataonStartup = DefaultRefreshMarketESIDataonStartup
-            .LoadESIFacilityDataonStartup = DefaultRefreshFacilityESIDataonStartup
+            .LoadESISystemCostIndiciesDataonStartup = DefaultRefreshFacilityESIDataonStartup
             .LoadESIPublicStructuresonStartup = DefaultRefreshPublicStructureDataonStartup
             .DisableSound = DefaultDisableSound
             .ManufacturingImplantValue = DefaultImplantValues
@@ -1226,7 +1226,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
             ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
             ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
-            ApplicationSettingsList(20) = New Setting("LoadESIFacilityDataonStartup", CStr(SentSettings.LoadESIFacilityDataonStartup))
+            ApplicationSettingsList(20) = New Setting("LoadESISystemCostIndiciesDataonStartup", CStr(SentSettings.LoadESISystemCostIndiciesDataonStartup))
             ApplicationSettingsList(21) = New Setting("LoadESIMarketDataonStartup", CStr(SentSettings.LoadESIMarketDataonStartup))
             ApplicationSettingsList(22) = New Setting("SaveBPRelicsDecryptors", CStr(SentSettings.SaveBPRelicsDecryptors))
             ApplicationSettingsList(23) = New Setting("IgnoreSVRThresholdValue", CStr(SentSettings.IgnoreSVRThresholdValue))
@@ -4796,7 +4796,7 @@ Public Structure ApplicationSettings
     Dim LoadAssetsonStartup As Boolean
     Dim LoadBPsonStartup As Boolean
     Dim LoadESIMarketDataonStartup As Boolean
-    Dim LoadESIFacilityDataonStartup As Boolean
+    Dim LoadESISystemCostIndiciesDataonStartup As Boolean
     Dim LoadESIPublicStructuresonStartup As Boolean
     Dim DisableSound As Boolean
     Dim IncludeInGameLinksinCopyText As Boolean

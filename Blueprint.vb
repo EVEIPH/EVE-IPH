@@ -91,13 +91,13 @@ Public Class Blueprint
     Private BPRawMats As Materials
 
     ' Skills required to make it
-    Private ReqBuildSkills As New EVESkillList ' Just this BP
-    Private ReqBuildComponentSkills As New EVESkillList ' All the skills to build just the components
+    Private ReqBuildSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels) ' Just this BP
+    Private ReqBuildComponentSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels) ' All the skills to build just the components
 
     ' Invention variables
     Private MaxRunsPerBP As Integer ' The max runs for a copy or invented bpc. Zero is unlimited runs
-    Private ReqInventionSkills As New EVESkillList ' For inventing this BP
-    Private ReqCopySkills As New EVESkillList ' For copying the BPC
+    Private ReqInventionSkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels) ' For inventing this BP
+    Private ReqCopySkills As New EVESkillList(UserApplicationSettings.UseActiveSkillLevels) ' For copying the BPC
     Public InventionMaterials As Materials
     Public CopyMaterials As Materials ' Some copies require items
     Private InventionChance As Double
@@ -768,7 +768,7 @@ Public Class Blueprint
 
         ' Recursion variables
         Dim ComponentBlueprint As Blueprint = Nothing
-        Dim TempSkills As New EVESkillList
+        Dim TempSkills As New EVESkillList(BPUserSettings.UseActiveSkillLevels)
 
         ' The current material we are working with
         Dim CurrentMaterial As Material
@@ -800,7 +800,7 @@ Public Class Blueprint
             CurrentMaterialCategory = readerBP.GetString(4)
             If CurrentMaterialCategory = "Skill" Then
                 ' It's a skill, so just add it to the main list of BP skills
-                ReqBuildSkills.InsertSkill(readerBP.GetInt64(1), readerBP.GetInt32(2), readerBP.GetInt32(2), 0, False, 0, "", Nothing, True)
+                ReqBuildSkills.InsertSkill(readerBP.GetInt64(1), readerBP.GetInt32(2), readerBP.GetInt32(2), readerBP.GetInt32(2), 0, False, 0, "", Nothing, True)
 
             ElseIf AddMaterial(CurrentMaterialCategory, readerBP.GetString(10), IgnoreMinerals, IgnoreT1Item) Then
 
@@ -1521,7 +1521,7 @@ Public Class Blueprint
                 End If
 
                 If SkillFound Then
-                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) < RequiredSkills.GetSkillList(i).TrainedLevel Then
+                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) < RequiredSkills.GetSkillList(i).Level Then
                         ' They have this skill but it isn't the correct level
                         ' They don't have this, so just leave
                         Return False
@@ -1553,12 +1553,16 @@ Public Class Blueprint
             JobFee = JobFee * MainManufacturingFacility.CostMultiplier
 
             ' facilityUsage = jobFee * taxRate
-            FacilityUsage = JobFee * MainManufacturingFacility.TaxRate
+            If BPUserSettings.AlphaAccount Then
+                FacilityUsage = JobFee * (MainManufacturingFacility.TaxRate + AlphaAccountTaxRate)
+            Else
+                FacilityUsage = JobFee * MainManufacturingFacility.TaxRate
+            End If
 
             ' totalInstallationCost = jobFee + facilityUsage
             ManufacturingFacilityUsage = (JobFee + FacilityUsage) * FWManufacturingCostBonus
-        Else
-            ManufacturingFacilityUsage = 0
+            Else
+                ManufacturingFacilityUsage = 0
         End If
 
     End Sub
@@ -2007,7 +2011,7 @@ Public Class Blueprint
 
         ' Just add all the skills and levels
         While readerItems.Read
-            ReqInventionSkills.InsertSkill(readerItems.GetInt64(0), readerItems.GetInt32(1), readerItems.GetInt32(1), 0, False, 0, "", Nothing, True)
+            ReqInventionSkills.InsertSkill(readerItems.GetInt64(0), readerItems.GetInt32(1), readerItems.GetInt32(1), readerItems.GetInt32(1), 0, False, 0, "", Nothing, True)
         End While
 
         readerItems.Close()
@@ -2032,7 +2036,7 @@ Public Class Blueprint
 
         ' Just add all the skills and levels
         While readerItems.Read
-            ReqCopySkills.InsertSkill(readerItems.GetInt64(0), readerItems.GetInt32(1), readerItems.GetInt32(1), 0, False, 0, "", Nothing, True)
+            ReqCopySkills.InsertSkill(readerItems.GetInt64(0), readerItems.GetInt32(1), readerItems.GetInt32(1), readerItems.GetInt32(1), 0, False, 0, "", Nothing, True)
         End While
 
         readerItems.Close()

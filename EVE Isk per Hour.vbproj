@@ -470,7 +470,6 @@
     <Compile Include="frmStatus.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="StationLocation.vb" />
     <Compile Include="TimePicker.Designer.vb">
       <DependentUpon>TimePicker.vb</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

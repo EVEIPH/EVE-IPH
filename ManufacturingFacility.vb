@@ -1084,6 +1084,9 @@ Public Class ManufacturingFacility
             PreviousSystem = ""
 
         End If
+
+        Call SetResetRefresh()
+
     End Sub
     Private Sub cmbFacilityType_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilityType.DropDown
         PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)
@@ -1219,6 +1222,9 @@ Public Class ManufacturingFacility
             SelectedFacility.FullyLoaded = False
             PreviousRegion = cmbFacilityRegion.Text
         End If
+
+        Call SetResetRefresh()
+
     End Sub
     Private Sub cmbFacilityRegion_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilityRegion.DropDown
         ' If you drop down, don't show the text window
@@ -1457,6 +1463,8 @@ Public Class ManufacturingFacility
             PreviousSystem = cmbFacilitySystem.Text
         End If
 
+        Call SetResetRefresh()
+
     End Sub
     Private Sub cmbFacilitySystem_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilitySystem.DropDown
         ' If you drop down, don't show the text window
@@ -1690,6 +1698,9 @@ Public Class ManufacturingFacility
             PreviousEquipment = cmbFacilityorArray.Text
             Call UpdateBlueprint()
         End If
+
+        Call SetResetRefresh()
+
     End Sub
     Private Sub cmbFacilityorArray_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilityorArray.DropDown
         ' If you drop down, don't show the text window
@@ -2405,6 +2416,9 @@ Public Class ManufacturingFacility
             lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
 
         End If
+
+        Call SetResetRefresh()
+
     End Sub
 
     Private Sub chkFacilityIncludeCost_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeCost.CheckedChanged
@@ -2421,6 +2435,9 @@ Public Class ManufacturingFacility
                 Call SetDefaultVisuals(True)
             End If
         End If
+
+        Call SetResetRefresh()
+
     End Sub
 
     Private Sub chkFacilityIncludeTime_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityIncludeTime.CheckedChanged
@@ -2437,6 +2454,9 @@ Public Class ManufacturingFacility
                 Call SetDefaultVisuals(True)
             End If
         End If
+
+        Call SetResetRefresh()
+
     End Sub
 
     Private Sub btnFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnFacilityFitting.Click
@@ -2457,6 +2477,8 @@ Public Class ManufacturingFacility
             ' If it's not the default, just load the facility so we get the changes from the fitting
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
         End If
+
+        Call SetResetRefresh()
 
     End Sub
 
@@ -3115,6 +3137,12 @@ Public Class ManufacturingFacility
         End If
     End Sub
 
+    Private Sub SetResetRefresh()
+        If SelectedLocation = ProgramLocation.ManufacturingTab And Not FirstLoad Then
+            Call frmMain.ResetRefresh()
+        End If
+    End Sub
+
 #End Region
 
 #Region "Faction Warfare Functions"
@@ -3236,6 +3264,9 @@ Public Class ManufacturingFacility
             ' Set the selected level
             SelectedFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbFacilitySystem.Text)
         End If
+
+        Call SetResetRefresh()
+
     End Sub
 
     Private Sub cmbFWUpgrade_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilityFWUpgrade.KeyPress
@@ -3674,9 +3705,29 @@ Public Class ManufacturingFacility
         ' If we set this to true, then we changed input and it's not default anymore
         Call SetDefaultVisuals(Not EnableButton)
 
+        Call SetResetRefresh()
+
         Return ReturnValue
 
     End Function
+
+    Private Sub cmbModules_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbModules.SelectedIndexChanged
+
+        Call SetResetRefresh()
+
+    End Sub
+
+    Private Sub cmbFuelBlocks_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbFuelBlocks.SelectedIndexChanged
+
+        Call SetResetRefresh()
+
+    End Sub
+
+    Private Sub cmbLargeShips_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbLargeShips.SelectedIndexChanged
+
+        Call SetResetRefresh()
+
+    End Sub
 
 #End Region
 

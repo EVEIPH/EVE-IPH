@@ -27,6 +27,7 @@ Partial Class frmBlueprintList
         Me.lblIntro = New System.Windows.Forms.Label()
         Me.btnClose = New System.Windows.Forms.Button()
         Me.grpBPType = New System.Windows.Forms.GroupBox()
+        Me.rbtnBPReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureModuleBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPFavoriteBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureRigsBlueprints = New System.Windows.Forms.RadioButton()
@@ -61,7 +62,6 @@ Partial Class frmBlueprintList
         Me.txtBPItemFilter = New System.Windows.Forms.TextBox()
         Me.btnClearItemFilter = New System.Windows.Forms.Button()
         Me.lblBPFilter = New System.Windows.Forms.Label()
-        Me.rbtnBPReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.grpBPType.SuspendLayout()
         Me.grpBPSize.SuspendLayout()
         Me.grpBPTechLevel.SuspendLayout()
@@ -117,6 +117,16 @@ Partial Class frmBlueprintList
         Me.grpBPType.TabIndex = 3
         Me.grpBPType.TabStop = False
         Me.grpBPType.Text = "Blueprint Type"
+        '
+        'rbtnBPReactionBlueprints
+        '
+        Me.rbtnBPReactionBlueprints.AutoSize = True
+        Me.rbtnBPReactionBlueprints.Location = New System.Drawing.Point(145, 126)
+        Me.rbtnBPReactionBlueprints.Name = "rbtnBPReactionBlueprints"
+        Me.rbtnBPReactionBlueprints.Size = New System.Drawing.Size(73, 17)
+        Me.rbtnBPReactionBlueprints.TabIndex = 17
+        Me.rbtnBPReactionBlueprints.Text = "Reactions"
+        Me.rbtnBPReactionBlueprints.UseVisualStyleBackColor = True
         '
         'rbtnBPStructureModuleBlueprints
         '
@@ -470,16 +480,6 @@ Partial Class frmBlueprintList
         Me.lblBPFilter.TabIndex = 20
         Me.lblBPFilter.Text = "BP Filter:"
         '
-        'rbtnBPReactionBlueprints
-        '
-        Me.rbtnBPReactionBlueprints.AutoSize = True
-        Me.rbtnBPReactionBlueprints.Location = New System.Drawing.Point(145, 126)
-        Me.rbtnBPReactionBlueprints.Name = "rbtnBPReactionBlueprints"
-        Me.rbtnBPReactionBlueprints.Size = New System.Drawing.Size(73, 17)
-        Me.rbtnBPReactionBlueprints.TabIndex = 17
-        Me.rbtnBPReactionBlueprints.Text = "Reactions"
-        Me.rbtnBPReactionBlueprints.UseVisualStyleBackColor = True
-        '
         'frmBlueprintList
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -497,6 +497,8 @@ Partial Class frmBlueprintList
         Me.Controls.Add(Me.lblIntro)
         Me.Controls.Add(Me.treBlueprintTreeView)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
         Me.Name = "frmBlueprintList"
         Me.Text = "Blueprint List"
         Me.grpBPType.ResumeLayout(false)

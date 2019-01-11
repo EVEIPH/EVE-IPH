@@ -71,7 +71,7 @@ Partial Class frmSettings
         Me.gbImplants = New System.Windows.Forms.GroupBox()
         Me.gbStartupOptions = New System.Windows.Forms.GroupBox()
         Me.chkRefreshPublicStructureDataonStartup = New System.Windows.Forms.CheckBox()
-        Me.chkRefreshFacilityDataonStartup = New System.Windows.Forms.CheckBox()
+        Me.chkRefreshSystemCostIndiciesDataonStartup = New System.Windows.Forms.CheckBox()
         Me.chkRefreshMarketDataonStartup = New System.Windows.Forms.CheckBox()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
@@ -561,7 +561,7 @@ Partial Class frmSettings
         'gbStartupOptions
         '
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshPublicStructureDataonStartup)
-        Me.gbStartupOptions.Controls.Add(Me.chkRefreshFacilityDataonStartup)
+        Me.gbStartupOptions.Controls.Add(Me.chkRefreshSystemCostIndiciesDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshMarketDataonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
@@ -583,15 +583,15 @@ Partial Class frmSettings
         Me.chkRefreshPublicStructureDataonStartup.Text = "Refresh Public Structure Data"
         Me.chkRefreshPublicStructureDataonStartup.UseVisualStyleBackColor = True
         '
-        'chkRefreshFacilityDataonStartup
+        'chkRefreshSystemCostIndiciesDataonStartup
         '
-        Me.chkRefreshFacilityDataonStartup.AutoSize = True
-        Me.chkRefreshFacilityDataonStartup.Location = New System.Drawing.Point(17, 99)
-        Me.chkRefreshFacilityDataonStartup.Name = "chkRefreshFacilityDataonStartup"
-        Me.chkRefreshFacilityDataonStartup.Size = New System.Drawing.Size(124, 17)
-        Me.chkRefreshFacilityDataonStartup.TabIndex = 29
-        Me.chkRefreshFacilityDataonStartup.Text = "Refresh Facility Data"
-        Me.chkRefreshFacilityDataonStartup.UseVisualStyleBackColor = True
+        Me.chkRefreshSystemCostIndiciesDataonStartup.AutoSize = True
+        Me.chkRefreshSystemCostIndiciesDataonStartup.Location = New System.Drawing.Point(17, 99)
+        Me.chkRefreshSystemCostIndiciesDataonStartup.Name = "chkRefreshSystemCostIndiciesDataonStartup"
+        Me.chkRefreshSystemCostIndiciesDataonStartup.Size = New System.Drawing.Size(179, 17)
+        Me.chkRefreshSystemCostIndiciesDataonStartup.TabIndex = 29
+        Me.chkRefreshSystemCostIndiciesDataonStartup.Text = "Refresh System Industry Indicies"
+        Me.chkRefreshSystemCostIndiciesDataonStartup.UseVisualStyleBackColor = True
         '
         'chkRefreshMarketDataonStartup
         '
@@ -899,7 +899,7 @@ Partial Class frmSettings
     Friend WithEvents chkDisableSound As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshBPsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbStartupOptions As System.Windows.Forms.GroupBox
-    Friend WithEvents chkRefreshFacilityDataonStartup As System.Windows.Forms.CheckBox
+    Friend WithEvents chkRefreshSystemCostIndiciesDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshMarketDataonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbExportOptions As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnExportDefault As System.Windows.Forms.RadioButton

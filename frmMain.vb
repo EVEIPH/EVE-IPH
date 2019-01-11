@@ -403,9 +403,8 @@ Public Class frmMain
         ' Type of skills loaded
         Call UpdateSkillPanel()
 
-        ' ESI Facilities
-        If UserApplicationSettings.LoadESIFacilityDataonStartup Then
-            ' Always do cost indicies first
+        ' Update System Cost Indicies
+        If UserApplicationSettings.LoadESISystemCostIndiciesDataonStartup Then
             Application.UseWaitCursor = True
             Call SetProgress("Updating Industry System Indicies...")
             Application.DoEvents()
@@ -427,14 +426,14 @@ Public Class frmMain
         End If
 
         ' Refresh Public Structures
-        If UserApplicationSettings.LoadESIPublicStructuresonStartup Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-            Call SetProgress("Updating Public Structures Data...")
-            Call ESIData.UpdatePublicStructureMarketsData()
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-        End If
+        '  If UserApplicationSettings.LoadESIPublicStructuresonStartup and SelectedCharacter.PublicStructuresAccess Then
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+        Call SetProgress("Updating Public Structures Data...")
+        Call ESIData.UpdatePublicStructureMarketsData()
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+        '   End If
 
         If TestingVersion Then
             Me.Text = Me.Text & " - Testing"
@@ -572,6 +571,19 @@ Public Class frmMain
         lstManufacturedPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
         lstManufacturedPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
+
+        ' If they don't have access to the correct scopes for structures, then don't enable the structure ID look up option
+        If Not SelectedCharacter.StructureMarketsAccess And Not SelectedCharacter.PublicStructuresAccess Then
+            chkRegion68.Enabled = False
+            txtStructureIDPrices.Enabled = False
+        Else
+            chkRegion68.Enabled = True
+            txtStructureIDPrices.Enabled = True
+        End If
+
+        pictStructureIDHelp.Visible = False
+        pnlStructureIDInstructions.Top = 169
+        pnlStructureIDInstructions.Left = 139
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
@@ -1799,6 +1811,8 @@ Public Class frmMain
         ' Simple update, just set all the data back to zero
         Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE")
         Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS_UPDATE_CACHE")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS")
 
         MsgBox("Market Orders reset", vbInformation, Application.ProductName)
 
@@ -8262,14 +8276,20 @@ ExitForm:
     Private Sub chkRegion68_CheckedChanged(sender As Object, e As EventArgs) Handles chkRegion68.CheckedChanged
         If chkRegion68.Checked Then
             txtStructureIDPrices.Enabled = True
+            pictStructureIDHelp.Visible = True
             ' Disable price profiles with structure look up
             rbtnPriceSettingPriceProfile.Enabled = False
             If rbtnPriceSettingPriceProfile.Checked Then
                 rbtnPriceSettingSingleSelect.Checked = True
             End If
+            ' You can only use structure ID with CCP data download as well
+            rbtnPriceSourceEVEMarketer.Enabled = False
+            rbtnPriceSourceCCPData.Checked = True
         Else
             txtStructureIDPrices.Enabled = False
             rbtnPriceSettingPriceProfile.Enabled = True
+            pictStructureIDHelp.Visible = False
+            rbtnPriceSourceEVEMarketer.Enabled = True
         End If
 
         If InStr(sender.ToString, "CheckState: 1") <> 0 Then
@@ -9012,18 +9032,19 @@ ExitSub:
         Dim RegionList As String
         Dim SelectedPrice As Double
         Dim MP As New MarketPriceInterface(pnlProgressBar)
-
+        Dim ESIData As New ESI
+        Dim ItemTypeIDs = New List(Of String)
+        Dim RegionID As String = ""
         Dim PriceType As String = "" ' Default
+        Dim Items As New List(Of TypeIDRegion)
 
         ' Use CCP Data
         If rbtnPriceSourceCCPData.Checked Then
-            Dim Items As New List(Of TypeIDRegion)
             ' Loop through each item and set it's pair for query
             For i = 0 To SentItems.Count - 1
                 Dim Temp As New TypeIDRegion
                 Temp.TypeIDs.Add(CStr(SentItems(i).TypeID))
 
-                Dim RegionID As String
                 ' Look up regionID since we can only look up regions in ESI
                 If SentItems(i).SystemID <> "" Then
                     DBCommand = New SQLiteCommand("SELECT regionID FROM SOLAR_SYSTEMS WHERE solarsystemID = '" & SentItems(i).SystemID & "'", EVEDB.DBREf)
@@ -9038,34 +9059,53 @@ ExitSub:
 
                 ' Set the region
                 Temp.RegionString = RegionID
+                ' Save the ItemID list
+                ItemTypeIDs.Add(CStr(SentItems(i).TypeID))
 
                 DBCommand = Nothing
 
                 Items.Add(Temp)
             Next
 
-            pnlStatus.Text = "Downloading Station Prices..."
+            ' If we aren't pulling a structure ID, then download from stations and structures if they have the option to
+            If chkRegion68.Checked = False Then
+                pnlStatus.Text = "Downloading Station Prices..."
 
-            ' Update the ESI prices cache
-            If Not MP.UpdateMarketOrders(Items) Then
-                ' Update Failed, don't reload everything
-                Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                ' Update the ESI prices cache
+                If Not MP.UpdateMarketOrders(Items) Then
+                    ' Update Failed, don't reload everything
+                    Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                    pnlStatus.Text = ""
+                    Exit Sub
+                End If
                 pnlStatus.Text = ""
-                Exit Sub
+
+                ' Now, based on the region and selected items, select the public upwell structures and get each set of market data from those
+                If SelectedCharacter.StructureMarketsAccess And SelectedCharacter.PublicStructuresAccess Then
+                    pnlStatus.Text = "Downloading Public Structure Prices..."
+
+                    ' First, make sure we have structures in the table to query
+                    Call ESIData.UpdatePublicStructureMarketsData()
+
+                    If Not ESIData.UpdateStructureMarketOrders(RegionID, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
+                        ' Update Failed, don't reload everything
+                        Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
+                        pnlStatus.Text = ""
+                        Exit Sub
+                    End If
+                    pnlStatus.Text = ""
+                End If
+            Else ' Download prices right from that structure
+                pnlStatus.Text = "Downloading Selected Structure Prices..."
+                Dim QueryData As New ESI.StructureDataQueryInfo
+                Dim ThreadPairs As New List(Of ESI.StructureDataQueryInfo)
+                QueryData.StructureID = CLng(txtStructureIDPrices.Text)
+                QueryData.TokenData = SelectedCharacter.CharacterTokenData
+                QueryData.SupressMessages = False
+                QueryData.ProgressBarRef = pnlProgressBar
+                ThreadPairs.Add(QueryData)
+                Call ESIData.LoadStructureMarketOrders(ThreadPairs(0))
             End If
-            pnlStatus.Text = ""
-
-            '' Now, based on the region, select the public upwell structures and get each set of market data from those
-            'pnlStatus.Text = "Downloading Structure Prices..."
-
-            'If Not MP.UpdateMarketOrders(Items) Then
-            '    ' Update Failed, don't reload everything
-            '    Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
-            '    pnlStatus.Text = ""
-            '    Exit Sub
-            'End If
-            'pnlStatus.Text = ""
-
         Else
             ' Update the EVE Marketer cache
             If Not UpdatePricesCache(SentItems) Then
@@ -9128,7 +9168,8 @@ ExitSub:
                 Dim LimittoBuy As Boolean = False
                 Dim LimittoSell As Boolean = False
                 Dim SystemID As String = ""
-                Dim RegionID As String = ""
+
+                RegionID = ""
 
                 If SentItems(i).SystemID <> "" Then
                     SystemID = RegionList
@@ -9167,8 +9208,8 @@ ExitSub:
                         SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, False)
                 End Select
 
-                ' Set the main from etc
-                SQL = SQL & " FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
+                ' Set the main from using both price locations
+                SQL = SQL & " FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
                 ' If they want a system, then limit all the data to that system id
                 If SentItems(i).SystemID <> "" Then
                     SQL = SQL & "AND SOLAR_SYSTEM_ID = " & RegionList & " "
@@ -9269,7 +9310,7 @@ ExitSub:
         Dim rsData As SQLiteDataReader
         Dim PriceList As New List(Of Double)
 
-        SQL = "SELECT PRICE FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " "
+        SQL = "SELECT PRICE FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
             SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
         Else
@@ -14261,7 +14302,7 @@ ExitCalc:
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
 
-        SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM MARKET_ORDERS WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
         SQL = SQL & "GROUP BY IS_BUY_ORDER"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
@@ -21314,24 +21355,30 @@ Leave:
     End Class
 
     Private Sub pictStructureIDHelp_MouseHover(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseHover
-        pnlStructureIDInstructions.Visible = True
+        If chkRegion68.Checked Then
+            pnlStructureIDInstructions.Visible = True
+        End If
     End Sub
 
     Private Sub pictStructureIDHelp_MouseLeave(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseLeave
-        pnlStructureIDInstructions.Visible = False
+        If chkRegion68.Checked Then
+            pnlStructureIDInstructions.Visible = False
+        End If
     End Sub
 
     Private Sub txtStructureIDPrices_TextChanged(sender As Object, e As EventArgs) Handles txtStructureIDPrices.TextChanged
         ' Format the text to just show the number, if it doesn't contain the correct text, show 'Invalid Name'
         Dim FormattedText As String = ""
 
-        If Not UpdatingStructureIDText Then
+        If Not UpdatingStructureIDText And txtStructureIDPrices.Text <> "Invalid Name" Then
             Try
                 If txtStructureIDPrices.Text.Contains("//") Then
                     ' Find the ID after it - [0054:36] Zifrian > <url=showinfo:35835//1027907881953>Tamo</url>
                     Dim IDStart As Integer = txtStructureIDPrices.Text.IndexOf("//") + 2
                     Dim IDEnd As Integer = txtStructureIDPrices.Text.IndexOf(">", IDStart)
                     FormattedText = txtStructureIDPrices.Text.Substring(IDStart, IDEnd - IDStart)
+                ElseIf IsNumeric(txtStructureIDPrices.Text) Then
+                    FormattedText = Trim(txtStructureIDPrices.Text)
                 Else
                     ' Not formatted correctly
                     FormattedText = "Invalid Name"
@@ -21362,9 +21409,6 @@ Leave:
             UpdatingStructureIDText = False
         End If
     End Sub
-
-
-
 
 #End Region
 

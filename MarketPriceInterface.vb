@@ -84,6 +84,8 @@ Public Class MarketPriceInterface
                 ' Start a transaction here to speed up processing in the updates
                 Call EVEDB.BeginSQLiteTransaction()
 
+                ThreadsArray = New List(Of Thread)
+
                 ' Reset the value of the progress bar
                 If Not IsNothing(RefProgressBar) Then
                     RefProgressBar.Visible = True
@@ -169,7 +171,7 @@ Public Class MarketPriceInterface
 
     End Sub
 
-    ' Uses ESI to update market prices
+    ' Uses ESI to update market prices from CCP
     Public Function UpdateMarketOrders(ByVal CacheItems As List(Of TypeIDRegion)) As Boolean
         Dim ReturnValue As Boolean = True
         Dim Pairs As New List(Of ItemRegionPairs)
@@ -330,7 +332,7 @@ Public Class MarketPriceInterface
         Try
             For i = 0 To Pairs.Count - 1
 
-                ' Update the prices then check limiting if needed - ignore cache lookup, the list we get will be updateable
+                ' Update the prices then check limiting if needed 
                 PricesUpdated = ESIData.UpdateMarketOrders(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
 
                 ' Only do limiting if we actually update something 
@@ -364,7 +366,7 @@ Public Class MarketPriceInterface
     End Sub
 
     ' Sees if the typid and region sent is ready to be updated by a cache date look up
-    Private Function UpdatableMarketData(ByVal Item As TypeIDRegion, ByVal CacheType As String) As Boolean
+    Public Function UpdatableMarketData(ByVal Item As TypeIDRegion, ByVal CacheType As String) As Boolean
         Dim SQL As String
         Dim TableName As String
         Dim rsCache As SQLiteDataReader
@@ -389,7 +391,7 @@ Public Class MarketPriceInterface
         rsCache = Nothing
         DBCommand = Nothing
 
-        If Cachedate <= Now Then
+        If Cachedate <= Date.UtcNow Then
             Return True
         Else
             Return False

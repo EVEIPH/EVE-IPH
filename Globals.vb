@@ -124,6 +124,8 @@ Public Module Public_Variables
     Public Const NumManufacturingTabColumns As Integer = 90
     Public Const NumIndustryJobColumns As Integer = 20
 
+    Public Const AlphaAccountTaxRate As Double = 0.02
+
     Public Const NoDate As Date = #1/1/1900#
     Public Const NoExpiry As Date = #1/1/2200#
 
@@ -204,6 +206,7 @@ Public Module Public_Variables
     Public Const SimpleDataExport As String = "Simple"
 
     Public SetTaxFeeChecks As Boolean
+    Public LocationIDs As New List(Of Long)
 
     ' For scanning assets
     Public Enum ScanType
@@ -2313,7 +2316,8 @@ InvalidDate:
                 ' Insert it as unknown so we don't look it up again
                 SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
                 With EVEStructure
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(CacheDate, SQLiteDateFormat)))
+                    ' Check the structure each day - set cache to now + 1
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(DateAdd(DateInterval.Day, 1, Date.UtcNow), SQLiteDateFormat)))
                 End With
                 TempPair.Name = ""
             End If
@@ -2329,6 +2333,49 @@ InvalidDate:
         Return StructurePairs
 
     End Function
+
+    ' Returns the region and system IDs for a structure or station ID sent
+    Public Function GetStationStructureLocation(ID As Long, CharacterTokenData As SavedTokenData, StationIDType As StationStructureIDType) As SystemRegion
+        Dim ReturnData As New SystemRegion
+
+        ' Update the data if it's a structure
+        If StationIDType = StationStructureIDType._Structure Then
+            Dim IDs As New List(Of Long)
+            IDs.Add(ID)
+            Call UpdateStructureData(IDs, CharacterTokenData)
+        End If
+
+        Dim SQL As String
+        Dim rsStations As SQLiteDataReader
+
+        ' Get the region and system id from the location of the station or structure
+        SQL = "SELECT STATION_ID, SOLAR_SYSTEM_ID, REGION_ID FROM STATIONS WHERE STATION_ID = " & CStr(ID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsStations = DBCommand.ExecuteReader
+
+        While rsStations.Read()
+            ReturnData.StationID = rsStations.GetInt64(0)
+            ReturnData.SystemID = rsStations.GetInt64(1)
+            ReturnData.RegionID = rsStations.GetInt64(2)
+        End While
+
+        rsStations.Close()
+        DBCommand = Nothing
+
+        Return ReturnData
+
+    End Function
+
+    Public Structure SystemRegion
+        Dim StationID As Long
+        Dim RegionID As Long
+        Dim SystemID As Long
+    End Structure
+
+    Public Enum StationStructureIDType
+        _Station = 0
+        _Structure = 1
+    End Enum
 
     ' Gets the MAC address for a unique ID
     Public Function GetMacAddress() As String
