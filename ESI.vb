@@ -325,7 +325,7 @@ Public Class ESI
 
         Try
 
-            Do ' Run this once but if it errors with a 420, allow it to run 5 times
+            Do ' TODO - error limit 420s https://developers.eveonline.com/blog/article/error-limiting-imminent
 
                 WC.Proxy = GetProxyData()
 
@@ -458,6 +458,9 @@ Public Class ESI
             End If
 
             If ErrorCode = 0 Then
+
+                ' TODO - error limit 420s https://developers.eveonline.com/blog/article/error-limiting-imminent
+
 
                 Dim Auth_header As String = $"Bearer {TokenData.access_token}"
 
@@ -1106,9 +1109,7 @@ Public Class ESI
 
     ' Updates the db with orders from structures for the items and region sent
     Public Function UpdateStructureMarketOrders(QueryRegionID As String, ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
-        ' Dim MarketOrdersOutput As List(Of ESIMarketOrder)
         Dim SQL As String
-        ' Dim rsCache As SQLiteDataReader
         Dim rsCheck As SQLiteDataReader
         Dim CacheDate As Date = NoDate
         Dim PublicData As String = ""
@@ -1141,6 +1142,7 @@ Public Class ESI
                 Pair.StructureID = SID
                 Pair.TokenData = Tokendata
                 Pair.SupressMessages = True
+                Pair.ProgressBarRef = Nothing
                 ThreadPairs.Add(Pair)
             Next
 
@@ -1148,23 +1150,29 @@ Public Class ESI
 
             ThreadsArray = New List(Of Thread)
 
-            ' Reset the value of the progress bar
-            If Not IsNothing(refPG) Then
-                refPG.Visible = True
-                refPG.Value = 0
-                StructureCount = 0
-                refPG.Maximum = StructureIDs.Count - 1
-            End If
             Application.DoEvents()
 
             ' Call this manually if it's just one item to update
             If ThreadPairs.Count = 1 Then
+                ' Set the refPG so it's updated inside the single run of the structure orders
+                Dim TempPair As New StructureDataQueryInfo
+                TempPair = ThreadPairs(0)
+                TempPair.ProgressBarRef = refPG
+                ThreadPairs = New List(Of StructureDataQueryInfo)
+                ThreadPairs.Add(TempPair)
                 Call LoadStructureMarketOrders(ThreadPairs(0))
             Else
+                ' Reset the value of the progress bar for counting structures
+                If Not IsNothing(refPG) Then
+                    refPG.Visible = True
+                    refPG.Value = 0
+                    StructureCount = 0
+                    refPG.Maximum = StructureIDs.Count
+                End If
+
                 ' Call each thread for the pairs
                 For i = 0 To ThreadPairs.Count - 1
                     Dim UPHThread As New Thread(AddressOf LoadStructureMarketOrders)
-
                     UPHThread.Start(ThreadPairs(i))
                     ' Save the thread if we need to kill it
                     ThreadsArray.Add(UPHThread)
@@ -1172,6 +1180,7 @@ Public Class ESI
 
                 Dim Stillworking As Boolean = True
                 Dim PrevCount As Integer = 0
+                Dim StartTime As DateTime = Now
 
                 Do Until Not Stillworking
                     ' Now loop until all the threads are done
@@ -1190,6 +1199,16 @@ Public Class ESI
                     End If
                     PrevCount = StructureCount
                     Application.DoEvents()
+
+                    ' Check if we need to leave - cancel pressed or 2 minutes passed
+                    If CancelUpdatePrices Or (StartTime <> NoDate And DateDiff(DateInterval.Second, StartTime, Now) >= 120) Then
+                        Call KillThreads()
+                        If CancelUpdatePrices Then
+                            Return True ' They wanted this so don't error
+                        Else
+                            Return False
+                        End If
+                    End If
                 Loop
 
                 ' Make sure all threads are not running
@@ -1250,7 +1269,7 @@ Public Class ESI
         rsCache = Nothing
         DBCommand = Nothing
 
-        ' For each structure, update the total record count for the progressbar on frmMain regardless of whether we do anythign with it
+        ' For each structure, update the total record count for the progressbar on frmMain regardless of whether we do anything with it
         StructureCount += 1
 
         ' If it's later than now, update
@@ -1279,8 +1298,6 @@ Public Class ESI
                             QueryInfo.ProgressBarRef.Value = 0
                             QueryInfo.ProgressBarRef.Maximum = MarketOrdersOutput.Count - 1
                             QueryInfo.ProgressBarRef.Visible = True
-                        Else
-                            QueryInfo.ProgressBarRef.Visible = False
                         End If
 
                         ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
@@ -1325,6 +1342,21 @@ Public Class ESI
         End If
 
         Return True
+
+    End Function
+
+    ' Just tries to download market prices - if it gets prices, then returns true else false
+    Public Function CheckStructureMarketData(StructureID As Long, TokenData As SavedTokenData, SupressErrors As Boolean) As Boolean
+        Dim PriceData As String = ""
+
+        PriceData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(StructureID) & "/" & TranquilityDataSource,
+                                                     FormatTokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors)
+
+        If Not IsNothing(PriceData) Then
+            Return True
+        Else
+            Return False
+        End If
 
     End Function
 
@@ -1392,11 +1424,13 @@ Public Class ESI
                             Dim StationLocation As SystemRegion
                             Dim OrderDownloadType As String = ""
 
-                            StationLocation = GetStationStructureLocation(.location_id, Nothing, StationStructureIDType._Station)
-                            If StationLocation.RegionID = 0 Then
-                                ' Not found, so look up the structure as some data can be in the station market data for structures as well
+                            ' We can have stations or structures in market data, so look up based on ID
+                            If .location_id < 67000000 Then
+                                StationLocation = GetStationStructureLocation(.location_id, Nothing, StationStructureIDType._Station)
+                            Else
                                 StationLocation = GetStationStructureLocation(.location_id, SelectedCharacter.CharacterTokenData, StationStructureIDType._Structure)
                             End If
+
                             Dim IssueDate As Date = FormatESIDate(.issued)
 
                             ' Insert all the new records

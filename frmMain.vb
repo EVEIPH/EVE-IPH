@@ -574,16 +574,10 @@ Public Class frmMain
 
         ' If they don't have access to the correct scopes for structures, then don't enable the structure ID look up option
         If Not SelectedCharacter.StructureMarketsAccess And Not SelectedCharacter.PublicStructuresAccess Then
-            chkRegion68.Enabled = False
-            txtStructureIDPrices.Enabled = False
+            btnAddStructureIDs.Enabled = False
         Else
-            chkRegion68.Enabled = True
-            txtStructureIDPrices.Enabled = True
+            btnAddStructureIDs.Enabled = True
         End If
-
-        pictStructureIDHelp.Visible = False
-        pnlStructureIDInstructions.Top = 169
-        pnlStructureIDInstructions.Left = 139
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
@@ -603,6 +597,7 @@ Public Class frmMain
                                                             "Avg = Average" & vbCrLf &
                                                             "Med = Median" & vbCrLf &
                                                             "Percentile = 5% of the top prices (Buy) or bottom (Sell, All) ")
+            ttUpdatePrices.SetToolTip(btnAddStructureIDs, "Use to add structures you have access to using with markets for downloading prices from structures.")
         End If
 
         FirstSolarSystemComboLoad = True
@@ -628,17 +623,6 @@ Public Class frmMain
         PriceOrdersUpdateCount = 0
         CancelUpdatePrices = False
         CancelManufacturingTabCalc = False
-
-        ' Set the structure instructions for importing prices from structures
-        lblStructurePriceInstructions.Text = "Some structures may not be 'public' and IPH cannot download prices from them. However, if you have access to a market (e.g Nullsec Trade Hub), follow these steps to import prices for specific structures."
-        lblStructurePriceInstructions.Text &= vbCrLf & vbCrLf
-        lblStructurePriceInstructions.Text &= "1. Make a link of the market hub in the EVE Chat window. You can drag the station name from assets or type the name and select auto-link and then search for 'Station'. Note, if you do not have access search will not work."
-        lblStructurePriceInstructions.Text &= vbCrLf
-        lblStructurePriceInstructions.Text &= "2. Right click the link and select Copy after entering the chat link."
-        lblStructurePriceInstructions.Text &= vbCrLf
-        lblStructurePriceInstructions.Text &= "3. Paste the text into the structure ID textbox - it will format the number for you."
-        lblStructurePriceInstructions.Text &= vbCrLf
-        lblStructurePriceInstructions.Text &= "4. Import prices."
 
         Call InitUpdatePricesTab()
 
@@ -8273,31 +8257,6 @@ ExitForm:
             Call ClearAllRegionChecks(45)
         End If
     End Sub
-    Private Sub chkRegion68_CheckedChanged(sender As Object, e As EventArgs) Handles chkRegion68.CheckedChanged
-        If chkRegion68.Checked Then
-            txtStructureIDPrices.Enabled = True
-            pictStructureIDHelp.Visible = True
-            ' Disable price profiles with structure look up
-            rbtnPriceSettingPriceProfile.Enabled = False
-            If rbtnPriceSettingPriceProfile.Checked Then
-                rbtnPriceSettingSingleSelect.Checked = True
-            End If
-            ' You can only use structure ID with CCP data download as well
-            rbtnPriceSourceEVEMarketer.Enabled = False
-            rbtnPriceSourceCCPData.Checked = True
-        Else
-            txtStructureIDPrices.Enabled = False
-            rbtnPriceSettingPriceProfile.Enabled = True
-            pictStructureIDHelp.Visible = False
-            rbtnPriceSourceEVEMarketer.Enabled = True
-        End If
-
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(68)
-        End If
-
-    End Sub
 #End Region
 
 #End Region
@@ -8463,8 +8422,6 @@ ExitForm:
             Next
             IgnoreSystemCheckUpdates = False
         End If
-
-        txtStructureIDPrices.Text = UserUpdatePricesTabSettings.StructureIDText
 
         UpdatePricesColumnClicked = UserUpdatePricesTabSettings.ColumnSort
         If UserUpdatePricesTabSettings.ColumnSortType = "Ascending" Then
@@ -8672,8 +8629,6 @@ ExitForm:
             TempSettings.SelectedRegions = TempRegions
         End If
 
-        TempSettings.StructureIDText = txtStructureIDPrices.Text
-
         ' Raw items
         ' Manufactured Items
         With TempSettings
@@ -8780,6 +8735,13 @@ ExitForm:
         Call ListClicked(lstManufacturedPriceProfile, sender, e)
     End Sub
 
+    Private Sub btnAddStructureIDs_Click(sender As Object, e As EventArgs) Handles btnAddStructureIDs.Click
+        Dim f1 As New frmAddStructureIDs
+
+        f1.ShowDialog()
+
+    End Sub
+
     ' Sets the price profile defaults for anything with ID = 0
     Private Sub SetPriceProfileDefaults(PriceType As String, PriceRegion As String, PriceSystem As String, PriceMod As String, RawMat As Boolean)
         Dim SQL As String = ""
@@ -8878,8 +8840,8 @@ ExitForm:
         pnlStatus.Text = "Initializing Query..."
         Application.DoEvents()
 
-        ' Find the checked region (if not structure ID)
-        If rbtnPriceSettingSingleSelect.Checked And chkRegion68.Checked = False Then
+        ' Find the checked region 
+        If rbtnPriceSettingSingleSelect.Checked Then
             If RegionChecked Then
                 For i = 1 To (RegionCheckBoxes.Length - 1)
                     If RegionCheckBoxes(i).Checked Then
@@ -8936,8 +8898,6 @@ ExitForm:
                 readerSystems = Nothing
                 DBCommand = Nothing
             End If
-        ElseIf rbtnPriceSettingSingleSelect.Checked Then
-            SearchStructureID = Trim(txtStructureIDPrices.Text)
         End If
 
         ' Build the list of types we want to update and include the type, region/system
@@ -9067,44 +9027,32 @@ ExitSub:
                 Items.Add(Temp)
             Next
 
-            ' If we aren't pulling a structure ID, then download from stations and structures if they have the option to
-            If chkRegion68.Checked = False Then
-                pnlStatus.Text = "Downloading Station Prices..."
+            pnlStatus.Text = "Downloading Station Prices..."
 
-                ' Update the ESI prices cache
-                If Not MP.UpdateMarketOrders(Items) Then
+            ' Update the ESI prices cache
+            If Not MP.UpdateMarketOrders(Items) Then
+                ' Update Failed, don't reload everything
+                Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                pnlStatus.Text = ""
+                Exit Sub
+            End If
+            pnlStatus.Text = ""
+            Application.DoEvents()
+
+            ' Now, based on the region and selected items, select the public upwell structures and get each set of market data from those
+            If SelectedCharacter.StructureMarketsAccess And SelectedCharacter.PublicStructuresAccess Then
+                pnlStatus.Text = "Downloading Public Structure Prices..."
+
+                ' First, make sure we have structures in the table to query
+                Call ESIData.UpdatePublicStructureMarketsData()
+
+                If Not ESIData.UpdateStructureMarketOrders(RegionID, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
                     ' Update Failed, don't reload everything
-                    Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                    Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
                     pnlStatus.Text = ""
                     Exit Sub
                 End If
                 pnlStatus.Text = ""
-
-                ' Now, based on the region and selected items, select the public upwell structures and get each set of market data from those
-                If SelectedCharacter.StructureMarketsAccess And SelectedCharacter.PublicStructuresAccess Then
-                    pnlStatus.Text = "Downloading Public Structure Prices..."
-
-                    ' First, make sure we have structures in the table to query
-                    Call ESIData.UpdatePublicStructureMarketsData()
-
-                    If Not ESIData.UpdateStructureMarketOrders(RegionID, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
-                        ' Update Failed, don't reload everything
-                        Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
-                        pnlStatus.Text = ""
-                        Exit Sub
-                    End If
-                    pnlStatus.Text = ""
-                End If
-            Else ' Download prices right from that structure
-                pnlStatus.Text = "Downloading Selected Structure Prices..."
-                Dim QueryData As New ESI.StructureDataQueryInfo
-                Dim ThreadPairs As New List(Of ESI.StructureDataQueryInfo)
-                QueryData.StructureID = CLng(txtStructureIDPrices.Text)
-                QueryData.TokenData = SelectedCharacter.CharacterTokenData
-                QueryData.SupressMessages = False
-                QueryData.ProgressBarRef = pnlProgressBar
-                ThreadPairs.Add(QueryData)
-                Call ESIData.LoadStructureMarketOrders(ThreadPairs(0))
             End If
         Else
             ' Update the EVE Marketer cache
@@ -10292,6 +10240,13 @@ ExitSub:
         Call UpdatePriceList()
         Application.DoEvents()
 
+    End Sub
+
+    Private Sub btnViewSavedStructures_Click(sender As Object, e As EventArgs) Handles btnViewSavedStructures.Click
+        If frmViewStructures.Visible = False Then
+            frmViewStructures = New frmViewSavedStructures
+            frmViewStructures.Show()
+        End If
     End Sub
 
 #End Region
@@ -21353,62 +21308,6 @@ Leave:
         End Function
 
     End Class
-
-    Private Sub pictStructureIDHelp_MouseHover(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseHover
-        If chkRegion68.Checked Then
-            pnlStructureIDInstructions.Visible = True
-        End If
-    End Sub
-
-    Private Sub pictStructureIDHelp_MouseLeave(sender As Object, e As EventArgs) Handles pictStructureIDHelp.MouseLeave
-        If chkRegion68.Checked Then
-            pnlStructureIDInstructions.Visible = False
-        End If
-    End Sub
-
-    Private Sub txtStructureIDPrices_TextChanged(sender As Object, e As EventArgs) Handles txtStructureIDPrices.TextChanged
-        ' Format the text to just show the number, if it doesn't contain the correct text, show 'Invalid Name'
-        Dim FormattedText As String = ""
-
-        If Not UpdatingStructureIDText And txtStructureIDPrices.Text <> "Invalid Name" Then
-            Try
-                If txtStructureIDPrices.Text.Contains("//") Then
-                    ' Find the ID after it - [0054:36] Zifrian > <url=showinfo:35835//1027907881953>Tamo</url>
-                    Dim IDStart As Integer = txtStructureIDPrices.Text.IndexOf("//") + 2
-                    Dim IDEnd As Integer = txtStructureIDPrices.Text.IndexOf(">", IDStart)
-                    FormattedText = txtStructureIDPrices.Text.Substring(IDStart, IDEnd - IDStart)
-                ElseIf IsNumeric(txtStructureIDPrices.Text) Then
-                    FormattedText = Trim(txtStructureIDPrices.Text)
-                Else
-                    ' Not formatted correctly
-                    FormattedText = "Invalid Name"
-                End If
-            Catch
-                FormattedText = "Invalid Name"
-            End Try
-            UpdatingStructureIDText = True
-            txtStructureIDPrices.Text = FormattedText
-            txtStructureIDPrices.SelectAll()
-            UpdatingStructureIDText = False
-        End If
-
-    End Sub
-
-    Private Sub txtStructureIDPrices_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtStructureIDPrices.KeyPress
-        If e.KeyChar = ControlChars.Back Then
-            UpdatingStructureIDText = True
-        Else
-            UpdatingStructureIDText = False
-        End If
-    End Sub
-
-    Private Sub txtStructureIDPrices_KeyDown(sender As Object, e As KeyEventArgs) Handles txtStructureIDPrices.KeyDown
-        If e.KeyCode = Keys.Delete Then
-            UpdatingStructureIDText = True
-        Else
-            UpdatingStructureIDText = False
-        End If
-    End Sub
 
 #End Region
 

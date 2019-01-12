@@ -1951,6 +1951,9 @@ Public Class ManufacturingFacility
                             TempBPGroupID = ItemIDs.ConstructionComponentsGroupID
                             TempBPCategoryID = ItemIDs.ComponentCategoryID
                     End Select
+                ElseIf Activity = ActivityCopying Or Activity = ActivityInvention Then
+                    TempBPCategoryID = ItemIDs.BlueprintCategoryID
+                    TempBPGroupID = ItemIDs.FrigateBlueprintGroupID
                 End If
 
                 SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
@@ -3831,6 +3834,9 @@ Public Enum ItemIDs
     StationEggGroupID = 307 ' This is for loading No POS build items
     SovStructureCategoryID = 3 ' For stations - I don't think this is used anymore (everything can be built at a pos?)
     StationPartsGroupID = 536
+
+    BlueprintCategoryID = 9
+    FrigateBlueprintGroupID = 105
 
 End Enum
 

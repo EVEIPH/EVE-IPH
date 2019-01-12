@@ -200,7 +200,6 @@ Public Class ProgramSettings
     Public DefaultPriceChecks As Boolean = False
     Public DefaultPriceSystem As String = "Jita"
     Public DefaultPriceRegion As String = ""
-    Public DefaultPriceStructureIDText As String = ""
     Public DefaultPriceRawMatsCombo As String = "Min Sell"
     Public DefaultPriceItemsCombo As String = "Min Sell"
     Public DefaultUPColumnSort As Integer = 1
@@ -1718,8 +1717,6 @@ Public Class ProgramSettings
                     .PPItemsSystem = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "PPItemsSystem", DefaultPPItemsSystem))
                     .PPItemsPriceMod = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "PPItemsPriceMod", DefaultPPItemsPriceMod))
 
-                    .StructureIDText = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "StructureIDText", DefaultPriceStructureIDText))
-
                 End With
 
             Else
@@ -1742,7 +1739,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(65) As Setting
+        Dim UpdatePricesSettingsList(64) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1831,8 +1828,6 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
             UpdatePricesSettingsList(64) = New Setting("AbyssalMaterials", CStr(PriceSettings.AbyssalMaterials))
 
-            UpdatePricesSettingsList(65) = New Setting("StructureIDText", CStr(PriceSettings.StructureIDText))
-
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
         Catch ex As Exception
@@ -1912,7 +1907,6 @@ Public Class ProgramSettings
             .PPRawSystem = DefaultPPRawSystem
             .PPRawPriceMod = DefaultPPRawPriceMod
 
-            .StructureIDText = DefaultPriceStructureIDText
         End With
 
         ' Save locally
@@ -4999,8 +4993,6 @@ Public Structure UpdatePriceTabSettings
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
-
-    Dim StructureIDText As String
 
 End Structure
 

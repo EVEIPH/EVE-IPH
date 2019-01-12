@@ -97,6 +97,7 @@ Public Module Public_Variables
     ' Same with assets
     Public frmDefaultAssets As frmAssetsViewer
     Public frmShoppingAssets As frmAssetsViewer
+    Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
 
     ' The only allowed characters for text entry
     Public Const allowedPriceChars As String = "0123456789.,"
@@ -2244,7 +2245,7 @@ InvalidDate:
     End Structure
 
     ' Updates the stations table with upwell structure data for the list of IDs sent and returns a set of name/ID pairs
-    Public Function UpdateStructureData(IDList As List(Of Long), CharacterTokenData As SavedTokenData) As List(Of StructureIDName)
+    Public Function UpdateStructureData(IDList As List(Of Long), CharacterTokenData As SavedTokenData, Optional ManuallyAdded As Boolean = False) As List(Of StructureIDName)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
         Dim API As New ESI
@@ -2253,6 +2254,7 @@ InvalidDate:
         Dim TempPair As StructureIDName
         Dim CacheDate As Date
         Dim StructurePairs As New List(Of StructureIDName)
+        Dim ManuallyAddedCode As Integer
 
         Dim MasterIDList As New List(Of Long)
 
@@ -2262,6 +2264,12 @@ InvalidDate:
                 MasterIDList.Add(EntryID)
             End If
         Next
+
+        If ManuallyAdded Then
+            ManuallyAddedCode = -1
+        Else
+            ManuallyAddedCode = 0
+        End If
 
         For Each StructureID In MasterIDList
             ' Get the cache date of the facility ID
@@ -2294,6 +2302,18 @@ InvalidDate:
             ' Look up each facility and save it in the STATIONS table
             EVEStructure = API.GetStructureData(StructureID, CharacterTokenData, CacheDate)
 
+            ' Look up the manual saved code and save it if we update the data
+            SQL = "SELECT MANUALLY_ADDED FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsData = DBCommand.ExecuteReader
+
+            ' Reset the data if it's in the table
+            If rsData.Read Then
+                ManuallyAddedCode = rsData.GetInt32(0)
+            End If
+
+            rsData.Close()
+
             ' Delete the record, if there, then add new data
             EVEDB.ExecuteNonQuerySQL("DELETE FROM STATIONS WHERE STATION_ID = " & CStr(StructureID))
 
@@ -2304,9 +2324,9 @@ InvalidDate:
                 rsData = DBCommand.ExecuteReader
 
                 If rsData.Read Then
-                    SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
+                    SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
                     With EVEStructure
-                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat)))
+                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat), ManuallyAddedCode))
                     End With
                 End If
                 rsData.Close()
@@ -2314,10 +2334,10 @@ InvalidDate:
                 TempPair.Name = EVEStructure.name
             Else
                 ' Insert it as unknown so we don't look it up again
-                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}')"
+                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
                 With EVEStructure
                     ' Check the structure each day - set cache to now + 1
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(DateAdd(DateInterval.Day, 1, Date.UtcNow), SQLiteDateFormat)))
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(DateAdd(DateInterval.Day, 1, Date.UtcNow), SQLiteDateFormat), ManuallyAddedCode))
                 End With
                 TempPair.Name = ""
             End If

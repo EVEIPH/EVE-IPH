@@ -1919,8 +1919,8 @@ Public Class Blueprint
         ' facilityUsage = (jobFee) * taxRate
         Dim InventionFacilityTax As Double = InventionJobFee * InventionFacility.TaxRate
 
-        ' totalInstallationCost = jobFee + facilityTax
-        Return (InventionJobFee + InventionFacilityTax) * FWInventionCostBonus
+        ' totalInstallationCost = jobFee + facilityTax * bonus for FW and invention facility
+        Return (InventionJobFee + InventionFacilityTax) * FWInventionCostBonus * InventionFacility.CostMultiplier
 
     End Function
 
@@ -1965,8 +1965,8 @@ Public Class Blueprint
         ' facilityUsage = jobFee * taxRate
         Dim CopyFacilityTax As Double = CopyJobFee * CopyFacility.TaxRate
 
-        ' totalInstallationCost = jobFee +  facilityTax
-        Return (CopyJobFee + CopyFacilityTax) * FWCopyingCostBonus
+        ' totalInstallationCost = jobFee +  facilityTax * bonus for FW and copy facility
+        Return (CopyJobFee + CopyFacilityTax) * FWCopyingCostBonus * CopyFacility.CostMultiplier
 
     End Function
 
