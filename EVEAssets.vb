@@ -225,7 +225,7 @@ Public Class EVEAssets
         If LocationID <> 0 Then
 
             ' See if it's a station
-            If LocationID >= 60000000 And LocationID < 67000000 Then
+            If LocationID >= MinStationID And LocationID < MaxStationID Then
 
                 SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(LocationID)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -281,16 +281,12 @@ Public Class EVEAssets
                     If FoundLocation IsNot Nothing Then
                         LocationName = FoundLocation.Name
                     Else
-                        ' Get the location name from ESI, while updating the data as it's probably an upwell structure
-                        Dim TempLocationData As New List(Of Long)
-                        TempLocationData.Add(LocationID)
-                        Dim LocationDataList As List(Of StructureIDName) = UpdateStructureData(TempLocationData, CharacterTokenData)
+                        ' Get the location name for the location if we don't have it yet
+                        Dim SP As New StructureProcessor
+                        Dim LocationData As StructureProcessor.StructureStationInformation = SP.GetStationInformation(LocationID, CharacterTokenData, True)
 
-                        ' Should only be one name
-                        If LocationDataList.Count > 0 Then
-                            If LocationDataList(0).Name <> "" Then
-                                LocationName = LocationDataList(0).Name
-                            End If
+                        If LocationData.Name <> "" Then
+                            LocationName = LocationData.Name
                         End If
 
                         If LocationName = "" Then

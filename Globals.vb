@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "Onslaught 1.0"
+    Public Const SDEVersion As String = "January_Release_1.0_2019"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -35,6 +35,7 @@ Public Module Public_Variables
 
     ' Variable to hold error tracking data when the error is hard to find - used for debugging only but mostly this is set to empty string
     Public ErrorTracker As String
+    Public ESIErrorHandler As ESIErrorProcessor
 
     Public DefaultCharSelected As Boolean
     Public FirstLoad As Boolean ' If the program just opened
@@ -76,18 +77,20 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
                                             & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
-                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, INVENTORY_TYPES.volume, INVENTORY_TYPES.marketGroupID, " _
+                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, IT.volume, IT.marketGroupID, " _
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
                                             & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
-                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP " _
+                                            & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP, " _
+                                            & "CASE WHEN IT2.marketGroupID IS NULL THEN 0 ELSE 1 END AS NPC_BPO " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID " _
                                             & "AND (OBP.USER_ID = @USERBP_USERID OR OBP.USER_ID = @USERBP_CORPID), " _
-                                            & "INVENTORY_TYPES WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID) AS X "
+                                            & "INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2 " _
+                                            & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID) AS X "
 
     ' Shopping List
     Public TotalShoppingList As New ShoppingList
@@ -120,6 +123,7 @@ Public Module Public_Variables
     ' For update prices, to cancel update
     Public CancelUpdatePrices As Boolean
     Public CancelManufacturingTabCalc As Boolean
+    Public CancelThreading As Boolean
 
     ' Column processing
     Public Const NumManufacturingTabColumns As Integer = 90
@@ -208,6 +212,9 @@ Public Module Public_Variables
 
     Public SetTaxFeeChecks As Boolean
     Public LocationIDs As New List(Of Long)
+
+    Public MaxStationID As Long = 67000000
+    Public MinStationID As Long = 60000000
 
     ' For scanning assets
     Public Enum ScanType
@@ -421,7 +428,7 @@ Public Module Public_Variables
 
     ' Returns boolean if the application has been registered (or the user saved the settings file at least)
     Public Function AppRegistered() As Boolean
-        Dim ESICheck As New ESI
+        Dim ESICheck As New ESI()
 
         If ESICheck.GetClientID = DummyClient Then
             Return False
@@ -1715,7 +1722,8 @@ InvalidDate:
     Public Sub ResetPublicStructureData()
         Dim SQL As String = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN "
         SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
-        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65)"
+        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65) "
+        SQL &= "AND MANUAL_ENTRY = 0"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
     End Sub
 
@@ -2238,164 +2246,6 @@ InvalidDate:
             TypeIDs = New List(Of String)
         End Sub
     End Class
-
-    Public Structure StructureIDName
-        Dim ID As Long
-        Dim Name As String
-    End Structure
-
-    ' Updates the stations table with upwell structure data for the list of IDs sent and returns a set of name/ID pairs
-    Public Function UpdateStructureData(IDList As List(Of Long), CharacterTokenData As SavedTokenData, Optional ManuallyAdded As Boolean = False) As List(Of StructureIDName)
-        Dim SQL As String = ""
-        Dim rsData As SQLiteDataReader
-        Dim API As New ESI
-        Dim EVEStructure As New ESIUniverseStructure
-        Dim StructureIDstoUpdate As New List(Of Long)
-        Dim TempPair As StructureIDName
-        Dim CacheDate As Date
-        Dim StructurePairs As New List(Of StructureIDName)
-        Dim ManuallyAddedCode As Integer
-
-        Dim MasterIDList As New List(Of Long)
-
-        ' Make a unique ID list
-        For Each EntryID In IDList
-            If Not MasterIDList.Contains(EntryID) Then
-                MasterIDList.Add(EntryID)
-            End If
-        Next
-
-        If ManuallyAdded Then
-            ManuallyAddedCode = -1
-        Else
-            ManuallyAddedCode = 0
-        End If
-
-        For Each StructureID In MasterIDList
-            ' Get the cache date of the facility ID
-            SQL = "SELECT CACHE_DATE, STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsData = DBCommand.ExecuteReader
-
-            If rsData.Read Then
-                ' See if we update it
-                If IsDBNull(rsData.GetValue(0)) Then
-                    ' No data so add it
-                    StructureIDstoUpdate.Add(StructureID)
-                ElseIf DateValue(rsData.GetString(0)) <= DateTime.UtcNow Then
-                    ' Need to update it
-                    StructureIDstoUpdate.Add(StructureID)
-                Else
-                    ' Not going to update it, so save the name and pair data
-                    TempPair.ID = StructureID
-                    TempPair.Name = rsData.GetString(1)
-                    Call StructurePairs.Add(TempPair)
-                End If
-            Else
-                ' Not in the table, so add it
-                StructureIDstoUpdate.Add(StructureID)
-            End If
-            rsData.Close()
-        Next
-
-        For Each StructureID In StructureIDstoUpdate
-            ' Look up each facility and save it in the STATIONS table
-            EVEStructure = API.GetStructureData(StructureID, CharacterTokenData, CacheDate)
-
-            ' Look up the manual saved code and save it if we update the data
-            SQL = "SELECT MANUALLY_ADDED FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsData = DBCommand.ExecuteReader
-
-            ' Reset the data if it's in the table
-            If rsData.Read Then
-                ManuallyAddedCode = rsData.GetInt32(0)
-            End If
-
-            rsData.Close()
-
-            ' Delete the record, if there, then add new data
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM STATIONS WHERE STATION_ID = " & CStr(StructureID))
-
-            If Not IsNothing(EVEStructure) Then
-                ' Lookup the data for the upwell structure from static tables
-                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(EVEStructure.solar_system_id)
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsData = DBCommand.ExecuteReader
-
-                If rsData.Read Then
-                    SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
-                    With EVEStructure
-                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1), rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat), ManuallyAddedCode))
-                    End With
-                End If
-                rsData.Close()
-
-                TempPair.Name = EVEStructure.name
-            Else
-                ' Insert it as unknown so we don't look it up again
-                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
-                With EVEStructure
-                    ' Check the structure each day - set cache to now + 1
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(DateAdd(DateInterval.Day, 1, Date.UtcNow), SQLiteDateFormat), ManuallyAddedCode))
-                End With
-                TempPair.Name = ""
-            End If
-
-            ' Save the pair
-            TempPair.ID = StructureID
-            Call StructurePairs.Add(TempPair)
-        Next
-
-        DBCommand = Nothing
-        rsData = Nothing
-
-        Return StructurePairs
-
-    End Function
-
-    ' Returns the region and system IDs for a structure or station ID sent
-    Public Function GetStationStructureLocation(ID As Long, CharacterTokenData As SavedTokenData, StationIDType As StationStructureIDType) As SystemRegion
-        Dim ReturnData As New SystemRegion
-
-        ' Update the data if it's a structure
-        If StationIDType = StationStructureIDType._Structure Then
-            Dim IDs As New List(Of Long)
-            IDs.Add(ID)
-            Call UpdateStructureData(IDs, CharacterTokenData)
-        End If
-
-        Dim SQL As String
-        Dim rsStations As SQLiteDataReader
-
-        ' Get the region and system id from the location of the station or structure
-        SQL = "SELECT STATION_ID, SOLAR_SYSTEM_ID, REGION_ID FROM STATIONS WHERE STATION_ID = " & CStr(ID)
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsStations = DBCommand.ExecuteReader
-
-        While rsStations.Read()
-            ReturnData.StationID = rsStations.GetInt64(0)
-            ReturnData.SystemID = rsStations.GetInt64(1)
-            ReturnData.RegionID = rsStations.GetInt64(2)
-        End While
-
-        rsStations.Close()
-        DBCommand = Nothing
-
-        Return ReturnData
-
-    End Function
-
-    Public Structure SystemRegion
-        Dim StationID As Long
-        Dim RegionID As Long
-        Dim SystemID As Long
-    End Structure
-
-    Public Enum StationStructureIDType
-        _Station = 0
-        _Structure = 1
-    End Enum
 
     ' Gets the MAC address for a unique ID
     Public Function GetMacAddress() As String

@@ -15,15 +15,21 @@ Public Class frmBlueprintList
 
     Private FirstFormLoad As Boolean
 
-    Private Sub frmBlueprintList_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Public Sub New()
 
         FirstFormLoad = True
 
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
         lblIntro.Text = "Expand the tree to locate a Blueprint." + Environment.NewLine + "Double-Click on it to load it into the main window." + Environment.NewLine + "This window will remain open unless you click Close."
 
-        'SetTopNodes()
         ' Load settings, which will fire handler to set top nodes for the saved options
         Call InitForm()
+
+        ' Load the tree
+        Call SetTopNodes()
 
         FirstFormLoad = False
 
@@ -71,6 +77,8 @@ Public Class frmBlueprintList
                     rbtnBPReactionBlueprints.Checked = True
             End Select
 
+            chkBPNPCBPOs.Checked = .BPNPCBPOsCheck
+
             chkBPTech1.Checked = .Tech1Check
             chkBPTech2.Checked = .Tech2Check
             chkBPTech3.Checked = .Tech3Check
@@ -86,11 +94,13 @@ Public Class frmBlueprintList
             chkBPXLarge.Checked = .XLCheck
 
         End With
+
     End Sub
 
     ' Saves settings for form to XML
     Private Sub btnReactionsSaveSettings_Click(sender As Object, e As EventArgs) Handles btnReactionsSaveSettings.Click
         Dim TempSettings As BPViewerSettings = Nothing
+        Dim Settings As New ProgramSettings
 
         With TempSettings
             If rbtnBPAll.Checked Then
@@ -129,6 +139,8 @@ Public Class frmBlueprintList
                 .BlueprintTypeSelection = rbtnBPReactionBlueprints.Text
             End If
 
+            .BPNPCBPOsCheck = chkBPNPCBPOs.Checked
+
             .Tech1Check = chkBPTech1.Checked
             .Tech2Check = chkBPTech2.Checked
             .Tech3Check = chkBPTech3.Checked
@@ -143,6 +155,12 @@ Public Class frmBlueprintList
             .LargeCheck = chkBPLarge.Checked
             .XLCheck = chkBPXLarge.Checked
         End With
+
+        Call Settings.SaveBPViewerSettings(TempSettings)
+
+        UserBPViewerSettings = TempSettings
+
+        MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -214,27 +232,33 @@ Public Class frmBlueprintList
 
     Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As Integer?) As String
 
-        Dim levelFilter = ""
+        Dim levelFilter As String = ""
         If filterColumnName <> "" And filterColumnValue.HasValue Then
             levelFilter = $"AND {filterColumnName}_ID = {filterColumnValue}"
         End If
 
         ' Ignore flag
-        Dim IgnoreFilter = ""
+        Dim IgnoreFilter As String = ""
         'If chkBPIncludeIgnoredBPs.Checked = False Then
         '    IgnoreFilter = " AND IGNORE = 0 "
         'End If
 
         ' Text search
-        Dim TextFilter = ""
+        Dim TextFilter As String = ""
         If Trim(txtBPItemFilter.Text) <> "" Then
             TextFilter = " AND BLUEPRINT_NAME LIKE '%" & FormatDBString(Trim(txtBPItemFilter.Text)) & "%' "
+        End If
+
+        Dim NPCBPOFilter As String = ""
+        If chkBPNPCBPOs.Checked Then
+            NPCBPOFilter = " AND i2.marketGroupID IS NOT NULL AND b.ITEM_TYPE <> 2 "
         End If
 
         Dim query =
             $"SELECT b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
             FROM ALL_BLUEPRINTS b
             JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
+            JOIN INVENTORY_TYPES i2 ON b.BLUEPRINT_ID = i2.typeID
             {GetOwnedJoin()}
             WHERE MARKET_GROUP IS NOT NULL
             {GetSizeGroupFilter()}
@@ -242,6 +266,7 @@ Public Class frmBlueprintList
             {levelFilter}
             {IgnoreFilter}
             {TextFilter}
+            {NPCBPOFilter}
             GROUP BY b.{displayLevel}, FilterID
             ORDER BY b.{displayLevel}
             "
@@ -402,18 +427,19 @@ Public Class frmBlueprintList
     End Sub
 
     Private Sub ResetSelectors(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
-        chkBPTech1.Enabled = T1
-        chkBPTech2.Enabled = T2
-        chkBPTech3.Enabled = T3
-        chkBPNavy.Enabled = NavyFaction
-        chkBPPirate.Enabled = PirateFaction
-        chkBPStory.Enabled = Storyline
+        If Not FirstFormLoad Then
+            chkBPTech1.Enabled = T1
+            chkBPTech2.Enabled = T2
+            chkBPTech3.Enabled = T3
+            chkBPNavy.Enabled = NavyFaction
+            chkBPPirate.Enabled = PirateFaction
+            chkBPStory.Enabled = Storyline
 
-        ' Make sure we have something checked
-        Call EnsureBPTechCheck()
-        ' Load the New data
-        Call SetTopNodes()
-
+            ' Make sure we have something checked
+            Call EnsureBPTechCheck()
+            ' Load the New data
+            Call SetTopNodes()
+        End If
     End Sub
 
     ' Makes sure we have a tech checked for blueprints
@@ -530,61 +556,61 @@ Public Class frmBlueprintList
     End Sub
 
     Private Sub chkbpTech1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech1.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkbpTech2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech2.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkbpTech3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTech3.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPNavy_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPNavy.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPPirate_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPPirate.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPStory_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPStory.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPSmall_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPSmall.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPMedium_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPMedium.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPLarge_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPLarge.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
 
     Private Sub chkBPXLarge_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPXLarge.CheckedChanged
-        If Not FirstLoad Then
+        If Not FirstFormLoad Then
             Call SetTopNodes()
         End If
     End Sub
@@ -594,6 +620,10 @@ Public Class frmBlueprintList
     End Sub
 
     Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
+        Call SetTopNodes()
+    End Sub
+
+    Private Sub chkBPNPCBPOs_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPNPCBPOs.CheckedChanged
         Call SetTopNodes()
     End Sub
 

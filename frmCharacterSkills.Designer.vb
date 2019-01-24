@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmCharacterSkills
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class frmCharacterSkills
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmCharacterSkills))
@@ -39,18 +39,16 @@ Partial Class frmCharacterSkills
         Me.mnuLevel4 = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuLevel5 = New System.Windows.Forms.ToolStripMenuItem()
         Me.gbOverride = New System.Windows.Forms.GroupBox()
+        Me.chkAllLevel5 = New System.Windows.Forms.CheckBox()
         Me.chkSkillOverride = New System.Windows.Forms.CheckBox()
         Me.gbCharName = New System.Windows.Forms.GroupBox()
         Me.btnSave = New System.Windows.Forms.Button()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.chkAllLevel5 = New System.Windows.Forms.CheckBox()
         Me.txtSkillNameFilter = New System.Windows.Forms.TextBox()
         Me.lblSkillNameFilter = New System.Windows.Forms.Label()
         Me.btnClearItemFilter = New System.Windows.Forms.Button()
         Me.contextOverride.SuspendLayout()
         Me.gbOverride.SuspendLayout()
         Me.gbCharName.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
         '
         'lblSkillName
@@ -172,18 +170,30 @@ Partial Class frmCharacterSkills
         '
         'gbOverride
         '
+        Me.gbOverride.Controls.Add(Me.chkAllLevel5)
         Me.gbOverride.Controls.Add(Me.chkSkillOverride)
         Me.gbOverride.Location = New System.Drawing.Point(12, 40)
         Me.gbOverride.Name = "gbOverride"
-        Me.gbOverride.Size = New System.Drawing.Size(165, 34)
+        Me.gbOverride.Size = New System.Drawing.Size(338, 34)
         Me.gbOverride.TabIndex = 6
         Me.gbOverride.TabStop = False
         '
+        'chkAllLevel5
+        '
+        Me.chkAllLevel5.AutoSize = True
+        Me.chkAllLevel5.Location = New System.Drawing.Point(184, 11)
+        Me.chkAllLevel5.Name = "chkAllLevel5"
+        Me.chkAllLevel5.Size = New System.Drawing.Size(132, 17)
+        Me.chkAllLevel5.TabIndex = 0
+        Me.chkAllLevel5.Text = "Set all Skills to Level 5"
+        Me.chkAllLevel5.UseVisualStyleBackColor = True
+        '
         'chkSkillOverride
         '
-        Me.chkSkillOverride.Location = New System.Drawing.Point(14, 12)
+        Me.chkSkillOverride.AutoSize = True
+        Me.chkSkillOverride.Location = New System.Drawing.Point(22, 11)
         Me.chkSkillOverride.Name = "chkSkillOverride"
-        Me.chkSkillOverride.Size = New System.Drawing.Size(133, 18)
+        Me.chkSkillOverride.Size = New System.Drawing.Size(93, 17)
         Me.chkSkillOverride.TabIndex = 0
         Me.chkSkillOverride.Text = "Override Skills"
         Me.chkSkillOverride.UseVisualStyleBackColor = True
@@ -206,24 +216,6 @@ Partial Class frmCharacterSkills
         Me.btnSave.TabIndex = 8
         Me.btnSave.Text = "Save Settings"
         Me.btnSave.UseVisualStyleBackColor = True
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.chkAllLevel5)
-        Me.GroupBox1.Location = New System.Drawing.Point(185, 40)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(165, 34)
-        Me.GroupBox1.TabIndex = 9
-        Me.GroupBox1.TabStop = False
-        '
-        'chkAllLevel5
-        '
-        Me.chkAllLevel5.Location = New System.Drawing.Point(14, 12)
-        Me.chkAllLevel5.Name = "chkAllLevel5"
-        Me.chkAllLevel5.Size = New System.Drawing.Size(133, 18)
-        Me.chkAllLevel5.TabIndex = 0
-        Me.chkAllLevel5.Text = "Set all Skills to Level 5"
-        Me.chkAllLevel5.UseVisualStyleBackColor = True
         '
         'txtSkillNameFilter
         '
@@ -252,6 +244,7 @@ Partial Class frmCharacterSkills
         '
         'frmCharacterSkills
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(362, 511)
@@ -259,7 +252,6 @@ Partial Class frmCharacterSkills
         Me.Controls.Add(Me.txtSkillNameFilter)
         Me.Controls.Add(Me.lblSkillNameFilter)
         Me.Controls.Add(Me.btnSave)
-        Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.btnRefresh)
         Me.Controls.Add(Me.gbCharName)
@@ -274,9 +266,9 @@ Partial Class frmCharacterSkills
         Me.Text = "EVE Isk per Hour - Loaded Skills"
         Me.contextOverride.ResumeLayout(False)
         Me.gbOverride.ResumeLayout(False)
+        Me.gbOverride.PerformLayout()
         Me.gbCharName.ResumeLayout(False)
         Me.gbCharName.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -298,7 +290,6 @@ Partial Class frmCharacterSkills
     Friend WithEvents btnSave As System.Windows.Forms.Button
     Friend WithEvents mnuOrigLevel As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As System.Windows.Forms.ToolStripSeparator
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
     Friend WithEvents chkAllLevel5 As System.Windows.Forms.CheckBox
     Friend WithEvents mnuLevel0 As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents txtSkillNameFilter As System.Windows.Forms.TextBox

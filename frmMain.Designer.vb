@@ -40,6 +40,8 @@ Partial Class frmMain
         Me.mnuUpdateIndustryFacilities = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateESIMarketPrices = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateESIPublicStructures = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuChangeDummyCharacterName = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuViewESIStatus = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuResetData = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetBlueprintData = New System.Windows.Forms.ToolStripMenuItem()
@@ -135,6 +137,7 @@ Partial Class frmMain
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
         Me.lstBPList = New System.Windows.Forms.ListBox()
         Me.gbBPBlueprintType = New System.Windows.Forms.GroupBox()
+        Me.chkBPNPCBPOs = New System.Windows.Forms.CheckBox()
         Me.rbtnBPReactionsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPCelestialsBlueprints = New System.Windows.Forms.RadioButton()
@@ -370,6 +373,7 @@ Partial Class frmMain
         Me.chkSystems3 = New System.Windows.Forms.CheckBox()
         Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.gbRegions = New System.Windows.Forms.GroupBox()
+        Me.btnViewSavedStructures = New System.Windows.Forms.Button()
         Me.btnAddStructureIDs = New System.Windows.Forms.Button()
         Me.chkRegion46 = New System.Windows.Forms.CheckBox()
         Me.chkRegion47 = New System.Windows.Forms.CheckBox()
@@ -465,6 +469,7 @@ Partial Class frmMain
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
+        Me.chkCalcNPCBPOs = New System.Windows.Forms.CheckBox()
         Me.btnCalcShowAssets = New System.Windows.Forms.Button()
         Me.gbCalcIncludeItems = New System.Windows.Forms.GroupBox()
         Me.chkCalcCanInvent = New System.Windows.Forms.CheckBox()
@@ -1021,7 +1026,6 @@ Partial Class frmMain
         Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
-        Me.btnViewSavedStructures = New System.Windows.Forms.Button()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1223,7 +1227,7 @@ Partial Class frmMain
         '
         'mnuUpdateData
         '
-        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.mnuUpdateESIPublicStructures, Me.ToolStripSeparator6, Me.mnuResetData})
+        Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.mnuUpdateESIPublicStructures, Me.mnuChangeDummyCharacterName, Me.mnuViewESIStatus, Me.ToolStripSeparator6, Me.mnuResetData})
         Me.mnuUpdateData.Name = "mnuUpdateData"
         Me.mnuUpdateData.Size = New System.Drawing.Size(43, 20)
         Me.mnuUpdateData.Text = "Data"
@@ -1231,31 +1235,43 @@ Partial Class frmMain
         'mnuUpdateIndustryFacilities
         '
         Me.mnuUpdateIndustryFacilities.Name = "mnuUpdateIndustryFacilities"
-        Me.mnuUpdateIndustryFacilities.Size = New System.Drawing.Size(236, 22)
+        Me.mnuUpdateIndustryFacilities.Size = New System.Drawing.Size(250, 22)
         Me.mnuUpdateIndustryFacilities.Text = "Update Industry Facilities"
         '
         'mnuUpdateESIMarketPrices
         '
         Me.mnuUpdateESIMarketPrices.Name = "mnuUpdateESIMarketPrices"
-        Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(236, 22)
+        Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(250, 22)
         Me.mnuUpdateESIMarketPrices.Text = "Update Adjusted Market Prices"
         '
         'mnuUpdateESIPublicStructures
         '
         Me.mnuUpdateESIPublicStructures.Name = "mnuUpdateESIPublicStructures"
-        Me.mnuUpdateESIPublicStructures.Size = New System.Drawing.Size(236, 22)
+        Me.mnuUpdateESIPublicStructures.Size = New System.Drawing.Size(250, 22)
         Me.mnuUpdateESIPublicStructures.Text = "Update Public Structures"
+        '
+        'mnuChangeDummyCharacterName
+        '
+        Me.mnuChangeDummyCharacterName.Name = "mnuChangeDummyCharacterName"
+        Me.mnuChangeDummyCharacterName.Size = New System.Drawing.Size(250, 22)
+        Me.mnuChangeDummyCharacterName.Text = "Change Dummy Character Name"
+        '
+        'mnuViewESIStatus
+        '
+        Me.mnuViewESIStatus.Name = "mnuViewESIStatus"
+        Me.mnuViewESIStatus.Size = New System.Drawing.Size(250, 22)
+        Me.mnuViewESIStatus.Text = "View ESI Status"
         '
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
-        Me.ToolStripSeparator6.Size = New System.Drawing.Size(233, 6)
+        Me.ToolStripSeparator6.Size = New System.Drawing.Size(247, 6)
         '
         'mnuResetData
         '
         Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIPublicStructures, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
         Me.mnuResetData.Name = "mnuResetData"
-        Me.mnuResetData.Size = New System.Drawing.Size(236, 22)
+        Me.mnuResetData.Size = New System.Drawing.Size(250, 22)
         Me.mnuResetData.Text = "Reset Data"
         '
         'mnuResetBlueprintData
@@ -1852,6 +1868,7 @@ Partial Class frmMain
         '
         'gbBPBlueprintType
         '
+        Me.gbBPBlueprintType.Controls.Add(Me.chkBPNPCBPOs)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPReactionsBlueprints)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPStructureModulesBlueprints)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPCelestialsBlueprints)
@@ -1876,6 +1893,17 @@ Partial Class frmMain
         Me.gbBPBlueprintType.TabIndex = 71
         Me.gbBPBlueprintType.TabStop = False
         Me.gbBPBlueprintType.Text = "Blueprint Type"
+        '
+        'chkBPNPCBPOs
+        '
+        Me.chkBPNPCBPOs.AutoSize = True
+        Me.chkBPNPCBPOs.Location = New System.Drawing.Point(208, 103)
+        Me.chkBPNPCBPOs.Name = "chkBPNPCBPOs"
+        Me.chkBPNPCBPOs.Size = New System.Drawing.Size(78, 17)
+        Me.chkBPNPCBPOs.TabIndex = 6
+        Me.chkBPNPCBPOs.Text = "NPC BPOs"
+        Me.chkBPNPCBPOs.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.chkBPNPCBPOs.UseVisualStyleBackColor = True
         '
         'rbtnBPReactionsBlueprints
         '
@@ -1913,7 +1941,7 @@ Partial Class frmMain
         'rbtnBPMiscBlueprints
         '
         Me.rbtnBPMiscBlueprints.AutoSize = True
-        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(208, 102)
+        Me.rbtnBPMiscBlueprints.Location = New System.Drawing.Point(149, 51)
         Me.rbtnBPMiscBlueprints.Name = "rbtnBPMiscBlueprints"
         Me.rbtnBPMiscBlueprints.Size = New System.Drawing.Size(50, 17)
         Me.rbtnBPMiscBlueprints.TabIndex = 15
@@ -1935,7 +1963,7 @@ Partial Class frmMain
         'rbtnBPFavoriteBlueprints
         '
         Me.rbtnBPFavoriteBlueprints.AutoSize = True
-        Me.rbtnBPFavoriteBlueprints.Location = New System.Drawing.Point(208, 15)
+        Me.rbtnBPFavoriteBlueprints.Location = New System.Drawing.Point(208, 17)
         Me.rbtnBPFavoriteBlueprints.Name = "rbtnBPFavoriteBlueprints"
         Me.rbtnBPFavoriteBlueprints.Size = New System.Drawing.Size(68, 17)
         Me.rbtnBPFavoriteBlueprints.TabIndex = 2
@@ -1957,7 +1985,7 @@ Partial Class frmMain
         'rbtnBPOwnedBlueprints
         '
         Me.rbtnBPOwnedBlueprints.AutoSize = True
-        Me.rbtnBPOwnedBlueprints.Location = New System.Drawing.Point(97, 15)
+        Me.rbtnBPOwnedBlueprints.Location = New System.Drawing.Point(97, 17)
         Me.rbtnBPOwnedBlueprints.Name = "rbtnBPOwnedBlueprints"
         Me.rbtnBPOwnedBlueprints.Size = New System.Drawing.Size(59, 17)
         Me.rbtnBPOwnedBlueprints.TabIndex = 1
@@ -3427,9 +3455,9 @@ Partial Class frmMain
         Me.tabUpdatePrices.Controls.Add(Me.lblItemFilter)
         Me.tabUpdatePrices.Controls.Add(Me.gbManufacturedItems)
         Me.tabUpdatePrices.Controls.Add(Me.gbRawMaterials)
-        Me.tabUpdatePrices.Controls.Add(Me.pnlSinglePriceLocationSelect)
         Me.tabUpdatePrices.Controls.Add(Me.pnlPriceProfiles)
         Me.tabUpdatePrices.Controls.Add(Me.btnOpenMarketBrowser)
+        Me.tabUpdatePrices.Controls.Add(Me.pnlSinglePriceLocationSelect)
         Me.tabUpdatePrices.Location = New System.Drawing.Point(4, 22)
         Me.tabUpdatePrices.Name = "tabUpdatePrices"
         Me.tabUpdatePrices.Padding = New System.Windows.Forms.Padding(3)
@@ -4446,6 +4474,15 @@ Partial Class frmMain
         Me.gbRegions.TabStop = False
         Me.gbRegions.Text = "Regions"
         '
+        'btnViewSavedStructures
+        '
+        Me.btnViewSavedStructures.Location = New System.Drawing.Point(351, 393)
+        Me.btnViewSavedStructures.Name = "btnViewSavedStructures"
+        Me.btnViewSavedStructures.Size = New System.Drawing.Size(100, 25)
+        Me.btnViewSavedStructures.TabIndex = 122
+        Me.btnViewSavedStructures.Text = "View Saved SIDs"
+        Me.btnViewSavedStructures.UseVisualStyleBackColor = True
+        '
         'btnAddStructureIDs
         '
         Me.btnAddStructureIDs.Location = New System.Drawing.Point(249, 393)
@@ -5390,6 +5427,7 @@ Partial Class frmMain
         '
         'gbCalcBPSelectOptions
         '
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.chkCalcNPCBPOs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcShowAssets)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIncludeItems)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcMarketFilters)
@@ -5422,6 +5460,16 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabIndex = 0
         Me.gbCalcBPSelectOptions.TabStop = False
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
+        '
+        'chkCalcNPCBPOs
+        '
+        Me.chkCalcNPCBPOs.AutoSize = True
+        Me.chkCalcNPCBPOs.Location = New System.Drawing.Point(443, 13)
+        Me.chkCalcNPCBPOs.Name = "chkCalcNPCBPOs"
+        Me.chkCalcNPCBPOs.Size = New System.Drawing.Size(78, 17)
+        Me.chkCalcNPCBPOs.TabIndex = 15
+        Me.chkCalcNPCBPOs.Text = "NPC BPOs"
+        Me.chkCalcNPCBPOs.UseVisualStyleBackColor = True
         '
         'btnCalcShowAssets
         '
@@ -11134,15 +11182,6 @@ Partial Class frmMain
         Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
         Me.CalcReactionsFacility.TabIndex = 1
         '
-        'btnViewSavedStructures
-        '
-        Me.btnViewSavedStructures.Location = New System.Drawing.Point(351, 393)
-        Me.btnViewSavedStructures.Name = "btnViewSavedStructures"
-        Me.btnViewSavedStructures.Size = New System.Drawing.Size(100, 25)
-        Me.btnViewSavedStructures.TabIndex = 122
-        Me.btnViewSavedStructures.Text = "View Saved SIDs"
-        Me.btnViewSavedStructures.UseVisualStyleBackColor = True
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11229,6 +11268,7 @@ Partial Class frmMain
         Me.ItemsDefaults.PerformLayout()
         Me.tabManufacturing.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.ResumeLayout(False)
+        Me.gbCalcBPSelectOptions.PerformLayout()
         Me.gbCalcIncludeItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.PerformLayout()
         Me.gbCalcMarketFilters.ResumeLayout(False)
@@ -12369,4 +12409,8 @@ Partial Class frmMain
     Friend WithEvents btnOpenMarketBrowser As Button
     Friend WithEvents btnAddStructureIDs As Button
     Friend WithEvents btnViewSavedStructures As Button
+    Friend WithEvents mnuViewESIStatus As ToolStripMenuItem
+    Friend WithEvents mnuChangeDummyCharacterName As ToolStripMenuItem
+    Friend WithEvents chkBPNPCBPOs As CheckBox
+    Friend WithEvents chkCalcNPCBPOs As CheckBox
 End Class

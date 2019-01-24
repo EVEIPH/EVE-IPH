@@ -3545,6 +3545,7 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualME.KeyPress
+        Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
 
@@ -3567,6 +3568,7 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualTE_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTE.KeyPress
+        Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
 
@@ -3589,6 +3591,7 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualCost_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualCost.KeyPress
+        Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
 
@@ -3611,6 +3614,7 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualTax_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTax.KeyPress
+        Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
 

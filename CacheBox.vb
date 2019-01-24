@@ -23,7 +23,7 @@ Public Class CacheBox
 
             If Not rsCheck.HasRows Then
                 ' Insert a record
-                EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_PUBLIC_CACHE_DATES VALUES (NULL,NULL,NULL)")
+                EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_PUBLIC_CACHE_DATES VALUES (NULL,NULL,NULL,NULL)")
             End If
             rsCheck.Close()
         End If
@@ -65,6 +65,7 @@ Public Class CacheBox
                     Else
                         Return False ' Don't update yet
                     End If
+
                 End If
             End If
         End If
@@ -108,6 +109,8 @@ Public Class CacheBox
                     .FieldName = "PUBLIC_STRUCTURES_CACHED_UNTIL"
                 Case CacheDateType.CorporateRoles
                     .FieldName = "CORP_ROLES_CACHE_DATE"
+                Case CacheDateType.ESIStatus
+                    .FieldName = "PUBLIC_ESI_STATUS_CACHED_UNTIL"
                 Case Else
                     .FieldName = ""
             End Select
@@ -117,7 +120,7 @@ Public Class CacheBox
             Case CacheDateType.CorporateAssets, CacheDateType.CorporateBlueprints, CacheDateType.CorporateIndyJobs, CacheDateType.PublicCorporationData, CacheDateType.CorporateRoles
                 ReturnData.TableName = "ESI_CORPORATION_DATA"
                 ReturnData.IDName = "CORPORATION_ID"
-            Case CacheDateType.IndustryFacilities, CacheDateType.IndustrySystems, CacheDateType.MarketPrices, CacheDateType.PublicStructures
+            Case CacheDateType.IndustryFacilities, CacheDateType.IndustrySystems, CacheDateType.MarketPrices, CacheDateType.PublicStructures, CacheDateType.ESIStatus
                 ReturnData.TableName = "ESI_PUBLIC_CACHE_DATES"
                 ReturnData.IDName = ""
             Case Else
@@ -152,5 +155,6 @@ Public Enum CacheDateType
     IndustryFacilities = 12
     MarketPrices = 13
     PublicStructures = 15
+    ESIStatus = 16
 
 End Enum

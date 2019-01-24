@@ -54,35 +54,26 @@
         Dim ESIData As New ESI
         Dim CheckedIDs As New List(Of Integer)
         Dim StructureTextBox As TextBox
-        Dim StructureLabel As Label
-        Dim AddStructure As Boolean
         Dim AddedCount As Integer = 0
+        Dim StructureIDList As New List(Of Long)
 
         CheckedIDs = GetCheckedIDs()
 
         For Each index In CheckedIDs
             StructureTextBox = GetTextBox(index)
-            StructureLabel = GetLabel(index)
-            AddStructure = False
 
-            If StructureLabel.Text = "" Then
-                ' They didn't do a check of the ID
-                If ESIData.CheckStructureMarketData(CLng(StructureTextBox.Text), SelectedCharacter.CharacterTokenData, True) Then
-                    ' They can add it
-                    AddStructure = True
-                End If
-            ElseIf StructureLabel.Text <> "Market Access Denied" Then
-                AddStructure = True
-            End If
-
-            If AddStructure Then
-                Dim TempList As New List(Of Long)
-                TempList.Add(CLng(StructureTextBox.Text))
+            ' Check the structure for ability to add data
+            If ESIData.CheckStructureMarketData(CLng(StructureTextBox.Text), SelectedCharacter.CharacterTokenData, True) Then
+                ' They can add it
+                StructureIDList.Add(CLng(StructureTextBox.Text))
                 AddedCount += 1
-                ' Add the data
-                Call UpdateStructureData(TempList, SelectedCharacter.CharacterTokenData, True)
             End If
+        Next
 
+        ' Add the data
+        Dim SP As New StructureProcessor
+        For Each StructureID In StructureIDList
+            Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, True)
         Next
 
         ' Refresh the view saved screen if open

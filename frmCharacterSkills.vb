@@ -263,6 +263,8 @@ Public Class frmCharacterSkills
 
         lblCharacterName.Text = SelectedCharacter.Name
 
+        ' If they want max alpha, load those skills into the selected character (dummy)
+
         ' Load whatever is in the database
         Call SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, LoadAllSkillsforOverride)
 
@@ -289,7 +291,6 @@ Public Class frmCharacterSkills
                         Else
                             TempSkillLevel = .Level
                         End If
-
 
                         If TempSkillLevel <> 0 Or (TempSkillLevel = 0 And chkSkillOverride.Checked = True) Then
                             CurrentSubNode = CurrentNode.Nodes.Add(.Name & " - " & CStr(TempSkillLevel))

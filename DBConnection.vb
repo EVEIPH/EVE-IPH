@@ -53,4 +53,12 @@ Public Class DBConnection
         Call ExecuteNonQuerySQL("ROLLBACK;")
     End Sub
 
+    Public Function TransactionActive() As Boolean
+        If DB.AutoCommit Then
+            Return False
+        Else
+            Return True
+        End If
+    End Function
+
 End Class

@@ -45,7 +45,7 @@ Public Class frmViewSavedStructures
 
         SQL = "SELECT STATION_ID, STATION_NAME, solarSystemName, regionName FROM STATIONS, SOLAR_SYSTEMS, REGIONS "
         SQL &= "WHERE STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
-        SQL &= "AND STATIONS.REGION_ID = REGIONS.regionID AND MANUALLY_ADDED <> 0 "
+        SQL &= "AND STATIONS.REGION_ID = REGIONS.regionID AND MANUAL_ENTRY <> 0 "
         SQL &= "ORDER BY regionName, solarSystemName, STATION_NAME"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

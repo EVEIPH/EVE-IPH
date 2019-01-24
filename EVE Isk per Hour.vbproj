@@ -186,10 +186,22 @@
     <Compile Include="frmBonusPopout.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmChangeDummyCharacter.Designer.vb">
+      <DependentUpon>frmChangeDummyCharacter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmChangeDummyCharacter.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmChooseFacility.Designer.vb">
       <DependentUpon>frmChooseFacility.vb</DependentUpon>
     </Compile>
     <Compile Include="frmChooseFacility.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmESIStatus.Designer.vb">
+      <DependentUpon>frmESIStatus.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmESIStatus.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmLoadESIAuthorization.Designer.vb">
@@ -482,6 +494,8 @@
     <Compile Include="frmStatus.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="StructureProcessor.vb" />
+    <Compile Include="ThreadingArray.vb" />
     <Compile Include="TimePicker.Designer.vb">
       <DependentUpon>TimePicker.vb</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -502,8 +516,14 @@
     <EmbeddedResource Include="frmBonusPopout.resx">
       <DependentUpon>frmBonusPopout.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmChangeDummyCharacter.resx">
+      <DependentUpon>frmChangeDummyCharacter.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmChooseFacility.resx">
       <DependentUpon>frmChooseFacility.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmESIStatus.resx">
+      <DependentUpon>frmESIStatus.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmLoadESIAuthorization.resx">
       <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
@@ -666,7 +686,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Help_Circle_Blue.png" />
     <Content Include="icon07_02.ico" />
     <Content Include="Resources\XImage.png" />
     <None Include="XImage.png" />

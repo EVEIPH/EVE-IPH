@@ -77,7 +77,7 @@ Public Class Character
     End Sub
 
     ' Saves the dummy character for the program
-    Public Function LoadDummyCharacter(IgnoreMessages As Boolean) As TriState
+    Public Function LoadDummyCharacter(IgnoreMessages As Boolean, Optional ReloadDummy As Boolean = False) As TriState
         Dim response As Integer
         Dim Settings As AppRegistrationInformationSettings
 
@@ -89,15 +89,22 @@ Public Class Character
             Dim SQL As String
             Dim rsCheck As SQLiteDataReader
 
-            SQL = String.Format("SELECT 'X' FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = {0}", CStr(DummyCharacterID))
+            SQL = String.Format("SELECT CHARACTER_NAME FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = {0}", CStr(DummyCharacterID))
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsCheck = DBCommand.ExecuteReader
 
-            ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite
-            If Not rsCheck.HasRows Then
+            ' Double check to make sure the record doesn't already exist - user could update skills, etc for a dummy and don't want to overwrite, or if we want to reload
+            If Not rsCheck.HasRows Or ReloadDummy Then
                 ' Now insert this data in the DB for using all the time and set to default"yyyy-MM-dd HH:mm:ss" since it doesn't exist
                 ID = DummyCharacterID
-                Name = "Dummy Character"
+                If rsCheck.HasRows Then
+                    ' Load the old name if they set it already and this is a reload
+                    rsCheck.Read()
+                    Name = rsCheck.GetString(0)
+                Else
+                    Name = "Dummy Character"
+                End If
+
                 DOB = NoDate
                 Gender = Male
                 RaceID = 1
@@ -114,18 +121,24 @@ Public Class Character
 
                 Dim NoExpireDate As String = Format(NoExpiry, SQLiteDateFormat)
 
-                With CharacterTokenData
-                    SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
-                    SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
-                End With
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                If Not rsCheck.HasRows Then
+                    With CharacterTokenData
+                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
+                        SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
+                    End With
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End If
 
                 ' Load dummy corp
                 CharacterCorporation = New Corporation()
-                CharacterCorporation.LoadDummyCorporationData
+                CharacterCorporation.LoadDummyCorporationData()
 
-                ' Load the dummy skills
-                Skills.LoadDummySkills()
+                ' Load the skills depending on settings
+                If UserApplicationSettings.LoadMaxAlphaSkills Then
+                    Skills.LoadMaxAlphaSkills()
+                Else
+                    Skills.LoadDummySkills()
+                End If
 
                 ' No standings
                 Standings = New EVENPCStandings
@@ -253,12 +266,12 @@ Public Class Character
                         IsDefault = CBool(.GetInt32(15))
                     Else
                         ' Check the error that caused this not to update
-                        If TempESI.ErrorData.ErrorText.Contains("token") Or TempESI.ErrorData.ErrorDescription.Contains("token") Then
+                        If ESIErrorHandler.ErrorResponse.Contains("token") Then
                             ' They have some issue with their token or log
-                            MsgBox("IPH is unable to refresh your character data - " & TempESI.ErrorData.ErrorDescription & vbCrLf & vbCrLf & "Please recheck your registration information and try again.", vbInformation, Application.ProductName)
-                            ' Now leave since everything below will fail
-                            Return True
+                            MsgBox("IPH is unable to refresh your character data - " & ESIErrorHandler.ErrorResponse & vbCrLf & vbCrLf & "Please recheck your registration information and try again.", vbInformation, Application.ProductName)
                         End If
+                        ' Now leave since everything below will fail
+                        Return True
                     End If
                 End If
 

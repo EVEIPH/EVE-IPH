@@ -136,8 +136,8 @@ Public Class frmMarketHistoryViewer
             MinXDate = dtpStartDate.Value
             EndDate = dtpEndDate.Value
         Else
-            StartDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 20), Now.Date)
-            MinXDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 1), Now.Date)
+            StartDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 20), Date.UtcNow.Date)
+            MinXDate = DateAdd(DateInterval.Day, -(CInt(cmbAvgPriceDuration.Text) + 1), Date.UtcNow.Date)
             EndDate = Now
         End If
 

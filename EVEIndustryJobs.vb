@@ -45,6 +45,7 @@ Public Class EVEIndustryJobs
         Dim CacheDate As Date
         Dim LocationID As Long = 0
         Dim TempDate As Date
+        Dim CorpCharIDs As New List(Of Long)
 
         Dim CDType As CacheDateType
 
@@ -62,23 +63,40 @@ Public Class EVEIndustryJobs
                 If IndyJobs.Count > 0 Then
                     Call EVEDB.BeginSQLiteTransaction()
 
-                    ' Clear out all the industry jobs for the user
-                    SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID = " & CharacterTokenData.CharacterID & " AND JobType = " & CStr(JobType)
+                    ' Clear out all the industry jobs for the user if not a corp lookup
+                    If JobType = ScanType.Personal Then
+                        SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID = " & CharacterTokenData.CharacterID & " AND JobType = " & CStr(JobType)
+                    Else
+                        ' Delete all jobs and reload for corp
+                        SQL = "DELETE FROM INDUSTRY_JOBS WHERE JobType = " & CStr(JobType)
+
+                        ' Also, get the list of character IDs stored in the DB with this corporation and only load those jobs
+                        Dim rsIDs As SQLiteDataReader
+                        DBCommand = New SQLiteCommand("SELECT CHARACTER_ID FROM ESI_CHARACTER_DATA WHERE CORPORATION_ID = " & CStr(ID), EVEDB.DBREf)
+                        rsIDs = DBCommand.ExecuteReader
+
+                        While rsIDs.Read
+                            CorpCharIDs.Add(rsIDs.GetInt64(0))
+                        End While
+
+                        rsIDs.Close()
+
+                    End If
 
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    ' Insert industry data
-                    For i = 0 To IndyJobs.Count - 1
-                        ' First make sure it's not already in there
-                        With IndyJobs(i)
-                            ' Insert it
-                            If .location_id = 0 Then
-                                LocationID = .station_id
-                            Else
-                                LocationID = .location_id
-                            End If
+                        ' Insert industry data
+                        For i = 0 To IndyJobs.Count - 1
+                            ' First make sure it's not already in there
+                            With IndyJobs(i)
+                                ' Insert it
+                                If .location_id = 0 Then
+                                    LocationID = .station_id
+                                Else
+                                    LocationID = .location_id
+                                End If
 
-                            If .installer_id = CharacterTokenData.CharacterID Then ' update fields
+                            If JobType = ScanType.Personal Or (CorpCharIDs.Contains(.installer_id) And JobType = ScanType.Corporation) Then ' update fields
                                 SQL = "INSERT INTO INDUSTRY_JOBS (jobID, installerID, facilityID, locationID, activityID, "
                                 SQL &= "blueprintID, blueprintTypeID, blueprintLocationID, outputLocationID, "
                                 SQL &= "runs, cost, licensedRuns, probability, productTypeID, status, duration, "
@@ -121,36 +139,40 @@ Public Class EVEIndustryJobs
 
                             End If
                         End With
-                    Next
+                        Next
 
-                    DBCommand = Nothing
+                        DBCommand = Nothing
 
-                    ' Now look up distinct location ids to find any public upwell structures to update
-                    Dim rsStructure As SQLiteDataReader
-                    Dim StructureIDList As New List(Of Long)
+                        ' Now look up distinct location ids to find any public upwell structures to update
+                        Dim rsStructure As SQLiteDataReader
+                        Dim StructureIDList As New List(Of Long)
 
-                    ' Select facilties only for this character, since others may not have the same rights to this token
-                    SQL = "SELECT DISTINCT facilityID FROM INDUSTRY_JOBS WHERE installerID = " & CStr(ID)
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsStructure = DBCommand.ExecuteReader
+                        ' Select facilties only for this character, since others may not have the same rights to this token
+                        SQL = "SELECT DISTINCT facilityID FROM INDUSTRY_JOBS WHERE installerID = " & CStr(ID)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        rsStructure = DBCommand.ExecuteReader
 
-                    While rsStructure.Read
-                        StructureIDList.Add(rsStructure.GetInt64(0))
-                    End While
+                        While rsStructure.Read
+                            StructureIDList.Add(rsStructure.GetInt64(0))
+                        End While
 
-                    rsStructure.Close()
+                        rsStructure.Close()
 
-                    ' Update all the structures we don't have names for
-                    Call UpdateStructureData(StructureIDList, CharacterTokenData)
+                        ' Update all the structures we don't have names for
+                        ' Add the data
+                        Dim SP As New StructureProcessor
+                        For Each StructureID In StructureIDList
+                            Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, False)
+                        Next
 
-                    DBCommand = Nothing
-                    rsStructure = Nothing
+                        DBCommand = Nothing
+                        rsStructure = Nothing
 
-                    Call EVEDB.CommitSQLiteTransaction()
-                End If
+                        Call EVEDB.CommitSQLiteTransaction()
+                    End If
 
-                ' Update cache date now that it's all set
-                Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+                    ' Update cache date now that it's all set
+                    Call CB.UpdateCacheDate(CDType, CacheDate, ID)
             End If
         End If
 

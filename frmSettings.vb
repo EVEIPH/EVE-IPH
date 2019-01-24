@@ -326,6 +326,7 @@ Public Class frmSettings
                 .SetToolTip(chkRefreshMarketDataonStartup, "When checked, IPH will refresh average and adjusted market prices (if cache date has past) on startup for use in industry calcuations")
                 .SetToolTip(chkRefreshSystemCostIndiciesDataonStartup, "When checked, IPH will refresh the system industry indicies on startup (if cache date has past) for use in industry calculations")
                 .SetToolTip(chkRefreshPublicStructureDataonStartup, "When checked, IPH will refresh data on public structures (if cache date has past) for use in price updates")
+                .SetToolTip(chkSupressESImsgs, "When checked, supresses messages if there are ESI Status errors.")
 
                 ' SVR Settings
                 .SetToolTip(lblSVRThreshold, "When set, this will be the default threshold for Sales to Volume Ratio on the BP and Manufacturing tabs")
@@ -341,6 +342,7 @@ Public Class frmSettings
                 ' Character Options
                 .SetToolTip(chkAlphaAccount, "When checked, IPH will calculate costs adding the 2% industry tax on industry and science jobs")
                 .SetToolTip(chkUseActiveSkills, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha)")
+                .SetToolTip(chkLoadMaxAlphaSkills, "When checked, IPH will load the maximum trainable alpha skills for a dummy character.")
 
                 ' Build Settings
                 .SetToolTip(chkBuildBuyDefault, "When checked, BP builds will use Build/Buy calcuations for final costs")
@@ -394,6 +396,7 @@ Public Class frmSettings
             chkRefreshSystemCostIndiciesDataonStartup.Checked = .LoadESISystemCostIndiciesDataonStartup
             chkRefreshMarketDataonStartup.Checked = .LoadESIMarketDataonStartup
             chkRefreshPublicStructureDataonStartup.Checked = .LoadESIPublicStructuresonStartup
+            chkSupressESImsgs.Checked = .SupressESIStatusMessages
 
             If .BrokerCorpStanding = Defaults.DefaultBrokerCorpStanding Then
                 ' Default
@@ -481,6 +484,7 @@ Public Class frmSettings
 
             chkAlphaAccount.Checked = .AlphaAccount
             chkUseActiveSkills.Checked = .UseActiveSkillLevels
+            chkLoadMaxAlphaSkills.Checked = .LoadMaxAlphaSkills
 
             chkLinksInCopyText.Checked = .IncludeInGameLinksinCopyText
 
@@ -541,6 +545,8 @@ Public Class frmSettings
         Dim ManufacturingImplantValue As Double = 0
         Dim CopyImplantValue As Double = 0
 
+        Dim OldMaxAlphaSkillsSetting As Boolean = UserApplicationSettings.LoadMaxAlphaSkills
+
         Dim Settings As New ProgramSettings
 
         If btnSave.Text = "Save" Then
@@ -587,6 +593,7 @@ Public Class frmSettings
                 .LoadESISystemCostIndiciesDataonStartup = chkRefreshSystemCostIndiciesDataonStartup.Checked
                 .LoadESIMarketDataonStartup = chkRefreshMarketDataonStartup.Checked
                 .LoadESIPublicStructuresonStartup = chkRefreshPublicStructureDataonStartup.Checked
+                .SupressESIStatusMessages = chkSupressESImsgs.Checked
 
                 ' If they didn't have this checked before, refresh assets
                 If SelectedCharacter.ID <> DummyCharacterID Then
@@ -632,14 +639,9 @@ Public Class frmSettings
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
-                ' Account options, don't allow if dummy account active
-                If SelectedCharacter.ID <> DummyCharacterID Then
-                    .AlphaAccount = chkAlphaAccount.Checked
-                    .UseActiveSkillLevels = chkUseActiveSkills.Checked
-                Else
-                    .AlphaAccount = False
-                    .UseActiveSkillLevels = False
-                End If
+                .AlphaAccount = chkAlphaAccount.Checked
+                .UseActiveSkillLevels = chkUseActiveSkills.Checked
+                .LoadMaxAlphaSkills = chkLoadMaxAlphaSkills.Checked
 
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
@@ -673,6 +675,13 @@ Public Class frmSettings
 
             ' Save the data to the local variable
             UserApplicationSettings = TempSettings
+
+            ' If they selected to load max alpha skills for dummy character or reset it, then reload them if it changed
+            If SelectedCharacter.ID = DummyCharacterID Then
+                If OldMaxAlphaSkillsSetting <> chkLoadMaxAlphaSkills.Checked Then
+                    Call SelectedCharacter.LoadDummyCharacter(True, True)
+                End If
+            End If
 
             ' They changed the active skill levels, update skills now with new application settings
             If ReloadSkills Then
@@ -798,4 +807,5 @@ InvalidData:
         ' They changed active skills, so reload character skills on exit
         ReloadSkills = True
     End Sub
+
 End Class

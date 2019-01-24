@@ -79,6 +79,7 @@ Public Class ProgramSettings
     Public DefaultRefreshMarketESIDataonStartup As Boolean = True
     Public DefaultRefreshFacilityESIDataonStartup As Boolean = True
     Public DefaultRefreshPublicStructureDataonStartup As Boolean = True
+    Public DefaultSupressESIStatusMessages As Boolean = False
     Public DefaultDisableSound As Boolean = False
     Public DefaultDNMarkInlineasOwned As Boolean = False
     Public DefaultSaveFacilitiesbyChar As Boolean = True
@@ -127,6 +128,7 @@ Public Class ProgramSettings
 
     Public DefaultAlphaAccount As Boolean = False
     Public DefaultUseActiveSkills As Boolean = False
+    Public DefaultLoadMaxAlphaSkills As Boolean = False
 
     ' SVR Stuff
     Public DefaultIgnoreSVRThresholdValue As Double = 0.0
@@ -177,6 +179,7 @@ Public Class ProgramSettings
     Public DefaultBPIncludeT3Cost As Boolean = False
     Public DefaultBPIncludeT3Time As Boolean = False
     Public DefaultBPSimpleCopyCheck As Boolean = False
+    Public DefaultBPNPCBPOs As Boolean = False
     Public DefaultBPProductionLines As Integer = 1
     Public DefaultBPLaboratoryLines As Integer = 1
     Public DefaultBPRELines As Integer = 1
@@ -233,6 +236,7 @@ Public Class ProgramSettings
     Public DefaultCheckBPTypeStructures As Boolean = True
     Public DefaultCheckBPTypeTools As Boolean = True
     Public DefaultCheckBPTypeModules As Boolean = True
+    Public DefaultCheckBPTypeNPCBPOs As Boolean = False
     Public DefaultCheckBPTypeAmmoCharges As Boolean = True
     Public DefaultCheckBPTypeRigs As Boolean = True
     Public DefaultCheckBPTypeSubsystems As Boolean = True
@@ -914,6 +918,7 @@ Public Class ProgramSettings
     Public DefaultBPViewerTechChecks As Boolean = True
     Public DefaultBPViewerSizeChecks As Boolean = False
     Public DefaultBPViewerIgnoreBPsCheck As Boolean = False
+    Public DefaultBPNPCBPOsCheck As Boolean = False
     Public DefaultBPViewerSelectionType As String = "All"
 
     ' 5 belts
@@ -1088,6 +1093,7 @@ Public Class ProgramSettings
                     .LoadESIMarketDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESIMarketDataonStartup", DefaultRefreshMarketESIDataonStartup))
                     .LoadESISystemCostIndiciesDataonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESISystemCostIndiciesDataonStartup", DefaultRefreshFacilityESIDataonStartup))
                     .LoadESIPublicStructuresonStartup = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadESISystemCostIndiciesDataonStartup", DefaultRefreshPublicStructureDataonStartup))
+                    .SupressESIStatusMessages = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SupressESIStatusMessages", DefaultSupressESIStatusMessages))
                     .DataExportFormat = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "DataExportFormat", DefaultDataExportFormat))
                     .AllowSkillOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AllowSkillOverride", DefaultAllowSkillOverride))
                     .ShowToolTips = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShowToolTips", DefaultShowToolTips))
@@ -1117,8 +1123,9 @@ Public Class ProgramSettings
                     .BuildT2T3Materials = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType))
                     .SaveFacilitiesbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveFacilitiesbyChar", DefaultSaveFacilitiesbyChar))
                     .LoadBPsbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadBPsbyChar", DefaultLoadBPsbyChar))
-                    .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultLoadBPsbyChar))
-                    .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultLoadBPsbyChar))
+                    .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultAlphaAccount))
+                    .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultUseActiveSkills))
+                    .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
                 End With
 
             Else
@@ -1151,6 +1158,7 @@ Public Class ProgramSettings
             .LoadAssetsonStartup = DefaultLoadAssetsonStartup
             .LoadBPsonStartup = DefaultLoadBPsonStartup
             .LoadESIMarketDataonStartup = DefaultRefreshMarketESIDataonStartup
+            .SupressESIStatusMessages = DefaultSupressESIStatusMessages
             .LoadESISystemCostIndiciesDataonStartup = DefaultRefreshFacilityESIDataonStartup
             .LoadESIPublicStructuresonStartup = DefaultRefreshPublicStructureDataonStartup
             .DisableSound = DefaultDisableSound
@@ -1169,6 +1177,7 @@ Public Class ProgramSettings
 
             .AlphaAccount = DefaultAlphaAccount
             .UseActiveSkillLevels = DefaultUseActiveSkills
+            .LoadMaxAlphaSkills = DefaultLoadMaxAlphaSkills
 
             .DisableSVR = DefaultDisableSVR
             .DisableGATracking = DefaultDisableGATracking
@@ -1202,7 +1211,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(35) As Setting
+        Dim ApplicationSettingsList(37) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1241,6 +1250,8 @@ Public Class ProgramSettings
             ApplicationSettingsList(33) = New Setting("DisableGATracking", CStr(SentSettings.DisableGATracking))
             ApplicationSettingsList(34) = New Setting("AlphaAccount", CStr(SentSettings.AlphaAccount))
             ApplicationSettingsList(35) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
+            ApplicationSettingsList(36) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
+            ApplicationSettingsList(37) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1463,6 +1474,7 @@ Public Class ProgramSettings
                     .CompProfitType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "CompProfitType", DefaultCompProfitType))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "CompressedOre", DefaultBPCompressedOre))
                     .SimpleCopyCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SimpleCopyCheck", DefaultBPSimpleCopyCheck))
+                    .NPCBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "NPCBPOs", DefaultBPNPCBPOs))
                 End With
 
             Else
@@ -1485,7 +1497,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(39) As Setting
+        Dim BPSettingsList(40) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1535,6 +1547,8 @@ Public Class ProgramSettings
 
             BPSettingsList(39) = New Setting("SimpleCopyCheck", CStr(SentSettings.SimpleCopyCheck))
 
+            BPSettingsList(40) = New Setting("NPCBPOs", CStr(SentSettings.NPCBPOs))
+
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
@@ -1567,6 +1581,7 @@ Public Class ProgramSettings
             .LargeCheck = DefaultSizeChecks
             .XLCheck = DefaultSizeChecks
             .SimpleCopyCheck = DefaultBPSimpleCopyCheck
+            .NPCBPOs = DefaultBPNPCBPOs
 
             .IncludeInventionCost = DefaultBPIncludeInventionCost
             .IncludeInventionTime = DefaultBPIncludeInventionTime
@@ -1946,6 +1961,7 @@ Public Class ProgramSettings
                     .CheckBPTypeComponents = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeComponents", DefaultCheckBPTypeComponents))
                     .CheckBPTypeStructures = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeStructures", DefaultCheckBPTypeStructures))
                     .CheckBPTypeMisc = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeMisc", DefaultCheckBPTypeTools))
+                    .CheckBPTypeNPCBPOs = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeNPCBPOs", DefaultCheckBPTypeNPCBPOs))
                     .CheckBPTypeModules = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeModules", DefaultCheckBPTypeModules))
                     .CheckBPTypeAmmoCharges = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeAmmoCharges", DefaultCheckBPTypeAmmoCharges))
                     .CheckBPTypeRigs = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckBPTypeRigs", DefaultCheckBPTypeRigs))
@@ -2051,6 +2067,7 @@ Public Class ProgramSettings
             .CheckTechPirate = DefaultCheckTechPirate
             .ItemTypeFilter = DefaultItemTypeFilter
             .TextItemFilter = DefaultTextItemFilter
+            .CheckBPTypeNPCBPOs = DefaultCheckBPTypeNPCBPOs
             .CheckBPTypeShips = DefaultCheckBPTypeShips
             .CheckBPTypeDrones = DefaultCheckBPTypeDrones
             .CheckBPTypeComponents = DefaultCheckBPTypeComponents
@@ -2065,6 +2082,7 @@ Public Class ProgramSettings
             .CheckBPTypeStructureModules = DefaultCheckBPTypeStructureModules
             .CheckBPTypeStationParts = DefaultCheckBPTypeStationParts
             .CheckBPTypeDeployables = DefaultCheckBPTypeDeployables
+            .CheckBPTypeReactions = DefaultCheckBPTypeReactions
             .CheckDecryptorNone = DefaultCheckDecryptorNone
             .CheckDecryptorOptimal = DefaultCheckDecryptorOptimal
             .CheckDecryptor06 = DefaultCheckDecryptor06
@@ -2137,7 +2155,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(84) As Setting
+        Dim ManufacturingSettingsList(85) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2225,6 +2243,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(82) = New Setting("CheckDecryptorOptimal", CStr(SentSettings.CheckDecryptorOptimal))
             ManufacturingSettingsList(83) = New Setting("CheckBPTypeStructureModules", CStr(SentSettings.CheckBPTypeStructureModules))
             ManufacturingSettingsList(84) = New Setting("CheckBPTypeReactions", CStr(SentSettings.CheckBPTypeReactions))
+            ManufacturingSettingsList(85) = New Setting("CheckBPTypeNPCBPOs", CStr(SentSettings.CheckBPTypeNPCBPOs))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -4504,6 +4523,7 @@ Public Class ProgramSettings
                     .LargeCheck = CBool(GetSettingValue(SettingsFolder, BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
                     .XLCheck = CBool(GetSettingValue(SettingsFolder, BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "SmallCheck", DefaultBPViewerSizeChecks))
                     .IncludeIgnoredBPs = CBool(GetSettingValue(SettingsFolder, BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "IncludeIgnoredBPs", DefaultBPViewerIgnoreBPsCheck))
+                    .BPNPCBPOsCheck = CBool(GetSettingValue(SettingsFolder, BPViewerSettingsFileName, SettingTypes.TypeBoolean, BPViewerSettingsFileName, "BPNPCBPOsCheck", DefaultBPNPCBPOsCheck))
                 End With
 
             Else
@@ -4526,7 +4546,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPViewerSettings(SentSettings As BPViewerSettings)
-        Dim BPSettingsList(11) As Setting
+        Dim BPSettingsList(12) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -4541,6 +4561,7 @@ Public Class ProgramSettings
             BPSettingsList(9) = New Setting("LargeCheck", CStr(SentSettings.LargeCheck))
             BPSettingsList(10) = New Setting("XLCheck", CStr(SentSettings.XLCheck))
             BPSettingsList(11) = New Setting("IncludeIgnoredBPs", CStr(SentSettings.IncludeIgnoredBPs))
+            BPSettingsList(12) = New Setting("BPNPCBPOsCheck", CStr(SentSettings.BPNPCBPOsCheck))
 
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -4555,6 +4576,7 @@ Public Class ProgramSettings
         Dim LocalSettings As BPViewerSettings
 
         With LocalSettings
+            .BPNPCBPOsCheck = DefaultBPNPCBPOsCheck
             .BlueprintTypeSelection = DefaultBPViewerSelectionType
             .Tech1Check = DefaultBPViewerTechChecks
             .Tech2Check = DefaultBPViewerTechChecks
@@ -4792,6 +4814,7 @@ Public Structure ApplicationSettings
     Dim LoadESIMarketDataonStartup As Boolean
     Dim LoadESISystemCostIndiciesDataonStartup As Boolean
     Dim LoadESIPublicStructuresonStartup As Boolean
+    Dim SupressESIStatusMessages As Boolean
     Dim DisableSound As Boolean
     Dim IncludeInGameLinksinCopyText As Boolean
 
@@ -4817,6 +4840,7 @@ Public Structure ApplicationSettings
     ' Character options
     Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
     Dim UseActiveSkillLevels As Boolean ' Use active skill levels instead of trained - useful for omega on alpha currently
+    Dim LoadMaxAlphaSkills As Boolean ' Load the max alpha skills for dummy accounts
 
     ' For shopping list
     Dim ShopListIncludeInventMats As Boolean
@@ -4875,6 +4899,7 @@ Public Structure BPTabSettings
     Dim PricePerUnit As Boolean
 
     Dim SimpleCopyCheck As Boolean
+    Dim NPCBPOs As Boolean
 
     Dim ProductionLines As Integer
     Dim LaboratoryLines As Integer
@@ -5015,6 +5040,7 @@ Public Structure ManufacturingTabSettings
     Dim CheckBPTypeComponents As Boolean
     Dim CheckBPTypeStructures As Boolean
     Dim CheckBPTypeMisc As Boolean
+    Dim CheckBPTypeNPCBPOs As Boolean
     Dim CheckBPTypeModules As Boolean
     Dim CheckBPTypeAmmoCharges As Boolean
     Dim CheckBPTypeRigs As Boolean
@@ -5656,6 +5682,8 @@ End Structure
 ' For the BP Viewer
 Public Structure BPViewerSettings
     Dim BlueprintTypeSelection As String ' Saves the name of the radio button used
+
+    Dim BPNPCBPOsCheck As Boolean
 
     Dim Tech1Check As Boolean
     Dim Tech2Check As Boolean
