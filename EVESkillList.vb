@@ -411,7 +411,8 @@ Public Class EVESkillList
                 ' Two possiblities - the skill exists, which is where we update the override variables, it doesn't and we enter a new record
                 ' or it's there but we want to remove it
                 ' Check for skill and update if there
-                SQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
+' TODO: Add a switch to change used value based on "USE ACTIVE SKILLS" option
+SQL = "SELECT ACTIVE_SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSkills = DBCommand.ExecuteReader
