@@ -214,23 +214,29 @@ Public Class frmBlueprintList
 
         Using con = New SQLiteConnection(EVEDB.DBREf.ConnectionString)
             Dim com = con.CreateCommand()
-            com.CommandText = BuildBPQuery(displayLevel, filterLevel.FilterField, filterLevel.FilterValue)
+            Dim ItemGroupID As Integer = 0
+            If thisNode.Name <> "" Then
+                ItemGroupID = CInt(thisNode.Name)
+            End If
+            com.CommandText = BuildBPQuery(displayLevel, filterLevel.FilterField, filterLevel.FilterValue, ItemGroupID)
 
             con.Open()
             Using reader = com.ExecuteReader()
                 While reader.Read
                     Dim newNode = New TreeNode(reader(displayLevel).ToString)
                     newNode.Tag = New NodeTag(displayLevel, CInt(reader("FilterID")))
+                    newNode.Name = reader("ITEM_GROUP_ID").ToString ' Store the group id
                     thisNode.Nodes.Add(newNode)
                     If displayLevel <> "BLUEPRINT_NAME" Then
                         newNode.Nodes.Add(New TreeNode) 'dummy node to show the + mark
                     End If
                 End While
             End Using
+            con.Close()
         End Using
     End Sub
 
-    Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As Integer?) As String
+    Private Function BuildBPQuery(displayLevel As String, filterColumnName As String, filterColumnValue As Integer?, Optional ItemGroupID As Integer = 0) As String
 
         Dim levelFilter As String = ""
         If filterColumnName <> "" And filterColumnValue.HasValue Then
@@ -254,22 +260,26 @@ Public Class frmBlueprintList
             NPCBPOFilter = " AND i2.marketGroupID IS NOT NULL AND b.ITEM_TYPE <> 2 "
         End If
 
+        Dim ItemGroupFilter As String = ""
+        If ItemGroupID <> 0 Then
+            ItemGroupFilter = "AND ITEM_GROUP_ID = " & CStr(ItemGroupID) & " "
+        End If
+
         Dim query =
-            $"SELECT b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
+            $"SELECT ITEM_GROUP_ID, b.{displayLevel}, {If(displayLevel = "BLUEPRINT_NAME", "0", $"{displayLevel}_ID")} AS FilterID
             FROM ALL_BLUEPRINTS b
             JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
             JOIN INVENTORY_TYPES i2 ON b.BLUEPRINT_ID = i2.typeID
             {GetOwnedJoin()}
             WHERE MARKET_GROUP IS NOT NULL
+            {ItemGroupFilter}
             {GetSizeGroupFilter()}
             {GetItemTypesFilter()}
             {levelFilter}
             {IgnoreFilter}
             {TextFilter}
             {NPCBPOFilter}
-            GROUP BY b.{displayLevel}, FilterID
-            ORDER BY b.{displayLevel}
-            "
+            GROUP BY b.{displayLevel}, FilterID"
 
         Return query
 

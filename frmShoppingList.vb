@@ -196,7 +196,7 @@ Public Class frmShoppingList
             ttMain.SetToolTip(btnShowAssets, "Open the Asset Viewer to set the default location(s) for materials to use for updating the Shopping List.")
             ttMain.SetToolTip(lblTIC, "Total of all invention materials in the buy list.")
             ttMain.SetToolTip(lblTCC, "Total of all the copy materials in the buy list.")
-            ttMain.SetToolTip(rbtnExportSimple, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
+            ttMain.SetToolTip(rbtnExportMulitBuy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
             ttMain.SetToolTip(chkRebuildItemsfromList, "When loading a saved shopping list, if checked IPH will rebuild all items with current prices and items. Otherwise it will load exactly what is in the list with current prices.")
         End If
 
@@ -249,8 +249,8 @@ Public Class frmShoppingList
             rbtnExportSSV.Checked = True
         ElseIf rbtnExportDefault.Text = UserShoppingListSettings.DataExportFormat Then
             rbtnExportDefault.Checked = True
-        ElseIf rbtnExportSimple.Text = UserShoppingListSettings.DataExportFormat Then
-            rbtnExportSimple.Checked = True
+        ElseIf rbtnExportMulitBuy.Text = UserShoppingListSettings.DataExportFormat Then
+            rbtnExportMulitBuy.Checked = True
         End If
         chkUpdateAssetsWhenUsed.Checked = UserShoppingListSettings.UpdateAssetsWhenUsed
 
@@ -892,7 +892,7 @@ Public Class frmShoppingList
             SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
             SQL = SQL & " AND ID IN (" & IDString & ")"
 
-            Call evedb.ExecuteNonQuerySQL(SQL)
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
@@ -919,13 +919,13 @@ Public Class frmShoppingList
                     SQL = SQL & " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
                     SQL = SQL & " AND ID IN (" & IDString & ")"
 
-                    Call evedb.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
                     Exit While
                 Else
                     ' Its less than or equal to the quantity so we need to delete this location's value and update the used quantity
                     SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID)
                     SQL = SQL & " AND ID IN (" & IDString & ")"
-                    Call evedb.ExecuteNonQuerySQL(SQL)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Update used quantity
                     UsedQuantityRemaining = UsedQuantityRemaining - LocUserQuantity
@@ -975,8 +975,8 @@ Public Class frmShoppingList
             TempList.DataExportFormat = rbtnExportCSV.Text
         ElseIf rbtnExportSSV.Checked Then
             TempList.DataExportFormat = rbtnExportSSV.Text
-        ElseIf rbtnExportSimple.Checked Then
-            TempList.DataExportFormat = rbtnExportSimple.Text
+        ElseIf rbtnExportMulitBuy.Checked Then
+            TempList.DataExportFormat = rbtnExportMulitBuy.Text
         End If
         TempList.UpdateAssetsWhenUsed = chkUpdateAssetsWhenUsed.Checked
         TempList.Usage = chkUsage.Checked
@@ -1306,7 +1306,7 @@ Public Class frmShoppingList
                         End If
 
                         ' If the line has records, import it into the correct lists
-                        If Line.Contains(Separator) And _
+                        If Line.Contains(Separator) And
                             Not (Line.Contains(BuyListHeader) Or Line.Contains(BuildListHeader) Or Line.Contains(ItemsListHeader) Or Line.Contains(ItemsListHeaderAdd)) Then
                             ' Parse the line
                             Dim Record As String()
@@ -1629,8 +1629,8 @@ Public Class frmShoppingList
             ExportTypeString = CSVDataExport
         ElseIf rbtnExportSSV.Checked Then
             ExportTypeString = SSVDataExport
-        ElseIf rbtnExportSimple.Checked Then
-            ExportTypeString = SimpleDataExport
+        ElseIf rbtnExportMulitBuy.Checked Then
+            ExportTypeString = MultiBuyDataExport
         Else
             ExportTypeString = DefaultTextDataExport
         End If
@@ -2004,7 +2004,7 @@ Public Class frmShoppingList
                     ShopListItem.Decryptor = lstItems.SelectedItems(i).SubItems(6).Text
                     ShopListItem.ManufacturingFacilityLocation = lstItems.SelectedItems(i).SubItems(7).Text
 
-                    ' Remove it from shopping listxc 
+                    ' Remove it from shopping list
                     TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, 0)
 
                 End If
@@ -2052,6 +2052,7 @@ Public Class frmShoppingList
         ' Just updated, so notify
         Call PlayNotifySound()
         Call RefreshLists()
+
     End Sub
 
 #End Region
@@ -2059,7 +2060,7 @@ Public Class frmShoppingList
 #Region "InlineListUpdate"
 
     ' Determines where to show the text box when clicking on the list sent
-    Private Sub ListClicked(ListRef As ListView, sender As Object, e As System.Windows.Forms.MouseEventArgs)
+    Private Sub ListClicked(ListRef As ListView, sender As Object, e As MouseEventArgs)
         Dim iSubIndex As Integer = 0
 
         ' Hide the text box when a new line is selected
@@ -2519,19 +2520,19 @@ Tabs:
 
     ' Grid clicks
     Private Sub lstBuild_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuild.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not My.Computer.Keyboard.ShiftKeyDown Then
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
             Call ListClicked(lstBuild, sender, e)
         End If
     End Sub
 
     Private Sub lstBuy_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuy.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not My.Computer.Keyboard.ShiftKeyDown Then
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
             Call ListClicked(lstBuy, sender, e)
         End If
     End Sub
 
     Private Sub lstItems_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstItems.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not My.Computer.Keyboard.ShiftKeyDown Then
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
             Call ListClicked(lstItems, sender, e)
         End If
     End Sub

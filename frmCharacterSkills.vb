@@ -326,7 +326,7 @@ Public Class frmCharacterSkills
 
     ' Updates the sent node and inserts the override skill into the array
     Private Sub UpdateSkill(ByVal Level As Integer, ByVal SentNode As TreeNode)
-        Dim TempSkill As EVESkill
+        Dim CurrentSkill As EVESkill
 
         ' If they selected the same skill level, just exit
         If Level = SelectedSkill.Level Then
@@ -334,7 +334,7 @@ Public Class frmCharacterSkills
         End If
 
         ' Get the user data if it exists
-        TempSkill = SelectedCharacter.Skills.GetSkill(SelectedSkill.Name)
+        CurrentSkill = SelectedCharacter.Skills.GetSkill(SelectedSkill.Name)
 
         ' Set the check to the level selected
         Call SetCheck(Level)
@@ -347,36 +347,29 @@ Public Class frmCharacterSkills
             mnuOrigLevel.Text = "Stored Level: " & CStr(SelectedSkill.Level)
             SelectedSkill.Overridden = True
             SelectedSkill.Level = Level
-
-            ' See if the skill is overridden, if so then we need to set the level to 0 and the override level to the level sent
-            If TempSkill.Overridden Then
-                SelectedSkill.OverriddenLevel = 0
-            Else ' First override
-                ' Update the skill, save the old skill value first in the override level
-                SelectedSkill.OverriddenLevel = TempSkill.Level
-            End If
-
+            SelectedSkill.OverriddenLevel = Level
         Else
             ' Not overridden, so load in the original skill level from the character data
             mnuOrigLevel.Text = "Not Overridden"
 
             ' If it returned nothing, then set the skill level to 0 because there is no saved skill
-            If TempSkill.TypeID = 0 Then
+            If CurrentSkill.TypeID = 0 Then
                 SelectedSkill.OverriddenLevel = 0
                 SelectedSkill.Level = 0
                 SelectedSkill.Overridden = False
             Else
                 ' Just save the temp skill data back
-                SelectedSkill = TempSkill
+                SelectedSkill = CurrentSkill
             End If
 
         End If
 
         ' Now update the skill in the override list
         OverrideSkills.UpdateSkill(SelectedSkill)
+
         ' Save it in the update list for later as we would insert it into the DB (so swap overridden and skill level)
         With SelectedSkill
-            UpdateSkills.InsertSkill(.TypeID, .OverriddenLevel, .TrainedLevel, .ActiveLevel, .SkillPoints, .Overridden, .TrainedLevel)
+            UpdateSkills.InsertSkill(.TypeID, .Level, .TrainedLevel, .ActiveLevel, .SkillPoints, .Overridden, .OverriddenLevel)
         End With
 
         ' They just changed a skill

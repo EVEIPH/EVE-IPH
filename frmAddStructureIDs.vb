@@ -1,6 +1,7 @@
 ﻿Public Class frmAddStructureIDs
 
     Private UpdatingStructureIDText As Boolean
+    Private Const InvalidName As String = "Invalid Name"
 
     Public Sub New()
 
@@ -30,23 +31,33 @@
     ' Will run an ESI query to see if the index they gave has market data
     Private Sub CheckIDforMarketData(ByVal Index As Integer)
         Dim ESIData As New ESI
-
         Dim StructureTextbox As TextBox = GetTextBox(Index)
         Dim StructureLabel As Label = GetLabel(Index)
 
-        If StructureTextbox.Text <> "" Then
-            If ESIData.CheckStructureMarketData(CLng(StructureTextbox.Text), SelectedCharacter.CharacterTokenData, True) Then
-                StructureLabel.ForeColor = Color.Green
-                StructureLabel.Text = "OK"
+        If GetTextBox(Index).Text <> InvalidName Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            If StructureTextbox.Text <> "" Then
+                If ESIData.CheckStructureMarketData(CLng(StructureTextbox.Text), SelectedCharacter.CharacterTokenData, True) Then
+                    StructureLabel.ForeColor = Color.Green
+                    StructureLabel.Text = "OK"
+                Else
+                    StructureLabel.ForeColor = Color.Red
+                    StructureLabel.Text = "Market Access Denied"
+                End If
             Else
-                StructureLabel.ForeColor = Color.Red
-                StructureLabel.Text = "Market Access Denied"
+                MsgBox("You must enter an ID", vbInformation, Application.ProductName)
+                StructureTextbox.Focus()
             End If
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
         Else
-            MsgBox("You must enter an ID", vbInformation, Application.ProductName)
+            MsgBox("Structure number is invalid", vbInformation, Application.ProductName)
+            StructureTextbox.SelectAll()
             StructureTextbox.Focus()
         End If
-
     End Sub
 
     ' Save all the structure IDs they entered, if they didn't check it, then run the check of the data and don't add if it comes back false
@@ -56,6 +67,9 @@
         Dim StructureTextBox As TextBox
         Dim AddedCount As Integer = 0
         Dim StructureIDList As New List(Of Long)
+
+        Application.UseWaitCursor = True
+        Application.DoEvents()
 
         CheckedIDs = GetCheckedIDs()
 
@@ -73,7 +87,7 @@
         ' Add the data
         Dim SP As New StructureProcessor
         For Each StructureID In StructureIDList
-            Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, True)
+            Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, True, False, True)
         Next
 
         ' Refresh the view saved screen if open
@@ -90,6 +104,10 @@
                 MsgBox("Added " & CStr(AddedCount) & " out of " & CheckedIDs.Count & " selected. Please double check information and try again.", vbInformation, Application.ProductName)
             End If
         End If
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
 
     End Sub
 
@@ -116,7 +134,7 @@
         Dim FormattedText As String = ""
         Dim textID As TextBox = CType(sender, TextBox)
 
-        If Not UpdatingStructureIDText And textID.Text <> "Invalid Name" Then
+        If Not UpdatingStructureIDText And textID.Text <> InvalidName Then
             Try
                 If textID.Text.Contains("//") Then
                     ' Find the ID after it - [0054:36] Zifrian > <url=showinfo:35835//1027907881953>Tamo</url>
@@ -127,10 +145,10 @@
                     FormattedText = Trim(textID.Text)
                 Else
                     ' Not formatted correctly
-                    FormattedText = "Invalid Name"
+                    FormattedText = InvalidName
                 End If
             Catch
-                FormattedText = "Invalid Name"
+                FormattedText = InvalidName
             End Try
             UpdatingStructureIDText = True
             textID.Text = FormattedText

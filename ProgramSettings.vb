@@ -124,6 +124,7 @@ Public Class ProgramSettings
 
     Public DefaultDisableSVR As Boolean = False
     Public DefaultDisableGATracking As Boolean = False
+    Public DefaultShareSavedFacilities As Boolean = True
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
 
     Public DefaultAlphaAccount As Boolean = False
@@ -349,6 +350,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckSovGallente As Boolean = True
     Public DefaultMiningCheckSovMinmatar As Boolean = True
     Public DefaultMiningCheckSovWormhole As Boolean = True
+    Public DefaultMiningCheckSovMoon As Boolean = True
     Public DefaultMiningCheckSovC1 As Boolean = True
     Public DefaultMiningCheckSovC2 As Boolean = True
     Public DefaultMiningCheckSovC3 As Boolean = True
@@ -1003,44 +1005,52 @@ Public Class ProgramSettings
         Dim FilePath As String = Path.ChangeExtension(Path.Combine(DynamicFilePath, FileFolder, FileName), XMLfileType)
         Dim TempValue As String
 
-        'Load the Xml file
-        m_xmld.Load(FilePath)
+        Try
 
-        'Get the settings
-        m_nodelist = m_xmld.SelectNodes("/" & RootElement & "/" & ElementString)
 
-        If Not IsNothing(m_nodelist.Item(0)) Then
-            ' Should only be one
-            TempValue = m_nodelist.Item(0).InnerText
+            'Load the Xml file
+            m_xmld.Load(FilePath)
 
-            ' If blank, then return default
-            If TempValue = "" Then
+            'Get the settings
+            m_nodelist = m_xmld.SelectNodes("/" & RootElement & "/" & ElementString)
+
+            If Not IsNothing(m_nodelist.Item(0)) Then
+                ' Should only be one
+                TempValue = m_nodelist.Item(0).InnerText
+
+                ' If blank, then return default
+                If TempValue = "" Then
+                    Return DefaultValue
+                End If
+
+                If TempValue = "False" Or TempValue = "True" Then
+                    ' Change to type boolean
+                    ObjectType = SettingTypes.TypeBoolean
+                End If
+
+                ' Found it, return the cast
+                Select Case ObjectType
+                    Case SettingTypes.TypeBoolean
+                        Return CBool(TempValue)
+                    Case SettingTypes.TypeDouble
+                        Return CDbl(TempValue)
+                    Case SettingTypes.TypeInteger
+                        Return CInt(TempValue)
+                    Case SettingTypes.TypeString
+                        Return CStr(TempValue)
+                    Case SettingTypes.TypeLong
+                        Return CLng(TempValue)
+                End Select
+
+            Else
+                ' Doesn't exist, use default
                 Return DefaultValue
             End If
 
-            If TempValue = "False" Or TempValue = "True" Then
-                ' Change to type boolean
-                ObjectType = SettingTypes.TypeBoolean
-            End If
-
-            ' Found it, return the cast
-            Select Case ObjectType
-                Case SettingTypes.TypeBoolean
-                    Return CBool(TempValue)
-                Case SettingTypes.TypeDouble
-                    Return CDbl(TempValue)
-                Case SettingTypes.TypeInteger
-                    Return CInt(TempValue)
-                Case SettingTypes.TypeString
-                    Return CStr(TempValue)
-                Case SettingTypes.TypeLong
-                    Return CLng(TempValue)
-            End Select
-
-        Else
-            ' Doesn't exist, use default
+        Catch ex As Exception
+            ' Threw an error, so return the default value
             Return DefaultValue
-        End If
+        End Try
 
         Return Nothing
 
@@ -1126,6 +1136,7 @@ Public Class ProgramSettings
                     .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultAlphaAccount))
                     .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultUseActiveSkills))
                     .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
+                    .ShareSavedFacilities = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShareSavedFacilities", DefaultDisableGATracking))
                 End With
 
             Else
@@ -1181,6 +1192,7 @@ Public Class ProgramSettings
 
             .DisableSVR = DefaultDisableSVR
             .DisableGATracking = DefaultDisableGATracking
+            .ShareSavedFacilities = DefaultShareSavedFacilities
             .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
             .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
@@ -1252,6 +1264,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(35) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
             ApplicationSettingsList(36) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
             ApplicationSettingsList(37) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
+            ApplicationSettingsList(36) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1454,9 +1467,9 @@ Public Class ProgramSettings
                     .LaboratoryLines = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "LaboratoryLines", DefaultBPLaboratoryLines))
                     .T3Lines = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "RELines", DefaultBPRELines))
                     .SmallCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SmallCheck", DefaultSizeChecks))
-                    .MediumCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SmallCheck", DefaultSizeChecks))
-                    .LargeCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SmallCheck", DefaultSizeChecks))
-                    .XLCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SmallCheck", DefaultSizeChecks))
+                    .MediumCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "MediumCheck", DefaultSizeChecks))
+                    .LargeCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "LargeCheck", DefaultSizeChecks))
+                    .XLCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "XLCheck", DefaultSizeChecks))
                     .IncludeFees = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeFees", DefaultBPIncludeFees))
                     .RelicType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RelicType", DefaultBPRelicType))
                     .T2DecryptorType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "T2DecryptorType", DefaultBPT2DecryptorType))
@@ -1677,6 +1690,7 @@ Public Class ProgramSettings
                     .CapitalComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalComponents", DefaultPriceChecks))
                     .Components = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Components", DefaultPriceChecks))
                     .Hybrid = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Hybrid", DefaultPriceChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FuelBlocks", DefaultPriceChecks))
                     .T1 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T1", DefaultPriceChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T2", DefaultPriceChecks))
@@ -1754,7 +1768,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(64) As Setting
+        Dim UpdatePricesSettingsList(65) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1843,6 +1857,8 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
             UpdatePricesSettingsList(64) = New Setting("AbyssalMaterials", CStr(PriceSettings.AbyssalMaterials))
 
+            UpdatePricesSettingsList(65) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
+
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
         Catch ex As Exception
@@ -1891,6 +1907,7 @@ Public Class ProgramSettings
             .CapitalComponents = DefaultPriceChecks
             .Components = DefaultPriceChecks
             .Hybrid = DefaultPriceChecks
+            .StructureComponents = DefaultPriceChecks
             .FuelBlocks = DefaultPriceChecks
             .Implants = DefaultPriceChecks
             .Celestials = DefaultPriceChecks
@@ -2625,6 +2642,7 @@ Public Class ProgramSettings
                     .MercoxitMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MercoxitMiningRig", DefaultMiningRig))
                     .IceMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "IceMiningRig", DefaultMiningRig))
                     .CheckSovWormhole = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovWormhole", DefaultMiningCheckSovWormhole))
+                    .CheckSovMoon = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMoon", DefaultMiningCheckSovMoon))
                     .CheckSovC1 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC1", DefaultMiningCheckSovC1))
                     .CheckSovC2 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC2", DefaultMiningCheckSovC2))
                     .CheckSovC3 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC3", DefaultMiningCheckSovC3))
@@ -2672,6 +2690,7 @@ Public Class ProgramSettings
             .CheckSovGallente = DefaultMiningCheckSovGallente
             .CheckSovMinmatar = DefaultMiningCheckSovMinmatar
             .CheckSovWormhole = DefaultMiningCheckSovWormhole
+            .CheckSovMoon = DefaultMiningCheckSovMoon
             .CheckSovC1 = DefaultMiningCheckSovC1
             .CheckSovC2 = DefaultMiningCheckSovC2
             .CheckSovC3 = DefaultMiningCheckSovC3
@@ -2742,7 +2761,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(69) As Setting
+        Dim MiningSettingsList(70) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2817,6 +2836,8 @@ Public Class ProgramSettings
 
             MiningSettingsList(68) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
             MiningSettingsList(69) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+
+            MiningSettingsList(70) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -4093,6 +4114,7 @@ Public Class ProgramSettings
                     .CapitalComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalComponents", DefaultAssetItemChecks))
                     .Components = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Components", DefaultAssetItemChecks))
                     .Hybrid = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Hybrid", DefaultAssetItemChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FuelBlocks", DefaultAssetItemChecks))
                     .T1 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T1", DefaultAssetItemChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T2", DefaultAssetItemChecks))
@@ -4204,6 +4226,8 @@ Public Class ProgramSettings
             AssetWindowSettingsList(50) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
             AssetWindowSettingsList(51) = New Setting("AbyssalMaterials", CStr(ItemsSelected.AbyssalMaterials))
 
+            AssetWindowSettingsList(52) = New Setting("StructureComponents", CStr(ItemsSelected.StructureComponents))
+
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
         Catch ex As Exception
@@ -4273,6 +4297,7 @@ Public Class ProgramSettings
             .CapitalComponents = DefaultAssetItemChecks
             .Components = DefaultAssetItemChecks
             .Hybrid = DefaultAssetItemChecks
+            .StructureComponents = DefaultAssetItemChecks
             .FuelBlocks = DefaultAssetItemChecks
             .T1 = DefaultAssetItemChecks
             .T2 = DefaultAssetItemChecks
@@ -4837,6 +4862,8 @@ Public Structure ApplicationSettings
     Dim DisableSVR As Boolean ' For disabling SVR updates
     Dim DisableGATracking As Boolean ' for disabling tracking app usage through Google Analytics
 
+    Dim ShareSavedFacilities As Boolean ' to use the same facility everywhere
+
     ' Character options
     Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
     Dim UseActiveSkillLevels As Boolean ' Use active skill levels instead of trained - useful for omega on alpha currently
@@ -4985,6 +5012,7 @@ Public Structure UpdatePriceTabSettings
     Dim CapitalComponents As Boolean
     Dim Components As Boolean
     Dim Hybrid As Boolean
+    Dim StructureComponents As Boolean
 
     Dim T1 As Boolean
     Dim T2 As Boolean
@@ -5210,6 +5238,7 @@ Public Structure MiningTabSettings
     Dim CheckSovGallente As Boolean
     Dim CheckSovMinmatar As Boolean
     Dim CheckSovWormhole As Boolean
+    Dim CheckSovMoon As Boolean
     Dim CheckSovC1 As Boolean
     Dim CheckSovC2 As Boolean
     Dim CheckSovC3 As Boolean
@@ -5652,6 +5681,7 @@ Public Structure AssetWindowSettings
     Dim CapitalComponents As Boolean
     Dim Components As Boolean
     Dim Hybrid As Boolean
+    Dim StructureComponents As Boolean
     Dim FuelBlocks As Boolean
     Dim StructureRigs As Boolean
     Dim StructureModules As Boolean

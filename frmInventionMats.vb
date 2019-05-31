@@ -96,7 +96,7 @@
         ElseIf rbtnExportSSV.Checked Then
             TempExportType = SSVDataExport
         ElseIf rbtnExportSimple.checked Then
-            TempExportType = SimpleDataExport
+            TempExportType = MultiBuyDataExport
         Else
             TempExportType = DefaultTextDataExport
         End If

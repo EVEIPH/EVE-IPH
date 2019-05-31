@@ -113,7 +113,8 @@ Public Class StructureProcessor
     End Sub
 
     ' To update data for one structure
-    Public Sub UpdateStructureData(StructureID As Long, TokenData As SavedTokenData, ManualEntry As Boolean)
+    Public Sub UpdateStructureData(StructureID As Long, TokenData As SavedTokenData, ManualEntry As Boolean,
+                                   Optional SupressError As Boolean = True, Optional IgnoreCacheDate As Boolean = False)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
         Dim API As New ESI()
@@ -121,22 +122,25 @@ Public Class StructureProcessor
         Dim CacheDate As Date
         Dim ManuallyAddedCode As Integer
 
-        ' Get the cache date of the facility ID
-        SQL = "SELECT CACHE_DATE, STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsData = DBCommand.ExecuteReader
+        If Not IgnoreCacheDate Then
+            ' Get the cache date of the facility ID
+            SQL = "SELECT CACHE_DATE, STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsData = DBCommand.ExecuteReader
 
-        If rsData.Read Then
-            ' See if we update it
-            If Not IsDBNull(rsData.GetValue(0)) Then
-                If DateValue(rsData.GetString(0)) > DateTime.UtcNow Then
-                    ' Doesn't need update
-                    Exit Sub
+            If rsData.Read Then
+                ' See if we update it
+                If Not IsDBNull(rsData.GetValue(0)) Then
+                    If DateValue(rsData.GetString(0)) > DateTime.UtcNow Then
+                        ' Doesn't need update
+                        Exit Sub
+                    End If
                 End If
             End If
-        End If
 
-        rsData.Close()
+            rsData.Close()
+
+        End If
 
         If ManualEntry Then
             ManuallyAddedCode = -1
@@ -146,7 +150,7 @@ Public Class StructureProcessor
 
         Try
             ' Look up the facility and save it in the STATIONS table
-            EVEStructure = API.GetStructureData(StructureID, TokenData, CacheDate)
+            EVEStructure = API.GetStructureData(StructureID, TokenData, CacheDate, SupressError)
 
             StructureCount += 1
 
@@ -170,13 +174,15 @@ Public Class StructureProcessor
                 SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(EVEStructure.solar_system_id)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsData = DBCommand.ExecuteReader
+                rsData.Read()
 
-                If rsData.Read Then
+                If rsData.HasRows Then
                     SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
                     With EVEStructure
                         EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1),
                                                         rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat), ManuallyAddedCode))
                     End With
+
                 End If
                 rsData.Close()
 
@@ -194,7 +200,9 @@ Public Class StructureProcessor
             rsData = Nothing
 
         Catch ex As Exception
-            Application.DoEvents()
+            If ex.Message <> "Thread was being aborted." Then
+                MsgBox("An error occured when importing structure data: " & ex.Message, vbInformation, Application.ProductName)
+            End If
         End Try
 
     End Sub

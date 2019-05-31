@@ -449,16 +449,10 @@ Public Class frmMain
 
         If Developer Then
             Me.Text = Me.Text & " - Developer"
-            mnuInventionSuccessMonitor.Visible = True
-            mnuFactoryFinder.Visible = True
-            mnuMarketFinder.Visible = True
             mnuRefinery.Visible = True
             mnuLPStore.Visible = True
         Else
             ' Hide all the development stuff
-            mnuInventionSuccessMonitor.Visible = False
-            mnuFactoryFinder.Visible = False
-            mnuMarketFinder.Visible = False
             mnuRefinery.Visible = False
             mnuLPStore.Visible = False
             tabMain.TabPages.Remove(tabPI)
@@ -484,14 +478,14 @@ Public Class frmMain
         '****************************************
         ' Width is now 556, scrollbar is 21 
         'lstBPComponentMats.Columns.Add("", -2, HorizontalAlignment.Center) ' For check (25 size)
-        lstBPComponentMats.Columns.Add("Material", 225, HorizontalAlignment.Left) 'added 25 temp
-        lstBPComponentMats.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
+        lstBPComponentMats.Columns.Add("Material", 215, HorizontalAlignment.Left) 'added 25 temp
+        lstBPComponentMats.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
         lstBPComponentMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
         lstBPComponentMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
-        lstBPComponentMats.Columns.Add("Total Cost", 105, HorizontalAlignment.Right)
+        lstBPComponentMats.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
 
         ' No check for raw mats since the check will be used to toggle build/buy for each item
-        lstBPRawMats.Columns.Add("Material", 210, HorizontalAlignment.Left)
+        lstBPRawMats.Columns.Add("Material", 215, HorizontalAlignment.Left)
         lstBPRawMats.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
         lstBPRawMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
         lstBPRawMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
@@ -586,7 +580,7 @@ Public Class frmMain
             btnViewSavedStructures.Enabled = False
         Else
             btnAddStructureIDs.Enabled = True
-            btnViewSavedStructures.Enabled = False
+            btnViewSavedStructures.Enabled = True
         End If
 
         ' Tool Tips
@@ -796,6 +790,60 @@ Public Class frmMain
         On Error GoTo 0
     End Sub
 
+    Private Sub frmMain_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        If ShowSupportSplash() Then
+            Dim f1 As New frmsupportSplash
+            f1.ShowDialog()
+        End If
+    End Sub
+
+    ' If the text file is there, read the counter in it. Only show the splash on the first run and after 100 uses
+    Private Function ShowSupportSplash() As Boolean
+        Dim ReturnValue As Boolean = True
+
+        Try
+            Dim FilePath As String = Path.Combine(DynamicFilePath, "SupportCounter.txt")
+
+            If File.Exists(FilePath) Then
+                ' See what the count is, if 100 then return true, else increment the counter
+                Dim fileReader As String
+                fileReader = My.Computer.FileSystem.ReadAllText(FilePath)
+
+                Dim Counter As Integer
+
+                If fileReader <> "" Then
+                    Counter = CInt(fileReader) + 1
+                Else
+                    Counter = 1
+                End If
+
+                If Counter <> 100 And Counter <> 1100 Then
+                    ReturnValue = False
+                    ' Increment counter
+                    Call File.Delete(FilePath)
+                    Call File.Create(FilePath).Dispose()
+                    Dim tfile As StreamWriter
+                    tfile = My.Computer.FileSystem.OpenTextFileWriter(FilePath, True)
+                    tfile.WriteLine(CStr(Counter))
+                    tfile.Close()
+                End If
+            Else
+                ' Make the file for counting
+                Call File.Create(FilePath).Dispose()
+                Dim objWriter As New StreamWriter(FilePath)
+                objWriter.Write("1")
+                objWriter.Close()
+            End If
+
+        Catch ex As Exception
+            ReturnValue = False
+        End Try
+
+        Return ReturnValue
+
+    End Function
+
+
     Public ReadOnly Property MyControls() As Collection
         Get
             Return m_ControlsCollection.Controls
@@ -814,7 +862,7 @@ Public Class frmMain
     End Sub
 
     ' Loads up the facilities for the selected character
-    Public Sub LoadFacilities()
+    Public Sub LoadFacilities(Optional FacilityLocation As ProgramLocation = Nothing, Optional FacilityType As ProductionType = ProductionType.None)
 
         ' See what ID we use for the facilities
         Dim CharID As Long = 0
@@ -824,32 +872,79 @@ Public Class frmMain
         Else
             CharID = CommonLoadBPsID
         End If
-        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention)
 
-        ' Initialize the BP facility
-        Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing)
+        If FacilityType = ProductionType.None Then
+            ' Initialize the BP facility
+            Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing, Me)
 
-        ' Load up the Manufacturing tab facilities
-        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
-        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
-        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying)
-        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
-        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
-        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
-        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
-        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
+            ' Load up the Manufacturing tab facilities
+            Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
+            Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
+            Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
+            Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
+            Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
+            Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
+            Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
+            Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
+            Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
 
-        ' Two facilities with check options - load the one they save
-        If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
-            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
-        Else
-            Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
-        End If
+            ' Two facilities with check options - load the one they save
+            If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
+                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
+            Else
+                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
+            End If
 
-        If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
-            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
-        Else
-            Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
+            If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
+                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
+            Else
+                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
+            End If
+        Else ' Multi-save
+            ' Need to see what facility to reload
+            Dim SavedPT As ProductionType
+
+            ' They saved a facility on the manufacturing tab, so init all the facilities on the bp tab and reload the current facility
+            If FacilityLocation <> ProgramLocation.BlueprintTab Then
+                ' Get the current facility that's viewed
+                SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
+                ' Just reload all the facilities
+                Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
+                ' Now reload the one that was shown
+                Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, SavedPT, Me)
+            Else
+                ' Saving on the bp tab, so that is all updated, but we need to update the manufacturing tab facility that was saved on BP
+                SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
+
+                Select Case FacilityType
+                    Case ProductionType.BoosterManufacturing
+                        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
+                    Case ProductionType.CapitalComponentManufacturing
+                        Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
+                    Case ProductionType.CapitalManufacturing
+                        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
+                    Case ProductionType.ComponentManufacturing
+                        Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
+                    Case ProductionType.Copying
+                        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
+                    Case ProductionType.Invention
+                        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
+                    Case ProductionType.Manufacturing
+                        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
+                    Case ProductionType.Reactions
+                        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
+                    Case ProductionType.SubsystemManufacturing
+                        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
+                    Case ProductionType.SuperManufacturing
+                        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
+                    Case ProductionType.T3CruiserManufacturing
+                        Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
+                    Case ProductionType.T3DestroyerManufacturing
+                        Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
+                    Case ProductionType.T3Invention
+                        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
+                End Select
+            End If
         End If
 
     End Sub
@@ -1707,14 +1802,6 @@ Public Class frmMain
 
     End Sub
 
-    ' Shows the Invention Success Monitor
-    Private Sub mnuInventionSuccessMonitor_Click(sender As System.Object, e As System.EventArgs) Handles mnuInventionSuccessMonitor.Click
-        Dim f1 As New frmInventionMonitor
-
-        f1.Show()
-
-    End Sub
-
     Private Sub mnuViewESIStatus_Click(sender As Object, e As EventArgs) Handles mnuViewESIStatus.Click
         Dim f1 As New frmESIStatus
 
@@ -2100,11 +2187,6 @@ Public Class frmMain
                 FirstShowMining = False ' Don't run for successive clicks
             End If
         End If
-    End Sub
-
-    Private Sub mnuInventionResultsTracking_Click(sender As System.Object, e As System.EventArgs)
-        Dim f1 As New frmInventionMonitor
-        f1.ShowDialog()
     End Sub
 
     Private Sub mnuCurrentResearchAgents_Click(sender As System.Object, e As System.EventArgs) Handles mnuCurrentResearchAgents.Click
@@ -2912,7 +2994,7 @@ Public Class frmMain
             ' If we updated a price, then update the program everywhere to be consistent
             If PriceUpdated Then
                 IgnoreFocus = True
-                Call UpdateProgramPrices()
+                Call UpdateProgramPrices(False) ' Don't refresh the grid, we are already updating it
                 IgnoreFocus = False
             End If
 
@@ -3606,6 +3688,18 @@ Tabs:
         Call UpdatePriceList()
     End Sub
 
+    Private Sub txtBPRuns_MouseWheel(sender As Object, e As MouseEventArgs) Handles txtBPRuns.MouseWheel
+        If e.Delta > 0 Then
+            ' UP
+            txtBPRuns.Text = CStr(Val(txtBPRuns.Text) + 1)
+        Else
+            ' Down
+            If Val(txtBPRuns.Text) <> 1 Then
+                txtBPRuns.Text = CStr(Val(txtBPRuns.Text) - 1)
+            End If
+        End If
+    End Sub
+
     Private Sub txtBPRuns_GotFocus(sender As Object, e As System.EventArgs) Handles txtBPRuns.GotFocus
         Call txtBPRuns.SelectAll()
     End Sub
@@ -4027,7 +4121,7 @@ Tabs:
         If chkBPSimpleCopy.Checked = False Then
             ExportFormat = UserApplicationSettings.DataExportFormat
         Else
-            ExportFormat = SimpleDataExport
+            ExportFormat = MultiBuyDataExport
         End If
 
         If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
@@ -4942,6 +5036,7 @@ Tabs:
         If bpName.Contains("Blueprint") Then
             RemoveHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
             cmbBPBlueprintSelection.Text = bpName
+            SelectedBPText = bpName
             AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
             Call SelectBlueprint()
         End If
@@ -5069,7 +5164,7 @@ Tabs:
 
             'chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
             chkBPSimpleCopy.Checked = .SimpleCopyCheck
-            chkBPNPCBPOs.Checked = .NPCBPOS
+            chkBPNPCBPOs.Checked = .NPCBPOs
 
             chkBPSmall.Checked = .SmallCheck
             chkBPMedium.Checked = .MediumCheck
@@ -5917,6 +6012,7 @@ Tabs:
 
         ' Build the item and get the list of materials
         Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, chkBPBrokerFees.Checked, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        'Call SelectedBlueprint.BuildItems2(chkBPTaxes.Checked, chkBPBrokerFees.Checked, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -6966,7 +7062,7 @@ ExitForm:
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Reload all the facilities to get the change
-        Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType)
+        Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType, Me)
 
         ' Refresh the bp, which will reload the facility with the changes
         Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
@@ -7124,6 +7220,7 @@ ExitForm:
             chkCapitalComponents.Checked = True
             chkComponents.Checked = True
             chkHybrid.Checked = True
+            chkStructureComponents.Checked = True
             chkFuelBlocks.Checked = True
             chkStructureRigs.Checked = True
             chkCelestials.Checked = True
@@ -7143,6 +7240,7 @@ ExitForm:
             chkCapT2Components.Checked = False
             chkCapitalComponents.Checked = False
             chkComponents.Checked = False
+            chkStructureComponents.Checked = False
             chkHybrid.Checked = False
             chkFuelBlocks.Checked = False
             chkStructureRigs.Checked = False
@@ -7597,6 +7695,10 @@ ExitForm:
     End Sub
 
     Private Sub chkHybrid_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkHybrid.CheckedChanged
+        Call UpdatePriceList()
+    End Sub
+
+    Private Sub chkStructureComponents_CheckedChanged(sender As Object, e As EventArgs) Handles chkStructureComponents.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -8439,6 +8541,7 @@ ExitForm:
             chkCapitalComponents.Checked = .CapitalComponents
             chkComponents.Checked = .Components
             chkHybrid.Checked = .Hybrid
+            chkStructureComponents.Checked = .StructureComponents
             chkFuelBlocks.Checked = .FuelBlocks
             chkPricesT1.Checked = .T1
             chkPricesT2.Checked = .T2
@@ -8792,6 +8895,7 @@ ExitForm:
             .CapT2Components = chkCapT2Components.Checked
             .CapitalComponents = chkCapitalComponents.Checked
             .Components = chkComponents.Checked
+            .StructureComponents = chkStructureComponents.Checked
             .Hybrid = chkHybrid.Checked
             .FuelBlocks = chkFuelBlocks.Checked
             .T1 = chkPricesT1.Checked
@@ -9591,7 +9695,7 @@ ExitSub:
             ' Reset Insert
             InsertRecord = False
 
-            ' Get the region/system list since they will always be the same, use the first one for EVE Central
+            ' Get the region/system list since they will always be the same, use the first one for EVE Marketer
             If CacheItems(i).SystemID <> "" Then
                 RegionSystem = CacheItems(i).SystemID
                 SystemID = CInt(RegionSystem)
@@ -9715,6 +9819,10 @@ ExitSub:
 
             Call EVEDB.CommitSQLiteTransaction()
 
+        End If
+
+        If CancelUpdatePrices Then
+            Call MsgBox("Price Update Canceled", vbInformation, Application.ProductName)
         End If
 
         ' Done updating, hide the progress bar
@@ -9847,6 +9955,10 @@ ExitSub:
         End If
         If chkHybrid.Checked Then
             SQL = SQL & "ITEM_GROUP = 'Hybrid Tech Components' OR "
+            ItemChecked = True
+        End If
+        If chkStructureComponents.Checked Then
+            SQL = SQL & "ITEM_GROUP = 'Structure Components' OR "
             ItemChecked = True
         End If
         If chkTools.Checked Then
@@ -10135,7 +10247,7 @@ ExitSub:
         SQL = SQL & "WHERE  inventory_types.groupID = inventory_groups.groupID "
         SQL = SQL & "AND inventory_groups.categoryID = inventory_categories.categoryID "
         SQL = SQL & "AND categoryname = 'Ship' AND groupName NOT IN ('Rookie ship','Prototype Exploration Ship') "
-        SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
+        SQL = SQL & "AND inventory_types.published <> 0  "
         SQL = SQL & "GROUP BY groupName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -18913,6 +19025,7 @@ Leave:
             chkMineIncludeLowSec.Checked = .CheckLowSecOres
             chkMineIncludeNullSec.Checked = .CheckNullSecOres
             chkMineWH.Checked = .CheckSovWormhole
+            chkMineMoonMining.Checked = .CheckSovMoon
 
             If chkMineIncludeNullSec.Checked Then
                 chkMineC1.Enabled = True
@@ -19800,6 +19913,7 @@ Leave:
             .CheckSovGallente = chkMineGallente.Checked
             .CheckSovMinmatar = chkMineMinmatar.Checked
             .CheckSovWormhole = chkMineWH.Checked
+            .CheckSovMoon = chkMineMoonMining.Checked
 
             .CheckSovC1 = chkMineC1.Checked
             .CheckSovC2 = chkMineC2.Checked
@@ -21455,6 +21569,17 @@ Leave:
 
     End Function
 
+    Private Sub frmMain_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+        ' If they don't have access to the correct scopes for structures, then don't enable the structure ID look up option
+        If Not SelectedCharacter.StructureMarketsAccess And Not SelectedCharacter.PublicStructuresAccess Then
+            btnAddStructureIDs.Enabled = False
+            btnViewSavedStructures.Enabled = False
+        Else
+            btnAddStructureIDs.Enabled = True
+            btnViewSavedStructures.Enabled = True
+        End If
+    End Sub
+
     ' The Ore structure to display in our grid for mining
     Public Structure MiningOre
         Dim OreID As Long
@@ -21481,7 +21606,6 @@ Leave:
         End Function
 
     End Class
-
 #End Region
 
 End Class

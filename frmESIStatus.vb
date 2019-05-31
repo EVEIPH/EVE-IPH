@@ -6,11 +6,30 @@ Public Class frmESIStatus
         Dim SQL As String
         Dim rsStatus As SQLiteDataReader
         Dim lstViewrow As ListViewItem
+        Dim ScopesList As String()
+        Dim ScopesSQL As String = ""
+        Dim EndLoc As Integer = 0
 
         lstStatus.Items.Clear()
         lstStatus.BeginUpdate()
 
-        SQL = "SELECT scope, purpose, status FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route ORDER BY SCOPE"
+        If SelectedCharacter.CharacterTokenData.Scopes = "No Scopes" Then
+            lstStatus.EndUpdate()
+            Exit Sub
+        End If
+
+        SQL = "SELECT scope, purpose, status FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route "
+        ScopesList = SelectedCharacter.CharacterTokenData.Scopes.Split(CChar(" "))
+
+        For Each scope In ScopesList
+            ScopesSQL &= scope.Substring(0, InStr(InStr(scope, ".") + 1, scope, ".") - 1) & "','"
+        Next
+
+        ScopesSQL = ScopesSQL.Substring(0, Len(ScopesSQL) - 3)
+
+        SQL &= "AND scope IN ('" & ScopesSQL & "') "
+        SQL &= "ORDER BY SCOPE"
+
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsStatus = DBCommand.ExecuteReader
 

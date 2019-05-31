@@ -9,17 +9,23 @@ Public Class DBConnection
     Public Sub New(ByVal DBFileName As String)
         DB = New SQLiteConnection
         DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
-        If DB.State = ConnectionState.Open Then DB.Close() ' Check if the DB is open and will lock on re-connection
+        If DB.State = ConnectionState.Open Then
+            DB.Close() ' Check if the DB is open and will lock on re-connection
+            DB.Dispose()
+            GC.Collect()
+            Threading.Thread.Sleep(5000)
+            DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
+        End If
         DB.Open()
 
-        Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = TRUNCATE; PRAGMA count_changes = OFF")
-        Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL;") ' Keep the DB small
+        Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL; PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = WAL; PRAGMA count_changes = OFF")
 
     End Sub
 
     Public Sub CloseDB()
         DB.Close()
         DB.Dispose()
+        GC.Collect()
     End Sub
 
     Public Function DBREf() As SQLiteConnection
@@ -35,6 +41,7 @@ Public Class DBConnection
             DBExecuteCmd.CommandText = SQL
             DBExecuteCmd.ExecuteNonQuery()
             DBExecuteCmd.Dispose()
+            DBExecuteCmd = Nothing
         End SyncLock
 
         ErrorTracker = ""

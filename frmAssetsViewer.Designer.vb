@@ -86,6 +86,7 @@ Partial Class frmAssetsViewer
         Me.chkCapitalComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapT2Components = New System.Windows.Forms.CheckBox()
         Me.gbRawMaterials = New System.Windows.Forms.GroupBox()
+        Me.chkAbyssalMaterials = New System.Windows.Forms.CheckBox()
         Me.chkBPCs = New System.Windows.Forms.CheckBox()
         Me.chkMisc = New System.Windows.Forms.CheckBox()
         Me.chkAsteroids = New System.Windows.Forms.CheckBox()
@@ -113,7 +114,7 @@ Partial Class frmAssetsViewer
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.AssetTree = New System.Windows.Forms.TreeView()
-        Me.chkAbyssalMaterials = New System.Windows.Forms.CheckBox()
+        Me.chkStructureComponents = New System.Windows.Forms.CheckBox()
         Me.gbSortOptions.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
         Me.tabMain.SuspendLayout()
@@ -723,6 +724,7 @@ Partial Class frmAssetsViewer
         '
         'gbComponents
         '
+        Me.gbComponents.Controls.Add(Me.chkStructureComponents)
         Me.gbComponents.Controls.Add(Me.chkHybrid)
         Me.gbComponents.Controls.Add(Me.chkComponents)
         Me.gbComponents.Controls.Add(Me.chkCapitalComponents)
@@ -802,6 +804,17 @@ Partial Class frmAssetsViewer
         Me.gbRawMaterials.Size = New System.Drawing.Size(269, 237)
         Me.gbRawMaterials.TabIndex = 5
         Me.gbRawMaterials.TabStop = False
+        '
+        'chkAbyssalMaterials
+        '
+        Me.chkAbyssalMaterials.AutoSize = True
+        Me.chkAbyssalMaterials.Location = New System.Drawing.Point(133, 214)
+        Me.chkAbyssalMaterials.Name = "chkAbyssalMaterials"
+        Me.chkAbyssalMaterials.Size = New System.Drawing.Size(107, 17)
+        Me.chkAbyssalMaterials.TabIndex = 22
+        Me.chkAbyssalMaterials.Text = "Abyssal Materials"
+        Me.chkAbyssalMaterials.UseVisualStyleBackColor = True
+        Me.chkAbyssalMaterials.Visible = False
         '
         'chkBPCs
         '
@@ -1071,16 +1084,14 @@ Partial Class frmAssetsViewer
         Me.AssetTree.Size = New System.Drawing.Size(346, 662)
         Me.AssetTree.TabIndex = 250
         '
-        'chkAbyssalMaterials
+        'chkStructureComponents
         '
-        Me.chkAbyssalMaterials.AutoSize = True
-        Me.chkAbyssalMaterials.Location = New System.Drawing.Point(133, 214)
-        Me.chkAbyssalMaterials.Name = "chkAbyssalMaterials"
-        Me.chkAbyssalMaterials.Size = New System.Drawing.Size(107, 17)
-        Me.chkAbyssalMaterials.TabIndex = 22
-        Me.chkAbyssalMaterials.Text = "Abyssal Materials"
-        Me.chkAbyssalMaterials.UseVisualStyleBackColor = True
-        Me.chkAbyssalMaterials.Visible = False
+        Me.chkStructureComponents.Location = New System.Drawing.Point(156, 49)
+        Me.chkStructureComponents.Name = "chkStructureComponents"
+        Me.chkStructureComponents.Size = New System.Drawing.Size(92, 34)
+        Me.chkStructureComponents.TabIndex = 18
+        Me.chkStructureComponents.Text = "Structure Components"
+        Me.chkStructureComponents.UseVisualStyleBackColor = True
         '
         'frmAssetsViewer
         '
@@ -1216,4 +1227,5 @@ Partial Class frmAssetsViewer
     Friend WithEvents chkBPCs As System.Windows.Forms.CheckBox
     Friend WithEvents chkStructureModules As CheckBox
     Friend WithEvents chkAbyssalMaterials As CheckBox
+    Friend WithEvents chkStructureComponents As CheckBox
 End Class

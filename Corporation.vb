@@ -199,13 +199,14 @@ Public Class Corporation
             ' Get all the roles for all characters in corporation. Note, the roles can only be pulled for a character with personnel manager
             RoleData = RoleESI.GetCorporationRoles(CharacterID, CorporationID, TokenData, CacheDate)
 
+            ' Delete current role data and update
+            Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}", CorporationID, CharacterID))
+
             If Not IsNothing(RoleData) Then
                 Call EVEDB.BeginSQLiteTransaction()
                 ' Check roles - for places they can carry out the role
                 ' Grantable is that they can give the role to others
                 For Each Character In RoleData
-                    ' Delete current role data and update
-                    Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}", CorporationID, Character.character_id))
                     ' Insert only role data (read access) for later checks
                     For Each Role In Character.roles
                         Call EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_CORPORATION_ROLES VALUES ({0}, {1},'{2}','Roles')", CorporationID, Character.character_id, FormatDBString(Role)))

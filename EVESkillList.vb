@@ -61,7 +61,7 @@ Public Class EVESkillList
             End If
 
             ' Insert skill
-            If UserApplicationSettings.AllowSkillOverride And CBool(rsData.GetInt32(3)) And LoadAllSkillsforOverride Then
+            If UserApplicationSettings.AllowSkillOverride And CBool(rsData.GetInt32(4)) And LoadAllSkillsforOverride Then
                 ' Use the override skill if set, save the old skill level in the override so we can reference it later if needed
                 InsertSkill(rsData.GetInt64(0), rsData.GetInt32(5), rsData.GetInt32(1), rsData.GetInt32(2), rsData.GetInt64(3), CBool(rsData.GetInt32(4)), SelectedSkillLevel)
             Else ' Just normal skills
@@ -401,17 +401,23 @@ Public Class EVESkillList
         ' Loop through all the override skills and update as necessary, then set the character skills to these
         If OverRideSkills.NumSkills <> 0 Then
 
+            Call EVEDB.BeginSQLiteTransaction()
+
             ' Update their user id to override skills
             SQL = "UPDATE ESI_CHARACTER_DATA SET OVERRIDE_SKILLS = 1 WHERE CHARACTER_ID = " & SelectedCharacter.ID
             Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Call EVEDB.BeginSQLiteTransaction()
 
             For i = 0 To OverRideSkills.NumSkills - 1
                 ' Two possiblities - the skill exists, which is where we update the override variables, it doesn't and we enter a new record
                 ' or it's there but we want to remove it
                 ' Check for skill and update if there
-                SQL = "SELECT SKILL_LEVEL FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
+                Dim SkillType As String
+                If UserApplicationSettings.UseActiveSkillLevels Then
+                    SkillType = "ACTIVE_SKILL_LEVEL"
+                Else
+                    SkillType = "TRAINED_SKILL_LEVEL"
+                End If
+                SQL = "SELECT " & SkillType & " FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSkills = DBCommand.ExecuteReader

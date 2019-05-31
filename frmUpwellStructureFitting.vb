@@ -390,7 +390,6 @@ Public Class frmUpwellStructureFitting
 
     ' Loads the image in the first free slot if available - use for double-click an item
     Private Sub LoadImageInFreeSlot(ByVal ModuleTypeID As Integer, ByVal ModuleName As String, ByVal GroupTag As String, ByVal GroupName As String)
-        Dim DummyImage As New Bitmap(64, 64)
 
         ' Loop through all the picture boxes and add the first one that is empty
         For Each Slot In SlotPictureBoxList
@@ -406,7 +405,7 @@ Public Class frmUpwellStructureFitting
                 If IsNothing(Slot.Image) Then
                     Slot.Image = FittingImages.Images(CStr(ModuleTypeID))
                     If IsNothing(Slot.Image) Then
-                        Slot.Image = My.Resources.XImage
+                        Slot.Image = New Bitmap(64, 64)
                         Slot.BackgroundImage = Nothing
                     End If
                     Slot.Image.Tag = ModuleTypeID

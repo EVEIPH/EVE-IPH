@@ -22,16 +22,18 @@ Public Class frmViewSavedStructures
     ' Load up the structures
     Private Sub frmViewSavedStructures_Shown(sender As Object, e As EventArgs) Handles Me.Shown
         Application.UseWaitCursor = True
-        Application.DoEvents()
+        Me.Enabled = False
         btnExit.Enabled = False
         btnRemove.Enabled = False
         lstStructures.Enabled = False
+        Application.DoEvents()
 
         Call LoadStructureGrid()
 
         btnExit.Enabled = True
         btnRemove.Enabled = True
         lstStructures.Enabled = True
+        Me.Enabled = True
         Application.UseWaitCursor = False
         Application.DoEvents()
 

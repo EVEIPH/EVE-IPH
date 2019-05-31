@@ -11,7 +11,7 @@ Public Class EVEMarketer
         Dim RegionOrSystem As String
     End Structure
 
-    ' Function takes an array of strings for Regions and a TypeID list, returns an array of EVE Central prices
+    ' Function takes an array of strings for Regions and a TypeID list, returns an array of EVE Marketeer prices
     Public Function GetPrices(ByVal TypeIDList As List(Of Long), RegionID As Integer, Optional SystemID As Integer = 0, Optional TypeIDBatchCount As Integer = 100) As List(Of EVEMarketerPrice)
         Dim PriceRecords As New List(Of EVEMarketerPrice)
         Dim TempRecord As EVEMarketerPrice
@@ -67,36 +67,38 @@ Public Class EVEMarketer
                 ' Parse the out put into the object and process
                 PriceOutput = JsonConvert.DeserializeObject(Of List(Of EMType))(Output)
 
-                For Each Price In PriceOutput
-                    With Price
-                        TempRecord.TypeID = .buy.forQuery.types(0)
-                        TempRecord.RegionOrSystem = CStr(RegionOrSystemUsed)
-                        TempRecord.BuyAvgPrice = .buy.avg
-                        TempRecord.BuyMaxPrice = .buy.max
-                        TempRecord.BuyMedian = .buy.median
-                        TempRecord.BuyMinPrice = .buy.min
-                        TempRecord.BuyPercentile = .buy.fivePercent
-                        TempRecord.BuyStdDev = .buy.stdDev
-                        TempRecord.BuyVolume = .buy.volume
-                        TempRecord.BuyWeightedAveragePrice = .buy.wavg
-                        TempRecord.BuyVariance = .buy.variance
+                If Not IsNothing(PriceOutput) Then
+                    For Each Price In PriceOutput
+                        With Price
+                            TempRecord.TypeID = .buy.forQuery.types(0)
+                            TempRecord.RegionOrSystem = CStr(RegionOrSystemUsed)
+                            TempRecord.BuyAvgPrice = .buy.avg
+                            TempRecord.BuyMaxPrice = .buy.max
+                            TempRecord.BuyMedian = .buy.median
+                            TempRecord.BuyMinPrice = .buy.min
+                            TempRecord.BuyPercentile = .buy.fivePercent
+                            TempRecord.BuyStdDev = .buy.stdDev
+                            TempRecord.BuyVolume = .buy.volume
+                            TempRecord.BuyWeightedAveragePrice = .buy.wavg
+                            TempRecord.BuyVariance = .buy.variance
 
-                        TempRecord.SellAvgPrice = .sell.avg
-                        TempRecord.SellMaxPrice = .sell.max
-                        TempRecord.SellMedian = .sell.median
-                        TempRecord.SellMinPrice = .sell.min
-                        TempRecord.SellPercentile = .sell.fivePercent
-                        TempRecord.SellStdDev = .sell.stdDev
-                        TempRecord.SellVolume = .sell.volume
-                        TempRecord.SellWeightedAveragePrice = .sell.wavg
-                        TempRecord.SellVariance = .sell.variance
-                    End With
+                            TempRecord.SellAvgPrice = .sell.avg
+                            TempRecord.SellMaxPrice = .sell.max
+                            TempRecord.SellMedian = .sell.median
+                            TempRecord.SellMinPrice = .sell.min
+                            TempRecord.SellPercentile = .sell.fivePercent
+                            TempRecord.SellStdDev = .sell.stdDev
+                            TempRecord.SellVolume = .sell.volume
+                            TempRecord.SellWeightedAveragePrice = .sell.wavg
+                            TempRecord.SellVariance = .sell.variance
+                        End With
 
-                    ' Add the record
-                    PriceRecords.Add(TempRecord)
+                        ' Add the record
+                        PriceRecords.Add(TempRecord)
 
-                    Application.DoEvents()
-                Next
+                        Application.DoEvents()
+                    Next
+                End If
 
             Catch ex As Exception
                 ' Determine if it's a 4xx error (my error) or 5xx (server error)
@@ -124,7 +126,7 @@ Public Class EVEMarketer
                 End If
 
                 ' If we error, that means one of the item list has errored. Probably a bad request for an item
-                ' that isn't in the EVE Central DB. If bad request (4xx error) then try and run it with 1 per batch and weed out the errors
+                ' that isn't in the EVE Marketer DB. If bad request (4xx error) then try and run it with 1 per batch and weed out the errors
                 ' If the TypeIDBatchCount isn't 1, then re-run
                 If ErrorCode = 4 Then
                     ' Message box and then exit

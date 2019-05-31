@@ -269,7 +269,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Call GetAccessToken(Token, Refresh)
+                AccessTokenOutput = GetAccessToken(Token, Refresh)
             End If
 
         Catch ex As Exception
@@ -512,7 +512,8 @@ Public Class ESI
     ''' </summary>
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
     Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
-                                     Optional ByVal ManualAuthToken As String = "") As Boolean
+                                     Optional ByVal ManualAuthToken As String = "",
+                                     Optional ByVal IgnoreCacheDate As Boolean = False) As Boolean
         Dim TokenData As ESITokenData
         Dim CharacterData As New ESICharacterData
         Dim CharacterID As Long
@@ -526,7 +527,7 @@ Public Class ESI
         End If
 
         Try
-            If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Then
+            If CB.DataUpdateable(CacheDateType.PublicCharacterData, CharacterID) Or IgnoreCacheDate Then
                 If CharacterID = 0 Then
                     ' We need to get the token data from the authorization
                     If ManualAuthToken <> "" Then
@@ -728,7 +729,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Call GetCharacterVerificationData(TokenData, TokenExpirationDate)
+                Return GetCharacterVerificationData(TokenData, TokenExpirationDate)
             End If
 
         Catch ex As Exception
@@ -1017,12 +1018,12 @@ Public Class ESI
 
     End Sub
 
-    Public Function GetStructureData(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByRef StructureCacheDate As Date) As ESIUniverseStructure
+    Public Function GetStructureData(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByRef StructureCacheDate As Date, ByVal SuppressErrors As Boolean) As ESIUniverseStructure
         Dim ReturnData As String = ""
 
-        ' Set up query string - suppress error messages since this will probably have the most issues
+        ' Set up query string - choose a suppress error message setting since this will probably have the most issues
         ReturnData = GetPrivateAuthorizedData(ESIURL & "universe/structures/" & CStr(ID) & "/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, True)
+                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, SuppressErrors)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of ESIUniverseStructure)(ReturnData)
@@ -1475,9 +1476,7 @@ Public Class ESI
         Dim MarketPricesOutput As List(Of ESIMarketHistoryItem)
         Dim SQL As String = ""
         Dim CacheDate As Date = NoDate
-        Dim MinHistoryDate As Date = NoDate
         Dim PublicData As String = ""
-        Dim HistoryDate As Date
         Dim MPI As New MarketPriceInterface(Nothing)
         Dim Pair As New MarketPriceInterface.ItemRegionPairs
 
@@ -1496,24 +1495,15 @@ Public Class ESI
                 ' Read in the data
                 If Not IsNothing(MarketPricesOutput) Then
                     If MarketPricesOutput.Count > 0 Then
-                        ' There is only 13 months of history data returned so only keep 13 months in the table from when we pulled this data
-                        MinHistoryDate = DateAdd(DateInterval.Month, -13, CacheDate)
+                        ' Delete all records from history so we update with a fresh set
+                        Call MHDB.ExecuteNonQuerySQL(String.Format("DELETE FROM MARKET_HISTORY WHERE TYPE_ID = {0} AND REGION_ID = {1}", TypeID, RegionID))
 
-                        ' Delete any historic data if we have data on this in the history cache
-                        If MinHistoryDate <> NoDate Then
-                            Call MHDB.ExecuteNonQuerySQL(String.Format("DELETE FROM MARKET_HISTORY WHERE TYPE_ID = {0} AND REGION_ID = {1} AND PRICE_HISTORY_DATE <'{2}'", TypeID, RegionID, Format(MinHistoryDate, SQLiteDateFormat)))
-                        End If
-
-                        ' Now read through all the output items that are not in the table insert them in MARKET_HISTORY
+                        ' Refresh data
                         For Each PriceEntry In MarketPricesOutput
                             With PriceEntry
-                                HistoryDate = FormatESIDate(.history_date)
-                                ' I only want to keep a year of data
-                                If HistoryDate > MinHistoryDate.Date Then
-                                    SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & Format(HistoryDate, SQLiteDateFormat) & "',"
-                                    SQL &= CStr(.lowest) & "," & CStr(.highest) & "," & CStr(.average) & "," & CStr(.order_count) & "," & CStr(.volume) & ")"
-                                    Call MHDB.ExecuteNonQuerySQL(SQL)
-                                End If
+                                SQL = "INSERT INTO MARKET_HISTORY VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & ",'" & Format(FormatESIDate(.history_date), SQLiteDateFormat) & "',"
+                                SQL &= CStr(.lowest) & "," & CStr(.highest) & "," & CStr(.average) & "," & CStr(.order_count) & "," & CStr(.volume) & ")"
+                                Call MHDB.ExecuteNonQuerySQL(SQL)
                             End With
 
                             Application.DoEvents()

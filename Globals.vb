@@ -208,7 +208,7 @@ Public Module Public_Variables
     Public Const DefaultTextDataExport As String = "Default"
     Public Const CSVDataExport As String = "CSV"
     Public Const SSVDataExport As String = "SSV"
-    Public Const SimpleDataExport As String = "Simple"
+    Public Const MultiBuyDataExport As String = "Multibuy"
 
     Public SetTaxFeeChecks As Boolean
     Public LocationIDs As New List(Of Long)
@@ -361,11 +361,8 @@ Public Module Public_Variables
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
 
         Dim TempFee As Double
-        ' Old BrokerFee % = (1.000 %  0.050 % × BrokerRelationsSkillLevel) / e ^ (0.1000 × FactionStanding + 0.04000 × CorporationStanding)
-        ' BrokerFee % = (1.000 %  0.050 % × BrokerRelationsSkillLevel) / 2 ^ (0.1400 × FactionStanding + 0.06000 × CorporationStanding) 
-        'TempFee = ((1 - 0.05 * BrokerRelations) / Math.Exp(0.1 * UserApplicationSettings.BrokerFactionStanding + 0.04 * UserApplicationSettings.BrokerCorpStanding)) / 100 * ItemMarketCost
-        'TempFee = ((1 - 0.05 * BrokerRelations) / (2 ^ (0.14 * UserApplicationSettings.BrokerFactionStanding + 0.06 * UserApplicationSettings.BrokerCorpStanding))) / 100 * ItemMarketCost
-
+        ' 3%-(0.1%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
+        ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
         Dim BrokerTax = 3.0 - (0.1 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
         TempFee = (BrokerTax / 100) * ItemMarketCost
 
@@ -1093,10 +1090,12 @@ InvalidDate:
     End Function
 
     ' After a price update in any location that updates prices, we want to refresh all the prices and grids on every tab 
-    Public Sub UpdateProgramPrices()
+    Public Sub UpdateProgramPrices(Optional ByVal RefreshUpdatePriceList As Boolean = True)
 
         ' Update the Update Prices tab
-        Call frmMain.UpdatePriceList()
+        If RefreshUpdatePriceList Then
+            Call frmMain.UpdatePriceList()
+        End If
 
         ' Update the shopping list
         Call UpdateShoppingListPrices()
@@ -2178,6 +2177,10 @@ InvalidDate:
 
         Dim Output As String = ""
 
+        If CancelUpdatePrices Then
+            Return ""
+        End If
+
         Try
             Dim Start As DateTime = Now
             Dim myUri As New Uri(URL)
@@ -2198,7 +2201,10 @@ InvalidDate:
             reader = New StreamReader(response.GetResponseStream())
 
             ' Read the data
-            Output = reader.ReadToEnd
+            Output = Trim(reader.ReadToEnd)
+            If Output.Substring(Len(Output) - 1, 1) = vbLf Then
+                Output = Output.Substring(0, Len(Output) - 1)
+            End If
 
             ' See if it downloaded a full file
             If Output.Substring(Len(Output) - 1, 1) <> "]" Then
@@ -2222,7 +2228,7 @@ InvalidDate:
 
             If ex.Message.Contains("An established connection was aborted by the software in your host machine") _
                 Or ex.Message.Contains("An existing connection was forcibly closed by the remote host.") _
-                Or ex.Message.Contains("The operation has timed out") Or ex.Message.Contains("503") And Not IgnoreExceptions Then
+                Or ex.Message.Contains("503") And Not IgnoreExceptions Then 'Or ex.Message.Contains("The operation has timed out")
                 ' Re-run this function - limit to 10 calls if not part of the first load of the program
                 If RecursiveCalls <= 10 And Not FirstLoad Then
                     Dim NumCalls As Integer = RecursiveCalls + 1

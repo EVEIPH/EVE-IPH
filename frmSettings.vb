@@ -318,6 +318,7 @@ Public Class frmSettings
                 .SetToolTip(chkSaveFacilitiesbyChar, "When checked, saved facilities will only apply to the selected character. If unchecked, all characters will share saved facilities")
                 .SetToolTip(chkLoadBPsbyChar, "When checked, blueprints loaded into IPH will be different for each character. If unchecked, all characters share the same BPs")
                 .SetToolTip(chkDisableTracking, "When checked, IPH will not send anonymous useage data to Google Analytics")
+                .SetToolTip(chkShareFacilities, "When checked, IPH will use the same facility type saved on any form when used on any other form. If unchecked, IPH will save each facility uniquely")
 
                 ' Startup Options
                 .SetToolTip(chkCheckUpdatesStartup, "IPH will check for program updates when the program starts")
@@ -481,6 +482,7 @@ Public Class frmSettings
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
+            chkShareFacilities.Checked = .ShareSavedFacilities
 
             chkAlphaAccount.Checked = .AlphaAccount
             chkUseActiveSkills.Checked = .UseActiveSkillLevels
@@ -557,6 +559,7 @@ Public Class frmSettings
             End If
 
             Me.Cursor = Cursors.WaitCursor
+            Me.Enabled = False
 
             ' Get the implant values if set
             If chkBeanCounterManufacturing.Checked Then
@@ -636,6 +639,8 @@ Public Class frmSettings
 
                 .DisableSVR = chkDisableSVR.Checked
                 .DisableGATracking = chkDisableTracking.Checked
+                .ShareSavedFacilities = chkShareFacilities.Checked
+
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
@@ -697,6 +702,7 @@ Public Class frmSettings
             MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
             btnSave.Text = "OK"
+            Me.Enabled = True
             Me.Cursor = Cursors.Default
         Else
             ' Just exit

@@ -465,6 +465,87 @@ Public Class Blueprint
 
     End Function
 
+    Public Sub BuildItems2(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
+                          ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
+        ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
+        If NumberofBlueprints = 1 Then
+            'Just run the normal function and it will set everything
+            Call BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
+        Else ' Multi bps
+
+            Dim RunsPerLine As Integer
+            Dim ExtraRuns As Integer
+            Dim AdjRunsperBP As Integer
+
+            Dim BatchList As New List(Of Integer)
+            Dim Batches As Integer
+
+            If UserRuns < NumberofBlueprints Then
+                ' Can't run more bps than runs, so reset to the runs - 1 bp per run
+                NumberofBlueprints = CInt(UserRuns)
+            End If
+
+            ' For bps with unlimited runs, assume that the most efficient is to run max runs on each line in one batch, 
+            ' so reset if bps are greater than lines
+            If MaxRunsPerBP = 0 Then
+                If NumberofBlueprints > NumberofProductionLines Then
+                    ' We can't run more bps than the lines entered, so reset this
+                    NumberofBlueprints = NumberofProductionLines
+                End If
+                Batches = 1
+            Else
+                ' How many batches do we run in the production chain?
+                Batches = CInt(Math.Ceiling(UserRuns / (MaxRunsPerBP * NumberofProductionLines)))
+            End If
+
+            ' set the minimum per bp, shouldn't go over the runs per bp since the user sends in the total numbps they need
+            RunsPerLine = CInt(Math.Floor(UserRuns / NumberofBlueprints))
+            ExtraRuns = CInt(UserRuns - (RunsPerLine * NumberofBlueprints))
+
+            ' To track how many runs we have used in the batch setup
+            Dim RunTracker As Long = 0
+
+            ' Fill a list of runs per bp
+            For i = 0 To Batches - 1
+                For j = 0 To NumberofProductionLines - 1
+                    ' As we add the runs, adjust with extra runs proportionally until they are gone
+                    If ExtraRuns <> 0 Then
+                        ' Since it's a fraction of a total batch run, this will always just be one until gone ** not right?
+                        AdjRunsperBP = RunsPerLine + 1
+                        ExtraRuns = ExtraRuns - 1 ' Adjust extra
+                    Else
+                        ' No extra runs, so just add the original runs now
+                        AdjRunsperBP = RunsPerLine
+                    End If
+
+                    BatchList.Add(AdjRunsperBP)
+
+                    ' If we have used up all the runs, then exit the loop
+                    RunTracker += AdjRunsperBP
+                    If RunTracker = UserRuns Then
+                        Exit For
+                    End If
+
+                    If AdjRunsperBP = MaxRunsPerBP Then
+                        ' Reset the adjusteded runs per bp to match invented amount, or if zero let it keep summing up for T1
+                        AdjRunsperBP = 0
+                    End If
+
+                Next
+
+                ' Add the above batchlist to the chain
+                ProductionChain.Add(BatchList)
+                ' Reset the batch list
+                BatchList = New List(Of Integer)
+
+            Next
+
+            Application.DoEvents()
+
+        End If
+
+    End Sub
+
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
     Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
                           ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
@@ -851,128 +932,141 @@ Public Class Blueprint
                 ' Treat augmented drones, polarized weapons, and all ship skins as just base blueprints - don't build the T2 items that they use (yet)
                 If readerME.Read And Not (BlueprintName.Contains("'Augmented'") And CurrentMaterial.GetMaterialGroup = "Drone") _
                     And Not BlueprintName.Contains("Edition") And Not BlueprintName.Contains("Polarized") Then
-                        ' We can build it from another BP
-                        HasBuildableComponents = True
+                    ' We can build it from another BP
+                    HasBuildableComponents = True
 
-                        ' Look up the ME/TE and owned data for the bp
-                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                    ' Look up the ME/TE and owned data for the bp
+                    Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
 
-                        ' Update the current material's ME
-                        CurrentMaterial.SetItemME(CStr(TempME))
+                    ' Update the current material's ME
+                    CurrentMaterial.SetItemME(CStr(TempME))
 
-                        Dim TempComponentFacility As IndustryFacility
+                    Dim TempComponentFacility As IndustryFacility
 
-                        ' Build the T1 component
-                        If readerBP.GetDouble(9) = ItemIDs.AdvCapitalComponentGroupID Or readerBP.GetDouble(9) = ItemIDs.CapitalComponentGroupID Then
-                            ' Use capital component facility
-                            TempComponentFacility = CapitalComponentManufacturingFacility
-                        ElseIf IsT1BaseItemforT2(CurrentMaterialCategory) Then
-                            ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
-                            TempComponentFacility = MainManufacturingFacility
-                        Else ' Components
-                            TempComponentFacility = ComponentManufacturingFacility
+                    ' Build the T1 component
+                    If readerBP.GetDouble(9) = ItemIDs.AdvCapitalComponentGroupID Or readerBP.GetDouble(9) = ItemIDs.CapitalComponentGroupID Then
+                        ' Use capital component facility
+                        TempComponentFacility = CapitalComponentManufacturingFacility
+                    ElseIf IsT1BaseItemforT2(CurrentMaterialCategory) Then
+                        ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
+                        TempComponentFacility = MainManufacturingFacility
+                    Else ' Components
+                        TempComponentFacility = ComponentManufacturingFacility
+                    End If
+
+                    ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
+                    ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
+                                        1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
+                                        ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
+
+                    ' Set this blueprint with the quantity needed and get it's mats
+                    Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
+
+                    ' Determine if the component should be bought, or we should build it and add to the correct list
+                    If BuildBuy Then
+                        Dim CheapertoBuild As Boolean = False
+                        ' See if the costs to build are less than buy
+                        If ComponentBPPortionSize = 1 Then
+                            If CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost Then
+                                CheapertoBuild = True
+                            End If
+                        Else
+                            ' Need to calc the proper cost for each run 
+                            If CurrentMaterial.GetTotalCost > ((ComponentBlueprint.GetTotalRawCost / (ComponentBPPortionSize * BuildQuantity)) * CurrentMaterial.GetQuantity) Then
+                                CheapertoBuild = True
+                            End If
                         End If
 
-                        ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
-                        ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
-                                            1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
-                                            ComponentManufacturingFacility, CapitalComponentManufacturingFacility, True)
+                        ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
+                        If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or
+                        (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
 
-                        ' Set this blueprint with the quantity needed and get it's mats
-                        Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
+                            '*** BUILD ***
+                            ' We want to build this item
+                            CurrentMaterial.SetBuildItem(True)
 
-                        ' Determine if the component should be bought, or we should build it and add to the correct list
-                        If BuildBuy Then
-                            Dim CheapertoBuild As Boolean = False
-                            ' See if the costs to build are less than buy
-                            If ComponentBPPortionSize = 1 Then
-                                If CurrentMaterial.GetTotalCost > ComponentBlueprint.GetTotalRawCost Then
-                                    CheapertoBuild = True
-                                End If
+                            ' Save the production time for this component
+                            Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
+
+                            ' Get the skills for BP to build it and add them to the list
+                            TempSkills = ComponentBlueprint.GetReqBPSkills
+
+                            ' Building this, so add fees to current (taxes for mats added in building item)
+                            ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
+
+                            ' Get the component usage
+                            Select Case ComponentBlueprint.GetItemGroupID
+                                Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
+                                    CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
+                                Case Else
+                                    ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
+                            End Select
+
+                            ' Since we are building this item, set the material cost to build cost per item, not buy
+                            CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity)
+
+                            ' Adjust the material quantity if we are building and the build quantity <> mat quantity
+                            If BuildQuantity <> CurrentMaterial.GetQuantity Then
+                                CurrentMaterial.SetQuantity(BuildQuantity)
+                            End If
+
+                            ' Insert the raw mats of this blueprint
+                            RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
+
+                            ' Save the item built, it's ME and the materials it used
+                            Dim TempBuiltItem As New BuiltItem
+                            TempBuiltItem.BPTypeID = readerME.GetInt64(0)
+                            TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
+                            TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
+                            TempBuiltItem.ItemQuantity = CurrentMatQuantity
+                            TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize) ' use decimal here, don't round yet
+                            TempBuiltItem.BuildME = TempME
+                            TempBuiltItem.BuildTE = TempTE
+                            TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
+
+                            TempBuiltItem.FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
+                            TempBuiltItem.FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
+                            TempBuiltItem.FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
+                            TempBuiltItem.IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
+                            TempBuiltItem.IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
+                            TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
+
+                            ' See if we need to add the system on to the end of the build location for POS
+                            If TempBuiltItem.FacilityType = ManufacturingFacility.POSFacility Then
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
                             Else
-                                ' Need to calc the proper cost for each run 
-                                If CurrentMaterial.GetTotalCost > ((ComponentBlueprint.GetTotalRawCost / (ComponentBPPortionSize * BuildQuantity)) * CurrentMaterial.GetQuantity) Then
-                                    CheapertoBuild = True
-                                End If
+                                TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
                             End If
 
-                            ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                            If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or
-                            (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+                            ' Add the raw mats to build the item
+                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
 
-                                '*** BUILD ***
-                                ' We want to build this item
-                                CurrentMaterial.SetBuildItem(True)
-
-                                ' Save the production time for this component
-                                Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
-
-                                ' Get the skills for BP to build it and add them to the list
-                                TempSkills = ComponentBlueprint.GetReqBPSkills
-
-                                ' Building this, so add fees to current (taxes for mats added in building item)
-                                ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-
-                                ' Get the component usage
-                                Select Case ComponentBlueprint.GetItemGroupID
-                                    Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
-                                        CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                                    Case Else
-                                        ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                                End Select
-
-                                ' Since we are building this item, set the material cost to build cost per item, not buy
-                                CurrentMaterial.SetBuildCost(ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity)
-
-                                ' Adjust the material quantity if we are building and the build quantity <> mat quantity
-                                If BuildQuantity <> CurrentMaterial.GetQuantity Then
-                                    CurrentMaterial.SetQuantity(BuildQuantity)
-                                End If
-
-                                ' Insert the raw mats of this blueprint
-                                RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
-
-                                ' Save the item built, it's ME and the materials it used
-                                Dim TempBuiltItem As New BuiltItem
-                                TempBuiltItem.BPTypeID = readerME.GetInt64(0)
-                                TempBuiltItem.ItemTypeID = CurrentMaterial.GetMaterialTypeID
-                                TempBuiltItem.ItemName = CurrentMaterial.GetMaterialName
-                                TempBuiltItem.ItemQuantity = CurrentMatQuantity
-                                TempBuiltItem.UsedQuantity = CDec(CurrentMatQuantity / ComponentBPPortionSize) ' use decimal here, don't round yet
-                                TempBuiltItem.BuildME = TempME
-                                TempBuiltItem.BuildTE = TempTE
-                                TempBuiltItem.ItemVolume = CurrentMaterial.GetVolume
-
-                                TempBuiltItem.FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                                TempBuiltItem.FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
-                                TempBuiltItem.FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
-                                TempBuiltItem.IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
-                                TempBuiltItem.IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
-                                TempBuiltItem.IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
-
-                                ' See if we need to add the system on to the end of the build location for POS
-                                If TempBuiltItem.FacilityType = ManufacturingFacility.POSFacility Then
-                                    TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                                Else
-                                    TempBuiltItem.FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
-                                End If
-
-                                ' Add the raw mats to build the item
-                                TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
-
-                                BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
-
-                            Else ' *** BUY ***
-                                ' We want to buy this item, don't add raw mats but add the component to the buy list (raw mats)
-                                CurrentMaterial.SetBuildItem(False)
-                                ' Also, not adding the build time to the lists
-                                RawMaterials.InsertMaterial(CurrentMaterial)
+                            If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
+                                ' Add any buildable components to this item list
+                                For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
+                                    TempBuiltItem.ComponentBuildList.Add(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                                Next
                             End If
 
-                            ' Finally, insert all components into the build/buy list
-                            ComponentMaterials.InsertMaterial(CurrentMaterial)
+                            ' Add this item to the main build list
+                            BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
-                        Else ' *** BUILD COMPONENT ALWAYS ***
+                            ' If this item has buildable components, add those to this main list too so it nests up
+                            For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
+                                BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                            Next
+
+                        Else ' *** BUY ***
+                            ' We want to buy this item, don't add raw mats but add the component to the buy list (raw mats)
+                            CurrentMaterial.SetBuildItem(False)
+                            ' Also, not adding the build time to the lists
+                            RawMaterials.InsertMaterial(CurrentMaterial)
+                        End If
+
+                        ' Finally, insert all components into the build/buy list
+                        ComponentMaterials.InsertMaterial(CurrentMaterial)
+
+                    Else ' *** BUILD COMPONENT ALWAYS ***
 
                             ' We want to build this item
                             CurrentMaterial.SetBuildItem(True)

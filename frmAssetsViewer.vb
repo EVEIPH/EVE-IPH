@@ -244,6 +244,7 @@ Public Class frmAssetsViewer
             chkCapitalComponents.Checked = .CapitalComponents
             chkComponents.Checked = .Components
             chkHybrid.Checked = .Hybrid
+            chkStructureComponents.Checked = .StructureComponents
             chkFuelBlocks.Checked = .FuelBlocks
 
             chkItemsT1.Checked = .T1
@@ -335,6 +336,8 @@ Public Class frmAssetsViewer
         ElseIf chkComponents.Checked Then
             Return True
         ElseIf chkHybrid.Checked Then
+            Return True
+        ElseIf chkStructureComponents.Checked Then
             Return True
         ElseIf chkFuelBlocks.Checked Then
             Return True
@@ -616,6 +619,10 @@ Public Class frmAssetsViewer
             End If
             If chkHybrid.Checked Then
                 SQL = SQL & "ITEM_GROUP = 'Hybrid Tech Components' OR "
+                ItemChecked = True
+            End If
+            If chkStructureComponents.Checked Then
+                SQL = SQL & "ITEM_GROUP = 'Structure Components' OR "
                 ItemChecked = True
             End If
             If chkTools.Checked Then
@@ -997,6 +1004,7 @@ Public Class frmAssetsViewer
             .CapitalComponents = chkCapitalComponents.Checked
             .Components = chkComponents.Checked
             .Hybrid = chkHybrid.Checked
+            .StructureComponents = chkStructureComponents.Checked
             .FuelBlocks = chkFuelBlocks.Checked
             .T1 = chkItemsT1.Checked
             .T2 = chkItemsT2.Checked
@@ -1250,6 +1258,7 @@ Public Class frmAssetsViewer
             chkCapitalComponents.Checked = True
             chkComponents.Checked = True
             chkHybrid.Checked = True
+            chkStructureComponents.Checked = True
             chkFuelBlocks.Checked = True
             chkCelestials.Checked = True
             chkStructureRigs.Checked = True
@@ -1270,6 +1279,7 @@ Public Class frmAssetsViewer
             chkCapitalComponents.Checked = False
             chkComponents.Checked = False
             chkHybrid.Checked = False
+            chkStructureComponents.Checked = False
             chkFuelBlocks.Checked = False
             chkCelestials.Checked = False
             chkStructureRigs.Checked = False

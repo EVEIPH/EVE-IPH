@@ -85,16 +85,16 @@ Public Class EVEIndustryJobs
 
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                        ' Insert industry data
-                        For i = 0 To IndyJobs.Count - 1
-                            ' First make sure it's not already in there
-                            With IndyJobs(i)
-                                ' Insert it
-                                If .location_id = 0 Then
-                                    LocationID = .station_id
-                                Else
-                                    LocationID = .location_id
-                                End If
+                    ' Insert industry data
+                    For i = 0 To IndyJobs.Count - 1
+                        ' First make sure it's not already in there
+                        With IndyJobs(i)
+                            ' Insert it
+                            If .location_id = 0 Then
+                                LocationID = .station_id
+                            Else
+                                LocationID = .location_id
+                            End If
 
                             If JobType = ScanType.Personal Or (CorpCharIDs.Contains(.installer_id) And JobType = ScanType.Corporation) Then ' update fields
                                 SQL = "INSERT INTO INDUSTRY_JOBS (jobID, installerID, facilityID, locationID, activityID, "
@@ -139,40 +139,40 @@ Public Class EVEIndustryJobs
 
                             End If
                         End With
-                        Next
+                    Next
 
-                        DBCommand = Nothing
+                    DBCommand = Nothing
 
-                        ' Now look up distinct location ids to find any public upwell structures to update
-                        Dim rsStructure As SQLiteDataReader
-                        Dim StructureIDList As New List(Of Long)
+                    ' Now look up distinct location ids to find any public upwell structures to update
+                    Dim rsStructure As SQLiteDataReader
+                    Dim StructureIDList As New List(Of Long)
 
-                        ' Select facilties only for this character, since others may not have the same rights to this token
-                        SQL = "SELECT DISTINCT facilityID FROM INDUSTRY_JOBS WHERE installerID = " & CStr(ID)
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsStructure = DBCommand.ExecuteReader
+                    ' Select facilties only for this character, since others may not have the same rights to this token
+                    SQL = "SELECT DISTINCT facilityID FROM INDUSTRY_JOBS WHERE installerID = " & CStr(ID)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsStructure = DBCommand.ExecuteReader
 
-                        While rsStructure.Read
-                            StructureIDList.Add(rsStructure.GetInt64(0))
-                        End While
+                    While rsStructure.Read
+                        StructureIDList.Add(rsStructure.GetInt64(0))
+                    End While
 
-                        rsStructure.Close()
+                    rsStructure.Close()
 
-                        ' Update all the structures we don't have names for
-                        ' Add the data
-                        Dim SP As New StructureProcessor
-                        For Each StructureID In StructureIDList
-                            Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, False)
-                        Next
+                    ' Update all the structures we don't have names for
+                    ' Add the data
+                    Dim SP As New StructureProcessor
+                    For Each StructureID In StructureIDList
+                        Call SP.UpdateStructureData(StructureID, SelectedCharacter.CharacterTokenData, False, True)
+                    Next
 
-                        DBCommand = Nothing
-                        rsStructure = Nothing
+                    DBCommand = Nothing
+                    rsStructure = Nothing
 
-                        Call EVEDB.CommitSQLiteTransaction()
-                    End If
+                    Call EVEDB.CommitSQLiteTransaction()
+                End If
 
-                    ' Update cache date now that it's all set
-                    Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+                ' Update cache date now that it's all set
+                Call CB.UpdateCacheDate(CDType, CacheDate, ID)
             End If
         End If
 

@@ -507,6 +507,7 @@ Partial Class frmBlueprintList
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.lblIntro)
         Me.Controls.Add(Me.treBlueprintTreeView)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False

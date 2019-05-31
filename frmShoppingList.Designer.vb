@@ -57,6 +57,11 @@ Partial Class frmShoppingList
         Me.lblUsage = New System.Windows.Forms.Label()
         Me.chkUsage = New System.Windows.Forms.CheckBox()
         Me.lblFees = New System.Windows.Forms.Label()
+        Me.gbExportOptions = New System.Windows.Forms.GroupBox()
+        Me.rbtnExportMulitBuy = New System.Windows.Forms.RadioButton()
+        Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
+        Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
+        Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
         Me.txtAddlCosts = New System.Windows.Forms.TextBox()
         Me.chkFees = New System.Windows.Forms.CheckBox()
         Me.lblAddlCosts = New System.Windows.Forms.Label()
@@ -71,11 +76,6 @@ Partial Class frmShoppingList
         Me.gbUpdateList = New System.Windows.Forms.GroupBox()
         Me.lblTotalInventionCost = New System.Windows.Forms.Label()
         Me.lblTotalCopyCost = New System.Windows.Forms.Label()
-        Me.gbExportOptions = New System.Windows.Forms.GroupBox()
-        Me.rbtnExportSimple = New System.Windows.Forms.RadioButton()
-        Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
-        Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
-        Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
         Me.lblTIC = New System.Windows.Forms.Label()
         Me.lblTCC = New System.Windows.Forms.Label()
         Me.lblTotalItemsInList = New System.Windows.Forms.Label()
@@ -86,8 +86,8 @@ Partial Class frmShoppingList
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
         Me.gbOptions.SuspendLayout()
-        Me.gbUpdateList.SuspendLayout()
         Me.gbExportOptions.SuspendLayout()
+        Me.gbUpdateList.SuspendLayout()
         Me.SuspendLayout()
         '
         'lblTotalCost
@@ -335,9 +335,9 @@ Partial Class frmShoppingList
         '
         'chkRebuildItemsfromList
         '
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(194, 12)
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(200, 11)
         Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
-        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(123, 36)
+        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(120, 36)
         Me.chkRebuildItemsfromList.TabIndex = 79
         Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
         Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
@@ -349,9 +349,9 @@ Partial Class frmShoppingList
         Me.chkBuyorBuyOrder.CheckState = System.Windows.Forms.CheckState.Checked
         Me.chkBuyorBuyOrder.Location = New System.Drawing.Point(6, 75)
         Me.chkBuyorBuyOrder.Name = "chkBuyorBuyOrder"
-        Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(183, 17)
+        Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(185, 17)
         Me.chkBuyorBuyOrder.TabIndex = 13
-        Me.chkBuyorBuyOrder.Text = "Calcuate Buy Order / Buy Market"
+        Me.chkBuyorBuyOrder.Text = "Calculate Buy Order / Buy Market"
         Me.chkBuyorBuyOrder.ThreeState = True
         Me.chkBuyorBuyOrder.UseVisualStyleBackColor = True
         '
@@ -396,6 +396,63 @@ Partial Class frmShoppingList
         Me.lblFees.TabIndex = 12
         Me.lblFees.Text = "0.00"
         Me.lblFees.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'gbExportOptions
+        '
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportMulitBuy)
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
+        Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
+        Me.gbExportOptions.Location = New System.Drawing.Point(192, 50)
+        Me.gbExportOptions.Name = "gbExportOptions"
+        Me.gbExportOptions.Size = New System.Drawing.Size(123, 86)
+        Me.gbExportOptions.TabIndex = 74
+        Me.gbExportOptions.TabStop = False
+        Me.gbExportOptions.Text = "Export Data in:"
+        '
+        'rbtnExportMulitBuy
+        '
+        Me.rbtnExportMulitBuy.AutoSize = True
+        Me.rbtnExportMulitBuy.Location = New System.Drawing.Point(8, 31)
+        Me.rbtnExportMulitBuy.Name = "rbtnExportMulitBuy"
+        Me.rbtnExportMulitBuy.Size = New System.Drawing.Size(114, 17)
+        Me.rbtnExportMulitBuy.TabIndex = 3
+        Me.rbtnExportMulitBuy.TabStop = True
+        Me.rbtnExportMulitBuy.Text = "Multi-Buy (Buy List)"
+        Me.rbtnExportMulitBuy.UseVisualStyleBackColor = True
+        '
+        'rbtnExportSSV
+        '
+        Me.rbtnExportSSV.AutoSize = True
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(8, 65)
+        Me.rbtnExportSSV.Name = "rbtnExportSSV"
+        Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
+        Me.rbtnExportSSV.TabIndex = 2
+        Me.rbtnExportSSV.TabStop = True
+        Me.rbtnExportSSV.Text = "SSV"
+        Me.rbtnExportSSV.UseVisualStyleBackColor = True
+        '
+        'rbtnExportCSV
+        '
+        Me.rbtnExportCSV.AutoSize = True
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(8, 48)
+        Me.rbtnExportCSV.Name = "rbtnExportCSV"
+        Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
+        Me.rbtnExportCSV.TabIndex = 1
+        Me.rbtnExportCSV.TabStop = True
+        Me.rbtnExportCSV.Text = "CSV"
+        Me.rbtnExportCSV.UseVisualStyleBackColor = True
+        '
+        'rbtnExportDefault
+        '
+        Me.rbtnExportDefault.AutoSize = True
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(8, 14)
+        Me.rbtnExportDefault.Name = "rbtnExportDefault"
+        Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
+        Me.rbtnExportDefault.TabIndex = 0
+        Me.rbtnExportDefault.TabStop = True
+        Me.rbtnExportDefault.Text = "Default"
+        Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
         'txtAddlCosts
         '
@@ -517,63 +574,6 @@ Partial Class frmShoppingList
         Me.lblTotalCopyCost.TabIndex = 27
         Me.lblTotalCopyCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'gbExportOptions
-        '
-        Me.gbExportOptions.Controls.Add(Me.rbtnExportSimple)
-        Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
-        Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
-        Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(192, 50)
-        Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(123, 86)
-        Me.gbExportOptions.TabIndex = 74
-        Me.gbExportOptions.TabStop = False
-        Me.gbExportOptions.Text = "Export Data in:"
-        '
-        'rbtnExportSimple
-        '
-        Me.rbtnExportSimple.AutoSize = True
-        Me.rbtnExportSimple.Location = New System.Drawing.Point(11, 31)
-        Me.rbtnExportSimple.Name = "rbtnExportSimple"
-        Me.rbtnExportSimple.Size = New System.Drawing.Size(56, 17)
-        Me.rbtnExportSimple.TabIndex = 3
-        Me.rbtnExportSimple.TabStop = True
-        Me.rbtnExportSimple.Text = "Simple"
-        Me.rbtnExportSimple.UseVisualStyleBackColor = True
-        '
-        'rbtnExportSSV
-        '
-        Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(11, 65)
-        Me.rbtnExportSSV.Name = "rbtnExportSSV"
-        Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
-        Me.rbtnExportSSV.TabIndex = 2
-        Me.rbtnExportSSV.TabStop = True
-        Me.rbtnExportSSV.Text = "SSV"
-        Me.rbtnExportSSV.UseVisualStyleBackColor = True
-        '
-        'rbtnExportCSV
-        '
-        Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(11, 48)
-        Me.rbtnExportCSV.Name = "rbtnExportCSV"
-        Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
-        Me.rbtnExportCSV.TabIndex = 1
-        Me.rbtnExportCSV.TabStop = True
-        Me.rbtnExportCSV.Text = "CSV"
-        Me.rbtnExportCSV.UseVisualStyleBackColor = True
-        '
-        'rbtnExportDefault
-        '
-        Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(11, 14)
-        Me.rbtnExportDefault.Name = "rbtnExportDefault"
-        Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
-        Me.rbtnExportDefault.TabIndex = 0
-        Me.rbtnExportDefault.TabStop = True
-        Me.rbtnExportDefault.Text = "Default"
-        Me.rbtnExportDefault.UseVisualStyleBackColor = True
-        '
         'lblTIC
         '
         Me.lblTIC.AutoSize = True
@@ -680,21 +680,21 @@ Partial Class frmShoppingList
         Me.Controls.Add(Me.btnSaveListToFile)
         Me.Controls.Add(Me.lstBuild)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
-        Me.Icon = CType(resources.GetObject("$this.Icon"),System.Drawing.Icon)
-        Me.MaximizeBox = false
-        Me.MinimizeBox = false
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
         Me.Name = "frmShoppingList"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Shopping List"
-        Me.DeleteBuildStrip.ResumeLayout(false)
-        Me.DeleteItemStrip.ResumeLayout(false)
-        Me.DeleteMaterialStrip.ResumeLayout(false)
-        Me.gbOptions.ResumeLayout(false)
-        Me.gbOptions.PerformLayout
-        Me.gbUpdateList.ResumeLayout(false)
-        Me.gbExportOptions.ResumeLayout(false)
-        Me.gbExportOptions.PerformLayout
-        Me.ResumeLayout(false)
+        Me.DeleteBuildStrip.ResumeLayout(False)
+        Me.DeleteItemStrip.ResumeLayout(False)
+        Me.DeleteMaterialStrip.ResumeLayout(False)
+        Me.gbOptions.ResumeLayout(False)
+        Me.gbOptions.PerformLayout()
+        Me.gbExportOptions.ResumeLayout(False)
+        Me.gbExportOptions.PerformLayout()
+        Me.gbUpdateList.ResumeLayout(False)
+        Me.ResumeLayout(False)
         Me.PerformLayout
 
 End Sub
@@ -755,5 +755,5 @@ End Sub
     Friend WithEvents lblTCC As System.Windows.Forms.Label
     Friend WithEvents lblTotalItemsInList As System.Windows.Forms.Label
     Friend WithEvents chkRebuildItemsfromList As CheckBox
-    Friend WithEvents rbtnExportSimple As RadioButton
+    Friend WithEvents rbtnExportMulitBuy As RadioButton
 End Class

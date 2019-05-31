@@ -14,6 +14,8 @@ Public Class frmManageAccounts
         ListColumnClicked = 0
         ListColumnSortOrder = SortOrder.None
 
+        btnRefreshToken.Enabled = False
+
         If AppRegistered() Then
             btnAddCharacter.Enabled = True
             btnSelectDefaultChar.Enabled = True
@@ -48,7 +50,7 @@ Public Class frmManageAccounts
 
         Application.UseWaitCursor = True
 
-        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, REFRESH_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME "
+        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN "
         SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
         SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
         SQL &= "AND CHARACTER_ID <> " & CStr(DummyCharacterID)
@@ -75,8 +77,9 @@ Public Class frmManageAccounts
 
             lstViewRow.SubItems.Add(rsAccounts.GetString(4)) ' SCOPES (Hidden)
             lstViewRow.SubItems.Add(rsAccounts.GetString(5)) ' Access Token (Hidden)
-            lstViewRow.SubItems.Add(rsAccounts.GetString(6)) ' Refresh Token (Hidden)
-            lstViewRow.SubItems.Add(Convert.ToDateTime(rsAccounts.GetString(7)).ToString) ' Refresh Token (Hidden)
+            lstViewRow.SubItems.Add(rsAccounts.GetString(8)) ' Refresh Token (Hidden)
+            lstViewRow.SubItems.Add(Convert.ToDateTime(rsAccounts.GetString(6)).ToString) ' Access Token expire date (Hidden)
+            lstViewRow.SubItems.Add(rsAccounts.GetString(7)) ' Token type
 
             Call lstAccounts.Items.Add(lstViewRow)
 
@@ -116,6 +119,7 @@ Public Class frmManageAccounts
             txtAccessToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
             txtAccessTokenExpDate.Text = lstAccounts.SelectedItems.Item(0).SubItems(7).Text
             txtRefreshToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
+            btnRefreshToken.Enabled = True
             btnDeleteCharacter.Enabled = True
             btnCopyAll.Enabled = True
         Else
@@ -123,10 +127,10 @@ Public Class frmManageAccounts
             txtAccessToken.Text = ""
             txtAccessTokenExpDate.Text = ""
             txtAccessTokenExpDate.Text = ""
+            btnRefreshToken.Enabled = False
             btnDeleteCharacter.Enabled = False
             btnCopyAll.Enabled = False
         End If
-
     End Sub
 
     Private Sub LoadScopes(ScopeList As String)
@@ -223,6 +227,47 @@ Public Class frmManageAccounts
             btnDeleteCharacter.Enabled = False
         Else
             btnDeleteCharacter.Enabled = True
+        End If
+    End Sub
+
+    ' For the selected character, refresh the token data again without regard to the cache date
+    Private Sub btnRefreshToken_Click(sender As Object, e As EventArgs) Handles btnRefreshToken.Click
+        If lstAccounts.SelectedItems.Count > 0 Then
+            ' Get the token data from the grid since they can't edit them anyway
+            Dim CharacterTokenData As New SavedTokenData
+            Dim ESIData As New ESI
+
+            CharacterTokenData.CharacterID = CLng(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
+            CharacterTokenData.Scopes = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
+            CharacterTokenData.AccessToken = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
+            CharacterTokenData.TokenExpiration = CDate(lstAccounts.SelectedItems.Item(0).SubItems(7).Text)
+            CharacterTokenData.TokenType = lstAccounts.SelectedItems.Item(0).SubItems(8).Text
+            CharacterTokenData.RefreshToken = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
+
+            If ESIData.SetCharacterData(CharacterTokenData, "", True) Then
+                ' Need to reload the data and set access flags based on scopes
+                Application.UseWaitCursor = True
+                Dim SelectedIndex As Integer = lstAccounts.SelectedIndices(0)
+                Call lstAccounts.SelectedIndices.Clear()
+                txtAccessToken.Text = ""
+                txtRefreshToken.Text = ""
+                txtAccessTokenExpDate.Text = ""
+                lstScopes.Items.Clear()
+                lstAccounts.Enabled = False
+                lstScopes.Enabled = False
+                Application.DoEvents()
+                Call SelectedCharacter.LoadCharacterData(CharacterTokenData, False, False)
+                Call LoadAccountGrid()
+                MsgBox("Token Data updated.", vbInformation, Application.ProductName)
+                Application.UseWaitCursor = False
+                lstAccounts.Enabled = True
+                lstScopes.Enabled = True
+                lstAccounts.Items(SelectedIndex).Selected = True
+                Application.DoEvents()
+            Else
+                MsgBox("Unable to update Token Data.", vbInformation, Application.ProductName)
+            End If
+
         End If
     End Sub
 

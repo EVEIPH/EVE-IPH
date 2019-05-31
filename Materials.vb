@@ -262,7 +262,7 @@ Public Class Materials
                         OutputString = OutputString & "Decryptor/Relic; "
                     End If
                     OutputString = OutputString & "Cost Per Item; Total Cost; Location" & vbCrLf
-                Case SimpleDataExport
+                Case MultiBuyDataExport
                     OutputString = "" ' no header
                 Case Else ' Default
                     OutputString = "Material - Quantity" & vbCrLf
@@ -271,7 +271,7 @@ Public Class Materials
             ' Loop through all materials
             For i = 0 To MaterialList.Count - 1
 
-                If IncludeLinks And ExportTextFormat <> SimpleDataExport Then
+                If IncludeLinks And ExportTextFormat <> MultiBuyDataExport Then
                     ' Format so users can link in game
                     '<a href=showinfo:3348>Warfare Link</a> modules
                     MatName = "<a href=showinfo:" & MaterialList(i).GetMaterialTypeID & ">" & MaterialList(i).GetMaterialName & "</a>"
@@ -329,7 +329,7 @@ Public Class Materials
 
                     OutputString = OutputString & vbCrLf
 
-                ElseIf ExportTextFormat = SimpleDataExport Then
+                ElseIf ExportTextFormat = MultiBuyDataExport Then
                     ' Just the name and quantity for use in evepraisal etc.
                     OutputString = OutputString & MatName & " " & MaterialList(i).GetQuantity & vbCrLf
                 Else
@@ -370,7 +370,7 @@ Public Class Materials
 SkipFormat:
             Next
 
-            If ExportTextFormat <> SimpleDataExport Then
+            If ExportTextFormat <> MultiBuyDataExport Then
                 ' Add total volume and cost to end
                 If Not IgnorePriceVolume Then
 

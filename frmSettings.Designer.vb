@@ -28,6 +28,7 @@ Partial Class frmSettings
         Me.btnSave = New System.Windows.Forms.Button()
         Me.btnCancel = New System.Windows.Forms.Button()
         Me.gbGeneral = New System.Windows.Forms.GroupBox()
+        Me.chkShareFacilities = New System.Windows.Forms.CheckBox()
         Me.chkDisableTracking = New System.Windows.Forms.CheckBox()
         Me.chkLoadBPsbyChar = New System.Windows.Forms.CheckBox()
         Me.chkSaveFacilitiesbyChar = New System.Windows.Forms.CheckBox()
@@ -92,9 +93,9 @@ Partial Class frmSettings
         Me.txtProxyPort = New System.Windows.Forms.TextBox()
         Me.lblProxyPort = New System.Windows.Forms.Label()
         Me.gbCharacterOptions = New System.Windows.Forms.GroupBox()
+        Me.chkLoadMaxAlphaSkills = New System.Windows.Forms.CheckBox()
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
-        Me.chkLoadMaxAlphaSkills = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -121,7 +122,7 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(347, 404)
+        Me.btnSave.Location = New System.Drawing.Point(348, 413)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
@@ -130,7 +131,7 @@ Partial Class frmSettings
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(557, 404)
+        Me.btnCancel.Location = New System.Drawing.Point(558, 413)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
@@ -139,6 +140,7 @@ Partial Class frmSettings
         '
         'gbGeneral
         '
+        Me.gbGeneral.Controls.Add(Me.chkShareFacilities)
         Me.gbGeneral.Controls.Add(Me.chkDisableTracking)
         Me.gbGeneral.Controls.Add(Me.chkLoadBPsbyChar)
         Me.gbGeneral.Controls.Add(Me.chkSaveFacilitiesbyChar)
@@ -148,15 +150,25 @@ Partial Class frmSettings
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
         Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
         Me.gbGeneral.Name = "gbGeneral"
-        Me.gbGeneral.Size = New System.Drawing.Size(235, 169)
+        Me.gbGeneral.Size = New System.Drawing.Size(235, 186)
         Me.gbGeneral.TabIndex = 4
         Me.gbGeneral.TabStop = False
         Me.gbGeneral.Text = "General:"
         '
+        'chkShareFacilities
+        '
+        Me.chkShareFacilities.AutoSize = True
+        Me.chkShareFacilities.Location = New System.Drawing.Point(17, 139)
+        Me.chkShareFacilities.Name = "chkShareFacilities"
+        Me.chkShareFacilities.Size = New System.Drawing.Size(131, 17)
+        Me.chkShareFacilities.TabIndex = 42
+        Me.chkShareFacilities.Text = "Share Saved Facilities"
+        Me.chkShareFacilities.UseVisualStyleBackColor = True
+        '
         'chkDisableTracking
         '
         Me.chkDisableTracking.AutoSize = True
-        Me.chkDisableTracking.Location = New System.Drawing.Point(17, 146)
+        Me.chkDisableTracking.Location = New System.Drawing.Point(17, 159)
         Me.chkDisableTracking.Name = "chkDisableTracking"
         Me.chkDisableTracking.Size = New System.Drawing.Size(199, 17)
         Me.chkDisableTracking.TabIndex = 41
@@ -166,7 +178,7 @@ Partial Class frmSettings
         'chkLoadBPsbyChar
         '
         Me.chkLoadBPsbyChar.AutoSize = True
-        Me.chkLoadBPsbyChar.Location = New System.Drawing.Point(17, 124)
+        Me.chkLoadBPsbyChar.Location = New System.Drawing.Point(17, 119)
         Me.chkLoadBPsbyChar.Name = "chkLoadBPsbyChar"
         Me.chkLoadBPsbyChar.Size = New System.Drawing.Size(162, 17)
         Me.chkLoadBPsbyChar.TabIndex = 40
@@ -176,7 +188,7 @@ Partial Class frmSettings
         'chkSaveFacilitiesbyChar
         '
         Me.chkSaveFacilitiesbyChar.AutoSize = True
-        Me.chkSaveFacilitiesbyChar.Location = New System.Drawing.Point(17, 103)
+        Me.chkSaveFacilitiesbyChar.Location = New System.Drawing.Point(17, 99)
         Me.chkSaveFacilitiesbyChar.Name = "chkSaveFacilitiesbyChar"
         Me.chkSaveFacilitiesbyChar.Size = New System.Drawing.Size(185, 17)
         Me.chkSaveFacilitiesbyChar.TabIndex = 39
@@ -185,7 +197,7 @@ Partial Class frmSettings
         '
         'chkLinksInCopyText
         '
-        Me.chkLinksInCopyText.Location = New System.Drawing.Point(17, 40)
+        Me.chkLinksInCopyText.Location = New System.Drawing.Point(17, 39)
         Me.chkLinksInCopyText.Name = "chkLinksInCopyText"
         Me.chkLinksInCopyText.Size = New System.Drawing.Size(214, 17)
         Me.chkLinksInCopyText.TabIndex = 38
@@ -195,7 +207,7 @@ Partial Class frmSettings
         'chkDisableSound
         '
         Me.chkDisableSound.AutoSize = True
-        Me.chkDisableSound.Location = New System.Drawing.Point(17, 82)
+        Me.chkDisableSound.Location = New System.Drawing.Point(17, 79)
         Me.chkDisableSound.Name = "chkDisableSound"
         Me.chkDisableSound.Size = New System.Drawing.Size(95, 17)
         Me.chkDisableSound.TabIndex = 24
@@ -205,7 +217,7 @@ Partial Class frmSettings
         'chkDisableSVR
         '
         Me.chkDisableSVR.AutoSize = True
-        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 61)
+        Me.chkDisableSVR.Location = New System.Drawing.Point(17, 59)
         Me.chkDisableSVR.Name = "chkDisableSVR"
         Me.chkDisableSVR.Size = New System.Drawing.Size(129, 17)
         Me.chkDisableSVR.TabIndex = 0
@@ -293,7 +305,7 @@ Partial Class frmSettings
         Me.gbStationStandings.Size = New System.Drawing.Size(160, 63)
         Me.gbStationStandings.TabIndex = 7
         Me.gbStationStandings.TabStop = False
-        Me.gbStationStandings.Text = "Station Standings:"
+        Me.gbStationStandings.Text = "Station (base) Standings:"
         '
         'txtBrokerCorpStanding
         '
@@ -333,7 +345,7 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(452, 404)
+        Me.btnReset.Location = New System.Drawing.Point(453, 413)
         Me.btnReset.Name = "btnReset"
         Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
@@ -569,7 +581,7 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 183)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 200)
         Me.gbStartupOptions.Name = "gbStartupOptions"
         Me.gbStartupOptions.Size = New System.Drawing.Size(235, 162)
         Me.gbStartupOptions.TabIndex = 39
@@ -623,7 +635,7 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
         Me.gbExportOptions.Location = New System.Drawing.Point(246, 347)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(95, 87)
+        Me.gbExportOptions.Size = New System.Drawing.Size(95, 102)
         Me.gbExportOptions.TabIndex = 38
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
@@ -631,7 +643,7 @@ Partial Class frmSettings
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 63)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 78)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -642,7 +654,7 @@ Partial Class frmSettings
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 40)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 53)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -653,7 +665,7 @@ Partial Class frmSettings
         'rbtnExportDefault
         '
         Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(9, 19)
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(9, 25)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0
@@ -670,7 +682,7 @@ Partial Class frmSettings
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.txtSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRThreshold)
-        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 347)
+        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 362)
         Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
         Me.gbCalcAvgPrice.Size = New System.Drawing.Size(235, 87)
         Me.gbCalcAvgPrice.TabIndex = 40
@@ -749,7 +761,7 @@ Partial Class frmSettings
         Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
         Me.gbProxySettings.Location = New System.Drawing.Point(347, 347)
         Me.gbProxySettings.Name = "gbProxySettings"
-        Me.gbProxySettings.Size = New System.Drawing.Size(311, 55)
+        Me.gbProxySettings.Size = New System.Drawing.Size(311, 60)
         Me.gbProxySettings.TabIndex = 41
         Me.gbProxySettings.TabStop = False
         Me.gbProxySettings.Text = "Proxy Settings:"
@@ -800,6 +812,16 @@ Partial Class frmSettings
         Me.gbCharacterOptions.TabStop = False
         Me.gbCharacterOptions.Text = "Character Options:"
         '
+        'chkLoadMaxAlphaSkills
+        '
+        Me.chkLoadMaxAlphaSkills.AutoSize = True
+        Me.chkLoadMaxAlphaSkills.Location = New System.Drawing.Point(9, 37)
+        Me.chkLoadMaxAlphaSkills.Name = "chkLoadMaxAlphaSkills"
+        Me.chkLoadMaxAlphaSkills.Size = New System.Drawing.Size(147, 17)
+        Me.chkLoadMaxAlphaSkills.TabIndex = 33
+        Me.chkLoadMaxAlphaSkills.Text = "Max Alpha Skills (Dummy)"
+        Me.chkLoadMaxAlphaSkills.UseVisualStyleBackColor = True
+        '
         'chkUseActiveSkills
         '
         Me.chkUseActiveSkills.AutoSize = True
@@ -820,22 +842,12 @@ Partial Class frmSettings
         Me.chkAlphaAccount.Text = "Alpha Account (2% tax)"
         Me.chkAlphaAccount.UseVisualStyleBackColor = True
         '
-        'chkLoadMaxAlphaSkills
-        '
-        Me.chkLoadMaxAlphaSkills.AutoSize = True
-        Me.chkLoadMaxAlphaSkills.Location = New System.Drawing.Point(9, 37)
-        Me.chkLoadMaxAlphaSkills.Name = "chkLoadMaxAlphaSkills"
-        Me.chkLoadMaxAlphaSkills.Size = New System.Drawing.Size(147, 17)
-        Me.chkLoadMaxAlphaSkills.TabIndex = 33
-        Me.chkLoadMaxAlphaSkills.Text = "Max Alpha Skills (Dummy)"
-        Me.chkLoadMaxAlphaSkills.UseVisualStyleBackColor = True
-        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(665, 439)
+        Me.ClientSize = New System.Drawing.Size(665, 452)
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
@@ -956,4 +968,5 @@ Partial Class frmSettings
     Friend WithEvents chkAlphaAccount As CheckBox
     Friend WithEvents chkSupressESImsgs As CheckBox
     Friend WithEvents chkLoadMaxAlphaSkills As CheckBox
+    Friend WithEvents chkShareFacilities As CheckBox
 End Class
