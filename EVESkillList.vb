@@ -411,6 +411,7 @@ Public Class EVESkillList
                 ' Two possiblities - the skill exists, which is where we update the override variables, it doesn't and we enter a new record
                 ' or it's there but we want to remove it
                 ' Check for skill and update if there
+
                 Dim SkillType As String
                 If UserApplicationSettings.UseActiveSkillLevels Then
                     SkillType = "ACTIVE_SKILL_LEVEL"
