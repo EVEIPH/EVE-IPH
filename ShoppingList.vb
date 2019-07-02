@@ -851,14 +851,16 @@ Public Class ShoppingList
                         With SentBuildList.GetBuiltItemList(i)
                             ' Get the component facility
                             Dim TempComponentFacility As New IndustryFacility
+                            Dim TempReactionFacility As New IndustryFacility
 
                             ' Set the component facility (use BP tab for now)
                             TempComponentFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+                            TempReactionFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
 
                             ' Re-run with new quantity
                             Dim TempBP As New Blueprint(.BPTypeID, FoundBuildItem.ItemQuantity + .ItemQuantity, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
-                               TempComponentFacility, TempComponentFacility, TempComponentFacility, True)
+                               TempComponentFacility, TempComponentFacility, TempComponentFacility, TempReactionFacility, True)
 
                             Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)

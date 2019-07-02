@@ -1614,7 +1614,7 @@ Public Class frmMain
         readerBP.Close()
 
         ' Finally, load the blueprint with data in the row selected like it was just selected
-        Call SelectBlueprint(True, SentFrom)
+        Call SelectBlueprint(True, SentFrom, True)
 
     End Sub
 
@@ -1709,26 +1709,49 @@ Public Class frmMain
             RawCostSplit.SplitValue = MaterialsCost
             f1.CostSplits.Add(RawCostSplit)
 
-            ' Manufacturing Facility usage
-            RawCostSplit.SplitName = "Manufacturing Facility Usage"
-            RawCostSplit.SplitValue = SelectedBlueprint.GetManufacturingFacilityUsage
+            ' Add reaction usage if it's a reaction for main bp
+            If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                RawCostSplit.SplitName = "Reaction Facility Usage"
+                RawCostSplit.SplitValue = SelectedBlueprint.GetReactionFacilityUsage
+            Else
+                ' Manufacturing Facility usage
+                RawCostSplit.SplitName = "Manufacturing Facilities Usage"
+                RawCostSplit.SplitValue = SelectedBlueprint.GetManufacturingFacilityUsage
+            End If
+
             f1.CostSplits.Add(RawCostSplit)
 
             If (SelectedBlueprint.HasComponents And chkBPBuildBuy.Checked = True) Or MaterialType = "Raw" Then
-                ' Component Facility Usage
-                RawCostSplit.SplitName = "Component Facility Usage"
-                RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage
-                f1.CostSplits.Add(RawCostSplit)
-
-                ' Capital Component Facility Usage
-                Select Case SelectedBlueprint.GetItemGroupID
-                    Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID,
-                        ItemIDs.JumpFreighterGroupID, ItemIDs.FreighterGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
-                        ' Only add cap component usage for ships that use them
-                        RawCostSplit.SplitName = "Capital Component Facility Usage"
-                        RawCostSplit.SplitValue = SelectedBlueprint.GetCapComponentFacilityUsage
+                If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                    ' Reactions Facility Usage
+                    If SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage > 0 Then
+                        RawCostSplit.SplitName = "Total Reaction Facilities Usage"
+                        RawCostSplit.SplitValue = SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage
                         f1.CostSplits.Add(RawCostSplit)
-                End Select
+                    End If
+                    ' Manufacturing Facility usage for fuel blocks
+                    RawCostSplit.SplitName = "Manufacturing Facilities Usage"
+                    RawCostSplit.SplitValue = SelectedBlueprint.GetManufacturingFacilityUsage
+                    f1.CostSplits.Add(RawCostSplit)
+                End If
+
+                ' The reaction blueprint won't have components or cap components
+                If Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                    ' Component Facility Usage
+                    RawCostSplit.SplitName = "Component Facilities Usage"
+                    RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage
+                    f1.CostSplits.Add(RawCostSplit)
+
+                    ' Capital Component Facility Usage
+                    Select Case SelectedBlueprint.GetItemGroupID
+                        Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID,
+                        ItemIDs.JumpFreighterGroupID, ItemIDs.FreighterGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
+                            ' Only add cap component usage for ships that use them
+                            RawCostSplit.SplitName = "Capital Component Facilities Usage"
+                            RawCostSplit.SplitValue = SelectedBlueprint.GetCapComponentFacilityUsage
+                            f1.CostSplits.Add(RawCostSplit)
+                    End Select
+                End If
             End If
 
             ' Taxes
@@ -5535,7 +5558,7 @@ Tabs:
     End Sub
 
     ' Selects the blueprint from the combo and loads it into the grids
-    Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0)
+    Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0, Optional FromEvent As Boolean = False)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
         Dim BPID As Integer
@@ -5638,10 +5661,14 @@ Tabs:
             RelicsLoaded = False
         End If
 
-        ' If the previous bp was loaded from history and the current bp isn't loaded from history, then reset the facilities to default
-        If PreviousBPfromHistory And SentFrom <> SentFromLocation.History Then
+        ' If the previous bp was loaded from history and the current bp isn't loaded from history or event, then reset the facilities to default
+        If PreviousBPfromHistory And SentFrom <> SentFromLocation.History And Not FromEvent Then
             PreviousBPfromHistory = False
-            Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
+            If ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID Then
+                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityReactions), FacilityView.FullControls, False)
+            Else
+                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
+            End If
             Call BPTabFacility.SetSelectedFacility(ProductionType.ComponentManufacturing, FacilityView.FullControls, False)
             Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
         End If
@@ -5722,9 +5749,14 @@ Tabs:
             TempBPType = BPType.NotOwned
         End If
 
-        If TempTech <> 1 And TempBPType <> BPType.Original Then
+        If (TempTech <> 1 And TempBPType <> BPType.Original) Then
             Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+
+            If TempTech = 2 And TempBPType = BPType.Copy Then
+                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention
+                chkBPIgnoreInvention.Checked = True
+            End If
 
             ' disable the me/te boxes since these are invented
             If chkBPIgnoreInvention.Checked Then
@@ -5943,15 +5975,20 @@ Tabs:
 
         ' Facility setup
         Dim ComponentManufacturingFacility As IndustryFacility
-        Dim ManufacturingFacility As IndustryFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
+        Dim ManufacturingFacility As New IndustryFacility
+        ManufacturingFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
 
         If SelectedBPText.Contains("Reaction Formula") Then
             'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
             ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.Manufacturing)
+        ElseIf ((BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And Not BPGroupID = ItemIDs.CapitalComponentGroupID) Then
+            ' Use the reaction facility as the 'component facility' if it's T2 component item, since they will do reactions
+            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
         Else
             ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
         End If
         Dim CapitalComponentManufacturingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
+        Dim ReactionFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
         Dim CopyFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Copying)
         Dim InventionFacility As New IndustryFacility
 
@@ -6001,7 +6038,7 @@ Tabs:
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManufacturingFacility,
-                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility)
+                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6344,6 +6381,7 @@ ExitForm:
         tabBPInventionEquip.Enabled = True
 
         Me.Cursor = Cursors.Default
+        Application.DoEvents()
 
     End Sub
 
@@ -6813,11 +6851,32 @@ ExitForm:
     Private Sub UpdateFacilityUsage(DivideUnits As Long)
         Dim UsedFacility As IndustryFacility = BPTabFacility.GetSelectedFacility()
         Dim TTText As String = ""
+        Dim SelectedManufacturingFacility As IndustryFacility = BPTabFacility.GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID)
 
-        ' Save all the usage values each time we update to allow updates for changing the facilit
-        BPTabFacility.GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
-        BPTabFacility.GetFacility(ProductionType.ComponentManufacturing).FacilityUsage = SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits
-        BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage() / DivideUnits
+        ' Save all the usage values each time we update to allow updates for changing the facility
+        If SelectedManufacturingFacility.FacilityProductionType = ProductionType.Reactions Then
+            SelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetTotalReactionFacilityUsage / DivideUnits
+        Else
+            SelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
+        End If
+
+        If SelectedManufacturingFacility.FacilityProductionType <> ProductionType.ComponentManufacturing Then
+            If SelectedManufacturingFacility.FacilityProductionType = ProductionType.Reactions Then
+                ' Need to save the usage value on the manufacturing facility for fuel blocks instead of components
+                BPTabFacility.GetFacility(ProductionType.Manufacturing).FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage() / DivideUnits
+            Else
+                BPTabFacility.GetFacility(ProductionType.ComponentManufacturing).FacilityUsage = SelectedBlueprint.GetComponentFacilityUsage() / DivideUnits
+            End If
+        End If
+
+        If SelectedManufacturingFacility.FacilityProductionType <> ProductionType.CapitalComponentManufacturing Then
+            BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage() / DivideUnits
+        End If
+
+        If SelectedManufacturingFacility.FacilityProductionType <> ProductionType.Reactions Then
+            BPTabFacility.GetFacility(ProductionType.Reactions).FacilityUsage = SelectedBlueprint.GetReactionFacilityUsage() / DivideUnits
+        End If
+
         BPTabFacility.GetFacility(ProductionType.Invention).FacilityUsage = SelectedBlueprint.GetInventionUsage() / DivideUnits
         BPTabFacility.GetFacility(ProductionType.Copying).FacilityUsage = SelectedBlueprint.GetCopyUsage() / DivideUnits
 
@@ -6839,6 +6898,9 @@ ExitForm:
                 Case ManufacturingFacility.ActivityCapComponentManufacturing
                     UsedFacility.FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage / DivideUnits
                     TTText = GetUsageToolTipText(SelectedBlueprint.GetCapitalComponentManufacturingFacility, True)
+                Case ManufacturingFacility.ActivityReactions
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetTotalReactionFacilityUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetReactionFacility, True)
             End Select
         Else
             UsedFacility.FacilityUsage = 0
@@ -7542,6 +7604,24 @@ ExitForm:
         End If
 
     End Function
+
+    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEVEMarketer.CheckedChanged
+        Call UpdateStructurePriceButtons()
+    End Sub
+
+    Private Sub rbtnPriceSourceCCPData_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceCCPData.CheckedChanged
+        Call UpdateStructurePriceButtons()
+    End Sub
+
+    Private Sub UpdateStructurePriceButtons()
+        If rbtnPriceSourceCCPData.Checked Then
+            btnAddStructureIDs.Visible = True
+            btnViewSavedStructures.Visible = True
+        Else
+            btnAddStructureIDs.Visible = False
+            btnViewSavedStructures.Visible = False
+        End If
+    End Sub
 
     Private Sub chkPricesT1_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT1.Click
         If RefreshList Then
@@ -13392,8 +13472,10 @@ CheckTechs:
                 ' Reset all the industry facilities
                 InsertItem.ManufacturingFacility = New IndustryFacility
                 InsertItem.ComponentManufacturingFacility = New IndustryFacility
+                InsertItem.CapComponentManufacturingFacility = New IndustryFacility
                 InsertItem.CopyFacility = New IndustryFacility
                 InsertItem.InventionFacility = New IndustryFacility
+                InsertItem.ReactionFacility = New IndustryFacility
 
                 Dim SelectedIndyType As ProductionType
                 Dim TempFacility As New ManufacturingFacility
@@ -13485,6 +13567,7 @@ CheckTechs:
                 InsertItem.ComponentManufacturingFacility = CalcComponentsFacility.GetFacility(ProductionType.ComponentManufacturing)
                 InsertItem.CapComponentManufacturingFacility = CalcComponentsFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
                 InsertItem.CopyFacility = CalcCopyFacility.GetFacility(ProductionType.Copying)
+                InsertItem.ReactionFacility = CalcReactionsFacility.GetFacility(ProductionType.Reactions)
 
                 ' Now determine how many copies of the base item we need with different data changed
                 ' If T1, just select compare types (raw and components)
@@ -13750,7 +13833,7 @@ CheckTechs:
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                    NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                    UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
-                                  InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
+                                  InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility)
 
                     ' Set the T2 and T3 inputs if necessary
                     If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
@@ -13852,7 +13935,8 @@ CheckTechs:
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                                If ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3 Then
+                                If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) _
+                                    And (InsertItem.BlueprintType <> BPType.Original And InsertItem.BlueprintType <> BPType.Copy) Then
                                     InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
@@ -13918,7 +14002,8 @@ CheckTechs:
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) _
+                                    And (InsertItem.BlueprintType <> BPType.Original And InsertItem.BlueprintType <> BPType.Copy) Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
@@ -13934,6 +14019,7 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
+                            InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
                             InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                             InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
@@ -13951,7 +14037,8 @@ CheckTechs:
                             ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                                         NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                                         UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
-                                                        InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility)
+                                                        InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
+                                                        InsertItem.ReactionFacility)
 
                             If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP
@@ -14000,7 +14087,8 @@ CheckTechs:
                                 InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                                 InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                                If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                                If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) _
+                                    And (InsertItem.BlueprintType <> BPType.Original And InsertItem.BlueprintType <> BPType.Copy) Then
                                     InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                                 Else
                                     InsertItem.InventionCost = 0
@@ -14016,6 +14104,7 @@ CheckTechs:
                                 InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                                 InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                                 InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
+                                InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
                                 InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                                 InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
@@ -14104,7 +14193,8 @@ CheckTechs:
                             InsertItem.CopyTime = FormatIPHTime(ManufacturingBlueprint.GetCopyTime / InsertItem.DivideUnits)
                             InsertItem.InventionTime = FormatIPHTime(ManufacturingBlueprint.GetInventionTime / InsertItem.DivideUnits)
 
-                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) And InsertItem.BlueprintType <> BPType.Original Then
+                            If (ManufacturingBlueprint.GetTechLevel = BPTechLevel.T2 Or ManufacturingBlueprint.GetTechLevel = BPTechLevel.T3) _
+                                    And (InsertItem.BlueprintType <> BPType.Original And InsertItem.BlueprintType <> BPType.Copy) Then
                                 InsertItem.InventionCost = ManufacturingBlueprint.GetInventionCost
                             Else
                                 InsertItem.InventionCost = 0
@@ -14120,6 +14210,7 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
+                            InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
                             InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                             InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
@@ -14759,6 +14850,10 @@ ExitCalc:
         Dim CalcType As String = ""
         Dim TempItem As New ManufacturingItem
         Dim CurrentRowFormat As New RowFormat
+
+        If IsNothing(BaseItem.ReactionFacility) Then
+            Application.DoEvents()
+        End If
 
         If rbtnCalcCompareRawMats.Checked Then
             CalcType = "Raw Mats"
@@ -15636,6 +15731,8 @@ ExitCalc:
         Public ComponentManufacturingFacilityUsage As Double
         Public CapComponentManufacturingFacility As IndustryFacility
         Public CapComponentManufacturingFacilityUsage As Double
+        Public ReactionFacility As IndustryFacility
+        Public ReactionFacilityUsage As Double
 
         Public CopyCost As Double
         Public CopyFacilityUsage As Double
@@ -15727,6 +15824,7 @@ ExitCalc:
             CopyofMe.ManufacturingFacility = ManufacturingFacility
             CopyofMe.ComponentManufacturingFacility = ComponentManufacturingFacility
             CopyofMe.CapComponentManufacturingFacility = CapComponentManufacturingFacility
+            CopyofMe.ReactionFacility = ReactionFacility
             CopyofMe.InventionFacility = InventionFacility
             CopyofMe.CopyFacility = CopyFacility
 
@@ -19027,7 +19125,7 @@ Leave:
             chkMineWH.Checked = .CheckSovWormhole
             chkMineMoonMining.Checked = .CheckSovMoon
 
-            If chkMineIncludeNullSec.Checked Then
+            If chkMineIncludeNullSec.Checked And chkMineWH.Checked Then
                 chkMineC1.Enabled = True
                 chkMineC2.Enabled = True
                 chkMineC3.Enabled = True
@@ -21377,6 +21475,21 @@ Leave:
                 If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
                     ' Found it, return value
                     Return CInt(MineProcessingCombos(i).Text)
+                Else
+                    ' If it didn't find it, it might be a moon ore - look up the type and check each of those
+                    Dim rsCheck As SQLiteDataReader
+                    DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG WHERE IT.groupID = IG.groupID and typeName = '" & OreName & "'", EVEDB.DBREf)
+                    rsCheck = DBCommand.ExecuteReader
+
+                    If rsCheck.Read Then
+                        If rsCheck.GetString(0).Contains(" ") Then
+                            If CurrentProcessingLabel.Contains(rsCheck.GetString(0).Substring(0, InStr(rsCheck.GetString(0), " ") - 1)) Then
+                                Return CInt(MineProcessingCombos(i).Text)
+                            End If
+                        End If
+                    End If
+                    rsCheck.Close()
+                    DBCommand = Nothing
                 End If
             Next
         End If
@@ -21606,6 +21719,7 @@ Leave:
         End Function
 
     End Class
+
 #End Region
 
 End Class

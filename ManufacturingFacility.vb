@@ -686,7 +686,7 @@ Public Class ManufacturingFacility
 
     ' Loads the class facility and objects
     Public Sub LoadFacility(ByVal ItemBPID As Integer, ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer, ByVal BlueprintTech As Integer,
-                            Optional ByVal LoadDefault As Boolean = False, Optional ByVal ComboSelect As Boolean = False, Optional RefreshBP As Boolean = True)
+                            Optional ByVal LoadDefault As Boolean = False, Optional ByVal ActivityComboSelect As Boolean = False, Optional RefreshBP As Boolean = True)
 
         ' Save these for later use
         SelectedBPID = ItemBPID
@@ -696,7 +696,9 @@ Public Class ManufacturingFacility
 
         ' Process the activities combo if showing full controls
         If SelectedView = FacilityView.FullControls Then
-            Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, SelectedBPID, ComboSelect)
+            If Not ActivityComboSelect Then ' only load if from the activities combo
+                Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, SelectedBPID)
+            End If
             PreviousActivity = cmbFacilityActivities.Text
         End If
 
@@ -782,8 +784,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer,
-                                      BPID As Integer, FromComboSelect As Boolean)
+    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, BPID As Integer)
 
         LoadingActivities = True
         Dim HasComponents As Boolean = False
@@ -795,13 +796,9 @@ Public Class ManufacturingFacility
             cmbFacilityActivities.Items.Clear()
             cmbFacilityActivities.Items.Add(ActivityReactions)
             cmbFacilityActivities.Items.Add(ActivityManufacturing)
-            If FromComboSelect Then
-                ' use what was there
-                cmbFacilityActivities.Text = ActivityText
-            Else
-                ' Start with reactions for a new facility because its a call to load not from combo
-                cmbFacilityActivities.Text = ActivityReactions
-            End If
+
+            ' Start with reactions for a new facility because its a call to load not from combo
+            cmbFacilityActivities.Text = ActivityReactions
 
             cmbFacilityActivities.EndUpdate()
             LoadingActivities = False
@@ -851,38 +848,37 @@ Public Class ManufacturingFacility
             Select Case BPGroupID
                 Case ItemIDs.TitanGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CarrierGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.CapitalIndustrialShipGroupID,
                         ItemIDs.IndustrialCommandShipGroupID, ItemIDs.FreighterGroupID, ItemIDs.JumpFreighterGroupID, ItemIDs.FAXGroupID
-
                     cmbFacilityActivities.Items.Add(ActivityCapComponentManufacturing)
                     If BPGroupID = ItemIDs.JumpFreighterGroupID Then
                         ' Need to add both cap and components
                         cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
                     End If
                 Case Else
-                    ' Just regular
-                    cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
+                    ' Iif it's not a T2 component, then load the component manufacturing activity else it will get a reaction load below
+                    If Not (BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) Then
+                        ' Just regular
+                        cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
+                    End If
             End Select
 
             SQL = ""
             If UserApplicationSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Then
                 SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
                 SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
-                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})) "
-                SQL &= "AND MATERIAL_GROUP IN ('Composite')"
+                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0} "
+                SQL &= "AND MATERIAL_GROUP IN ('Composite')))"
             ElseIf UserApplicationSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
-                SQL = "SELECT * FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
+                SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
                 SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN "
-                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
-                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
-                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0})) "
-                SQL &= "AND MATERIAL_GROUP IN ('Composite', 'Hybrid Polymers'))) "
-                SQL &= "AND MATERIAL_GROUP IN ('Intermediate Materials','Harvestable Cloud')"
+                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0} "
+                SQL &= "AND MATERIAL_GROUP IN ('Composite','Hybrid Polymers','Intermediate Materials','Harvestable Cloud')))"
             End If
 
             If SQL <> "" Then
                 DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
                 readerBP = DBCommand.ExecuteReader
 
-                ' If they want to drill down on reacitons, add the reactions facility option
+                ' If they want to drill down on reactions, add the reactions facility option
                 If readerBP.Read Then
                     cmbFacilityActivities.Items.Add(ActivityReactions)
                 End If
@@ -1493,7 +1489,15 @@ Public Class ManufacturingFacility
             SystemName = cmbFacilitySystem.Text
         End If
 
-        Select Case GetFacilityTypeCode(cmbFacilityType.Text)
+        Dim LocalFacilityType As FacilityTypes = GetFacilityTypeCode(cmbFacilityType.Text)
+
+        If FacilityActivity = ActivityReactions And LocalFacilityType = FacilityTypes.Station Then
+            ' Need to force it to use the upwell structure since we can only do reactions there (or pos)
+            LocalFacilityType = FacilityTypes.UpwellStructure
+            AutoLoadFacility = True
+        End If
+
+        Select Case LocalFacilityType
 
             Case FacilityTypes.Station
                 ' Load the Stations in system for the activity we are doing
@@ -1723,8 +1727,9 @@ Public Class ManufacturingFacility
             Dim ItemCategoryID As Integer = 0
             Dim TechLevel As Integer = 0
             Dim Activity As String = ""
+            Dim OriginalProductionType As ProductionType = SelectedProductionType
 
-            SelectedFacility = SelectFacility(SelectedProductionType, True)
+            SelectedFacility = SelectFacility(OriginalProductionType, True)
 
             If Not IsNothing(SelectedBlueprint) Then
                 With SelectedBlueprint
@@ -1736,14 +1741,20 @@ Public Class ManufacturingFacility
             ElseIf SelectedLocation = ProgramLocation.ManufacturingTab Then
                 BPID = 0 ' this only matters for the activity combo
                 ' For the manufacturing tab, we manually put in the IDs, so get the data first
-                Call GetFacilityBPItemData(SelectedProductionType, ItemGroupID, ItemCategoryID, TechLevel, Activity)
+                Call GetFacilityBPItemData(OriginalProductionType, ItemGroupID, ItemCategoryID, TechLevel, Activity)
             End If
 
-            ' Load it up
-            Call LoadFacility(BPID, ItemGroupID, ItemCategoryID, TechLevel, True)
+            ' Load up the default based on the BPID - assume we selected from combo to bypass loading activities again
+            Call LoadFacility(BPID, ItemGroupID, ItemCategoryID, TechLevel, True, True)
+
+            'If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) And OriginalProductionType = ProductionType.Manufacturing Then
+            '    ' Need to make sure the default of the manufacturing facility is loaded and not reactions
+            '    ' Use the Fuelblock blueprint data
+            '    Call LoadFacility(4314, 1136, 4, 1, True)
+            'End If
 
             ' Set the default based on the checkbox 
-            Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
+            Call SetFacility(SelectedFacility, OriginalProductionType, False, False)
 
             LoadingActivities = False
         End If
@@ -2167,11 +2178,9 @@ Public Class ManufacturingFacility
         End If
 
         ' Enable the FW settings 
-        If Not FirstLoad Then
-            Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
-            If SelectedLocation = ProgramLocation.BlueprintTab Then
-                Call CostIndexUpdateText()
-            End If
+        Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
+        If SelectedLocation = ProgramLocation.BlueprintTab Then
+            Call CostIndexUpdateText()
         End If
 
         ' Loaded up, let them save it
@@ -2402,7 +2411,7 @@ Public Class ManufacturingFacility
 
             ' See if we update the price labels on the BP tab
             If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
-                Call frmMain.UpdateBPPriceLabels()
+                Call frmMain.RefreshBP()
             End If
 
             lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
@@ -3066,10 +3075,16 @@ Public Class ManufacturingFacility
 
             ' Manufacturing Facility usage
             RawCostSplit.UsageName = "Manufacturing Facility Usage"
-            RawCostSplit.UsageValue = GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage
+            If Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                RawCostSplit.UsageValue = GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage
+            Else
+                ' Add fuel block usage
+                RawCostSplit.UsageValue = SelectedManufacturingFacility.FacilityUsage
+            End If
             f1.UsageSplits.Add(RawCostSplit)
 
-            If SelectedBlueprint.HasComponents Then
+            If SelectedBlueprint.HasComponents And SelectedBlueprint.GetItemCategoryID <> ItemIDs.ComponentCategoryID And SelectedBlueprint.GetItemGroupID <> ItemIDs.AdvCapitalComponentGroupID And
+            Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
                 ' Component Facility Usage
                 RawCostSplit.UsageName = "Component Facility Usage"
                 RawCostSplit.UsageValue = SelectedComponentManufacturingFacility.FacilityUsage
@@ -3078,12 +3093,18 @@ Public Class ManufacturingFacility
                 ' Capital Component Facility Usage
                 Select Case SelectedBlueprint.GetItemGroupID
                     Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID,
-                        ItemIDs.JumpFreighterGroupID, ItemIDs.FreighterGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
+                    ItemIDs.JumpFreighterGroupID, ItemIDs.FreighterGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
                         ' Only add cap component usage for ships that use them
                         RawCostSplit.UsageName = "Capital Component Facility Usage"
                         RawCostSplit.UsageValue = SelectedCapitalComponentManufacturingFacility.FacilityUsage
                         f1.UsageSplits.Add(RawCostSplit)
                 End Select
+            ElseIf (SelectedBlueprint.GetItemCategoryID = ItemIDs.ComponentCategoryID Or SelectedBlueprint.GetItemGroupID = ItemIDs.AdvCapitalComponentGroupID) Or
+            ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                ' Load reactions usage
+                RawCostSplit.UsageName = "Reaction Facility Usage"
+                RawCostSplit.UsageValue = SelectedReactionsFacility.FacilityUsage
+                f1.UsageSplits.Add(RawCostSplit)
             End If
 
             If SelectedBlueprint.GetTechLevel <> BPTechLevel.T1 Then
@@ -3099,6 +3120,7 @@ Public Class ManufacturingFacility
                 RawCostSplit.UsageValue = SelectedCopyFacility.FacilityUsage
                 f1.UsageSplits.Add(RawCostSplit)
             End If
+
 
             f1.Show()
         End If
@@ -3274,6 +3296,7 @@ Public Class ManufacturingFacility
 
     ' Loads the facility sent into the type of the facility
     Public Sub UpdateFacility(UpdatedFacility As IndustryFacility)
+
         Select Case UpdatedFacility.FacilityProductionType
             Case ProductionType.BoosterManufacturing
                 SelectedBoosterManufacturingFacility = CType(UpdatedFacility.Clone, IndustryFacility)

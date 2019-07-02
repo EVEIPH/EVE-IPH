@@ -1426,6 +1426,7 @@ Public Class frmShoppingList
                         Dim TempBuildFacility As New IndustryFacility
                         Dim TempCompFacility As New IndustryFacility
                         Dim TempCapCompFacility As New IndustryFacility
+                        Dim TempReactionFacility As New IndustryFacility
 
                         TempDecryptor = InventionDecryptors.GetDecryptor(ItemList(i).Decryptor)
 
@@ -1446,6 +1447,7 @@ Public Class frmShoppingList
                         ' Set the component facilities 
                         TempCompFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
                         TempCapCompFacility = frmMain.BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
+                        TempReactionFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
 
                         ' Look up BP data
                         SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL, ITEM_GROUP_ID, ITEM_CATEGORY_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FormatDBString(ItemList(i).ItemName) & "'"
@@ -1457,7 +1459,7 @@ Public Class frmShoppingList
                         ' Build the Item - use everything we can from file import
                         TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, TempBuildFacility,
-                                               TempCompFacility, TempCapCompFacility)
+                                               TempCompFacility, TempCapCompFacility, TempReactionFacility)
 
                         ' See if we invent, use selected BP facilities for invention
                         If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then

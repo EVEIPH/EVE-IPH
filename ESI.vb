@@ -155,7 +155,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Call GetAuthorizationToken()
+                Return GetAuthorizationToken()
             End If
 
         Catch ex As Exception
@@ -345,7 +345,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Call GetPublicData(URL, CacheDate, BodyData)
+                Return GetPublicData(URL, CacheDate, BodyData)
             End If
 
         Catch ex As Exception
@@ -460,7 +460,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Call GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
+                Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
             End If
 
         Catch ex As Exception
@@ -702,7 +702,11 @@ Public Class ESI
             Dim Pages As Integer = CInt(myWebHeaderCollection.Item("X-Pages"))
 
             If Not IsNothing(Expires) Then
-                CacheDate = CDate(Expires.Replace("GMT", "").Substring(InStr(Expires, ",") + 1)) ' Expiration date is in GMT
+                If Expires <> "-1" Then
+                    CacheDate = CDate(Expires.Replace("GMT", "").Substring(InStr(Expires, ",") + 1)) ' Expiration date is in GMT
+                Else
+                    CacheDate = NoExpiry
+                End If
             Else
                 CacheDate = NoExpiry
             End If

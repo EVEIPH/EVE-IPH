@@ -311,9 +311,9 @@ Public Class frmUpwellStructureFitting
 
     End Sub
 
-    Private Sub ServiceModuleListView_MouseDown(sender As Object, e As MouseEventArgs) Handles ServiceModuleListView.MouseDown
+    Private Sub ServiceModuleListView_MouseDown(sender As Object, e As MouseEventArgs) Handles FittingListViewIcons.MouseDown
         ' Make sure we select the image
-        Dim Selection As ListViewItem = ServiceModuleListView.GetItemAt(e.X, e.Y)
+        Dim Selection As ListViewItem = FittingListViewIcons.GetItemAt(e.X, e.Y)
 
         If Not IsNothing(Selection) Then
             Dim ModuleTypeID As Integer = CInt(Selection.ImageKey)
@@ -329,7 +329,7 @@ Public Class frmUpwellStructureFitting
 
             If Not IsNothing(pbFloat.Image) Then
                 pbFloat.Visible = True
-                pbFloat.Location = New Point(e.X + ServiceModuleListView.Left, e.Y + ServiceModuleListView.Top)
+                pbFloat.Location = New Point(e.X + FittingListViewIcons.Left, e.Y + FittingListViewIcons.Top)
                 ' Now select the image and connect it to the mouse cursor
                 SendMessage(pbFloat.Handle.ToInt32, WM_NCLBUTTONDOWN, HTCAPTION, 0&)
             Else
@@ -380,7 +380,7 @@ Public Class frmUpwellStructureFitting
 
     ' Loads a selected image in a free slot - use for double-click on an item
     Private Sub LoadSelectedImageInFreeSlot()
-        Dim Selection As ListViewItem = ServiceModuleListView.SelectedItems(0)
+        Dim Selection As ListViewItem = FittingListViewIcons.SelectedItems(0)
 
         If Not IsNothing(Selection) Then
             Call LoadImageInFreeSlot(CInt(Selection.ImageKey), Selection.Text, CStr(Selection.Group.Tag), Selection.Group.Name)
@@ -1197,7 +1197,7 @@ Public Class frmUpwellStructureFitting
         If Not FirstLoad Then
 
             ' Clear current images
-            ServiceModuleListView.Items.Clear()
+            FittingListViewIcons.Items.Clear()
 
             Dim SQL As String = ""
             Dim RigString As String = ""
@@ -1313,32 +1313,32 @@ Public Class frmUpwellStructureFitting
 
                     '& CStr(ItemAttributes.disallowInHighSec) & ") "
                     If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Or GID = 1887 Then
-                        LVI.Group = ServiceModuleListView.Groups(0) ' 0 is services
+                        LVI.Group = FittingListViewIcons.Groups(0) ' 0 is services
                     ElseIf EID = SlotSizes.HighSlot Then
-                        LVI.Group = ServiceModuleListView.Groups(1) ' 1 is high
+                        LVI.Group = FittingListViewIcons.Groups(1) ' 1 is high
                     ElseIf EID = SlotSizes.MediumSlot Then
-                        LVI.Group = ServiceModuleListView.Groups(2) ' 2 is medium
+                        LVI.Group = FittingListViewIcons.Groups(2) ' 2 is medium
                     ElseIf EID = SlotSizes.LowSlot Then
-                        LVI.Group = ServiceModuleListView.Groups(3) ' 3 is low
+                        LVI.Group = FittingListViewIcons.Groups(3) ' 3 is low
                     Else
                         ' Rigs
                         If rsReader.GetString(4).Contains("Combat") Then
-                            LVI.Group = ServiceModuleListView.Groups(4) ' 4 is Combat rigs
+                            LVI.Group = FittingListViewIcons.Groups(4) ' 4 is Combat rigs
                         ElseIf rsReader.GetString(4).Contains("Reprocessing") Or rsReader.GetString(4).Contains("Grading") Then
-                            LVI.Group = ServiceModuleListView.Groups(5) ' 5 is Reprocessing rigs
+                            LVI.Group = FittingListViewIcons.Groups(5) ' 5 is Reprocessing rigs
                         ElseIf rsReader.GetString(4).Contains("Engineering") Then
-                            LVI.Group = ServiceModuleListView.Groups(6) ' 6 is Engineering rigs
+                            LVI.Group = FittingListViewIcons.Groups(6) ' 6 is Engineering rigs
                         ElseIf rsReader.GetString(4).Contains("Reactor") Then
-                            LVI.Group = ServiceModuleListView.Groups(7) ' 7 is Reaction rigs
+                            LVI.Group = FittingListViewIcons.Groups(7) ' 7 is Reaction rigs
                         ElseIf rsReader.GetString(4).Contains("Drilling") Then
-                            LVI.Group = ServiceModuleListView.Groups(8) ' 8 is Drilling rigs
+                            LVI.Group = FittingListViewIcons.Groups(8) ' 8 is Drilling rigs
                         End If
                     End If
 
                     ' add the image
                     LVI.ImageKey = CStr(rsReader.GetInt32(0))
                     LVI.Text = rsReader.GetString(2)
-                    ServiceModuleListView.Items.Add(LVI)
+                    FittingListViewIcons.Items.Add(LVI)
                 End If
 
             End While
@@ -2099,6 +2099,7 @@ Public Class frmUpwellStructureFitting
         Dim BuildFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Manufacturing)
         Dim ComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
         Dim CapComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
+        Dim ReactionFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
         Dim BPID As Long
 
         Select Case FuelBlock
@@ -2114,7 +2115,7 @@ Public Class frmUpwellStructureFitting
 
         ' Build T1 BP for the block, standard settings with whatever is on bp tab
         Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
-                                    BuildFacility, ComponentFacility, CapComponentFacility)
+                                    BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility)
         Call BlockBP.BuildItems(False, False, False, False, False)
 
         Return BlockBP.GetRawItemUnitPrice
@@ -2599,7 +2600,7 @@ Public Class frmUpwellStructureFitting
         End If
     End Sub
 
-    Private Sub ServiceModuleListView_ItemActivate(sender As Object, e As EventArgs) Handles ServiceModuleListView.ItemActivate
+    Private Sub ServiceModuleListView_ItemActivate(sender As Object, e As EventArgs) Handles FittingListViewIcons.ItemActivate
         Call LoadSelectedImageInFreeSlot()
     End Sub
 

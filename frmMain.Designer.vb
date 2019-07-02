@@ -206,6 +206,9 @@ Partial Class frmMain
         Me.lblBPBuyColor = New System.Windows.Forms.Label()
         Me.lblBPBuildColor = New System.Windows.Forms.Label()
         Me.gbBPMEPEImage = New System.Windows.Forms.GroupBox()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.btnBPSaveBP = New System.Windows.Forms.Button()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabFacility = New System.Windows.Forms.TabPage()
@@ -263,8 +266,8 @@ Partial Class frmMain
         Me.lblBPPE = New System.Windows.Forms.Label()
         Me.lblBPNumBPs = New System.Windows.Forms.Label()
         Me.gbBPIgnoreinCalcs = New System.Windows.Forms.GroupBox()
-        Me.chkBPIgnoreT1Item = New System.Windows.Forms.CheckBox()
         Me.chkBPIgnoreMinerals = New System.Windows.Forms.CheckBox()
+        Me.chkBPIgnoreT1Item = New System.Windows.Forms.CheckBox()
         Me.chkBPIgnoreInvention = New System.Windows.Forms.CheckBox()
         Me.gbBPShopandCopy = New System.Windows.Forms.GroupBox()
         Me.chkBPSimpleCopy = New System.Windows.Forms.CheckBox()
@@ -1025,6 +1028,9 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
+        Me.gbCalcSellExessItems = New System.Windows.Forms.GroupBox()
+        Me.btnCalcSellExessItemsSettings = New System.Windows.Forms.Button()
+        Me.chkCalcSellExessItems = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1035,6 +1041,7 @@ Partial Class frmMain
         Me.gbFilters.SuspendLayout()
         Me.gbBPInventionStats.SuspendLayout()
         Me.gbBPMEPEImage.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
         Me.tabBPInventionEquip.SuspendLayout()
         Me.tabFacility.SuspendLayout()
         Me.tabT3Calcs.SuspendLayout()
@@ -1145,6 +1152,7 @@ Partial Class frmMain
         Me.gbMineWHSpace.SuspendLayout()
         Me.tabPI.SuspendLayout()
         Me.gbPIPlanets.SuspendLayout()
+        Me.gbCalcSellExessItems.SuspendLayout()
         Me.SuspendLayout()
         '
         'mnuStripMain
@@ -2638,6 +2646,7 @@ Partial Class frmMain
         '
         'gbBPMEPEImage
         '
+        Me.gbBPMEPEImage.Controls.Add(Me.GroupBox1)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveBP)
         Me.gbBPMEPEImage.Controls.Add(Me.tabBPInventionEquip)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveSettings)
@@ -2663,6 +2672,35 @@ Partial Class frmMain
         Me.gbBPMEPEImage.Size = New System.Drawing.Size(455, 224)
         Me.gbBPMEPEImage.TabIndex = 6
         Me.gbBPMEPEImage.TabStop = False
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.Button1)
+        Me.GroupBox1.Controls.Add(Me.CheckBox1)
+        Me.GroupBox1.Location = New System.Drawing.Point(239, 6)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(81, 62)
+        Me.GroupBox1.TabIndex = 21
+        Me.GroupBox1.TabStop = False
+        '
+        'Button1
+        '
+        Me.Button1.Enabled = False
+        Me.Button1.Location = New System.Drawing.Point(6, 36)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(69, 22)
+        Me.Button1.TabIndex = 27
+        Me.Button1.Text = "Settings"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'CheckBox1
+        '
+        Me.CheckBox1.Location = New System.Drawing.Point(5, 7)
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.Size = New System.Drawing.Size(83, 32)
+        Me.CheckBox1.TabIndex = 1
+        Me.CheckBox1.Text = "Sell excess build items"
+        Me.CheckBox1.UseVisualStyleBackColor = True
         '
         'btnBPSaveBP
         '
@@ -3072,9 +3110,9 @@ Partial Class frmMain
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.btnBPUpdateCostIndex)
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPSystemCostIndexManual)
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.txtBPUpdateCostIndex)
-        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(314, 6)
+        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(323, 6)
         Me.gbBPManualSystemCostIndex.Name = "gbBPManualSystemCostIndex"
-        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(136, 62)
+        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(127, 62)
         Me.gbBPManualSystemCostIndex.TabIndex = 23
         Me.gbBPManualSystemCostIndex.TabStop = False
         Me.gbBPManualSystemCostIndex.Text = "Update System Data:"
@@ -3082,9 +3120,9 @@ Partial Class frmMain
         'btnBPUpdateCostIndex
         '
         Me.btnBPUpdateCostIndex.Enabled = False
-        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(78, 14)
+        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(76, 13)
         Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
-        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(52, 42)
+        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(50, 45)
         Me.btnBPUpdateCostIndex.TabIndex = 21
         Me.btnBPUpdateCostIndex.Text = "Update System"
         Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = True
@@ -3092,7 +3130,7 @@ Partial Class frmMain
         'lblBPSystemCostIndexManual
         '
         Me.lblBPSystemCostIndexManual.AutoSize = True
-        Me.lblBPSystemCostIndexManual.Location = New System.Drawing.Point(3, 18)
+        Me.lblBPSystemCostIndexManual.Location = New System.Drawing.Point(3, 20)
         Me.lblBPSystemCostIndexManual.Name = "lblBPSystemCostIndexManual"
         Me.lblBPSystemCostIndexManual.Size = New System.Drawing.Size(60, 13)
         Me.lblBPSystemCostIndexManual.TabIndex = 26
@@ -3100,7 +3138,7 @@ Partial Class frmMain
         '
         'txtBPUpdateCostIndex
         '
-        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(6, 34)
+        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(5, 37)
         Me.txtBPUpdateCostIndex.MaxLength = 7
         Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
         Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(66, 20)
@@ -3227,40 +3265,40 @@ Partial Class frmMain
         '
         'gbBPIgnoreinCalcs
         '
-        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreMinerals)
+        Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreInvention)
         Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(142, 6)
         Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
-        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(166, 62)
+        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(94, 62)
         Me.gbBPIgnoreinCalcs.TabIndex = 20
         Me.gbBPIgnoreinCalcs.TabStop = False
         Me.gbBPIgnoreinCalcs.Text = "Ignore in Calcs:"
         '
-        'chkBPIgnoreT1Item
-        '
-        Me.chkBPIgnoreT1Item.AutoSize = True
-        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(90, 20)
-        Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
-        Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
-        Me.chkBPIgnoreT1Item.TabIndex = 2
-        Me.chkBPIgnoreT1Item.Text = "T1 Item"
-        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = True
-        '
         'chkBPIgnoreMinerals
         '
         Me.chkBPIgnoreMinerals.AutoSize = True
-        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(14, 38)
+        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(5, 43)
         Me.chkBPIgnoreMinerals.Name = "chkBPIgnoreMinerals"
         Me.chkBPIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
         Me.chkBPIgnoreMinerals.TabIndex = 1
         Me.chkBPIgnoreMinerals.Text = "Minerals"
         Me.chkBPIgnoreMinerals.UseVisualStyleBackColor = True
         '
+        'chkBPIgnoreT1Item
+        '
+        Me.chkBPIgnoreT1Item.AutoSize = True
+        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(5, 29)
+        Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
+        Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
+        Me.chkBPIgnoreT1Item.TabIndex = 2
+        Me.chkBPIgnoreT1Item.Text = "T1 Item"
+        Me.chkBPIgnoreT1Item.UseVisualStyleBackColor = True
+        '
         'chkBPIgnoreInvention
         '
         Me.chkBPIgnoreInvention.AutoSize = True
-        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(14, 20)
+        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(5, 15)
         Me.chkBPIgnoreInvention.Name = "chkBPIgnoreInvention"
         Me.chkBPIgnoreInvention.Size = New System.Drawing.Size(70, 17)
         Me.chkBPIgnoreInvention.TabIndex = 0
@@ -5510,6 +5548,7 @@ Partial Class frmMain
         '
         'gbCalcBPSelectOptions
         '
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcSellExessItems)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.chkCalcNPCBPOs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcShowAssets)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIncludeItems)
@@ -11177,6 +11216,35 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = True
         '
+        'gbCalcSellExessItems
+        '
+        Me.gbCalcSellExessItems.Controls.Add(Me.btnCalcSellExessItemsSettings)
+        Me.gbCalcSellExessItems.Controls.Add(Me.chkCalcSellExessItems)
+        Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 199)
+        Me.gbCalcSellExessItems.Name = "gbCalcSellExessItems"
+        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 62)
+        Me.gbCalcSellExessItems.TabIndex = 29
+        Me.gbCalcSellExessItems.TabStop = False
+        '
+        'btnCalcSellExessItemsSettings
+        '
+        Me.btnCalcSellExessItemsSettings.Enabled = False
+        Me.btnCalcSellExessItemsSettings.Location = New System.Drawing.Point(6, 36)
+        Me.btnCalcSellExessItemsSettings.Name = "btnCalcSellExessItemsSettings"
+        Me.btnCalcSellExessItemsSettings.Size = New System.Drawing.Size(82, 22)
+        Me.btnCalcSellExessItemsSettings.TabIndex = 27
+        Me.btnCalcSellExessItemsSettings.Text = "Settings"
+        Me.btnCalcSellExessItemsSettings.UseVisualStyleBackColor = True
+        '
+        'chkCalcSellExessItems
+        '
+        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(5, 7)
+        Me.chkCalcSellExessItems.Name = "chkCalcSellExessItems"
+        Me.chkCalcSellExessItems.Size = New System.Drawing.Size(83, 32)
+        Me.chkCalcSellExessItems.TabIndex = 1
+        Me.chkCalcSellExessItems.Text = "Sell excess build items"
+        Me.chkCalcSellExessItems.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11215,6 +11283,7 @@ Partial Class frmMain
         Me.gbBPInventionStats.PerformLayout()
         Me.gbBPMEPEImage.ResumeLayout(False)
         Me.gbBPMEPEImage.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
         Me.tabBPInventionEquip.ResumeLayout(False)
         Me.tabFacility.ResumeLayout(False)
         Me.tabT3Calcs.ResumeLayout(False)
@@ -11402,6 +11471,7 @@ Partial Class frmMain
         Me.tabPI.ResumeLayout(False)
         Me.gbPIPlanets.ResumeLayout(False)
         Me.gbPIPlanets.PerformLayout()
+        Me.gbCalcSellExessItems.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -12407,4 +12477,10 @@ Partial Class frmMain
     Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
     Friend WithEvents mnuViewESIStatus As ToolStripMenuItem
     Friend WithEvents chkStructureComponents As CheckBox
+    Friend WithEvents GroupBox1 As GroupBox
+    Friend WithEvents Button1 As Button
+    Friend WithEvents CheckBox1 As CheckBox
+    Friend WithEvents gbCalcSellExessItems As GroupBox
+    Friend WithEvents btnCalcSellExessItemsSettings As Button
+    Friend WithEvents chkCalcSellExessItems As CheckBox
 End Class

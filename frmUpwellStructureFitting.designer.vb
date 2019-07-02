@@ -34,7 +34,7 @@ Partial Class frmUpwellStructureFitting
         Dim ListViewGroup9 As System.Windows.Forms.ListViewGroup = New System.Windows.Forms.ListViewGroup("Drilling Rigs", System.Windows.Forms.HorizontalAlignment.Left)
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmUpwellStructureFitting))
         Me.FittingImages = New System.Windows.Forms.ImageList(Me.components)
-        Me.ServiceModuleListView = New System.Windows.Forms.ListView()
+        Me.FittingListViewIcons = New System.Windows.Forms.ListView()
         Me.lblSelectedUpwellStructure = New System.Windows.Forms.Label()
         Me.cmbUpwellStructureName = New System.Windows.Forms.ComboBox()
         Me.chkIncludeFuelCosts = New System.Windows.Forms.CheckBox()
@@ -208,6 +208,10 @@ Partial Class frmUpwellStructureFitting
         Me.EventLog1 = New System.Diagnostics.EventLog()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
         Me.MainToolTip = New System.Windows.Forms.ToolTip(Me.components)
+        Me.FittingListViewDetails = New EVE_Isk_per_Hour.ManufacturingListView()
+        Me.gbViewType = New System.Windows.Forms.GroupBox()
+        Me.rbtnViewIcons = New System.Windows.Forms.RadioButton()
+        Me.rbtnListView = New System.Windows.Forms.RadioButton()
         Me.tabUpwellStructure.SuspendLayout()
         Me.tabFitting.SuspendLayout()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -273,6 +277,7 @@ Partial Class frmUpwellStructureFitting
         Me.gbTextFilter.SuspendLayout()
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.gbViewType.SuspendLayout()
         Me.SuspendLayout()
         '
         'FittingImages
@@ -281,11 +286,12 @@ Partial Class frmUpwellStructureFitting
         Me.FittingImages.ImageSize = New System.Drawing.Size(64, 64)
         Me.FittingImages.TransparentColor = System.Drawing.Color.Transparent
         '
-        'ServiceModuleListView
+        'FittingListViewIcons
         '
-        Me.ServiceModuleListView.Activation = System.Windows.Forms.ItemActivation.TwoClick
-        Me.ServiceModuleListView.AllowDrop = True
-        Me.ServiceModuleListView.AutoArrange = False
+        Me.FittingListViewIcons.Activation = System.Windows.Forms.ItemActivation.TwoClick
+        Me.FittingListViewIcons.AllowDrop = True
+        Me.FittingListViewIcons.AutoArrange = False
+        Me.FittingListViewIcons.GridLines = True
         ListViewGroup1.Header = "Services"
         ListViewGroup1.Name = "ServiceSlots"
         ListViewGroup1.Tag = "ServiceSlot"
@@ -313,15 +319,15 @@ Partial Class frmUpwellStructureFitting
         ListViewGroup9.Header = "Drilling Rigs"
         ListViewGroup9.Name = "DrillingRigs"
         ListViewGroup9.Tag = "RigSlot"
-        Me.ServiceModuleListView.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7, ListViewGroup8, ListViewGroup9})
-        Me.ServiceModuleListView.HoverSelection = True
-        Me.ServiceModuleListView.LargeImageList = Me.FittingImages
-        Me.ServiceModuleListView.Location = New System.Drawing.Point(6, 210)
-        Me.ServiceModuleListView.MultiSelect = False
-        Me.ServiceModuleListView.Name = "ServiceModuleListView"
-        Me.ServiceModuleListView.Size = New System.Drawing.Size(342, 397)
-        Me.ServiceModuleListView.TabIndex = 8
-        Me.ServiceModuleListView.UseCompatibleStateImageBehavior = False
+        Me.FittingListViewIcons.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7, ListViewGroup8, ListViewGroup9})
+        Me.FittingListViewIcons.HoverSelection = True
+        Me.FittingListViewIcons.LargeImageList = Me.FittingImages
+        Me.FittingListViewIcons.Location = New System.Drawing.Point(6, 208)
+        Me.FittingListViewIcons.MultiSelect = False
+        Me.FittingListViewIcons.Name = "FittingListViewIcons"
+        Me.FittingListViewIcons.Size = New System.Drawing.Size(342, 399)
+        Me.FittingListViewIcons.TabIndex = 8
+        Me.FittingListViewIcons.UseCompatibleStateImageBehavior = False
         '
         'lblSelectedUpwellStructure
         '
@@ -371,6 +377,7 @@ Partial Class frmUpwellStructureFitting
         '
         'tabFitting
         '
+        Me.tabFitting.Controls.Add(Me.FittingListViewDetails)
         Me.tabFitting.Controls.Add(Me.LowSlot3)
         Me.tabFitting.Controls.Add(Me.RigSlot2)
         Me.tabFitting.Controls.Add(Me.LowSlot6)
@@ -2175,7 +2182,7 @@ Partial Class frmUpwellStructureFitting
         '
         Me.pbFloat.BackColor = System.Drawing.Color.White
         Me.pbFloat.InitialImage = Nothing
-        Me.pbFloat.Location = New System.Drawing.Point(254, 531)
+        Me.pbFloat.Location = New System.Drawing.Point(258, 457)
         Me.pbFloat.Name = "pbFloat"
         Me.pbFloat.Size = New System.Drawing.Size(64, 64)
         Me.pbFloat.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
@@ -2183,12 +2190,60 @@ Partial Class frmUpwellStructureFitting
         Me.pbFloat.TabStop = False
         Me.pbFloat.Visible = False
         '
+        'FittingListViewDetails
+        '
+        Me.FittingListViewDetails.AllowColumnReorder = True
+        Me.FittingListViewDetails.FullRowSelect = True
+        Me.FittingListViewDetails.GridLines = True
+        Me.FittingListViewDetails.Location = New System.Drawing.Point(134, 79)
+        Me.FittingListViewDetails.Name = "FittingListViewDetails"
+        Me.FittingListViewDetails.OwnerDraw = True
+        Me.FittingListViewDetails.Size = New System.Drawing.Size(342, 397)
+        Me.FittingListViewDetails.TabIndex = 42
+        Me.FittingListViewDetails.UseCompatibleStateImageBehavior = False
+        Me.FittingListViewDetails.View = System.Windows.Forms.View.Details
+        Me.FittingListViewDetails.Visible = False
+        '
+        'gbViewType
+        '
+        Me.gbViewType.Controls.Add(Me.rbtnListView)
+        Me.gbViewType.Controls.Add(Me.rbtnViewIcons)
+        Me.gbViewType.Location = New System.Drawing.Point(6, 208)
+        Me.gbViewType.Name = "gbViewType"
+        Me.gbViewType.Size = New System.Drawing.Size(168, 33)
+        Me.gbViewType.TabIndex = 8
+        Me.gbViewType.TabStop = False
+        Me.gbViewType.Visible = False
+        '
+        'rbtnViewIcons
+        '
+        Me.rbtnViewIcons.AutoSize = True
+        Me.rbtnViewIcons.Location = New System.Drawing.Point(12, 10)
+        Me.rbtnViewIcons.Name = "rbtnViewIcons"
+        Me.rbtnViewIcons.Size = New System.Drawing.Size(72, 17)
+        Me.rbtnViewIcons.TabIndex = 0
+        Me.rbtnViewIcons.TabStop = True
+        Me.rbtnViewIcons.Text = "Icon View"
+        Me.rbtnViewIcons.UseVisualStyleBackColor = True
+        '
+        'rbtnListView
+        '
+        Me.rbtnListView.AutoSize = True
+        Me.rbtnListView.Location = New System.Drawing.Point(90, 10)
+        Me.rbtnListView.Name = "rbtnListView"
+        Me.rbtnListView.Size = New System.Drawing.Size(67, 17)
+        Me.rbtnListView.TabIndex = 1
+        Me.rbtnListView.TabStop = True
+        Me.rbtnListView.Text = "List View"
+        Me.rbtnListView.UseVisualStyleBackColor = True
+        '
         'frmUpwellStructureFitting
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(1134, 611)
+        Me.Controls.Add(Me.gbViewType)
         Me.Controls.Add(Me.gbTextFilter)
         Me.Controls.Add(Me.btnCloseForm)
         Me.Controls.Add(Me.btnSaveSettings)
@@ -2200,7 +2255,7 @@ Partial Class frmUpwellStructureFitting
         Me.Controls.Add(Me.btnStripFitting)
         Me.Controls.Add(Me.cmbUpwellStructureName)
         Me.Controls.Add(Me.lblSelectedUpwellStructure)
-        Me.Controls.Add(Me.ServiceModuleListView)
+        Me.Controls.Add(Me.FittingListViewIcons)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
@@ -2280,6 +2335,8 @@ Partial Class frmUpwellStructureFitting
         Me.gbTextFilter.PerformLayout()
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.gbViewType.ResumeLayout(False)
+        Me.gbViewType.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -2287,7 +2344,7 @@ Partial Class frmUpwellStructureFitting
     Friend WithEvents RigSlot1 As PictureBox
     Friend WithEvents HighSlot1 As PictureBox
     Friend WithEvents FittingImages As ImageList
-    Friend WithEvents ServiceModuleListView As ListView
+    Friend WithEvents FittingListViewIcons As ListView
     Friend WithEvents StructurePicture As PictureBox
     Friend WithEvents MidSlot1 As PictureBox
     Friend WithEvents LowSlot1 As PictureBox
@@ -2459,4 +2516,8 @@ Partial Class frmUpwellStructureFitting
     Friend WithEvents lblNitrogenFuelBlock As Label
     Friend WithEvents btnRefreshPrices As Button
     Friend WithEvents MainToolTip As ToolTip
+    Friend WithEvents FittingListViewDetails As ManufacturingListView
+    Friend WithEvents gbViewType As GroupBox
+    Friend WithEvents rbtnListView As RadioButton
+    Friend WithEvents rbtnViewIcons As RadioButton
 End Class
