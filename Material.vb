@@ -47,7 +47,7 @@ Public Class Material
         End If
 
         If SentPrice = 0 Then
-            CostPerItem = GetItemCost()
+            CostPerItem = GetItemPrice(TypeID)
         Else
             CostPerItem = SentPrice
         End If
@@ -61,27 +61,6 @@ Public Class Material
     Public Function Clone() As Object Implements ICloneable.Clone
         Dim CopyOfMe As New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.Quantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.ItemTE, Me.BuildItem, Me.ItemType)
         Return CopyOfMe
-    End Function
-
-    ' Returns Cost of item sent if in price database
-    Private Function GetItemCost() As Double
-        Dim readerCost As SQLiteDataReader
-        Dim SQL As String
-
-        ' Look up the cost for the material
-        SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & TypeID
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerCost = DBCommand.ExecuteReader
-
-        If readerCost.Read Then
-            GetItemCost = readerCost.GetDouble(0)
-        Else
-            GetItemCost = 0
-        End If
-
-        readerCost.Close()
-
     End Function
 
     Private Sub SetTotalCostVolume()

@@ -1095,7 +1095,7 @@ Public Class frmMain
 
     Private Sub lblCalcColorCode3_MouseEnter(sender As System.Object, e As System.EventArgs) Handles lblCalcColorCode3.MouseEnter
         If UserApplicationSettings.ShowToolTips Then
-            ttBP.SetToolTip(lblCalcColorCode5, "Green Text: Unable to T3 Invent Item")
+            ttBP.SetToolTip(lblCalcColorCode3, "Green Text: Unable to T3 Invent Item")
         End If
     End Sub
 
@@ -1107,7 +1107,13 @@ Public Class frmMain
 
     Private Sub lblCalcColorCode5_MouseEnter(sender As System.Object, e As System.EventArgs) Handles lblCalcColorCode5.MouseEnter
         If UserApplicationSettings.ShowToolTips Then
-            ttBP.SetToolTip(lblCalcColorCode3, "Red Text: Unable to Build Item")
+            ttBP.SetToolTip(lblCalcColorCode5, "Red Text: Unable to Build Item")
+        End If
+    End Sub
+
+    Private Sub lblCalcColorCode6_MouseEnter(sender As System.Object, e As System.EventArgs) Handles lblCalcColorCode6.MouseEnter
+        If UserApplicationSettings.ShowToolTips Then
+            ttBP.SetToolTip(lblCalcColorCode6, "Green Background: Corp Owned Blueprint")
         End If
     End Sub
 
@@ -1725,7 +1731,7 @@ Public Class frmMain
                 If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
                     ' Reactions Facility Usage
                     If SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage > 0 Then
-                        RawCostSplit.SplitName = "Total Reaction Facilities Usage"
+                        RawCostSplit.SplitName = "Component Reaction Facilities Usage"
                         RawCostSplit.SplitValue = SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage
                         f1.CostSplits.Add(RawCostSplit)
                     End If
@@ -1789,7 +1795,13 @@ Public Class frmMain
                 RawCostSplit.SplitName = "Copy Usage"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetCopyUsage
                 f1.CostSplits.Add(RawCostSplit)
+            End If
 
+            ' Show the decrease if any excess items sold
+            If chkBPSellExcessItems.Checked Then
+                RawCostSplit.SplitName = "Sold Excess Items"
+                RawCostSplit.SplitValue = -1 * SelectedBlueprint.GetSellExcessAmount ' show as negative
+                f1.CostSplits.Add(RawCostSplit)
             End If
 
             f1.Show()
@@ -1833,12 +1845,6 @@ Public Class frmMain
 
     Private Sub mnuIndustryUpgradeBelts_Click(sender As System.Object, e As System.EventArgs) Handles mnuIndustryUpgradeBelts.Click
         Dim f1 As New frmIndustryBeltFlip
-
-        f1.Show()
-    End Sub
-
-    Private Sub mnuLPStore_Click(sender As System.Object, e As System.EventArgs) Handles mnuLPStore.Click
-        Dim f1 As New frmLPStore
 
         f1.Show()
     End Sub
@@ -4363,6 +4369,10 @@ Tabs:
         Call RefreshBP()
     End Sub
 
+    Private Sub chkBPSellExcessItems_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPSellExcessItems.CheckedChanged
+        Call RefreshBP()
+    End Sub
+
     Public Sub RefreshBP(Optional IgnoreFocus As Boolean = False)
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
             If Not IsNothing(SelectedBlueprint) Then
@@ -4566,6 +4576,13 @@ Tabs:
         If e.ColumnIndex = 0 Or e.ColumnIndex >= 4 Then
             e.Cancel = True
             e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
+        End If
+    End Sub
+
+    Private Sub btnBPListMats_Click(sender As Object, e As EventArgs) Handles btnBPListMats.Click
+        If Not IsNothing(SelectedBlueprint) Then
+            Dim f1 As New frmMaterialListViewer(SelectedBlueprint.GetExcessMaterials)
+            Call f1.Show()
         End If
     End Sub
 
@@ -5188,6 +5205,7 @@ Tabs:
             'chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
             chkBPSimpleCopy.Checked = .SimpleCopyCheck
             chkBPNPCBPOs.Checked = .NPCBPOs
+            chkBPSellExcessItems.Checked = .SellExcessBuildItems
 
             chkBPSmall.Checked = .SmallCheck
             chkBPMedium.Checked = .MediumCheck
@@ -5289,6 +5307,7 @@ Tabs:
         chkBPBrokerFees.Enabled = False
         gbBPManualSystemCostIndex.Enabled = False
         gbBPIgnoreinCalcs.Enabled = False
+        gbBPSellExcess.Enabled = False
 
         ' Copy Labels
         rbtnBPComponentCopy.Enabled = False
@@ -5419,6 +5438,7 @@ Tabs:
             ' .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
             .SimpleCopyCheck = chkBPSimpleCopy.Checked
             .NPCBPOs = chkBPNPCBPOs.Checked
+            .SellExcessBuildItems = chkBPSellExcessItems.Checked
 
             .SmallCheck = chkBPSmall.Checked
             .MediumCheck = chkBPMedium.Checked
@@ -5790,6 +5810,7 @@ Tabs:
 
         gbBPManualSystemCostIndex.Enabled = True
         gbBPIgnoreinCalcs.Enabled = True
+        gbBPSellExcess.Enabled = True
         btnBPUpdateCostIndex.Enabled = False
 
         cmbBPBlueprintSelection.Focus()
@@ -6038,7 +6059,7 @@ Tabs:
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManufacturingFacility,
-                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility)
+                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6855,7 +6876,7 @@ ExitForm:
 
         ' Save all the usage values each time we update to allow updates for changing the facility
         If SelectedManufacturingFacility.FacilityProductionType = ProductionType.Reactions Then
-            SelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetTotalReactionFacilityUsage / DivideUnits
+            SelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetReactionFacilityUsage / DivideUnits
         Else
             SelectedManufacturingFacility.FacilityUsage = SelectedBlueprint.GetManufacturingFacilityUsage / DivideUnits
         End If
@@ -6899,7 +6920,7 @@ ExitForm:
                     UsedFacility.FacilityUsage = SelectedBlueprint.GetCapComponentFacilityUsage / DivideUnits
                     TTText = GetUsageToolTipText(SelectedBlueprint.GetCapitalComponentManufacturingFacility, True)
                 Case ManufacturingFacility.ActivityReactions
-                    UsedFacility.FacilityUsage = SelectedBlueprint.GetTotalReactionFacilityUsage / DivideUnits
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetReactionFacilityUsage / DivideUnits
                     TTText = GetUsageToolTipText(SelectedBlueprint.GetReactionFacility, True)
             End Select
         Else
@@ -10806,6 +10827,10 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
+    Private Sub chkCalcSellExessItems_CheckedChanged(sender As Object, e As EventArgs) Handles chkCalcSellExessItems.CheckedChanged
+        Call ResetRefresh()
+    End Sub
+
     Private Sub chkCalcUsage_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Call ResetRefresh()
     End Sub
@@ -11792,6 +11817,15 @@ CheckTechs:
             ColumnPositions(.InventionFacilityTEBonus) = ProgramSettings.InventionFacilityTEBonusColumnName
             ColumnPositions(.InventionFacilityUsage) = ProgramSettings.InventionFacilityUsageColumnName
             ColumnPositions(.InventionFacilityFWSystemLevel) = ProgramSettings.InventionFacilityFWSystemLevelColumnName
+            ColumnPositions(.ReactionFacilityName) = ProgramSettings.ReactionFacilityNameColumnName
+            ColumnPositions(.ReactionFacilitySystem) = ProgramSettings.ReactionFacilitySystemColumnName
+            ColumnPositions(.ReactionFacilityRegion) = ProgramSettings.ReactionFacilityRegionColumnName
+            ColumnPositions(.ReactionFacilitySystemIndex) = ProgramSettings.ReactionFacilitySystemIndexColumnName
+            ColumnPositions(.ReactionFacilityTax) = ProgramSettings.ReactionFacilityTaxColumnName
+            ColumnPositions(.ReactionFacilityMEBonus) = ProgramSettings.ReactionFacilityMEBonusColumnName
+            ColumnPositions(.ReactionFacilityTEBonus) = ProgramSettings.ReactionFacilityTEBonusColumnName
+            ColumnPositions(.ReactionFacilityUsage) = ProgramSettings.ReactionFacilityUsageColumnName
+            ColumnPositions(.ReactionFacilityFWSystemLevel) = ProgramSettings.ReactionFacilityFWSystemLevelColumnName
         End With
 
         ' First column is always the ListID
@@ -11984,6 +12018,24 @@ CheckTechs:
                     Return .InventionFacilityUsageWidth
                 Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                     Return .InventionFacilityFWSystemLevelWidth
+                Case ProgramSettings.ReactionFacilityNameColumnName
+                    Return .ReactionFacilityNameWidth
+                Case ProgramSettings.ReactionFacilitySystemColumnName
+                    Return .ReactionFacilitySystemWidth
+                Case ProgramSettings.ReactionFacilityRegionColumnName
+                    Return .ReactionFacilityRegionWidth
+                Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                    Return .ReactionFacilitySystemIndexWidth
+                Case ProgramSettings.ReactionFacilityTaxColumnName
+                    Return .ReactionFacilityTaxWidth
+                Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                    Return .ReactionFacilityMEBonusWidth
+                Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                    Return .ReactionFacilityTEBonusWidth
+                Case ProgramSettings.ReactionFacilityUsageColumnName
+                    Return .ReactionFacilityUsageWidth
+                Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                    Return .ReactionFacilityFWSystemLevelWidth
                 Case Else
                     Return 0
             End Select
@@ -12225,6 +12277,24 @@ CheckTechs:
                         .InventionFacilityUsage = i
                     Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                         .InventionFacilityFWSystemLevel = i
+                    Case ProgramSettings.ReactionFacilityNameColumnName
+                        .ReactionFacilityName = i
+                    Case ProgramSettings.ReactionFacilitySystemColumnName
+                        .ReactionFacilitySystem = i
+                    Case ProgramSettings.ReactionFacilityRegionColumnName
+                        .ReactionFacilityRegion = i
+                    Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                        .ReactionFacilitySystemIndex = i
+                    Case ProgramSettings.ReactionFacilityTaxColumnName
+                        .ReactionFacilityTax = i
+                    Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                        .ReactionFacilityMEBonus = i
+                    Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                        .ReactionFacilityTEBonus = i
+                    Case ProgramSettings.ReactionFacilityUsageColumnName
+                        .ReactionFacilityUsage = i
+                    Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                        .ReactionFacilityFWSystemLevel = i
                 End Select
             Next
         End With
@@ -12422,6 +12492,24 @@ CheckTechs:
                         .InventionFacilityUsageWidth = NewWidth
                     Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                         .InventionFacilityFWSystemLevelWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityNameColumnName
+                        .ReactionFacilityNameWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilitySystemColumnName
+                        .ReactionFacilitySystemWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityRegionColumnName
+                        .ReactionFacilityRegionWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                        .ReactionFacilitySystemIndexWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityTaxColumnName
+                        .ReactionFacilityTaxWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                        .ReactionFacilityMEBonusWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                        .ReactionFacilityTEBonusWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityUsageColumnName
+                        .ReactionFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                        .ReactionFacilityFWSystemLevelWidth = NewWidth
                 End Select
             End With
         End If
@@ -12621,6 +12709,24 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.ReactionFacilityNameColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.ReactionFacilitySystemColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.ReactionFacilityRegionColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                Return HorizontalAlignment.Left
+            Case ProgramSettings.ReactionFacilityTaxColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReactionFacilityUsageColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Right
             Case Else
                 Return 0
         End Select
@@ -12679,6 +12785,7 @@ CheckTechs:
 
             chkCalcTaxes.Checked = .CheckIncludeTaxes
             chkCalcFees.Checked = .CheckIncludeBrokersFees
+            chkCalcSellExessItems.Checked = .CheckSellExcessItems
 
             ' Check wrecked Relics, do not check meta levels or decryptors (NONE)
             chkCalcDecryptor0.CheckState = CType(.CheckDecryptorOptimal, CheckState)
@@ -12813,6 +12920,7 @@ CheckTechs:
             End Select
 
             chkCalcPPU.Checked = .CalcPPU
+            chkBPSellExcessItems.Checked = .CheckSellExcessItems
 
             ListIDIterator = 0
 
@@ -12944,6 +13052,7 @@ CheckTechs:
 
             .CheckIncludeTaxes = chkCalcTaxes.Checked
             .CheckIncludeBrokersFees = chkCalcFees.Checked
+            .CheckSellExcessItems = chkCalcSellExessItems.Checked
 
             .CheckDecryptorOptimal = CInt(chkCalcDecryptor0.CheckState)
             .CheckDecryptorNone = chkCalcDecryptor1.Checked
@@ -12971,6 +13080,7 @@ CheckTechs:
             .CheckRaceOther = chkCalcRaceOther.Checked
 
             .CalcPPU = chkCalcPPU.Checked
+            .CheckSellExcessItems = chkBPSellExcessItems.Checked
 
             .ColumnSort = ManufacturingColumnClicked
             If ManufacturingColumnSortType = SortOrder.Ascending Then
@@ -13480,6 +13590,8 @@ CheckTechs:
                 Dim SelectedIndyType As ProductionType
                 Dim TempFacility As New ManufacturingFacility
 
+                Dim BuildType As ProductionType
+
                 ' Set the facility for manufacturing
                 If CalcBaseFacility.GetFacility(ProductionType.Manufacturing).FacilityType = FacilityTypes.POS Then
                     ' If this is visible, then look up as a pos, else just look up normally
@@ -13541,8 +13653,15 @@ CheckTechs:
 
                     readerArray.Close()
                 Else
+
                     ' Nothing special, just set it to the current selected facility for this type
-                    Dim BuildType As ProductionType = TempFacility.GetProductionType(InsertItem.ItemGroupID, InsertItem.ItemCategoryID, ManufacturingFacility.ActivityManufacturing)
+                    Select Case InsertItem.ItemGroupID
+                        Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                            BuildType = ProductionType.Reactions
+                        Case Else
+                            BuildType = TempFacility.GetProductionType(InsertItem.ItemGroupID, InsertItem.ItemCategoryID, ManufacturingFacility.ActivityManufacturing)
+                    End Select
+
                     Select Case BuildType
                         Case ProductionType.Manufacturing
                             InsertItem.ManufacturingFacility = CalcBaseFacility.GetFacility(BuildType)
@@ -13563,8 +13682,16 @@ CheckTechs:
                     End Select
                 End If
 
-                ' Set the component, and copy facilities
-                InsertItem.ComponentManufacturingFacility = CalcComponentsFacility.GetFacility(ProductionType.ComponentManufacturing)
+                If BuildType = ProductionType.Reactions Then
+                    'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
+                    InsertItem.ComponentManufacturingFacility = CalcBaseFacility.GetFacility(ProductionType.Manufacturing)
+                ElseIf ((InsertItem.ItemCategoryID = ItemIDs.ComponentCategoryID Or InsertItem.ItemGroupID = ItemIDs.AdvCapitalComponentGroupID) And Not InsertItem.ItemGroupID = ItemIDs.CapitalComponentGroupID) Then
+                    ' Use the reaction facility as the 'component facility' if it's T2 component item, since they will do reactions
+                    InsertItem.ComponentManufacturingFacility = CalcReactionsFacility.GetFacility(ProductionType.Reactions)
+                Else
+                    InsertItem.ComponentManufacturingFacility = CalcComponentsFacility.GetFacility(ProductionType.ComponentManufacturing)
+                End If
+
                 InsertItem.CapComponentManufacturingFacility = CalcComponentsFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
                 InsertItem.CopyFacility = CalcCopyFacility.GetFacility(ProductionType.Copying)
                 InsertItem.ReactionFacility = CalcReactionsFacility.GetFacility(ProductionType.Reactions)
@@ -13833,7 +13960,7 @@ CheckTechs:
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                    NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                    UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
-                                  InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility)
+                                   InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility, chkCalcSellExessItems.Checked)
 
                     ' Set the T2 and T3 inputs if necessary
                     If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
@@ -14019,7 +14146,7 @@ CheckTechs:
                             InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
-                            InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
+                            InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetTotalReactionFacilityUsage
                             InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                             InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
 
@@ -14038,7 +14165,7 @@ CheckTechs:
                                                         NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                                         UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
-                                                        InsertItem.ReactionFacility)
+                                                        InsertItem.ReactionFacility, chkCalcSellExessItems.Checked)
 
                             If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP
@@ -14162,7 +14289,6 @@ CheckTechs:
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
                             End If
 
-                            InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
@@ -14207,7 +14333,13 @@ CheckTechs:
                             End If
 
                             ' Usage
-                            InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                            ' If it's a reaction, we don't want to add the manufacturing usage for any fuel blocks if it's a component
+                            Select Case InsertItem.ItemGroupID
+                                Case ItemIDs.ReactionsIntermediateGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionBiochmeicalsGroupID
+                                    InsertItem.ManufacturingFacilityUsage = 0
+                                Case Else
+                                    InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                            End Select
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
                             InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
@@ -14311,6 +14443,14 @@ DisplayResults:
                 ' So the display will show zeros instead of NaN (divide by zero)
                 FinalItemList(i).DivideUnits = 1
             End If
+
+            ' If the bp is a blueprint, change the reaction facility equal to the manufacturing facility (used in bp)
+            ' and the manufacturing facility equal to the component facility
+            Select Case FinalItemList(i).ItemGroup
+                Case "Composite", "Biochemical Material", "Hybrid Polymers", "Intermediate Materials"
+                    FinalItemList(i).ReactionFacility = CType(FinalItemList(i).ManufacturingFacility.Clone, IndustryFacility)
+                    FinalItemList(i).ManufacturingFacility = CType(FinalItemList(i).ComponentManufacturingFacility.Clone, IndustryFacility) ' fuel blocks
+            End Select
 
             For j = 1 To ColumnPositions.Count - 1
                 Select Case ColumnPositions(j)
@@ -14499,6 +14639,25 @@ DisplayResults:
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).InventionFacilityUsage / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                         BPList.SubItems.Add(CStr(FinalItemList(i).InventionFacility.FWUpgradeLevel))
+
+                    Case ProgramSettings.ReactionFacilityNameColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReactionFacility.FacilityName)
+                    Case ProgramSettings.ReactionFacilitySystemColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReactionFacility.SolarSystemName)
+                    Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ReactionFacility.CostIndex, 5))
+                    Case ProgramSettings.ReactionFacilityTaxColumnName
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).ReactionFacility.TaxRate, 1))
+                    Case ProgramSettings.ReactionFacilityRegionColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReactionFacility.RegionName)
+                    Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReactionFacility.MaterialMultiplier))
+                    Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReactionFacility.TimeMultiplier))
+                    Case ProgramSettings.ReactionFacilityUsageColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ReactionFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                    Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReactionFacility.FWUpgradeLevel))
                 End Select
             Next
 
@@ -15819,7 +15978,6 @@ ExitCalc:
 
             CopyofMe.CopyCost = CopyCost
             CopyofMe.InventionCost = InventionCost
-            CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
 
             CopyofMe.ManufacturingFacility = ManufacturingFacility
             CopyofMe.ComponentManufacturingFacility = ComponentManufacturingFacility
@@ -15849,6 +16007,7 @@ ExitCalc:
             CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
             CopyofMe.ComponentManufacturingFacilityUsage = ComponentManufacturingFacilityUsage
             CopyofMe.CapComponentManufacturingFacilityUsage = CapComponentManufacturingFacilityUsage
+            CopyofMe.ReactionFacilityUsage = ReactionFacilityUsage
             CopyofMe.CopyFacilityUsage = CopyFacilityUsage
             CopyofMe.InventionFacilityUsage = InventionFacilityUsage
 
@@ -17057,32 +17216,17 @@ ExitCalc:
         ' Now figure out what prices to use and load accordingly
         If rbtnDCUpdatedPrices.Checked Then ' Use whatever the user has loaded in Item Prices
             For i = 0 To DCAgentList.Count - 1
-                ' First get the record we are updating
-                SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & DCAgentList(i).DataCoreID
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerDC2 = DBCommand.ExecuteReader()
 
                 ' First save the record and then remove the record we are on
                 DCAgentRecord = DCAgentList(i)
-
-                If readerDC2.Read() Then
-                    DCAgentRecord.DataCorePrice = readerDC2.GetDouble(0)
-                Else
-                    DCAgentRecord.DataCorePrice = 0
-                End If
-
+                DCAgentRecord.DataCorePrice = GetItemPrice(DCAgentList(i).DataCoreID)
                 DCAgentRecord.DataCorePrice -= DataCoreRedeemCost ' Add an amount of Isk to redeem each datacore, so subtract this from the market price
-
                 DCAgentRecord.PriceFrom = "Current"
                 DCAgentRecord.IskPerHour = Math.Round((DCAgentRecord.DataCorePrice * DCAgentRecord.CoresPerDay) / 24, 2)
 
                 ' Insert the record
                 TempDCAgentList.Add(DCAgentRecord)
 
-                readerDC2.Close()
-                readerDC2 = Nothing
-                DBCommand = Nothing
             Next
 
         ElseIf rbtnDCRegionPrices.Checked Then ' Look up the max buy price for the region the Agent is located

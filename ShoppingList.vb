@@ -1800,6 +1800,7 @@ Public Class BuiltItem
     Public BuildTE As Integer
     Public BuildMaterials As Materials
     Public ComponentBuildList As List(Of BuiltItem) ' This item may also have build able items
+    Public BPQuantity As Long
 
     ' These fields are for shopping list update functions
     Public FacilityMEModifier As Double
@@ -1820,6 +1821,7 @@ Public Class BuiltItem
         BuildME = 0
         BuildMaterials = New Materials
         ComponentBuildList = New List(Of BuiltItem)
+        BPQuantity = 0
 
         FacilityMEModifier = 1
         FacilityType = ""
@@ -1844,6 +1846,7 @@ Public Class BuiltItem
         CopyOfMe.BuildME = Me.BuildME
         CopyOfMe.BuildTE = Me.BuildTE
         CopyOfMe.BuildMaterials = Me.BuildMaterials
+        CopyOfMe.BPQuantity = Me.BPQuantity
         CopyOfMe.FacilityMEModifier = Me.FacilityMEModifier
         CopyOfMe.FacilityLocation = Me.FacilityLocation
         CopyOfMe.FacilityType = Me.FacilityType

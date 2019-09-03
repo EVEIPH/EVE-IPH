@@ -206,9 +206,8 @@ Partial Class frmMain
         Me.lblBPBuyColor = New System.Windows.Forms.Label()
         Me.lblBPBuildColor = New System.Windows.Forms.Label()
         Me.gbBPMEPEImage = New System.Windows.Forms.GroupBox()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.Button1 = New System.Windows.Forms.Button()
-        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
+        Me.gbBPSellExcess = New System.Windows.Forms.GroupBox()
+        Me.chkBPSellExcessItems = New System.Windows.Forms.CheckBox()
         Me.btnBPSaveBP = New System.Windows.Forms.Button()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabFacility = New System.Windows.Forms.TabPage()
@@ -478,6 +477,8 @@ Partial Class frmMain
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
         Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
+        Me.gbCalcSellExessItems = New System.Windows.Forms.GroupBox()
+        Me.chkCalcSellExessItems = New System.Windows.Forms.CheckBox()
         Me.chkCalcNPCBPOs = New System.Windows.Forms.CheckBox()
         Me.btnCalcShowAssets = New System.Windows.Forms.Button()
         Me.gbCalcIncludeItems = New System.Windows.Forms.GroupBox()
@@ -534,6 +535,7 @@ Partial Class frmMain
         Me.rbtnCalcCompareComponents = New System.Windows.Forms.RadioButton()
         Me.rbtnCalcCompareAll = New System.Windows.Forms.RadioButton()
         Me.gbCalcTextColors = New System.Windows.Forms.GroupBox()
+        Me.lblCalcColorCode6 = New System.Windows.Forms.Label()
         Me.lblCalcText = New System.Windows.Forms.Label()
         Me.lblCalcColorCode3 = New System.Windows.Forms.Label()
         Me.lblCalcColorCode4 = New System.Windows.Forms.Label()
@@ -1028,9 +1030,7 @@ Partial Class frmMain
         Me.chkPIStorm = New System.Windows.Forms.CheckBox()
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
-        Me.gbCalcSellExessItems = New System.Windows.Forms.GroupBox()
-        Me.btnCalcSellExessItemsSettings = New System.Windows.Forms.Button()
-        Me.chkCalcSellExessItems = New System.Windows.Forms.CheckBox()
+        Me.btnBPListMats = New System.Windows.Forms.Button()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1041,7 +1041,7 @@ Partial Class frmMain
         Me.gbFilters.SuspendLayout()
         Me.gbBPInventionStats.SuspendLayout()
         Me.gbBPMEPEImage.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
+        Me.gbBPSellExcess.SuspendLayout()
         Me.tabBPInventionEquip.SuspendLayout()
         Me.tabFacility.SuspendLayout()
         Me.tabT3Calcs.SuspendLayout()
@@ -1071,6 +1071,7 @@ Partial Class frmMain
         Me.ItemsDefaults.SuspendLayout()
         Me.tabManufacturing.SuspendLayout()
         Me.gbCalcBPSelectOptions.SuspendLayout()
+        Me.gbCalcSellExessItems.SuspendLayout()
         Me.gbCalcIncludeItems.SuspendLayout()
         Me.gbCalcMarketFilters.SuspendLayout()
         Me.gbCalcIgnoreinCalcs.SuspendLayout()
@@ -1152,7 +1153,6 @@ Partial Class frmMain
         Me.gbMineWHSpace.SuspendLayout()
         Me.tabPI.SuspendLayout()
         Me.gbPIPlanets.SuspendLayout()
-        Me.gbCalcSellExessItems.SuspendLayout()
         Me.SuspendLayout()
         '
         'mnuStripMain
@@ -2646,7 +2646,7 @@ Partial Class frmMain
         '
         'gbBPMEPEImage
         '
-        Me.gbBPMEPEImage.Controls.Add(Me.GroupBox1)
+        Me.gbBPMEPEImage.Controls.Add(Me.gbBPSellExcess)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveBP)
         Me.gbBPMEPEImage.Controls.Add(Me.tabBPInventionEquip)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveSettings)
@@ -2673,34 +2673,24 @@ Partial Class frmMain
         Me.gbBPMEPEImage.TabIndex = 6
         Me.gbBPMEPEImage.TabStop = False
         '
-        'GroupBox1
+        'gbBPSellExcess
         '
-        Me.GroupBox1.Controls.Add(Me.Button1)
-        Me.GroupBox1.Controls.Add(Me.CheckBox1)
-        Me.GroupBox1.Location = New System.Drawing.Point(239, 6)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(81, 62)
-        Me.GroupBox1.TabIndex = 21
-        Me.GroupBox1.TabStop = False
+        Me.gbBPSellExcess.Controls.Add(Me.btnBPListMats)
+        Me.gbBPSellExcess.Controls.Add(Me.chkBPSellExcessItems)
+        Me.gbBPSellExcess.Location = New System.Drawing.Point(239, 6)
+        Me.gbBPSellExcess.Name = "gbBPSellExcess"
+        Me.gbBPSellExcess.Size = New System.Drawing.Size(81, 62)
+        Me.gbBPSellExcess.TabIndex = 21
+        Me.gbBPSellExcess.TabStop = False
         '
-        'Button1
+        'chkBPSellExcessItems
         '
-        Me.Button1.Enabled = False
-        Me.Button1.Location = New System.Drawing.Point(6, 36)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(69, 22)
-        Me.Button1.TabIndex = 27
-        Me.Button1.Text = "Settings"
-        Me.Button1.UseVisualStyleBackColor = True
-        '
-        'CheckBox1
-        '
-        Me.CheckBox1.Location = New System.Drawing.Point(5, 7)
-        Me.CheckBox1.Name = "CheckBox1"
-        Me.CheckBox1.Size = New System.Drawing.Size(83, 32)
-        Me.CheckBox1.TabIndex = 1
-        Me.CheckBox1.Text = "Sell excess build items"
-        Me.CheckBox1.UseVisualStyleBackColor = True
+        Me.chkBPSellExcessItems.Location = New System.Drawing.Point(4, 6)
+        Me.chkBPSellExcessItems.Name = "chkBPSellExcessItems"
+        Me.chkBPSellExcessItems.Size = New System.Drawing.Size(83, 32)
+        Me.chkBPSellExcessItems.TabIndex = 1
+        Me.chkBPSellExcessItems.Text = "Sell excess build items"
+        Me.chkBPSellExcessItems.UseVisualStyleBackColor = True
         '
         'btnBPSaveBP
         '
@@ -5583,6 +5573,24 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabStop = False
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
         '
+        'gbCalcSellExessItems
+        '
+        Me.gbCalcSellExessItems.Controls.Add(Me.chkCalcSellExessItems)
+        Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 199)
+        Me.gbCalcSellExessItems.Name = "gbCalcSellExessItems"
+        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 48)
+        Me.gbCalcSellExessItems.TabIndex = 29
+        Me.gbCalcSellExessItems.TabStop = False
+        '
+        'chkCalcSellExessItems
+        '
+        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(5, 11)
+        Me.chkCalcSellExessItems.Name = "chkCalcSellExessItems"
+        Me.chkCalcSellExessItems.Size = New System.Drawing.Size(83, 32)
+        Me.chkCalcSellExessItems.TabIndex = 1
+        Me.chkCalcSellExessItems.Text = "Sell excess build items"
+        Me.chkCalcSellExessItems.UseVisualStyleBackColor = True
+        '
         'chkCalcNPCBPOs
         '
         Me.chkCalcNPCBPOs.AutoSize = True
@@ -6159,6 +6167,7 @@ Partial Class frmMain
         '
         'gbCalcTextColors
         '
+        Me.gbCalcTextColors.Controls.Add(Me.lblCalcColorCode6)
         Me.gbCalcTextColors.Controls.Add(Me.lblCalcText)
         Me.gbCalcTextColors.Controls.Add(Me.lblCalcColorCode3)
         Me.gbCalcTextColors.Controls.Add(Me.lblCalcColorCode4)
@@ -6170,6 +6179,18 @@ Partial Class frmMain
         Me.gbCalcTextColors.Size = New System.Drawing.Size(148, 30)
         Me.gbCalcTextColors.TabIndex = 5
         Me.gbCalcTextColors.TabStop = False
+        '
+        'lblCalcColorCode6
+        '
+        Me.lblCalcColorCode6.BackColor = System.Drawing.Color.LightGreen
+        Me.lblCalcColorCode6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblCalcColorCode6.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblCalcColorCode6.Location = New System.Drawing.Point(55, 10)
+        Me.lblCalcColorCode6.Name = "lblCalcColorCode6"
+        Me.lblCalcColorCode6.Size = New System.Drawing.Size(15, 15)
+        Me.lblCalcColorCode6.TabIndex = 5
+        Me.lblCalcColorCode6.Text = "T"
+        Me.lblCalcColorCode6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'lblCalcText
         '
@@ -6183,8 +6204,8 @@ Partial Class frmMain
         'lblCalcColorCode3
         '
         Me.lblCalcColorCode3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalcColorCode3.ForeColor = System.Drawing.Color.DarkRed
-        Me.lblCalcColorCode3.Location = New System.Drawing.Point(80, 10)
+        Me.lblCalcColorCode3.ForeColor = System.Drawing.Color.DarkGreen
+        Me.lblCalcColorCode3.Location = New System.Drawing.Point(127, 10)
         Me.lblCalcColorCode3.Name = "lblCalcColorCode3"
         Me.lblCalcColorCode3.Size = New System.Drawing.Size(15, 15)
         Me.lblCalcColorCode3.TabIndex = 2
@@ -6195,7 +6216,7 @@ Partial Class frmMain
         '
         Me.lblCalcColorCode4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.lblCalcColorCode4.ForeColor = System.Drawing.Color.DarkOrange
-        Me.lblCalcColorCode4.Location = New System.Drawing.Point(100, 10)
+        Me.lblCalcColorCode4.Location = New System.Drawing.Point(109, 10)
         Me.lblCalcColorCode4.Name = "lblCalcColorCode4"
         Me.lblCalcColorCode4.Size = New System.Drawing.Size(15, 15)
         Me.lblCalcColorCode4.TabIndex = 3
@@ -6205,8 +6226,8 @@ Partial Class frmMain
         'lblCalcColorCode5
         '
         Me.lblCalcColorCode5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalcColorCode5.ForeColor = System.Drawing.Color.DarkGreen
-        Me.lblCalcColorCode5.Location = New System.Drawing.Point(120, 10)
+        Me.lblCalcColorCode5.ForeColor = System.Drawing.Color.DarkRed
+        Me.lblCalcColorCode5.Location = New System.Drawing.Point(91, 10)
         Me.lblCalcColorCode5.Name = "lblCalcColorCode5"
         Me.lblCalcColorCode5.Size = New System.Drawing.Size(15, 15)
         Me.lblCalcColorCode5.TabIndex = 4
@@ -6215,10 +6236,10 @@ Partial Class frmMain
         '
         'lblCalcColorCode2
         '
-        Me.lblCalcColorCode2.BackColor = System.Drawing.Color.LightSkyBlue
+        Me.lblCalcColorCode2.BackColor = System.Drawing.Color.LightSteelBlue
         Me.lblCalcColorCode2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.lblCalcColorCode2.ForeColor = System.Drawing.Color.Black
-        Me.lblCalcColorCode2.Location = New System.Drawing.Point(60, 10)
+        Me.lblCalcColorCode2.Location = New System.Drawing.Point(73, 10)
         Me.lblCalcColorCode2.Name = "lblCalcColorCode2"
         Me.lblCalcColorCode2.Size = New System.Drawing.Size(15, 15)
         Me.lblCalcColorCode2.TabIndex = 1
@@ -6229,7 +6250,7 @@ Partial Class frmMain
         '
         Me.lblCalcColorCode1.BackColor = System.Drawing.Color.BlanchedAlmond
         Me.lblCalcColorCode1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblCalcColorCode1.Location = New System.Drawing.Point(40, 10)
+        Me.lblCalcColorCode1.Location = New System.Drawing.Point(37, 10)
         Me.lblCalcColorCode1.Name = "lblCalcColorCode1"
         Me.lblCalcColorCode1.Size = New System.Drawing.Size(15, 15)
         Me.lblCalcColorCode1.TabIndex = 0
@@ -11216,34 +11237,14 @@ Partial Class frmMain
         Me.btnPIReset.Text = "Reset"
         Me.btnPIReset.UseVisualStyleBackColor = True
         '
-        'gbCalcSellExessItems
+        'btnBPListMats
         '
-        Me.gbCalcSellExessItems.Controls.Add(Me.btnCalcSellExessItemsSettings)
-        Me.gbCalcSellExessItems.Controls.Add(Me.chkCalcSellExessItems)
-        Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 199)
-        Me.gbCalcSellExessItems.Name = "gbCalcSellExessItems"
-        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 62)
-        Me.gbCalcSellExessItems.TabIndex = 29
-        Me.gbCalcSellExessItems.TabStop = False
-        '
-        'btnCalcSellExessItemsSettings
-        '
-        Me.btnCalcSellExessItemsSettings.Enabled = False
-        Me.btnCalcSellExessItemsSettings.Location = New System.Drawing.Point(6, 36)
-        Me.btnCalcSellExessItemsSettings.Name = "btnCalcSellExessItemsSettings"
-        Me.btnCalcSellExessItemsSettings.Size = New System.Drawing.Size(82, 22)
-        Me.btnCalcSellExessItemsSettings.TabIndex = 27
-        Me.btnCalcSellExessItemsSettings.Text = "Settings"
-        Me.btnCalcSellExessItemsSettings.UseVisualStyleBackColor = True
-        '
-        'chkCalcSellExessItems
-        '
-        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(5, 7)
-        Me.chkCalcSellExessItems.Name = "chkCalcSellExessItems"
-        Me.chkCalcSellExessItems.Size = New System.Drawing.Size(83, 32)
-        Me.chkCalcSellExessItems.TabIndex = 1
-        Me.chkCalcSellExessItems.Text = "Sell excess build items"
-        Me.chkCalcSellExessItems.UseVisualStyleBackColor = True
+        Me.btnBPListMats.Location = New System.Drawing.Point(6, 35)
+        Me.btnBPListMats.Name = "btnBPListMats"
+        Me.btnBPListMats.Size = New System.Drawing.Size(72, 22)
+        Me.btnBPListMats.TabIndex = 24
+        Me.btnBPListMats.Text = "List Mats"
+        Me.btnBPListMats.UseVisualStyleBackColor = True
         '
         'frmMain
         '
@@ -11283,7 +11284,7 @@ Partial Class frmMain
         Me.gbBPInventionStats.PerformLayout()
         Me.gbBPMEPEImage.ResumeLayout(False)
         Me.gbBPMEPEImage.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
+        Me.gbBPSellExcess.ResumeLayout(False)
         Me.tabBPInventionEquip.ResumeLayout(False)
         Me.tabFacility.ResumeLayout(False)
         Me.tabT3Calcs.ResumeLayout(False)
@@ -11333,6 +11334,7 @@ Partial Class frmMain
         Me.tabManufacturing.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.PerformLayout()
+        Me.gbCalcSellExessItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.PerformLayout()
         Me.gbCalcMarketFilters.ResumeLayout(False)
@@ -11471,7 +11473,6 @@ Partial Class frmMain
         Me.tabPI.ResumeLayout(False)
         Me.gbPIPlanets.ResumeLayout(False)
         Me.gbPIPlanets.PerformLayout()
-        Me.gbCalcSellExessItems.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -12477,10 +12478,10 @@ Partial Class frmMain
     Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
     Friend WithEvents mnuViewESIStatus As ToolStripMenuItem
     Friend WithEvents chkStructureComponents As CheckBox
-    Friend WithEvents GroupBox1 As GroupBox
-    Friend WithEvents Button1 As Button
-    Friend WithEvents CheckBox1 As CheckBox
+    Friend WithEvents gbBPSellExcess As GroupBox
+    Friend WithEvents chkBPSellExcessItems As CheckBox
     Friend WithEvents gbCalcSellExessItems As GroupBox
-    Friend WithEvents btnCalcSellExessItemsSettings As Button
     Friend WithEvents chkCalcSellExessItems As CheckBox
+    Friend WithEvents lblCalcColorCode6 As Label
+    Friend WithEvents btnBPListMats As Button
 End Class

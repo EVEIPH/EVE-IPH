@@ -39,8 +39,8 @@ Public Class frmCostSplitViewer
         lstCosts.BeginUpdate()
 
         ' Just load the mats into the list
-        lstCosts.Columns.Add("Cost Split", 175, HorizontalAlignment.Left)
-        lstCosts.Columns.Add("Total Cost", 125, HorizontalAlignment.Right)
+        lstCosts.Columns.Add("Cost Split", 200, HorizontalAlignment.Left)
+        lstCosts.Columns.Add("Total Cost", 100, HorizontalAlignment.Right)
 
         If Not IsNothing(CostSplits) Then
             For i = 0 To CostSplits.Count - 1

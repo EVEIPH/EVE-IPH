@@ -128,6 +128,15 @@
             Call UpdateListCheck(.InventionFacilityTEBonus, 87)
             Call UpdateListCheck(.InventionFacilityUsage, 88)
             Call UpdateListCheck(.InventionFacilityFWSystemLevel, 89)
+            Call UpdateListCheck(.ReactionFacilityName, 90)
+            Call UpdateListCheck(.ReactionFacilitySystem, 91)
+            Call UpdateListCheck(.ReactionFacilityRegion, 92)
+            Call UpdateListCheck(.ReactionFacilitySystemIndex, 93)
+            Call UpdateListCheck(.ReactionFacilityTax, 94)
+            Call UpdateListCheck(.ReactionFacilityMEBonus, 95)
+            Call UpdateListCheck(.ReactionFacilityTEBonus, 96)
+            Call UpdateListCheck(.ReactionFacilityUsage, 97)
+            Call UpdateListCheck(.ReactionFacilityFWSystemLevel, 98)
 
             chkLstBoxColumns.Update()
 
@@ -276,6 +285,15 @@
             .InventionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(87), .InventionFacilityTEBonus)
             .InventionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(88), .InventionFacilityUsage)
             .InventionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(89), .InventionFacilityFWSystemLevel)
+            .ReactionFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(90), .ReactionFacilityName)
+            .ReactionFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(91), .ReactionFacilitySystem)
+            .ReactionFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(92), .ReactionFacilityRegion)
+            .ReactionFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(93), .ReactionFacilitySystemIndex)
+            .ReactionFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(94), .ReactionFacilityTax)
+            .ReactionFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(95), .ReactionFacilityMEBonus)
+            .ReactionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(96), .ReactionFacilityTEBonus)
+            .ReactionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(97), .ReactionFacilityUsage)
+            .ReactionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(98), .ReactionFacilityFWSystemLevel)
 
             ' Now in case something was removed, we want to update the indicies
             With UserManufacturingTabColumnSettings
@@ -374,6 +392,15 @@
                     ColumnPositions(.InventionFacilityTEBonus) = ProgramSettings.InventionFacilityTEBonusColumnName
                     ColumnPositions(.InventionFacilityUsage) = ProgramSettings.InventionFacilityUsageColumnName
                     ColumnPositions(.InventionFacilityFWSystemLevel) = ProgramSettings.InventionFacilityFWSystemLevelColumnName
+                    ColumnPositions(.InventionFacilityName) = ProgramSettings.InventionFacilityNameColumnName
+                    ColumnPositions(.ReactionFacilitySystem) = ProgramSettings.ReactionFacilitySystemColumnName
+                    ColumnPositions(.ReactionFacilityRegion) = ProgramSettings.ReactionFacilityRegionColumnName
+                    ColumnPositions(.ReactionFacilitySystemIndex) = ProgramSettings.ReactionFacilitySystemIndexColumnName
+                    ColumnPositions(.ReactionFacilityTax) = ProgramSettings.ReactionFacilityTaxColumnName
+                    ColumnPositions(.ReactionFacilityMEBonus) = ProgramSettings.ReactionFacilityMEBonusColumnName
+                    ColumnPositions(.ReactionFacilityTEBonus) = ProgramSettings.ReactionFacilityTEBonusColumnName
+                    ColumnPositions(.ReactionFacilityUsage) = ProgramSettings.ReactionFacilityUsageColumnName
+                    ColumnPositions(.ReactionFacilityFWSystemLevel) = ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                 End With
 
                 ' Reset the first column is empty
@@ -590,6 +617,24 @@
                                 .InventionFacilityUsage = i
                             Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                                 .InventionFacilityFWSystemLevel = i
+                            Case ProgramSettings.ReactionFacilityNameColumnName
+                                .ReactionFacilityName = i
+                            Case ProgramSettings.ReactionFacilitySystemColumnName
+                                .ReactionFacilitySystem = i
+                            Case ProgramSettings.ReactionFacilityRegionColumnName
+                                .ReactionFacilityRegion = i
+                            Case ProgramSettings.ReactionFacilitySystemIndexColumnName
+                                .ReactionFacilitySystemIndex = i
+                            Case ProgramSettings.ReactionFacilityTaxColumnName
+                                .ReactionFacilityTax = i
+                            Case ProgramSettings.ReactionFacilityMEBonusColumnName
+                                .ReactionFacilityMEBonus = i
+                            Case ProgramSettings.ReactionFacilityTEBonusColumnName
+                                .ReactionFacilityTEBonus = i
+                            Case ProgramSettings.ReactionFacilityUsageColumnName
+                                .ReactionFacilityUsage = i
+                            Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                                .ReactionFacilityFWSystemLevel = i
                         End Select
                     Next
                 End With

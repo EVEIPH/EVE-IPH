@@ -326,6 +326,8 @@ Public Module Public_Variables
         Dim BuyType As String
     End Structure
 
+
+
     ' For updating the splash screen with what is going on
     Private Delegate Sub ProgressSetter(ByVal progress As String)
 
@@ -354,8 +356,8 @@ Public Module Public_Variables
     ' Returns the tax on an item price only
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
-        ' Each level of accounting reduces tax by 10% - Starting level with Accounting 0 is 1.5% tax 
-        Return (2.0 - (Accounting * 0.1 * 2.0)) / 100 * ItemMarketCost
+        ' Each level of accounting reduces tax by 11%, Max Sales Tax: 5%, Min Sales Tax: 2.25%
+        Return (5.0 - (Accounting * 0.11 * 5.0)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -363,9 +365,9 @@ Public Module Public_Variables
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
 
         Dim TempFee As Double
-        ' 3%-(0.1%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
+        ' 5%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
         ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
-        Dim BrokerTax = 3.0 - (0.1 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+        Dim BrokerTax = 5.0 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
         TempFee = (BrokerTax / 100) * ItemMarketCost
 
         If TempFee < 100 Then
@@ -769,6 +771,27 @@ InvalidDate:
 
     End Function
 
+    ' Returns the price of the typeID sent in item_prices
+    Public Function GetItemPrice(ByVal TypeID As Long) As Double
+        Dim readerCost As SQLiteDataReader
+        Dim SQL As String
+        Dim ItemPrice As Double = 0
+
+        ' Look up the cost for the material
+        SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID =" & TypeID
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerCost = DBCommand.ExecuteReader
+
+        If readerCost.Read Then
+            ItemPrice = readerCost.GetDouble(0)
+        End If
+
+        readerCost.Close()
+        Return ItemPrice
+
+    End Function
+
     ' Sorts the reference listview and column
     Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder,
                                     Optional UseSentSortType As Boolean = False)
@@ -802,6 +825,10 @@ InvalidDate:
         End If
 
         ' Perform the sort with these new sort options.
+        If ColumnIndex > RefListView.Columns.Count - 1 Then
+            ColumnIndex = 0
+        End If
+
         RefListView.ListViewItemSorter = New ListViewItemComparer(ColumnIndex, SortType)
         RefListView.Sort()
 

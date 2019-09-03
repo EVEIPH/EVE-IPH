@@ -2115,7 +2115,7 @@ Public Class frmUpwellStructureFitting
 
         ' Build T1 BP for the block, standard settings with whatever is on bp tab
         Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
-                                    BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility)
+                                    BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility, UserBPTabSettings.SellExcessBuildItems)
         Call BlockBP.BuildItems(False, False, False, False, False)
 
         Return BlockBP.GetRawItemUnitPrice

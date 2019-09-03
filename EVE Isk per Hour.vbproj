@@ -215,6 +215,12 @@
     <Compile Include="frmManualESI.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmMaterialListViewer.Designer.vb">
+      <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMaterialListViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmMETE.Designer.vb">
       <DependentUpon>frmMETE.vb</DependentUpon>
     </Compile>
@@ -273,12 +279,6 @@
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
     </Compile>
     <Compile Include="frmMarketHistoryViewer.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmLPStore.Designer.vb">
-      <DependentUpon>frmLPStore.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmLPStore.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmReqSkills.Designer.vb">
@@ -530,6 +530,9 @@
     <EmbeddedResource Include="frmManualESI.resx">
       <DependentUpon>frmManualESI.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmMaterialListViewer.resx">
+      <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMETE.resx">
       <DependentUpon>frmMETE.vb</DependentUpon>
     </EmbeddedResource>
@@ -541,9 +544,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmMarketHistoryViewer.resx">
       <DependentUpon>frmMarketHistoryViewer.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmLPStore.resx">
-      <DependentUpon>frmLPStore.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmReqSkills.resx">
       <DependentUpon>frmReqSkills.vb</DependentUpon>
