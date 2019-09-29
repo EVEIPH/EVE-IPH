@@ -805,7 +805,7 @@ Public Class frmMain
             Dim FilePath As String = Path.Combine(DynamicFilePath, "SupportCounter.txt")
 
             If File.Exists(FilePath) Then
-                ' See what the count is, if 100 then return true, else increment the counter
+                ' See what the count is, if 100, 500, or 1000 then return true, else increment the counter
                 Dim fileReader As String
                 fileReader = My.Computer.FileSystem.ReadAllText(FilePath)
 
@@ -817,7 +817,7 @@ Public Class frmMain
                     Counter = 1
                 End If
 
-                If Counter <> 100 And Counter <> 1100 Then
+                If Counter <> 100 And Counter <> 500 And Counter <> 1000 Then
                     ReturnValue = False
                     ' Increment counter
                     Call File.Delete(FilePath)
@@ -3494,6 +3494,39 @@ Tabs:
 
 #Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
 
+    Private Sub rbtnBPAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPAdvT2MatType.CheckedChanged
+        If rbtnBPAdvT2MatType.Checked Then
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
+    Private Sub rbtnBPProcT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPProcT2MatType.CheckedChanged
+        If rbtnBPProcT2MatType.Checked Then
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
+    Private Sub rbtnBPRawT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPRawT2MatType.CheckedChanged
+        If rbtnBPRawT2MatType.Checked Then
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
+    Private Sub ProcessT2MatSelection()
+        If Not FirstLoad And Not UpdatingCheck Then
+            If rbtnBPAdvT2MatType.Checked Then
+                UserApplicationSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
+                Call RefreshBP()
+            ElseIf rbtnBPProcT2MatType.Checked Then
+                UserApplicationSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials
+                Call RefreshBP()
+            ElseIf rbtnBPRawT2MatType.Checked Then
+                UserApplicationSettings.BuildT2T3Materials = BuildMatType.RawMaterials
+                Call RefreshBP()
+            End If
+        End If
+    End Sub
+
     Private Sub chkPerUnit_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPPricePerUnit.CheckedChanged
         If Not FirstLoad And Not UpdatingCheck Then
             Call UpdateBPPriceLabels()
@@ -4530,9 +4563,15 @@ Tabs:
             Dim rsBP As SQLiteDataReader
             Dim SQL As String
             Dim BuildType As String = ""
+            Dim TempItemName As String = lstBPComponentMats.SelectedItems(0).SubItems(0).Text
+
+            ' Strip off any extra text
+            If lstBPComponentMats.SelectedItems(0).SubItems(0).Text.Contains("(") Then
+                TempItemName = TempItemName.Substring(0, InStr(TempItemName, "(") - 2)
+            End If
 
             SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
-            SQL = SQL & "'" & lstBPComponentMats.SelectedItems(0).SubItems(0).Text & "'"
+            SQL = SQL & "'" & TempItemName & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsBP = DBCommand.ExecuteReader()
@@ -4544,22 +4583,31 @@ Tabs:
 
             ' Adjust the runs for porition size needed and use that instead
             Dim BPID As Long = rsBP.GetInt64(0)
-            Dim Runs As Long = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
-            Dim GroupID As Integer = rsBP.GetInt32(2)
-            Dim CategoryID As Integer = rsBP.GetInt32(3)
-            Dim BPName As String = rsBP.GetString(4
-                                                  )
-            rsBP.Close()
+            Dim Runs As Long
 
-            Dim SelectedActivity As String = ""
-            If BPName.Contains("Reaction Formula") Then
-                SelectedActivity = ManufacturingFacility.ActivityReactions
+            If lstBPComponentMats.SelectedItems(0).BackColor = lblBPBuildColor.BackColor Then
+                ' They are building this, so use the runs sent and don't divide by portion size
+                Runs = CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text)
             Else
-                SelectedActivity = ManufacturingFacility.ActivityManufacturing
+                ' They are buying, so portion size will determine runs along with the number of items
+                Runs = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
             End If
 
-            With BPTabFacility
-                Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
+            Dim GroupID As Integer = rsBP.GetInt32(2)
+                Dim CategoryID As Integer = rsBP.GetInt32(3)
+                Dim BPName As String = rsBP.GetString(4
+                                                  )
+                rsBP.Close()
+
+                Dim SelectedActivity As String = ""
+                If BPName.Contains("Reaction Formula") Then
+                    SelectedActivity = ManufacturingFacility.ActivityReactions
+                Else
+                    SelectedActivity = ManufacturingFacility.ActivityManufacturing
+                End If
+
+                With BPTabFacility
+                    Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
                                     .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
                                     .GetFacility(ProductionType.CapitalComponentManufacturing),
                                     .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
@@ -4567,8 +4615,8 @@ Tabs:
                                     lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
                                     CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
                                     "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
-            End With
-        End If
+                End With
+            End If
 
     End Sub
 
@@ -5269,6 +5317,21 @@ Tabs:
             chkBPIgnoreMinerals.Checked = .IgnoreMinerals
             chkBPIgnoreT1Item.Checked = .IgnoreT1Item
 
+            ' T2/T3 Material types
+            lblBPT2MatTypeSelector.Enabled = False
+            rbtnBPAdvT2MatType.Enabled = False
+            rbtnBPProcT2MatType.Enabled = False
+            rbtnBPRawT2MatType.Enabled = False
+
+            Select Case UserApplicationSettings.BuildT2T3Materials
+                Case BuildMatType.AdvMaterials
+                    rbtnBPAdvT2MatType.Checked = True
+                Case BuildMatType.ProcessedMaterials
+                    rbtnBPProcT2MatType.Checked = True
+                Case BuildMatType.RawMaterials
+                    rbtnBPRawT2MatType.Checked = True
+            End Select
+
             ' Profit labels
             If .RawProfitType = "Percent" Then
                 lblBPRawProfit1.Text = "Raw Profit Percent:"
@@ -5787,19 +5850,37 @@ Tabs:
                 txtBPTE.Enabled = False
             End If
 
-        Else ' Check the ignore invention, they own this BPO and don't need to invent it (if T2)
-            If TempTech = 2 Then
-                chkBPIgnoreInvention.Checked = True
-            End If
+        Else
+            ' Check the ignore invention, they own this BPO and don't need to invent it (if T2 or T3)
+            chkBPIgnoreInvention.Checked = True
+
             ' enable the me/te boxes
             txtBPME.Enabled = True
             txtBPTE.Enabled = True
         End If
 
         If TempTech <> 2 Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1, and T3 are always invented - so don't allow toggle
+            chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
         Else
             chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
+        End If
+
+        If TempTech <> 2 And Not SelectedBPText.Contains("Reaction Formula") Then
+            ' Disable the T2/T3 boxes for moon/gas mat types
+            lblBPT2MatTypeSelector.Enabled = False
+            rbtnBPAdvT2MatType.Enabled = False
+            rbtnBPProcT2MatType.Enabled = False
+            rbtnBPRawT2MatType.Enabled = False
+        Else
+            ' Also enable the T2/T3 boxes for moon/gas mat types
+            lblBPT2MatTypeSelector.Enabled = True
+            rbtnBPAdvT2MatType.Enabled = True
+            If TempTech = 3 Then
+                rbtnBPProcT2MatType.Enabled = False ' No intermediate gas materials
+            Else
+                rbtnBPProcT2MatType.Enabled = True
+            End If
+            rbtnBPRawT2MatType.Enabled = True
         End If
 
         ' Reactions can't have ME or TE
@@ -6037,8 +6118,6 @@ Tabs:
             InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
         End If
 
-        ' Working
-
         ' Now load the materials into the lists
         lstBPComponentMats.Items.Clear()
         lstBPComponentMats.Enabled = False
@@ -6099,8 +6178,17 @@ Tabs:
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetQuantity, 0))
                 TempME = BPComponentMats(i).GetItemME
 
-                ' Mark line yellow if the blueprint for this item has no ME stored
-                If TempME = "0" Then
+                Dim Reaction As Boolean
+                Select Case BPComponentMats(i).GetMaterialGroup
+                    Case "Composite", "Biochemical Material", "Hybrid Polymers", "Intermediate Materials"
+                        Reaction = True
+                    Case Else
+                        Reaction = False
+                End Select
+
+
+                ' Mark line grey if the blueprint for this item has no ME stored except if reaction
+                If TempME = "0" And Not Reaction Then
                     complstViewRow.BackColor = Color.LightGray
                 Else
                     complstViewRow.BackColor = Color.White
@@ -6191,26 +6279,26 @@ Tabs:
             ' Fill the Raw List
             lstBPRawMats.Items.Clear()
             lstBPRawMats.BeginUpdate()
-            If (chkBPCompressedOre.Checked) Then
-                Call CalculateCompressedOres(BPRawMats)
-            Else
-                For i = 0 To BPRawMats.Count - 1
-                    rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
-                    'The remaining columns are subitems  
-                    rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
-                    rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
-                    TempPrice = BPRawMats(i).GetCostPerItem
-                    ' If the price is zero, highlight text as red
-                    If TempPrice = 0 Then
-                        rawlstViewRow.ForeColor = Color.Red
-                    Else
-                        rawlstViewRow.ForeColor = Color.Black
-                    End If
-                    rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
-                    rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
-                    Call lstBPRawMats.Items.Add(rawlstViewRow)
-                Next
-            End If
+            'If (chkBPCompressedOre.Checked) Then
+            '    Call CalculateCompressedOres(BPRawMats)
+            'Else
+            For i = 0 To BPRawMats.Count - 1
+                rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
+                'The remaining columns are subitems  
+                rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
+                rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
+                TempPrice = BPRawMats(i).GetCostPerItem
+                ' If the price is zero, highlight text as red
+                If TempPrice = 0 Then
+                    rawlstViewRow.ForeColor = Color.Red
+                Else
+                    rawlstViewRow.ForeColor = Color.Black
+                End If
+                rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
+                rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
+                Call lstBPRawMats.Items.Add(rawlstViewRow)
+            Next
+            'End If
             ' Sort the raw mats list
             Dim TempSort As SortOrder
             If BPRawColumnSortType = SortOrder.Ascending Then
@@ -6731,9 +6819,9 @@ ExitForm:
         lblBPMarketCost.Text = FormatNumber(SelectedBlueprint.GetItemMarketPrice / DivideUnits, 2)
 
         ' Materials (bottom labels)
-        If Not chkBPCompressedOre.Checked Then
-            lblBPRawMatCost.Text = FormatNumber(SelectedBlueprint.GetRawMaterials.GetTotalMaterialsCost, 2)
-        End If
+        ' If Not chkBPCompressedOre.Checked Then
+        lblBPRawMatCost.Text = FormatNumber(SelectedBlueprint.GetRawMaterials.GetTotalMaterialsCost, 2)
+        'End If
 
         lblBPComponentMatCost.Text = FormatNumber(SelectedBlueprint.GetComponentMaterials.GetTotalMaterialsCost, 2)
 
@@ -20592,7 +20680,6 @@ Leave:
         ' Load up the main mining laser query - set groupID for search in processing
         SQL = "SELECT typeName, CASE WHEN metaGroupID IS NULL THEN 1 ELSE metaGroupID END AS TECH "
         SQL &= "FROM INVENTORY_TYPES "
-        SQL &= "LEFT JOIN META_TYPES ON INVENTORY_TYPES.typeID = META_TYPES.typeID "
         SQL &= "WHERE published <> 0 "
 
         ' Clear miners

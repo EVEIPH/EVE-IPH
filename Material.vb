@@ -23,15 +23,15 @@ Public Class Material
 
     Private ItemType As Integer ' My item type value
 
-    Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Long, _
-                   ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String, _
-                   Optional ByVal SentBuild As Boolean = False, Optional ByVal SentItemType As Integer = 0)
+    Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Long,
+                   ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String,
+                   Optional ByVal isBuiltItem As Boolean = False, Optional ByVal SentItemType As Integer = 0)
         TypeID = SentTypeID
         TypeName = SentTypeName
         Quantity = SentQuantity
         Volume = SentVolume
         GroupName = SentGroupName
-        BuildItem = SentBuild
+        BuildItem = isBuiltItem
         ItemType = SentItemType
 
         If Trim(SentItemME) <> "" Then
@@ -80,6 +80,11 @@ Public Class Material
         Quantity = SentQuantity
         ' New quantity means new total price and volume
         Call SetTotalCostVolume()
+    End Sub
+
+    ' Sets the name with the sent name
+    Public Sub SetName(ByVal SentName As String)
+        TypeName = SentName
     End Sub
 
     ' Sets the items ME

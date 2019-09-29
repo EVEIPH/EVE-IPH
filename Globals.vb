@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "January_Release_1.0_2019"
+    Public Const SDEVersion As String = "September_Release_1.0_2019"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -793,6 +793,14 @@ InvalidDate:
     End Function
 
     ' Sorts the reference listview and column
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="ColumnIndex"></param>
+    ''' <param name="RefListView"></param>
+    ''' <param name="ListPrevColumnClicked"></param>
+    ''' <param name="ListPrevColumnSortOrder"></param>
+    ''' <param name="UseSentSortType"></param>
     Public Sub ListViewColumnSorter(ByVal ColumnIndex As Integer, ByRef RefListView As ListView, ByRef ListPrevColumnClicked As Integer, ByRef ListPrevColumnSortOrder As SortOrder,
                                     Optional UseSentSortType As Boolean = False)
         Dim SortType As SortOrder
@@ -940,6 +948,17 @@ InvalidDate:
 
     End Function
 
+    Public Function UpdateItemNamewithRuns(ByVal ItemName As String, ByVal Runs As Long) As String
+        ' Update built item name with runs we did to get this quantity
+        ' Reset item name for found item
+        If ItemName.Contains("(") Then
+            ItemName = Trim(ItemName.Substring(0, InStr(ItemName, "(") - 1))
+        End If
+
+        Return ItemName & " (Runs: " & CStr(Runs) & ")"
+
+    End Function
+
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, SLFacility As IndustryFacility,
                                  IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean,
@@ -963,6 +982,7 @@ InvalidDate:
                     .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
                     .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
                     .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
+                    .PortionSize = SentBlueprint.GetPortionSize
 
                     ' See if we need to add the system on to the end of the build location for POS
                     If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
