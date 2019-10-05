@@ -959,6 +959,15 @@ InvalidDate:
 
     End Function
 
+    ' Strips off the Runs if it is on the name
+    Public Function RemoveItemNameRuns(ByVal ItemName As String) As String
+        If ItemName.Contains("(Runs:") Then
+            Return Trim(ItemName.Substring(0, InStr(ItemName, "(") - 2))
+        Else
+            Return ItemName
+        End If
+    End Function
+
     ' Imports sent blueprint to shopping list
     Public Sub AddToShoppingList(SentBlueprint As Blueprint, BuildBuy As Boolean, CopyRawMats As Boolean, SLFacility As IndustryFacility,
                                  IgnoreInvention As Boolean, IgnoreMinerals As Boolean, IgnoreT1ITem As Boolean,
@@ -1027,6 +1036,7 @@ InvalidDate:
                     .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
                     .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
                     .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
+                    .PortionSize = SentBlueprint.GetPortionSize
 
                     ' See if we need to add the system on to the end of the build location for POS
                     If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
@@ -1119,6 +1129,14 @@ InvalidDate:
         TotalShoppingList.InsertShoppingItem(ShoppingItem, ShoppingBuildList, ShoppingBuyList)
 
     End Sub
+
+    Public Function IsReaction(ByVal ItemGroupID As Integer) As Boolean
+        If ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
 
     ' Enables Cut, Copy, Paste, and Select all from shortcut key entry for the sent text box
     Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As System.Windows.Forms.KeyEventArgs) As Boolean

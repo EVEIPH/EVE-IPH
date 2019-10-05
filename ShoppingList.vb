@@ -985,6 +985,7 @@ Public Class ShoppingList
                             InsertBuildItem.IncludeActivityCost = TempBP.GetManufacturingFacility.IncludeActivityCost
                             InsertBuildItem.IncludeActivityTime = TempBP.GetManufacturingFacility.IncludeActivityTime
                             InsertBuildItem.IncludeActivityUsage = TempBP.GetManufacturingFacility.IncludeActivityUsage
+                            InsertBuildItem.PortionSize = TempBP.GetPortionSize
 
                             ' See if we need to add the system on to the end of the build location for POS
                             If InsertBuildItem.FacilityType = ManufacturingFacility.POSFacility Then

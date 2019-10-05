@@ -54,6 +54,7 @@ Public Class frmMain
     Private DCIPH_COLUMN As Integer ' The number of the DC IPH column for totalling up the price
 
     Private TechChecked As Boolean
+    Private IgnoreRefresh As Boolean = False
     Private RunUpdatePriceList As Boolean = True ' If we want to run the price list update
     Private RefreshList As Boolean = True
     Private UpdateAllTechChecks As Boolean = True ' Whether to update all Tech checks in prices or not
@@ -797,7 +798,7 @@ Public Class frmMain
         End If
     End Sub
 
-    ' If the text file is there, read the counter in it. Only show the splash on the first run and after 100 uses
+    ' If the text file is there, read the counter in it. Only show the splash on the first run and after every 100 uses
     Private Function ShowSupportSplash() As Boolean
         Dim ReturnValue As Boolean = True
 
@@ -805,7 +806,7 @@ Public Class frmMain
             Dim FilePath As String = Path.Combine(DynamicFilePath, "SupportCounter.txt")
 
             If File.Exists(FilePath) Then
-                ' See what the count is, if 100, 500, or 1000 then return true, else increment the counter
+                ' See what the count is
                 Dim fileReader As String
                 fileReader = My.Computer.FileSystem.ReadAllText(FilePath)
 
@@ -817,7 +818,8 @@ Public Class frmMain
                     Counter = 1
                 End If
 
-                If Counter <> 100 And Counter <> 500 And Counter <> 1000 Then
+                ' If the counter divides evenly by 100, show the form
+                If Counter Mod 100 <> 0 Then
                     ReturnValue = False
                     ' Increment counter
                     Call File.Delete(FilePath)
@@ -1487,10 +1489,11 @@ Public Class frmMain
         Dim readerBP As SQLiteDataReader
         Dim readerRelic As SQLiteDataReader
         Dim SQL As String
+        Dim AdjustedRuns As Integer = 0
 
         Dim TempLines As Integer = CInt(ManufacturingLines)
 
-        SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
+        SQL = "SELECT BLUEPRINT_NAME, TECH_LEVEL, PORTION_SIZE FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & BPID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -1501,6 +1504,7 @@ Public Class frmMain
         SelectedBPText = readerBP.GetString(0)
         AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
         BPTech = readerBP.GetInt32(1)
+        AdjustedRuns = CInt(Math.Ceiling(CInt(SentRuns) / readerBP.GetInt64(2)))
 
         If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
             ' Set the decryptor
@@ -1562,7 +1566,7 @@ Public Class frmMain
 
             ' Need to calculate the number of bps based on the bp
             If chkCalcAutoCalcT2NumBPs.Checked Then
-                txtBPNumBPs.Text = CStr(GetUsedNumBPs(BPID, BPTech, CInt(SentRuns), TempLines, CInt(NumBPs), BPDecryptor.RunMod))
+                txtBPNumBPs.Text = CStr(GetUsedNumBPs(BPID, BPTech, AdjustedRuns, TempLines, CInt(NumBPs), BPDecryptor.RunMod))
             End If
         Else
             ' T1
@@ -1597,7 +1601,7 @@ Public Class frmMain
         txtBPLines.Text = ManufacturingLines
         txtBPInventionLines.Text = LaboratoryLines
         txtBPRelicLines.Text = LaboratoryLines
-        txtBPRuns.Text = SentRuns
+        txtBPRuns.Text = CStr(AdjustedRuns)
 
         txtBPAddlCosts.Text = AddlCosts
         txtBPME.Text = MEValue
@@ -2866,7 +2870,7 @@ Public Class frmMain
                     SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, "
                     SQL = SQL & "CASE WHEN TE Is NULL THEN 0 ELSE TE END AS BP_TE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
-                    SQL = SQL & "WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
+                    SQL = SQL & "WHERE ITEM_NAME = '" & RemoveItemNameRuns(CurrentRow.SubItems(0).Text) & "'"
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsData = DBCommand.ExecuteReader
@@ -4079,7 +4083,7 @@ Tabs:
             End If
         End If
 
-        If Not FirstLoad Then
+        If Not FirstLoad And Not IgnoreRefresh Then
             Call RefreshBP()
         End If
 
@@ -5650,6 +5654,7 @@ Tabs:
         Dim ItemGroupID As Integer
         Dim ItemCategoryID As Integer
         Dim BPGroup As String
+        Dim Reaction As Boolean = False
 
         ' Set the number of runs to 1 if it's blank
         If Trim(txtBPRuns.Text) = "" Then
@@ -5744,10 +5749,12 @@ Tabs:
             RelicsLoaded = False
         End If
 
+        Reaction = IsReaction(ItemGroupID)
+
         ' If the previous bp was loaded from history and the current bp isn't loaded from history or event, then reset the facilities to default
         If PreviousBPfromHistory And SentFrom <> SentFromLocation.History And Not FromEvent Then
             PreviousBPfromHistory = False
-            If ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID Then
+            If Reaction Then
                 Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityReactions), FacilityView.FullControls, False)
             Else
                 Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
@@ -5806,7 +5813,11 @@ Tabs:
             OwnedBP = False
             OwnedBPRuns = 1
             If TempTech = 1 Then ' All T1
-                If SentFrom <> SentFromLocation.ManufacturingTab Then
+                If Reaction Then
+                    ' Reactions can't be researched
+                    txtBPME.Text = "0"
+                    txtBPTE.Text = "0"
+                ElseIf SentFrom <> SentFromLocation.ManufacturingTab Then
                     txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
                 ElseIf SentFrom = SentFromLocation.ShoppingList Then
@@ -5832,6 +5843,7 @@ Tabs:
             TempBPType = BPType.NotOwned
         End If
 
+        IgnoreRefresh = True
         If (TempTech <> 1 And TempBPType <> BPType.Original) Then
             Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
@@ -5858,6 +5870,8 @@ Tabs:
             txtBPME.Enabled = True
             txtBPTE.Enabled = True
         End If
+
+        IgnoreRefresh = False
 
         If TempTech <> 2 Then
             chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle

@@ -97,7 +97,7 @@ Public Class Materials
     End Sub
 
     ' Inserts a Single material into list
-    Public Sub InsertMaterial(ByVal SentMaterial As Material)
+    Public Sub InsertMaterial(ByVal SentMaterial As Material, Optional OverrideCost As Double = -1)
         Dim TempMat As Material
         Dim CloneMat As Material
 
@@ -118,6 +118,10 @@ Public Class Materials
             TempMat.AddQuantity(CloneMat.GetQuantity)
         Else
             TempMat = CloneMat
+        End If
+
+        If OverrideCost <> -1 Then
+            TempMat.SetTotalCost(OverrideCost)
         End If
 
         ' Add the material and update totals
@@ -276,7 +280,7 @@ Public Class Materials
                     '<a href=showinfo:3348>Warfare Link</a> modules
                     MatName = "<a href=showinfo:" & MaterialList(i).GetMaterialTypeID & ">" & MaterialList(i).GetMaterialName & "</a>"
                 Else
-                    MatName = MaterialList(i).GetMaterialName
+                    MatName = RemoveItemNameRuns(MaterialList(i).GetMaterialName)
                 End If
 
                 If MaterialList(i).GetMaterialGroup.Contains("|") Then

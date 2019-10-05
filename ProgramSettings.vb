@@ -4247,7 +4247,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(51) As Setting
+        Dim AssetWindowSettingsList(52) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location

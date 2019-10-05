@@ -52,7 +52,6 @@ Public Class Material
             CostPerItem = SentPrice
         End If
 
-        ' Set the cost and volume
         Call SetTotalCostVolume()
 
     End Sub
@@ -82,6 +81,14 @@ Public Class Material
         Call SetTotalCostVolume()
     End Sub
 
+    ' Sets the Total Cost of the material to the sent cost only if it's built
+    Public Sub SetBuildCost(ByVal BuildCost As Double)
+        If BuildItem Then
+            CostPerItem = BuildCost
+            Call SetTotalCostVolume()
+        End If
+    End Sub
+
     ' Sets the name with the sent name
     Public Sub SetName(ByVal SentName As String)
         TypeName = SentName
@@ -100,14 +107,6 @@ Public Class Material
     ' Sets the item as built
     Public Sub SetBuildItem(ByVal BuildValue As Boolean)
         BuildItem = BuildValue
-    End Sub
-
-    ' Sets the Total Cost of the material to the sent cost only if it's built
-    Public Sub SetBuildCost(ByVal BuildCost As Double)
-        If BuildItem Then
-            CostPerItem = BuildCost
-            Call SetTotalCostVolume()
-        End If
     End Sub
 
     ' Allow setting total cost
