@@ -326,8 +326,6 @@ Public Module Public_Variables
         Dim BuyType As String
     End Structure
 
-
-
     ' For updating the splash screen with what is going on
     Private Delegate Sub ProgressSetter(ByVal progress As String)
 
@@ -1781,7 +1779,6 @@ InvalidDate:
             ' Refresh the lists
             Call frmShop.RefreshLists()
         End If
-
     End Sub
 
     ' Deletes all the public structures from the stations table

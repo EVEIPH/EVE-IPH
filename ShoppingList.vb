@@ -1886,10 +1886,9 @@ Public Class BuiltItemList
         Dim ReturnList As New BuiltItemList
 
         For i = 0 To ItemList.Count - 1
-            If ItemList(i).ItemName = ItemName Then
+            If RemoveItemNameRuns(ItemList(i).ItemName) = ItemName Then
                 Call ReturnList.AddBuiltItem(ItemList(i))
             End If
-
         Next
 
         Return ReturnList

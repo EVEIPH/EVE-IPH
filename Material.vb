@@ -82,7 +82,7 @@ Public Class Material
     End Sub
 
     ' Sets the Total Cost of the material to the sent cost only if it's built
-    Public Sub SetBuildCost(ByVal BuildCost As Double)
+    Public Sub SetBuildCostPerItem(ByVal BuildCost As Double)
         If BuildItem Then
             CostPerItem = BuildCost
             Call SetTotalCostVolume()

@@ -793,7 +793,7 @@ Public Class Blueprint
 
             ' Add any items that are not built but could be to the raw list
             For j = 0 To ComponentMaterials.GetMaterialList.Count - 1
-                If ComponentMaterials.GetMaterialList(j).GetBuildItem = False And ComponentMaterials.GetMaterialList(j).GetItemME <> "-" Then
+                If ComponentMaterials.GetMaterialList(j).GetBuildItem = False And ComponentMaterials.GetMaterialList(j).GetItemME <> "-" And BuildBuy Then
                     Call RawMaterials.InsertMaterial(ComponentMaterials.GetMaterialList(j))
                 End If
             Next
@@ -844,7 +844,7 @@ Public Class Blueprint
         Dim TempNumBPs As Integer = 1
 
         Dim SaveExcessMats As Boolean = True
-        Dim BuildCost As Double = -1
+        Dim SingleRunBuildCost As Double = -1
 
         ' Select all materials to buid this BP
         SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_CATEGORY, ACTIVITY, "
@@ -1034,8 +1034,8 @@ Public Class Blueprint
                                     End If
                             End Select
 
-                            BuildCost = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity
-                            CurrentMaterial.SetBuildCost(BuildCost)
+                            SingleRunBuildCost = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity
+                            CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
 
                             ' Set the name of the material to include the build runs
                             CurrentMaterial.SetName(CurrentMaterial.GetMaterialName & " (Runs: " & CStr(BuildQuantity) & ")")
@@ -1079,7 +1079,8 @@ Public Class Blueprint
 
                         ' Use the build cost for the material if the item quantity doesn't match portion size, and insert all components into the build/buy list
                         If CurrentMatQuantity <> BuildQuantity Then
-                            ComponentMaterials.InsertMaterial(CurrentMaterial, BuildCost)
+                            ' Override the total build cost (which for this is the number of runs we need and the cost of each) mostly for items with portion sizes
+                            ComponentMaterials.InsertMaterial(CurrentMaterial, SingleRunBuildCost * BuildQuantity)
                         Else
                             ComponentMaterials.InsertMaterial(CurrentMaterial)
                         End If

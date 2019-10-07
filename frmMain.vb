@@ -1504,7 +1504,11 @@ Public Class frmMain
         SelectedBPText = readerBP.GetString(0)
         AddHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
         BPTech = readerBP.GetInt32(1)
-        AdjustedRuns = CInt(Math.Ceiling(CInt(SentRuns) / readerBP.GetInt64(2)))
+        If SentFrom = SentFromLocation.BlueprintTab Then
+            AdjustedRuns = CInt(Math.Ceiling(CInt(SentRuns) / readerBP.GetInt64(2)))
+        Else
+            AdjustedRuns = CInt(SentRuns)
+        End If
 
         If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
             ' Set the decryptor
@@ -14889,7 +14893,8 @@ ExitCalc:
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
 
-        SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
+        SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) "
+        SQL &= "WHERE TYPE_ID = " & CStr(TypeID) & " And REGION_ID = " & CStr(RegionID) & " "
         SQL = SQL & "GROUP BY IS_BUY_ORDER"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
@@ -14929,7 +14934,7 @@ ExitCalc:
         ' Build the where clause to look up data
         Dim AssetLocationFlagList As New List(Of String)
         ' First look up the location and flagID pairs - unique ID of asset locations
-        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ManufacturingTab) & " AND ID IN (" & IDString & ")"
+        SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ManufacturingTab) & " And ID IN (" & IDString & ")"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
@@ -14938,7 +14943,7 @@ ExitCalc:
                 ' If the flag is the base location, then we want all items at the location id
                 AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
             Else
-                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & " AND Flag = " & CStr(readerAssets.GetInt32(1)) & ")")
+                AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & " And Flag = " & CStr(readerAssets.GetInt32(1)) & ")")
             End If
         End While
 
@@ -14956,14 +14961,14 @@ ExitCalc:
                     ' exit if we get to the end of the list
                     Exit For
                 End If
-                TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " OR "
+                TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " Or "
             Next
 
             ' Strip final OR
             TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
 
             SQL = "SELECT SUM(Quantity) FROM ASSETS WHERE (" & TempAssetWhereList & ") "
-            SQL = SQL & " AND ASSETS.TypeID = " & CStr(TypeID) & " AND ID IN (" & IDString & ")"
+            SQL = SQL & " And ASSETS.TypeID = " & CStr(TypeID) & " And ID IN (" & IDString & ")"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerAssets = DBCommand.ExecuteReader
@@ -14985,8 +14990,9 @@ ExitCalc:
         Dim rsItems As SQLiteDataReader
 
         SQL = "SELECT SUM(runs * PORTION_SIZE) FROM INDUSTRY_JOBS, ALL_BLUEPRINTS WHERE INDUSTRY_JOBS.productTypeID = ALL_BLUEPRINTS.ITEM_ID "
-        SQL = SQL & "AND productTypeID = " & CStr(TypeID) & " AND status = 1 AND activityID = 1 "
-        'SQL = SQL & "AND INSTALLER_ID = " & CStr(SelectedCharacter.ID) & " "
+        SQL = SQL & "And productTypeID = " & CStr(TypeID) & " And status = 1 And activityID IN (1,11) "
+        'SQL = SQL & "And installerID = " & CStr(SelectedCharacter.ID) & " "
+
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
@@ -15084,7 +15090,7 @@ ExitCalc:
 
         ' See if we are looking at User Owned blueprints or All
         If rbtnCalcBPOwned.Checked Then
-            WhereClause = WhereClause & "AND USER_ID = " & SelectedCharacter.ID & " AND OWNED <> 0  "
+            WhereClause = WhereClause & "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
         End If
 
         SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
