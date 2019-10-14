@@ -371,7 +371,8 @@ Public Class ESI
     ''' <returns>Returns data response as a string</returns>
     Private Function GetPrivateAuthorizedData(ByVal URL As String, ByVal TokenData As ESITokenData,
                                               ByVal TokenExpiration As Date, ByRef CacheDate As Date,
-                                              ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False) As String
+                                              ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False,
+                                              Optional SinglePage As Boolean = False) As String
         Dim WC As New WebClient
         Dim Response As String = ""
 
@@ -445,6 +446,9 @@ Public Class ESI
                         TempResponse = WC.DownloadString(URL & "&page=" & CStr(i))
                         ' Combine with the original response - strip the end and leading brackets
                         Response = Response.Substring(0, Len(Response) - 1) & "," & TempResponse.Substring(1)
+                        If SinglePage Then
+                            Exit For
+                        End If
                     Next
                 End If
             End If
@@ -1287,7 +1291,7 @@ Public Class ESI
         Dim PriceData As String = ""
 
         PriceData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(StructureID) & "/" & TranquilityDataSource,
-                                                     FormatTokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors)
+                                                     FormatTokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors, True)
 
         If Not IsNothing(PriceData) Then
             Return True

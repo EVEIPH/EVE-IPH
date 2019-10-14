@@ -982,7 +982,7 @@ InvalidDate:
                     .BlueprintTypeID = SentBlueprint.GetTypeID
                     .TypeID = SentBlueprint.GetItemID
                     .Name = SentBlueprint.GetItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetItemData.GetQuantity
+                    .Runs = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
                     .ManufacturingFacilityMEModifier = SLFacility.BaseME ' For full item, components will be saved in blueprint class for ComponentList
@@ -1027,7 +1027,7 @@ InvalidDate:
                     .BlueprintTypeID = SentBlueprint.GetTypeID
                     .TypeID = SentBlueprint.GetItemID
                     .Name = SentBlueprint.GetItemData.GetMaterialName
-                    .Quantity = SentBlueprint.GetItemData.GetQuantity
+                    .Runs = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
                     .ManufacturingFacilityMEModifier = SLFacility.BaseME  ' For full item, components will be saved in blueprint class for ComponentList

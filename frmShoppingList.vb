@@ -152,7 +152,7 @@ Public Class frmShoppingList
         ' Built Item List for items we are building - width = 371 (21 for verticle scroll bar)
         lstBuild.Columns.Add("TypeID", 0, HorizontalAlignment.Center) ' always left allignment this column for some reason, so add a dummy
         lstBuild.Columns.Add("Build Item", 237, HorizontalAlignment.Left)
-        lstBuild.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
+        lstBuild.Columns.Add("Runs", 80, HorizontalAlignment.Right)
         lstBuild.Columns.Add("ME", 30, HorizontalAlignment.Right)
         lstBuild.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
         lstBuild.Columns.Add("Facility Location", 0, HorizontalAlignment.Left) 'Hidden to help build at component facility
@@ -531,7 +531,7 @@ Public Class frmShoppingList
                 Else
                     lstItem.SubItems.Add(ItemList(i).Name & " (" & ItemList(i).Relic & ")") ' Add relic name after the item
                 End If
-                lstItem.SubItems.Add(CStr(FormatNumber(ItemList(i).Quantity, 0)))
+                lstItem.SubItems.Add(CStr(FormatNumber(ItemList(i).Runs, 0)))
                 lstItem.SubItems.Add(CStr(ItemList(i).ItemME))
                 lstItem.SubItems.Add(CStr(ItemList(i).NumBPs))
                 lstItem.SubItems.Add(ItemList(i).BuildType)
@@ -2003,7 +2003,7 @@ Public Class frmShoppingList
                         ShopListItem.Name = SelectedItem
                         ShopListItem.Relic = ""
                     End If
-                    ShopListItem.Quantity = CLng(lstItems.SelectedItems(i).SubItems(2).Text)
+                    ShopListItem.Runs = CLng(lstItems.SelectedItems(i).SubItems(2).Text)
                     ShopListItem.ItemME = CInt(lstItems.SelectedItems(i).SubItems(3).Text)
                     ShopListItem.ItemTE = CInt(CBool(lstItems.SelectedItems(i).SubItems(12).Text))
                     ShopListItem.NumBPs = CInt(lstItems.SelectedItems(i).SubItems(4).Text)
@@ -2339,13 +2339,13 @@ Public Class frmShoppingList
                         ShopListItem.Name = TempName
                         ShopListItem.Relic = ""
                     End If
-                    ShopListItem.Quantity = CLng(CurrentRow.SubItems(2).Text)
+                    ShopListItem.Runs = CLng(CurrentRow.SubItems(2).Text)
                     ShopListItem.ItemME = CInt(CurrentRow.SubItems(3).Text)
                     ShopListItem.ItemTE = CInt(CurrentRow.SubItems(15).Text)
                     ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
                     ShopListItem.BuildType = CurrentRow.SubItems(5).Text
                     ShopListItem.Decryptor = CurrentRow.SubItems(6).Text
-                    ShopListItem.InventedRunsPerBP = CInt(Math.Ceiling(ShopListItem.Quantity / ShopListItem.NumBPs))
+                    ShopListItem.InventedRunsPerBP = CInt(Math.Ceiling(ShopListItem.Runs / ShopListItem.NumBPs))
                     ShopListItem.ManufacturingFacilityLocation = CurrentRow.SubItems(7).Text
 
                     ' Update the full shopping list
