@@ -4591,40 +4591,32 @@ Tabs:
 
             ' Adjust the runs for porition size needed and use that instead
             Dim BPID As Long = rsBP.GetInt64(0)
-            Dim Runs As Long
-
-            If lstBPComponentMats.SelectedItems(0).BackColor = lblBPBuildColor.BackColor Then
-                ' They are building this, so use the runs sent and don't divide by portion size
-                Runs = CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text)
-            Else
-                ' They are buying, so portion size will determine runs along with the number of items
-                Runs = CLng(Math.Ceiling(CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text) / rsBP.GetInt32(1)))
-            End If
+            Dim Runs As Long = CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text)
 
             Dim GroupID As Integer = rsBP.GetInt32(2)
-                Dim CategoryID As Integer = rsBP.GetInt32(3)
-                Dim BPName As String = rsBP.GetString(4
-                                                  )
-                rsBP.Close()
+            Dim CategoryID As Integer = rsBP.GetInt32(3)
+            Dim BPName As String = rsBP.GetString(4
+                                                )
+            rsBP.Close()
 
-                Dim SelectedActivity As String = ""
-                If BPName.Contains("Reaction Formula") Then
-                    SelectedActivity = ManufacturingFacility.ActivityReactions
-                Else
-                    SelectedActivity = ManufacturingFacility.ActivityManufacturing
-                End If
-
-                With BPTabFacility
-                    Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
-                                    .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
-                                    .GetFacility(ProductionType.CapitalComponentManufacturing),
-                                    .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
-                                    chkBPTaxes.Checked, chkBPBrokerFees.Checked,
-                                    lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
-                                    CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
-                                    "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
-                End With
+            Dim SelectedActivity As String = ""
+            If BPName.Contains("Reaction Formula") Then
+                SelectedActivity = ManufacturingFacility.ActivityReactions
+            Else
+                SelectedActivity = ManufacturingFacility.ActivityManufacturing
             End If
+
+            With BPTabFacility
+                Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
+                                .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
+                                .GetFacility(ProductionType.CapitalComponentManufacturing),
+                                .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
+                                chkBPTaxes.Checked, chkBPBrokerFees.Checked,
+                                lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
+                                CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
+                                "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
+            End With
+        End If
 
     End Sub
 
@@ -4821,7 +4813,8 @@ Tabs:
             cmbBPBlueprintSelection.Text = SelectedBPText
             lstBPList.Visible = False
             Call SelectBlueprint()
-            cmbBPBlueprintSelection.Focus()
+            cmbBPBlueprintSelection.SelectAll()
+            txtBPRuns.Focus()
         End If
     End Sub
 

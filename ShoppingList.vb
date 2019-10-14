@@ -66,7 +66,7 @@ Public Class ShoppingList
         Dim FoundBuildItem As BuiltItem
         Dim TempBuiltItem As New BuiltItem
         Dim UpdatedRunQuantity As Long
-        Dim BuiltComponents As New Materials
+        Dim BuiltComponents As New BuiltItemList
 
         ' First, see if there are any other items in the list, if this is the only one and the quantity is 0 then just clear all lists and leave
         If UpdateItemQuantity <= 0 And TotalItemList.Count = 1 And TotalItemList(0).Name = SentItem.Name Then
@@ -87,51 +87,23 @@ Public Class ShoppingList
                     For i = 0 To .GetBuiltItemList.Count - 1
                         ' Make sure the item exists (might have been deleted already in the main list) before updating
                         ' Find the built item in the build list for this item
-                        TempBuiltItem.ItemTypeID = .GetBuiltItemList(i).ItemTypeID
-                        TempBuiltItem.BuildME = CInt(.GetBuiltItemList(i).BuildME)
-                        TempBuiltItem.FacilityLocation = .GetBuiltItemList(i).FacilityLocation
-
-                        Call TotalBuildList.SetItemToFind(TempBuiltItem)
+                        Call TotalBuildList.SetItemToFind(.GetBuiltItemList(i))
                         FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
 
                         If FoundBuildItem IsNot Nothing Then
                             ' Copy current built item info
-                            With FoundBuildItem
-                                TempBuiltItem = New BuiltItem
-                                TempBuiltItem.BPTypeID = .BPTypeID
-                                TempBuiltItem.ItemTypeID = .ItemTypeID
-                                TempBuiltItem.ItemName = .ItemName
-                                TempBuiltItem.ItemQuantity = .ItemQuantity
-                                TempBuiltItem.UsedQuantity = .UsedQuantity
-                                TempBuiltItem.ItemVolume = .ItemVolume
-                                TempBuiltItem.FacilityMEModifier = .FacilityMEModifier
-                                TempBuiltItem.FacilityLocation = .FacilityLocation
-                                TempBuiltItem.FacilityType = .FacilityType
-                                TempBuiltItem.FacilityBuildType = .FacilityBuildType
-                                TempBuiltItem.IncludeActivityCost = .IncludeActivityCost
-                                TempBuiltItem.IncludeActivityTime = .IncludeActivityTime
-                                TempBuiltItem.IncludeActivityUsage = .IncludeActivityUsage
-                                TempBuiltItem.BPRuns = .BPRuns
-                                TempBuiltItem.ComponentBuildList = .ComponentBuildList
-                                TempBuiltItem.PortionSize = .PortionSize
+                            TempBuiltItem = New BuiltItem
+                            TempBuiltItem = CType(FoundBuildItem.Clone, BuiltItem)
 
-                                TempBuiltItem.BuildME = .BuildME
-                                TempBuiltItem.BuildTE = .BuildTE
+                            ' Use group name as facility location
+                            Dim TempMat As New Material(TempBuiltItem.ItemTypeID, TempBuiltItem.ItemName, TempBuiltItem.FacilityLocation, TempBuiltItem.ItemQuantity,
+                                                        TempBuiltItem.ItemVolume, 0, CStr(TempBuiltItem.BuildME), CStr(TempBuiltItem.BuildTE), True)
 
-                                ' If we are building a component, then we are buying all the mats for it so only use the buy list for mats to update
-                                TempBuiltItem.BuildMaterials.InsertMaterialList(.BuildMaterials.GetMaterialList)
+                            ' Figure out how many runs we need to do of this component item for the updated quantity of the main item
+                            UpdatedRunQuantity = GetUpdatedQuantity("Build", FoundItem, UpdateItemQuantity, TempMat, True, TempBuiltItem.PortionSize)
 
-                                ' use group name as facility location
-                                Dim TempMat As New Material(.ItemTypeID, .ItemName, .FacilityLocation, .ItemQuantity, .ItemVolume, 0,
-                                                            CStr(.BuildME), CStr(.BuildTE), True)
-
-                                ' Figure out how many runs we need to do of this component item for the updated quantity of the main item
-                                UpdatedRunQuantity = GetUpdatedQuantity("Build", FoundItem, UpdateItemQuantity, TempMat, BuiltComponents, True, .PortionSize)
-
-                                ' Update built item name with runs we did to get this quantity
-                                .ItemName = UpdateItemNamewithRuns(.ItemName, CLng(Math.Ceiling(UpdatedRunQuantity / .PortionSize)))
-
-                            End With
+                            ' Update built item name with runs we did to get this quantity
+                            TempBuiltItem.ItemName = UpdateItemNamewithRuns(TempBuiltItem.ItemName, CLng(Math.Ceiling(UpdatedRunQuantity / TempBuiltItem.PortionSize)))
 
                             ' Need to update to the quantity sent in the Build List
                             Call UpdateShoppingBuiltItemQuantity(TempBuiltItem, UpdatedRunQuantity)
@@ -141,32 +113,6 @@ Public Class ShoppingList
                 End With
             End If
 
-            ' Now if there are any components to make the built items above, adjust the main built list with those too
-            Dim TempBuiltList As New BuiltItemList
-            For Each BC In BuiltComponents.GetMaterialList
-                ' Find the built item in the build list for this item
-                For Each BI In TotalBuildList.GetBuiltItemList
-                    If BI.ItemTypeID = BC.GetMaterialTypeID Then
-                        ' Found it, now adjust the quantity by adding what we have in built components
-                        TempBuiltItem = New BuiltItem
-                        TempBuiltItem = BI
-                        TempBuiltItem.ItemQuantity = BC.GetQuantity + BI.ItemQuantity
-                        ' Update built item name with runs we did to get this quantity
-                        TempBuiltItem.ItemName = UpdateItemNamewithRuns(TempBuiltItem.ItemName, CLng(Math.Ceiling(TempBuiltItem.ItemQuantity / TempBuiltItem.PortionSize)))
-
-                        ' Insert into list
-                        Call TempBuiltList.AddBuiltItem(TempBuiltItem)
-                    End If
-                Next
-            Next
-
-            ' Finally update the main list
-            For Each BI In TempBuiltList.GetBuiltItemList
-                Call ProcessBuiltItem(FoundItem, BI.ItemQuantity, BI)
-            Next
-
-            Dim TempBuiltItems As New Materials
-
             ' Now look at the materials
             If Not IsNothing(FoundItem.BPMaterialList) Then
                 With FoundItem.BPMaterialList
@@ -175,7 +121,7 @@ Public Class ShoppingList
                         If .GetMaterialList(i).GetBuildItem = False Then
                             ' Make sure the item exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
-                                UpdatedRunQuantity = GetUpdatedQuantity("Buy", FoundItem, UpdateItemQuantity, .GetMaterialList(i), TempBuiltItems, False)
+                                UpdatedRunQuantity = GetUpdatedQuantity("Buy", FoundItem, UpdateItemQuantity, .GetMaterialList(i), False)
                                 ' Need to update to the quantity sent in the Buy list
                                 Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                             End If
@@ -197,7 +143,7 @@ Public Class ShoppingList
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
                                 ' Need to update to the quantity sent in the Buy List
-                                UpdatedRunQuantity = GetUpdatedQuantity("Invention", FoundItem, UpdateItemQuantity, .GetMaterialList(i), TempBuiltItems, False)
+                                UpdatedRunQuantity = GetUpdatedQuantity("Invention", FoundItem, UpdateItemQuantity, .GetMaterialList(i), False)
 
                                 Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                                 ' Update this material in the item's invention list for copy/paste function
@@ -226,7 +172,7 @@ Public Class ShoppingList
                             ' Make sure the material exists (might have been deleted already in the main list) before updating
                             If Not IsNothing(TotalBuyList.SearchListbyName(.GetMaterialList(i).GetMaterialName)) Then
                                 ' Need to update to the quantity sent in the Buy List
-                                UpdatedRunQuantity = GetUpdatedQuantity("Copying", FoundItem, UpdateItemQuantity, .GetMaterialList(i), TempBuiltItems, False)
+                                UpdatedRunQuantity = GetUpdatedQuantity("Copying", FoundItem, UpdateItemQuantity, .GetMaterialList(i), False)
 
                                 Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedRunQuantity)
                                 ' Update this material in the item's invention list for copy/paste function
@@ -272,7 +218,7 @@ Public Class ShoppingList
     End Sub
 
     ' Removes or updates a built item quantity from the build list and its materials from the material list - i.e. remove particle accelerator and raw mats from item - Hammerhead II
-    Public Sub UpdateShoppingBuiltItemQuantity(ByVal SentItem As BuiltItem, ByVal UpdateItemQuantity As Long)
+    Public Sub UpdateShoppingBuiltItemQuantity(ByRef SentItem As BuiltItem, ByVal UpdateItemQuantity As Long)
         Dim FoundItem As BuiltItem
         Dim UpdatedQuantity As Long ' This is the final mat quantity for updating the shopping buy/build list ammount
         Dim RefMatQuantity As Long ' This is the reference for materials we send in the update quantity - will be the mat quantity for that built item
@@ -281,9 +227,10 @@ Public Class ShoppingList
         Dim UpdateItemMatList As New Materials
         Dim UpdateBuiltItemMatList As New Materials
         Dim UpdateBuildList As New List(Of BuiltItem)
+        Dim RefBuildList As New List(Of BuiltItem)
         Dim InsertMat As Material
         Dim InsertBuiltItem As New BuiltItem
-        Dim BuiltComponentList As New Materials
+        Dim BuiltComponentList As New List(Of BuiltItem)
         Dim ShoppingItem As New ShoppingListItem
 
         Dim SQL As String = ""
@@ -334,7 +281,7 @@ Public Class ShoppingList
                             ShoppingItem.NumBPs = 1 ' Built items (components) are always one bp for now
 
                             ' Get the new quantity for each material to build this item - which will be in the buy list
-                            UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, .GetMaterialList(i), BuiltComponentList, False, 1, RefMatQuantity)
+                            UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, .GetMaterialList(i), False, 1, RefMatQuantity)
 
                             ' Need to update to the quantity sent in the Buy List
                             Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
@@ -359,80 +306,102 @@ Public Class ShoppingList
 
             ' Now update the materials from any component items that this item may have built for the found item
             For i = 0 To FoundItem.ComponentBuildList.Count - 1
-                With FoundItem.ComponentBuildList(i)
-                    ' Look up how many runs of the component we need
-                    If UpdateItemQuantity = 0 Then
-                        ' Need to update the quantity in the build list to delete the total we needed here - so what's in build list now minus this quantity
-                        Dim TempBuiltItem As New BuiltItem
-                        Dim FoundBuildItem As New BuiltItem
-                        ' Look up current built items
-                        TempBuiltItem.ItemTypeID = .ItemTypeID
-                        TempBuiltItem.ItemName = .ItemName
-                        TempBuiltItem.BuildME = .BuildME
-                        TempBuiltItem.FacilityLocation = .FacilityLocation
-                        TempBuiltItem.FacilityBuildType = .FacilityBuildType
-                        TempBuiltItem.PortionSize = .PortionSize
+                Dim RefBuiltItem As New BuiltItem
 
-                        Call TotalBuildList.SetItemToFind(TempBuiltItem)
-                        FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
+                ' Look up how many runs of the component we need
+                If UpdateItemQuantity = 0 Then
+                    ' Need to update the quantity in the build list to delete the total we needed here - so what's in build list now minus this quantity
+                    Dim FoundBuildItem As New BuiltItem
+                    ' Look up current built items
+                    Call TotalBuildList.SetItemToFind(FoundItem.ComponentBuildList(i))
+                    FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
 
-                        If FoundBuildItem IsNot Nothing Then
-                            UpdatedQuantity = FoundBuildItem.ItemQuantity - .ItemQuantity
-                        End If
+                    If FoundBuildItem IsNot Nothing Then
+                        UpdatedQuantity = FoundBuildItem.ItemQuantity - FoundItem.ComponentBuildList(i).ItemQuantity
+                    End If
+
+                    If UpdatedQuantity < 0 Then
+                        UpdatedQuantity = 0
+                    End If
+
+                Else
+                    ' Need to calculate the new amount
+                    SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
+                    SQL = SQL & "WHERE BLUEPRINT_ID = " & FoundItem.BPTypeID
+                    SQL = SQL & " AND ACTIVITY IN (1,11)"
+                    SQL = SQL & " AND MATERIAL_ID = " & FoundItem.ComponentBuildList(i).ItemTypeID
+
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMatCheck = DBCommand.ExecuteReader
+
+                    If rsMatCheck.Read Then
+                        ' Now adjust the quantity based on the ME bonus and runs for the original bp
+                        Dim Runs As Long = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.PortionSize))
+                        Dim MEBonus As Double = GetMEBonus(FoundItem.BuildME, FoundItem.FacilityMEModifier)
+                        Dim TempBuildQuantity As Long = 0
+
+                        RefBuiltItem = CType(FoundItem.ComponentBuildList(i).Clone, BuiltItem)
+
+                        Call TotalBuildList.SetItemToFind(RefBuiltItem)
+                        Dim ListMatQuantity As Long = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem).ItemQuantity
+
+                        TempBuildQuantity = CLng(Math.Max(Runs, Math.Ceiling(Math.Round(Runs * rsMatCheck.GetInt64(0) * MEBonus, 2))))
+
+                        ' Figure out what we needed prior to update
+                        Dim OldMatQuantity As Long = CLng(Math.Max(SentItem.BPRuns, Math.Ceiling(Math.Round(SentItem.BPRuns * rsMatCheck.GetInt64(0) * MEBonus, 2))))
+
+                        ' Remove what was in the list prior (old mat quantity)
+                        UpdatedQuantity = ListMatQuantity - OldMatQuantity
 
                         If UpdatedQuantity < 0 Then
                             UpdatedQuantity = 0
                         End If
 
-                    Else
-                        SQL = "SELECT PORTION_SIZE FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID IN "
-                        SQL = SQL & "(SELECT DISTINCT BLUEPRINT_ID FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & FoundItem.ComponentBuildList(i).ItemTypeID & " AND ACTIVITY IN (1,11)) "
+                        ' Add what we need now
+                        UpdatedQuantity += TempBuildQuantity
 
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsMatCheck = DBCommand.ExecuteReader
-
-                        If rsMatCheck.Read Then
-                            UpdatedQuantity = rsMatCheck.GetInt32(0)
-                            Application.DoEvents()
-                        End If
+                        ' Save what we need in the sent item reference
+                        RefBuiltItem.ItemQuantity = TempBuildQuantity
+                        RefBuiltItem.BPRuns = CLng(Math.Ceiling(TempBuildQuantity / RefBuiltItem.PortionSize))
+                        RefBuiltItem.ItemName = UpdateItemNamewithRuns(RefBuiltItem.ItemName, RefBuiltItem.BPRuns)
 
                     End If
+                    rsMatCheck.Close()
+                End If
 
-                    Call UpdateShoppingBuiltItemQuantity(FoundItem.ComponentBuildList(i), UpdatedQuantity)
+                ' Update this component in the main built item list with the new quantity
+                Call UpdateShoppingBuiltItemQuantity(FoundItem.ComponentBuildList(i), UpdatedQuantity)
 
-                End With
+                ' Add the item with the new quantity to the reference build list
+                UpdateBuildList.Add(RefBuiltItem)
+
             Next
 
             ' Save the base data
-            UpdateItem.ItemTypeID = FoundItem.ItemTypeID
-            UpdateItem.BuildME = FoundItem.BuildME
-            UpdateItem.ItemName = FoundItem.ItemName
-            UpdateItem.ItemVolume = FoundItem.ItemVolume
-            UpdateItem.FacilityMEModifier = FoundItem.FacilityMEModifier
-            UpdateItem.FacilityLocation = FoundItem.FacilityLocation
-            UpdateItem.FacilityType = FoundItem.FacilityType
-            UpdateItem.FacilityBuildType = FoundItem.FacilityBuildType
-            UpdateItem.IncludeActivityCost = FoundItem.IncludeActivityCost
-            UpdateItem.IncludeActivityTime = FoundItem.IncludeActivityTime
-            UpdateItem.IncludeActivityUsage = FoundItem.IncludeActivityUsage
-            UpdateItem.PortionSize = FoundItem.PortionSize
+            UpdateItem = New BuiltItem
+            UpdateItem = CType(FoundItem.Clone, BuiltItem)
+            Dim BPRuns As Long = CLng(Math.Ceiling(UpdateItemQuantity / FoundItem.PortionSize))
 
             ' Update built item name with runs we did to get this quantity
-            UpdateItem.ItemName = UpdateItemNamewithRuns(UpdateItem.ItemName, CLng(Math.Ceiling(UpdateItemQuantity / FoundItem.PortionSize)))
+            UpdateItem.ItemName = UpdateItemNamewithRuns(UpdateItem.ItemName, BPRuns)
 
-            ' Update the new built list quantity
+            ' Update the new built list quantity and runs
             UpdateItem.ItemQuantity = UpdateItemQuantity
+            UpdateItem.BPRuns = BPRuns
             ' Update the new built list material list, with updated quantities
             UpdateItem.BuildMaterials = UpdateItemMatList
             ' Update the component build list as well with updated quantities
             UpdateItem.ComponentBuildList = UpdateBuildList
 
-            ' Update the quantity of the build list item
+            ' Update the data of the build list item
             Call TotalBuildList.RemoveBuiltItem(FoundItem) ' Remove the old one
 
             If UpdateItemQuantity <> 0 Then
                 Call TotalBuildList.AddBuiltItem(UpdateItem) ' Add the updated one
             End If
+
+            ' Update the sent item reference list
+            SentItem.ComponentBuildList = RefBuildList
 
         End If
 
@@ -501,58 +470,10 @@ Public Class ShoppingList
 
     End Sub
 
-    ' Process the built item in the built item list
-    Public Sub ProcessBuiltItem(ByVal FoundItem As ShoppingListItem, ByVal UpdateItemQuantity As Long, ByVal OriginalBuiltItem As BuiltItem)
-        Dim FoundBuildItem As BuiltItem
-        Dim TempBuiltItem As New BuiltItem
-
-        ' Make sure the item exists (might have been deleted already in the main list) before updating
-        ' Find the built item in the build list for this item
-        TempBuiltItem.ItemTypeID = OriginalBuiltItem.ItemTypeID
-        TempBuiltItem.BuildME = CInt(OriginalBuiltItem.BuildME)
-        TempBuiltItem.FacilityLocation = OriginalBuiltItem.FacilityLocation
-
-        Call TotalBuildList.SetItemToFind(TempBuiltItem)
-        FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
-
-        If FoundBuildItem IsNot Nothing Then
-            ' Copy current built item info
-            With FoundBuildItem
-                TempBuiltItem = New BuiltItem
-                TempBuiltItem.BPTypeID = .BPTypeID
-                TempBuiltItem.ItemTypeID = .ItemTypeID
-                TempBuiltItem.ItemName = .ItemName
-                TempBuiltItem.ItemQuantity = .ItemQuantity
-                TempBuiltItem.UsedQuantity = .UsedQuantity
-                TempBuiltItem.ItemVolume = .ItemVolume
-                TempBuiltItem.FacilityMEModifier = .FacilityMEModifier
-                TempBuiltItem.FacilityLocation = .FacilityLocation
-                TempBuiltItem.FacilityType = .FacilityType
-                TempBuiltItem.FacilityBuildType = .FacilityBuildType
-                TempBuiltItem.IncludeActivityCost = .IncludeActivityCost
-                TempBuiltItem.IncludeActivityTime = .IncludeActivityTime
-                TempBuiltItem.IncludeActivityUsage = .IncludeActivityUsage
-                TempBuiltItem.BPRuns = .BPRuns
-                TempBuiltItem.ComponentBuildList = .ComponentBuildList
-                TempBuiltItem.PortionSize = .PortionSize
-
-                TempBuiltItem.BuildME = .BuildME
-                TempBuiltItem.BuildTE = .BuildTE
-
-                ' If we are building a component, then we are buying all the mats for it so only use the buy list for mats to update
-                TempBuiltItem.BuildMaterials.InsertMaterialList(.BuildMaterials.GetMaterialList)
-
-                ' Need to update to the quantity sent in the Build List
-                Call UpdateShoppingBuiltItemQuantity(TempBuiltItem, UpdateItemQuantity)
-
-                ' Update built item name with runs we did to get this quantity
-                .ItemName = UpdateItemNamewithRuns(.ItemName, CLng(Math.Ceiling(UpdateItemQuantity / .PortionSize)))
-
-            End With
-
-        End If
-
-    End Sub
+    ' Calculates the MEBonus based on inputs
+    Private Function GetMEBonus(ItemME As Double, FacilityMEModifier As Double) As Double
+        Return (1 - (ItemME / 100)) * FacilityMEModifier
+    End Function
 
     ' Calculates the updated item quantity for updating lists
     ' ProcessingType = Invention/RE/Build/Buy
@@ -564,7 +485,7 @@ Public Class ShoppingList
     ' ShoppingItem = flag if it's a built item (uses quantity) or a main shopping item from the list (uses runs for quantity)
     Private Function GetUpdatedQuantity(ByVal ProcessingType As String, ByVal CurrentItem As ShoppingListItem,
                                         ByVal NewMaterialQuantity As Long, ByVal UpdateMaterial As Material,
-                                        ByRef BuiltComponents As Materials, ByVal ShoppingItem As Boolean,
+                                        ByVal ShoppingItem As Boolean,
                                         Optional ByVal UpdateMaterialPortionSize As Long = 1,
                                         Optional ByRef RefMatQuantity As Long = 0) As Long
         Dim UpdatedQuantity As Long = 0
@@ -572,6 +493,7 @@ Public Class ShoppingList
         Dim ListMatQuantity As Long
         Dim NumInventionJobs As Integer
         Dim NewMatQuantity As Long = 0
+        Dim OldMatQuantity As Long = 0
 
         ' Set up the ME bonus and then calculate the new material quantity
         Dim MEBonus As Double = 0
@@ -603,8 +525,7 @@ Public Class ShoppingList
         End Select
 
         ' Look up the single run quantity for the material
-        SQL = "SELECT QUANTITY, CASE WHEN PORTION_SIZE IS NULL THEN 1 ELSE PORTION_SIZE END "
-        SQL &= "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ALL_BLUEPRINTS ON ALL_BLUEPRINTS.ITEM_ID = ALL_BLUEPRINT_MATERIALS.MATERIAL_ID "
+        SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ALL_BLUEPRINTS ON ALL_BLUEPRINTS.ITEM_ID = ALL_BLUEPRINT_MATERIALS.MATERIAL_ID "
         SQL &= "WHERE PRODUCT_ID = " & ProductIDSQL & " AND MATERIAL_ID = " & UpdateMaterial.GetMaterialTypeID
         SQL &= ActivitySQL
 
@@ -618,7 +539,7 @@ Public Class ShoppingList
             ' This item isn't required to build this bp, so exit
             rsMatQuantity.Close()
             RefMatQuantity = 0
-            Return NewMaterialQuantity
+            Return UpdateMaterial.GetQuantity
         End If
 
         ' Calc out final mat quantity
@@ -629,7 +550,7 @@ Public Class ShoppingList
             ' For invention materials, find out how many mats we need by calcuating the new value from the item runs and invention jobs per item
             If NewMaterialQuantity <= 0 Then
                 ' Easy case, just remove the update material quantity (add the negative)
-                NewMatQuantity = 0 'ListMatQuantity + NewItemQuantity
+                NewMatQuantity = 0
             Else
                 ' Here, we need to figure out how many items per run to remove (3 inv mats per job, and remove 2 items, then remove 6 invention mats)
                 NumInventionJobs = CInt(Math.Ceiling(CurrentItem.AvgInvRunsforSuccess * Math.Ceiling(ItemBPRuns / CurrentItem.InventedRunsPerBP)))
@@ -641,9 +562,6 @@ Public Class ShoppingList
 
         ElseIf ProcessingType = "Buy" Or ProcessingType = "Build" Then
             Dim UpdatedItemNumBPs As Integer = 0
-
-            ' Set the ME of the main item to calculate how many runs we need of the component
-            MEBonus = (1 - (CurrentItem.ItemME / 100)) * CurrentItem.ManufacturingFacilityMEModifier
 
             ' Figure out how many bps for the component we need 
             If CurrentItem.InventionJobs <> 0 Then
@@ -702,6 +620,9 @@ Public Class ShoppingList
 
             Next
 
+            ' Set the ME of the main item to calculate how many runs we need of the component
+            MEBonus = GetMEBonus(CurrentItem.ItemME, CurrentItem.ManufacturingFacilityMEModifier)
+
             ' Now for each bp, calc the runs with the ME value - only do this for buy
             If ProcessingType = "Buy" Then
                 For i = 0 To BlueprintsRunList.Count - 1
@@ -724,6 +645,9 @@ Public Class ShoppingList
             ' Get the quantity from the correct list so we have the right total materials of all items using this material
             If ProcessingType = "Buy" Then
                 ListMatQuantity = TotalBuyList.SearchListbyName(UpdateMaterial.GetMaterialName).GetQuantity
+                ' Figure out what we needed prior to update
+                Dim OldRuns As Long = CLng(Math.Ceiling(CurrentItem.Quantity / CurrentItem.PortionSize))
+                OldMatQuantity = CLng(Math.Max(OldRuns, Math.Ceiling(Math.Round(OldRuns * SingleRunQuantity * MEBonus, 2))))
             ElseIf ProcessingType = "Build" Then
                 Dim TempBuildItem As New BuiltItem
                 TempBuildItem.ItemTypeID = UpdateMaterial.GetMaterialTypeID
@@ -731,6 +655,8 @@ Public Class ShoppingList
                 TempBuildItem.FacilityLocation = UpdateMaterial.GetMaterialGroup
                 Call TotalBuildList.SetItemToFind(TempBuildItem)
                 ListMatQuantity = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem).ItemQuantity
+                ' Figure out what we needed prior to update
+                OldMatQuantity = CLng(Math.Max(CurrentItem.Quantity, Math.Ceiling(Math.Round(CurrentItem.Quantity * SingleRunQuantity * MEBonus, 2))))
             End If
         End If
 
@@ -749,32 +675,12 @@ Public Class ShoppingList
             UpdatedQuantity = NewMatQuantity
         End If
 
-        ' Decrease the mats in the shopping list from what we had, then add what we now need
-        UpdatedQuantity = (ListMatQuantity - UpdateMaterial.GetQuantity) + UpdatedQuantity
+        ' Decrease the mats in the shopping list from what we needed before then add what we need now
+        UpdatedQuantity = (ListMatQuantity - OldMatQuantity) + UpdatedQuantity
 
         ' If the update caused it go below zero, reset
         If UpdatedQuantity < 0 Then
             UpdatedQuantity = 0
-        End If
-
-        ' Finally look up any components for the item - CHECK THIS, NEED TO ADJUST TO RUNS OR ITEMS
-        If ProcessingType <> "Invention" And ProcessingType <> "Copying" Then
-            SQL = "SELECT MATERIAL_ID, MATERIAL, QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
-            SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS ON ALL_BLUEPRINTS.ITEM_ID = ALL_BLUEPRINT_MATERIALS.MATERIAL_ID "
-            SQL = SQL & "WHERE PRODUCT_ID = " & UpdateMaterial.GetMaterialTypeID
-            SQL = SQL & " AND ACTIVITY IN (1,11) AND ALL_BLUEPRINTS.BLUEPRINT_ID IS NOT NULL"
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsMatQuantity = DBCommand.ExecuteReader
-
-            While rsMatQuantity.Read
-                ' Find out how many runs of this component we are doing and add the material and quantity * those runs
-                Dim Runs As Long = CInt(Math.Ceiling(UpdatedQuantity / UpdateMaterialPortionSize))
-                Dim TempMat As New Material(rsMatQuantity.GetInt64(0), rsMatQuantity.GetString(1), "", rsMatQuantity.GetInt64(2) * Runs, 0, 0, "0", "0", True)
-                Call BuiltComponents.InsertMaterial(TempMat) ' reference for processing in calling function
-            End While
-
-            rsMatQuantity.Close()
         End If
 
         Return UpdatedQuantity
@@ -936,16 +842,9 @@ Public Class ShoppingList
             If Not IsNothing(SentBuildList.GetBuiltItemList) Then
                 ' Loop through everything and find all the items to update
                 For i = 0 To SentBuildList.GetBuiltItemList.Count - 1
-                    Dim TempBuiltItem As New BuiltItem
                     Dim FoundBuildItem As New BuiltItem
                     ' Look up current built items
-                    TempBuiltItem.ItemTypeID = SentBuildList.GetBuiltItemList(i).ItemTypeID
-                    TempBuiltItem.ItemName = SentBuildList.GetBuiltItemList(i).ItemName
-                    TempBuiltItem.BuildME = SentBuildList.GetBuiltItemList(i).BuildME
-                    TempBuiltItem.FacilityLocation = SentBuildList.GetBuiltItemList(i).FacilityLocation
-                    TempBuiltItem.FacilityBuildType = SentBuildList.GetBuiltItemList(i).FacilityBuildType
-
-                    Call TotalBuildList.SetItemToFind(TempBuiltItem)
+                    Call TotalBuildList.SetItemToFind(CType(SentBuildList.GetBuiltItemList(i).Clone, BuiltItem))
                     FoundBuildItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
 
                     ' Rebuild with new quantity
@@ -955,15 +854,19 @@ Public Class ShoppingList
                             ' Get the component facility
                             Dim TempComponentFacility As New IndustryFacility
                             Dim TempReactionFacility As New IndustryFacility
+                            Dim TempManufacturingFacility As New IndustryFacility
 
                             ' Set the component facility (use BP tab for now)
+                            TempManufacturingFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Manufacturing)
                             TempComponentFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
                             TempReactionFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
 
                             ' Re-run with new quantity
-                            Dim TempBP As New Blueprint(.BPTypeID, FoundBuildItem.ItemQuantity + .ItemQuantity, .BuildME, .BuildTE, 1,
+                            Dim NewRuns As Integer = CInt(Math.Ceiling((FoundBuildItem.ItemQuantity + .ItemQuantity) / FoundBuildItem.PortionSize))
+
+                            Dim TempBP As New Blueprint(.BPTypeID, NewRuns, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
-                               TempComponentFacility, TempComponentFacility, TempComponentFacility, TempReactionFacility, True)
+                               TempManufacturingFacility, TempComponentFacility, TempComponentFacility, TempReactionFacility, True)
 
                             Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
@@ -973,8 +876,8 @@ Public Class ShoppingList
                             InsertBuildItem.BuildMaterials = TempBP.GetRawMaterials
                             InsertBuildItem.BPTypeID = TempBP.GetTypeID
                             InsertBuildItem.ItemTypeID = TempBP.GetItemID
-                            InsertBuildItem.ItemName = TempBP.GetItemName
-                            InsertBuildItem.ItemQuantity = TempBP.GetUserRuns
+                            InsertBuildItem.ItemName = UpdateItemNamewithRuns(TempBP.GetItemName, NewRuns)
+                            InsertBuildItem.ItemQuantity = FoundBuildItem.ItemQuantity + .ItemQuantity
                             InsertBuildItem.BuildME = TempBP.GetME
                             InsertBuildItem.BuildTE = TempBP.GetTE
                             InsertBuildItem.ItemVolume = TempBP.GetTotalItemVolume
@@ -1615,7 +1518,7 @@ Public Class ShoppingList
             CopyOfMe.TotalBuyList = CType(.TotalBuyList.Clone, Materials)
             CopyOfMe.TotalBuildList = CType(.TotalBuildList.Clone, BuiltItemList)
             CopyOfMe.TotalInventionMats = CType(.TotalInventionMats, Materials)
-            CopyOfMe.TotalCopyMats = CType(.TotalCopyMats, Materials)
+            CopyOfMe.TotalCopyMats = CType(.TotalCopyMats.Clone, Materials)
             CopyOfMe.OnHandMatList = CType(.OnHandMatList.Clone, Materials)
             CopyOfMe.OnHandComponentList = CType(.OnHandComponentList.Clone, Materials)
             CopyOfMe.AdditionalCosts = .AdditionalCosts
@@ -1739,7 +1642,7 @@ Public Class BuiltItemList
         Dim TempItem As BuiltItem
 
         For i = 0 To ItemList.Count - 1
-            TempItem = CType(ItemList(i).Clone(), BuiltItem)
+            TempItem = CType(ItemList(i).Clone, BuiltItem)
             CopyOfMe.AddBuiltItem(TempItem)
         Next
 
@@ -1753,7 +1656,6 @@ Public Class BuiltItemList
     Public Sub AddBuiltItem(ByVal SentItem As BuiltItem)
         Dim FoundItem As New BuiltItem
         Dim ComponentFoundItem As New BuiltItem
-        Dim UpdateItem As New BuiltItem
         Dim CombinedMaterials As New Materials
         Dim AddItem As BuiltItem = CType(SentItem.Clone, BuiltItem)
 
@@ -1765,29 +1667,15 @@ Public Class BuiltItemList
             ' Exists, so update the quantity and materials
             ' Remove the item from the list we are updating
             Call ItemList.Remove(FoundItem)
-            UpdateItem.BPTypeID = AddItem.BPTypeID
-            UpdateItem.ItemTypeID = FoundItem.ItemTypeID
-            UpdateItem.ItemName = AddItem.ItemName
-            UpdateItem.BuildME = AddItem.BuildME
-            UpdateItem.BuildTE = AddItem.BuildTE
-            UpdateItem.ItemVolume = AddItem.ItemVolume
-            UpdateItem.FacilityMEModifier = AddItem.FacilityMEModifier
-            UpdateItem.FacilityLocation = AddItem.FacilityLocation
-            UpdateItem.FacilityType = AddItem.FacilityType
-            UpdateItem.FacilityBuildType = AddItem.FacilityBuildType
-            UpdateItem.IncludeActivityCost = AddItem.IncludeActivityCost
-            UpdateItem.IncludeActivityTime = AddItem.IncludeActivityTime
-            UpdateItem.IncludeActivityUsage = AddItem.IncludeActivityUsage
 
             ' Get the runs of this blueprint to set the right amount of build materials needed
-            Dim Runs As Long = CLng(Math.Ceiling((FoundItem.ItemQuantity + AddItem.ItemQuantity) / FoundItem.PortionSize))
+            Dim Runs As Long = CLng(Math.Ceiling((FoundItem.ItemQuantity + AddItem.ItemQuantity) / AddItem.PortionSize))
 
-            ' Combine the materials only for the number of runs we need
-            For i = 0 To Runs - 1
-                CombinedMaterials.InsertMaterialList(AddItem.BuildMaterials.GetMaterialList)
-            Next
+            ' Combine the materials
+            CombinedMaterials.InsertMaterialList(AddItem.BuildMaterials.GetMaterialList)
+            CombinedMaterials.InsertMaterialList(FoundItem.BuildMaterials.GetMaterialList)
 
-            UpdateItem.BuildMaterials = CType(CombinedMaterials.Clone, Materials)
+            AddItem.BuildMaterials = CType(CombinedMaterials.Clone, Materials)
 
             ' Combine the built item lists by updating the quantity and saving
             For Each AddItemBI In AddItem.ComponentBuildList
@@ -1799,23 +1687,26 @@ Public Class BuiltItemList
                     TempComponent = CType(ComponentFoundItem.Clone, BuiltItem)
                     TempComponent.ItemQuantity = ComponentFoundItem.ItemQuantity + AddItemBI.ItemQuantity
                     ' Add updated quantity
-                    UpdateItem.ComponentBuildList.Add(TempComponent)
+                    AddItem.ComponentBuildList.Add(TempComponent)
                 Else
                     ' not found, add it
-                    UpdateItem.ComponentBuildList.Add(AddItemBI)
+                    AddItem.ComponentBuildList.Add(AddItemBI)
                 End If
             Next
 
             ' Update the quantities
-            UpdateItem.ItemQuantity = AddItem.ItemQuantity + FoundItem.ItemQuantity
-            UpdateItem.UsedQuantity = AddItem.UsedQuantity + FoundItem.UsedQuantity
-            UpdateItem.PortionSize = AddItem.PortionSize
+            AddItem.ItemQuantity = AddItem.ItemQuantity + FoundItem.ItemQuantity
+            AddItem.UsedQuantity = AddItem.UsedQuantity + FoundItem.UsedQuantity
+            AddItem.BPRuns = Runs
+            AddItem.PortionSize = AddItem.PortionSize
+
+            AddItem.ItemName = UpdateItemNamewithRuns(AddItem.ItemName, Runs)
 
             ' Cost
-            TotalCost = TotalCost + UpdateItem.BuildMaterials.GetTotalMaterialsCost
+            TotalCost = TotalCost + AddItem.BuildMaterials.GetTotalMaterialsCost
 
             ' Re-add the item
-            Call ItemList.Add(UpdateItem)
+            Call ItemList.Add(AddItem)
 
         Else
             ' Add the item to the list
@@ -1957,7 +1848,7 @@ Public Class BuiltItem
         CopyOfMe.ItemVolume = Me.ItemVolume
         CopyOfMe.BuildME = Me.BuildME
         CopyOfMe.BuildTE = Me.BuildTE
-        CopyOfMe.BuildMaterials = Me.BuildMaterials
+        CopyOfMe.BuildMaterials = CType(Me.BuildMaterials.Clone, Materials)
         CopyOfMe.BPRuns = Me.BPRuns
         CopyOfMe.PortionSize = Me.PortionSize
         CopyOfMe.FacilityMEModifier = Me.FacilityMEModifier
@@ -1967,7 +1858,11 @@ Public Class BuiltItem
         CopyOfMe.IncludeActivityUsage = Me.IncludeActivityUsage
         CopyOfMe.IncludeActivityTime = Me.IncludeActivityTime
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost
-        CopyOfMe.ComponentBuildList = Me.ComponentBuildList
+        CopyOfMe.ComponentBuildList = New List(Of BuiltItem)
+        ' Clone each built item in the list
+        For Each BI In Me.ComponentBuildList
+            CopyOfMe.ComponentBuildList.Add(CType(BI.Clone, BuiltItem))
+        Next
         Return CopyOfMe
     End Function
 

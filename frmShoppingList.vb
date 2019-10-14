@@ -1786,18 +1786,23 @@ Public Class frmShoppingList
         Dim rsBPLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
+        SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
         DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
+        Dim Runs As Integer = CInt(Math.Ceiling(CInt(lstBuild.SelectedItems(0).SubItems(2).Text) / rsBPLookup.GetInt64(1)))
+
         Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, SentFromLocation.ShoppingList,
                                            Nothing, Nothing, Nothing, Nothing, Nothing,
                                            UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
                                            lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
-                                           lstBuild.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),
+                                           CStr(Runs), "1", CStr(UserBPTabSettings.LaboratoryLines),
                                            "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
+
+        rsBPLookup.Close()
+
     End Sub
 
     Private Sub lstItems_ColumnClick(sender As Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstItems.ColumnClick
