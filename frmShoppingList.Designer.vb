@@ -413,7 +413,7 @@ Partial Class frmShoppingList
         'rbtnExportMulitBuy
         '
         Me.rbtnExportMulitBuy.AutoSize = True
-        Me.rbtnExportMulitBuy.Location = New System.Drawing.Point(8, 31)
+        Me.rbtnExportMulitBuy.Location = New System.Drawing.Point(8, 15)
         Me.rbtnExportMulitBuy.Name = "rbtnExportMulitBuy"
         Me.rbtnExportMulitBuy.Size = New System.Drawing.Size(114, 17)
         Me.rbtnExportMulitBuy.TabIndex = 3
@@ -424,7 +424,7 @@ Partial Class frmShoppingList
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(8, 65)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(8, 66)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -435,7 +435,7 @@ Partial Class frmShoppingList
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(8, 48)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(8, 49)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -446,7 +446,7 @@ Partial Class frmShoppingList
         'rbtnExportDefault
         '
         Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(8, 14)
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(8, 32)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0

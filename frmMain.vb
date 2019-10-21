@@ -1541,7 +1541,7 @@ Public Class frmMain
                 End If
 
                 SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
-                SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8 AND typeName LIKE '%" & TempRelic & "%'"
+                SQL = SQL & "And typeID = blueprintTypeID And activityID = 8 And typeName Like '%" & TempRelic & "%'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerRelic = DBCommand.ExecuteReader
@@ -1555,16 +1555,33 @@ Public Class frmMain
                 chkBPIncludeT3Costs.Checked = InventionFacility.IncludeActivityCost
                 chkBPIncludeT3Time.Checked = InventionFacility.IncludeActivityTime
 
-            Else
-                LoadingInventionDecryptors = True
-                cmbBPInventionDecryptor.Text = BPDecryptor.Name
-                LoadingInventionDecryptors = False
-
+            Else ' T2
                 ' Check the include cost/time
-                chkBPIncludeInventionCosts.Checked = InventionFacility.IncludeActivityCost
-                chkBPIncludeInventionTime.Checked = InventionFacility.IncludeActivityTime
-                chkBPIncludeCopyCosts.Checked = CopyFacility.IncludeActivityCost
-                chkBPIncludeCopyTime.Checked = CopyFacility.IncludeActivityTime
+                If Inputs <> "Unknown" Then ' Unknown inputs is T2 BPO or pre-industry patch
+                    LoadingInventionDecryptors = True
+                    cmbBPInventionDecryptor.Text = BPDecryptor.Name
+                    LoadingInventionDecryptors = False
+
+                    If Not IsNothing(InventionFacility) Then
+                        chkBPIncludeInventionCosts.Checked = InventionFacility.IncludeActivityCost
+                        chkBPIncludeInventionTime.Checked = InventionFacility.IncludeActivityTime
+                    Else
+                        chkBPIncludeInventionCosts.Checked = True
+                        chkBPIncludeInventionTime.Checked = True
+                    End If
+
+                    If Not IsNothing(CopyFacility) Then
+                        chkBPIncludeCopyCosts.Checked = CopyFacility.IncludeActivityCost
+                        chkBPIncludeCopyTime.Checked = CopyFacility.IncludeActivityTime
+                    Else
+                        chkBPIncludeCopyCosts.Checked = True
+                        chkBPIncludeCopyTime.Checked = True
+                    End If
+
+                    chkBPIgnoreInvention.Checked = False
+                Else
+                    chkBPIgnoreInvention.Checked = True ' mark as t2 bpo
+                End If
 
             End If
 
@@ -5797,6 +5814,13 @@ Tabs:
         End If
 
         Dim OwnedBPRuns As Integer
+        Dim TempBPType As BPType
+
+        If HasOwnedBP Then
+            TempBPType = GetBPType(readerBP.GetInt32(4))
+        Else
+            TempBPType = BPType.NotOwned
+        End If
 
         If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
             txtBPME.Text = CStr(readerBP.GetInt32(0))
@@ -5824,23 +5848,25 @@ Tabs:
                     End If
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
                 End If
+                TempBPType = BPType.NotOwned ' set to not owned for non bp load events
             Else ' Default T2/T3 BPCs are going to be copies
-                If NewBP Then
+                If TempBPType = BPType.Original And TempTech = 2 And chkBPIgnoreInvention.Checked = True Then
+                    ' T2 BPO
+                    txtBPME.Text = CStr(readerBP.GetInt32(0))
+                    OwnedBPME = txtBPME.Text
+                    txtBPTE.Text = CStr(readerBP.GetInt32(1))
+                    OwnedBPPE = txtBPTE.Text
+                ElseIf NewBP Then
+                    ' Use invention numbers
                     txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
                     txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
+                    TempBPType = BPType.NotOwned
                 End If
             End If
         End If
 
-        Dim TempBPType As BPType
-
-        If OwnedBP Then
-            TempBPType = GetBPType(readerBP.GetInt32(4))
-        Else
-            TempBPType = BPType.NotOwned
-        End If
-
         IgnoreRefresh = True
+
         If (TempTech <> 1 And TempBPType <> BPType.Original) Then
             Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
             chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
@@ -5859,8 +5885,8 @@ Tabs:
                 txtBPTE.Enabled = False
             End If
 
-        Else
-            ' Check the ignore invention, they own this BPO and don't need to invent it (if T2 or T3)
+        ElseIf TempTech = 2 And TempBPType = BPType.Original Then
+            ' Check the ignore invention, they own this T2 BPO and don't need to invent it
             chkBPIgnoreInvention.Checked = True
 
             ' enable the me/te boxes

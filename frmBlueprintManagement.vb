@@ -560,6 +560,8 @@ Public Class frmBlueprintManagement
 
     Private Sub frmBlueprintManagement_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
 
+        Application.DoEvents()
+
         If FirstLoad Then
             Call InitForm()
         End If

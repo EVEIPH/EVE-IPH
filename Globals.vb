@@ -333,7 +333,7 @@ Public Module Public_Variables
         'Get a reference to the application's splash screen.
         Dim splash As SplashScreen = DirectCast(My.Application.SplashScreen, SplashScreen)
 
-        'Invoke the spalsh screen's SetProgress method on the thread that owns it.
+        'Invoke the splach screen's SetProgress method on the thread that owns it.
         splash.Invoke(New ProgressSetter(AddressOf splash.SetProgress), progress)
     End Sub
 
@@ -985,16 +985,11 @@ InvalidDate:
                     .Runs = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .ManufacturingFacilityMEModifier = SLFacility.BaseME ' For full item, components will be saved in blueprint class for ComponentList
-                    .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
-                    .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
-                    .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
                     .PortionSize = SentBlueprint.GetPortionSize
 
-                    ' See if we need to add the system on to the end of the build location for POS
-                    If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
-                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                    End If
+                    .ManufacturingFacility = SentBlueprint.GetManufacturingFacility
+                    .ComponentManufacturingFacility = SentBlueprint.GetComponentManufacturingFacility
+                    .ReactionFacility = SentBlueprint.GetReactionFacility
 
                     If BuildBuy Then
                         .BuildType = "Build/Buy"
@@ -1030,17 +1025,10 @@ InvalidDate:
                     .Runs = SentBlueprint.GetItemData.GetQuantity
                     .ItemME = SentBlueprint.GetME
                     .ItemTE = SentBlueprint.GetTE
-                    .ManufacturingFacilityMEModifier = SLFacility.BaseME  ' For full item, components will be saved in blueprint class for ComponentList
-                    .ManufacturingFacilityType = SLFacility.GetFacilityTypeDescription
-                    .ManufacturingFacilityLocation = SentBlueprint.GetManufacturingFacility.FacilityName
-                    .ManufacturingFacilityBuildType = SentBlueprint.GetManufacturingFacility.FacilityProductionType
+                    .ManufacturingFacility = SentBlueprint.GetManufacturingFacility
+                    .ComponentManufacturingFacility = SentBlueprint.GetComponentManufacturingFacility
+                    .ReactionFacility = SentBlueprint.GetReactionFacility
                     .PortionSize = SentBlueprint.GetPortionSize
-
-                    ' See if we need to add the system on to the end of the build location for POS
-                    If .ManufacturingFacilityType = ManufacturingFacility.POSFacility Then
-                        .ManufacturingFacilityLocation = .ManufacturingFacilityLocation & " (" & SentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                    End If
-
                     .BuildType = "Components"
 
                     If Not CopyInventionMatsOnly Then

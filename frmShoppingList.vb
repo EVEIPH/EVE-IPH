@@ -536,8 +536,8 @@ Public Class frmShoppingList
                 lstItem.SubItems.Add(CStr(ItemList(i).NumBPs))
                 lstItem.SubItems.Add(ItemList(i).BuildType)
                 lstItem.SubItems.Add(ItemList(i).Decryptor)
-                lstItem.SubItems.Add(ItemList(i).ManufacturingFacilityLocation)
-                lstItem.SubItems.Add(CStr(ItemList(i).ManufacturingFacilityType))
+                lstItem.SubItems.Add(ItemList(i).ManufacturingFacility.FacilityName)
+                lstItem.SubItems.Add(CStr(ItemList(i).ManufacturingFacility.FacilityType))
                 lstItem.SubItems.Add(CStr(ItemList(i).IgnoredInvention))
                 lstItem.SubItems.Add(CStr(ItemList(i).IgnoredMinerals))
                 lstItem.SubItems.Add(CStr(ItemList(i).IgnoredT1BaseItem))
@@ -545,7 +545,7 @@ Public Class frmShoppingList
                 lstItem.SubItems.Add(CStr(ItemList(i).IncludeActivityTime))
                 lstItem.SubItems.Add(CStr(ItemList(i).IncludeActivityUsage))
                 lstItem.SubItems.Add(CStr(ItemList(i).ItemTE))
-                lstItem.SubItems.Add(CStr(ItemList(i).ManufacturingFacilityBuildType))
+                lstItem.SubItems.Add(CStr(ItemList(i).ManufacturingFacility.FacilityProductionType))
             End With
         Next
 
@@ -585,13 +585,13 @@ Public Class frmShoppingList
                     lstBuildItem.SubItems.Add(CStr(FormatNumber(BuildItems.GetBuiltItemList(i).ItemQuantity, 0)))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).BuildME))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).BuildTE))
-                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).FacilityLocation))
-                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).FacilityType))
+                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).ManufacturingFacility.FacilityName))
+                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).ManufacturingFacility.FacilityType))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).IncludeActivityCost))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).IncludeActivityTime))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).IncludeActivityUsage))
                     lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).BPTypeID)) ' Add the bp type id here for double clicking later
-                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).FacilityBuildType))
+                    lstBuildItem.SubItems.Add(CStr(BuildItems.GetBuiltItemList(i).ManufacturingFacility.FacilityProductionType))
                 Next
             End If
         End If
@@ -1786,22 +1786,24 @@ Public Class frmShoppingList
         Dim rsBPLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
+        If lstBuild.SelectedItems.Count <> 0 Then
+            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & lstBuild.SelectedItems(0).SubItems(0).Text
 
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
-        rsBPLookup = DBCommand.ExecuteReader
-        rsBPLookup.Read()
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsBPLookup = DBCommand.ExecuteReader
+            rsBPLookup.Read()
 
-        Dim Runs As Integer = CInt(Math.Ceiling(CInt(lstBuild.SelectedItems(0).SubItems(2).Text) / rsBPLookup.GetInt64(1)))
+            Dim Runs As Integer = CInt(Math.Ceiling(CInt(lstBuild.SelectedItems(0).SubItems(2).Text) / rsBPLookup.GetInt64(1)))
 
-        Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, SentFromLocation.ShoppingList,
-                                           Nothing, Nothing, Nothing, Nothing, Nothing,
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
-                                           lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
-                                           CStr(Runs), "1", CStr(UserBPTabSettings.LaboratoryLines),
-                                           "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
+            Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, SentFromLocation.ShoppingList,
+                                               Nothing, Nothing, Nothing, Nothing, Nothing,
+                                               UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
+                                               lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
+                                               CStr(Runs), "1", CStr(UserBPTabSettings.LaboratoryLines),
+                                               "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
 
-        rsBPLookup.Close()
+            rsBPLookup.Close()
+        End If
 
     End Sub
 
@@ -2009,7 +2011,7 @@ Public Class frmShoppingList
                     ShopListItem.NumBPs = CInt(lstItems.SelectedItems(i).SubItems(4).Text)
                     ShopListItem.BuildType = lstItems.SelectedItems(i).SubItems(5).Text
                     ShopListItem.Decryptor = lstItems.SelectedItems(i).SubItems(6).Text
-                    ShopListItem.ManufacturingFacilityLocation = lstItems.SelectedItems(i).SubItems(7).Text
+                    ShopListItem.ManufacturingFacility.FacilityName = lstItems.SelectedItems(i).SubItems(7).Text
 
                     ' Remove it from shopping list
                     TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, 0)
@@ -2048,7 +2050,7 @@ Public Class frmShoppingList
                 TempBuiltItem.ItemName = lstBuild.SelectedItems(i).SubItems(1).Text
                 TempBuiltItem.ItemQuantity = CLng(lstBuild.SelectedItems(i).SubItems(2).Text)
                 TempBuiltItem.BuildME = CInt(lstBuild.SelectedItems(i).SubItems(3).Text)
-                TempBuiltItem.FacilityLocation = lstBuild.SelectedItems(i).SubItems(5).Text
+                TempBuiltItem.ManufacturingFacility.FacilityName = lstBuild.SelectedItems(i).SubItems(5).Text
 
                 ' Remove it from shopping list, sending the grid quantity
                 TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltItem, 0)
@@ -2313,7 +2315,7 @@ Public Class frmShoppingList
                     TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
                     TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
                     TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
-                    TempBuiltItem.FacilityLocation = CurrentRow.SubItems(5).Text
+                    TempBuiltItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(5).Text
 
                     ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
                     Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
@@ -2346,7 +2348,7 @@ Public Class frmShoppingList
                     ShopListItem.BuildType = CurrentRow.SubItems(5).Text
                     ShopListItem.Decryptor = CurrentRow.SubItems(6).Text
                     ShopListItem.InventedRunsPerBP = CInt(Math.Ceiling(ShopListItem.Runs / ShopListItem.NumBPs))
-                    ShopListItem.ManufacturingFacilityLocation = CurrentRow.SubItems(7).Text
+                    ShopListItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(7).Text
 
                     ' Update the full shopping list
                     Call TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, QuantityValue)

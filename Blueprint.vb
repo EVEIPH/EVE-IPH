@@ -718,22 +718,13 @@ Public Class Blueprint
                         .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
                         ' Set the variables
-                        .FacilityMEModifier = ComponentBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
-                        .FacilityType = ComponentBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
-                        .FacilityBuildType = ComponentBlueprint.MainManufacturingFacility.FacilityProductionType
+                        .ManufacturingFacility = ComponentBlueprint.MainManufacturingFacility
                         .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
                         .IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
                         .IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
 
-                        ' See if we need to add the system on to the end of the build location for POS
-                        If BuiltComponentList.GetBuiltItemList(i).FacilityType = ManufacturingFacility.POSFacility Then
-                            BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName & " (" & ComponentBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-                        Else
-                            BuiltComponentList.GetBuiltItemList(i).FacilityLocation = ComponentBlueprint.MainManufacturingFacility.FacilityName
-                        End If
 
                         Dim ItemPrice As Double = 0
-
                         Dim OwnedBP As Boolean
 
                         Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
@@ -1274,19 +1265,10 @@ Public Class Blueprint
         TempBuiltItem.PortionSize = PortionSize
 
         TempBuiltItem.BuildMaterials = RefBlueprint.GetRawMaterials
-        TempBuiltItem.FacilityMEModifier = RefBlueprint.MainManufacturingFacility.MaterialMultiplier ' Save MM used on component
-        TempBuiltItem.FacilityType = RefBlueprint.MainManufacturingFacility.GetFacilityTypeDescription
-        TempBuiltItem.FacilityBuildType = RefBlueprint.MainManufacturingFacility.FacilityProductionType
+        TempBuiltItem.ManufacturingFacility = RefBlueprint.MainManufacturingFacility
         TempBuiltItem.IncludeActivityCost = RefBlueprint.MainManufacturingFacility.IncludeActivityCost
         TempBuiltItem.IncludeActivityTime = RefBlueprint.MainManufacturingFacility.IncludeActivityTime
         TempBuiltItem.IncludeActivityUsage = RefBlueprint.MainManufacturingFacility.IncludeActivityUsage
-
-        ' See if we need to add the system on to the end of the build location for POS
-        If TempBuiltItem.FacilityType = ManufacturingFacility.POSFacility Then
-            TempBuiltItem.FacilityLocation = RefBlueprint.MainManufacturingFacility.FacilityName & " (" & RefBlueprint.GetManufacturingFacility.SolarSystemName & ")"
-        Else
-            TempBuiltItem.FacilityLocation = RefBlueprint.MainManufacturingFacility.FacilityName
-        End If
 
         Return TempBuiltItem
 

@@ -96,7 +96,7 @@ Public Class ShoppingList
                             TempBuiltItem = CType(FoundBuildItem.Clone, BuiltItem)
 
                             ' Use group name as facility location
-                            Dim TempMat As New Material(TempBuiltItem.ItemTypeID, TempBuiltItem.ItemName, TempBuiltItem.FacilityLocation, TempBuiltItem.ItemQuantity,
+                            Dim TempMat As New Material(TempBuiltItem.ItemTypeID, TempBuiltItem.ItemName, TempBuiltItem.ManufacturingFacility.FacilityName, TempBuiltItem.ItemQuantity,
                                                         TempBuiltItem.ItemVolume, 0, CStr(TempBuiltItem.BuildME), CStr(TempBuiltItem.BuildTE), True)
 
                             ' Figure out how many runs we need to do of this component item for the updated quantity of the main item
@@ -262,10 +262,7 @@ Public Class ShoppingList
                             ' Set the values we need to get updated quantity
                             ShoppingItem.Name = FoundItem.ItemName
                             ShoppingItem.TypeID = FoundItem.ItemTypeID
-                            ShoppingItem.ManufacturingFacilityMEModifier = FoundItem.FacilityMEModifier
-                            ShoppingItem.ManufacturingFacilityLocation = FoundItem.FacilityLocation
-                            ShoppingItem.ManufacturingFacilityType = FoundItem.FacilityType
-                            ShoppingItem.ManufacturingFacilityBuildType = FoundItem.FacilityBuildType
+                            ShoppingItem.ManufacturingFacility = FoundItem.ManufacturingFacility
                             ShoppingItem.IncludeActivityCost = FoundItem.IncludeActivityCost
                             ShoppingItem.IncludeActivityTime = FoundItem.IncludeActivityTime
                             ShoppingItem.IncludeActivityUsage = FoundItem.IncludeActivityUsage
@@ -339,7 +336,7 @@ Public Class ShoppingList
                     If rsMatCheck.Read Then
                         ' Now adjust the quantity based on the ME bonus and runs for the original bp
                         Dim Runs As Long = CInt(Math.Ceiling(UpdateItemQuantity / FoundItem.PortionSize))
-                        Dim MEBonus As Double = GetMEBonus(FoundItem.BuildME, FoundItem.FacilityMEModifier)
+                        Dim MEBonus As Double = GetMEBonus(FoundItem.BuildME, FoundItem.ManufacturingFacility.MaterialMultiplier)
                         Dim TempBuildQuantity As Long = 0
 
                         RefBuiltItem = CType(FoundItem.ComponentBuildList(i).Clone, BuiltItem)
@@ -632,7 +629,7 @@ Public Class ShoppingList
             Next
 
             ' Set the ME of the main item to calculate how many runs we need of the component
-            MEBonus = GetMEBonus(CurrentItem.ItemME, CurrentItem.ManufacturingFacilityMEModifier)
+            MEBonus = GetMEBonus(CurrentItem.ItemME, CurrentItem.ManufacturingFacility.MaterialMultiplier)
 
             ' Get the quantity from the correct list so we have the right total materials of all items using this material
             If ProcessingType = "Buy" Then
@@ -649,7 +646,7 @@ Public Class ShoppingList
                 Dim TempBuildItem As New BuiltItem
                 TempBuildItem.ItemTypeID = UpdateMaterial.GetMaterialTypeID
                 TempBuildItem.BuildME = CInt(UpdateMaterial.GetItemME)
-                TempBuildItem.FacilityLocation = UpdateMaterial.GetMaterialGroup
+                TempBuildItem.ManufacturingFacility.FacilityName = UpdateMaterial.GetMaterialGroup
                 Call TotalBuildList.SetItemToFind(TempBuildItem)
                 Dim FoundBuiltItem As BuiltItem
                 FoundBuiltItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
@@ -663,30 +660,30 @@ Public Class ShoppingList
                 OldMatQuantity = CLng(Math.Max(CurrentItem.Runs, Math.Ceiling(Math.Round(CurrentItem.Runs * SingleRunQuantity * MEBonus, 2))))
             End If
 
-            ' Now for each bp, calc the runs with the ME value - only do this for buy
-            If ProcessingType = "Buy" Then
-                For i = 0 To BlueprintsRunList.Count - 1
-                    ' Set the quantity required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2)) and sum for each bp
-                    NewMatQuantity += CLng(Math.Max(BlueprintsRunList(i), Math.Ceiling(Math.Round(BlueprintsRunList(i) * SingleRunQuantity * MEBonus, 2))))
-                Next
-            Else
-                ' Default to 1 run for build items to match the main blueprint function - this is the quantity of the new material for the item runs
-                NewMatQuantity = CLng(Math.Max(ItemBPRuns, Math.Ceiling(Math.Round(ItemBPRuns * SingleRunQuantity * MEBonus, 2))))
-            End If
+            If NewMaterialQuantity <> 0 Then
+                ' Now for each bp, calc the runs with the ME value - only do this for buy
+                If ProcessingType = "Buy" Then
+                    For i = 0 To BlueprintsRunList.Count - 1
+                        ' Set the quantity required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2)) and sum for each bp
+                        NewMatQuantity += CLng(Math.Max(BlueprintsRunList(i), Math.Ceiling(Math.Round(BlueprintsRunList(i) * SingleRunQuantity * MEBonus, 2))))
+                    Next
+                Else
+                    ' Default to 1 run for build items to match the main blueprint function - this is the quantity of the new material for the item runs
+                    NewMatQuantity = CLng(Math.Max(TempItemRuns, Math.Ceiling(Math.Round(TempItemRuns * SingleRunQuantity * MEBonus, 2))))
+                End If
 
-            If NewMaterialQuantity = 0 Then
-                ' Deleting, so adjust numbers from what was in shopping list
-                NewMatQuantity = UpdateMaterial.GetQuantity - NewMatQuantity
+            Else
+                ' Deleting, so no need to calculate, just reduce from what was in list for this item already
+                NewMatQuantity = 0
             End If
 
             ' Set the mat quantity for reference
             RefMatQuantity = NewMatQuantity
 
-
         End If
 
-        ' Update with onhand mats functionality
-        If UpdateMaterial.GetBuildItem Then ' Building
+            ' Update with onhand mats functionality
+            If UpdateMaterial.GetBuildItem Then ' Building
             ' If entered, use this as the quantity to update to reflect that the user already entered a updated value
             OnHandMats = GetOnHandComponentQuantity(UpdateMaterial.GetMaterialName)
         Else ' Buying
@@ -697,7 +694,7 @@ Public Class ShoppingList
         If OnHandMats <> 0 Then
             UpdatedQuantity = NewMatQuantity - OnHandMats
         Else
-            UpdatedQuantity = NewMatQuantity
+            UpdatedQuantity = NewMatQuantity ' Quantity we need now
         End If
 
         ' Decrease the mats in the shopping list from what we needed before then add what we need now
@@ -739,7 +736,7 @@ Public Class ShoppingList
 
         SingleRunQuantity = rsMatQuantity.GetInt64(0)
 
-        MEBonus = (1 - (ItemData.ItemME / 100)) * ItemData.ManufacturingFacilityMEModifier
+        MEBonus = (1 - (ItemData.ItemME / 100)) * ItemData.ManufacturingFacility.MaterialMultiplier
 
         ' Figure out how many bps we need now and apply the ME bonus for each bp and sum up
         Dim NewNumBPs As Integer
@@ -876,22 +873,12 @@ Public Class ShoppingList
                     If FoundBuildItem IsNot Nothing Then
                         ' With this item, update the quantity and rebuild for new materials list
                         With SentBuildList.GetBuiltItemList(i)
-                            ' Get the component facility
-                            Dim TempComponentFacility As New IndustryFacility
-                            Dim TempReactionFacility As New IndustryFacility
-                            Dim TempManufacturingFacility As New IndustryFacility
-
-                            ' Set the component facility (use BP tab for now)
-                            TempManufacturingFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Manufacturing)
-                            TempComponentFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
-                            TempReactionFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
-
                             ' Re-run with new quantity
                             Dim NewRuns As Integer = CInt(Math.Ceiling((FoundBuildItem.ItemQuantity + .ItemQuantity) / FoundBuildItem.PortionSize))
 
                             Dim TempBP As New Blueprint(.BPTypeID, NewRuns, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
-                               TempManufacturingFacility, TempComponentFacility, TempComponentFacility, TempReactionFacility, True)
+                               .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, True)
 
                             Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
@@ -907,20 +894,11 @@ Public Class ShoppingList
                             InsertBuildItem.BuildTE = TempBP.GetTE
                             InsertBuildItem.ItemVolume = TempBP.GetTotalItemVolume
                             InsertBuildItem.BuildMaterials = TempBP.GetRawMaterials
-                            InsertBuildItem.FacilityMEModifier = TempBP.GetManufacturingFacility.MaterialMultiplier
-                            InsertBuildItem.FacilityType = TempBP.GetManufacturingFacility.GetFacilityTypeDescription
-                            InsertBuildItem.FacilityBuildType = TempBP.GetManufacturingFacility.FacilityProductionType
+                            InsertBuildItem.ManufacturingFacility = TempBP.GetManufacturingFacility
                             InsertBuildItem.IncludeActivityCost = TempBP.GetManufacturingFacility.IncludeActivityCost
                             InsertBuildItem.IncludeActivityTime = TempBP.GetManufacturingFacility.IncludeActivityTime
                             InsertBuildItem.IncludeActivityUsage = TempBP.GetManufacturingFacility.IncludeActivityUsage
                             InsertBuildItem.PortionSize = TempBP.GetPortionSize
-
-                            ' See if we need to add the system on to the end of the build location for POS
-                            If InsertBuildItem.FacilityType = ManufacturingFacility.POSFacility Then
-                                InsertBuildItem.FacilityLocation = TempBP.GetManufacturingFacility.FacilityName & " (" & TempBP.GetManufacturingFacility.SolarSystemName & ")"
-                            Else
-                                InsertBuildItem.FacilityLocation = TempBP.GetManufacturingFacility.FacilityName
-                            End If
 
                             ' Remove the old record
                             TotalBuildList.RemoveBuiltItem(FoundBuildItem)
@@ -1260,7 +1238,7 @@ Public Class ShoppingList
                 TempBuiltItem = TotalBuildList.GetBuiltItemList(j)
                 ' Use Volume for the facility ME value, since this isn't used (also ignore total volume)
                 TempMat = New Material(TempBuiltItem.ItemTypeID, TempBuiltItem.ItemName, "Built Item", TempBuiltItem.ItemQuantity,
-                                       TempBuiltItem.FacilityMEModifier, 0, CStr(TempBuiltItem.BuildME), CStr(TempBuiltItem.BuildTE))
+                                       TempBuiltItem.ManufacturingFacility.MaterialMultiplier, 0, CStr(TempBuiltItem.BuildME), CStr(TempBuiltItem.BuildTE))
 
                 Call ReturnBuildItems.InsertMaterial(TempMat)
 
@@ -1327,8 +1305,6 @@ Public Class ShoppingList
 
     End Function
 
-    ' Sets the sent list to the 
-
     ' Returns the full list of Items we want to build in the shopping list
     Public Function GetFullItemList() As Materials
         Dim TempMat As Material
@@ -1338,7 +1314,7 @@ Public Class ShoppingList
             With TotalItemList(i)
                 ' Item sort order is Build Type, Decryptor, NumBps, and Relic for the group name
                 TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" _
-                                       & .ManufacturingFacilityLocation, .Runs, .BuildVolume / .Runs, 0, CStr(.ItemME), CStr(.ItemTE))
+                                       & .ManufacturingFacility.FacilityName, .Runs, .BuildVolume / .Runs, 0, CStr(.ItemME), CStr(.ItemTE))
             End With
             ReturnMaterials.InsertMaterial(TempMat)
         Next
@@ -1495,7 +1471,7 @@ Public Class ShoppingList
         'If Item1.NumBPs <> Item2.NumBPs Then
         '    Return False
         'End If
-        If Item1.ManufacturingFacilityLocation <> Item2.ManufacturingFacilityLocation Then
+        If Item1.ManufacturingFacility.FacilityName <> Item2.ManufacturingFacility.FacilityName Then
             Return False
         End If
 
@@ -1582,11 +1558,10 @@ Public Class ShoppingListItem
     Public BPMaterialList As New Materials ' This is the list of items on the Blueprint so we have a record of what they are building - it is not updated
     Public BPBuiltItems As New BuiltItemList ' List of items we build for this bp - not updated
 
-    ' For ME values to update with add/subtract in shopping list, item is either cap component, component, or anything else we are building
-    Public ManufacturingFacilityMEModifier As Double
-    Public ManufacturingFacilityLocation As String ' This is the name of the station or Array (with system name) where we build the items
-    Public ManufacturingFacilityType As String ' POS, station, etc
-    Public ManufacturingFacilityBuildType As ProductionType
+    ' Set the component facility (use BP tab for now)
+    Public ManufacturingFacility As IndustryFacility
+    Public ComponentManufacturingFacility As IndustryFacility
+    Public ReactionFacility As IndustryFacility
 
     ' Ignore Variables
     Public IgnoredInvention As Boolean
@@ -1630,10 +1605,9 @@ Public Class ShoppingListItem
         BPMaterialList = Nothing
         BPBuiltItems = Nothing
 
-        ManufacturingFacilityMEModifier = 1
-        ManufacturingFacilityLocation = ""
-        ManufacturingFacilityType = ""
-        ManufacturingFacilityBuildType = ProductionType.None
+        ManufacturingFacility = New IndustryFacility
+        ComponentManufacturingFacility = New IndustryFacility
+        ReactionFacility = New IndustryFacility
 
         IgnoredInvention = False
         IgnoredMinerals = False
@@ -1795,7 +1769,7 @@ Public Class BuiltItemList
 
     ' Predicate for finding a component item in the list
     Public Function FindBuiltItem(ByVal Item As BuiltItem) As Boolean
-        If Item.ItemTypeID = ItemToFind.ItemTypeID And Item.BuildME = ItemToFind.BuildME And Item.FacilityLocation = ItemToFind.FacilityLocation Then
+        If Item.ItemTypeID = ItemToFind.ItemTypeID And Item.BuildME = ItemToFind.BuildME And Item.ManufacturingFacility.FacilityName = ItemToFind.ManufacturingFacility.FacilityName Then
             Return True
         Else
             Return False
@@ -1835,10 +1809,7 @@ Public Class BuiltItem
     Public PortionSize As Long
 
     ' These fields are for shopping list update functions
-    Public FacilityMEModifier As Double
-    Public FacilityType As String
-    Public FacilityLocation As String
-    Public FacilityBuildType As ProductionType
+    Public ManufacturingFacility As New IndustryFacility
 
     Public IncludeActivityCost As Boolean
     Public IncludeActivityTime As Boolean
@@ -1856,10 +1827,7 @@ Public Class BuiltItem
         BPRuns = 0
         PortionSize = 0
 
-        FacilityMEModifier = 1
-        FacilityType = ""
-        FacilityLocation = ""
-        FacilityBuildType = ProductionType.None
+        ManufacturingFacility = New IndustryFacility
 
         IncludeActivityCost = False
         IncludeActivityTime = False
@@ -1881,10 +1849,7 @@ Public Class BuiltItem
         CopyOfMe.BuildMaterials = CType(Me.BuildMaterials.Clone, Materials)
         CopyOfMe.BPRuns = Me.BPRuns
         CopyOfMe.PortionSize = Me.PortionSize
-        CopyOfMe.FacilityMEModifier = Me.FacilityMEModifier
-        CopyOfMe.FacilityLocation = Me.FacilityLocation
-        CopyOfMe.FacilityType = Me.FacilityType
-        CopyOfMe.FacilityBuildType = Me.FacilityBuildType
+        CopyOfMe.ManufacturingFacility = CType(Me.ManufacturingFacility.Clone, IndustryFacility)
         CopyOfMe.IncludeActivityUsage = Me.IncludeActivityUsage
         CopyOfMe.IncludeActivityTime = Me.IncludeActivityTime
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost
