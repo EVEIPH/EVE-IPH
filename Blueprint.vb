@@ -742,7 +742,7 @@ Public Class Blueprint
                             ' Market cost is greater than build cost, so set the mat cost to the build cost
                             ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
                             ' Adjust the runs of this BP in the name for built bps
-                            .ItemName &= " (Runs: " & CStr(ComponentBlueprint.GetUserRuns) & ")"
+                            .ItemName = UpdateItemNamewithRuns(.ItemName, ComponentBlueprint.GetUserRuns)
                         Else
                             ' Buying item
                             ItemPrice = MarketPrice
@@ -1029,7 +1029,7 @@ Public Class Blueprint
                             CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
 
                             ' Set the name of the material to include the build runs
-                            CurrentMaterial.SetName(CurrentMaterial.GetMaterialName & " (Runs: " & CStr(BuildQuantity) & ")")
+                            CurrentMaterial.SetName(UpdateItemNamewithRuns(CurrentMaterial.GetMaterialName, BuildQuantity))
 
                             ' Save the item built, it's ME and the materials it used
                             Dim TempBuiltItem As New BuiltItem
@@ -1106,7 +1106,7 @@ Public Class Blueprint
                         End Select
 
                         ' Set the name of the material to include the build runs
-                        CurrentMaterial.SetName(CurrentMaterial.GetMaterialName & " (Runs: " & CStr(BuildQuantity) & ")")
+                        CurrentMaterial.SetName(UpdateItemNamewithRuns(CurrentMaterial.GetMaterialName, BuildQuantity))
 
                         ' Insert the existing component that we are using into the component list as set in the original BP
                         ComponentMaterials.InsertMaterial(CurrentMaterial)

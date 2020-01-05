@@ -390,6 +390,7 @@ Public Class EVEAssets
 
         ' Loop through each node and add all the items in it
         For Each TempAsset In BaseAssets
+
             ' If we know the location and the node is a base node, then process
             If TempAsset.LocationName <> UnknownLocation And TempAsset.FlagID <= 0 Then
 

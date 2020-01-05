@@ -2665,7 +2665,6 @@ Public Class ProgramSettings
                     .BoosterShipSkill = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterShipSkill", DefaultMiningBoosterShipSkill))
                     .MiningFormanSkill = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningFormanSkill", DefaultMiningMiningFormanSkill))
                     .MiningDirectorSkill = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningDirectorSkill", DefaultMiningMiningDirectorSkill))
-                    .WarfareLinkSpecSkill = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "WarfareLinkSpecSkill", DefaultMiningWarfareLinkSpecSkill))
                     .CheckMineForemanLaserOpBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserOpBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
@@ -2769,7 +2768,6 @@ Public Class ProgramSettings
             .BoosterShipSkill = DefaultMiningBoosterShipSkill
             .MiningFormanSkill = DefaultMiningMiningFormanSkill
             .MiningDirectorSkill = DefaultMiningMiningDirectorSkill
-            .WarfareLinkSpecSkill = DefaultMiningWarfareLinkSpecSkill
             .CheckMineForemanLaserOpBoost = DefaultMiningCheckMineForemanLaserOpBoost
             .CheckMineForemanLaserRangeBoost = DefaultMiningCheckMineForemanLaserOpBoost
             .CheckMiningForemanMindLink = DefaultMiningCheckMiningForemanMindLink
@@ -2797,7 +2795,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(70) As Setting
+        Dim MiningSettingsList(69) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2839,41 +2837,40 @@ Public Class ProgramSettings
             MiningSettingsList(36) = New Setting("BoosterShipSkill", CStr(SentSettings.BoosterShipSkill))
             MiningSettingsList(37) = New Setting("MiningFormanSkill", CStr(SentSettings.MiningFormanSkill))
             MiningSettingsList(38) = New Setting("MiningDirectorSkill", CStr(SentSettings.MiningDirectorSkill))
-            MiningSettingsList(39) = New Setting("WarfareLinkSpecSkill", CStr(SentSettings.WarfareLinkSpecSkill))
-            MiningSettingsList(40) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
-            MiningSettingsList(41) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
-            MiningSettingsList(42) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
-            MiningSettingsList(43) = New Setting("MiningDroneM3perHour", CStr(SentSettings.MiningDroneM3perHour))
-            MiningSettingsList(44) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
-            MiningSettingsList(45) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
-            MiningSettingsList(46) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
-            MiningSettingsList(47) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
-            MiningSettingsList(48) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
-            MiningSettingsList(49) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
-            MiningSettingsList(50) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
-            MiningSettingsList(51) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
-            MiningSettingsList(52) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
-            MiningSettingsList(53) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
-            MiningSettingsList(54) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
-            MiningSettingsList(55) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
-            MiningSettingsList(56) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
-            MiningSettingsList(57) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
-            MiningSettingsList(58) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
-            MiningSettingsList(59) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
-            MiningSettingsList(60) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
-            MiningSettingsList(61) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
-            MiningSettingsList(62) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            MiningSettingsList(63) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
-            MiningSettingsList(64) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
+            MiningSettingsList(39) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
+            MiningSettingsList(40) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
+            MiningSettingsList(41) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
+            MiningSettingsList(42) = New Setting("MiningDroneM3perHour", CStr(SentSettings.MiningDroneM3perHour))
+            MiningSettingsList(43) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
+            MiningSettingsList(44) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
+            MiningSettingsList(45) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
+            MiningSettingsList(46) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
+            MiningSettingsList(47) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
+            MiningSettingsList(48) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
+            MiningSettingsList(49) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
+            MiningSettingsList(50) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
+            MiningSettingsList(51) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
+            MiningSettingsList(52) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
+            MiningSettingsList(53) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
+            MiningSettingsList(54) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
+            MiningSettingsList(55) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
+            MiningSettingsList(56) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
+            MiningSettingsList(57) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
+            MiningSettingsList(58) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
+            MiningSettingsList(59) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
+            MiningSettingsList(60) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
+            MiningSettingsList(61) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
+            MiningSettingsList(62) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
+            MiningSettingsList(63) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
 
-            MiningSettingsList(65) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            MiningSettingsList(66) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            MiningSettingsList(67) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
+            MiningSettingsList(64) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
+            MiningSettingsList(65) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
+            MiningSettingsList(66) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
 
-            MiningSettingsList(68) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            MiningSettingsList(69) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            MiningSettingsList(67) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            MiningSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
 
-            MiningSettingsList(70) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
+            MiningSettingsList(69) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -4172,7 +4169,7 @@ Public Class ProgramSettings
                     .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Gas", DefaultAssetItemChecks))
                     .Misc = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Misc", DefaultAssetItemChecks))
-                    .BPCs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BPCs", DefaultAssetItemChecks))
+                    .BPCs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BPCs", False))
                     .AncientRelics = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientRelics", DefaultAssetItemChecks))
                     .AncientSalvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientSalvage", DefaultAssetItemChecks))
                     .Salvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
@@ -5380,7 +5377,6 @@ Public Structure MiningTabSettings
     Dim BoosterShipSkill As Integer
     Dim MiningFormanSkill As Integer
     Dim MiningDirectorSkill As Integer
-    Dim WarfareLinkSpecSkill As Integer
     Dim CheckMineForemanLaserOpBoost As Integer ' 0,1,2
     Dim CheckMineForemanLaserRangeBoost As Integer '0,1,2
     Dim CheckMiningForemanMindLink As Boolean

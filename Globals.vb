@@ -953,7 +953,7 @@ InvalidDate:
             ItemName = Trim(ItemName.Substring(0, InStr(ItemName, "(") - 1))
         End If
 
-        Return ItemName & " (Runs: " & CStr(Runs) & ")"
+        Return ItemName & " (Runs: " & FormatNumber(Runs, 0) & ")"
 
     End Function
 
@@ -1164,11 +1164,6 @@ InvalidDate:
         ' Refresh the Mining Tab
         If frmMain.lstMineGrid.Items.Count > 0 Then
             Call frmMain.LoadMiningGrid()
-        End If
-
-        ' Refresh the Reactions Tab
-        If frmMain.lstReactions.Items.Count > 0 Then
-            Call frmMain.UpdateReactionsGrid()
         End If
 
         ' Refresh the prices in manual update for minerals

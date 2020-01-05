@@ -10,6 +10,9 @@ Public Class frmESIStatus
         Dim ScopesSQL As String = ""
         Dim EndLoc As Integer = 0
 
+        Dim StartLoc As Integer = 0
+        Dim Length As Integer = 0
+
         lstStatus.Items.Clear()
         lstStatus.BeginUpdate()
 
@@ -18,11 +21,14 @@ Public Class frmESIStatus
             Exit Sub
         End If
 
+
         SQL = "SELECT scope, purpose, status FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route "
         ScopesList = SelectedCharacter.CharacterTokenData.Scopes.Split(CChar(" "))
 
         For Each scope In ScopesList
-            ScopesSQL &= scope.Substring(0, InStr(InStr(scope, ".") + 1, scope, ".") - 1) & "','"
+            If InStr(scope, ".") <> 0 Then
+                ScopesSQL &= scope.Substring(0, InStr(InStr(scope, ".") + 1, scope, ".") - 1) & "','"
+            End If
         Next
 
         ScopesSQL = ScopesSQL.Substring(0, Len(ScopesSQL) - 3)

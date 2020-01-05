@@ -165,9 +165,6 @@ Public Class frmMain
     ' For ignoring updates to the ship booster combo in mining
     Private UpdatingMiningShips As Boolean
 
-    ' The Reaction list for Reactions tab
-    Private GlobalReactionList As New List(Of Reaction)
-
     ' If we refresh the manufacturing data or recalcuate
     Private RefreshCalcData As Boolean
 
@@ -457,7 +454,6 @@ Public Class frmMain
             mnuRefinery.Visible = False
             mnuLPStore.Visible = False
             tabMain.TabPages.Remove(tabPI)
-            tabMain.TabPages.Remove(tabReactions)
         End If
 
         ' Load all the forms' facilities
@@ -484,6 +480,14 @@ Public Class frmMain
         lstBPComponentMats.Columns.Add("ME", 35, HorizontalAlignment.Center)
         lstBPComponentMats.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
         lstBPComponentMats.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
+
+        ' Width is now 556, scrollbar is 21 
+        'lstBPBuiltComponents.Columns.Add("", -2, HorizontalAlignment.Center) ' For check (25 size)
+        lstBPBuiltComponents.Columns.Add("Material", 215, HorizontalAlignment.Left) 'added 25 temp
+        lstBPBuiltComponents.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
+        lstBPBuiltComponents.Columns.Add("ME", 35, HorizontalAlignment.Center)
+        lstBPBuiltComponents.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
+        lstBPBuiltComponents.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
 
         ' No check for raw mats since the check will be used to toggle build/buy for each item
         lstBPRawMats.Columns.Add("Material", 215, HorizontalAlignment.Left)
@@ -715,30 +719,6 @@ Public Class frmMain
         End If
 
         '****************************************
-        '**** Reactions Tab Initializations *****
-        '****************************************
-        ' 922 width, 21 for scroll
-        lstReactions.Columns.Add("Reaction Type", 136, HorizontalAlignment.Left)
-        lstReactions.Columns.Add("Reaction", 210, HorizontalAlignment.Left)
-        lstReactions.Columns.Add("Output Material", 222, HorizontalAlignment.Left)
-        lstReactions.Columns.Add("Output Quantity", 100, HorizontalAlignment.Right)
-        lstReactions.Columns.Add("Material Group", 118, HorizontalAlignment.Left)
-        lstReactions.Columns.Add("Isk per Hour", 115, HorizontalAlignment.Right)
-
-        Call InitReactionsTab()
-
-        ' Tool Tips
-        If UserApplicationSettings.ShowToolTips Then
-            ttReactions.SetToolTip(chkReactionsTaxes, "Include taxes charged for sale of Reaction Products")
-            ttReactions.SetToolTip(chkReactionsFees, "Include Broker Fees charged for placing a buy order for Reaction Products")
-        End If
-
-        ' Set up grid for input mats
-        lstReactionMats.Columns.Add("Material", 117, HorizontalAlignment.Left)
-        'lstReactionMats.Columns.Add("Cost", 50, HorizontalAlignment.Right)
-        lstReactionMats.Columns.Add("Quantity", 52, HorizontalAlignment.Right)
-
-        '****************************************
         '**** Mining Tab Initializations ********
         '****************************************
         lstMineGrid.Columns.Add("Ore ID", 0, HorizontalAlignment.Right) ' Hidden
@@ -821,14 +801,16 @@ Public Class frmMain
                 ' If the counter divides evenly by 100, show the form
                 If Counter Mod 100 <> 0 Then
                     ReturnValue = False
-                    ' Increment counter
-                    Call File.Delete(FilePath)
-                    Call File.Create(FilePath).Dispose()
-                    Dim tfile As StreamWriter
-                    tfile = My.Computer.FileSystem.OpenTextFileWriter(FilePath, True)
-                    tfile.WriteLine(CStr(Counter))
-                    tfile.Close()
                 End If
+
+                ' Always increment counter
+                Call File.Delete(FilePath)
+                Call File.Create(FilePath).Dispose()
+                Dim tfile As StreamWriter
+                tfile = My.Computer.FileSystem.OpenTextFileWriter(FilePath, True)
+                tfile.WriteLine(CStr(Counter))
+                tfile.Close()
+
             Else
                 ' Make the file for counting
                 Call File.Create(FilePath).Dispose()
@@ -2522,7 +2504,6 @@ Public Class frmMain
         Call InitBPTab(ResetBPTab)
         Call InitDatacoreTab()
         Call InitManufacturingTab()
-        Call InitReactionsTab()
         Call InitUpdatePricesTab()
         Call InitMiningTab()
 
@@ -2565,20 +2546,6 @@ Public Class frmMain
         Call InitUpdatePricesTab()
 
         MsgBox("Update Prices Tab Default Settings Restored", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub mnuRestoreDefaultReactions_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultReactions.Click
-        Call AllSettings.SetDefaultReactionSettings()
-        ' Save them
-        Call AllSettings.SaveReactionSettings(AllSettings.GetReactionSettings)
-        ' Load them again
-        UserReactionTabSettings = AllSettings.LoadReactionSettings()
-
-        ' Reload the tab
-        Call InitReactionsTab()
-
-        MsgBox("Reactions Tab Default Settings Restored", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -3518,6 +3485,16 @@ Tabs:
 #Region "Blueprints Tab"
 
 #Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
+
+    Private Sub btnBPComponents_Click(sender As Object, e As EventArgs) Handles btnBPComponents.Click
+        lstBPComponentMats.Visible = True
+        lstBPBuiltComponents.Visible = False
+    End Sub
+
+    Private Sub btnBPBuiltComponents_Click(sender As Object, e As EventArgs) Handles btnBPBuiltComponents.Click
+        lstBPComponentMats.Visible = False
+        lstBPBuiltComponents.Visible = True
+    End Sub
 
     Private Sub rbtnBPAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPAdvT2MatType.CheckedChanged
         If rbtnBPAdvT2MatType.Checked Then
@@ -5407,6 +5384,7 @@ Tabs:
 
         ' Clear grids
         lstBPComponentMats.Items.Clear()
+        lstBPBuiltComponents.Items.Clear()
         lstBPRawMats.Items.Clear()
 
         ResetBPTab = True
@@ -5662,6 +5640,7 @@ Tabs:
     Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0, Optional FromEvent As Boolean = False)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
+        Dim readerMat As SQLiteDataReader
         Dim BPID As Integer
         Dim TempTech As Integer
         Dim ItemType As Integer
@@ -5876,10 +5855,11 @@ Tabs:
                 chkBPIgnoreInvention.Checked = True
             End If
 
-            ' disable the me/te boxes since these are invented
+            ' disable the me/te boxes if invented, else enable and ignore invention
             If chkBPIgnoreInvention.Checked Then
                 txtBPME.Enabled = True
                 txtBPTE.Enabled = True
+                Call SetInventionEnabled("T" & CStr(TempTech), False)
             Else
                 txtBPME.Enabled = False
                 txtBPTE.Enabled = False
@@ -5902,13 +5882,16 @@ Tabs:
             chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
         End If
 
-        If TempTech <> 2 And Not SelectedBPText.Contains("Reaction Formula") Then
-            ' Disable the T2/T3 boxes for moon/gas mat types
-            lblBPT2MatTypeSelector.Enabled = False
-            rbtnBPAdvT2MatType.Enabled = False
-            rbtnBPProcT2MatType.Enabled = False
-            rbtnBPRawT2MatType.Enabled = False
-        Else
+        ' See if it has moon/gas mats
+        SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
+        SQL &= "WHERE BLUEPRINT_ID = " & CStr(BPID) & " "
+        SQL &= "AND MATERIAL_GROUP IN ('Intermediate Materials', 'Composite','Hybrid Polymers')"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerMat = DBCommand.ExecuteReader()
+        readerMat.Read()
+
+        If readerMat.HasRows Or TempTech <> 1 Then
             ' Also enable the T2/T3 boxes for moon/gas mat types
             lblBPT2MatTypeSelector.Enabled = True
             rbtnBPAdvT2MatType.Enabled = True
@@ -5918,7 +5901,15 @@ Tabs:
                 rbtnBPProcT2MatType.Enabled = True
             End If
             rbtnBPRawT2MatType.Enabled = True
+        Else
+            ' Disable the T2/T3 boxes for moon/gas mat types
+            lblBPT2MatTypeSelector.Enabled = False
+            rbtnBPAdvT2MatType.Enabled = False
+            rbtnBPProcT2MatType.Enabled = False
+            rbtnBPRawT2MatType.Enabled = False
         End If
+
+        readerMat.Close()
 
         ' Reactions can't have ME or TE
         If SelectedBPText.Contains("Reaction Formula") Then
@@ -6026,8 +6017,10 @@ Tabs:
         Dim i As Integer = 0
         Dim BPRawMats As List(Of Material)
         Dim BPComponentMats As List(Of Material)
+        Dim BPBuiltItems As New List(Of BuiltItem)
         Dim rawlstViewRow As ListViewItem
         Dim complstViewRow As ListViewItem
+        Dim builtlistViewRow As ListViewItem
         Dim TempME As String = "0"
         Dim TempPrice As Double = 0
         Dim BPCName As String = ""
@@ -6113,18 +6106,18 @@ Tabs:
         End If
 
         ' Facility setup
-        Dim ComponentManufacturingFacility As IndustryFacility
-        Dim ManufacturingFacility As New IndustryFacility
-        ManufacturingFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
+        Dim ComponentFacility As New IndustryFacility
+        Dim ManuFacility As New IndustryFacility
+        ManuFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
 
         If SelectedBPText.Contains("Reaction Formula") Then
             'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
-            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.Manufacturing)
+            ComponentFacility = BPTabFacility.GetFacility(ProductionType.Manufacturing)
         ElseIf ((BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And Not BPGroupID = ItemIDs.CapitalComponentGroupID) Then
             ' Use the reaction facility as the 'component facility' if it's T2 component item, since they will do reactions
-            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
+            ComponentFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
         Else
-            ComponentManufacturingFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
+            ComponentFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
         End If
         Dim CapitalComponentManufacturingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
         Dim ReactionFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
@@ -6160,6 +6153,9 @@ Tabs:
         lstBPComponentMats.Enabled = False
         lstBPRawMats.Items.Clear()
         lstBPRawMats.Enabled = False
+        lstBPBuiltComponents.Items.Clear()
+        lstBPBuiltComponents.Enabled = False
+
         lblBPCanMakeBP.Visible = False
         lblBPCanMakeBPAll.Visible = False
         txtListEdit.Visible = False
@@ -6174,8 +6170,8 @@ Tabs:
 
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManufacturingFacility,
-                                          ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked)
+                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6191,6 +6187,7 @@ Tabs:
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
         BPComponentMats = SelectedBlueprint.GetComponentMaterials.GetMaterialList
+        BPBuiltItems = SelectedBlueprint.BuiltComponentList.GetBuiltItemList
 
         If chkBPBuildBuy.Checked Then
             lblBPComponentMats.Text = "Build/Buy Component Material List"
@@ -6222,7 +6219,6 @@ Tabs:
                     Case Else
                         Reaction = False
                 End Select
-
 
                 ' Mark line grey if the blueprint for this item has no ME stored except if reaction
                 If TempME = "0" And Not Reaction Then
@@ -6292,12 +6288,59 @@ Tabs:
                 lstBPComponentMats.Enabled = True
             End If
 
+            ' Fill the built component list if there
+            If BPBuiltItems.Count <> 0 Then
+                lstBPBuiltComponents.Items.Clear()
+                lstBPBuiltComponents.BeginUpdate()
+
+                For i = 0 To BPBuiltItems.Count - 1
+                    builtlistViewRow = New ListViewItem(BPBuiltItems(i).ItemName)
+                    builtlistViewRow.SubItems.Add(FormatNumber(BPBuiltItems(i).ItemQuantity, 0))
+                    TempME = CStr(BPBuiltItems(i).BuildME)
+
+                    ' Mark line grey if the blueprint for this item has no ME stored except if reaction
+                    If TempME = "0" And BPBuiltItems(i).ManufacturingFacility.Activity <> ManufacturingFacility.ActivityReactions Then
+                        builtlistViewRow.BackColor = Color.LightGray
+                    Else
+                        builtlistViewRow.BackColor = Color.White
+                    End If
+
+                    builtlistViewRow.SubItems.Add(TempME)
+
+                    TempPrice = BPBuiltItems(i).BuildMaterials.GetTotalMaterialsCost
+
+                    ' If the price is zero, highlight text as red
+                    If TempPrice = 0 Then
+                        builtlistViewRow.ForeColor = Color.Red
+                    Else
+                        builtlistViewRow.ForeColor = Color.Black
+                    End If
+                    builtlistViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
+                    builtlistViewRow.SubItems.Add(FormatNumber(BPBuiltItems(i).BuildMaterials.GetTotalMaterialsCost, 2))
+                    Call lstBPBuiltComponents.Items.Add(builtlistViewRow)
+
+                Next
+
+                If BPCompColumnSortType = SortOrder.Ascending Then
+                    TempSort = SortOrder.Descending
+                Else
+                    TempSort = SortOrder.Ascending
+                End If
+
+                ' Sort the list
+                Call ListViewColumnSorter(BPCompColumnClicked, CType(lstBPBuiltComponents, ListView), BPCompColumnClicked, TempSort)
+
+                lstBPBuiltComponents.EndUpdate()
+                lstBPBuiltComponents.Enabled = True
+            End If
+
         Else ' No components
             ' Disable the raw and component selector radio for exporting to shopping list, the button will still just pull the data from the list anyway though
             rbtnBPComponentCopy.Enabled = False
             rbtnBPRawmatCopy.Enabled = True
             rbtnBPRawmatCopy.Checked = True
             lstBPComponentMats.Enabled = False
+            lstBPBuiltComponents.Enabled = False
         End If
 
         If SelectedBlueprint.GetTechLevel <> BPTechLevel.T1 Then
@@ -6518,6 +6561,7 @@ ExitForm:
 
         ' Done
         lstBPComponentMats.Enabled = True
+        lstBPBuiltComponents.Enabled = True
         lstBPRawMats.Enabled = True
         lblBPCanMakeBP.Visible = True
         lblBPCanMakeBPAll.Visible = True
@@ -10750,12 +10794,23 @@ ExitSub:
         If e.KeyCode = Keys.C AndAlso e.Control = True Then ' Copy
             ' Find the bp record selected
             Dim FoundItem As New ManufacturingItem
-            ' Find the item clicked in the list of items then just send those values over
-            ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(0).SubItems(0).Text)
-            FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+            ' Copy the bps to the clipboard or item name if bp isn't set
+            Dim OutputText As String = ""
 
-            ' Copy the bp to the clipboard
-            CopyTextToClipboard(FoundItem.Blueprint.GetName)
+            For i = 0 To lstManufacturing.SelectedItems.Count - 1
+                ' Find the item clicked in the list of items then just send those values over
+                ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(i).SubItems(0).Text)
+                FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+                OutputText &= FoundItem.ItemName & vbCrLf
+            Next
+
+            Call CopyTextToClipboard(OutputText)
+
+        ElseIf e.KeyCode = Keys.A AndAlso e.Control = True Then ' Select all
+            For i = 0 To lstManufacturing.Items.Count - 1
+                lstManufacturing.Items(i).Selected = True
+                Application.DoEvents()
+            Next
         End If
 
     End Sub
@@ -13340,8 +13395,6 @@ CheckTechs:
         Dim TotalItemCount As Integer = 0
         Dim TempItemType As Integer = 0
 
-        Dim Response As MsgBoxResult
-
         Dim InventionDecryptors As New DecryptorList
 
         Dim OrigME As Integer
@@ -13962,15 +14015,15 @@ CheckTechs:
             ' *** Calculate ***
             ' Got all the data, now see if they want to calculate prices
             If Calculate Then
-                If TotalItemCount > 1000 Then
-                    ' Make sure they know this will take a bit to run - unless this is fairly quick
-                    Response = MsgBox("This may take some time to complete. Do you want to continue?", vbYesNo, Me.Text)
+                'If TotalItemCount > 1000 Then
+                '    ' Make sure they know this will take a bit to run - unless this is fairly quick
+                '    Response = MsgBox("This may take some time to complete. Do you want to continue?", vbYesNo, Me.Text)
 
-                    If Response = vbNo Then
-                        ' Just display the results of the query
-                        GoTo DisplayResults
-                    End If
-                End If
+                '    If Response = vbNo Then
+                '        ' Just display the results of the query
+                '        GoTo DisplayResults
+                '    End If
+                'End If
 
                 ListIDIterator = 0 ' Reset the iterator for new list
                 ' Reset the format list and recalc
@@ -17767,858 +17820,6 @@ Leave:
 
 #End Region
 
-#Region "Reactions"
-
-#Region "Reaction Form functions"
-
-    ' Calculate per hour, the best profit available for reactions selected
-    Private Sub btnCalculateCosts_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnReactionRefresh.Click
-        lstReactionMats.Visible = False
-        Call UpdateReactionsGrid()
-
-    End Sub
-
-    Private Sub chkReactionsTaxes_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsTaxes.CheckedChanged
-        If Not FirstLoad Then
-
-            ' Reset check box
-            lblReactionsTaxes.Text = "0.00"
-
-            Call UpdateReactionsGrid()
-        End If
-    End Sub
-
-    Private Sub chkReactionsFees_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsFees.CheckedChanged
-        If Not FirstLoad Then
-
-            ' Reset check box
-            lblReactionsFees.Text = "0.00"
-
-            Call UpdateReactionsGrid()
-        End If
-    End Sub
-
-    Private Sub txtReactionsNumPOS_GotFocus(sender As Object, e As System.EventArgs) Handles txtReactionsNumPOS.GotFocus
-        Call txtReactionsNumPOS.SelectAll()
-    End Sub
-
-    Private Sub txtReactionsNumPOS_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtReactionsNumPOS.KeyDown
-        Call ProcessCutCopyPasteSelect(txtReactionsNumPOS, e)
-        If e.KeyCode = Keys.Enter Then
-            Call UpdateReactionsGrid()
-        End If
-    End Sub
-
-    Private Sub txtReactionsNumPOS_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtReactionsNumPOS.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtReactionPOSFuelCost_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtReactionPOSFuelCost.Click
-        Call txtReactionPOSFuelCost.SelectAll()
-    End Sub
-
-    Private Sub txtReactionPOSFuelCost_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtReactionPOSFuelCost.GotFocus
-        Call txtReactionPOSFuelCost.SelectAll()
-    End Sub
-
-    Private Sub txtReactionPOSFuelCost_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtReactionPOSFuelCost.KeyDown
-        Call ProcessCutCopyPasteSelect(txtReactionPOSFuelCost, e)
-        If e.KeyCode = Keys.Enter Then
-            Call UpdateReactionsGrid()
-        End If
-    End Sub
-
-    Private Sub txtReactionPOSFuelCost_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtReactionPOSFuelCost.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub chkReactionsMoonMats_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsProcMoonMats.CheckedChanged
-        Call UpdateReactionChecks()
-    End Sub
-
-    Private Sub chkReactionsAdvComp_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsAdvMoonMats.CheckedChanged
-        Call UpdateReactionChecks()
-    End Sub
-
-    Private Sub chkReactionsSimpleBio_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsSimpleBio.CheckedChanged
-        Call UpdateReactionChecks()
-    End Sub
-
-    Private Sub chkReactionsComplexBio_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsComplexBio.CheckedChanged
-        Call UpdateReactionChecks()
-    End Sub
-
-    Private Sub chkReactionsBuildBasic_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkReactionsBuildBasic.CheckedChanged
-        If chkReactionsBuildBasic.Checked Then
-            chkReactionsIgnoreBaseMatPrice.Enabled = True
-        Else
-            chkReactionsIgnoreBaseMatPrice.Enabled = False
-        End If
-    End Sub
-
-    Private Sub chkReactionsBuildBasic_EnabledChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkReactionsBuildBasic.EnabledChanged
-        If Not chkReactionsBuildBasic.Enabled Then
-            chkReactionsIgnoreBaseMatPrice.Enabled = False
-        End If
-    End Sub
-
-    Private Sub UpdateReactionChecks()
-        If chkReactionsAdvMoonMats.Checked Or chkReactionsComplexBio.Checked Then
-            chkReactionsBuildBasic.Enabled = True
-        Else
-            chkReactionsBuildBasic.Enabled = False
-        End If
-
-        If chkReactionsSimpleBio.Checked Or chkReactionsProcMoonMats.Checked Then
-            chkReactionsIgnoreBaseMatPrice.Enabled = True
-        Else
-            chkReactionsIgnoreBaseMatPrice.Enabled = False
-        End If
-
-        If chkReactionsProcMoonMats.Checked Then
-            chkReactionsRefine.Enabled = True
-        Else
-            chkReactionsRefine.Enabled = False
-        End If
-
-    End Sub
-
-    Private Sub lstReactions_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstReactions.ColumnClick
-        Call ListViewColumnSorter(e.Column, lstReactions, ReactionsColumnClicked, ReactionsColumnSortType)
-    End Sub
-
-    Private Sub chkReactionsRefine_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkReactionsRefine.CheckedChanged
-        If chkReactionsRefine.Checked Then
-            gbReactionsRefinery.Enabled = True
-        Else
-            gbReactionsRefinery.Enabled = False
-        End If
-    End Sub
-
-#End Region
-
-    Private Sub InitReactionsTab()
-        lstReactions.Items.Clear()
-        lstReactionMats.Visible = False
-
-        chkReactionsTaxes.Checked = UserReactionTabSettings.CheckTaxes
-        chkReactionsFees.Checked = UserReactionTabSettings.CheckFees
-
-        ReactionsColumnClicked = UserReactionTabSettings.ColumnSort
-        If UserReactionTabSettings.ColumnSortType = "Ascending" Then
-            ReactionsColumnSortType = SortOrder.Ascending
-        Else
-            ReactionsColumnSortType = SortOrder.Descending
-        End If
-
-        chkReactionsAdvMoonMats.Checked = UserReactionTabSettings.CheckAdvMoonMats
-        chkReactionsProcMoonMats.Checked = UserReactionTabSettings.CheckProcessedMoonMats
-        chkReactionsHybrid.Checked = UserReactionTabSettings.CheckHybrid
-
-        chkReactionsSimpleBio.Checked = UserReactionTabSettings.CheckSimpleBio
-        chkReactionsComplexBio.Checked = UserReactionTabSettings.CheckComplexBio
-
-        chkReactionsRefine.Checked = UserReactionTabSettings.CheckRefine
-        chkReactionsIgnoreBaseMatPrice.Checked = UserReactionTabSettings.CheckIgnoreMarket
-        chkReactionsBuildBasic.Checked = UserReactionTabSettings.CheckBuildBasic
-
-        cmbReactionsRefineTax.Text = FormatPercent(UserReactionTabSettings.RefineryTax, 1)
-        cmbReactionsRefiningEfficiency.Text = FormatPercent(UserReactionTabSettings.RefineryEfficiency, 0)
-        txtReactionsRefineryStanding.Text = FormatNumber(UserReactionTabSettings.RefineryStanding, 2)
-
-        txtReactionsNumPOS.Text = CStr(UserReactionTabSettings.NumberofPOS)
-        txtReactionPOSFuelCost.Text = FormatNumber(UserReactionTabSettings.POSFuelCost, 2)
-        txtReactionPOSFuelCost.Focus()
-
-    End Sub
-
-    Private Sub btnReactionsSaveSettings_Click(sender As System.Object, e As System.EventArgs) Handles btnReactionsSaveSettings.Click
-        Dim TempSettings As ReactionsTabSettings = Nothing
-        Dim Settings As New ProgramSettings
-
-        If Not IsNumeric(txtReactionPOSFuelCost.Text) Or Trim(txtReactionPOSFuelCost.Text) = "" Then
-            MsgBox("Invalid POS Fuel Cost", vbExclamation, Application.ProductName)
-            txtReactionPOSFuelCost.Focus()
-            Exit Sub
-        End If
-
-        If Not IsNumeric(txtReactionPOSFuelCost.Text) Or Trim(txtReactionsNumPOS.Text) = "" Then
-            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
-            txtReactionsNumPOS.Focus()
-            Exit Sub
-        End If
-
-        If Not IsNumeric(txtReactionsRefineryStanding.Text) Or Trim(txtReactionsRefineryStanding.Text) = "" Then
-            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
-            txtReactionsRefineryStanding.Focus()
-            Exit Sub
-        End If
-
-        If Val(txtReactionsRefineryStanding.Text) > 10 Then
-            MsgBox("Choose a lower value for Refinery Standing", vbExclamation, Me.Text)
-            txtReactionsRefineryStanding.Focus()
-            Exit Sub
-        End If
-
-        ' Refine Tax
-        Dim TempRefine As String
-        TempRefine = cmbReactionsRefineTax.Text.Replace("%", "")
-
-        If Not IsNumeric(TempRefine) Or Trim(TempRefine) = "" Then
-            MsgBox("Invalid Refinery Tax", vbExclamation, Application.ProductName)
-            cmbReactionsRefineTax.Focus()
-        ElseIf CDbl(TempRefine) > 10 Then
-            cmbReactionsRefineTax.Text = "10.0"
-        End If
-
-        TempSettings.POSFuelCost = CDbl(txtReactionPOSFuelCost.Text)
-        TempSettings.NumberofPOS = CInt(txtReactionsNumPOS.Text)
-
-        TempSettings.CheckTaxes = chkReactionsTaxes.Checked
-        TempSettings.CheckFees = chkReactionsFees.Checked
-        TempSettings.CheckAdvMoonMats = chkReactionsAdvMoonMats.Checked
-        TempSettings.CheckProcessedMoonMats = chkReactionsProcMoonMats.Checked
-        TempSettings.CheckHybrid = chkReactionsHybrid.Checked
-
-        TempSettings.CheckRefine = chkReactionsRefine.Checked
-        TempSettings.CheckIgnoreMarket = chkReactionsIgnoreBaseMatPrice.Checked
-        TempSettings.CheckBuildBasic = chkReactionsBuildBasic.Checked
-        TempSettings.CheckSimpleBio = chkReactionsSimpleBio.Checked
-        TempSettings.CheckComplexBio = chkReactionsComplexBio.Checked
-
-        TempSettings.ColumnSort = ReactionsColumnClicked
-
-        If ReactionsColumnSortType = SortOrder.Ascending Then
-            TempSettings.ColumnSortType = "Ascending"
-        Else
-            TempSettings.ColumnSortType = "Decending"
-        End If
-
-        If cmbReactionsRefiningEfficiency.Text.Contains("%") Then
-            TempSettings.RefineryEfficiency = CDbl(cmbReactionsRefiningEfficiency.Text.Substring(0, Len(cmbReactionsRefiningEfficiency.Text) - 1)) / 100
-        Else
-            TempSettings.RefineryEfficiency = CDbl(cmbReactionsRefiningEfficiency.Text) / 100
-        End If
-
-        ' Standings
-        TempSettings.RefineryStanding = CDbl(txtReactionsRefineryStanding.Text)
-
-        Dim RefineTax As Double = CDbl(cmbReactionsRefineTax.Text.Replace("%", ""))
-
-        If RefineTax <= 0 Then
-            TempSettings.RefineryTax = 0
-        Else
-            TempSettings.RefineryTax = RefineTax / 100
-        End If
-
-        ' Save the data in the XML file
-        Call Settings.SaveReactionSettings(TempSettings)
-
-        ' Save the data to the local variable
-        UserReactionTabSettings = TempSettings
-
-        MsgBox("Settings Saved", vbInformation, Application.ProductName)
-
-    End Sub
-
-    ' Rebuild of reaction processing
-    Private Function BuildReactionList(ByVal LoadAdvMoon As Boolean, ByVal LoadSimpleMoon As Boolean, ByVal LoadHybrid As Boolean,
-                                   ByVal LoadSimpleBio As Boolean, ByVal LoadAdvBio As Boolean, ByVal IgnoreBaseMatPrice As Boolean,
-                                   ByVal BuildBaseMats As Boolean, ByVal SetTaxes As Boolean, ByVal SetFees As Boolean,
-                                   ByVal Refine As Boolean, TotalHourlyPOSCost As Double, NumberofTowers As Integer) As List(Of Reaction)
-
-        Dim FinalReactionList As New List(Of Reaction)
-        Dim CurrentReaction As Reaction
-        Dim readerReactions As SQLiteDataReader
-        Dim SQL As String
-        Dim ReactionGroupList As String = ""
-
-        Dim ReprocessingStation As Reprocessing
-        Dim RefineOutputName As String
-        Dim RefineOutputQuantity As Long
-        Dim RefineOutputVolume As Double
-        Dim TempMats As Materials
-
-        ' Get the list of reactions we want to make
-        SQL = "SELECT REACTION_TYPE_ID, REACTION_NAME, REACTION_GROUP, MATERIAL_GROUP, MATERIAL_CATEGORY, MATERIAL_TYPE_ID,"
-        SQL = SQL & "MATERIAL_NAME, MATERIAL_QUANTITY, MATERIAL_VOLUME, "
-        SQL = SQL & "CASE WHEN ITEM_PRICES.PRICE IS NULL THEN 0 ELSE ITEM_PRICES.PRICE END AS MATERIAL_PRICE_PER_UNIT "
-        SQL = SQL & "FROM REACTIONS LEFT OUTER JOIN ITEM_PRICES ON REACTIONS.MATERIAL_TYPE_ID  = ITEM_PRICES.ITEM_ID "
-
-        If LoadAdvMoon Then
-            ReactionGroupList = ReactionGroupList & "'Complex Reactions',"
-        End If
-        If LoadSimpleMoon Then
-            ReactionGroupList = ReactionGroupList & "'Simple Reaction',"
-        End If
-        If LoadHybrid Then
-            ReactionGroupList = ReactionGroupList & "'Hybrid Reactions',"
-        End If
-        If LoadSimpleBio Then
-            ReactionGroupList = ReactionGroupList & "'Simple Biochemical Reactions',"
-        End If
-        If LoadAdvBio Then
-            ReactionGroupList = ReactionGroupList & "'Complex Biochemical Reactions',"
-        End If
-
-        SQL = SQL & "WHERE REACTION_TYPE = 'Output' "
-        SQL = SQL & "AND REACTION_GROUP IN (" & ReactionGroupList.Substring(0, Len(ReactionGroupList) - 1) & ") "
-        SQL = SQL & "AND MATERIAL_CATEGORY NOT IN ('Commodity','Planetary Commodities')"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerReactions = DBCommand.ExecuteReader()
-
-        While readerReactions.Read
-            CurrentReaction = Nothing
-
-            ' For each resulting reaction, set initial data of the final reaction
-            CurrentReaction.TypeID = readerReactions.GetInt32(0)
-            CurrentReaction.Reaction = readerReactions.GetString(1)
-            CurrentReaction.ReactionGroup = readerReactions.GetString(2)
-
-            ' Set the name of the reaction type here by group type
-            Select Case CurrentReaction.ReactionGroup
-                Case "Complex Biochemical Reactions"
-                    CurrentReaction.ReactionType = "Complex Biochemical"
-                Case "Complex Reactions"
-                    CurrentReaction.ReactionType = "Advanced Moon Materials"
-                Case "Hybrid Reactions"
-                    CurrentReaction.ReactionType = "Hybrid Polymers"
-                Case "Simple Biochemical Reactions"
-                    CurrentReaction.ReactionType = "Simple Biochemical"
-                Case "Simple Reaction"
-                    CurrentReaction.ReactionType = "Processed Moon Materials"
-            End Select
-
-            ' Get the Inputs
-            CurrentReaction.Inputs = GetReactionInputs(CurrentReaction.TypeID, BuildBaseMats, IgnoreBaseMatPrice)
-
-            ' Set the output material
-            ' If we are refining and the material produced is unrefined, then get refined mats value
-            If Refine And readerReactions.GetString(6).Contains("Unrefined") Then
-                Dim Tax As Double
-                Dim Efficiency As Double
-
-                If cmbReactionsRefiningEfficiency.Text.Contains("%") Then
-                    Efficiency = CDbl(cmbReactionsRefiningEfficiency.Text.Substring(0, Len(cmbReactionsRefiningEfficiency.Text) - 1)) / 100
-                Else
-                    Efficiency = CDbl(cmbReactionsRefiningEfficiency.Text) / 100
-                End If
-
-                Dim RefineTax As Double = CDbl(cmbReactionsRefineTax.Text.Replace("%", ""))
-
-                If RefineTax <= 0 Then
-                    Tax = 0
-                Else
-                    Tax = RefineTax / 100
-                End If
-
-                ReprocessingStation = New Reprocessing(SelectedCharacter.Skills.GetSkillLevel(3385),
-                                                              SelectedCharacter.Skills.GetSkillLevel(3389),
-                                                              SelectedCharacter.Skills.GetSkillLevel(12196),
-                                                              UserApplicationSettings.RefiningImplantValue, Efficiency,
-                                                              Tax, CDbl(txtReactionsRefineryStanding.Text))
-
-                TempMats = ReprocessingStation.ReprocessMaterial(readerReactions.GetInt64(5), 1, 1, False, False, False)
-                RefineOutputName = ""
-                RefineOutputQuantity = 0
-
-                ' Sum up the outputs
-                For k = 0 To TempMats.GetMaterialList.Count - 1
-                    ' Save the name/quantity as a combination of the outputs
-                    RefineOutputName = RefineOutputName & TempMats.GetMaterialList(k).GetMaterialName & "(" & CStr(TempMats.GetMaterialList(k).GetQuantity) & ") - "
-                    RefineOutputQuantity = RefineOutputQuantity + TempMats.GetMaterialList(k).GetQuantity
-                    RefineOutputVolume = RefineOutputVolume + TempMats.GetMaterialList(k).GetVolume
-                Next
-
-                RefineOutputName = RefineOutputName.Substring(0, Len(RefineOutputName) - 3)
-
-                ' Set the refine output - use the total cost divided by the total quantity to fudge the numbers to look correct in the screen
-                CurrentReaction.Output = New Material(readerReactions.GetInt64(5),
-                                                   RefineOutputName, readerReactions.GetString(3),
-                                                   RefineOutputQuantity, RefineOutputVolume, TempMats.GetTotalMaterialsCost / RefineOutputQuantity, "-", "-")
-            Else
-                ' Set the output
-                CurrentReaction.Output = New Material(readerReactions.GetInt64(5), readerReactions.GetString(6),
-                                                          readerReactions.GetString(3), readerReactions.GetInt64(7),
-                                                          readerReactions.GetDouble(8), readerReactions.GetDouble(9), "0", "0")
-            End If
-
-            ' We are assuming the full chain is set up and processing - so 1 hour per reaction
-            ' Unless we are building the base materials, these output 200 units instead of 100 required
-            ' for final reaction. So assume the number of POS's entered takes this into account and double the reaction output quantity
-            If BuildBaseMats And (CurrentReaction.ReactionGroup = "Complex Biochemical Reactions" Or CurrentReaction.ReactionGroup = "Complex Reactions") Then
-                ' Double the output mats
-                CurrentReaction.Output.SetQuantity(CurrentReaction.Output.GetQuantity * 2)
-            End If
-
-            ' Determine final profit
-            CurrentReaction.ProfitPerHour = CurrentReaction.Output.GetTotalCost - CurrentReaction.Inputs.GetTotalMaterialsCost - (TotalHourlyPOSCost * NumberofTowers)
-
-            ' Finally set the taxes and fees
-            If SetTaxes Then
-                CurrentReaction.Taxes = GetSalesTax(CurrentReaction.ProfitPerHour)
-                CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Taxes
-            End If
-
-            If SetFees Then
-                CurrentReaction.Fees = GetSalesTax(CurrentReaction.ProfitPerHour)
-                CurrentReaction.ProfitPerHour = CurrentReaction.ProfitPerHour - CurrentReaction.Fees
-            End If
-
-            FinalReactionList.Add(CurrentReaction)
-
-        End While
-
-        readerReactions.Close()
-        DBCommand = Nothing
-
-        Return FinalReactionList
-
-    End Function
-
-    ' Gets the inputs of an output reaction and returns the list of materials
-    Private Function GetReactionInputs(ReactionTypeID As Long, BuildBaseMaterials As Boolean, IgnoreBaseMatPrices As Boolean) As Materials
-        Dim readerInputs As SQLiteDataReader
-        Dim readerSubInput As SQLiteDataReader
-        Dim SQL As String
-        Dim ReactionInputList As New Materials
-        Dim ReactionSubInputList As New Materials
-        Dim BaseInputList As New List(Of Material)
-        Dim InputMaterial As Material
-
-        SQL = "SELECT REACTION_TYPE_ID, REACTION_NAME, REACTION_GROUP, MATERIAL_GROUP, MATERIAL_CATEGORY, MATERIAL_TYPE_ID,"
-        SQL = SQL & "MATERIAL_NAME, MATERIAL_QUANTITY, MATERIAL_VOLUME, "
-        SQL = SQL & "CASE WHEN ITEM_PRICES.PRICE IS NULL THEN 0 ELSE ITEM_PRICES.PRICE END AS MATERIAL_PRICE_PER_UNIT "
-        SQL = SQL & "FROM REACTIONS LEFT OUTER JOIN ITEM_PRICES ON REACTIONS.MATERIAL_TYPE_ID  = ITEM_PRICES.ITEM_ID "
-        SQL = SQL & "WHERE REACTION_TYPE = 'Input' AND REACTION_TYPE_ID = " & ReactionTypeID
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerInputs = DBCommand.ExecuteReader()
-
-        While readerInputs.Read
-            ' Two options, buy them or build them if they are complex
-            If BuildBaseMaterials And (readerInputs.GetString(2) = "Complex Biochemical Reactions" Or readerInputs.GetString(2) = "Complex Reactions") _
-                And readerInputs.GetString(4) <> "Commodity" And readerInputs.GetString(4) <> "Planetary Commodities" Then
-                ' Look up each input material for it's base build cost and use that for profit calc
-                '        ' The logic for a full chain is as follows:
-                '        ' 2 Basic Moon Materials from Moon Mining -> ReactoreaderInputsr => 1 Processed Moon Material} These 2 Processed Moon Materials -> Reactor => Advanced Moon Material
-                '        ' 2 Basic Moon Materials from Moon Mining -> Reactor => 1 Processed Moon Material}
-                ' 
-                ' Assume it takes one hour to do a full chain after one gets the initial materials loaded and running (~3 hour startup)
-
-                ' Get the reaction type id for the input reaction
-                SQL = "SELECT REACTION_TYPE_ID, REACTION_GROUP FROM REACTIONS WHERE REACTION_TYPE = 'Output' and MATERIAL_NAME = '" & readerInputs.GetString(6) & "'"
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerSubInput = DBCommand.ExecuteReader()
-
-                Call readerSubInput.Read()
-                ReactionSubInputList = GetReactionInputs(readerSubInput.GetInt64(0), BuildBaseMaterials, IgnoreBaseMatPrices)
-
-                ' Add the inputs to the list
-                For i = 0 To ReactionSubInputList.GetMaterialList.Count - 1
-                    ReactionSubInputList.GetMaterialList(i).SetTotalCost(0)
-                    ReactionInputList.InsertMaterial(ReactionSubInputList.GetMaterialList(i))
-                    ' If this is a base material, and they want to ignore cost, then update
-                    If IgnoreBaseMatPrices And (readerSubInput.GetString(1) = "Simple Biochemical Reactions" Or readerSubInput.GetString(1) = "Simple Reaction") Then
-                        ' Find the material we just insert and set the cost to 0
-                        For j = 0 To ReactionInputList.GetMaterialList.Count - 1
-                            If ReactionInputList.GetMaterialList(j).GetMaterialName = ReactionSubInputList.GetMaterialList(i).GetMaterialName Then
-                                Dim TempPrice As Double
-                                TempPrice = ReactionInputList.GetMaterialList(j).GetTotalCost
-                                ReactionInputList.GetMaterialList(j).SetTotalCost(0)
-                                ReactionInputList.ResetTotalValue(ReactionInputList.GetTotalMaterialsCost - TempPrice)
-                            End If
-                        Next
-                    End If
-                Next
-
-                readerSubInput.Close()
-
-            Else ' Buying
-
-                ' Insert all the inputs into the list individually
-                InputMaterial = New Material(readerInputs.GetInt64(5), readerInputs.GetString(6),
-                                                              readerInputs.GetString(3), readerInputs.GetInt64(7),
-                                                              readerInputs.GetDouble(8), readerInputs.GetDouble(9), "0", "0")
-
-                ' If this is a base material, and they want to ignore cost, then update
-                If IgnoreBaseMatPrices And (readerInputs.GetString(2) = "Simple Biochemical Reactions" Or readerInputs.GetString(2) = "Simple Reaction") Then
-                    Call InputMaterial.SetTotalCost(0)
-                End If
-
-                ReactionInputList.InsertMaterial(InputMaterial)
-
-            End If
-
-        End While
-
-        readerInputs.Close()
-        DBCommand = Nothing
-
-        Return ReactionInputList
-
-    End Function
-
-    ' Updates the grid with all the reactions
-    Public Sub UpdateReactionsGrid()
-        Dim lstViewRow As ListViewItem
-        Dim POSFuelCost As Double
-        Dim NumberOfPOS As Integer
-        Dim ReactionIPH As Double
-        Dim IgnoreMoonMatPrice As Boolean = False
-        Dim BuildBaseMats As Boolean = False
-        Dim i As Integer
-
-        ' Don't do anything but clear the list if no items checked
-        If Not chkReactionsAdvMoonMats.Checked And Not chkReactionsComplexBio.Checked And Not chkReactionsHybrid.Checked And Not chkReactionsProcMoonMats.Checked And Not chkReactionsSimpleBio.Checked Then
-            lstReactions.Items.Clear()
-            Exit Sub
-        End If
-
-        ' Check Fuel Cost
-        If Not IsNumeric(txtReactionPOSFuelCost.Text) Or Trim(txtReactionPOSFuelCost.Text) = "" Then
-            MsgBox("Must Enter Fuel Cost", vbExclamation, Me.Text)
-            txtReactionPOSFuelCost.Focus()
-            Exit Sub
-        Else
-            POSFuelCost = CDbl(txtReactionPOSFuelCost.Text)
-        End If
-
-        If Not IsNumeric(txtReactionPOSFuelCost.Text) Or Trim(txtReactionsNumPOS.Text) = "" Then
-            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
-            txtReactionsNumPOS.Focus()
-            Exit Sub
-        Else
-            NumberOfPOS = CInt(txtReactionsNumPOS.Text)
-        End If
-
-        If Not IsNumeric(txtReactionsRefineryStanding.Text) Or Trim(txtReactionsRefineryStanding.Text) = "" Then
-            MsgBox("Invalid Number of POSs", vbExclamation, Me.Text)
-            txtReactionsRefineryStanding.Focus()
-            Exit Sub
-        End If
-
-        If Val(txtReactionsRefineryStanding.Text) > 10 Then
-            MsgBox("Choose a lower value for Refinery Standing", vbExclamation, Me.Text)
-            txtReactionsRefineryStanding.Focus()
-            Exit Sub
-        End If
-
-        ' Working
-        Me.Cursor = Cursors.WaitCursor
-
-        If chkReactionsIgnoreBaseMatPrice.Checked And chkReactionsIgnoreBaseMatPrice.Enabled Then
-            IgnoreMoonMatPrice = True
-        Else
-            IgnoreMoonMatPrice = False
-        End If
-
-        If chkReactionsBuildBasic.Checked And chkReactionsBuildBasic.Enabled Then
-            BuildBaseMats = True
-        Else
-            BuildBaseMats = False
-        End If
-
-        ' Get the reaction list
-        GlobalReactionList = BuildReactionList(chkReactionsAdvMoonMats.Checked, chkReactionsProcMoonMats.Checked, chkReactionsHybrid.Checked,
-                                            chkReactionsSimpleBio.Checked, chkReactionsComplexBio.Checked, IgnoreMoonMatPrice, BuildBaseMats,
-                                            chkReactionsTaxes.Checked, chkReactionsFees.Checked, chkReactionsRefine.Checked, POSFuelCost, NumberOfPOS)
-
-        If GlobalReactionList.Count > 0 Then
-            ' Sort it
-            GlobalReactionList.Sort(New ReactionIPHComparer)
-
-            ' Put the materials in the list
-            ' Clear List and begin update
-            lstReactions.BeginUpdate()
-            lstReactions.Items.Clear()
-
-            For i = 0 To GlobalReactionList.Count - 1
-                lstViewRow = New ListViewItem(GlobalReactionList(i).ReactionType)
-                'The remaining columns are subitems  
-                lstViewRow.SubItems.Add(GlobalReactionList(i).Reaction)
-                lstViewRow.SubItems.Add(GlobalReactionList(i).Output.GetMaterialName)
-                lstViewRow.SubItems.Add(FormatNumber(GlobalReactionList(i).Output.GetQuantity, 0))
-                lstViewRow.SubItems.Add(GlobalReactionList(i).Output.GetMaterialGroup)
-                ReactionIPH = GlobalReactionList(i).ProfitPerHour
-
-                If ReactionIPH < 0 Then
-                    lstViewRow.ForeColor = Color.Red
-                Else
-                    lstViewRow.ForeColor = Color.Black
-                End If
-
-                ' Color row by type of reaction
-                Select Case GlobalReactionList(i).Output.GetMaterialGroup
-                    Case "Biochemical Material"
-                        If GlobalReactionList(i).ReactionGroup.Substring(0, 6) = "Simple" Then
-                            lstViewRow.BackColor = Color.LightYellow
-                        Else
-                            lstViewRow.BackColor = Color.LightGreen
-                        End If
-                    Case "Composite"
-                        lstViewRow.BackColor = Color.Wheat
-                    Case "Hybrid Polymers"
-                        lstViewRow.BackColor = Color.LightSkyBlue
-                    Case "Intermediate Materials"
-                        lstViewRow.BackColor = Color.LightCyan
-                End Select
-
-                lstViewRow.SubItems.Add(FormatNumber(ReactionIPH, 2)) ' IPH
-
-                Call lstReactions.Items.Add(lstViewRow)
-
-            Next
-
-            ' Now sort this
-            Dim TempType As SortOrder
-            If ReactionsColumnSortType = SortOrder.Ascending Then
-                TempType = SortOrder.Descending
-            Else
-                TempType = SortOrder.Ascending
-            End If
-            Call ListViewColumnSorter(ReactionsColumnClicked, CType(lstReactions, ListView), ReactionsColumnClicked, TempType)
-            Me.Cursor = Cursors.Default
-
-            lstReactions.EndUpdate()
-        End If
-
-        Me.Cursor = Cursors.Default
-
-    End Sub
-
-    ' Loads the reaction into the list
-    Private Sub LoadReaction(ByVal SentReaction As Reaction)
-        Dim lstViewRow As ListViewItem
-        Dim ReactionIPH As Double
-
-        lstViewRow = New ListViewItem(SentReaction.ReactionType)
-        'The remaining columns are subitems  
-        lstViewRow.SubItems.Add(SentReaction.Reaction)
-        lstViewRow.SubItems.Add(SentReaction.Output.GetMaterialName)
-        lstViewRow.SubItems.Add(SentReaction.Output.GetMaterialGroup)
-        ReactionIPH = SentReaction.ProfitPerHour - 15000
-
-        If ReactionIPH < 0 Then
-            lstViewRow.ForeColor = Color.Red
-        Else
-            lstViewRow.ForeColor = Color.Black
-        End If
-
-        ' Color row by type of reaction
-        Select Case SentReaction.Output.GetMaterialGroup
-            Case "Biochemical Material"
-                If SentReaction.ReactionGroup.Substring(0, 6) = "Simple" Then
-                    lstViewRow.BackColor = Color.LightYellow
-                Else
-                    lstViewRow.BackColor = Color.LightGreen
-                End If
-            Case "Composite"
-                lstViewRow.BackColor = Color.Wheat
-            Case "Hybrid Polymers"
-                lstViewRow.BackColor = Color.LightSkyBlue
-            Case "Intermediate Materials"
-                lstViewRow.BackColor = Color.LightCyan
-        End Select
-
-        lstViewRow.SubItems.Add(FormatNumber(ReactionIPH, 2))
-
-        Call lstReactions.Items.Add(lstViewRow)
-
-    End Sub
-
-    ' Function takes 2 reaction lists and returns the combined list
-    'Private Function AddReactions(ByVal ReactionList1 As Reaction(), ByVal ReactionList2 As Reaction()) As Reaction()
-    '    Dim TempReactions() As Reaction
-    '    Dim i As Integer = 0
-    '    Dim j As Integer = 0
-    '    Dim TotalRecords As Integer
-
-    '    If IsNothing(ReactionList1) And IsNothing(ReactionList2) Then
-    '        Return Nothing
-    '    ElseIf IsNothing(ReactionList1) Then
-    '        Return ReactionList2
-    '    ElseIf IsNothing(ReactionList2) Then
-    '        Return ReactionList1
-    '    End If
-
-    '    TotalRecords = ReactionList1.Count + ReactionList2.Count - 1
-    '    ReDim TempReactions(TotalRecords)
-
-    '    ' Copy the first list
-    '    For i = 0 To ReactionList1.Count - 1
-    '        TempReactions(i).TypeID = ReactionList1(i).TypeID
-    '        TempReactions(i).ReactionType = ReactionList1(i).ReactionType
-    '        TempReactions(i).Reaction = ReactionList1(i).Reaction
-    '        TempReactions(i).ReactionGroup = ReactionList1(i).ReactionGroup
-    '        TempReactions(i).Output = ReactionList1(i).Output
-    '        TempReactions(i).Inputs = ReactionList1(i).Inputs
-    '        TempReactions(i).ProfitPerHour = ReactionList1(i).ProfitPerHour
-    '        TempReactions(i).Fees = ReactionList1(i).Fees
-    '        TempReactions(i).Taxes = ReactionList1(i).Taxes
-    '    Next
-
-    '    'Now the second
-    '    For i = ReactionList1.Count To TotalRecords
-    '        TempReactions(i).TypeID = ReactionList2(j).TypeID
-    '        TempReactions(i).ReactionType = ReactionList2(j).ReactionType
-    '        TempReactions(i).Reaction = ReactionList2(j).Reaction
-    '        TempReactions(i).ReactionGroup = ReactionList2(j).ReactionGroup
-    '        TempReactions(i).Output = ReactionList2(j).Output
-    '        TempReactions(i).Inputs = ReactionList2(j).Inputs
-    '        TempReactions(i).ProfitPerHour = ReactionList2(j).ProfitPerHour
-    '        TempReactions(i).Fees = ReactionList2(j).Fees
-    '        TempReactions(i).Taxes = ReactionList2(j).Taxes
-    '        j = j + 1
-    '    Next
-
-    '    Return TempReactions
-
-    'End Function
-
-    ' Sorts a Reaction list descending
-    'Private Sub SortListDesc(ByRef List() As Reaction, ByVal First As Integer, ByVal Last As Integer)
-    '    Dim LowIndex As Integer
-    '    Dim HighIndex As Integer
-    '    Dim MidValue As Double
-
-    '    ' Quicksort
-    '    LowIndex = First
-    '    HighIndex = Last
-    '    MidValue = List((First + Last) \ 2).ProfitPerHour
-
-    '    Do
-    '        While List(LowIndex).ProfitPerHour > MidValue
-    '            LowIndex = LowIndex + 1
-    '        End While
-
-    '        While List(HighIndex).ProfitPerHour < MidValue
-    '            HighIndex = HighIndex - 1
-    '        End While
-
-    '        If LowIndex <= HighIndex Then
-    '            Swap(List, LowIndex, HighIndex)
-    '            LowIndex = LowIndex + 1
-    '            HighIndex = HighIndex - 1
-    '        End If
-
-    '    Loop While LowIndex <= HighIndex
-
-    '    If First < HighIndex Then
-    '        SortListDesc(List, First, HighIndex)
-    '    End If
-
-    '    If LowIndex < Last Then
-    '        SortListDesc(List, LowIndex, Last)
-    '    End If
-
-    'End Sub
-
-    ' This swaps the Reaction list values
-    'Private Sub Swap(ByRef List() As Reaction, ByRef IndexA As Integer, ByRef IndexB As Integer)
-    '    Dim Temp As Reaction
-
-    '    Temp = List(IndexA)
-    '    List(IndexA) = List(IndexB)
-    '    List(IndexB) = Temp
-
-    'End Sub
-
-    ' Updates the input list boxes when a row is clicked
-    Private Sub lstReactions_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lstReactions.SelectedIndexChanged
-        Dim i As Integer
-        Dim index As Integer
-        Dim lstViewRow As ListViewItem
-
-        ' Load up the inputs into the boxes depending on number of mats
-        ' Reactions is form global and since it is sorted, it represents what is in lstReactions
-        If lstReactions.SelectedItems.Count > 0 Then
-            index = lstReactions.SelectedIndices(0)
-
-            ' Look up the index in the global list
-            index = GetGlobalReactionListIndex(lstReactions.SelectedItems(0).SubItems(1).Text)
-
-            lstReactionMats.BeginUpdate()
-            lstReactionMats.Items.Clear()
-
-            If Not IsNothing(GlobalReactionList(index).Inputs.GetMaterialList) Then
-                For i = 0 To GlobalReactionList(index).Inputs.GetMaterialList.Count - 1
-
-                    lstViewRow = New ListViewItem(GlobalReactionList(index).Inputs.GetMaterialList(i).GetMaterialName)
-                    'The remaining columns are subitems  
-                    'lstViewRow.SubItems.Add(GlobalReactionList(index).Inputs.GetMaterialList(i).GetCostPerItem)
-                    lstViewRow.SubItems.Add(CStr(GlobalReactionList(index).Inputs.GetMaterialList(i).GetQuantity))
-                    Call lstReactionMats.Items.Add(lstViewRow)
-                Next
-
-                ' Populate Taxes and Fees
-                lblReactionsFees.Text = FormatNumber(GlobalReactionList(index).Fees, 2)
-                lblReactionsTaxes.Text = FormatNumber(GlobalReactionList(index).Taxes, 2)
-
-            End If
-            lstReactionMats.EndUpdate()
-        End If
-
-        lstReactionMats.Visible = True
-
-    End Sub
-
-    ' Searches through the reaction list for the selected reaction and returns the index in that list
-    ' This is because sorting the list doesn't update the reaction list (Temp Fix)
-    Private Function GetGlobalReactionListIndex(ReactionName As String) As Integer
-
-        For i = 0 To GlobalReactionList.Count - 1
-            If GlobalReactionList(i).Reaction = ReactionName Then
-                Return i
-            End If
-        Next
-
-        Return 0
-
-    End Function
-
-    ' Reaction Structure
-    Public Structure Reaction
-        Dim TypeID As Integer
-        Dim ReactionType As String
-        Dim Reaction As String
-        Dim ReactionGroup As String
-        Dim Output As Material
-        Dim ProfitPerHour As Double
-        Dim Taxes As Double ' Taxes for selling this item
-        Dim Fees As Double ' Fees for setting up sell order
-        ' Inputs
-        Dim Inputs As Materials
-    End Structure
-
-    ' For sorting a list of Reactions
-    Public Class ReactionIPHComparer
-
-        Implements System.Collections.Generic.IComparer(Of Reaction)
-
-        Public Function Compare(ByVal p1 As Reaction, ByVal p2 As Reaction) As Integer Implements IComparer(Of Reaction).Compare
-            ' swap p2 and p1 to do decending sort
-            Return p2.ProfitPerHour.CompareTo(p1.ProfitPerHour)
-        End Function
-
-    End Class
-
-#End Region
-
 #Region "Mining"
 
 #Region "Mining Object Functions"
@@ -19436,7 +18637,6 @@ Leave:
             cmbMineMiningDirector.Text = CStr(.MiningDirectorSkill)
             cmbMineMiningForeman.Text = CStr(.MiningFormanSkill)
             cmbMineBoosterShipSkill.Text = CStr(.BoosterShipSkill)
-            cmbMineWarfareLinkSpec.Text = CStr(.WarfareLinkSpecSkill)
             chkMineForemanMindlink.Checked = .CheckMiningForemanMindLink
             cmbMineIndustReconfig.Text = CStr(.IndustrialReconfig)
 
@@ -20248,7 +19448,6 @@ Leave:
             .MiningDirectorSkill = CInt(cmbMineMiningDirector.Text)
             .MiningFormanSkill = CInt(cmbMineMiningForeman.Text)
             .BoosterShipSkill = CInt(cmbMineBoosterShipSkill.Text)
-            .WarfareLinkSpecSkill = CInt(cmbMineWarfareLinkSpec.Text)
             .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
             .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
 
@@ -21145,8 +20344,6 @@ Leave:
             cmbMineMiningForeman.Enabled = True
             lblMineBoosterShipSkill.Enabled = True
             cmbMineBoosterShipSkill.Enabled = True
-            lblMineWarfareLinkSpec.Enabled = True
-            cmbMineWarfareLinkSpec.Enabled = True
 
             If cmbMineMiningForeman.Text = "5" Then
                 cmbMineMiningDirector.Enabled = True
@@ -21223,8 +20420,6 @@ Leave:
             chkMineForemanLaserRangeBoost.Enabled = False
             lblMineBoosterShipSkill.Enabled = False
             cmbMineBoosterShipSkill.Enabled = False
-            lblMineWarfareLinkSpec.Enabled = False
-            cmbMineWarfareLinkSpec.Enabled = False
             chkMineRorqDeployedMode.Enabled = False
             cmbMineIndustReconfig.Enabled = False
             lblMineIndustrialReconfig.Enabled = False

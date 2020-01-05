@@ -81,6 +81,7 @@ Partial Class frmAssetsViewer
         Me.chkItemsT1 = New System.Windows.Forms.CheckBox()
         Me.chkManufacturedItems = New System.Windows.Forms.CheckBox()
         Me.gbComponents = New System.Windows.Forms.GroupBox()
+        Me.chkStructureComponents = New System.Windows.Forms.CheckBox()
         Me.chkHybrid = New System.Windows.Forms.CheckBox()
         Me.chkComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapitalComponents = New System.Windows.Forms.CheckBox()
@@ -114,7 +115,6 @@ Partial Class frmAssetsViewer
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.AssetTree = New System.Windows.Forms.TreeView()
-        Me.chkStructureComponents = New System.Windows.Forms.CheckBox()
         Me.gbSortOptions.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
         Me.tabMain.SuspendLayout()
@@ -736,6 +736,15 @@ Partial Class frmAssetsViewer
         Me.gbComponents.TabStop = False
         Me.gbComponents.Text = "Components"
         '
+        'chkStructureComponents
+        '
+        Me.chkStructureComponents.Location = New System.Drawing.Point(156, 49)
+        Me.chkStructureComponents.Name = "chkStructureComponents"
+        Me.chkStructureComponents.Size = New System.Drawing.Size(92, 34)
+        Me.chkStructureComponents.TabIndex = 18
+        Me.chkStructureComponents.Text = "Structure Components"
+        Me.chkStructureComponents.UseVisualStyleBackColor = True
+        '
         'chkHybrid
         '
         Me.chkHybrid.AutoSize = True
@@ -819,7 +828,7 @@ Partial Class frmAssetsViewer
         'chkBPCs
         '
         Me.chkBPCs.AutoSize = True
-        Me.chkBPCs.Location = New System.Drawing.Point(132, 86)
+        Me.chkBPCs.Location = New System.Drawing.Point(133, 103)
         Me.chkBPCs.Name = "chkBPCs"
         Me.chkBPCs.Size = New System.Drawing.Size(102, 17)
         Me.chkBPCs.TabIndex = 21
@@ -829,7 +838,7 @@ Partial Class frmAssetsViewer
         'chkMisc
         '
         Me.chkMisc.AutoSize = True
-        Me.chkMisc.Location = New System.Drawing.Point(186, 103)
+        Me.chkMisc.Location = New System.Drawing.Point(182, 86)
         Me.chkMisc.Name = "chkMisc"
         Me.chkMisc.Size = New System.Drawing.Size(51, 17)
         Me.chkMisc.TabIndex = 20
@@ -930,7 +939,7 @@ Partial Class frmAssetsViewer
         'chkGas
         '
         Me.chkGas.AutoSize = True
-        Me.chkGas.Location = New System.Drawing.Point(133, 103)
+        Me.chkGas.Location = New System.Drawing.Point(133, 86)
         Me.chkGas.Name = "chkGas"
         Me.chkGas.Size = New System.Drawing.Size(45, 17)
         Me.chkGas.TabIndex = 9
@@ -1083,15 +1092,6 @@ Partial Class frmAssetsViewer
         Me.AssetTree.Name = "AssetTree"
         Me.AssetTree.Size = New System.Drawing.Size(346, 662)
         Me.AssetTree.TabIndex = 250
-        '
-        'chkStructureComponents
-        '
-        Me.chkStructureComponents.Location = New System.Drawing.Point(156, 49)
-        Me.chkStructureComponents.Name = "chkStructureComponents"
-        Me.chkStructureComponents.Size = New System.Drawing.Size(92, 34)
-        Me.chkStructureComponents.TabIndex = 18
-        Me.chkStructureComponents.Text = "Structure Components"
-        Me.chkStructureComponents.UseVisualStyleBackColor = True
         '
         'frmAssetsViewer
         '

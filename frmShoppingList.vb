@@ -1,6 +1,11 @@
 ﻿
 Imports System.Data.SQLite
 Imports System.IO
+Imports System.Net
+Imports System.Text
+Imports System.Collections.Specialized
+Imports System.Threading
+Imports Newtonsoft.Json
 
 Public Class frmShoppingList
 
@@ -152,7 +157,7 @@ Public Class frmShoppingList
         ' Built Item List for items we are building - width = 371 (21 for verticle scroll bar)
         lstBuild.Columns.Add("TypeID", 0, HorizontalAlignment.Center) ' always left allignment this column for some reason, so add a dummy
         lstBuild.Columns.Add("Build Item", 237, HorizontalAlignment.Left)
-        lstBuild.Columns.Add("Runs", 80, HorizontalAlignment.Right)
+        lstBuild.Columns.Add("Quantity", 80, HorizontalAlignment.Right)
         lstBuild.Columns.Add("ME", 30, HorizontalAlignment.Right)
         lstBuild.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
         lstBuild.Columns.Add("Facility Location", 0, HorizontalAlignment.Left) 'Hidden to help build at component facility
@@ -2561,6 +2566,65 @@ Tabs:
         txtListEdit.Hide()
     End Sub
 
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Dim AccessTokenOutput As New ESITokenData
+        Dim Success As Boolean = False
+        Dim WC As New WebClient
+        Dim Response As Byte()
+        Dim Data As String = ""
+        Dim PostParameters As New NameValueCollection
+
+        Try
+
+            ' See if we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
+
+            'curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
+
+
+            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=dodixie&raw_textarea=basilisk", "POST", PostParameters)
+
+            ' Convert byte data to string
+            Data = Encoding.UTF8.GetString(Response)
+
+            ' Parse the data to the class
+            AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            Success = True
+
+        Catch ex As WebException
+
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+
+        Catch ex As Exception
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+        End Try
+
+
+    End Sub
+
 #End Region
 
+End Class
+
+Public Class EVEPraisal
+    <JsonProperty("appraisal")> Public appraisal As eveappraisal
+End Class
+
+Public Class eveappraisal
+    <JsonProperty("created")> Public created As Double
+    <JsonProperty("id")> Public id As String
+    <JsonProperty("items")> Public items As List(Of eprasialItems)
+    <JsonProperty("market_name")> Public market_name As String
+    <JsonProperty("raw")> Public raw As String
+End Class
+
+Public Class eprasialItems
+    <JsonProperty("appraisal")> Public appraisal As eveappraisal
+    <JsonProperty("method")> Public method As String
+    <JsonProperty("route")> Public route As String
+    <JsonProperty("status")> Public status As String
+    <JsonProperty("tags")> Public tags As List(Of String)
 End Class

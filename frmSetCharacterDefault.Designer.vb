@@ -92,7 +92,7 @@ Partial Class frmSetCharacterDefault
         '
         'btnManualLoad
         '
-        Me.btnManualLoad.Location = New System.Drawing.Point(29, 375)
+        Me.btnManualLoad.Location = New System.Drawing.Point(20, 375)
         Me.btnManualLoad.Name = "btnManualLoad"
         Me.btnManualLoad.Size = New System.Drawing.Size(270, 26)
         Me.btnManualLoad.TabIndex = 15
