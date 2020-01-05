@@ -15062,7 +15062,7 @@ ExitCalc:
         Dim rsItems As SQLiteDataReader
 
         SQL = "SELECT SUM(runs * PORTION_SIZE) FROM INDUSTRY_JOBS, ALL_BLUEPRINTS WHERE INDUSTRY_JOBS.productTypeID = ALL_BLUEPRINTS.ITEM_ID "
-        SQL = SQL & "And productTypeID = " & CStr(TypeID) & " And status = 1 And activityID IN (1,11) "
+        SQL = SQL & "And productTypeID = " & CStr(TypeID) & " And status = 'active' And activityID IN (1,11) "
         'SQL = SQL & "And installerID = " & CStr(SelectedCharacter.ID) & " "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
