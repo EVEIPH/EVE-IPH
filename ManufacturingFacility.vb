@@ -2002,7 +2002,7 @@ Public Class ManufacturingFacility
                     For Each RigID In InstalledModules
                         ' Look up the bonus while adjusting for the type of space we are in
                         SQL = "SELECT attributeID, "
-                        SQL &= "ABS(value * (Select value FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} And ATTRIBUTEID = {1}))/100) As BONUS "
+                        SQL &= "ABS(value * (Select value FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} And ATTRIBUTEID = {1})/100) As BONUS "
                         SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID In (2593,2594,2595,2713,2714,2653) "
                         SQL &= "And value <> 0 And TYPEID = {0}"
                         SQL = String.Format(SQL, RigID, CInt(securityAttribute))
