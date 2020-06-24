@@ -229,9 +229,9 @@ Public Class ESI
         Dim WC As New WebClient
         Dim Response As Byte()
         Dim Data As String = ""
-        Dim AuthHeader As String = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
 
-        WC.Headers(HttpRequestHeader.Authorization) = AuthHeader
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+        WC.Headers(HttpRequestHeader.Authorization) = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
         WC.Proxy = GetProxyData()
 
         Dim PostParameters As New NameValueCollection
@@ -292,6 +292,7 @@ Public Class ESI
     Private Function GetPublicData(ByVal URL As String, ByRef CacheDate As Date, Optional BodyData As String = "") As String
         Dim Response As String = ""
         Dim WC As New WebClient
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim myWebHeaderCollection As New WebHeaderCollection
         Dim Expires As String = Nothing
         Dim Pages As Integer = Nothing
@@ -374,6 +375,8 @@ Public Class ESI
                                               ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False,
                                               Optional SinglePage As Boolean = False) As String
         Dim WC As New WebClient
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+
         Dim Response As String = ""
 
         Try
@@ -679,6 +682,7 @@ Public Class ESI
     Public Function GetCharacterVerificationData(ByVal TokenData As SavedTokenData, ByVal TokenExpirationDate As Date) As ESICharacterVerificationData
         Dim CacheDate As Date
         Dim WC As New WebClient
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim Response As String = ""
 
         WC.Proxy = GetProxyData()
@@ -1580,7 +1584,7 @@ Public Class ESI
                         Call EVEDB.BeginSQLiteTransaction()
 
                         ' Clear the old records first
-                        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+                        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
 
                         TempLabel.Text = "Saving Adjusted Market Price Data..."
                         TempPB.Minimum = 0
@@ -1605,7 +1609,7 @@ Public Class ESI
                                 Else
                                     AveragePrice = "0.00"
                                 End If
-                                SQL = "UPDATE ITEM_PRICES SET ADJUSTED_PRICE = " & AdjustedPrice & ", AVERAGE_PRICE = " & AveragePrice
+                                SQL = "UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = " & AdjustedPrice & ", AVERAGE_PRICE = " & AveragePrice
                                 SQL &= " WHERE ITEM_ID = " & CStr(.type_id)
                                 Call EVEDB.ExecuteNonQuerySQL(SQL)
                             End With

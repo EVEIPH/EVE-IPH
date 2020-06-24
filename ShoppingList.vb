@@ -897,7 +897,11 @@ Public Class ShoppingList
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
                                .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, True)
 
-                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees, True,
+                            Dim BFI As BrokerFeeInfo
+                            BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)
+                            BFI.FixedRate = UserBPTabSettings.BrokerFeeRate
+
+                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, bfi, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
 
                             Dim InsertBuildItem As New BuiltItem
@@ -1351,7 +1355,7 @@ Public Class ShoppingList
     End Sub
 
     ' Sets all the price data for the shopping list after updates
-    Public Sub SetPriceData(IncludeMaterialBrokerFees As Boolean, IncludeUsage As Boolean, ItemBuyTypeList As List(Of ItemBuyType))
+    Public Sub SetPriceData(BrokerFeeData As BrokerFeeInfo, IncludeUsage As Boolean, ItemBuyTypeList As List(Of ItemBuyType))
 
         ' First, Total up all the material costs, build time and market prices from the items we have and then add to total costs
         TotalListBuildTime = 0
@@ -1367,9 +1371,7 @@ Public Class ShoppingList
 
         ' The only fee that applies when shopping is either a buy order or directly buying - Broker fees are all that apply during a buy order
         MaterialsBrokerFee = 0 ' Reset
-        If IncludeMaterialBrokerFees Then
-            MaterialsBrokerFee = CalculateBrokersFees(ItemBuyTypeList)
-        End If
+        MaterialsBrokerFee = CalculateBrokersFees(ItemBuyTypeList, BrokerFeeData)
 
         ' Total usage
         TotalListUsage = 0 ' Reset
@@ -1386,7 +1388,7 @@ Public Class ShoppingList
     End Sub
 
     ' Gets the broker fees based on user options that determine if each item is bought from market or through orders
-    Private Function CalculateBrokersFees(ItemList As List(Of ItemBuyType)) As Double
+    Private Function CalculateBrokersFees(ItemList As List(Of ItemBuyType), BrokerData As BrokerFeeInfo) As Double
         Dim TotalBrokersFee As Double = 0
 
         ' Loop through the buy list and check the item list to see if we apply brokers fees or not
@@ -1396,7 +1398,7 @@ Public Class ShoppingList
                     If TotalBuyList.GetMaterialList(i).GetMaterialName = ItemList(j).ItemName Then
                         If ItemList(j).BuyType = "Buy Order" Then
                             ' Apply broker fee
-                            TotalBrokersFee += GetSalesBrokerFee(TotalBuyList.GetMaterialList(i).GetTotalCost)
+                            TotalBrokersFee += GetSalesBrokerFee(TotalBuyList.GetMaterialList(i).GetTotalCost, BrokerData)
                         End If
                     End If
                 Next

@@ -1533,12 +1533,12 @@ Public Class ManufacturingFacility
                 SQL &= "WHERE INVENTORY_GROUPS.categoryID = 65 "
                 SQL &= "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupid "
                 SQL &= "AND INVENTORY_TYPES.published = 1 "
-                SQL &= "AND (typeID IN (SELECT COALESCE(valuefloat, valueint) AS UPWELL_STRUCTURE_ID "
+                SQL &= "AND (typeID IN (SELECT value AS UPWELL_STRUCTURE_ID "
                 SQL &= "FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
                 SQL &= "WHERE ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
                 SQL &= "AND attributeName Like 'canFitShipType%' "
                 SQL &= "AND TYPE_ATTRIBUTES.typeID = {0}) "
-                SQL &= "OR INVENTORY_TYPES.groupID In (Select COALESCE(valuefloat, valueint) As UPWELL_STRUCTURE_ID "
+                SQL &= "OR INVENTORY_TYPES.groupID In (Select value As UPWELL_STRUCTURE_ID "
                 SQL &= "FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
                 SQL &= "WHERE ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
                 SQL &= "AND attributeName LIKE 'canFitShipGroup%' "
@@ -2002,9 +2002,9 @@ Public Class ManufacturingFacility
                     For Each RigID In InstalledModules
                         ' Look up the bonus while adjusting for the type of space we are in
                         SQL = "SELECT attributeID, "
-                        SQL &= "ABS((COALESCE(VALUEFLOAT, VALUEINT) * (Select COALESCE(VALUEFLOAT, VALUEINT) FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} And ATTRIBUTEID = {1}))/100) As BONUS "
+                        SQL &= "ABS(value * (Select value FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} And ATTRIBUTEID = {1}))/100) As BONUS "
                         SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID In (2593,2594,2595,2713,2714,2653) "
-                        SQL &= "And COALESCE(VALUEFLOAT, VALUEINT) <> 0 And TYPEID = {0}"
+                        SQL &= "And value <> 0 And TYPEID = {0}"
                         SQL = String.Format(SQL, RigID, CInt(securityAttribute))
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsLoader = DBCommand.ExecuteReader
@@ -3272,6 +3272,14 @@ Public Class ManufacturingFacility
             btnFacilitySave.Enabled = True
             ' Set the selected level
             SelectedFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbFacilitySystem.Text)
+            ' Facility is loaded, so save it to default and dynamic variable
+            Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
+
+            ' If this changed, we need to update the usage
+            If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
+                Call frmMain.RefreshBP()
+                Call UpdateUsage("")
+            End If
         End If
 
         Call SetResetRefresh()

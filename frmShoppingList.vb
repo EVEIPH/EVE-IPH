@@ -448,7 +448,7 @@ Public Class frmShoppingList
 
                             ' Now look at max buy
                             TotalPrice = MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity
-                            BuyOrderFees = GetSalesBrokerFee(TotalPrice)
+                            BuyOrderFees = GetSalesBrokerFee(TotalPrice, GetBrokerFeeData(frmMain.chkBPBrokerFees, frmMain.txtBPBrokerFeeRate))
                             BuyOrderPrice = TotalPrice + BuyOrderFees
 
                             ' Use min sell
@@ -474,7 +474,7 @@ Public Class frmShoppingList
                         ' They want a buy order for all items
                         BuyOrderText = BuyOrder
                         If MaxBuyUnitPrice <> 0 Then
-                            BuyOrderFees = GetSalesBrokerFee(MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity)
+                            BuyOrderFees = GetSalesBrokerFee(MaxBuyUnitPrice * RawItems.GetMaterialList(i).GetQuantity, GetBrokerFeeData(frmMain.chkBPBrokerFees, frmMain.txtBPBrokerFeeRate))
                         Else
                             BuyOrderFees = 0
                         End If
@@ -613,7 +613,11 @@ Public Class frmShoppingList
                 Call TotalShoppingList.SetAdditionalCosts(CDbl(txtAddlCosts.Text))
             End If
 
-            Call TotalShoppingList.SetPriceData(chkFees.Checked, chkUsage.Checked, ItemBuyTypeList)
+            Dim BFI As BrokerFeeInfo
+            BFI.IncludeFee = CType(chkFees.CheckState, BrokerFeeType)
+            BFI.FixedRate = CDbl(txtBrokerFeeRate.Text)
+
+            Call TotalShoppingList.SetPriceData(BFI, chkUsage.Checked, ItemBuyTypeList)
 
             lblTotalCost.Text = FormatNumber(TotalShoppingList.GetTotalCost, 2) & " ISK"
             lblTotalVolume.Text = FormatNumber(TotalShoppingList.GetTotalVolume, 2) & " m3"
@@ -744,11 +748,12 @@ Public Class frmShoppingList
 
                                 Next
 
-                            Else ' Look up in asset list
+                            Else ' Look up in pasted asset list
                                 Dim TempMaterial As Material
 
                                 If Not IsNothing(PasteMaterialList) Then
-                                    TempMaterial = PasteMaterialList.SearchListbyName(ProcessList.GetMaterialList(j).GetMaterialName, False)
+                                    ' The names in the pasted materials won't have the runs tag for built items so remove it before searching
+                                    TempMaterial = PasteMaterialList.SearchListbyName(RemoveItemNameRuns(ProcessList.GetMaterialList(j).GetMaterialName), False)
 
                                     If Not IsNothing(TempMaterial) Then
                                         ' Found it
@@ -1481,7 +1486,7 @@ Public Class frmShoppingList
                         End If
 
                         ' Build the item and get the list of materials
-                        Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, frmMain.chkBPBrokerFees.Checked, False, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
+                        Call TempBP.BuildItems(frmMain.chkBPTaxes.Checked, GetBrokerFeeData(frmMain.chkBPBrokerFees, frmMain.txtBPBrokerFeeRate), False, ItemList(i).IgnoredMinerals, ItemList(i).IgnoredT1BaseItem)
 
                         ' Now that all the lists are loaded, load what we need 
                         If chkRebuildItemsfromList.Checked = False Then
@@ -1800,9 +1805,13 @@ Public Class frmShoppingList
 
             Dim Runs As Integer = CInt(Math.Ceiling(CInt(lstBuild.SelectedItems(0).SubItems(2).Text) / rsBPLookup.GetInt64(1)))
 
+            Dim BFI As BrokerFeeInfo
+            BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)
+            BFI.FixedRate = UserBPTabSettings.BrokerFeeRate
+
             Call frmMain.LoadBPfromEvent(rsBPLookup.GetInt64(0), "Raw", None, SentFromLocation.ShoppingList,
                                                Nothing, Nothing, Nothing, Nothing, Nothing,
-                                               UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
+                                               UserBPTabSettings.IncludeTaxes, BFI,
                                                lstBuild.SelectedItems(0).SubItems(3).Text, lstBuild.SelectedItems(0).SubItems(4).Text,
                                                CStr(Runs), "1", CStr(UserBPTabSettings.LaboratoryLines),
                                                "1", txtAddlCosts.Text, False) ' Any buildable component here is one 1 bp
@@ -1861,10 +1870,14 @@ Public Class frmShoppingList
         rsBPLookup = DBCommand.ExecuteReader
         rsBPLookup.Read()
 
+        Dim BFI As BrokerFeeInfo
+        BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)
+        BFI.FixedRate = UserBPTabSettings.BrokerFeeRate
+
         ' Get the decryptor or relic used from the item
         Call frmMain.LoadBPfromEvent(CLng(rsBPLookup.GetValue(0)), lstItems.SelectedItems(0).SubItems(5).Text, Inputs, SentFromLocation.ShoppingList,
                                            Nothing, Nothing, Nothing, Nothing, Nothing,
-                                           UserBPTabSettings.IncludeTaxes, UserBPTabSettings.IncludeFees,
+                                           UserBPTabSettings.IncludeTaxes, BFI,
                                            lstItems.SelectedItems(0).SubItems(3).Text, lstItems.SelectedItems(0).SubItems(15).Text,
                                            lstItems.SelectedItems(0).SubItems(2).Text, "1", CStr(UserBPTabSettings.LaboratoryLines),
                                            lstItems.SelectedItems(0).SubItems(4).Text, txtAddlCosts.Text, False)
@@ -2362,7 +2375,7 @@ Public Class frmShoppingList
 
             ElseIf ListRef.Name = lstBuy.Name And UpdatePrice Then ' Price update on the lstBuy screen
                 ' Update the price in the database
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
                 Call evedb.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
@@ -2570,6 +2583,7 @@ Tabs:
         Dim AccessTokenOutput As New ESITokenData
         Dim Success As Boolean = False
         Dim WC As New WebClient
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim Response As Byte()
         Dim Data As String = ""
         Dim PostParameters As New NameValueCollection
@@ -2603,6 +2617,38 @@ Tabs:
         End Try
 
 
+    End Sub
+
+    Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
+        If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtBrokerFeeRate.Visible = True
+        Else
+            txtBrokerFeeRate.Visible = False
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.GotFocus
+        Call txtBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
+        txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
     End Sub
 
 #End Region

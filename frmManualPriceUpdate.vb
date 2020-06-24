@@ -118,7 +118,7 @@ Public Class frmManualPriceUpdate
 
             ' Update all the prices
             For i = 1 To MineralTextBoxes.Count - 1
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MineralLabels(i).Text & "'"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MineralLabels(i).Text & "'"
                 Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
@@ -355,7 +355,7 @@ Public Class frmManualPriceUpdate
 
             ' Update all the prices
             For i = 1 To MoonTextBoxes.Count - 1
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MoonLabels(i).Text & "'"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & Prices(i) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & MoonLabels(i).Text & "'"
                 Call evedb.ExecuteNonQuerySQL(SQL)
             Next
 
@@ -629,7 +629,7 @@ Public Class frmManualPriceUpdate
         End If
 
         ' Update the price
-        SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtItemPriceUpdate.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & FormatDBString(lblSelectedItem.Text) & "'"
+        SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtItemPriceUpdate.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & FormatDBString(lblSelectedItem.Text) & "'"
         Call evedb.ExecuteNonQuerySQL(SQL)
 
         ' Finally update the Program prices

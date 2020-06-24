@@ -581,7 +581,7 @@ Public Class frmUpwellStructureFitting
             If CheckSlots(typeID) Then
                 SQL = "SELECT typeName, INVENTORY_TYPES.groupID, groupName, "
                 SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, "
-                SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE "
+                SQL &= "CASE WHEN value IS NULL THEN -1 ELSE value END AS RIG_SIZE "
                 SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
                 SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
                 SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
@@ -757,7 +757,7 @@ Public Class frmUpwellStructureFitting
         Dim AID As Integer
 
         ' Query all the stats for the selected Upwell Structure and process slots
-        SQL = "Select attributeID, COALESCE(valueint, valuefloat) As Value "
+        SQL = "Select attributeID, value "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
         SQL &= "WHERE attributeID In (" & ItemAttributes.hiSlots & "," & ItemAttributes.medSlots & "," & ItemAttributes.lowSlots & "," & ItemAttributes.serviceSlots & "," & ItemAttributes.rigSlots & ") "
         SQL &= "And INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID And typeName = '" & FormatDBString(cmbUpwellStructureName.Text) & "'"
@@ -1209,8 +1209,8 @@ Public Class frmUpwellStructureFitting
             ' query for all types of modules, rigs, and services to fit
             SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
             SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
-            SQL &= "CASE WHEN COALESCE(valuefloat, valueint) IS NULL THEN -1 ELSE COALESCE(valuefloat, valueint) END AS RIG_SIZE, "
-            SQL &= "CASE WHEN (SELECT COALESCE(valuefloat, valueint) FROM TYPE_ATTRIBUTES "
+            SQL &= "CASE WHEN value IS NULL THEN -1 ELSE value END AS RIG_SIZE, "
+            SQL &= "CASE WHEN (SELECT value FROM TYPE_ATTRIBUTES "
             SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND (attributeID = " & ItemAttributes.disallowInHighSec & " OR attributeID = " & ItemAttributes.disallowInEmpireSpace & ") "
             SQL &= ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
             SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
@@ -1353,7 +1353,7 @@ Public Class frmUpwellStructureFitting
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
-        SQL = "SELECT COALESCE(valuefloat, valueint) AS STRUCTURE_ID FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+        SQL = "SELECT value AS STRUCTURE_ID FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
         SQL &= "WHERE TYPE_ATTRIBUTES.typeID = {0} AND ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID "
         SQL &= "AND (attributeName LIKE 'canFitShipType%' OR attributeName LIKE 'canFitShipGroup%')"
         ' Add typeid to look up
@@ -1696,7 +1696,7 @@ Public Class frmUpwellStructureFitting
             ' Only look at rig bonuses for now
             If InstalledModule.moduleType.Contains("Rig") Then
                 ' Get the security modifier first - set to 1 if not found
-                SQL = "SELECT COALESCE(valueint, valuefloat) FROM TYPE_ATTRIBUTES WHERE typeID = {0} AND attributeID = "
+                SQL = "SELECT value FROM TYPE_ATTRIBUTES WHERE typeID = {0} AND attributeID = "
                 If chkHighSec.Checked Then
                     SQL &= CStr(ItemAttributes.hiSecModifier) & " "
                 ElseIf chkLowSec.Checked Then
@@ -1720,8 +1720,8 @@ Public Class frmUpwellStructureFitting
                     Case "EngineeringRigs"
                         SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
                         SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
@@ -1743,8 +1743,8 @@ Public Class frmUpwellStructureFitting
                         SQL &= "UNION "
                         SQL &= "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
                         SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
@@ -1758,8 +1758,8 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Combat' AS BONUS_APPLIES_TO, "
                         SQL &= "'Combat' AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
@@ -1770,8 +1770,8 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Refining' AS BONUS_APPLIES_TO, "
                         SQL &= "'Refining' AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) * " & CStr(SystemSecurityBonus) & " AS BONUS, " ' Data is stored as a decimal but others it's a full number
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value* " & CStr(SystemSecurityBonus) & " AS BONUS, " ' Data is stored as a decimal but others it's a full number
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
@@ -1782,8 +1782,8 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Reactions' AS BONUS_APPLIES_TO, "
                         SQL &= "'Reactions' AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
@@ -1794,8 +1794,8 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Moon Mining' AS BONUS_APPLIES_TO, "
                         SQL &= "'Moon Mining' AS ACTIVITY, "
-                        SQL &= "AT.displayName AS BONUS_NAME, "
-                        SQL &= "COALESCE(valueint, valuefloat) / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
+                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
@@ -1876,38 +1876,38 @@ Public Class frmUpwellStructureFitting
             EVEDB.BeginSQLiteTransaction()
             ' Buying, so save only the fuel block prices
             If Not rbtnBuildBlocks.Checked Then
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Helium)
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtHeliumFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Helium)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHydrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Hydrogen)
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtHydrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Hydrogen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Nitrogen)
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Nitrogen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Oxygen)
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtNitrogenFuelBlockBuyPrice.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CStr(FuelBlocks.Oxygen)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else ' Only save mats
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeliumIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16274"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtHeliumIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16274"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHydrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17889"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtHydrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17889"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtNitrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17888"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtNitrogenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17888"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtOxygenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17887"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtOxygenIsotopes.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 17887"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtCoolant.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9832"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtCoolant.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9832"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtEnrichedUranium.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 44"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtEnrichedUranium.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 44"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtHeavyWater.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16272"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtHeavyWater.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16272"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtLiquidOzone.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16273"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtLiquidOzone.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16273"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtMechanicalParts.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3689"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtMechanicalParts.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3689"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtOxygen.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3683"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtOxygen.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 3683"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtRobotics.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9848"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtRobotics.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 9848"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CDbl(txtStrontiumClathrates.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16275"
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CDbl(txtStrontiumClathrates.Text) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = 16275"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
@@ -2116,7 +2116,9 @@ Public Class frmUpwellStructureFitting
         ' Build T1 BP for the block, standard settings with whatever is on bp tab
         Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
                                     BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility, UserBPTabSettings.SellExcessBuildItems)
-        Call BlockBP.BuildItems(False, False, False, False, False)
+        Dim TempBF As BrokerFeeInfo
+        TempBF.IncludeFee = BrokerFeeType.NoFee
+        Call BlockBP.BuildItems(False, TempBF, False, False, False)
 
         Return BlockBP.GetRawItemUnitPrice
 

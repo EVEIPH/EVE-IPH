@@ -83,6 +83,8 @@ Partial Class frmShoppingList
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
         Me.Button1 = New System.Windows.Forms.Button()
+        Me.txtBrokerFeeRate = New System.Windows.Forms.TextBox()
+        Me.lblFeeRate = New System.Windows.Forms.Label()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -266,7 +268,7 @@ Partial Class frmShoppingList
         Me.chkUpdateAssetsWhenUsed.AutoSize = True
         Me.chkUpdateAssetsWhenUsed.Checked = True
         Me.chkUpdateAssetsWhenUsed.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkUpdateAssetsWhenUsed.Location = New System.Drawing.Point(6, 35)
+        Me.chkUpdateAssetsWhenUsed.Location = New System.Drawing.Point(6, 99)
         Me.chkUpdateAssetsWhenUsed.Name = "chkUpdateAssetsWhenUsed"
         Me.chkUpdateAssetsWhenUsed.Size = New System.Drawing.Size(155, 17)
         Me.chkUpdateAssetsWhenUsed.TabIndex = 10
@@ -316,8 +318,9 @@ Partial Class frmShoppingList
         '
         'gbOptions
         '
-        Me.gbOptions.Controls.Add(Me.chkRebuildItemsfromList)
+        Me.gbOptions.Controls.Add(Me.lblFeeRate)
         Me.gbOptions.Controls.Add(Me.chkBuyorBuyOrder)
+        Me.gbOptions.Controls.Add(Me.txtBrokerFeeRate)
         Me.gbOptions.Controls.Add(Me.chkAlwaysOnTop)
         Me.gbOptions.Controls.Add(Me.lblUsage)
         Me.gbOptions.Controls.Add(Me.chkUsage)
@@ -336,9 +339,10 @@ Partial Class frmShoppingList
         '
         'chkRebuildItemsfromList
         '
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(200, 11)
+        Me.chkRebuildItemsfromList.AutoSize = True
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(562, 642)
         Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
-        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(120, 36)
+        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(179, 17)
         Me.chkRebuildItemsfromList.TabIndex = 79
         Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
         Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
@@ -348,7 +352,7 @@ Partial Class frmShoppingList
         Me.chkBuyorBuyOrder.AutoSize = True
         Me.chkBuyorBuyOrder.Checked = True
         Me.chkBuyorBuyOrder.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBuyorBuyOrder.Location = New System.Drawing.Point(6, 75)
+        Me.chkBuyorBuyOrder.Location = New System.Drawing.Point(6, 35)
         Me.chkBuyorBuyOrder.Name = "chkBuyorBuyOrder"
         Me.chkBuyorBuyOrder.Size = New System.Drawing.Size(185, 17)
         Me.chkBuyorBuyOrder.TabIndex = 13
@@ -359,7 +363,7 @@ Partial Class frmShoppingList
         'chkAlwaysOnTop
         '
         Me.chkAlwaysOnTop.AutoSize = True
-        Me.chkAlwaysOnTop.Location = New System.Drawing.Point(6, 15)
+        Me.chkAlwaysOnTop.Location = New System.Drawing.Point(6, 117)
         Me.chkAlwaysOnTop.Name = "chkAlwaysOnTop"
         Me.chkAlwaysOnTop.Size = New System.Drawing.Size(96, 17)
         Me.chkAlwaysOnTop.TabIndex = 9
@@ -369,7 +373,7 @@ Partial Class frmShoppingList
         'lblUsage
         '
         Me.lblUsage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblUsage.Location = New System.Drawing.Point(63, 95)
+        Me.lblUsage.Location = New System.Drawing.Point(63, 55)
         Me.lblUsage.Name = "lblUsage"
         Me.lblUsage.Size = New System.Drawing.Size(112, 17)
         Me.lblUsage.TabIndex = 15
@@ -381,7 +385,7 @@ Partial Class frmShoppingList
         Me.chkUsage.AutoSize = True
         Me.chkUsage.Checked = True
         Me.chkUsage.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkUsage.Location = New System.Drawing.Point(6, 95)
+        Me.chkUsage.Location = New System.Drawing.Point(6, 55)
         Me.chkUsage.Name = "chkUsage"
         Me.chkUsage.Size = New System.Drawing.Size(60, 17)
         Me.chkUsage.TabIndex = 14
@@ -391,7 +395,7 @@ Partial Class frmShoppingList
         'lblFees
         '
         Me.lblFees.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblFees.Location = New System.Drawing.Point(62, 55)
+        Me.lblFees.Location = New System.Drawing.Point(62, 15)
         Me.lblFees.Name = "lblFees"
         Me.lblFees.Size = New System.Drawing.Size(113, 17)
         Me.lblFees.TabIndex = 12
@@ -457,7 +461,7 @@ Partial Class frmShoppingList
         '
         'txtAddlCosts
         '
-        Me.txtAddlCosts.Location = New System.Drawing.Point(63, 115)
+        Me.txtAddlCosts.Location = New System.Drawing.Point(63, 75)
         Me.txtAddlCosts.MaxLength = 15
         Me.txtAddlCosts.Name = "txtAddlCosts"
         Me.txtAddlCosts.Size = New System.Drawing.Size(112, 20)
@@ -470,17 +474,18 @@ Partial Class frmShoppingList
         Me.chkFees.AutoSize = True
         Me.chkFees.Checked = True
         Me.chkFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkFees.Location = New System.Drawing.Point(6, 55)
+        Me.chkFees.Location = New System.Drawing.Point(6, 15)
         Me.chkFees.Name = "chkFees"
         Me.chkFees.Size = New System.Drawing.Size(52, 17)
         Me.chkFees.TabIndex = 11
         Me.chkFees.Text = "Fees:"
+        Me.chkFees.ThreeState = True
         Me.chkFees.UseVisualStyleBackColor = True
         '
         'lblAddlCosts
         '
         Me.lblAddlCosts.AutoSize = True
-        Me.lblAddlCosts.Location = New System.Drawing.Point(4, 119)
+        Me.lblAddlCosts.Location = New System.Drawing.Point(4, 79)
         Me.lblAddlCosts.Name = "lblAddlCosts"
         Me.lblAddlCosts.Size = New System.Drawing.Size(62, 13)
         Me.lblAddlCosts.TabIndex = 16
@@ -645,13 +650,32 @@ Partial Class frmShoppingList
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(549, 644)
+        Me.Button1.Location = New System.Drawing.Point(723, 587)
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(168, 28)
+        Me.Button1.Size = New System.Drawing.Size(113, 28)
         Me.Button1.TabIndex = 78
         Me.Button1.Text = "EVEpraisal Test"
         Me.Button1.UseVisualStyleBackColor = True
         Me.Button1.Visible = False
+        '
+        'txtBrokerFeeRate
+        '
+        Me.txtBrokerFeeRate.Location = New System.Drawing.Point(249, 13)
+        Me.txtBrokerFeeRate.Name = "txtBrokerFeeRate"
+        Me.txtBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
+        Me.txtBrokerFeeRate.TabIndex = 79
+        Me.txtBrokerFeeRate.TabStop = False
+        Me.txtBrokerFeeRate.Visible = False
+        '
+        'lblFeeRate
+        '
+        Me.lblFeeRate.AutoSize = True
+        Me.lblFeeRate.Location = New System.Drawing.Point(189, 17)
+        Me.lblFeeRate.Name = "lblFeeRate"
+        Me.lblFeeRate.Size = New System.Drawing.Size(54, 13)
+        Me.lblFeeRate.TabIndex = 80
+        Me.lblFeeRate.Text = "Fee Rate:"
+        Me.lblFeeRate.TextAlign = System.Drawing.ContentAlignment.TopRight
         '
         'frmShoppingList
         '
@@ -659,6 +683,7 @@ Partial Class frmShoppingList
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
+        Me.Controls.Add(Me.chkRebuildItemsfromList)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
@@ -769,4 +794,6 @@ End Sub
     Friend WithEvents chkRebuildItemsfromList As CheckBox
     Friend WithEvents rbtnExportMulitBuy As RadioButton
     Friend WithEvents Button1 As Button
+    Friend WithEvents txtBrokerFeeRate As TextBox
+    Friend WithEvents lblFeeRate As Label
 End Class

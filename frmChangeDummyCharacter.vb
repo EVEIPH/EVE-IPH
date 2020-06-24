@@ -34,7 +34,7 @@ Public Class frmChangeDummyCharacter
 
         ' Just save what they enter and put a asterisk on the end to singify it's a dummy account
         Try
-            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET CHARACTER_NAME = '" & FormatDBString(Trim(txtName.Text)) & "*'")
+            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET CHARACTER_NAME = '" & FormatDBString(Trim(txtName.Text)) & "*' WHERE CHARACTER_ID = " & CStr(DummyCharacterID))
 
             MsgBox("Dummy Character Name updated.", vbInformation, Application.ProductName)
 

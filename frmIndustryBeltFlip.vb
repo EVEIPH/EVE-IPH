@@ -71,7 +71,7 @@ Public Class frmIndustryBeltFlip
     Private Sub LoadSettings()
 
         ' Station refinery settings
-        cmbMineStationEff.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningEfficiency, 0)
+        txtMineStationEff.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningEfficiency, 0)
         txtMineRefineStanding.Text = FormatNumber(UserIndustryFlipBeltSettings.RefineCorpStanding, 2)
         cmbRefineStationTax.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningTax, 1)
 
@@ -94,8 +94,17 @@ Public Class frmIndustryBeltFlip
         lblm3perhrperminer.Text = FormatNumber(CDbl(txtm3perCycle.Text) / CDbl(txtCycleTime.Text) * 3600, 2)
 
         ' Tax settings
-        chkMineIncludeBrokerFees.Checked = UserIndustryFlipBeltSettings.IncludeBrokerFees
-        chkMineIncludeTaxes.Checked = UserIndustryFlipBeltSettings.IncludeTaxes
+        Select Case UserIndustryFlipBeltSettings.IncludeBrokerFees
+            Case 2
+                chkBrokerFees.CheckState = CheckState.Indeterminate
+                txtBrokerFeeRate.Visible = True
+            Case 1
+                chkBrokerFees.CheckState = CheckState.Checked
+            Case 0
+                chkBrokerFees.CheckState = CheckState.Unchecked
+        End Select
+        chkIncludeTaxes.Checked = UserIndustryFlipBeltSettings.IncludeTaxes
+        txtBrokerFeeRate.Text = FormatPercent(UserIndustryFlipBeltSettings.BrokerFeeRate, 1)
 
         If UserApplicationSettings.ShowToolTips Then
             ttMain.SetToolTip(rbtn0percent, "No Bonus for Enormous or Colossal Belts")
@@ -214,7 +223,7 @@ Public Class frmIndustryBeltFlip
 
         ' Refining
         ' Station numbers
-        TempDouble = CDbl(cmbMineStationEff.Text.Replace("%", ""))
+        TempDouble = FormatManualPercentEntry(txtMineStationEff.Text)
 
         If TempDouble <= 0 Then
             TempSettings.RefiningEfficiency = 0
@@ -222,7 +231,7 @@ Public Class frmIndustryBeltFlip
             TempSettings.RefiningEfficiency = TempDouble / 100
         End If
 
-        TempDouble = CDbl(cmbRefineStationTax.Text.Replace("%", ""))
+        TempDouble = FormatManualPercentEntry(cmbRefineStationTax.Text)
 
         If TempDouble <= 0 Then
             TempSettings.RefiningTax = 0
@@ -239,8 +248,9 @@ Public Class frmIndustryBeltFlip
         TempSettings.m3perCycle = CDbl(txtm3perCycle.Text)
         TempSettings.NumMiners = CInt(cmbNumMiners.Text)
 
-        TempSettings.IncludeBrokerFees = chkMineIncludeBrokerFees.Checked
-        TempSettings.IncludeTaxes = chkMineIncludeTaxes.Checked
+        TempSettings.IncludeTaxes = chkIncludeTaxes.Checked
+        TempSettings.IncludeBrokerFees = CType(chkBrokerFees.CheckState, Integer)
+        TempSettings.BrokerFeeRate = FormatManualPercentEntry(txtBrokerFeeRate.Text)
 
         If rbtn0percent.Checked Then
             TempSettings.TrueSec = rbtn0percent.Text
@@ -536,7 +546,7 @@ Public Class frmIndustryBeltFlip
         Dim StationEffiency As Double
         Dim StationTax As Double
 
-        Dim TempDouble = CDbl(cmbMineStationEff.Text.Replace("%", ""))
+        Dim TempDouble = FormatManualPercentEntry(txtMineStationEff.Text)
 
         If TempDouble <= 0 Then
             StationEffiency = 0
@@ -544,7 +554,7 @@ Public Class frmIndustryBeltFlip
             StationEffiency = TempDouble / 100
         End If
 
-        TempDouble = CDbl(cmbRefineStationTax.Text.Replace("%", ""))
+        TempDouble = FormatManualPercentEntry(cmbRefineStationTax.Text)
 
         If TempDouble <= 0 Then
             StationTax = 0
@@ -661,7 +671,7 @@ Public Class frmIndustryBeltFlip
                 If readerBelts.Read Then
                     ' Refine each ore in the ore list, store refined minerals
                     RefinedMaterials = RefiningStation.ReprocessORE(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
-                                    CType(item.SubItems(3).Text, Double), chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, OutputNumber)
+                                    CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, Nothing, OutputNumber)
 
                     ' Store the refined materials
                     TotalRefinedMinerals.InsertMaterialList(RefinedMaterials.GetMaterialList)
@@ -1068,7 +1078,7 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub cmbMineStationEff_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbMineStationEff.SelectedIndexChanged
+    Private Sub cmbMineStationEff_SelectedIndexChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
@@ -1104,13 +1114,13 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub chkMineIncludeBrokerFees_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineIncludeBrokerFees.CheckedChanged
+    Private Sub chkIncludeBrokerFees_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBrokerFees.CheckedChanged
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
     End Sub
 
-    Private Sub chkMineIncludeTaxes_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineIncludeTaxes.CheckedChanged
+    Private Sub chkIncludeTaxes_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkIncludeTaxes.CheckedChanged
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
@@ -1238,6 +1248,62 @@ Public Class frmIndustryBeltFlip
 
     Private Sub btnCloseXL_Click(sender As System.Object, e As System.EventArgs) Handles btnCloseXL.Click
         Me.Hide()
+    End Sub
+
+    Private Sub chkBrokerFees_Click(sender As Object, e As EventArgs) Handles chkBrokerFees.Click
+        If chkBrokerFees.Checked And chkBrokerFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtBrokerFeeRate.Visible = True
+        Else
+            txtBrokerFeeRate.Visible = False
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.GotFocus
+        Call txtBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
+        txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+    End Sub
+
+    Private Sub txtMineStationEff_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineStationEff.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
+        End If
+    End Sub
+
+    Private Sub txtMineStationEff_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineStationEff.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtMineStationEff_GotFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.GotFocus
+        Call txtMineStationEff.SelectAll()
+    End Sub
+
+    Private Sub txtMineStationEff_LostFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.LostFocus
+        txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
     End Sub
 
 #End Region

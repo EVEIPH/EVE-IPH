@@ -27,6 +27,12 @@ Public Class Blueprint
     Private HasBuildableComponents As Boolean = False
     Private AdditionalCosts As Double
 
+    ' Helps determine if this is a component that might need special processing
+    Private IsComponentBP As Boolean
+    Private BBItemtoFind As Long
+    Private BBList As New List(Of BuildBuyItem)
+    Private NewBPRequest As Boolean
+
     ' Taxes/Fees
     '   •	Buy - When you buy something off the market (Buy from someone’s Sell Order – So Minimum Sell), you don’t pay taxes or broker fees
     '       o	No Tax, No Broker Fee
@@ -161,16 +167,13 @@ Public Class Blueprint
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
-    ' Helps determine if this is a component that might need special processing
-    Private IsComponentBP As Boolean
-
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
                 ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character,
                 ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double,
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
-                ByVal BPSellExcessItems As Boolean, Optional ByVal ComponentBP As Boolean = False)
+                ByVal BPSellExcessItems As Boolean, Optional ByVal ComponentBP As Boolean = False, Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
 
         Dim readerBP As SQLiteDataReader
         Dim SQL As String = ""
@@ -248,6 +251,12 @@ Public Class Blueprint
 
         ' Do build/buy 
         BuildBuy = BPBuildBuy
+        If Not IsNothing(BuildBuyList) Then
+            BBList = BuildBuyList
+            NewBPRequest = False
+        Else
+            NewBPRequest = True
+        End If
 
         SellExcessItems = BPSellExcessItems
         SellExcessAmount = 0
@@ -460,13 +469,13 @@ Public Class Blueprint
     End Function
 
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
-    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
+    Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByVal SetProductionCosts As Boolean,
                         ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
         If NumberofBlueprints = 1 Then
             'Just run the normal function and it will set everything
-            Call BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
+            Call BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
         Else ' Multi bps
             Dim BatchBlueprint As Blueprint
             Dim ComponentBlueprint As Blueprint
@@ -548,7 +557,7 @@ Public Class Blueprint
                                                 CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility,
                                                 CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems)
 
-                    Call BatchBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
+                    Call BatchBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
                     ' Sum up all the stuff that is batch dependent
                     With BatchBlueprint
@@ -684,7 +693,7 @@ Public Class Blueprint
                                                     0, TempComponentFacility, ComponentManufacturingFacility,
                                                     CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems)
 
-                        Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
+                        Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
                         ' Save all the materials that are excess - update usage first?
                         Call ExcessMaterials.InsertMaterialList(ComponentBlueprint.ExcessMaterials.GetMaterialList)
@@ -708,9 +717,9 @@ Public Class Blueprint
                                 If SetTaxes Then
                                     BuildExcessAmount -= GetSalesTax(BuildExcessAmount)
                                 End If
-                                If SetBrokerFees Then
-                                    BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount)
-                                End If
+
+                                BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount, BrokerFeeData)
+
                             End If
                         End If
 
@@ -798,14 +807,14 @@ Public Class Blueprint
             End If
 
             ' Finally recalculate our prices
-            Call SetPriceData(SetTaxes, SetBrokerFees)
+            Call SetPriceData(SetTaxes, BrokerFeeData)
 
         End If
 
     End Sub
 
     ' Sets the material versions for our blueprint
-    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean, ByVal SetProductionCosts As Boolean,
+    Private Sub BuildItem(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByVal SetProductionCosts As Boolean,
                         ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean, Optional ByRef ExcessBuiltItems As Materials = Nothing)
         ' Database stuff
         Dim SQL As String
@@ -948,7 +957,7 @@ Public Class Blueprint
                         ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, True)
 
                     ' Set this blueprint with the quantity needed and get it's mats
-                    Call ComponentBlueprint.BuildItem(SetTaxes, SetBrokerFees, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
+                    Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
                     ' Save all the materials that are excess
                     Dim ExtraMaterial As Material = Nothing
@@ -974,9 +983,8 @@ Public Class Blueprint
                                 If SetTaxes Then
                                     BuildExcessAmount -= GetSalesTax(BuildExcessAmount)
                                 End If
-                                If SetBrokerFees Then
-                                    BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount)
-                                End If
+
+                                BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount, BrokerFeeData)
                             End If
                         End If
                     End If
@@ -996,8 +1004,19 @@ Public Class Blueprint
                             End If
                         End If
 
+                        ' Regardless of whatever is set, we want to override with what is in the list
+                        Dim TempBuildCheck As Boolean
+
+                        ' First time you run the bp, just use the base check 
+                        If NewBPRequest Then
+                            TempBuildCheck = CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
+                        Else
+                            ' Every time after, just use the list as set in the first run or modified by user
+                            TempBuildCheck = ManualBuildBuy(ComponentBlueprint.ItemID)
+                        End If
+
                         ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                        If CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned))) Then
+                        If TempBuildCheck Then
 
                             '*** BUILD ***
                             ' We want to build this item
@@ -1188,7 +1207,7 @@ Public Class Blueprint
 
         ' Set taxes and fees on this item only (materials set in shopping list)
         Taxes = GetSalesTax(ItemMarketCost)
-        BrokerFees = GetSalesBrokerFee(ItemMarketCost)
+        BrokerFees = GetSalesBrokerFee(ItemMarketCost, BrokerFeeData)
 
         ' Set the costs for making this item
         Call SetManufacturingCostsAndFees()
@@ -1209,9 +1228,23 @@ Public Class Blueprint
         Next
 
         ' Finally set all the price data
-        Call SetPriceData(SetTaxes, SetBrokerFees)
+        Call SetPriceData(SetTaxes, BrokerFeeData)
 
     End Sub
+
+    ' See if the item is in the list and if so, return that value else false
+    Private Function ManualBuildBuy(ItemID As Long) As Boolean
+        Dim FoundItem As BuildBuyItem
+        BBItemtoFind = ItemID
+        FoundItem = BBList.Find(AddressOf FindBBItem)
+
+        If FoundItem.ItemID <> 0 Then
+            Return FoundItem.BuildItem
+        Else
+            Return False
+        End If
+
+    End Function
 
     ' Adjusts the lists for use of excess materials
     Private Function UseExcessMaterials(ByRef ExcessBuildItems As Materials, ByRef CurrentMaterial As Material, ByRef CurrentMatQuantity As Long) As Boolean
@@ -1495,7 +1528,7 @@ Public Class Blueprint
     End Sub
 
     ' Sets all price data for the user to get on this blueprint, Set public so can reset with fees/taxes
-    Public Sub SetPriceData(ByVal SetTaxes As Boolean, ByVal SetBrokerFees As Boolean)
+    Public Sub SetPriceData(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo)
         Dim TaxesFees As Double = 0
         Dim TotalUsage As Double = 0
         Dim ComponentUsage As Double = 0
@@ -1508,11 +1541,7 @@ Public Class Blueprint
             DisplayTaxes = 0
         End If
 
-        If SetBrokerFees Then
-            DisplayBrokerFees = GetSalesBrokerFee(ItemMarketCost)
-        Else
-            DisplayBrokerFees = 0
-        End If
+        DisplayBrokerFees = GetSalesBrokerFee(ItemMarketCost, BrokerFeeData)
 
         TaxesFees = DisplayTaxes + DisplayBrokerFees
 
@@ -1571,9 +1600,7 @@ Public Class Blueprint
                 SellExcessAmount -= GetSalesTax(SellExcessAmount)
             End If
 
-            If SetBrokerFees Then
-                SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount)
-            End If
+            SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount, BrokerFeeData)
 
             If SellExcessAmount < 0 Then
                 SellExcessAmount = 0
@@ -1823,6 +1850,15 @@ Public Class Blueprint
         Next
 
         Return ""
+    End Function
+
+    ' Predicate for finding the BuildBuyItem in full list
+    Public Function FindBBItem(ByVal Item As BuildBuyItem) As Boolean
+        If BBItemtoFind = Item.ItemID Then
+            Return True
+        Else
+            Return False
+        End If
     End Function
 
 #Region "Invention/RE Functions"
@@ -2687,6 +2723,8 @@ Public Class Blueprint
     Public Function GetAdditionalCosts() As Double
         Return AdditionalCosts
     End Function
+
+
 
 #End Region
 

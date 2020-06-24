@@ -58,7 +58,7 @@ Class Reprocessing
 
     ' Returns a material list that would result from reprocessing the Product size of the item 
     Public Function ReprocessMaterial(ByVal ItemID As Long, ByVal BatchSize As Integer, ByVal NumItems As Long,
-                                      ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByVal RecursiveReprocess As Boolean) As Materials
+                                      ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByVal RecursiveReprocess As Boolean) As Materials
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
         Dim readerReprocess As SQLiteDataReader
@@ -105,7 +105,7 @@ Class Reprocessing
                 readerReprocess = DBCommand.ExecuteReader
 
                 If readerReprocess.HasRows Then
-                    RecursionMaterials = ReprocessMaterial(RefinedMatId, TotalBatches, NewMaterialQuantity, IncludeTax, IncludeFees, RecursiveReprocess)
+                    RecursionMaterials = ReprocessMaterial(RefinedMatId, TotalBatches, NewMaterialQuantity, IncludeTax, BrokerFeeData, RecursiveReprocess)
 
                     ' If there are recursion mats returned, add items to new list
                     If Not IsNothing(RecursionMaterials.GetMaterialList) Then
@@ -139,16 +139,15 @@ Class Reprocessing
             TempMaterials.AdjustTaxedPrice(GetSalesTax(TempMaterials.GetTotalMaterialsCost))
         End If
 
-        If IncludeFees Then
-            TempMaterials.AdjustTaxedPrice(GetSalesBrokerFee(TempMaterials.GetTotalMaterialsCost))
-        End If
+        ' Broker fee
+        TempMaterials.AdjustTaxedPrice(GetSalesBrokerFee(TempMaterials.GetTotalMaterialsCost, BrokerFeeData))
 
         Return TempMaterials
 
     End Function
 
     Public Function ReprocessORE(ByVal OreID As Long, ByVal OreProcessingSkill As Integer, ByVal TotalOre As Double,
-                              ByVal IncludeTax As Boolean, ByVal IncludeFees As Boolean, ByRef TotalYield As Double) As Materials
+                              ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double) As Materials
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
         Dim SQL As String
@@ -205,15 +204,7 @@ Class Reprocessing
             RefinedMats.InsertMaterial(RefinedMat)
         End While
 
-        If IncludeTax Then
-            RefinedMats.AdjustTaxedPrice(GetSalesTax(RefinedMats.GetTotalMaterialsCost))
-        End If
-
-        If IncludeFees Then
-            RefinedMats.AdjustTaxedPrice(GetSalesBrokerFee(RefinedMats.GetTotalMaterialsCost))
-        End If
-
-        ' Finally, subtract the station's refine tax
+        ' Subtract the station's refine tax
         For Each RefinedMaterial In RefinedMats.GetMaterialList
             SQL = "SELECT ADJUSTED_PRICE FROM ITEM_PRICES WHERE ITEM_ID = " & RefinedMaterial.GetMaterialTypeID
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -226,8 +217,16 @@ Class Reprocessing
             AdjustedCost += TempCost
         Next
 
-        ' Finally update the total cost for the list
+        ' Update the total cost for the list
         Call RefinedMats.ResetTotalValue(AdjustedCost)
+
+        ' Finally adjust the taxes
+        If IncludeTax Then
+            RefinedMats.AdjustTaxedPrice(GetSalesTax(RefinedMats.GetTotalMaterialsCost))
+        End If
+
+        ' Broker fee data
+        RefinedMats.AdjustTaxedPrice(GetSalesBrokerFee(RefinedMats.GetTotalMaterialsCost, BrokerFeeData))
 
         Return RefinedMats
 

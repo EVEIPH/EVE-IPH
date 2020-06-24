@@ -122,6 +122,7 @@ Partial Class frmMain
         Me.ViewMarketHistoryToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AddToShoppingListToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.FavoriteBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ttUpdatePrices = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttManufacturing = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttDatacores = New System.Windows.Forms.ToolTip(Me.components)
@@ -152,8 +153,9 @@ Partial Class frmMain
         Me.chkMineCompressedOre = New System.Windows.Forms.CheckBox()
         Me.btnMineSaveAllSettings = New System.Windows.Forms.Button()
         Me.gbMineTaxBroker = New System.Windows.Forms.GroupBox()
-        Me.chkMineIncludeTaxes = New System.Windows.Forms.CheckBox()
+        Me.txtMineBrokerFeeRate = New System.Windows.Forms.TextBox()
         Me.chkMineIncludeBrokerFees = New System.Windows.Forms.CheckBox()
+        Me.chkMineIncludeTaxes = New System.Windows.Forms.CheckBox()
         Me.gbMineStripStats = New System.Windows.Forms.GroupBox()
         Me.lblMineRange = New System.Windows.Forms.Label()
         Me.lblMineCycleTime1 = New System.Windows.Forms.Label()
@@ -490,8 +492,15 @@ Partial Class frmMain
         Me.lblDCStanding3 = New System.Windows.Forms.Label()
         Me.btnDCRefresh = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
-        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
+        Me.gbCalcIgnoreinCalcs = New System.Windows.Forms.GroupBox()
+        Me.chkCalcIgnoreMinerals = New System.Windows.Forms.CheckBox()
+        Me.chkCalcIgnoreT1Item = New System.Windows.Forms.CheckBox()
+        Me.chkCalcIgnoreInvention = New System.Windows.Forms.CheckBox()
+        Me.gbIncludeTaxesFees = New System.Windows.Forms.GroupBox()
+        Me.txtCalcBrokerFeeRate = New System.Windows.Forms.TextBox()
+        Me.chkCalcFees = New System.Windows.Forms.CheckBox()
+        Me.chkCalcTaxes = New System.Windows.Forms.CheckBox()
         Me.gbCalcSellExessItems = New System.Windows.Forms.GroupBox()
         Me.chkCalcSellExessItems = New System.Windows.Forms.CheckBox()
         Me.chkCalcNPCBPOs = New System.Windows.Forms.CheckBox()
@@ -501,9 +510,7 @@ Partial Class frmMain
         Me.chkCalcCanBuild = New System.Windows.Forms.CheckBox()
         Me.gbCalcMarketFilters = New System.Windows.Forms.GroupBox()
         Me.txtCalcProfitThreshold = New System.Windows.Forms.TextBox()
-        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.txtCalcSVRThreshold = New System.Windows.Forms.TextBox()
-        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.chkCalcMaxBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.chkCalcMinBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.cmbCalcPriceTrend = New System.Windows.Forms.ComboBox()
@@ -520,13 +527,6 @@ Partial Class frmMain
         Me.chkCalcSVRIncludeNull = New System.Windows.Forms.CheckBox()
         Me.chkCalcIPHThreshold = New System.Windows.Forms.CheckBox()
         Me.btnCalcCalculate = New System.Windows.Forms.Button()
-        Me.gbCalcIgnoreinCalcs = New System.Windows.Forms.GroupBox()
-        Me.chkCalcIgnoreMinerals = New System.Windows.Forms.CheckBox()
-        Me.chkCalcIgnoreT1Item = New System.Windows.Forms.CheckBox()
-        Me.chkCalcIgnoreInvention = New System.Windows.Forms.CheckBox()
-        Me.gbIncludeTaxesFees = New System.Windows.Forms.GroupBox()
-        Me.chkCalcFees = New System.Windows.Forms.CheckBox()
-        Me.chkCalcTaxes = New System.Windows.Forms.CheckBox()
         Me.btnCalcSelectColumns = New System.Windows.Forms.Button()
         Me.gbCalcSizeLimit = New System.Windows.Forms.GroupBox()
         Me.chkCalcXL = New System.Windows.Forms.CheckBox()
@@ -585,27 +585,16 @@ Partial Class frmMain
         Me.lblTempME = New System.Windows.Forms.Label()
         Me.tabCalcFacilities = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilityBase = New System.Windows.Forms.TabPage()
-        Me.CalcBaseFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityComponents = New System.Windows.Forms.TabPage()
-        Me.CalcComponentsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityCopy = New System.Windows.Forms.TabPage()
-        Me.CalcCopyFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT2Invention = New System.Windows.Forms.TabPage()
-        Me.CalcInventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT3Invention = New System.Windows.Forms.TabPage()
-        Me.CalcT3InventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilitySupers = New System.Windows.Forms.TabPage()
-        Me.CalcSupersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityCapitals = New System.Windows.Forms.TabPage()
-        Me.CalcCapitalsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT3Ships = New System.Windows.Forms.TabPage()
-        Me.CalcT3ShipsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilitySubsystems = New System.Windows.Forms.TabPage()
-        Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityBoosters = New System.Windows.Forms.TabPage()
-        Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityReactions = New System.Windows.Forms.TabPage()
-        Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.gbCalcFilter = New System.Windows.Forms.GroupBox()
         Me.cmbCalcBPTypeFilter = New System.Windows.Forms.ComboBox()
         Me.gbCalcBPTech = New System.Windows.Forms.GroupBox()
@@ -652,7 +641,6 @@ Partial Class frmMain
         Me.tabUpdatePrices = New System.Windows.Forms.TabPage()
         Me.btnLoadPricesfromFile = New System.Windows.Forms.Button()
         Me.btnSavePricestoFile = New System.Windows.Forms.Button()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
         Me.txtItemsPriceModifier = New System.Windows.Forms.TextBox()
@@ -734,13 +722,6 @@ Partial Class frmMain
         Me.chkMinerals = New System.Windows.Forms.CheckBox()
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
         Me.pnlSinglePriceLocationSelect = New System.Windows.Forms.Panel()
-        Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
-        Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
-        Me.chkSystems2 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems4 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems5 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems3 = New System.Windows.Forms.CheckBox()
-        Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.gbRegions = New System.Windows.Forms.GroupBox()
         Me.btnViewSavedStructures = New System.Windows.Forms.Button()
         Me.btnAddStructureIDs = New System.Windows.Forms.Button()
@@ -811,6 +792,13 @@ Partial Class frmMain
         Me.chkRegion1 = New System.Windows.Forms.CheckBox()
         Me.chkRegion45 = New System.Windows.Forms.CheckBox()
         Me.chkRegion67 = New System.Windows.Forms.CheckBox()
+        Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
+        Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
+        Me.chkSystems2 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems4 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems5 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems3 = New System.Windows.Forms.CheckBox()
+        Me.chkSystems1 = New System.Windows.Forms.CheckBox()
         Me.pnlPriceProfiles = New System.Windows.Forms.Panel()
         Me.tabPriceProfile = New System.Windows.Forms.TabControl()
         Me.tabPriceProfileRaw = New System.Windows.Forms.TabPage()
@@ -824,7 +812,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtRawMaterialsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblRawMaterialsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.tabPriceProfileManufactured = New System.Windows.Forms.TabPage()
         Me.ItemsDefaults = New System.Windows.Forms.GroupBox()
         Me.btnItemsDefaults = New System.Windows.Forms.Button()
@@ -836,8 +823,9 @@ Partial Class frmMain
         Me.lblItemsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtItemsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblItemsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
+        Me.btnBPBuiltComponents = New System.Windows.Forms.Button()
+        Me.btnBPComponents = New System.Windows.Forms.Button()
         Me.rbtnBPRawT2MatType = New System.Windows.Forms.RadioButton()
         Me.rbtnBPProcT2MatType = New System.Windows.Forms.RadioButton()
         Me.rbtnBPAdvT2MatType = New System.Windows.Forms.RadioButton()
@@ -882,6 +870,7 @@ Partial Class frmMain
         Me.btnBPBack = New System.Windows.Forms.Button()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
+        Me.txtBPBrokerFeeRate = New System.Windows.Forms.TextBox()
         Me.txtBPMarketPriceEdit = New System.Windows.Forms.TextBox()
         Me.lblBPProductionTime = New System.Windows.Forms.Label()
         Me.lblBPTotalUnits = New System.Windows.Forms.Label()
@@ -921,7 +910,6 @@ Partial Class frmMain
         Me.btnBPSaveBP = New System.Windows.Forms.Button()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabFacility = New System.Windows.Forms.TabPage()
-        Me.BPTabFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabT3Calcs = New System.Windows.Forms.TabPage()
         Me.lblBPT3Decryptor = New System.Windows.Forms.Label()
         Me.cmbBPT3Decryptor = New System.Windows.Forms.ComboBox()
@@ -994,12 +982,28 @@ Partial Class frmMain
         Me.lblBPComponentMatCost = New System.Windows.Forms.Label()
         Me.lblBPComponentMats = New System.Windows.Forms.Label()
         Me.lblBPComponentMatCost1 = New System.Windows.Forms.Label()
+        Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.BPTabFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
-        Me.tabMain = New System.Windows.Forms.TabControl()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
-        Me.btnBPComponents = New System.Windows.Forms.Button()
-        Me.btnBPBuiltComponents = New System.Windows.Forms.Button()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
+        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.CalcBaseFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcComponentsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcCopyFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcInventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcT3InventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcSupersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcCapitalsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcT3ShipsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1047,11 +1051,11 @@ Partial Class frmMain
         Me.gbDCCorpsGallente.SuspendLayout()
         Me.tabManufacturing.SuspendLayout()
         Me.gbCalcBPSelectOptions.SuspendLayout()
+        Me.gbCalcIgnoreinCalcs.SuspendLayout()
+        Me.gbIncludeTaxesFees.SuspendLayout()
         Me.gbCalcSellExessItems.SuspendLayout()
         Me.gbCalcIncludeItems.SuspendLayout()
         Me.gbCalcMarketFilters.SuspendLayout()
-        Me.gbCalcIgnoreinCalcs.SuspendLayout()
-        Me.gbIncludeTaxesFees.SuspendLayout()
         Me.gbCalcSizeLimit.SuspendLayout()
         Me.gbCalcProdLines.SuspendLayout()
         Me.gbCalcCompareType.SuspendLayout()
@@ -1089,8 +1093,8 @@ Partial Class frmMain
         Me.gbPricesTech.SuspendLayout()
         Me.gbRawMaterials.SuspendLayout()
         Me.pnlSinglePriceLocationSelect.SuspendLayout()
-        Me.gbTradeHubSystems.SuspendLayout()
         Me.gbRegions.SuspendLayout()
+        Me.gbTradeHubSystems.SuspendLayout()
         Me.pnlPriceProfiles.SuspendLayout()
         Me.tabPriceProfile.SuspendLayout()
         Me.tabPriceProfileRaw.SuspendLayout()
@@ -1381,7 +1385,7 @@ Partial Class frmMain
         '
         Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuIndustryUpgradeBelts, Me.mnuRefinery, Me.mnuLPStore})
         Me.mnuTools.Name = "mnuTools"
-        Me.mnuTools.Size = New System.Drawing.Size(47, 20)
+        Me.mnuTools.Size = New System.Drawing.Size(46, 20)
         Me.mnuTools.Text = "Tools"
         '
         'mnuIndustryUpgradeBelts
@@ -1412,20 +1416,20 @@ Partial Class frmMain
         'mnuUserSettings
         '
         Me.mnuUserSettings.Name = "mnuUserSettings"
-        Me.mnuUserSettings.Size = New System.Drawing.Size(306, 22)
+        Me.mnuUserSettings.Size = New System.Drawing.Size(305, 22)
         Me.mnuUserSettings.Text = "Select Application Settings"
         '
         'mnuSelectDefaultChar
         '
         Me.mnuSelectDefaultChar.Name = "mnuSelectDefaultChar"
-        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(306, 22)
+        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(305, 22)
         Me.mnuSelectDefaultChar.Text = "Select Default Character"
         '
         'mnuRestoreDefaultTabSettings
         '
         Me.mnuRestoreDefaultTabSettings.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuRestoreDefaultBP, Me.mnuRestoreDefaultUpdatePrices, Me.mnuRestoreDefaultManufacturing, Me.mnuRestoreDefaultDatacores, Me.mnuRestoreDefaultMining})
         Me.mnuRestoreDefaultTabSettings.Name = "mnuRestoreDefaultTabSettings"
-        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(306, 22)
+        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(305, 22)
         Me.mnuRestoreDefaultTabSettings.Text = "Restore Default Tab Settings"
         '
         'mnuRestoreDefaultBP
@@ -1461,13 +1465,13 @@ Partial Class frmMain
         'mnuRestoreDefaultBPFacilities
         '
         Me.mnuRestoreDefaultBPFacilities.Name = "mnuRestoreDefaultBPFacilities"
-        Me.mnuRestoreDefaultBPFacilities.Size = New System.Drawing.Size(306, 22)
+        Me.mnuRestoreDefaultBPFacilities.Size = New System.Drawing.Size(305, 22)
         Me.mnuRestoreDefaultBPFacilities.Text = "Restore Default Blueprint Tab Facilities"
         '
         'mnuRestoreDefaultCalcFacilities
         '
         Me.mnuRestoreDefaultCalcFacilities.Name = "mnuRestoreDefaultCalcFacilities"
-        Me.mnuRestoreDefaultCalcFacilities.Size = New System.Drawing.Size(306, 22)
+        Me.mnuRestoreDefaultCalcFacilities.Size = New System.Drawing.Size(305, 22)
         Me.mnuRestoreDefaultCalcFacilities.Text = "Restore Default Manufacturing Tab Facilities"
         '
         'mnuAbout
@@ -1703,9 +1707,9 @@ Partial Class frmMain
         '
         'ListOptionsMenu
         '
-        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewMarketHistoryToolStripMenuItem, Me.AddToShoppingListToolStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem})
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewMarketHistoryToolStripMenuItem, Me.AddToShoppingListToolStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem, Me.FavoriteBlueprintToolStripMenuItem})
         Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(186, 70)
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(186, 92)
         '
         'ViewMarketHistoryToolStripMenuItem
         '
@@ -1724,6 +1728,12 @@ Partial Class frmMain
         Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
         Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
         Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
+        '
+        'FavoriteBlueprintToolStripMenuItem
+        '
+        Me.FavoriteBlueprintToolStripMenuItem.Name = "FavoriteBlueprintToolStripMenuItem"
+        Me.FavoriteBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.FavoriteBlueprintToolStripMenuItem.Text = "Favorite Blueprint"
         '
         'CalcImageList
         '
@@ -1990,8 +2000,9 @@ Partial Class frmMain
         '
         'gbMineTaxBroker
         '
-        Me.gbMineTaxBroker.Controls.Add(Me.chkMineIncludeTaxes)
+        Me.gbMineTaxBroker.Controls.Add(Me.txtMineBrokerFeeRate)
         Me.gbMineTaxBroker.Controls.Add(Me.chkMineIncludeBrokerFees)
+        Me.gbMineTaxBroker.Controls.Add(Me.chkMineIncludeTaxes)
         Me.gbMineTaxBroker.Location = New System.Drawing.Point(1057, 255)
         Me.gbMineTaxBroker.Name = "gbMineTaxBroker"
         Me.gbMineTaxBroker.Size = New System.Drawing.Size(72, 69)
@@ -1999,28 +2010,39 @@ Partial Class frmMain
         Me.gbMineTaxBroker.TabStop = False
         Me.gbMineTaxBroker.Text = "Include:"
         '
+        'txtMineBrokerFeeRate
+        '
+        Me.txtMineBrokerFeeRate.Location = New System.Drawing.Point(6, 45)
+        Me.txtMineBrokerFeeRate.Name = "txtMineBrokerFeeRate"
+        Me.txtMineBrokerFeeRate.Size = New System.Drawing.Size(60, 20)
+        Me.txtMineBrokerFeeRate.TabIndex = 8
+        Me.txtMineBrokerFeeRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtMineBrokerFeeRate.Visible = False
+        '
+        'chkMineIncludeBrokerFees
+        '
+        Me.chkMineIncludeBrokerFees.AutoSize = True
+        Me.chkMineIncludeBrokerFees.Checked = True
+        Me.chkMineIncludeBrokerFees.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineIncludeBrokerFees.Location = New System.Drawing.Point(6, 29)
+        Me.chkMineIncludeBrokerFees.Name = "chkMineIncludeBrokerFees"
+        Me.chkMineIncludeBrokerFees.Size = New System.Drawing.Size(49, 17)
+        Me.chkMineIncludeBrokerFees.TabIndex = 0
+        Me.chkMineIncludeBrokerFees.Text = "Fees"
+        Me.chkMineIncludeBrokerFees.ThreeState = True
+        Me.chkMineIncludeBrokerFees.UseVisualStyleBackColor = True
+        '
         'chkMineIncludeTaxes
         '
         Me.chkMineIncludeTaxes.AutoSize = True
         Me.chkMineIncludeTaxes.Checked = True
         Me.chkMineIncludeTaxes.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkMineIncludeTaxes.Location = New System.Drawing.Point(10, 44)
+        Me.chkMineIncludeTaxes.Location = New System.Drawing.Point(6, 14)
         Me.chkMineIncludeTaxes.Name = "chkMineIncludeTaxes"
         Me.chkMineIncludeTaxes.Size = New System.Drawing.Size(55, 17)
         Me.chkMineIncludeTaxes.TabIndex = 1
         Me.chkMineIncludeTaxes.Text = "Taxes"
         Me.chkMineIncludeTaxes.UseVisualStyleBackColor = True
-        '
-        'chkMineIncludeBrokerFees
-        '
-        Me.chkMineIncludeBrokerFees.Checked = True
-        Me.chkMineIncludeBrokerFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkMineIncludeBrokerFees.Location = New System.Drawing.Point(10, 11)
-        Me.chkMineIncludeBrokerFees.Name = "chkMineIncludeBrokerFees"
-        Me.chkMineIncludeBrokerFees.Size = New System.Drawing.Size(61, 36)
-        Me.chkMineIncludeBrokerFees.TabIndex = 0
-        Me.chkMineIncludeBrokerFees.Text = "Broker Fees"
-        Me.chkMineIncludeBrokerFees.UseVisualStyleBackColor = True
         '
         'gbMineStripStats
         '
@@ -5412,30 +5434,16 @@ Partial Class frmMain
         Me.tabManufacturing.Text = "Manufacturing List"
         Me.tabManufacturing.UseVisualStyleBackColor = True
         '
-        'lstManufacturing
-        '
-        Me.lstManufacturing.AllowColumnReorder = True
-        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
-        Me.lstManufacturing.FullRowSelect = True
-        Me.lstManufacturing.GridLines = True
-        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
-        Me.lstManufacturing.Name = "lstManufacturing"
-        Me.lstManufacturing.OwnerDraw = True
-        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
-        Me.lstManufacturing.TabIndex = 1
-        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturing.View = System.Windows.Forms.View.Details
-        '
         'gbCalcBPSelectOptions
         '
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
+        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbIncludeTaxesFees)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcSellExessItems)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.chkCalcNPCBPOs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcShowAssets)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIncludeItems)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcMarketFilters)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcCalculate)
-        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
-        Me.gbCalcBPSelectOptions.Controls.Add(Me.gbIncludeTaxesFees)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcSelectColumns)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcSizeLimit)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcProdLines)
@@ -5463,18 +5471,103 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabStop = False
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
         '
+        'gbCalcIgnoreinCalcs
+        '
+        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreMinerals)
+        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreT1Item)
+        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreInvention)
+        Me.gbCalcIgnoreinCalcs.Location = New System.Drawing.Point(859, 199)
+        Me.gbCalcIgnoreinCalcs.Name = "gbCalcIgnoreinCalcs"
+        Me.gbCalcIgnoreinCalcs.Size = New System.Drawing.Size(156, 56)
+        Me.gbCalcIgnoreinCalcs.TabIndex = 19
+        Me.gbCalcIgnoreinCalcs.TabStop = False
+        Me.gbCalcIgnoreinCalcs.Text = "Ignore in Calculations:"
+        '
+        'chkCalcIgnoreMinerals
+        '
+        Me.chkCalcIgnoreMinerals.AutoSize = True
+        Me.chkCalcIgnoreMinerals.CheckAlign = System.Drawing.ContentAlignment.BottomLeft
+        Me.chkCalcIgnoreMinerals.Location = New System.Drawing.Point(86, 16)
+        Me.chkCalcIgnoreMinerals.Name = "chkCalcIgnoreMinerals"
+        Me.chkCalcIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
+        Me.chkCalcIgnoreMinerals.TabIndex = 1
+        Me.chkCalcIgnoreMinerals.Text = "Minerals"
+        Me.chkCalcIgnoreMinerals.UseVisualStyleBackColor = True
+        '
+        'chkCalcIgnoreT1Item
+        '
+        Me.chkCalcIgnoreT1Item.AutoSize = True
+        Me.chkCalcIgnoreT1Item.Location = New System.Drawing.Point(9, 34)
+        Me.chkCalcIgnoreT1Item.Name = "chkCalcIgnoreT1Item"
+        Me.chkCalcIgnoreT1Item.Size = New System.Drawing.Size(89, 17)
+        Me.chkCalcIgnoreT1Item.TabIndex = 2
+        Me.chkCalcIgnoreT1Item.Text = "T1 Base Item"
+        Me.chkCalcIgnoreT1Item.UseVisualStyleBackColor = True
+        '
+        'chkCalcIgnoreInvention
+        '
+        Me.chkCalcIgnoreInvention.AutoSize = True
+        Me.chkCalcIgnoreInvention.Location = New System.Drawing.Point(9, 16)
+        Me.chkCalcIgnoreInvention.Name = "chkCalcIgnoreInvention"
+        Me.chkCalcIgnoreInvention.Size = New System.Drawing.Size(70, 17)
+        Me.chkCalcIgnoreInvention.TabIndex = 0
+        Me.chkCalcIgnoreInvention.Text = "Invention"
+        Me.chkCalcIgnoreInvention.UseVisualStyleBackColor = True
+        '
+        'gbIncludeTaxesFees
+        '
+        Me.gbIncludeTaxesFees.Controls.Add(Me.txtCalcBrokerFeeRate)
+        Me.gbIncludeTaxesFees.Controls.Add(Me.chkCalcFees)
+        Me.gbIncludeTaxesFees.Controls.Add(Me.chkCalcTaxes)
+        Me.gbIncludeTaxesFees.Location = New System.Drawing.Point(859, 255)
+        Me.gbIncludeTaxesFees.Name = "gbIncludeTaxesFees"
+        Me.gbIncludeTaxesFees.Size = New System.Drawing.Size(256, 39)
+        Me.gbIncludeTaxesFees.TabIndex = 17
+        Me.gbIncludeTaxesFees.TabStop = False
+        Me.gbIncludeTaxesFees.Text = "Include:"
+        '
+        'txtCalcBrokerFeeRate
+        '
+        Me.txtCalcBrokerFeeRate.Location = New System.Drawing.Point(162, 14)
+        Me.txtCalcBrokerFeeRate.Name = "txtCalcBrokerFeeRate"
+        Me.txtCalcBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
+        Me.txtCalcBrokerFeeRate.TabIndex = 62
+        Me.txtCalcBrokerFeeRate.TabStop = False
+        Me.txtCalcBrokerFeeRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtCalcBrokerFeeRate.Visible = False
+        '
+        'chkCalcFees
+        '
+        Me.chkCalcFees.AutoSize = True
+        Me.chkCalcFees.Location = New System.Drawing.Point(86, 17)
+        Me.chkCalcFees.Name = "chkCalcFees"
+        Me.chkCalcFees.Size = New System.Drawing.Size(49, 17)
+        Me.chkCalcFees.TabIndex = 1
+        Me.chkCalcFees.Text = "Fees"
+        Me.chkCalcFees.UseVisualStyleBackColor = True
+        '
+        'chkCalcTaxes
+        '
+        Me.chkCalcTaxes.AutoSize = True
+        Me.chkCalcTaxes.Location = New System.Drawing.Point(9, 17)
+        Me.chkCalcTaxes.Name = "chkCalcTaxes"
+        Me.chkCalcTaxes.Size = New System.Drawing.Size(55, 17)
+        Me.chkCalcTaxes.TabIndex = 0
+        Me.chkCalcTaxes.Text = "Taxes"
+        Me.chkCalcTaxes.UseVisualStyleBackColor = True
+        '
         'gbCalcSellExessItems
         '
         Me.gbCalcSellExessItems.Controls.Add(Me.chkCalcSellExessItems)
-        Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 199)
+        Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 197)
         Me.gbCalcSellExessItems.Name = "gbCalcSellExessItems"
-        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 48)
+        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 58)
         Me.gbCalcSellExessItems.TabIndex = 29
         Me.gbCalcSellExessItems.TabStop = False
         '
         'chkCalcSellExessItems
         '
-        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(5, 11)
+        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(6, 17)
         Me.chkCalcSellExessItems.Name = "chkCalcSellExessItems"
         Me.chkCalcSellExessItems.Size = New System.Drawing.Size(83, 32)
         Me.chkCalcSellExessItems.TabIndex = 1
@@ -5571,15 +5664,6 @@ Partial Class frmMain
         Me.txtCalcProfitThreshold.Text = "0.00"
         Me.txtCalcProfitThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'tpMaxBuildTimeFilter
-        '
-        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMaxBuildTimeFilter.Enabled = False
-        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 39)
-        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
-        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMaxBuildTimeFilter.TabIndex = 70
-        '
         'txtCalcSVRThreshold
         '
         Me.txtCalcSVRThreshold.Location = New System.Drawing.Point(65, 40)
@@ -5588,15 +5672,6 @@ Partial Class frmMain
         Me.txtCalcSVRThreshold.Size = New System.Drawing.Size(60, 20)
         Me.txtCalcSVRThreshold.TabIndex = 1
         Me.txtCalcSVRThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'tpMinBuildTimeFilter
-        '
-        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMinBuildTimeFilter.Enabled = False
-        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
-        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
-        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMinBuildTimeFilter.TabIndex = 69
         '
         'chkCalcMaxBuildTimeFilter
         '
@@ -5753,80 +5828,6 @@ Partial Class frmMain
         Me.btnCalcCalculate.TabIndex = 21
         Me.btnCalcCalculate.Text = "Calculate"
         Me.btnCalcCalculate.UseVisualStyleBackColor = True
-        '
-        'gbCalcIgnoreinCalcs
-        '
-        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreMinerals)
-        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreT1Item)
-        Me.gbCalcIgnoreinCalcs.Controls.Add(Me.chkCalcIgnoreInvention)
-        Me.gbCalcIgnoreinCalcs.Location = New System.Drawing.Point(859, 238)
-        Me.gbCalcIgnoreinCalcs.Name = "gbCalcIgnoreinCalcs"
-        Me.gbCalcIgnoreinCalcs.Size = New System.Drawing.Size(156, 56)
-        Me.gbCalcIgnoreinCalcs.TabIndex = 19
-        Me.gbCalcIgnoreinCalcs.TabStop = False
-        Me.gbCalcIgnoreinCalcs.Text = "Ignore in Calculations:"
-        '
-        'chkCalcIgnoreMinerals
-        '
-        Me.chkCalcIgnoreMinerals.AutoSize = True
-        Me.chkCalcIgnoreMinerals.CheckAlign = System.Drawing.ContentAlignment.BottomLeft
-        Me.chkCalcIgnoreMinerals.Location = New System.Drawing.Point(86, 16)
-        Me.chkCalcIgnoreMinerals.Name = "chkCalcIgnoreMinerals"
-        Me.chkCalcIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
-        Me.chkCalcIgnoreMinerals.TabIndex = 1
-        Me.chkCalcIgnoreMinerals.Text = "Minerals"
-        Me.chkCalcIgnoreMinerals.UseVisualStyleBackColor = True
-        '
-        'chkCalcIgnoreT1Item
-        '
-        Me.chkCalcIgnoreT1Item.AutoSize = True
-        Me.chkCalcIgnoreT1Item.Location = New System.Drawing.Point(9, 34)
-        Me.chkCalcIgnoreT1Item.Name = "chkCalcIgnoreT1Item"
-        Me.chkCalcIgnoreT1Item.Size = New System.Drawing.Size(89, 17)
-        Me.chkCalcIgnoreT1Item.TabIndex = 2
-        Me.chkCalcIgnoreT1Item.Text = "T1 Base Item"
-        Me.chkCalcIgnoreT1Item.UseVisualStyleBackColor = True
-        '
-        'chkCalcIgnoreInvention
-        '
-        Me.chkCalcIgnoreInvention.AutoSize = True
-        Me.chkCalcIgnoreInvention.Location = New System.Drawing.Point(9, 16)
-        Me.chkCalcIgnoreInvention.Name = "chkCalcIgnoreInvention"
-        Me.chkCalcIgnoreInvention.Size = New System.Drawing.Size(70, 17)
-        Me.chkCalcIgnoreInvention.TabIndex = 0
-        Me.chkCalcIgnoreInvention.Text = "Invention"
-        Me.chkCalcIgnoreInvention.UseVisualStyleBackColor = True
-        '
-        'gbIncludeTaxesFees
-        '
-        Me.gbIncludeTaxesFees.Controls.Add(Me.chkCalcFees)
-        Me.gbIncludeTaxesFees.Controls.Add(Me.chkCalcTaxes)
-        Me.gbIncludeTaxesFees.Location = New System.Drawing.Point(859, 199)
-        Me.gbIncludeTaxesFees.Name = "gbIncludeTaxesFees"
-        Me.gbIncludeTaxesFees.Size = New System.Drawing.Size(156, 39)
-        Me.gbIncludeTaxesFees.TabIndex = 17
-        Me.gbIncludeTaxesFees.TabStop = False
-        Me.gbIncludeTaxesFees.Text = "Include:"
-        '
-        'chkCalcFees
-        '
-        Me.chkCalcFees.AutoSize = True
-        Me.chkCalcFees.Location = New System.Drawing.Point(86, 17)
-        Me.chkCalcFees.Name = "chkCalcFees"
-        Me.chkCalcFees.Size = New System.Drawing.Size(49, 17)
-        Me.chkCalcFees.TabIndex = 1
-        Me.chkCalcFees.Text = "Fees"
-        Me.chkCalcFees.UseVisualStyleBackColor = True
-        '
-        'chkCalcTaxes
-        '
-        Me.chkCalcTaxes.AutoSize = True
-        Me.chkCalcTaxes.Location = New System.Drawing.Point(9, 17)
-        Me.chkCalcTaxes.Name = "chkCalcTaxes"
-        Me.chkCalcTaxes.Size = New System.Drawing.Size(55, 17)
-        Me.chkCalcTaxes.TabIndex = 0
-        Me.chkCalcTaxes.Text = "Taxes"
-        Me.chkCalcTaxes.UseVisualStyleBackColor = True
         '
         'btnCalcSelectColumns
         '
@@ -6458,13 +6459,6 @@ Partial Class frmMain
         Me.tabCalcFacilityBase.Text = "Base"
         Me.tabCalcFacilityBase.UseVisualStyleBackColor = True
         '
-        'CalcBaseFacility
-        '
-        Me.CalcBaseFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcBaseFacility.Name = "CalcBaseFacility"
-        Me.CalcBaseFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcBaseFacility.TabIndex = 0
-        '
         'tabCalcFacilityComponents
         '
         Me.tabCalcFacilityComponents.Controls.Add(Me.CalcComponentsFacility)
@@ -6474,13 +6468,6 @@ Partial Class frmMain
         Me.tabCalcFacilityComponents.TabIndex = 10
         Me.tabCalcFacilityComponents.Text = "Components"
         Me.tabCalcFacilityComponents.UseVisualStyleBackColor = True
-        '
-        'CalcComponentsFacility
-        '
-        Me.CalcComponentsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcComponentsFacility.Name = "CalcComponentsFacility"
-        Me.CalcComponentsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcComponentsFacility.TabIndex = 1
         '
         'tabCalcFacilityCopy
         '
@@ -6492,13 +6479,6 @@ Partial Class frmMain
         Me.tabCalcFacilityCopy.Text = "Copy"
         Me.tabCalcFacilityCopy.UseVisualStyleBackColor = True
         '
-        'CalcCopyFacility
-        '
-        Me.CalcCopyFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcCopyFacility.Name = "CalcCopyFacility"
-        Me.CalcCopyFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcCopyFacility.TabIndex = 1
-        '
         'tabCalcFacilityT2Invention
         '
         Me.tabCalcFacilityT2Invention.Controls.Add(Me.CalcInventionFacility)
@@ -6508,13 +6488,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT2Invention.TabIndex = 2
         Me.tabCalcFacilityT2Invention.Text = "T2 Inv"
         Me.tabCalcFacilityT2Invention.UseVisualStyleBackColor = True
-        '
-        'CalcInventionFacility
-        '
-        Me.CalcInventionFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcInventionFacility.Name = "CalcInventionFacility"
-        Me.CalcInventionFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcInventionFacility.TabIndex = 1
         '
         'tabCalcFacilityT3Invention
         '
@@ -6526,13 +6499,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT3Invention.Text = "T3 Inv"
         Me.tabCalcFacilityT3Invention.UseVisualStyleBackColor = True
         '
-        'CalcT3InventionFacility
-        '
-        Me.CalcT3InventionFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcT3InventionFacility.Name = "CalcT3InventionFacility"
-        Me.CalcT3InventionFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcT3InventionFacility.TabIndex = 1
-        '
         'tabCalcFacilitySupers
         '
         Me.tabCalcFacilitySupers.Controls.Add(Me.CalcSupersFacility)
@@ -6542,13 +6508,6 @@ Partial Class frmMain
         Me.tabCalcFacilitySupers.TabIndex = 6
         Me.tabCalcFacilitySupers.Text = "Supers"
         Me.tabCalcFacilitySupers.UseVisualStyleBackColor = True
-        '
-        'CalcSupersFacility
-        '
-        Me.CalcSupersFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcSupersFacility.Name = "CalcSupersFacility"
-        Me.CalcSupersFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcSupersFacility.TabIndex = 1
         '
         'tabCalcFacilityCapitals
         '
@@ -6560,13 +6519,6 @@ Partial Class frmMain
         Me.tabCalcFacilityCapitals.Text = "Capitals"
         Me.tabCalcFacilityCapitals.UseVisualStyleBackColor = True
         '
-        'CalcCapitalsFacility
-        '
-        Me.CalcCapitalsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcCapitalsFacility.Name = "CalcCapitalsFacility"
-        Me.CalcCapitalsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcCapitalsFacility.TabIndex = 1
-        '
         'tabCalcFacilityT3Ships
         '
         Me.tabCalcFacilityT3Ships.Controls.Add(Me.CalcT3ShipsFacility)
@@ -6576,13 +6528,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT3Ships.TabIndex = 9
         Me.tabCalcFacilityT3Ships.Text = "T3 Ships"
         Me.tabCalcFacilityT3Ships.UseVisualStyleBackColor = True
-        '
-        'CalcT3ShipsFacility
-        '
-        Me.CalcT3ShipsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcT3ShipsFacility.Name = "CalcT3ShipsFacility"
-        Me.CalcT3ShipsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcT3ShipsFacility.TabIndex = 1
         '
         'tabCalcFacilitySubsystems
         '
@@ -6594,13 +6539,6 @@ Partial Class frmMain
         Me.tabCalcFacilitySubsystems.Text = "Subsystems"
         Me.tabCalcFacilitySubsystems.UseVisualStyleBackColor = True
         '
-        'CalcSubsystemsFacility
-        '
-        Me.CalcSubsystemsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcSubsystemsFacility.Name = "CalcSubsystemsFacility"
-        Me.CalcSubsystemsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcSubsystemsFacility.TabIndex = 1
-        '
         'tabCalcFacilityBoosters
         '
         Me.tabCalcFacilityBoosters.Controls.Add(Me.CalcBoostersFacility)
@@ -6611,13 +6549,6 @@ Partial Class frmMain
         Me.tabCalcFacilityBoosters.Text = "Boosters"
         Me.tabCalcFacilityBoosters.UseVisualStyleBackColor = True
         '
-        'CalcBoostersFacility
-        '
-        Me.CalcBoostersFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcBoostersFacility.Name = "CalcBoostersFacility"
-        Me.CalcBoostersFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcBoostersFacility.TabIndex = 1
-        '
         'tabCalcFacilityReactions
         '
         Me.tabCalcFacilityReactions.Controls.Add(Me.CalcReactionsFacility)
@@ -6627,13 +6558,6 @@ Partial Class frmMain
         Me.tabCalcFacilityReactions.TabIndex = 4
         Me.tabCalcFacilityReactions.Text = "Reactions"
         Me.tabCalcFacilityReactions.UseVisualStyleBackColor = True
-        '
-        'CalcReactionsFacility
-        '
-        Me.CalcReactionsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcReactionsFacility.Name = "CalcReactionsFacility"
-        Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcReactionsFacility.TabIndex = 1
         '
         'gbCalcFilter
         '
@@ -7125,19 +7049,6 @@ Partial Class frmMain
         Me.btnSavePricestoFile.TabIndex = 41
         Me.btnSavePricestoFile.Text = "Save Prices"
         Me.btnSavePricestoFile.UseVisualStyleBackColor = True
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = True
-        Me.lstPricesView.GridLines = True
-        Me.lstPricesView.HideSelection = False
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = False
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = False
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
         'txtPriceItemFilter
         '
@@ -7987,89 +7898,13 @@ Partial Class frmMain
         '
         'pnlSinglePriceLocationSelect
         '
-        Me.pnlSinglePriceLocationSelect.Controls.Add(Me.gbTradeHubSystems)
         Me.pnlSinglePriceLocationSelect.Controls.Add(Me.gbRegions)
+        Me.pnlSinglePriceLocationSelect.Controls.Add(Me.gbTradeHubSystems)
         Me.pnlSinglePriceLocationSelect.Location = New System.Drawing.Point(671, 3)
         Me.pnlSinglePriceLocationSelect.Name = "pnlSinglePriceLocationSelect"
         Me.pnlSinglePriceLocationSelect.Size = New System.Drawing.Size(463, 483)
         Me.pnlSinglePriceLocationSelect.TabIndex = 15
         Me.pnlSinglePriceLocationSelect.Visible = False
-        '
-        'gbTradeHubSystems
-        '
-        Me.gbTradeHubSystems.Controls.Add(Me.cmbPriceSystems)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems2)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems4)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems5)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems3)
-        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems1)
-        Me.gbTradeHubSystems.Location = New System.Drawing.Point(4, 433)
-        Me.gbTradeHubSystems.Name = "gbTradeHubSystems"
-        Me.gbTradeHubSystems.Size = New System.Drawing.Size(455, 45)
-        Me.gbTradeHubSystems.TabIndex = 8
-        Me.gbTradeHubSystems.TabStop = False
-        Me.gbTradeHubSystems.Text = "Trade Hub Systems"
-        '
-        'cmbPriceSystems
-        '
-        Me.cmbPriceSystems.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend
-        Me.cmbPriceSystems.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.cmbPriceSystems.FormattingEnabled = True
-        Me.cmbPriceSystems.Location = New System.Drawing.Point(293, 16)
-        Me.cmbPriceSystems.Name = "cmbPriceSystems"
-        Me.cmbPriceSystems.Size = New System.Drawing.Size(156, 21)
-        Me.cmbPriceSystems.TabIndex = 5
-        Me.cmbPriceSystems.Text = "Select System"
-        '
-        'chkSystems2
-        '
-        Me.chkSystems2.AutoSize = True
-        Me.chkSystems2.Location = New System.Drawing.Point(62, 19)
-        Me.chkSystems2.Name = "chkSystems2"
-        Me.chkSystems2.Size = New System.Drawing.Size(53, 17)
-        Me.chkSystems2.TabIndex = 1
-        Me.chkSystems2.Text = "Amarr"
-        Me.chkSystems2.UseVisualStyleBackColor = True
-        '
-        'chkSystems4
-        '
-        Me.chkSystems4.AutoSize = True
-        Me.chkSystems4.Location = New System.Drawing.Point(188, 19)
-        Me.chkSystems4.Name = "chkSystems4"
-        Me.chkSystems4.Size = New System.Drawing.Size(51, 17)
-        Me.chkSystems4.TabIndex = 3
-        Me.chkSystems4.Text = "Rens"
-        Me.chkSystems4.UseVisualStyleBackColor = True
-        '
-        'chkSystems5
-        '
-        Me.chkSystems5.AutoSize = True
-        Me.chkSystems5.Location = New System.Drawing.Point(245, 19)
-        Me.chkSystems5.Name = "chkSystems5"
-        Me.chkSystems5.Size = New System.Drawing.Size(46, 17)
-        Me.chkSystems5.TabIndex = 4
-        Me.chkSystems5.Text = "Hek"
-        Me.chkSystems5.UseVisualStyleBackColor = True
-        '
-        'chkSystems3
-        '
-        Me.chkSystems3.AutoSize = True
-        Me.chkSystems3.Location = New System.Drawing.Point(121, 19)
-        Me.chkSystems3.Name = "chkSystems3"
-        Me.chkSystems3.Size = New System.Drawing.Size(61, 17)
-        Me.chkSystems3.TabIndex = 2
-        Me.chkSystems3.Text = "Dodixie"
-        Me.chkSystems3.UseVisualStyleBackColor = True
-        '
-        'chkSystems1
-        '
-        Me.chkSystems1.AutoSize = True
-        Me.chkSystems1.Location = New System.Drawing.Point(14, 19)
-        Me.chkSystems1.Name = "chkSystems1"
-        Me.chkSystems1.Size = New System.Drawing.Size(42, 17)
-        Me.chkSystems1.TabIndex = 0
-        Me.chkSystems1.Text = "Jita"
-        Me.chkSystems1.UseVisualStyleBackColor = True
         '
         'gbRegions
         '
@@ -8837,6 +8672,82 @@ Partial Class frmMain
         Me.chkRegion67.Text = "Wicked Creek"
         Me.chkRegion67.UseVisualStyleBackColor = True
         '
+        'gbTradeHubSystems
+        '
+        Me.gbTradeHubSystems.Controls.Add(Me.cmbPriceSystems)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems2)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems4)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems5)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems3)
+        Me.gbTradeHubSystems.Controls.Add(Me.chkSystems1)
+        Me.gbTradeHubSystems.Location = New System.Drawing.Point(4, 433)
+        Me.gbTradeHubSystems.Name = "gbTradeHubSystems"
+        Me.gbTradeHubSystems.Size = New System.Drawing.Size(455, 45)
+        Me.gbTradeHubSystems.TabIndex = 8
+        Me.gbTradeHubSystems.TabStop = False
+        Me.gbTradeHubSystems.Text = "Trade Hub Systems"
+        '
+        'cmbPriceSystems
+        '
+        Me.cmbPriceSystems.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend
+        Me.cmbPriceSystems.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
+        Me.cmbPriceSystems.FormattingEnabled = True
+        Me.cmbPriceSystems.Location = New System.Drawing.Point(293, 16)
+        Me.cmbPriceSystems.Name = "cmbPriceSystems"
+        Me.cmbPriceSystems.Size = New System.Drawing.Size(156, 21)
+        Me.cmbPriceSystems.TabIndex = 5
+        Me.cmbPriceSystems.Text = "Select System"
+        '
+        'chkSystems2
+        '
+        Me.chkSystems2.AutoSize = True
+        Me.chkSystems2.Location = New System.Drawing.Point(62, 19)
+        Me.chkSystems2.Name = "chkSystems2"
+        Me.chkSystems2.Size = New System.Drawing.Size(53, 17)
+        Me.chkSystems2.TabIndex = 1
+        Me.chkSystems2.Text = "Amarr"
+        Me.chkSystems2.UseVisualStyleBackColor = True
+        '
+        'chkSystems4
+        '
+        Me.chkSystems4.AutoSize = True
+        Me.chkSystems4.Location = New System.Drawing.Point(188, 19)
+        Me.chkSystems4.Name = "chkSystems4"
+        Me.chkSystems4.Size = New System.Drawing.Size(51, 17)
+        Me.chkSystems4.TabIndex = 3
+        Me.chkSystems4.Text = "Rens"
+        Me.chkSystems4.UseVisualStyleBackColor = True
+        '
+        'chkSystems5
+        '
+        Me.chkSystems5.AutoSize = True
+        Me.chkSystems5.Location = New System.Drawing.Point(245, 19)
+        Me.chkSystems5.Name = "chkSystems5"
+        Me.chkSystems5.Size = New System.Drawing.Size(46, 17)
+        Me.chkSystems5.TabIndex = 4
+        Me.chkSystems5.Text = "Hek"
+        Me.chkSystems5.UseVisualStyleBackColor = True
+        '
+        'chkSystems3
+        '
+        Me.chkSystems3.AutoSize = True
+        Me.chkSystems3.Location = New System.Drawing.Point(121, 19)
+        Me.chkSystems3.Name = "chkSystems3"
+        Me.chkSystems3.Size = New System.Drawing.Size(61, 17)
+        Me.chkSystems3.TabIndex = 2
+        Me.chkSystems3.Text = "Dodixie"
+        Me.chkSystems3.UseVisualStyleBackColor = True
+        '
+        'chkSystems1
+        '
+        Me.chkSystems1.AutoSize = True
+        Me.chkSystems1.Location = New System.Drawing.Point(14, 19)
+        Me.chkSystems1.Name = "chkSystems1"
+        Me.chkSystems1.Size = New System.Drawing.Size(42, 17)
+        Me.chkSystems1.TabIndex = 0
+        Me.chkSystems1.Text = "Jita"
+        Me.chkSystems1.UseVisualStyleBackColor = True
+        '
         'pnlPriceProfiles
         '
         Me.pnlPriceProfiles.Controls.Add(Me.tabPriceProfile)
@@ -8967,19 +8878,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsPriceMod.TabIndex = 44
         Me.lblRawMaterialsDefaultsPriceMod.Text = "Price Modifier:"
         '
-        'lstRawPriceProfile
-        '
-        Me.lstRawPriceProfile.FullRowSelect = True
-        Me.lstRawPriceProfile.GridLines = True
-        Me.lstRawPriceProfile.HideSelection = False
-        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstRawPriceProfile.MultiSelect = False
-        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
-        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstRawPriceProfile.TabIndex = 1
-        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
-        '
         'tabPriceProfileManufactured
         '
         Me.tabPriceProfileManufactured.Controls.Add(Me.ItemsDefaults)
@@ -9092,19 +8990,6 @@ Partial Class frmMain
         Me.lblItemsDefaultsPriceMod.TabIndex = 44
         Me.lblItemsDefaultsPriceMod.Text = "Price Modifier:"
         '
-        'lstManufacturedPriceProfile
-        '
-        Me.lstManufacturedPriceProfile.FullRowSelect = True
-        Me.lstManufacturedPriceProfile.GridLines = True
-        Me.lstManufacturedPriceProfile.HideSelection = False
-        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstManufacturedPriceProfile.MultiSelect = False
-        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
-        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstManufacturedPriceProfile.TabIndex = 2
-        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
-        '
         'tabBlueprints
         '
         Me.tabBlueprints.Controls.Add(Me.btnBPBuiltComponents)
@@ -9146,6 +9031,26 @@ Partial Class frmMain
         Me.tabBlueprints.TabIndex = 0
         Me.tabBlueprints.Text = "Blueprints"
         Me.tabBlueprints.UseVisualStyleBackColor = True
+        '
+        'btnBPBuiltComponents
+        '
+        Me.btnBPBuiltComponents.AutoSize = True
+        Me.btnBPBuiltComponents.Location = New System.Drawing.Point(84, 588)
+        Me.btnBPBuiltComponents.Name = "btnBPBuiltComponents"
+        Me.btnBPBuiltComponents.Size = New System.Drawing.Size(99, 23)
+        Me.btnBPBuiltComponents.TabIndex = 79
+        Me.btnBPBuiltComponents.Text = "Built Components"
+        Me.btnBPBuiltComponents.UseVisualStyleBackColor = True
+        '
+        'btnBPComponents
+        '
+        Me.btnBPComponents.AutoSize = True
+        Me.btnBPComponents.Location = New System.Drawing.Point(6, 588)
+        Me.btnBPComponents.Name = "btnBPComponents"
+        Me.btnBPComponents.Size = New System.Drawing.Size(76, 23)
+        Me.btnBPComponents.TabIndex = 78
+        Me.btnBPComponents.Text = "Components"
+        Me.btnBPComponents.UseVisualStyleBackColor = True
         '
         'rbtnBPRawT2MatType
         '
@@ -9637,6 +9542,7 @@ Partial Class frmMain
         'gbBPInventionStats
         '
         Me.gbBPInventionStats.BackColor = System.Drawing.Color.Transparent
+        Me.gbBPInventionStats.Controls.Add(Me.txtBPBrokerFeeRate)
         Me.gbBPInventionStats.Controls.Add(Me.txtBPMarketPriceEdit)
         Me.gbBPInventionStats.Controls.Add(Me.lblBPProductionTime)
         Me.gbBPInventionStats.Controls.Add(Me.lblBPTotalUnits)
@@ -9673,6 +9579,16 @@ Partial Class frmMain
         Me.gbBPInventionStats.TabIndex = 17
         Me.gbBPInventionStats.TabStop = False
         '
+        'txtBPBrokerFeeRate
+        '
+        Me.txtBPBrokerFeeRate.Location = New System.Drawing.Point(225, 77)
+        Me.txtBPBrokerFeeRate.Name = "txtBPBrokerFeeRate"
+        Me.txtBPBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
+        Me.txtBPBrokerFeeRate.TabIndex = 61
+        Me.txtBPBrokerFeeRate.TabStop = False
+        Me.txtBPBrokerFeeRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtBPBrokerFeeRate.Visible = False
+        '
         'txtBPMarketPriceEdit
         '
         Me.txtBPMarketPriceEdit.Location = New System.Drawing.Point(53, 97)
@@ -9687,7 +9603,7 @@ Partial Class frmMain
         '
         Me.lblBPProductionTime.BackColor = System.Drawing.Color.Transparent
         Me.lblBPProductionTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPProductionTime.Location = New System.Drawing.Point(5, 28)
+        Me.lblBPProductionTime.Location = New System.Drawing.Point(5, 25)
         Me.lblBPProductionTime.Name = "lblBPProductionTime"
         Me.lblBPProductionTime.Size = New System.Drawing.Size(132, 17)
         Me.lblBPProductionTime.TabIndex = 1
@@ -9697,7 +9613,7 @@ Partial Class frmMain
         'lblBPTotalUnits
         '
         Me.lblBPTotalUnits.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPTotalUnits.Location = New System.Drawing.Point(141, 63)
+        Me.lblBPTotalUnits.Location = New System.Drawing.Point(141, 60)
         Me.lblBPTotalUnits.Name = "lblBPTotalUnits"
         Me.lblBPTotalUnits.Size = New System.Drawing.Size(132, 16)
         Me.lblBPTotalUnits.TabIndex = 7
@@ -9716,7 +9632,7 @@ Partial Class frmMain
         'lblBPTotalUnits1
         '
         Me.lblBPTotalUnits1.AutoSize = True
-        Me.lblBPTotalUnits1.Location = New System.Drawing.Point(138, 48)
+        Me.lblBPTotalUnits1.Location = New System.Drawing.Point(138, 45)
         Me.lblBPTotalUnits1.Name = "lblBPTotalUnits1"
         Me.lblBPTotalUnits1.Size = New System.Drawing.Size(34, 13)
         Me.lblBPTotalUnits1.TabIndex = 6
@@ -9735,7 +9651,7 @@ Partial Class frmMain
         'lblBPPT
         '
         Me.lblBPPT.AutoSize = True
-        Me.lblBPPT.Location = New System.Drawing.Point(3, 13)
+        Me.lblBPPT.Location = New System.Drawing.Point(3, 10)
         Me.lblBPPT.Name = "lblBPPT"
         Me.lblBPPT.Size = New System.Drawing.Size(104, 13)
         Me.lblBPPT.TabIndex = 0
@@ -9746,7 +9662,7 @@ Partial Class frmMain
         Me.chkBPTaxes.AutoSize = True
         Me.chkBPTaxes.Checked = True
         Me.chkBPTaxes.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPTaxes.Location = New System.Drawing.Point(6, 81)
+        Me.chkBPTaxes.Location = New System.Drawing.Point(6, 79)
         Me.chkBPTaxes.Name = "chkBPTaxes"
         Me.chkBPTaxes.Size = New System.Drawing.Size(58, 17)
         Me.chkBPTaxes.TabIndex = 9
@@ -9756,7 +9672,7 @@ Partial Class frmMain
         'lblBPMarketCost
         '
         Me.lblBPMarketCost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPMarketCost.Location = New System.Drawing.Point(5, 62)
+        Me.lblBPMarketCost.Location = New System.Drawing.Point(5, 59)
         Me.lblBPMarketCost.Name = "lblBPMarketCost"
         Me.lblBPMarketCost.Size = New System.Drawing.Size(132, 17)
         Me.lblBPMarketCost.TabIndex = 5
@@ -9765,7 +9681,7 @@ Partial Class frmMain
         'lblBPMarketCost1
         '
         Me.lblBPMarketCost1.AutoSize = True
-        Me.lblBPMarketCost1.Location = New System.Drawing.Point(3, 48)
+        Me.lblBPMarketCost1.Location = New System.Drawing.Point(3, 45)
         Me.lblBPMarketCost1.Name = "lblBPMarketCost1"
         Me.lblBPMarketCost1.Size = New System.Drawing.Size(70, 13)
         Me.lblBPMarketCost1.TabIndex = 4
@@ -9805,11 +9721,12 @@ Partial Class frmMain
         Me.chkBPBrokerFees.AutoSize = True
         Me.chkBPBrokerFees.Checked = True
         Me.chkBPBrokerFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPBrokerFees.Location = New System.Drawing.Point(141, 81)
+        Me.chkBPBrokerFees.Location = New System.Drawing.Point(141, 79)
         Me.chkBPBrokerFees.Name = "chkBPBrokerFees"
         Me.chkBPBrokerFees.Size = New System.Drawing.Size(52, 17)
         Me.chkBPBrokerFees.TabIndex = 11
         Me.chkBPBrokerFees.Text = "Fees:"
+        Me.chkBPBrokerFees.ThreeState = True
         Me.chkBPBrokerFees.UseVisualStyleBackColor = True
         '
         'lblBPCompIPH
@@ -9854,7 +9771,7 @@ Partial Class frmMain
         'lblBPTotalItemPT
         '
         Me.lblBPTotalItemPT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblBPTotalItemPT.Location = New System.Drawing.Point(141, 28)
+        Me.lblBPTotalItemPT.Location = New System.Drawing.Point(141, 25)
         Me.lblBPTotalItemPT.Name = "lblBPTotalItemPT"
         Me.lblBPTotalItemPT.Size = New System.Drawing.Size(132, 17)
         Me.lblBPTotalItemPT.TabIndex = 3
@@ -9874,7 +9791,7 @@ Partial Class frmMain
         'lblBPCPTPT
         '
         Me.lblBPCPTPT.AutoSize = True
-        Me.lblBPCPTPT.Location = New System.Drawing.Point(138, 13)
+        Me.lblBPCPTPT.Location = New System.Drawing.Point(138, 10)
         Me.lblBPCPTPT.Name = "lblBPCPTPT"
         Me.lblBPCPTPT.Size = New System.Drawing.Size(114, 13)
         Me.lblBPCPTPT.TabIndex = 2
@@ -9959,7 +9876,7 @@ Partial Class frmMain
         'chkBPPricePerUnit
         '
         Me.chkBPPricePerUnit.AutoSize = True
-        Me.chkBPPricePerUnit.Location = New System.Drawing.Point(225, 47)
+        Me.chkBPPricePerUnit.Location = New System.Drawing.Point(225, 44)
         Me.chkBPPricePerUnit.Name = "chkBPPricePerUnit"
         Me.chkBPPricePerUnit.Size = New System.Drawing.Size(48, 17)
         Me.chkBPPricePerUnit.TabIndex = 8
@@ -10081,17 +9998,10 @@ Partial Class frmMain
         Me.tabFacility.Margin = New System.Windows.Forms.Padding(0)
         Me.tabFacility.Name = "tabFacility"
         Me.tabFacility.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabFacility.Size = New System.Drawing.Size(281, 142)
+        Me.tabFacility.Size = New System.Drawing.Size(261, 142)
         Me.tabFacility.TabIndex = 1
         Me.tabFacility.Text = "Facility"
         Me.tabFacility.UseVisualStyleBackColor = True
-        '
-        'BPTabFacility
-        '
-        Me.BPTabFacility.Location = New System.Drawing.Point(0, 0)
-        Me.BPTabFacility.Name = "BPTabFacility"
-        Me.BPTabFacility.Size = New System.Drawing.Size(280, 142)
-        Me.BPTabFacility.TabIndex = 0
         '
         'tabT3Calcs
         '
@@ -10112,9 +10022,9 @@ Partial Class frmMain
         Me.tabT3Calcs.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.tabT3Calcs.Location = New System.Drawing.Point(4, 4)
         Me.tabT3Calcs.Name = "tabT3Calcs"
-        Me.tabT3Calcs.Size = New System.Drawing.Size(281, 142)
+        Me.tabT3Calcs.Size = New System.Drawing.Size(261, 142)
         Me.tabT3Calcs.TabIndex = 2
-        Me.tabT3Calcs.Text = "Inv"
+        Me.tabT3Calcs.Text = "Invention"
         Me.tabT3Calcs.UseVisualStyleBackColor = True
         '
         'lblBPT3Decryptor
@@ -10268,9 +10178,9 @@ Partial Class frmMain
         Me.tabInventionCalcs.Margin = New System.Windows.Forms.Padding(0)
         Me.tabInventionCalcs.Name = "tabInventionCalcs"
         Me.tabInventionCalcs.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabInventionCalcs.Size = New System.Drawing.Size(281, 142)
+        Me.tabInventionCalcs.Size = New System.Drawing.Size(261, 142)
         Me.tabInventionCalcs.TabIndex = 0
-        Me.tabInventionCalcs.Text = "Inv"
+        Me.tabInventionCalcs.Text = "Invention"
         Me.tabInventionCalcs.UseVisualStyleBackColor = True
         '
         'lblBPCopyTime
@@ -10813,8 +10723,32 @@ Partial Class frmMain
         Me.lblBPComponentMatCost1.Text = "Component Mat Cost:"
         Me.lblBPComponentMatCost1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
+        'tabMain
+        '
+        Me.tabMain.Controls.Add(Me.tabBlueprints)
+        Me.tabMain.Controls.Add(Me.tabUpdatePrices)
+        Me.tabMain.Controls.Add(Me.tabManufacturing)
+        Me.tabMain.Controls.Add(Me.tabDatacores)
+        Me.tabMain.Controls.Add(Me.tabMining)
+        Me.tabMain.Controls.Add(Me.tabPI)
+        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
+        Me.tabMain.Location = New System.Drawing.Point(2, 26)
+        Me.tabMain.Name = "tabMain"
+        Me.tabMain.SelectedIndex = 0
+        Me.tabMain.Size = New System.Drawing.Size(1145, 641)
+        Me.tabMain.TabIndex = 1
+        '
+        'BPTabFacility
+        '
+        Me.BPTabFacility.Location = New System.Drawing.Point(0, 0)
+        Me.BPTabFacility.Name = "BPTabFacility"
+        Me.BPTabFacility.Size = New System.Drawing.Size(280, 142)
+        Me.BPTabFacility.TabIndex = 0
+        '
         'lstBPComponentMats
         '
+        Me.lstBPComponentMats.CheckBoxes = True
         Me.lstBPComponentMats.FullRowSelect = True
         Me.lstBPComponentMats.GridLines = True
         Me.lstBPComponentMats.HideSelection = False
@@ -10841,22 +10775,6 @@ Partial Class frmMain
         Me.lstBPRawMats.UseCompatibleStateImageBehavior = False
         Me.lstBPRawMats.View = System.Windows.Forms.View.Details
         '
-        'tabMain
-        '
-        Me.tabMain.Controls.Add(Me.tabBlueprints)
-        Me.tabMain.Controls.Add(Me.tabUpdatePrices)
-        Me.tabMain.Controls.Add(Me.tabManufacturing)
-        Me.tabMain.Controls.Add(Me.tabDatacores)
-        Me.tabMain.Controls.Add(Me.tabMining)
-        Me.tabMain.Controls.Add(Me.tabPI)
-        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
-        Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
-        Me.tabMain.Location = New System.Drawing.Point(2, 26)
-        Me.tabMain.Name = "tabMain"
-        Me.tabMain.SelectedIndex = 0
-        Me.tabMain.Size = New System.Drawing.Size(1145, 641)
-        Me.tabMain.TabIndex = 1
-        '
         'lstBPBuiltComponents
         '
         Me.lstBPBuiltComponents.FullRowSelect = True
@@ -10872,25 +10790,153 @@ Partial Class frmMain
         Me.lstBPBuiltComponents.View = System.Windows.Forms.View.Details
         Me.lstBPBuiltComponents.Visible = False
         '
-        'btnBPComponents
+        'lstPricesView
         '
-        Me.btnBPComponents.AutoSize = True
-        Me.btnBPComponents.Location = New System.Drawing.Point(6, 588)
-        Me.btnBPComponents.Name = "btnBPComponents"
-        Me.btnBPComponents.Size = New System.Drawing.Size(76, 23)
-        Me.btnBPComponents.TabIndex = 78
-        Me.btnBPComponents.Text = "Components"
-        Me.btnBPComponents.UseVisualStyleBackColor = True
+        Me.lstPricesView.FullRowSelect = True
+        Me.lstPricesView.GridLines = True
+        Me.lstPricesView.HideSelection = False
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = False
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = False
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
-        'btnBPBuiltComponents
+        'lstRawPriceProfile
         '
-        Me.btnBPBuiltComponents.AutoSize = True
-        Me.btnBPBuiltComponents.Location = New System.Drawing.Point(84, 588)
-        Me.btnBPBuiltComponents.Name = "btnBPBuiltComponents"
-        Me.btnBPBuiltComponents.Size = New System.Drawing.Size(99, 23)
-        Me.btnBPBuiltComponents.TabIndex = 79
-        Me.btnBPBuiltComponents.Text = "Built Components"
-        Me.btnBPBuiltComponents.UseVisualStyleBackColor = True
+        Me.lstRawPriceProfile.FullRowSelect = True
+        Me.lstRawPriceProfile.GridLines = True
+        Me.lstRawPriceProfile.HideSelection = False
+        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstRawPriceProfile.MultiSelect = False
+        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
+        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstRawPriceProfile.TabIndex = 1
+        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturedPriceProfile
+        '
+        Me.lstManufacturedPriceProfile.FullRowSelect = True
+        Me.lstManufacturedPriceProfile.GridLines = True
+        Me.lstManufacturedPriceProfile.HideSelection = False
+        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstManufacturedPriceProfile.MultiSelect = False
+        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
+        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstManufacturedPriceProfile.TabIndex = 2
+        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturing
+        '
+        Me.lstManufacturing.AllowColumnReorder = True
+        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
+        Me.lstManufacturing.FullRowSelect = True
+        Me.lstManufacturing.GridLines = True
+        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
+        Me.lstManufacturing.Name = "lstManufacturing"
+        Me.lstManufacturing.OwnerDraw = True
+        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
+        Me.lstManufacturing.TabIndex = 1
+        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturing.View = System.Windows.Forms.View.Details
+        '
+        'tpMaxBuildTimeFilter
+        '
+        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMaxBuildTimeFilter.Enabled = False
+        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 39)
+        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
+        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMaxBuildTimeFilter.TabIndex = 70
+        '
+        'tpMinBuildTimeFilter
+        '
+        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMinBuildTimeFilter.Enabled = False
+        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
+        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
+        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMinBuildTimeFilter.TabIndex = 69
+        '
+        'CalcBaseFacility
+        '
+        Me.CalcBaseFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcBaseFacility.Name = "CalcBaseFacility"
+        Me.CalcBaseFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcBaseFacility.TabIndex = 0
+        '
+        'CalcComponentsFacility
+        '
+        Me.CalcComponentsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcComponentsFacility.Name = "CalcComponentsFacility"
+        Me.CalcComponentsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcComponentsFacility.TabIndex = 1
+        '
+        'CalcCopyFacility
+        '
+        Me.CalcCopyFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcCopyFacility.Name = "CalcCopyFacility"
+        Me.CalcCopyFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcCopyFacility.TabIndex = 1
+        '
+        'CalcInventionFacility
+        '
+        Me.CalcInventionFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcInventionFacility.Name = "CalcInventionFacility"
+        Me.CalcInventionFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcInventionFacility.TabIndex = 1
+        '
+        'CalcT3InventionFacility
+        '
+        Me.CalcT3InventionFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcT3InventionFacility.Name = "CalcT3InventionFacility"
+        Me.CalcT3InventionFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcT3InventionFacility.TabIndex = 1
+        '
+        'CalcSupersFacility
+        '
+        Me.CalcSupersFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcSupersFacility.Name = "CalcSupersFacility"
+        Me.CalcSupersFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcSupersFacility.TabIndex = 1
+        '
+        'CalcCapitalsFacility
+        '
+        Me.CalcCapitalsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcCapitalsFacility.Name = "CalcCapitalsFacility"
+        Me.CalcCapitalsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcCapitalsFacility.TabIndex = 1
+        '
+        'CalcT3ShipsFacility
+        '
+        Me.CalcT3ShipsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcT3ShipsFacility.Name = "CalcT3ShipsFacility"
+        Me.CalcT3ShipsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcT3ShipsFacility.TabIndex = 1
+        '
+        'CalcSubsystemsFacility
+        '
+        Me.CalcSubsystemsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcSubsystemsFacility.Name = "CalcSubsystemsFacility"
+        Me.CalcSubsystemsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcSubsystemsFacility.TabIndex = 1
+        '
+        'CalcBoostersFacility
+        '
+        Me.CalcBoostersFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcBoostersFacility.Name = "CalcBoostersFacility"
+        Me.CalcBoostersFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcBoostersFacility.TabIndex = 1
+        '
+        'CalcReactionsFacility
+        '
+        Me.CalcReactionsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcReactionsFacility.Name = "CalcReactionsFacility"
+        Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcReactionsFacility.TabIndex = 1
         '
         'frmMain
         '
@@ -10995,15 +11041,15 @@ Partial Class frmMain
         Me.tabManufacturing.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.PerformLayout()
+        Me.gbCalcIgnoreinCalcs.ResumeLayout(False)
+        Me.gbCalcIgnoreinCalcs.PerformLayout()
+        Me.gbIncludeTaxesFees.ResumeLayout(False)
+        Me.gbIncludeTaxesFees.PerformLayout()
         Me.gbCalcSellExessItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.PerformLayout()
         Me.gbCalcMarketFilters.ResumeLayout(False)
         Me.gbCalcMarketFilters.PerformLayout()
-        Me.gbCalcIgnoreinCalcs.ResumeLayout(False)
-        Me.gbCalcIgnoreinCalcs.PerformLayout()
-        Me.gbIncludeTaxesFees.ResumeLayout(False)
-        Me.gbIncludeTaxesFees.PerformLayout()
         Me.gbCalcSizeLimit.ResumeLayout(False)
         Me.gbCalcSizeLimit.PerformLayout()
         Me.gbCalcProdLines.ResumeLayout(False)
@@ -11064,10 +11110,10 @@ Partial Class frmMain
         Me.gbRawMaterials.ResumeLayout(False)
         Me.gbRawMaterials.PerformLayout()
         Me.pnlSinglePriceLocationSelect.ResumeLayout(False)
-        Me.gbTradeHubSystems.ResumeLayout(False)
-        Me.gbTradeHubSystems.PerformLayout()
         Me.gbRegions.ResumeLayout(False)
         Me.gbRegions.PerformLayout()
+        Me.gbTradeHubSystems.ResumeLayout(False)
+        Me.gbTradeHubSystems.PerformLayout()
         Me.pnlPriceProfiles.ResumeLayout(False)
         Me.tabPriceProfile.ResumeLayout(False)
         Me.tabPriceProfileRaw.ResumeLayout(False)
@@ -12083,4 +12129,8 @@ Partial Class frmMain
     Friend WithEvents lstBPBuiltComponents As MyListView
     Friend WithEvents btnBPBuiltComponents As Button
     Friend WithEvents btnBPComponents As Button
+    Friend WithEvents FavoriteBlueprintToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents txtBPBrokerFeeRate As TextBox
+    Friend WithEvents txtCalcBrokerFeeRate As TextBox
+    Friend WithEvents txtMineBrokerFeeRate As TextBox
 End Class

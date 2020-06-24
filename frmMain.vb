@@ -67,6 +67,18 @@ Public Class frmMain
     ' BP List for Previous/Next
     Private BPHistory As New List(Of BPHistoryItem)
 
+    ' For letting manual check/override of build/buy calculations
+    Private IgnoreListViewItemChecks As Boolean
+    Private BPBBItems As New List(Of BPBBItem)
+
+    Private BPBBItemtoFind As New Integer
+    Private BBItemtoFind As New BuildBuyItem
+
+    Public Structure BPBBItem
+        Dim BPID As Integer
+        Dim BBItems As List(Of BuildBuyItem)
+    End Structure
+
     Private Structure BPHistoryItem
         Dim BPID As Long
         Dim BPName As String
@@ -79,7 +91,7 @@ Public Class frmMain
         Dim InventionFacility As IndustryFacility
         Dim CopyFacility As IndustryFacility
         Dim IncludeTaxes As Boolean
-        Dim IncludeFees As Boolean
+        Dim BrokerFeeData As BrokerFeeInfo
         Dim MEValue As String
         Dim TEValue As String
         Dim SentRuns As String
@@ -827,7 +839,6 @@ Public Class frmMain
 
     End Function
 
-
     Public ReadOnly Property MyControls() As Collection
         Get
             Return m_ControlsCollection.Controls
@@ -1333,6 +1344,24 @@ Public Class frmMain
         Me.Cursor = Cursors.Default
     End Sub
 
+    ' Predicate for finding the BuildBuyItem in full list
+    Public Function FindBBItem(ByVal Item As BuildBuyItem) As Boolean
+        If BBItemtoFind.ItemID = Item.ItemID Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    ' Predicate for finding the BPBuildBuyItem in full list
+    Public Function FindBPBBItem(ByVal Item As BPBBItem) As Boolean
+        If BPBBItemtoFind = Item.BPID Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
     Private Sub ToolStripMenuItem1_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter1.Click
         Call LoadSelectedCharacter(tsCharacter1.Text)
@@ -1460,7 +1489,7 @@ Public Class frmMain
     Public Sub LoadBPfromEvent(BPID As Long, BuildType As String, Inputs As String, SentFrom As SentFromLocation,
                                 BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, CapCompentFacility As IndustryFacility,
                                 InventionFacility As IndustryFacility, CopyFacility As IndustryFacility,
-                                IncludeTaxes As Boolean, IncludeFees As Boolean,
+                                IncludeTaxes As Boolean, BrokerFeeData As BrokerFeeInfo,
                                 MEValue As String, TEValue As String, SentRuns As String,
                                 ManufacturingLines As String, LaboratoryLines As String, NumBPs As String,
                                 AddlCosts As String, PPUCheck As Boolean,
@@ -1599,7 +1628,15 @@ Public Class frmMain
         End If
 
         chkBPTaxes.Checked = IncludeTaxes
-        chkBPBrokerFees.Checked = IncludeFees
+        Select Case BrokerFeeData.IncludeFee
+            Case BrokerFeeType.SpecialFee
+                chkBPBrokerFees.CheckState = CheckState.Indeterminate
+                txtBPBrokerFeeRate.Text = FormatPercent(BrokerFeeData.FixedRate, 1)
+            Case BrokerFeeType.Fee
+                chkBPBrokerFees.Checked = True
+            Case BrokerFeeType.NoFee
+                chkBPBrokerFees.Checked = False
+        End Select
 
         txtBPLines.Text = ManufacturingLines
         txtBPInventionLines.Text = LaboratoryLines
@@ -1894,7 +1931,7 @@ Public Class frmMain
             SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE ITEM_PRICES SET PRICE = 0"
+            SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = 0"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             SQL = "DELETE FROM MARKET_HISTORY"
@@ -1953,7 +1990,7 @@ Public Class frmMain
             SQL = "DELETE FROM MARKET_HISTORY_UPDATE_CACHE"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
-            SQL = "UPDATE ITEM_PRICES SET PRICE = 0"
+            SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = 0"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
@@ -1994,7 +2031,7 @@ Public Class frmMain
     Public Sub ResetESIAdjustedMarketPrices()
 
         ' Simple update, just set all the data back to zero
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET MARKET_PRICES_CACHED_UNTIL = NULL")
 
         MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
@@ -2899,7 +2936,7 @@ Public Class frmMain
 
                 Else ' Price per unit update
 
-                    SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
+                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Mark the line text with black incase it is red for no price
@@ -2921,7 +2958,7 @@ Public Class frmMain
 
             ElseIf ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
                 ' Price List Update
-                SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
@@ -3887,19 +3924,58 @@ Tabs:
 
     Private Sub chkBPTaxesFees_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPTaxes.CheckedChanged
         If Not FirstLoad And SetTaxFeeChecks Then
-            If Not IsNothing(SelectedBlueprint) Then
-                Call SelectedBlueprint.SetPriceData(chkBPTaxes.Checked, chkBPBrokerFees.Checked)
-                Call UpdateBPPriceLabels()
-            End If
+            Call RefreshBPData()
         End If
     End Sub
 
     Private Sub chkBPBrokerFees_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPBrokerFees.CheckedChanged
         If Not FirstLoad And SetTaxFeeChecks Then
-            If Not IsNothing(SelectedBlueprint) Then
-                Call SelectedBlueprint.SetPriceData(chkBPTaxes.Checked, chkBPBrokerFees.Checked)
-                Call UpdateBPPriceLabels()
+            Call RefreshBPData()
+        End If
+    End Sub
+
+    Private Sub chkBPBrokerFees_Click(sender As Object, e As EventArgs) Handles chkBPBrokerFees.Click
+        If chkBPBrokerFees.Checked And chkBPBrokerFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtBPBrokerFeeRate.Visible = True
+        Else
+            txtBPBrokerFeeRate.Visible = False
+        End If
+
+        If Not FirstLoad And SetTaxFeeChecks Then
+            Call RefreshBPData()
+        End If
+    End Sub
+
+    Private Sub txtBPBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtBPBrokerFeeRate.Text = GetFormattedPercentEntry(txtBPBrokerFeeRate)
+            Call RefreshBPData()
+        End If
+    End Sub
+
+    Private Sub txtBPBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
             End If
+        End If
+    End Sub
+
+    Private Sub txtBPBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBPBrokerFeeRate.GotFocus
+        Call txtBPBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtBPBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBPBrokerFeeRate.LostFocus
+        txtBPBrokerFeeRate.Text = GetFormattedPercentEntry(txtBPBrokerFeeRate)
+        Call RefreshBPData()
+    End Sub
+
+    Public Sub RefreshBPData()
+        If Not IsNothing(SelectedBlueprint) Then
+            Call SelectedBlueprint.SetPriceData(chkBPTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate))
+            Call UpdateBPPriceLabels()
         End If
     End Sub
 
@@ -4420,8 +4496,68 @@ Tabs:
         End If
     End Sub
 
-    Private Sub lstBPComponentMats_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBPComponentMats.MouseClick
+    Private Sub lstBPComponentMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseClick
         Call ListClicked(lstBPComponentMats, sender, e)
+    End Sub
+
+    Private Sub lstBPComponentMats_ItemChecked(sender As Object, e As ItemCheckedEventArgs) Handles lstBPComponentMats.ItemChecked
+        If Not IgnoreListViewItemChecks Then
+            ' Process user checks, insert the item id and the check state in the bb list
+            Dim TempItem As New BuildBuyItem
+            Dim TempBPItem As New BPBBItem
+            Dim FoundBPItem As New BPBBItem
+
+            TempItem.BuildItem = e.Item.Checked
+            TempItem.ItemID = GetTypeID(RemoveItemNameRuns(e.Item.SubItems(0).Text))
+
+            ' See if we can buid this or not, if not, just uncheck the box and exit - don't refresh the bp
+            Dim SQL As String
+            Dim readerIT As SQLiteDataReader
+
+            SQL = "SELECT 'X' FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & TempItem.ItemID
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerIT = DBCommand.ExecuteReader()
+
+            If readerIT.Read Then
+                readerIT.Close()
+            Else
+                ' Can't build it
+                IgnoreListViewItemChecks = True
+                e.Item.Checked = False
+                IgnoreListViewItemChecks = False
+                Exit Sub
+            End If
+
+            ' See if the BB Items for the BP are in the list
+            BPBBItemtoFind = SelectedBlueprint.GetBPID
+            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+
+            ' See if the item checked is in the list, if so, update the temp, remove the old items and replace
+            If FoundBPItem.BPID <> 0 Then
+                ' In list, so remove and refresh
+                Call BPBBItems.Remove(FoundBPItem)
+            End If
+
+            ' Now add all checked items
+            TempBPItem.BPID = SelectedBlueprint.GetBPID
+            TempBPItem.BBItems = New List(Of BuildBuyItem)
+
+            Dim item As ListViewItem
+
+            For Each item In lstBPComponentMats.CheckedItems
+                TempItem.BuildItem = True
+                TempItem.ItemID = GetTypeID(RemoveItemNameRuns(item.SubItems(0).Text))
+                ' Add checked item
+                TempBPItem.BBItems.Add(TempItem)
+            Next
+
+            Call BPBBItems.Add(TempBPItem)
+
+            If Not FirstLoad And Not IgnoreRefresh Then
+                Call RefreshBP()
+            End If
+
+        End If
     End Sub
 
     Private Sub lstBPRawMats_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBPRawMats.MouseClick
@@ -4520,7 +4656,7 @@ Tabs:
 
     Private Sub UpdateMarketPriceManually()
 
-        Dim SQL As String = "UPDATE ITEM_PRICES SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
+        Dim SQL As String = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
         Call EVEDB.ExecuteNonQuerySQL(SQL)
         Call PlayNotifySound()
         lblBPMarketCost.Text = FormatNumber(txtBPMarketPriceEdit.Text, 2)
@@ -4561,57 +4697,58 @@ Tabs:
     Private Sub lstBPComponentMats_DoubleClick(sender As Object, e As System.EventArgs) Handles lstBPComponentMats.DoubleClick
 
         ' If the item doesn't have an ME (set to "-") then don't load
-        If lstBPComponentMats.SelectedItems(0).SubItems(2).Text <> "-" Then
-            Dim rsBP As SQLiteDataReader
-            Dim SQL As String
-            Dim BuildType As String = ""
-            Dim TempItemName As String = lstBPComponentMats.SelectedItems(0).SubItems(0).Text
+        If lstBPComponentMats.SelectedItems.Count <> 0 Then
+            If lstBPComponentMats.SelectedItems(0).SubItems(2).Text <> "-" Then
+                Dim rsBP As SQLiteDataReader
+                Dim SQL As String
+                Dim BuildType As String = ""
+                Dim TempItemName As String = lstBPComponentMats.SelectedItems(0).SubItems(0).Text
 
-            ' Strip off any extra text
-            If lstBPComponentMats.SelectedItems(0).SubItems(0).Text.Contains("(") Then
-                TempItemName = TempItemName.Substring(0, InStr(TempItemName, "(") - 2)
+                ' Strip off any extra text
+                If lstBPComponentMats.SelectedItems(0).SubItems(0).Text.Contains("(") Then
+                    TempItemName = TempItemName.Substring(0, InStr(TempItemName, "(") - 2)
+                End If
+
+                SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
+                SQL = SQL & "'" & TempItemName & "'"
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsBP = DBCommand.ExecuteReader()
+                rsBP.Read()
+
+                If chkBPBuildBuy.Checked Then
+                    BuildType = "Build/Buy"
+                End If
+
+                ' Adjust the runs for porition size needed and use that instead
+                Dim BPID As Long = rsBP.GetInt64(0)
+                Dim Runs As Long = CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text)
+
+                Dim GroupID As Integer = rsBP.GetInt32(2)
+                Dim CategoryID As Integer = rsBP.GetInt32(3)
+                Dim BPName As String = rsBP.GetString(4
+                                                    )
+                rsBP.Close()
+
+                Dim SelectedActivity As String = ""
+                If BPName.Contains("Reaction Formula") Then
+                    SelectedActivity = ManufacturingFacility.ActivityReactions
+                Else
+                    SelectedActivity = ManufacturingFacility.ActivityManufacturing
+                End If
+
+                With BPTabFacility
+                    Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
+                                    .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
+                                    .GetFacility(ProductionType.CapitalComponentManufacturing),
+                                    .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
+                                    chkBPTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate),
+                                    lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
+                                    CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
+                                    "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
+                End With
             End If
-
-            SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
-            SQL = SQL & "'" & TempItemName & "'"
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsBP = DBCommand.ExecuteReader()
-            rsBP.Read()
-
-            If chkBPBuildBuy.Checked Then
-                BuildType = "Build/Buy"
-            End If
-
-            ' Adjust the runs for porition size needed and use that instead
-            Dim BPID As Long = rsBP.GetInt64(0)
-            Dim Runs As Long = CLng(lstBPComponentMats.SelectedItems(0).SubItems(1).Text)
-
-            Dim GroupID As Integer = rsBP.GetInt32(2)
-            Dim CategoryID As Integer = rsBP.GetInt32(3)
-            Dim BPName As String = rsBP.GetString(4
-                                                )
-            rsBP.Close()
-
-            Dim SelectedActivity As String = ""
-            If BPName.Contains("Reaction Formula") Then
-                SelectedActivity = ManufacturingFacility.ActivityReactions
-            Else
-                SelectedActivity = ManufacturingFacility.ActivityManufacturing
-            End If
-
-            With BPTabFacility
-                Call LoadBPfromEvent(BPID, BuildType, None, SentFromLocation.BlueprintTab,
-                                .GetSelectedManufacturingFacility(GroupID, CategoryID, SelectedActivity), .GetFacility(ProductionType.ComponentManufacturing),
-                                .GetFacility(ProductionType.CapitalComponentManufacturing),
-                                .GetSelectedInventionFacility(GroupID, CategoryID), .GetFacility(ProductionType.Copying),
-                                chkBPTaxes.Checked, chkBPBrokerFees.Checked,
-                                lstBPComponentMats.SelectedItems(0).SubItems(2).Text, txtBPTE.Text,
-                                CStr(Runs), txtBPLines.Text, txtBPInventionLines.Text,
-                                "1", txtBPAddlCosts.Text, chkBPPricePerUnit.Checked) ' Use 1 bp for now
-            End With
         End If
-
     End Sub
 
     Private Sub lstPricesView_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstPricesView.ColumnWidthChanging
@@ -4879,7 +5016,7 @@ Tabs:
     Private Sub GetBPWithName(bpName As String)
         ' Query: SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%Repair%'
         Dim readerBP As SQLiteDataReader
-        Dim query As String
+        Dim SQL As String = ""
 
         cmbBPBlueprintSelection.Text = bpName
         lstBPList.Items.Clear()
@@ -4887,18 +5024,18 @@ Tabs:
         ' Add limiting functions here based on radio buttons
         ' Use replace to Get rid of 's in blueprint name for sorting
         If Me.rbtnBPOwnedBlueprints.Checked Or Me.rbtnBPFavoriteBlueprints.Checked Then
-            query = BuildBPSelectQuery()
+            SQL = BuildBPSelectQuery()
         Else
-            query = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES "
-            query = query & "WHERE ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
-            query = query & BuildBPSelectQuery()
-            query = query & " AND ALL_BLUEPRINTS.BLUEPRINT_NAME LIKE '%" & FormatDBString(bpName) & "%'"
-            query = query & " ORDER BY X"
+            SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT2 "
+            SQL &= "WHERE ALL_BLUEPRINTS.ITEM_ID = IT2.typeID "
+            SQL &= BuildBPSelectQuery()
+            SQL &= " AND ALL_BLUEPRINTS.BLUEPRINT_NAME LIKE '%" & FormatDBString(bpName) & "%'"
+            SQL &= " ORDER BY X"
         End If
 
         ' query = "SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%" & bpName & "%'"
 
-        DBCommand = New SQLiteCommand(query, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
         lstBPList.BeginUpdate()
 
@@ -4968,11 +5105,14 @@ Tabs:
                 SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
                 SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
-                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID AND FAVORITE = 1 "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+                SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
+                SQL = SQL & "CASE WHEN OWNED_BLUEPRINTS.FAVORITE IS NOT NULL THEN OWNED_BLUEPRINTS.FAVORITE ELSE "
+                SQL = SQL & "CASE WHEN ALL_BLUEPRINTS.FAVORITE Is Not NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS MY_FAVORITE "
+                SQL = SQL & "FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
+                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0  "
+                SQL = SQL & "And OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL = SQL & "And ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID And MY_FAVORITE = 1 "
+                SQL = SQL & "And ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             End If
         End With
 
@@ -5030,7 +5170,7 @@ Tabs:
         End If
 
         ' Add the item types
-        SQL = SQL & " AND " & SQLItemType
+        SQL = SQL & " And " & SQLItemType
 
         Dim SizesClause As String = ""
 
@@ -5058,7 +5198,7 @@ Tabs:
         Dim NPCBPOsClause As String = ""
 
         If chkBPNPCBPOs.Checked Then
-            NPCBPOsClause = " AND IT2.marketGroupID IS NOT NULL AND ITEM_TYPE <> 2 " ' Take T2 bps off the list too if they select only NPC even though they show up on the market, no NPC sells them
+            NPCBPOsClause = " AND IT2.marketGroupID IS NOT NULL AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 
         SQL = SQL & SizesClause & NPCBPOsClause
@@ -5245,7 +5385,6 @@ Tabs:
             chkBPStoryline.Checked = .TechStorylineCheck
             chkBPPirateFaction.Checked = .TechPirateCheck
 
-            'chkBPIncludeIgnoredBPs.Checked = .IncludeIgnoredBPs
             chkBPSimpleCopy.Checked = .SimpleCopyCheck
             chkBPNPCBPOs.Checked = .NPCBPOs
             chkBPSellExcessItems.Checked = .SellExcessBuildItems
@@ -5256,9 +5395,20 @@ Tabs:
             chkBPXL.Checked = .XLCheck
 
             SetTaxFeeChecks = False
-            'chkBPFacilityIncludeUsage.Checked = .IncludeUsage
             chkBPTaxes.Checked = .IncludeTaxes
-            chkBPBrokerFees.Checked = .IncludeFees
+            txtBPBrokerFeeRate.Visible = False
+            Select Case .IncludeFees
+                Case 2
+                    chkBPBrokerFees.CheckState = CheckState.Indeterminate
+                    txtBPBrokerFeeRate.Visible = True
+                Case 1
+                    chkBPBrokerFees.CheckState = CheckState.Checked
+                Case 0
+                    chkBPBrokerFees.CheckState = CheckState.Unchecked
+            End Select
+
+            txtBPBrokerFeeRate.Text = FormatPercent(.BrokerFeeRate, 1)
+
             SetTaxFeeChecks = True
 
             chkBPPricePerUnit.Checked = .PricePerUnit
@@ -5363,6 +5513,7 @@ Tabs:
         chkBPBuildBuy.Enabled = False
         chkBPTaxes.Enabled = False
         chkBPBrokerFees.Enabled = False
+        txtBPBrokerFeeRate.Enabled = False
         gbBPManualSystemCostIndex.Enabled = False
         gbBPIgnoreinCalcs.Enabled = False
         gbBPSellExcess.Enabled = False
@@ -5506,7 +5657,14 @@ Tabs:
 
             '.IncludeUsage = chkBPFacilityIncludeUsage.Checked
             .IncludeTaxes = chkBPTaxes.Checked
-            .IncludeFees = chkBPBrokerFees.Checked
+            If chkBPBrokerFees.CheckState = CheckState.Indeterminate Then
+                .IncludeFees = 2
+            ElseIf chkBPBrokerFees.CheckState = CheckState.Checked Then
+                .IncludeFees = 1
+            Else
+                .IncludeFees = 0
+            End If
+            .BrokerFeeRate = FormatManualPercentEntry(txtBPBrokerFeeRate.Text)
 
             .IncludeInventionCost = chkBPIncludeInventionCosts.Checked
             .IncludeInventionTime = chkBPIncludeInventionTime.Checked
@@ -5979,6 +6137,7 @@ Tabs:
             txtBPAddlCosts.Enabled = True
             chkBPBuildBuy.Enabled = True
             txtBPNumBPs.Enabled = True
+            txtBPBrokerFeeRate.Enabled = True
             txtBPLines.Enabled = True
             chkBPTaxes.Enabled = True
             chkBPBrokerFees.Enabled = True
@@ -6168,10 +6327,28 @@ Tabs:
         BPME = CInt(txtBPME.Text)
         BPTE = CInt(txtBPTE.Text)
 
+        ' Get the Build/Buy preference list if needed
+        Dim BPBuildBuyPref As List(Of BuildBuyItem)
+        If chkBPBuildBuy.Checked Then
+            ' Look up the list of preferences if this bp is in the list
+            BPBBItemtoFind = BPID
+            Dim FoundBPItem As New BPBBItem
+            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+
+            If FoundBPItem.BPID <> 0 Then
+                BPBuildBuyPref = FoundBPItem.BBItems
+            Else
+                ' Not found
+                BPBuildBuyPref = Nothing
+            End If
+        Else
+            BPBuildBuyPref = Nothing
+        End If
+
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
-                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked)
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked, False, BPBuildBuyPref)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6181,7 +6358,7 @@ Tabs:
         End If
 
         ' Build the item and get the list of materials
-        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, chkBPBrokerFees.Checked, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
         'Call SelectedBlueprint.BuildItems2(chkBPTaxes.Checked, chkBPBrokerFees.Checked, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
@@ -6203,10 +6380,17 @@ Tabs:
 
         ' Fill Component List if components built
         If Not IsNothing(BPComponentMats) And SelectedBlueprint.HasComponents Then
+            IgnoreListViewItemChecks = True
+
+            If chkBPBuildBuy.Checked Then
+                lstBPComponentMats.CheckBoxes = True
+            Else
+                lstBPComponentMats.CheckBoxes = False
+            End If
+
             lstBPComponentMats.Items.Clear()
             lstBPComponentMats.BeginUpdate()
             For i = 0 To BPComponentMats.Count - 1
-                'complstViewRow = lstBPComponentMats.Items.Add(BPComponentMats(i).GetMaterialName) ' Check TODO - Add check box?
                 'The remaining columns are subitems  
                 complstViewRow = New ListViewItem(BPComponentMats(i).GetMaterialName)
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetQuantity, 0))
@@ -6231,8 +6415,10 @@ Tabs:
                 If chkBPBuildBuy.Checked Then
                     If BPComponentMats(i).GetBuildItem Then
                         complstViewRow.BackColor = lblBPBuildColor.BackColor
+                        complstViewRow.Checked = True
                     Else
                         complstViewRow.BackColor = lblBPBuyColor.BackColor
+                        complstViewRow.Checked = False
                     End If
                 End If
 
@@ -6249,6 +6435,7 @@ Tabs:
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetTotalCost, 2))
                 Call lstBPComponentMats.Items.Add(complstViewRow)
             Next
+            IgnoreListViewItemChecks = False
 
             Dim TempSort As SortOrder
             If BPCompColumnSortType = SortOrder.Ascending Then
@@ -6575,196 +6762,6 @@ ExitForm:
 
     End Sub
 
-    Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
-        Dim newList As New List(Of OreMineral)
-        Dim oreQuantityList As ListViewItem
-        Dim materialQuantityList As ListViewItem
-        Dim materialList As New List(Of Material)
-        Dim oreID As Integer
-        Dim oreSkillReproSkillID As Integer
-        Dim reproSkill As Integer
-        Dim reproEffSkill As Integer
-        Dim reproSpecOreSkill As Integer
-        Dim refinePercent As Double ' Start with 50% refining
-        Dim stationTax As Double
-        Dim lockedList As New List(Of Integer)
-        Dim mineralTotal As Double
-        Dim oreCost As Double
-
-        Dim skillDict As New Dictionary(Of String, Integer) From {
-                {"Arkonor", 12180},
-                {"Bistot", 12181},
-                {"Crokite", 12182},
-                {"Dark Ochre", 12183},
-                {"Gneiss", 12184},
-                {"Hedbergite", 12185},
-                {"Hemorphite", 12186},
-                {"Jaspet", 12187},
-                {"Kernite", 12188},
-                {"Mercoxit", 12189},
-                {"Omber", 12190},
-                {"Plagioclase", 12191},
-                {"Pyroxeres", 12192},
-                {"Scordite", 12193},
-                {"Spodumain", 12194},
-                {"Veldspar", 12195}}
-
-
-        Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName, g.groupName FROM ORE_REFINE o " +
-                     "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
-                     "JOIN INVENTORY_GROUPS g ON i.groupID = g.groupID " +
-                     "WHERE o.OreID = {0} " +
-                     "ORDER BY o.MineralQuantity DESC"
-
-        Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
-                         "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
-                         "WHERE i.typeName LIKE 'Compressed%' " +
-                         "AND o.MineralID = {0} " +
-                         "ORDER BY o.MineralQuantity DESC LIMIT 1"
-
-        reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
-        reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
-
-        If BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StationFacility Then
-            Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY FROM STATIONS WHERE STATION_NAME = '{0}'", BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).FacilityName), EVEDB.DBREf)
-                refinePercent = CType(DBCommand.ExecuteScalar, Double)
-            End Using
-        ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StructureFacility Then
-            stationTax = 0.0
-            refinePercent = 0.5
-        ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.POSFacility Then
-            stationTax = 0.0
-            refinePercent = 0.52
-        End If
-
-        If refinePercent = 0 Then
-            refinePercent = 0.5 ' Setting the refine percent to 50 if it comes back as 0 for corrupt station data.
-        End If
-
-        For i = 0 To bpMaterialList.Count - 1 Step 1
-            Dim loopCounter = i
-            Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
-
-            If (currentMineralID > 40) Then
-                materialList.Add(bpMaterialList(i))
-                Continue For
-            End If
-
-            Using DBCommand = New SQLiteCommand(String.Format(mineralSQL, currentMineralID), EVEDB.DBREf)
-                oreID = CType(DBCommand.ExecuteScalar(), Integer)
-            End Using
-
-            If oreID = 28367 And currentMineralID = 36 Then
-                oreID = 28397
-            End If
-
-            ' Reprocessing = 3385 -> 0.03 => 0.15
-            ' Repro Efficiency = 3389 -> 0.02 => 0.10
-            ' Ore Special = 12180-12195 -> 0.02 => 0.10
-            ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
-            ' Beancounter 27169, 27174, 27175 (2, 4, 1) 
-
-            Using DBCommand = New SQLiteCommand(String.Format(oreSQL, oreID), EVEDB.DBREf)
-                Dim result = DBCommand.ExecuteReader()
-                While result.Read()
-                    skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
-                    reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
-
-                    Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 + UserApplicationSettings.RefiningImplantValue)
-
-                    Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
-
-                    'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
-
-
-
-                    ' TODO : FIX THE MULTIPLIER
-                    mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
-
-                    If mineralTotal < bpMaterialList(loopCounter).GetQuantity() Or currentMineralID <> result.GetInt32(1) Then
-                        newList.Add(New OreMineral With {
-                                    .OreID = result.GetInt32(0),
-                                    .MineralID = result.GetInt32(1),
-                                    .MineralQuantity = mineralQuantity,
-                                    .OreMultiplier = 0,
-                                    .OreName = result.GetString(3),
-                                    .OreSelectedFor = currentMineralID})
-                    End If
-                End While
-
-                ' Make sure we're not grabbing the same Ore numerous times.
-                Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID And x.MineralID = currentMineralID And x.Locked = False)
-
-                If currentMineral Is Nothing Then
-                    Continue For
-                End If
-
-                If currentMineralID = 35 And oreID = 28420 Then
-                    mineralTotal = 0
-                End If
-                Dim multiplier = (bpMaterialList(loopCounter).GetQuantity() - mineralTotal) / currentMineral.MineralQuantity
-
-                If (multiplier > 0) Then
-                    Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID And y.OreSelectedFor = currentMineralID)
-                    lockedList.Add(oreID)
-                    For Each item As OreMineral In updateMultipliers
-                        item.OreMultiplier = CType(Math.Ceiling(multiplier), Int64)
-                        ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
-                        item.Locked = True
-                    Next
-                End If
-
-                ' Moved this down here because the Tritanium/Pyerite problem wasn't getting resolved if the item only required the two minerals.
-                ' This will fix the issue by forcing it to reset Spodumain properly.
-                Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
-
-                Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
-
-                If tempList.Count > 1 Then
-                    Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
-                    For Each item As OreMineral In tmpRange
-                        item.OreMultiplier = 0
-                    Next
-                End If
-
-            End Using
-
-        Next
-
-        'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
-        Dim oreList = newList.Where(Function(x) x.OreMultiplier > 0).DistinctBy(Function(c) c.OreSelectedFor)
-
-        For Each item As OreMineral In oreList
-            oreQuantityList = New ListViewItem(item.OreName)
-            oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
-            oreQuantityList.SubItems.Add("-")
-            Using DBCommand = New SQLiteCommand(String.Format("SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREf)
-                Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
-                oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
-                oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
-
-                oreCost += avgPrice * item.OreMultiplier
-            End Using
-            Call lstBPRawMats.Items.Add(oreQuantityList)
-
-        Next
-
-        For Each item As Material In materialList
-            materialQuantityList = New ListViewItem(item.GetMaterialName())
-            materialQuantityList.SubItems.Add(CType(item.GetQuantity(), String))
-            materialQuantityList.SubItems.Add("-")
-            materialQuantityList.SubItems.Add(FormatNumber(item.GetCostPerItem(), 2))
-            materialQuantityList.SubItems.Add(FormatNumber(item.GetTotalCost(), 2))
-            oreCost += item.GetTotalCost()
-
-            Call lstBPRawMats.Items.Add(materialQuantityList)
-        Next
-
-        lblBPRawMatCost.Text = FormatNumber(oreCost, 2)
-
-
-    End Sub
-
     ' Updates the blueprint history list for moving forward and back
     Private Sub UpdateBPHistory(ByVal NewBP As Boolean)
         Dim TempBPHistoryItem As BPHistoryItem
@@ -6796,7 +6793,11 @@ ExitForm:
                     .InventionFacility = CType(BPTabFacility.GetSelectedInventionFacility(BP.GetItemGroupID, BP.GetItemCategoryID).Clone, IndustryFacility)
                     .SentRuns = txtBPRuns.Text
                     .IncludeTaxes = chkBPTaxes.Checked
-                    .IncludeFees = chkBPBrokerFees.Checked
+
+                    ' Save broker fee
+                    .BrokerFeeData.IncludeFee = CType(chkBPBrokerFees.CheckState, BrokerFeeType)
+                    .BrokerFeeData.FixedRate = FormatManualPercentEntry(txtBPBrokerFeeRate.Text)
+
                     .MEValue = txtBPME.Text
                     .TEValue = txtBPTE.Text
                     .SentRuns = txtBPRuns.Text
@@ -7038,6 +7039,7 @@ ExitForm:
 
     End Sub
 
+    ' Update the facility usage directly in the object
     Private Sub UpdateFacilityUsage(DivideUnits As Long)
         Dim UsedFacility As IndustryFacility = BPTabFacility.GetSelectedFacility()
         Dim TTText As String = ""
@@ -7207,7 +7209,7 @@ ExitForm:
                 LoadingBPfromHistory = True
                 PreviousBPfromHistory = True
                 Call LoadBPfromEvent(.BPID, .BuildType, .Inputs, .SentFrom, .BuildFacility, .ComponentFacility, .CapComponentFacility, .InventionFacility, .CopyFacility, .IncludeTaxes,
-                                           .IncludeFees, .MEValue, .TEValue, .SentRuns, .ManufacturingLines, .LabLines, .NumBPs, .AddlCosts, .PPU)
+                                           .BrokerFeeData, .MEValue, .TEValue, .SentRuns, .ManufacturingLines, .LabLines, .NumBPs, .AddlCosts, .PPU)
             End With
 
             CurrentBPHistoryIndex = LocationID
@@ -7337,6 +7339,196 @@ ExitForm:
         txtBPMarketPriceEdit.Visible = True
         txtBPMarketPriceEdit.Focus()
     End Sub
+
+    ' Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
+    'Dim newList As New List(Of OreMineral)
+    '    Dim oreQuantityList As ListViewItem
+    '    Dim materialQuantityList As ListViewItem
+    '    Dim materialList As New List(Of Material)
+    '    Dim oreID As Integer
+    '    Dim oreSkillReproSkillID As Integer
+    '    Dim reproSkill As Integer
+    '    Dim reproEffSkill As Integer
+    '    Dim reproSpecOreSkill As Integer
+    '    Dim refinePercent As Double ' Start with 50% refining
+    '    Dim stationTax As Double
+    '    Dim lockedList As New List(Of Integer)
+    '    Dim mineralTotal As Double
+    '    Dim oreCost As Double
+
+    '    Dim skillDict As New Dictionary(Of String, Integer) From {
+    '            {"Arkonor", 12180},
+    '            {"Bistot", 12181},
+    '            {"Crokite", 12182},
+    '            {"Dark Ochre", 12183},
+    '            {"Gneiss", 12184},
+    '            {"Hedbergite", 12185},
+    '            {"Hemorphite", 12186},
+    '            {"Jaspet", 12187},
+    '            {"Kernite", 12188},
+    '            {"Mercoxit", 12189},
+    '            {"Omber", 12190},
+    '            {"Plagioclase", 12191},
+    '            {"Pyroxeres", 12192},
+    '            {"Scordite", 12193},
+    '            {"Spodumain", 12194},
+    '            {"Veldspar", 12195}}
+
+
+    '    Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName, g.groupName FROM ORE_REFINE o " +
+    '                 "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
+    '                 "JOIN INVENTORY_GROUPS g ON i.groupID = g.groupID " +
+    '                 "WHERE o.OreID = {0} " +
+    '                 "ORDER BY o.MineralQuantity DESC"
+
+    '    Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
+    '                     "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
+    '                     "WHERE i.typeName LIKE 'Compressed%' " +
+    '                     "AND o.MineralID = {0} " +
+    '                     "ORDER BY o.MineralQuantity DESC LIMIT 1"
+
+    '    reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
+    '    reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
+
+    '    If BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StationFacility Then
+    '        Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY FROM STATIONS WHERE STATION_NAME = '{0}'", BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).FacilityName), EVEDB.DBREf)
+    '            refinePercent = CType(DBCommand.ExecuteScalar, Double)
+    '        End Using
+    '    ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StructureFacility Then
+    '        stationTax = 0.0
+    '        refinePercent = 0.5
+    '    ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.POSFacility Then
+    '        stationTax = 0.0
+    '        refinePercent = 0.52
+    '    End If
+
+    '    If refinePercent = 0 Then
+    '        refinePercent = 0.5 ' Setting the refine percent to 50 if it comes back as 0 for corrupt station data.
+    '    End If
+
+    '    For i = 0 To bpMaterialList.Count - 1 Step 1
+    '        Dim loopCounter = i
+    '        Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
+
+    '        If (currentMineralID > 40) Then
+    '            materialList.Add(bpMaterialList(i))
+    '            Continue For
+    '        End If
+
+    '        Using DBCommand = New SQLiteCommand(String.Format(mineralSQL, currentMineralID), EVEDB.DBREf)
+    '            oreID = CType(DBCommand.ExecuteScalar(), Integer)
+    '        End Using
+
+    '        If oreID = 28367 And currentMineralID = 36 Then
+    '            oreID = 28397
+    '        End If
+
+    '        ' Reprocessing = 3385 -> 0.03 => 0.15
+    '        ' Repro Efficiency = 3389 -> 0.02 => 0.10
+    '        ' Ore Special = 12180-12195 -> 0.02 => 0.10
+    '        ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
+    '        ' Beancounter 27169, 27174, 27175 (2, 4, 1) 
+
+    '        Using DBCommand = New SQLiteCommand(String.Format(oreSQL, oreID), EVEDB.DBREf)
+    '            Dim result = DBCommand.ExecuteReader()
+    '            While result.Read()
+    '                skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
+    '                reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
+
+    '                Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 + UserApplicationSettings.RefiningImplantValue)
+
+    '                Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
+
+    '                'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
+
+
+
+    '                ' TODO : FIX THE MULTIPLIER
+    '                mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
+
+    '                If mineralTotal < bpMaterialList(loopCounter).GetQuantity() Or currentMineralID <> result.GetInt32(1) Then
+    '                    newList.Add(New OreMineral With {
+    '                                .OreID = result.GetInt32(0),
+    '                                .MineralID = result.GetInt32(1),
+    '                                .MineralQuantity = mineralQuantity,
+    '                                .OreMultiplier = 0,
+    '                                .OreName = result.GetString(3),
+    '                                .OreSelectedFor = currentMineralID})
+    '                End If
+    '            End While
+
+    '            ' Make sure we're not grabbing the same Ore numerous times.
+    '            Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID And x.MineralID = currentMineralID And x.Locked = False)
+
+    '            If currentMineral Is Nothing Then
+    '                Continue For
+    '            End If
+
+    '            If currentMineralID = 35 And oreID = 28420 Then
+    '                mineralTotal = 0
+    '            End If
+    '            Dim multiplier = (bpMaterialList(loopCounter).GetQuantity() - mineralTotal) / currentMineral.MineralQuantity
+
+    '            If (multiplier > 0) Then
+    '                Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID And y.OreSelectedFor = currentMineralID)
+    '                lockedList.Add(oreID)
+    '                For Each item As OreMineral In updateMultipliers
+    '                    item.OreMultiplier = CType(Math.Ceiling(multiplier), Int64)
+    '                    ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
+    '                    item.Locked = True
+    '                Next
+    '            End If
+
+    '            ' Moved this down here because the Tritanium/Pyerite problem wasn't getting resolved if the item only required the two minerals.
+    '            ' This will fix the issue by forcing it to reset Spodumain properly.
+    '            Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
+
+    '            Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
+
+    '            If tempList.Count > 1 Then
+    '                Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
+    '                For Each item As OreMineral In tmpRange
+    '                    item.OreMultiplier = 0
+    '                Next
+    '            End If
+
+    '        End Using
+
+    '    Next
+
+    '    'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
+    '    Dim oreList = newList.Where(Function(x) x.OreMultiplier > 0).DistinctBy(Function(c) c.OreSelectedFor)
+
+    '    For Each item As OreMineral In oreList
+    '        oreQuantityList = New ListViewItem(item.OreName)
+    '        oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
+    '        oreQuantityList.SubItems.Add("-")
+    '        Using DBCommand = New SQLiteCommand(String.Format("SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREf)
+    '            Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
+    '            oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
+    '            oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
+
+    '            oreCost += avgPrice * item.OreMultiplier
+    '        End Using
+    '        Call lstBPRawMats.Items.Add(oreQuantityList)
+
+    '    Next
+
+    '    For Each item As Material In materialList
+    '        materialQuantityList = New ListViewItem(item.GetMaterialName())
+    '        materialQuantityList.SubItems.Add(CType(item.GetQuantity(), String))
+    '        materialQuantityList.SubItems.Add("-")
+    '        materialQuantityList.SubItems.Add(FormatNumber(item.GetCostPerItem(), 2))
+    '        materialQuantityList.SubItems.Add(FormatNumber(item.GetTotalCost(), 2))
+    '        oreCost += item.GetTotalCost()
+
+    '        Call lstBPRawMats.Items.Add(materialQuantityList)
+    '    Next
+
+    '    lblBPRawMatCost.Text = FormatNumber(oreCost, 2)
+
+
+    'End Sub
 
 #End Region
 
@@ -8971,7 +9163,7 @@ ExitForm:
 
     End Sub
 
-    ' Loads up the settings in the price profile grids
+    ' Loads up the settings in the price profile grids on update prices
     Private Sub LoadPriceProfileGrids()
         Dim rsPP As SQLiteDataReader
         Dim SQL As String
@@ -9338,7 +9530,7 @@ ExitForm:
         pnlStatus.Text = "Initializing Query..."
         Application.DoEvents()
 
-        ' Find the checked region 
+        ' Find the checked region - single select
         If rbtnPriceSettingSingleSelect.Checked Then
             If RegionChecked Then
                 For i = 1 To (RegionCheckBoxes.Length - 1)
@@ -9444,8 +9636,6 @@ ExitForm:
                                 TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
                             End If
                             TempItem.PriceModifier = rsPP.GetDouble(3)
-                        Else
-                            Application.DoEvents()
                         End If
                     End If
 
@@ -9709,7 +9899,7 @@ ExitSub:
                     SelectedPrice = readerPrices.GetDouble(0) * (1 + SentItems(i).PriceModifier)
 
                     ' Now Update the ITEM_PRICES table, set price and price type
-                    SQL = "UPDATE ITEM_PRICES SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
+                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
                 readerPrices.Close()
@@ -9870,6 +10060,8 @@ ExitSub:
                     RGN = "Station Parts"
                 Case "Booster"
                     RGN = "Boosters"
+                Case "Structure Components"
+                    RGN = "Structure Components"
                 Case Else
                     ' Do if checks or select on category
                     If GN.Contains("Decryptor") Then
@@ -10731,7 +10923,7 @@ ExitSub:
                         End Select
 
                         ' Loop through and update the price and price type, the rest is static
-                        SQL = "UPDATE ITEM_PRICES SET "
+                        SQL = "UPDATE ITEM_PRICES_FACT SET "
                         If FileType = SSVDataExport Then
                             ' Need to swap periods and commas before inserting
                             ParsedLine(2) = ParsedLine(2).Replace(".", "") ' Just replace the periods as they are commas for numbers, which aren't needed
@@ -11005,6 +11197,38 @@ CheckTechs:
 
     Private Sub chkCalcFees_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCalcFees.CheckedChanged
         Call ResetRefresh()
+    End Sub
+
+    Private Sub chkCalcFees_Click(sender As Object, e As EventArgs) Handles chkCalcFees.Click
+        If chkCalcFees.Checked And chkCalcFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtCalcBrokerFeeRate.Visible = True
+        Else
+            txtCalcBrokerFeeRate.Visible = False
+        End If
+    End Sub
+
+    Private Sub txtCalcBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtCalcBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtCalcBrokerFeeRate.Text = GetFormattedPercentEntry(txtCalcBrokerFeeRate)
+        End If
+    End Sub
+
+    Private Sub txtCalcBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtCalcBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtCalcBrokerFeeRate.GotFocus
+        Call txtCalcBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtCalcBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtCalcBrokerFeeRate.LostFocus
+        txtCalcBrokerFeeRate.Text = GetFormattedPercentEntry(txtCalcBrokerFeeRate)
     End Sub
 
     Private Sub chkCalcSellExessItems_CheckedChanged(sender As Object, e As EventArgs) Handles chkCalcSellExessItems.CheckedChanged
@@ -14163,7 +14387,7 @@ CheckTechs:
                     End If
 
                     ' Build the blueprint(s)
-                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
 
                     ' If checked, Add the values to the array only if we can Build, Invent, or RE it
                     AddItem = True
@@ -14353,7 +14577,7 @@ CheckTechs:
                             End If
 
                             ' Get the list of materials
-                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, chkCalcFees.Checked, False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
 
                             ' Build/Buy (add only if it has components we build)
                             If ManufacturingBlueprint.HasComponents Then
@@ -15719,7 +15943,7 @@ ExitCalc:
         End If
 
         If chkCalcNPCBPOs.Checked Then
-            NPCBPOsClause = " AND NPC_BPO = 1 AND ITEM_TYPE <> 2 " ' Take T2 bps off the list too if they select only NPC even though they show up on the market, no NPC sells them
+            NPCBPOsClause = " AND NPC_BPO = 1 AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 
         ' Flag for favorites 
@@ -16001,7 +16225,7 @@ ExitCalc:
                 Call LoadBPfromEvent(.BPID, .CalcType, .Inputs, SentFromLocation.ManufacturingTab,
                                      .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility,
                                      .InventionFacility, .CopyFacility,
-                                     chkCalcTaxes.Checked, chkCalcFees.Checked,
+                                     chkCalcTaxes.Checked, GetBrokerFeeData(chkCalcFees, txtCalcBrokerFeeRate),
                                      CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
                                      txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType)
             End With
@@ -16401,6 +16625,35 @@ ExitCalc:
 
             Call PlayNotifySound()
         End If
+    End Sub
+
+    Private Sub FavoriteBlueprintToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles FavoriteBlueprintToolStripMenuItem.Click
+
+        If lstManufacturing.Items.Count > 0 Then
+            Dim FoundItem As New ManufacturingItem
+            Dim SQL As String
+
+            ' Find the each item selected in the list of items then remove each one from the list
+            For i = 0 To lstManufacturing.SelectedItems.Count - 1
+                ManufacturingRecordIDToFind = CLng(lstManufacturing.SelectedItems(i).SubItems(0).Text)
+                FoundItem = FinalManufacturingItemList.Find(AddressOf FindManufacturingItem)
+
+                If FoundItem IsNot Nothing Then
+                    ' We found it, so set the bp to a favorite in all_blueprints
+                    SQL = "UPDATE ALL_BLUEPRINTS SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    ' Assume they want to update owned blueprints too if they own it
+                    SQL = "UPDATE OWNED_BLUEPRINTS SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                End If
+            Next
+
+            Call PlayNotifySound()
+
+        End If
+
     End Sub
 
     ' Gets the typeID and other data to open up the market history viewer
@@ -17989,7 +18242,6 @@ Leave:
             chkMineIncludeNullSec.Text = "Null Sec Ice"
             lstMineGrid.Columns(1).Text = "Ice Name"
             gbMineMiningDroneM3.Enabled = False ' drones don't apply to ice
-            rbtnMineIceRig.Enabled = True
             If UserMiningTabSettings.IceMiningRig Then
                 rbtnMineIceRig.Checked = True
             Else
@@ -18334,7 +18586,7 @@ Leave:
     End Sub
 
     Private Sub txtMineReprocessingTax_LostFocus(sender As Object, e As EventArgs) Handles txtMineReprocessingTax.LostFocus
-        txtMineReprocessingTax.Text = FormatPercent(FormatManualPercentEntry(txtMineReprocessingTax.Text), 1)
+        txtMineReprocessingTax.Text = GetFormattedPercentEntry(txtMineReprocessingTax)
     End Sub
 
     Private Sub txtMineReprocessingTax_GotFocus(sender As Object, e As EventArgs) Handles txtMineReprocessingTax.GotFocus
@@ -18343,7 +18595,7 @@ Leave:
 
     Private Sub txtMineReprocessingTax_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineReprocessingTax.KeyDown
         If e.KeyCode = Keys.Enter Then
-            txtMineReprocessingTax.Text = FormatPercent(FormatManualPercentEntry(txtMineReprocessingTax.Text), 1)
+            txtMineReprocessingTax.Text = GetFormattedPercentEntry(txtMineReprocessingTax)
         End If
     End Sub
 
@@ -18359,7 +18611,7 @@ Leave:
 
     Private Sub txtMineStationEff_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineStationEff.KeyDown
         If e.KeyCode = Keys.Enter Then
-            txtMineStationEff.Text = FormatPercent(FormatManualPercentEntry(txtMineStationEff.Text), 1)
+            txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
         End If
     End Sub
 
@@ -18378,26 +18630,40 @@ Leave:
     End Sub
 
     Private Sub txtMineStationEff_LostFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.LostFocus
-        txtMineStationEff.Text = FormatPercent(FormatManualPercentEntry(txtMineStationEff.Text), 1)
+        txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
     End Sub
 
-    Private Function FormatManualPercentEntry(Entry As String) As Double
-        Dim EntryText As String
-
-        If Entry.Contains("%") Then
-            ' Strip the percent first
-            EntryText = Entry.Substring(0, Len(Entry) - 1)
-        Else
-            EntryText = Entry
+    Private Sub txtMineBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineBrokerFeeRate.Text = GetFormattedPercentEntry(txtMineBrokerFeeRate)
         End If
+    End Sub
 
-        If IsNumeric(EntryText) Then
-            Return CDbl(EntryText) / 100
-        Else
-            Return 0
+    Private Sub txtMineBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
         End If
+    End Sub
 
-    End Function
+    Private Sub txtMineBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtMineBrokerFeeRate.GotFocus
+        Call txtMineBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtMineBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtMineBrokerFeeRate.LostFocus
+        txtMineBrokerFeeRate.Text = GetFormattedPercentEntry(txtMineBrokerFeeRate)
+    End Sub
+
+    Private Sub chkMineIncludeBrokerFees_Click(sender As Object, e As EventArgs) Handles chkMineIncludeBrokerFees.Click
+        If chkMineIncludeBrokerFees.Checked And chkMineIncludeBrokerFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtMineBrokerFeeRate.Visible = True
+        Else
+            txtMineBrokerFeeRate.Visible = False
+        End If
+    End Sub
 
     Private Sub chkMineRefinedOre_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineRefinedOre.CheckedChanged
         Call SetOreRefineChecks()
@@ -18539,6 +18805,8 @@ Leave:
     Private Sub chkchkMineMoonMining_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineMoonMining.CheckedChanged
         Call UpdateOrebySpaceChecks()
     End Sub
+
+
 
 #End Region
 
@@ -18734,6 +19002,8 @@ Leave:
             chkMineIncludeBrokerFees.Checked = .CheckIncludeFees
             chkMineIncludeTaxes.Checked = .CheckIncludeTaxes
 
+            txtMineBrokerFeeRate.Text = FormatPercent(.BrokerFeeRate, 1)
+
             ' Michii
             chkMineMichiImplant.Checked = .MichiiImplant
 
@@ -18769,7 +19039,6 @@ Leave:
                 cmbMineNumLasers.Text = CStr(.NumIceMiners)
                 cmbMineNumMiningUpgrades.Text = CStr(.NumIceUpgrades)
                 rbtnMineMercoxitRig.Enabled = False
-                rbtnMineIceRig.Enabled = True
                 If .IceMiningRig Then
                     rbtnMineIceRig.Checked = True
                 Else
@@ -19129,9 +19398,12 @@ Leave:
 
             ' Only refine ore or ice
             If chkMineRefinedOre.Checked And Not GasMining Then
+
+                Dim BFI As BrokerFeeInfo = GetBrokerFeeData(chkMineIncludeBrokerFees, txtMineBrokerFeeRate)
+
                 ' Refine total Ore we mined for an hour and save the total isk/hour
                 ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsPerHour,
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, ReprocessingYield)
+                                                             chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
 
                 TempOre.RefineYield = ReprocessingYield
 
@@ -19143,7 +19415,7 @@ Leave:
 
                 ' Calculate the unit price by refining one batch
                 ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, GetOreProcessingSkill(TempOre.OreName), TempOre.UnitsToRefine,
-                                                             chkMineIncludeTaxes.Checked, chkMineIncludeBrokerFees.Checked, ReprocessingYield)
+                                                             chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
                 TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                 TempOre.RefineType = "Refined"
                 OreList.Add(TempOre)
@@ -19324,7 +19596,7 @@ Leave:
     End Sub
 
     ' Saves all the settings on the screen selected
-    Private Sub btnMineSaveAllSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineSaveAllSettings.Click
+    Private Sub btnMineSaveSettings_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineSaveAllSettings.Click
         Dim TempSettings As MiningTabSettings = Nothing
         Dim Settings As New ProgramSettings
 
@@ -19988,6 +20260,9 @@ Leave:
                         End If
                     End While
 
+                    ' Can all use ice rig
+                    rbtnMineIceRig.Enabled = True
+
                     rbtnMineT1Crystals.Enabled = False
                     rbtnMineT2Crystals.Enabled = False
 
@@ -20010,6 +20285,7 @@ Leave:
                 ' For Other Ships
                 lblMineLaserNumber.Visible = True
                 cmbMineNumLasers.Visible = True
+                rbtnMineIceRig.Enabled = False ' All can't use ice rig regardless
 
                 If cmbMineOreType.Text = "Ore" Then
                     rbtnMineT1Crystals.Enabled = False

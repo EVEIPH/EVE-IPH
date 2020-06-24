@@ -122,7 +122,7 @@ Public Class DecryptorList
         Dim TempDecryptor As New Decryptor
 
         ' Set the Decryptor first
-        SQL = "SELECT INVENTORY_TYPES.typeID, attributeName, valueFloat "
+        SQL = "SELECT INVENTORY_TYPES.typeID, attributeName, value "
         SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
         SQL = SQL & "WHERE TYPE_ATTRIBUTES.typeID = INVENTORY_TYPES.typeID "
         SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "

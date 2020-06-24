@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "September_Release_1.0_2019"
+    Public Const SDEVersion As String = "June_23_2020 Release"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -79,20 +79,22 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
                                             & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
-                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE ELSE 0 END AS FAVORITE, IT.volume, IT.marketGroupID, " _
-                                            & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
-                                            & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
-                                            & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
-                                            & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
-                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
+                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE " _
+                                            & "ELSE CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NOT NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS FAVORITE, " _
+                                            & "IT.volume, IT.marketGroupID, " _
+                                            & "CASE WHEN OBP.ADDITIONAL_COSTS Is Not NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
+                                            & "CASE WHEN OBP.LOCATION_ID Is Not NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
+                                            & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
+                                            & "CASE WHEN OBP.FLAG_ID Is Not NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
+                                            & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
                                             & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP, " _
-                                            & "CASE WHEN IT2.marketGroupID IS NULL THEN 0 ELSE 1 END AS NPC_BPO " _
+                                            & "CASE WHEN IT2.marketGroupID Is NULL THEN 0 ELSE 1 END AS NPC_BPO " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID " _
-                                            & "AND (OBP.USER_ID = @USERBP_USERID OR OBP.USER_ID = @USERBP_CORPID), " _
+                                            & "And (OBP.USER_ID = @USERBP_USERID Or OBP.USER_ID = @USERBP_CORPID), " _
                                             & "INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2 " _
-                                            & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID) AS X "
+                                            & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID) AS X "
 
     ' Shopping List
     Public TotalShoppingList As New ShoppingList
@@ -308,6 +310,17 @@ Public Module Public_Variables
         Dim Number As Integer
     End Structure
 
+    Public Structure BrokerFeeInfo
+        Dim IncludeFee As BrokerFeeType
+        Dim FixedRate As Double
+    End Structure
+
+    Public Enum BrokerFeeType
+        NoFee = 0
+        Fee = 1
+        SpecialFee = 2
+    End Enum
+
     ' For importing blueprints via cut/paste
     Public Structure CopyPasteBlueprint
         Dim Name As String
@@ -349,6 +362,11 @@ Public Module Public_Variables
 
     End Function
 
+    Public Structure BuildBuyItem
+        Dim ItemID As Long
+        Dim BuildItem As Boolean ' True, we build it regardless, False we do not regardless. If not in list, we don't do anything differently
+    End Structure
+
 #Region "Taxes/Fees"
 
     ' Returns the tax on an item price only
@@ -359,20 +377,44 @@ Public Module Public_Variables
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
-    Public Function GetSalesBrokerFee(ByVal ItemMarketCost As Double) As Double
+    Public Function GetSalesBrokerFee(ByVal ItemMarketCost As Double, BrokerFee As BrokerFeeInfo) As Double
         Dim BrokerRelations As Integer = SelectedCharacter.Skills.GetSkillLevel(3446)
-
         Dim TempFee As Double
-        ' 5%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
-        ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
-        Dim BrokerTax = 5.0 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
-        TempFee = (BrokerTax / 100) * ItemMarketCost
+
+        If BrokerFee.IncludeFee = BrokerFeeType.Fee Then
+            ' 5%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
+            ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
+            Dim BrokerTax = 5.0 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+            TempFee = (BrokerTax / 100) * ItemMarketCost
+        ElseIf BrokerFee.IncludeFee = BrokerFeeType.SpecialFee Then
+            ' use a flat rate to set the fee
+            TempFee = BrokerFee.FixedRate * ItemMarketCost
+        Else
+            Return 0
+        End If
 
         If TempFee < 100 Then
             Return 100
         Else
             Return TempFee
         End If
+
+    End Function
+
+    ' Get Broker Fee data
+    Public Function GetBrokerFeeData(ByVal BrokerCheck As CheckBox, SpecialRateBox As TextBox) As BrokerFeeInfo
+        Dim TempBF As BrokerFeeInfo
+        If BrokerCheck.CheckState = CheckState.Indeterminate Then
+            ' Get the special fee
+            TempBF.FixedRate = FormatManualPercentEntry(SpecialRateBox.Text)
+            TempBF.IncludeFee = BrokerFeeType.SpecialFee
+        ElseIf BrokerCheck.CheckState = CheckState.Checked Then
+            TempBF.IncludeFee = BrokerFeeType.Fee
+        Else
+            TempBF.IncludeFee = BrokerFeeType.NoFee
+        End If
+
+        Return TempBF
 
     End Function
 
@@ -678,6 +720,30 @@ InvalidDate:
     End Function
 
 #End Region
+
+    ' Formats the manual entry of a percent in a string
+    Public Function FormatManualPercentEntry(Entry As String) As Double
+        Dim EntryText As String
+
+        If Entry.Contains("%") Then
+            ' Strip the percent first
+            EntryText = Entry.Substring(0, Len(Entry) - 1)
+        Else
+            EntryText = Entry
+        End If
+
+        If IsNumeric(EntryText) Then
+            Return CDbl(EntryText) / 100
+        Else
+            Return 0
+        End If
+
+    End Function
+
+    ' Returns the sent text box text as a percent in string format
+    Public Function GetFormattedPercentEntry(RefTextbox As TextBox) As String
+        Return FormatPercent(FormatManualPercentEntry(RefTextbox.Text), 1)
+    End Function
 
     Public Function GetBPType(BPTypeValue As Object) As BPType
 
@@ -1736,12 +1802,12 @@ InvalidDate:
         Dim SQL As String
         Dim readerAttribute As SQLiteDataReader
 
-        SQL = "SELECT COALESCE(valuefloat, valueint), ATTRIBUTE_TYPES.displayName "
+        SQL = "SELECT value, ATTRIBUTE_TYPES.displayNameID "
         SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
         SQL = SQL & "WHERE INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
         SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
         SQL = SQL & "AND INVENTORY_TYPES.typeName ='" & FormatDBString(TypeName) & "' "
-        SQL = SQL & "AND (ATTRIBUTE_TYPES.displayName= '" & AttributeName & "' OR ATTRIBUTE_TYPES.attributeName = '" & AttributeName & "')"
+        SQL = SQL & "AND (ATTRIBUTE_TYPES.displayNameID = '" & AttributeName & "' OR ATTRIBUTE_TYPES.attributeName = '" & AttributeName & "')"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAttribute = DBCommand.ExecuteReader
@@ -2184,6 +2250,30 @@ InvalidDate:
 
     End Function
 
+    ' Gets the typeid from inventory types for the typename sent
+    Public Function GetTypeID(ByVal TypeName As String) As Long
+        Dim SQL As String
+        Dim readerIT As SQLiteDataReader
+        Dim ReturnID As Long
+
+        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerIT = DBCommand.ExecuteReader()
+
+        If readerIT.Read Then
+            ReturnID = readerIT.GetInt64(0)
+        Else
+            ReturnID = 0
+        End If
+
+        readerIT.Close()
+        readerIT = Nothing
+
+        Return ReturnID
+
+    End Function
+
     ' Looks up the typeid for the mining bonus for different attributes related to mining and returns the value for everything except ships (those are invTraits)
     Public Function GetMiningBonus(ByVal TypeID As Integer) As Double
         Dim SQL As String
@@ -2191,7 +2281,7 @@ InvalidDate:
         Dim ReturnBonus As Double
 
         ' It's a module - compressionQuantityNeeded and mining amounts
-        SQL = "SELECT TYPE_ATTRIBUTES.attributeID, COALESCE(valueInt, valueFloat) AS Bonus "
+        SQL = "SELECT TYPE_ATTRIBUTES.attributeID, value AS Bonus "
         SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES, INVENTORY_GROUPS, ATTRIBUTE_TYPES "
         SQL &= "WHERE TYPE_ATTRIBUTES.typeid = INVENTORY_TYPES.typeid "
         SQL &= "AND INVENTORY_TYPES.groupid = INVENTORY_GROUPS.groupid "

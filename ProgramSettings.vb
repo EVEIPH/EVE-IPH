@@ -168,7 +168,8 @@ Public Class ProgramSettings
     Public DefaultBPTechChecks As Boolean = True
     Public DefaultSizeChecks As Boolean = False
     Public DefaultBPSelectionType As String = "All"
-    Public DefaultBPIncludeFees As Boolean = True
+    Public DefaultBPIncludeFees As Integer = 0
+    Public DefaultBPBrokerFeeRate As Double = 0.05
     Public DefaultBPIncludeTaxes As Boolean = True
     Public DefaultBPIncludeUsage As Boolean = True
     Public DefaultBPIgnoreChecks As Boolean = False
@@ -360,6 +361,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckSovC5 As Boolean = True
     Public DefaultMiningCheckSovC6 As Boolean = True
     Public DefaultMiningCheckIncludeFees As Boolean = True
+    Public DefaultMiningBrokerFeeRate As Double = 0.05
     Public DefaultMiningCheckIncludeTaxes As Boolean = True
     Public DefaultMiningCheckIncludeJumpFuelCosts As Boolean = False
     Public DefaultMiningTotalJumpFuelCost As Integer = 0
@@ -770,7 +772,8 @@ Public Class ProgramSettings
     Private DefaultNumMiners As Integer = 1
     Private DefaultCompressOre As Boolean = False
     Private DefaultIPHperMiner As Boolean = False
-    Private DefaultIncludeBrokerFees As Boolean = True
+    Private DefaultIncludeBrokerFees As Integer '0,1,2 - Tri-check
+    Private DefaultBFBrokerFeeRate As Double = 0.05
     Private DefaultIncludeTaxes As Boolean = True
     Private DefaultTruesec As String = ""
 
@@ -1499,7 +1502,8 @@ Public Class ProgramSettings
                     .MediumCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "MediumCheck", DefaultSizeChecks))
                     .LargeCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "LargeCheck", DefaultSizeChecks))
                     .XLCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "XLCheck", DefaultSizeChecks))
-                    .IncludeFees = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeFees", DefaultBPIncludeFees))
+                    .IncludeFees = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "IncludeFees", DefaultBPIncludeFees))
+                    .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
                     .RelicType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RelicType", DefaultBPRelicType))
                     .T2DecryptorType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "T2DecryptorType", DefaultBPT2DecryptorType))
                     .T3DecryptorType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "T3DecryptorType", DefaultBPT3DecryptorType))
@@ -1540,7 +1544,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(41) As Setting
+        Dim BPSettingsList(42) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1592,6 +1596,7 @@ Public Class ProgramSettings
 
             BPSettingsList(40) = New Setting("NPCBPOs", CStr(SentSettings.NPCBPOs))
             BPSettingsList(41) = New Setting("SellExcessBuildItems", CStr(SentSettings.SellExcessBuildItems))
+            BPSettingsList(42) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -1613,9 +1618,10 @@ Public Class ProgramSettings
             .TechStorylineCheck = DefaultBPTechChecks
             .TechFactionCheck = DefaultBPTechChecks
             .TechPirateCheck = DefaultBPTechChecks
-            .IncludeUsage = DefaultBPIncludeFees
+            .IncludeUsage = DefaultBPIncludeUsage
             .IncludeTaxes = DefaultBPIncludeTaxes
             .IncludeFees = DefaultIncludeBrokerFees
+            .BrokerFeeRate = DefaultBPBrokerFeeRate
             .PricePerUnit = DefaultBPPricePerUnit
             .ProductionLines = DefaultBPProductionLines
             .LaboratoryLines = DefaultBPLaboratoryLines
@@ -2630,6 +2636,7 @@ Public Class ProgramSettings
                     .CheckSovGallente = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovGallente", DefaultMiningCheckSovGallente))
                     .CheckSovMinmatar = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMinmatar", DefaultMiningCheckSovMinmatar))
                     .CheckIncludeFees = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
+                    .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "BrokerFeeRate", DefaultMiningBrokerFeeRate))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
                     .CheckIncludeJumpFuelCosts = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeJumpFuelCosts", DefaultMiningCheckIncludeJumpFuelCosts))
                     .TotalJumpFuelCost = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelCost", DefaultMiningTotalJumpFuelCost))
@@ -2733,6 +2740,7 @@ Public Class ProgramSettings
             .CheckSovC5 = DefaultMiningCheckSovC5
             .CheckSovC6 = DefaultMiningCheckSovC6
             .CheckIncludeFees = DefaultMiningCheckIncludeFees
+            .BrokerFeeRate = DefaultMiningBrokerFeeRate
             .CheckIncludeTaxes = DefaultMiningCheckIncludeTaxes
             .CheckIncludeJumpFuelCosts = DefaultMiningCheckIncludeJumpFuelCosts
             .TotalJumpFuelCost = DefaultMiningTotalJumpFuelCost
@@ -2795,7 +2803,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(69) As Setting
+        Dim MiningSettingsList(70) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2871,6 +2879,7 @@ Public Class ProgramSettings
             MiningSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
 
             MiningSettingsList(69) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
+            MiningSettingsList(70) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -3783,9 +3792,10 @@ Public Class ProgramSettings
                     .NumMiners = CInt(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeInteger, IndustryFlipBeltSettingsFileName, "NumMiners", DefaultNumMiners))
                     .CompressOre = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "CompressOre", DefaultCompressOre))
                     .IPHperMiner = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IPHperMiner", DefaultIPHperMiner))
-                    .IncludeBrokerFees = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeBrokerFees", DefaultIncludeBrokerFees))
+                    .IncludeBrokerFees = CInt(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeInteger, IndustryFlipBeltSettingsFileName, "IncludeBrokerFees", DefaultIncludeBrokerFees))
                     .IncludeTaxes = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
                     .TrueSec = CStr(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeString, IndustryFlipBeltSettingsFileName, "TrueSec", DefaultTruesec))
+                    .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
 
                     .RefiningEfficiency = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
                     .RefiningTax = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningTax", DefaultRefineTax))
@@ -3822,6 +3832,7 @@ Public Class ProgramSettings
             .CompressOre = DefaultCompressOre
             .IPHperMiner = DefaultIPHperMiner
             .IncludeBrokerFees = DefaultIncludeBrokerFees
+            .BrokerFeeRate = DefaultBFBrokerFeeRate
             .IncludeTaxes = DefaultIncludeTaxes
             .TrueSec = DefaultTruesec
             .RefiningEfficiency = DefaultRefiningEfficency
@@ -3837,7 +3848,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryFlipBeltSettings(SentSettings As IndustryFlipBeltSettings)
-        Dim IndustryFlipBeltSettingsList(10) As Setting
+        Dim IndustryFlipBeltSettingsList(11) As Setting
 
         Try
             IndustryFlipBeltSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
@@ -3851,6 +3862,7 @@ Public Class ProgramSettings
             IndustryFlipBeltSettingsList(8) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
             IndustryFlipBeltSettingsList(9) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
             IndustryFlipBeltSettingsList(10) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
+            IndustryFlipBeltSettingsList(11) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, IndustryFlipBeltSettingsFileName, IndustryFlipBeltSettingsList, IndustryFlipBeltSettingsFileName)
 
@@ -4999,7 +5011,8 @@ Public Structure BPTabSettings
     Dim LargeCheck As Boolean
     Dim XLCheck As Boolean
 
-    Dim IncludeFees As Boolean
+    Dim IncludeFees As Integer ' 0,1,2 - Tri check
+    Dim BrokerFeeRate As Double
     Dim IncludeUsage As Boolean
     Dim IncludeTaxes As Boolean
 
@@ -5338,6 +5351,7 @@ Public Structure MiningTabSettings
 
     Dim CheckIncludeFees As Boolean
     Dim CheckIncludeTaxes As Boolean
+    Dim BrokerFeeRate As Double
 
     Dim CheckIncludeJumpFuelCosts As Boolean
     Dim TotalJumpFuelCost As Double
@@ -5678,8 +5692,9 @@ Public Structure IndustryFlipBeltSettings
     Dim NumMiners As Integer
     Dim CompressOre As Boolean
     Dim IPHperMiner As Boolean
-    Dim IncludeBrokerFees As Boolean
+    Dim IncludeBrokerFees As Integer
     Dim IncludeTaxes As Boolean
+    Dim BrokerFeeRate As Double
     Dim TrueSec As String
 
     Dim RefiningEfficiency As Double
