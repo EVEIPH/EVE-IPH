@@ -613,9 +613,7 @@ Public Class frmShoppingList
                 Call TotalShoppingList.SetAdditionalCosts(CDbl(txtAddlCosts.Text))
             End If
 
-            Dim BFI As BrokerFeeInfo
-            BFI.IncludeFee = CType(chkFees.CheckState, BrokerFeeType)
-            BFI.FixedRate = CDbl(txtBrokerFeeRate.Text)
+            Dim BFI As BrokerFeeInfo = GetBrokerFeeData(chkFees, txtBrokerFeeRate)
 
             Call TotalShoppingList.SetPriceData(BFI, chkUsage.Checked, ItemBuyTypeList)
 

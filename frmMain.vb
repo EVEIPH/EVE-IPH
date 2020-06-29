@@ -2155,7 +2155,7 @@ Public Class frmMain
             Application.UseWaitCursor = True
             Application.DoEvents()
 
-            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 0"
+            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
             Application.UseWaitCursor = False
@@ -2892,8 +2892,8 @@ Public Class frmMain
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
-                    SQL = SQL & "CASE WHEN FAVORITE IS NULL THEN 0 ELSE FAVORITE END AS FAVORITE, IGNORE, "
-                    SQL = SQL & "CASE WHEN TE Is NULL THEN 0 ELSE TE END AS BP_TE "
+                    SQL = SQL & "CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NULL THEN 0 ELSE ALL_BLUEPRINTS.FAVORITE END AS FAVORITE, IGNORE, "
+                    SQL = SQL & "CASE WHEN TE IS NULL THEN 0 ELSE TE END AS BP_TE "
                     SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
                     SQL = SQL & "WHERE ITEM_NAME = '" & RemoveItemNameRuns(CurrentRow.SubItems(0).Text) & "'"
 
@@ -2936,7 +2936,7 @@ Public Class frmMain
 
                 Else ' Price per unit update
 
-                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_NAME = '" & CurrentRow.SubItems(0).Text & "'"
+                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(CurrentRow.SubItems(0).Text)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Mark the line text with black incase it is red for no price
@@ -2958,7 +2958,7 @@ Public Class frmMain
 
             ElseIf ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
                 ' Price List Update
-                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(CurrentRow.SubItems(0).Text)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
@@ -4655,12 +4655,13 @@ Tabs:
     End Sub
 
     Private Sub UpdateMarketPriceManually()
-
-        Dim SQL As String = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
-        Call EVEDB.ExecuteNonQuerySQL(SQL)
-        Call PlayNotifySound()
-        lblBPMarketCost.Text = FormatNumber(txtBPMarketPriceEdit.Text, 2)
-        IgnoreFocus = True
+        If Trim(txtBPMarketPriceEdit.Text) <> "" Then
+            Dim SQL As String = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtBPMarketPriceEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & SelectedBlueprint.GetItemID
+            Call EVEDB.ExecuteNonQuerySQL(SQL)
+            Call PlayNotifySound()
+            lblBPMarketCost.Text = FormatNumber(txtBPMarketPriceEdit.Text, 2)
+            IgnoreFocus = True
+        End If
         Call RefreshBP()
     End Sub
 
@@ -16586,7 +16587,7 @@ ExitCalc:
 
                     ' We found it, so set the bp to ignore
                     With FoundItem
-                        SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
+                        SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
                         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         ' Remove the item from the list in all it's forms plus from the manufacturing list
@@ -16640,7 +16641,7 @@ ExitCalc:
 
                 If FoundItem IsNot Nothing Then
                     ' We found it, so set the bp to a favorite in all_blueprints
-                    SQL = "UPDATE ALL_BLUEPRINTS SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
+                    SQL = "UPDATE ALL_BLUEPRINTS_FACT SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Assume they want to update owned blueprints too if they own it

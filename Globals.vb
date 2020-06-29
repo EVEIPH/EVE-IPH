@@ -1960,7 +1960,7 @@ InvalidDate:
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS Set IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
+            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else
@@ -2011,7 +2011,7 @@ InvalidDate:
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
+            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If
@@ -2282,10 +2282,9 @@ InvalidDate:
 
         ' It's a module - compressionQuantityNeeded and mining amounts
         SQL = "SELECT TYPE_ATTRIBUTES.attributeID, value AS Bonus "
-        SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES, INVENTORY_GROUPS, ATTRIBUTE_TYPES "
+        SQL &= "FROM TYPE_ATTRIBUTES, INVENTORY_TYPES, INVENTORY_GROUPS "
         SQL &= "WHERE TYPE_ATTRIBUTES.typeid = INVENTORY_TYPES.typeid "
         SQL &= "AND INVENTORY_TYPES.groupid = INVENTORY_GROUPS.groupid "
-        SQL &= "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
         SQL &= "AND TYPE_ATTRIBUTES.attributeid IN (434,77,1938,207,2458,428,1941,379,780,885) "
         SQL &= "AND INVENTORY_TYPES.groupID Not In (1,1218) And categoryID <> 6 "
         SQL &= "AND TYPE_ATTRIBUTES.typeID = " & CStr(TypeID)

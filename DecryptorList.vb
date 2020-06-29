@@ -122,10 +122,9 @@ Public Class DecryptorList
         Dim TempDecryptor As New Decryptor
 
         ' Set the Decryptor first
-        SQL = "SELECT INVENTORY_TYPES.typeID, attributeName, value "
-        SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
+        SQL = "SELECT INVENTORY_TYPES.typeID, attributeID, value "
+        SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES "
         SQL = SQL & "WHERE TYPE_ATTRIBUTES.typeID = INVENTORY_TYPES.typeID "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
         SQL = SQL & "AND INVENTORY_TYPES.typeName = '" & DecryptorName & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -136,14 +135,14 @@ Public Class DecryptorList
             While readerDecryptor.Read
                 TempDecryptor.TypeID = readerDecryptor.GetInt64(0)
 
-                Select Case readerDecryptor.GetString(1)
-                    Case "inventionPropabilityMultiplier"
+                Select Case readerDecryptor.GetInt32(1)
+                    Case 1112
                         TempDecryptor.ProductionMod = readerDecryptor.GetDouble(2)
-                    Case "inventionMEModifier"
+                    Case 1113
                         TempDecryptor.MEMod = CInt(readerDecryptor.GetDouble(2))
-                    Case "inventionTEModifier"
+                    Case 1114
                         TempDecryptor.TEMod = CInt(readerDecryptor.GetDouble(2))
-                    Case "inventionMaxRunModifier"
+                    Case 1124
                         TempDecryptor.RunMod = CInt(readerDecryptor.GetDouble(2))
                 End Select
             End While
