@@ -1392,7 +1392,7 @@ Public Class ShoppingList
         Dim TotalBrokersFee As Double = 0
 
         ' Loop through the buy list and check the item list to see if we apply brokers fees or not
-        If Not IsNothing(TotalBuyList.GetMaterialList) Then
+        If Not IsNothing(TotalBuyList.GetMaterialList) And Not IsNothing(ItemList) Then
             For i = 0 To TotalBuyList.GetMaterialList.Count - 1
                 For j = 0 To ItemList.Count - 1
                     If TotalBuyList.GetMaterialList(i).GetMaterialName = ItemList(j).ItemName Then
