@@ -430,9 +430,9 @@ Public Module Public_Variables
         If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
 
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
+            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBREf)
 
-            If CInt(CMDCount.ExecuteScalar()) = 0 Or Not AppRegistered() Then
+            If CInt(CMDCount.ExecuteScalar()) = 0 Then
                 ' No characters loaded yet so load dummy for all
                 Call SelectedCharacter.LoadDummyCharacter(True)
             Else
@@ -466,18 +466,6 @@ Public Module Public_Variables
         End If
 
     End Sub
-
-    ' Returns boolean if the application has been registered (or the user saved the settings file at least)
-    Public Function AppRegistered() As Boolean
-        Dim ESICheck As New ESI()
-
-        If ESICheck.GetClientID = DummyClient Then
-            Return False
-        Else
-            Return True
-        End If
-
-    End Function
 
 #End Region
 

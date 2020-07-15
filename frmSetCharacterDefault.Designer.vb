@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmSetCharacterDefault
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,16 +20,14 @@ Partial Class frmSetCharacterDefault
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmSetCharacterDefault))
         Me.chkListDefaultChar = New System.Windows.Forms.CheckedListBox()
         Me.btnSelectDefault = New System.Windows.Forms.Button()
         Me.btnCancel = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
-        Me.btnReloadRegistration = New System.Windows.Forms.Button()
         Me.btnEVESSOLogin = New System.Windows.Forms.Button()
-        Me.btnManualLoad = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'chkListDefaultChar
@@ -70,16 +68,6 @@ Partial Class frmSetCharacterDefault
     "cted, then log in to the EVE SSO below to authorize your caracters for use in IP" &
     "H."
         '
-        'btnReloadRegistration
-        '
-        Me.btnReloadRegistration.Location = New System.Drawing.Point(53, 343)
-        Me.btnReloadRegistration.Name = "btnReloadRegistration"
-        Me.btnReloadRegistration.Size = New System.Drawing.Size(204, 26)
-        Me.btnReloadRegistration.TabIndex = 13
-        Me.btnReloadRegistration.Text = "Re-Enter Registration Information"
-        Me.btnReloadRegistration.UseVisualStyleBackColor = True
-        Me.btnReloadRegistration.Visible = False
-        '
         'btnEVESSOLogin
         '
         Me.btnEVESSOLogin.BackgroundImage = CType(resources.GetObject("btnEVESSOLogin.BackgroundImage"), System.Drawing.Image)
@@ -90,24 +78,12 @@ Partial Class frmSetCharacterDefault
         Me.btnEVESSOLogin.TabIndex = 1
         Me.btnEVESSOLogin.UseVisualStyleBackColor = True
         '
-        'btnManualLoad
-        '
-        Me.btnManualLoad.Location = New System.Drawing.Point(20, 375)
-        Me.btnManualLoad.Name = "btnManualLoad"
-        Me.btnManualLoad.Size = New System.Drawing.Size(270, 26)
-        Me.btnManualLoad.TabIndex = 15
-        Me.btnManualLoad.Text = "Still having issues? Click here to manually authorize."
-        Me.btnManualLoad.UseVisualStyleBackColor = True
-        Me.btnManualLoad.Visible = False
-        '
         'frmSetCharacterDefault
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.ClientSize = New System.Drawing.Size(311, 412)
+        Me.ClientSize = New System.Drawing.Size(311, 349)
         Me.ControlBox = False
-        Me.Controls.Add(Me.btnManualLoad)
-        Me.Controls.Add(Me.btnReloadRegistration)
         Me.Controls.Add(Me.lblKeyType)
         Me.Controls.Add(Me.btnCancel)
         Me.Controls.Add(Me.btnEVESSOLogin)
@@ -128,6 +104,4 @@ Partial Class frmSetCharacterDefault
     Friend WithEvents btnCancel As System.Windows.Forms.Button
     Friend WithEvents btnEVESSOLogin As Button
     Friend WithEvents lblKeyType As Label
-    Friend WithEvents btnReloadRegistration As Button
-    Friend WithEvents btnManualLoad As Button
 End Class

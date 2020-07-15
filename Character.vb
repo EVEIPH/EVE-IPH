@@ -79,7 +79,6 @@ Public Class Character
     ' Saves the dummy character for the program
     Public Function LoadDummyCharacter(IgnoreMessages As Boolean, Optional ReloadDummy As Boolean = False) As TriState
         Dim response As Integer
-        Dim Settings As AppRegistrationInformationSettings
 
         If Not IgnoreMessages Then
             response = MsgBox("If you do not load a character many features will not be available to you. Do you want to continue without loading a character?", vbYesNo, Application.ProductName)
@@ -160,21 +159,9 @@ Public Class Character
                 Call EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CStr(DummyCharacterID)))
                 Call LoadDefaultCharacter(False, False, True)
             End If
-
-            ' Finally, save the app registration information file as nothing so it doesn't try to load again
-            Settings.ClientID = DummyClient
-            Settings.SecretKey = ""
-            Settings.Scopes = ""
-
-            If AllSettings.SaveAppRegistrationInformationSettings(Settings) Then
-                Return TriState.True ' both options load a dummy character
-            Else
-                Return TriState.False
-            End If
-        Else
-            ' Go back and do nothing
-            Return TriState.UseDefault
         End If
+
+        Return TriState.UseDefault
 
     End Function
 
@@ -183,10 +170,6 @@ Public Class Character
                                          Optional LoadingDummy As Boolean = False) As Boolean
         Dim rsCharacter As SQLiteDataReader
         Dim SQL As String
-
-        If Not AppRegistered() And Not LoadingDummy Then
-            Return False
-        End If
 
         ' See if we have a character ID loaded
         SQL = "SELECT CHARACTER_ID FROM ESI_CHARACTER_DATA WHERE IS_DEFAULT <> 0"

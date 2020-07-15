@@ -399,13 +399,6 @@ Public Class frmMain
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
-        ' Only allow selecting a character if they registered the program
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-        Else
-            mnuSelectionAddChar.Enabled = False
-        End If
-
         ' Display to the user any issues with ESI endpoints
         Call SetProgress("Checking Status of ESI...")
         Call ESIData.GetESIStatus()
@@ -2273,13 +2266,6 @@ Public Class frmMain
         Dim f2 = New frmSetCharacterDefault
         f2.ShowDialog()
 
-        ' Only allow selecting a default if they are registered
-        If AppRegistered() Then
-            mnuSelectDefaultChar.Enabled = True
-        Else
-            mnuSelectDefaultChar.Enabled = False
-        End If
-
         Call LoadCharacterNamesinMenu()
 
         ' Reinit form
@@ -2292,38 +2278,10 @@ Public Class frmMain
 
         Call f1.ShowDialog()
 
-        ' Only allow selecting a default if they registered the program
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-            mnuSelectDefaultChar.Enabled = True
-        Else
-            mnuSelectionAddChar.Enabled = False
-            mnuSelectDefaultChar.Enabled = False
-            ' Reload the list
-            Call LoadCharacterNamesinMenu()
-        End If
-
         ' Default character set, now set the panel if it changed
         If SelectedCharacter.Name <> mnuCharacter.Text.Substring(mnuCharacter.Text.IndexOf(":") + 2) Then
             ' If we returned, we got a default character set
             Call ResetTabs()
-            Call LoadCharacterNamesinMenu()
-        End If
-
-    End Sub
-
-    Private Sub mnuRegisterProgram_Click(sender As Object, e As EventArgs) Handles mnuRegisterProgram.Click
-        Dim f1 As New frmLoadESIAuthorization
-        f1.ShowDialog()
-        f1.Close()
-
-        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
-
-        ' If they registered the program, let them add characters now
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-            Dim f2 As New frmSetCharacterDefault
-            f2.ShowDialog()
             Call LoadCharacterNamesinMenu()
         End If
 

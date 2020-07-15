@@ -173,6 +173,12 @@
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
     <Compile Include="EVEMarketer.vb" />
+    <Compile Include="frmAddCharacter.Designer.vb">
+      <DependentUpon>frmAddCharacter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAddCharacter.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmAddStructureIDs.Designer.vb">
       <DependentUpon>frmAddStructureIDs.vb</DependentUpon>
     </Compile>
@@ -201,18 +207,6 @@
       <DependentUpon>frmESIStatus.vb</DependentUpon>
     </Compile>
     <Compile Include="frmESIStatus.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmLoadESIAuthorization.Designer.vb">
-      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmLoadESIAuthorization.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmManualESI.Designer.vb">
-      <DependentUpon>frmManualESI.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmManualESI.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMaterialListViewer.Designer.vb">
@@ -506,6 +500,9 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="frmAddCharacter.resx">
+      <DependentUpon>frmAddCharacter.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmAddStructureIDs.resx">
       <DependentUpon>frmAddStructureIDs.vb</DependentUpon>
     </EmbeddedResource>
@@ -523,12 +520,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmLoadESIAuthorization.resx">
-      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmManualESI.resx">
-      <DependentUpon>frmManualESI.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMaterialListViewer.resx">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>

@@ -49,8 +49,6 @@ Public Module SettingsVariables
     Public UserUpwellStructureSettings As UpwellStructureSettings
     ' For bonus popout on structure viewer
     Public StructureBonusPopoutViewerSettings As StructureBonusPopoutSettings
-    ' For the application registration information
-    Public AppRegInfoSettings As AppRegistrationInformationSettings
 
 End Module
 
@@ -944,10 +942,6 @@ Public Class ProgramSettings
     Private Const UpwellStructureViewerSettingsFileName As String = "UpwellStructureViewerSettings"
     Private Const StructureBonusPopoutViewerSettingsFileName As String = "StructureBonusPopoutViewerSettings"
 
-    ' Application Registration Information
-    Public Const AppRegistrationInformationSettingsFileName As String = "AppRegistrationInformation"
-    Private AppRegistrationInformationSettings As AppRegistrationInformationSettings
-
     ' For BP List Viewer
     Public DefaultBPViewerTechChecks As Boolean = True
     Public DefaultBPViewerSizeChecks As Boolean = False
@@ -1309,78 +1303,6 @@ Public Class ProgramSettings
     ' Returns the application settings
     Public Function GetApplicationSettings() As ApplicationSettings
         Return ApplicationSettings
-    End Function
-
-#End Region
-
-#Region "Application Registration Information"
-
-    ' Loads the app registration settings from XML setting file
-    Public Function LoadAppRegistrationInformationSettings() As AppRegistrationInformationSettings
-        Dim TempSettings As AppRegistrationInformationSettings = Nothing
-
-        Try
-            If FileExists("", AppRegistrationInformationSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .ClientID = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "ClientID", ""))
-                    .SecretKey = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "SecretKey", ""))
-                    .Scopes = CStr(GetSettingValue("", AppRegistrationInformationSettingsFileName, SettingTypes.TypeString, AppRegistrationInformationSettingsFileName, "Scopes", ""))
-                End With
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultAppRegistrationInfromationSettings()
-            End If
-        Catch ex As Exception
-            MsgBox("An error occured when loading Application Registration Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultAppRegistrationInfromationSettings()
-        End Try
-
-        ' Save them locally and then export
-        AppRegistrationInformationSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    ' Load defaults 
-    Public Function SetDefaultAppRegistrationInfromationSettings() As AppRegistrationInformationSettings
-        Dim TempSettings As AppRegistrationInformationSettings = Nothing
-
-        ' Load defaults 
-        TempSettings.ClientID = ""
-        TempSettings.SecretKey = ""
-        TempSettings.Scopes = ""
-
-        AppRegistrationInformationSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    ' Saves the Shopping List Settings to XML
-    Public Function SaveAppRegistrationInformationSettings(SentSettings As AppRegistrationInformationSettings) As Boolean
-        Dim AppRegistrationInformationSettingsList(2) As Setting
-
-        Try
-            AppRegistrationInformationSettingsList(0) = New Setting("ClientID", CStr(SentSettings.ClientID))
-            AppRegistrationInformationSettingsList(1) = New Setting("SecretKey", CStr(SentSettings.SecretKey))
-            AppRegistrationInformationSettingsList(2) = New Setting("Scopes", CStr(SentSettings.Scopes))
-
-            Call WriteSettingsToFile("", AppRegistrationInformationSettingsFileName, AppRegistrationInformationSettingsList, AppRegistrationInformationSettingsFileName)
-            Return True
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving Application Registration Information. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-            Return False
-        End Try
-
-    End Function
-
-    ' Returns the Shopping List Settings
-    Public Function GetAppRegistrationInformationSettings() As AppRegistrationInformationSettings
-        Return AppRegistrationInformationSettings
     End Function
 
 #End Region
@@ -5910,11 +5832,4 @@ Public Structure StructureBonusPopoutSettings
     Dim ActivityColumnWidth As Integer
     Dim BonusesColumnWidth As Integer
     Dim BonusSourceColumnWidth As Integer
-End Structure
-
-' For saving the application registration information
-Public Structure AppRegistrationInformationSettings
-    Dim ClientID As String
-    Dim SecretKey As String
-    Dim Scopes As String
 End Structure

@@ -16,15 +16,6 @@ Public Class frmManageAccounts
 
         btnRefreshToken.Enabled = False
 
-        If AppRegistered() Then
-            btnAddCharacter.Enabled = True
-            btnSelectDefaultChar.Enabled = True
-        Else
-            'Disable until they register
-            btnAddCharacter.Enabled = False
-            btnSelectDefaultChar.Enabled = False
-        End If
-
     End Sub
 
     Private Sub lstAccounts_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstAccounts.ColumnClick
@@ -99,7 +90,7 @@ Public Class frmManageAccounts
         rsAccounts.Read()
 
         ' Don't enable default setting if there aren't any new api keys
-        If CInt(rsAccounts.GetValue(0)) = 0 Or Not AppRegistered() Then
+        If CInt(rsAccounts.GetValue(0)) = 0 Then
             btnSelectDefaultChar.Enabled = False
         Else
             btnSelectDefaultChar.Enabled = True
@@ -269,25 +260,6 @@ Public Class frmManageAccounts
             End If
 
         End If
-    End Sub
-
-    Private Sub btnRegisterProgram_Click(sender As Object, e As EventArgs) Handles btnRegisterProgram.Click
-        Dim f1 As New frmLoadESIAuthorization
-        f1.ShowDialog()
-        f1.Close()
-
-        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
-
-        ' If they registered the program, let them add characters now
-        If AppRegistered() Then
-            Dim f2 As New frmSetCharacterDefault
-            f2.ShowDialog()
-            btnSelectDefaultChar.Enabled = True
-            btnAddCharacter.Enabled = True
-        End If
-
-        Call LoadAccountGrid()
-
     End Sub
 
     Private Sub btnCopyAll_Click(sender As Object, e As EventArgs) Handles btnCopyAll.Click

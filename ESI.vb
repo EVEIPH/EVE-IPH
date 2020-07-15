@@ -1,10 +1,12 @@
 ﻿Imports System.Net
+Imports System.Web
 Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
 Imports System.Data.SQLite
 Imports System.Collections.Specialized
 Imports System.Threading
+Imports System.Security.Cryptography
 Imports Newtonsoft.Json
 
 Public Module ESIGlobals
@@ -12,8 +14,8 @@ Public Module ESIGlobals
 End Module
 
 Public Class ESI
-    Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/oauth/authorize"
-    Private Const ESITokenURL As String = "https://login.eveonline.com/oauth/token"
+    Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/v2/oauth/authorize"
+    Private Const ESITokenURL As String = "https://login.eveonline.com/v2/oauth/token"
     Private Const ESIVerifyURL As String = "https://login.eveonline.com/oauth/verify"
     Private Const ESIURL As String = "https://esi.evetech.net/latest/"
     Private Const ESIStatusURL As String = "https://esi.evetech.net/status.json?version=latest"
@@ -21,10 +23,12 @@ Public Class ESI
 
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
     Private Const LocalPort As String = "12500" ' Always use this port
+    Private Const EVEIPHClientID As String = "2737513b64854fa0a309e125419f8eff" ' IPH Client ID in EVE Developers
+    ' Only request scopes I need - if I add a scope, the user will need to re-authorize for the new scopes.
+    Private Const ScopesString As String = "esi-universe.read_structures.v1 esi-corporations.read_corporation_membership.v1 esi-assets.read_assets.v1 esi-markets.structure_markets.v1 esi-characters.read_standings.v1 esi-characters.read_agents_research.v1 esi-industry.read_character_jobs.v1 esi-characters.read_blueprints.v1 esi-assets.read_corporation_assets.v1 esi-corporations.read_blueprints.v1 esi-industry.read_corporation_jobs.v1"
 
-    Private ClientID As String
-    Private SecretKey As String
-    Public ScopesString As String
+    Private AuthorizationToken As String ' Token returned by ESI on initial authorization - good for 5 minutes
+    Private CodeVerifier As String ' For PKCE - generated code we send to ESI for access codes after sending the hashed version of this for authorization code
 
     Public Const ESICharacterAssetScope As String = "esi-assets.read_assets"
     Public Const ESICharacterResearchAgentsScope As String = "esi-characters.read_agents_research"
@@ -53,8 +57,7 @@ Public Class ESI
     Private Const ESIMaximumConnections As Integer = 20
 
     Private AuthThreadReference As Thread ' Reference in case we need to kill this
-    Private AuthStreamText As String ' The return data from the web call
-    Private myListner As TcpListener = New TcpListener(IPAddress.Parse(LocalHost), CInt(LocalPort)) ' Ref to the listener so we can stop it
+    Private myListener As TcpListener = New TcpListener(IPAddress.Parse(LocalHost), CInt(LocalPort)) ' Ref to the listener so we can stop it
 
     Private StructureCount As Integer ' for counting order updates
 
@@ -82,27 +85,12 @@ Public Class ESI
     ' esi-markets.structure_markets.v1: Allows reading of markets for structures the character can use
 
     ''' <summary>
-    ''' Initialize the class and set the implemented scopes
+    ''' Initialize the class variables as needed
     ''' </summary>
     Public Sub New()
-
-        ' Load all the details from the authorization information file
-        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
-        With ApplicationSettings
-            ClientID = .ClientID
-            SecretKey = .SecretKey
-            ' Make sure we split out all the double spaces, etc from the scopes string.
-            ' Process the scopes and only leave one space between each
-            ScopesString = String.Join(" ", .Scopes.Split(New String() {" ", ",", "%20", "%2520", vbCr, vbLf, vbCrLf}, StringSplitOptions.RemoveEmptyEntries))
-        End With
-
-        AuthStreamText = ""
-
+        AuthorizationToken = ""
+        CodeVerifier = ""
     End Sub
-
-    Public Function GetClientID() As String
-        Return ClientID
-    End Function
 
     ''' <summary>
     ''' Opens a connection to EVE SSO server and gets an authorization token to get an access token
@@ -111,41 +99,38 @@ Public Class ESI
     Private Function GetAuthorizationToken() As String
 
         Try
-            If ClientID <> "" And ClientID <> DummyClient Then
-                Dim StartTime As Date = Now
+            Dim StartTime As Date = Now
 
-                ' See if we are in an error limited state
-                If ESIErrorHandler.ErrorLimitReached Then
-                    ' Need to wait until we are ready to continue
-                    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-                End If
-
-                AuthStreamText = "" ' Reset before call
-                AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
-                AuthThreadReference.Start()
-
-                ' Now loop until thread is done, 60 seconds goes by, or cancel clicked
-                Do
-                    If DateDiff(DateInterval.Second, StartTime, Now) > 60 Then
-                        Call MsgBox("Request timed out. You must complete your login within 60 seconds.", vbInformation, Application.ProductName)
-                        myListner.Stop()
-                        AuthThreadReference.Abort()
-                        Return Nothing
-                    ElseIf CancelESISSOLogin Then
-                        Call MsgBox("Request Canceled", vbInformation, Application.ProductName)
-                        myListner.Stop()
-                        AuthThreadReference.Abort()
-                        Return Nothing
-                    ElseIf Not AuthThreadReference.IsAlive Then
-                        Exit Do
-                    End If
-                    Application.DoEvents()
-                Loop
-
-                ' Get the authtoken from the stream
-                Return GetAuthToken(AuthStreamText)
-
+            ' See if we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
             End If
+
+            AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
+            AuthThreadReference.Start()
+
+            ' Now loop until thread is done, 60 seconds goes by, or cancel clicked
+            Do
+                If DateDiff(DateInterval.Second, StartTime, Now) > 60 Then
+                    Call MsgBox("Request timed out. You must complete your login within 60 seconds.", vbInformation, Application.ProductName)
+                    myListener.Stop()
+                    AuthThreadReference.Abort()
+                    Return Nothing
+                ElseIf CancelESISSOLogin Then
+                    Call MsgBox("Request Canceled", vbInformation, Application.ProductName)
+                    myListener.Stop()
+                    AuthThreadReference.Abort()
+                    Return Nothing
+                ElseIf Not AuthThreadReference.IsAlive Then
+                    Exit Do
+                End If
+                Application.DoEvents()
+            Loop
+
+            ' Get the authtoken after it completed
+            Return AuthorizationToken
+
         Catch ex As WebException
 
             Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AuthToken, False)
@@ -169,41 +154,76 @@ Public Class ESI
     ''' <summary>
     ''' Opens the login for EVE SSO and returns the data stream from a successful log in
     ''' </summary>
-    Private Sub GetAuthorizationfromWeb()
+    Private Sub GetAuthorizationfromWeb(Optional MyURL As String = "")
         Try
-            ' Build the authorization call
-            Dim URL As String = GetURL
+            Dim URL As String = ""
+            Dim ChallengeCode As String = ""
+            Dim AuthStreamText As String = "" ' The return data from the web call
+            ' State is a random number for passing to ESI
+            Dim InitState As String = DateTime.UtcNow.ToFileTime().ToString()
 
-            Process.Start(URL)
+            ' Set the challenge code for this call
+            CodeVerifier = GetCodeVerifier()
+            ChallengeCode = GetChallengeCode(CodeVerifier)
+
+            ' Build the authorization URL
+            URL = ESIAuthorizeURL
+            URL &= "?client_id=" & EVEIPHClientID
+            URL &= "&redirect_uri=" & WebUtility.UrlEncode("http://" & LocalHost & ":" & LocalPort)
+            URL &= "&response_type=code"
+            URL &= "&scope=" & WebUtility.UrlEncode(ScopesString)
+            URL &= "&state=" & InitState
+            URL &= "&code_challenge=" & ChallengeCode
+            URL &= "&code_challenge_method=S256"
+
+            ' Open the browser to get authorization from user
+            Call Process.Start(URL)
 
             Dim mySocket As Socket = Nothing
             Dim myStream As NetworkStream = Nothing
             Dim myReader As StreamReader = Nothing
             Dim myWriter As StreamWriter = Nothing
 
-            myListner.Start()
+            myListener.Start()
 
-            mySocket = myListner.AcceptSocket() ' Wait for response
+            mySocket = myListener.AcceptSocket() ' Wait for response
             myStream = New NetworkStream(mySocket)
             myReader = New StreamReader(myStream)
             myWriter = New StreamWriter(myStream)
             myWriter.AutoFlush = True
 
             Do
+                ' Get the response from the callback
                 AuthStreamText &= myReader.ReadLine & "|"
 
-                If AuthStreamText.Contains("code") Then
+                If AuthStreamText.Contains("code") And AuthStreamText.Contains("state") Then
                     Exit Do
                 End If
             Loop Until myReader.EndOfStream
 
-            myWriter.Write("Login Successful!" & vbCrLf & vbCrLf & "You can close this window.")
+            ' Strip the code and state from the callback stream text
+            AuthStreamText = AuthStreamText.Substring(InStr(AuthStreamText, "/"))
+            Dim CodeStart As Integer = 6 '?code=
+            Dim CodeEnd As Integer = InStr(AuthStreamText, "&state=") - 1
+            Dim StateStart As Integer = CodeEnd + 7
+            Dim StateEnd As Integer = InStr(AuthStreamText, " ") - 1
+            ' Parse the values - Check the state return first
+            Dim ReturnState As String = AuthStreamText.Substring(StateStart, StateEnd - StateStart)
+
+            If ReturnState <> InitState Then
+                myWriter.Write("The Authorization was unsuccessful. Please retry your request." & vbCrLf & vbCrLf & "You can close this window.")
+            Else
+                myWriter.Write("Authorization Successful!" & vbCrLf & vbCrLf & "You can close this window.")
+            End If
+
+            ' Now save the auth token to get access tokens
+            AuthorizationToken = AuthStreamText.Substring(CodeStart, CodeEnd - CodeStart)
 
             myWriter.Close()
             myReader.Close()
             myStream.Close()
             mySocket.Close()
-            myListner.Stop()
+            myListener.Stop()
 
             Application.DoEvents()
         Catch ex As Exception
@@ -231,16 +251,20 @@ Public Class ESI
         Dim Data As String = ""
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-        WC.Headers(HttpRequestHeader.Authorization) = $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientID}:{SecretKey}"), Base64FormattingOptions.None)}"
+        WC.Headers(HttpRequestHeader.ContentType) = "application/x-www-form-urlencoded"
+        WC.Headers(HttpRequestHeader.Host) = "login.eveonline.com"
         WC.Proxy = GetProxyData()
 
         Dim PostParameters As New NameValueCollection
         If Not Refresh Then
             PostParameters.Add("grant_type", "authorization_code")
             PostParameters.Add("code", Token)
+            PostParameters.Add("client_id", EVEIPHClientID)
+            PostParameters.Add("code_verifier", CodeVerifier) ' PKCE - Send the code verifier for ESI to hash to compare to what we sent earlier
         Else
             PostParameters.Add("grant_type", "refresh_token")
             PostParameters.Add("refresh_token", Token)
+            PostParameters.Add("client_id", EVEIPHClientID)
         End If
 
         Try
@@ -1928,27 +1952,26 @@ Public Class ESI
         Return ESIMaximumConnections
     End Function
 
-    ' Returns the URL from all the data for this registration
-    Public Function GetURL() As String
-        Return ESIAuthorizeURL & "?response_type=code" & "&redirect_uri=http://" & LocalHost & ":" & LocalPort & "&client_id=" & ClientID & "&scope=" & ScopesString
+    Private Function GetCodeVerifier() As String
+        Dim RandomBytes As Byte() = New Byte(32) {}
+        Dim RandomNumber As New RNGCryptoServiceProvider()
+
+        Call RandomNumber.GetBytes(RandomBytes)
+
+        Return GetURLSafeCode(RandomBytes)
+
     End Function
 
-    Public Function GetAuthToken(ByVal StreamText As String) As String
-        Dim AuthToken As String = ""
+    Private Function GetChallengeCode(CodeVerifier As String) As String
+        Dim Hash256 As New SHA256Managed
 
-        ' Process the auth stream now
-        Dim AuthTokenString As String() = StreamText.Split(New Char() {" "c})
+        ' Make sure it can work in web calls
+        Return GetURLSafeCode(Hash256.ComputeHash(Encoding.ASCII.GetBytes(CodeVerifier)))
 
-        For i = 0 To AuthTokenString.Count - 1
-            If AuthTokenString(i).Contains("/?code=") Then
-                ' Strip the header and save the string
-                Dim Start As Integer = InStr(AuthTokenString(i), "=")
-                AuthToken = AuthTokenString(i).Substring(Start)
-                Exit For
-            End If
-        Next
+    End Function
 
-        Return AuthToken
+    Private Function GetURLSafeCode(SentCode As Byte()) As String
+        Return Convert.ToBase64String(SentCode).Replace("+", "-").Replace("/", "_").TrimEnd(CChar("="))
     End Function
 
 #End Region
