@@ -340,6 +340,14 @@ Public Class frmBlueprintManagement
         End If
     End Sub
 
+    Private Sub rbtnReactionBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnReactionBlueprints.CheckedChanged
+        If Not FirstLoad And rbtnReactionBlueprints.Checked Then
+            cmbBPTypeFilterLoaded = False
+            cmbBPTypeFilter.Text = SelectTypeText
+            Call UpdateBlueprintGrid(True)
+        End If
+    End Sub
+
     Private Sub rbtnAllBPTypes_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnAllBPTypes.CheckedChanged
         If Not FirstLoad And rbtnAllBPTypes.Checked Then
             cmbBPTypeFilterLoaded = False

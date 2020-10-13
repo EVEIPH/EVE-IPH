@@ -67,6 +67,7 @@ Partial Class frmBlueprintManagement
         Me.cmbBPTypeFilter = New System.Windows.Forms.ComboBox()
         Me.lblBPCombo = New System.Windows.Forms.Label()
         Me.gbBlueprintType = New System.Windows.Forms.GroupBox()
+        Me.rbtnReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnStructureBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnCelestialsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
@@ -112,7 +113,6 @@ Partial Class frmBlueprintManagement
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
         Me.lstBPs = New EVE_Isk_per_Hour.MyListView()
-        Me.rbtnReactionBlueprints = New System.Windows.Forms.RadioButton()
         Me.gbBPFilter.SuspendLayout()
         Me.gbBlueprintTech.SuspendLayout()
         Me.gbBackup.SuspendLayout()
@@ -596,6 +596,17 @@ Partial Class frmBlueprintManagement
         Me.gbBlueprintType.TabStop = False
         Me.gbBlueprintType.Text = "Item Type:"
         '
+        'rbtnReactionBlueprints
+        '
+        Me.rbtnReactionBlueprints.AutoSize = True
+        Me.rbtnReactionBlueprints.Location = New System.Drawing.Point(116, 70)
+        Me.rbtnReactionBlueprints.Name = "rbtnReactionBlueprints"
+        Me.rbtnReactionBlueprints.Size = New System.Drawing.Size(73, 17)
+        Me.rbtnReactionBlueprints.TabIndex = 67
+        Me.rbtnReactionBlueprints.TabStop = True
+        Me.rbtnReactionBlueprints.Text = "Reactions"
+        Me.rbtnReactionBlueprints.UseVisualStyleBackColor = True
+        '
         'rbtnStructureBlueprints
         '
         Me.rbtnStructureBlueprints.AutoSize = True
@@ -1066,17 +1077,6 @@ Partial Class frmBlueprintManagement
         Me.lstBPs.TabStop = False
         Me.lstBPs.UseCompatibleStateImageBehavior = False
         Me.lstBPs.View = System.Windows.Forms.View.Details
-        '
-        'rbtnReactionBlueprints
-        '
-        Me.rbtnReactionBlueprints.AutoSize = True
-        Me.rbtnReactionBlueprints.Location = New System.Drawing.Point(116, 70)
-        Me.rbtnReactionBlueprints.Name = "rbtnReactionBlueprints"
-        Me.rbtnReactionBlueprints.Size = New System.Drawing.Size(73, 17)
-        Me.rbtnReactionBlueprints.TabIndex = 67
-        Me.rbtnReactionBlueprints.TabStop = True
-        Me.rbtnReactionBlueprints.Text = "Reactions"
-        Me.rbtnReactionBlueprints.UseVisualStyleBackColor = True
         '
         'frmBlueprintManagement
         '

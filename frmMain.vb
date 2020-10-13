@@ -61,6 +61,9 @@ Public Class frmMain
     Private FirstShowMining As Boolean = True ' If we have clicked on the Mining tab yet to load initial data
     Private FirstShowDatacores As Boolean = True ' If we have clicked on the Datacores tab yet or not (only load initial data on first click)
 
+    ' For fixing double-click / check box on listview item box
+    Private inhibitAutoCheck As Boolean
+
     ' Blueprints Variables
     Private cmbBPsLoaded As Boolean
 
@@ -291,6 +294,18 @@ Public Class frmMain
             Developer = True
         Else
             Developer = False
+        End If
+
+        ' Covert to new ESI registration system to use my registration and PKCE
+        ' If they registered before, show a pop-up and require registration. Then delete the registration file
+        Dim AppRegistrationFileName As String = Path.ChangeExtension(Path.Combine(DynamicFilePath, "", "AppRegistrationInformation"), ".xml")
+        If File.Exists(AppRegistrationFileName) Then
+            Dim f1 As New frmAppRegistrationNotice
+            f1.ShowDialog()
+
+            ' Now delete the registration file
+            File.Delete(AppRegistrationFileName)
+
         End If
 
         ' Set test platform
@@ -2263,8 +2278,8 @@ Public Class frmMain
     Private Sub mnuSelectionAddChar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionAddChar.Click
 
         ' Open up the default select box here
-        Dim f2 = New frmSetCharacterDefault
-        f2.ShowDialog()
+        Dim f1 = New frmAddCharacter
+        f1.ShowDialog()
 
         Call LoadCharacterNamesinMenu()
 
@@ -4456,6 +4471,20 @@ Tabs:
 
     Private Sub lstBPComponentMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseClick
         Call ListClicked(lstBPComponentMats, sender, e)
+    End Sub
+
+    Private Sub lstBPComponentMats_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseDown
+        inhibitAutoCheck = True
+    End Sub
+
+    Private Sub lstBPComponentMats_MouseUp(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseUp
+        inhibitAutoCheck = False
+    End Sub
+
+    Private Sub lstBPComponentMats_ItemCheck(sender As Object, e As ItemCheckEventArgs) Handles lstBPComponentMats.ItemCheck
+        If inhibitAutoCheck Then
+            e.NewValue = e.CurrentValue
+        End If
     End Sub
 
     Private Sub lstBPComponentMats_ItemChecked(sender As Object, e As ItemCheckedEventArgs) Handles lstBPComponentMats.ItemChecked
@@ -17392,7 +17421,7 @@ ExitCalc:
         readerRecordCount = CInt(CMDCount.ExecuteScalar())
 
         ' Read the settings and stats to make the query
-        SQL = "SELECT FACTION, CORPORATION_ID, CORPORATION_NAME, AGENT_NAME, LEVEL, QUALITY, RESEARCH_TYPE_ID, "
+        SQL = "SELECT FACTION, CORPORATION_ID, CORPORATION_NAME, AGENT_NAME, LEVEL, 'QUALITY', RESEARCH_TYPE_ID, "
         SQL = SQL & "RESEARCH_TYPE, REGION_ID, REGION_NAME, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_NAME, SECURITY, STATION "
         SQL = SQL & "FROM RESEARCH_AGENTS, FACTIONS, REGIONS "
         SQL = SQL & "WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "

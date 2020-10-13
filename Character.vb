@@ -352,6 +352,7 @@ Public Class Character
         Dim rsToken As SQLiteDataReader
 
         SQL = "SELECT ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES FROM ESI_CHARACTER_DATA "
+        SQL &= "WHERE CHARACTER_ID = " & CStr(ID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsToken = DBCommand.ExecuteReader
 

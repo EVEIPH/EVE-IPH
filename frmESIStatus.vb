@@ -21,7 +21,6 @@ Public Class frmESIStatus
             Exit Sub
         End If
 
-
         SQL = "SELECT scope, purpose, status FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route "
         ScopesList = SelectedCharacter.CharacterTokenData.Scopes.Split(CChar(" "))
 
@@ -34,7 +33,7 @@ Public Class frmESIStatus
         ScopesSQL = ScopesSQL.Substring(0, Len(ScopesSQL) - 3)
 
         SQL &= "AND scope IN ('" & ScopesSQL & "') "
-        SQL &= "ORDER BY SCOPE"
+        SQL &= "ORDER BY tag1"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsStatus = DBCommand.ExecuteReader

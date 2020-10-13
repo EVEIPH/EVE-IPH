@@ -65,6 +65,9 @@ Public Module Public_Variables
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
 
+    ' Only request ESI scopes I need - if I add a scope, the user will need to re-authorize for the new scopes.
+    Public ESIScopesString As String = ""
+
     ' Just because
     Public Const TheForgeTypeID As Long = 10000002
 

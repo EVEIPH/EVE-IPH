@@ -194,7 +194,7 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub btnAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAddCharacter.Click
-        Dim fLoadAPI As New frmSetCharacterDefault
+        Dim fLoadAPI As New frmAddCharacter
         fLoadAPI.ShowDialog()
 
         lstAccounts.Items.Clear()

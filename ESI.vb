@@ -24,8 +24,6 @@ Public Class ESI
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
     Private Const LocalPort As String = "12500" ' Always use this port
     Private Const EVEIPHClientID As String = "2737513b64854fa0a309e125419f8eff" ' IPH Client ID in EVE Developers
-    ' Only request scopes I need - if I add a scope, the user will need to re-authorize for the new scopes.
-    Private Const ScopesString As String = "esi-universe.read_structures.v1 esi-corporations.read_corporation_membership.v1 esi-assets.read_assets.v1 esi-markets.structure_markets.v1 esi-characters.read_standings.v1 esi-characters.read_agents_research.v1 esi-industry.read_character_jobs.v1 esi-characters.read_blueprints.v1 esi-assets.read_corporation_assets.v1 esi-corporations.read_blueprints.v1 esi-industry.read_corporation_jobs.v1"
 
     Private AuthorizationToken As String ' Token returned by ESI on initial authorization - good for 5 minutes
     Private CodeVerifier As String ' For PKCE - generated code we send to ESI for access codes after sending the hashed version of this for authorization code
@@ -171,7 +169,7 @@ Public Class ESI
             URL &= "?client_id=" & EVEIPHClientID
             URL &= "&redirect_uri=" & WebUtility.UrlEncode("http://" & LocalHost & ":" & LocalPort)
             URL &= "&response_type=code"
-            URL &= "&scope=" & WebUtility.UrlEncode(ScopesString)
+            URL &= "&scope=" & WebUtility.UrlEncode(ESIScopesString)
             URL &= "&state=" & InitState
             URL &= "&code_challenge=" & ChallengeCode
             URL &= "&code_challenge_method=S256"
@@ -1817,7 +1815,7 @@ Public Class ESI
                 TempLabel.Text = "Downloading Public Structure Data..."
                 Application.DoEvents()
 
-                ' Get all the public structure IDs from ESI
+                ' Get all the public structure IDs from ESI with a market module
                 PublicData = GetPublicData(ESIURL & "universe/structures/" & TranquilityDataSource & "&filter=market", CacheDate)
 
                 If Not IsNothing(PublicData) Then
