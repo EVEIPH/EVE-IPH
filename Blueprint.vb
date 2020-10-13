@@ -388,11 +388,6 @@ Public Class Blueprint
     Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor,
                 ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility, ByVal InventionItemTypeID As Long) As Integer
 
-        ' Don't invent these
-        If BlueprintName.Contains("Edition") Or BlueprintName.Contains("Polarized") Or BlueprintName.Contains("'Augmented'") Then
-            Return 0
-        End If
-
         ' 3406 laboratory operation and 24624 is adv laboratory operation
         NumberofLaboratoryLines = NumLaboratoryLines
 
@@ -555,7 +550,7 @@ Public Class Blueprint
 
                     BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
                                                 CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility,
-                                                CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems)
+                                                CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, False, BBList)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -912,13 +907,13 @@ Public Class Blueprint
                 End Select
 
                 If Not UsesReactions Then
-                    SQLAdd = " AND BLUEPRINT_GROUP NOT LIKE '%Reaction Formulas'"
+                    SQLAdd = " AND BLUEPRINT_GROUP_ID NOT IN (1888,1889,1890)"
                 Else
                     SQLAdd = ""
                 End If
 
                 ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
-                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
+                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
 
@@ -1159,10 +1154,9 @@ Public Class Blueprint
                         End If
                     End If
 
-                Else ' Just raw material or T2 drone for augmented drones, and Polarized weapons, insert into list
+                Else ' Just raw material 
 
-                    If readerME.HasRows And ((BlueprintName.Contains("'Augmented'") Or CurrentMaterial.GetMaterialGroup = "Drone") _
-                        Or Not BlueprintName.Contains("Edition") Or Not BlueprintName.Contains("Polarized")) Then
+                    If readerME.HasRows Then
                         ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
                         ' For example, see modulate core strip miner and polarized heavy pulse weapons.
                         Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
@@ -2227,9 +2221,9 @@ Public Class Blueprint
 
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
-        SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
+        SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS_FACT "
         SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
-        SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY = 'Skill'"
+        SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader
@@ -2252,9 +2246,9 @@ Public Class Blueprint
 
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
-        SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
+        SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS_FACT "
         SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
-        SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY = 'Skill'"
+        SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader

@@ -173,10 +173,22 @@
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
     <Compile Include="EVEMarketer.vb" />
+    <Compile Include="frmAddCharacter.Designer.vb">
+      <DependentUpon>frmAddCharacter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAddCharacter.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmAddStructureIDs.Designer.vb">
       <DependentUpon>frmAddStructureIDs.vb</DependentUpon>
     </Compile>
     <Compile Include="frmAddStructureIDs.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAppRegistrationNotice.Designer.vb">
+      <DependentUpon>frmAppRegistrationNotice.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAppRegistrationNotice.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmBonusPopout.Designer.vb">
@@ -203,18 +215,6 @@
     <Compile Include="frmESIStatus.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmLoadESIAuthorization.Designer.vb">
-      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmLoadESIAuthorization.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmManualESI.Designer.vb">
-      <DependentUpon>frmManualESI.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmManualESI.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmMaterialListViewer.Designer.vb">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
     </Compile>
@@ -227,10 +227,10 @@
     <Compile Include="frmMETE.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmsupportSplash.Designer.vb">
-      <DependentUpon>frmsupportSplash.vb</DependentUpon>
+    <Compile Include="frmSupportSplash.Designer.vb">
+      <DependentUpon>frmSupportSplash.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmsupportSplash.vb">
+    <Compile Include="frmSupportSplash.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmUpwellStructureFitting.designer.vb">
@@ -506,8 +506,14 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="frmAddCharacter.resx">
+      <DependentUpon>frmAddCharacter.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmAddStructureIDs.resx">
       <DependentUpon>frmAddStructureIDs.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAppRegistrationNotice.resx">
+      <DependentUpon>frmAppRegistrationNotice.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmBlueprintList.resx">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
@@ -524,20 +530,14 @@
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmLoadESIAuthorization.resx">
-      <DependentUpon>frmLoadESIAuthorization.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmManualESI.resx">
-      <DependentUpon>frmManualESI.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmMaterialListViewer.resx">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMETE.resx">
       <DependentUpon>frmMETE.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmsupportSplash.resx">
-      <DependentUpon>frmsupportSplash.vb</DependentUpon>
+    <EmbeddedResource Include="frmSupportSplash.resx">
+      <DependentUpon>frmSupportSplash.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmUpwellStructureFitting.resx">
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>

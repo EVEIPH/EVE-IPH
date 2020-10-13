@@ -61,6 +61,9 @@ Public Class frmMain
     Private FirstShowMining As Boolean = True ' If we have clicked on the Mining tab yet to load initial data
     Private FirstShowDatacores As Boolean = True ' If we have clicked on the Datacores tab yet or not (only load initial data on first click)
 
+    ' For fixing double-click / check box on listview item box
+    Private inhibitAutoCheck As Boolean
+
     ' Blueprints Variables
     Private cmbBPsLoaded As Boolean
 
@@ -293,6 +296,18 @@ Public Class frmMain
             Developer = False
         End If
 
+        ' Covert to new ESI registration system to use my registration and PKCE
+        ' If they registered before, show a pop-up and require registration. Then delete the registration file
+        Dim AppRegistrationFileName As String = Path.ChangeExtension(Path.Combine(DynamicFilePath, "", "AppRegistrationInformation"), ".xml")
+        If File.Exists(AppRegistrationFileName) Then
+            Dim f1 As New frmAppRegistrationNotice
+            f1.ShowDialog()
+
+            ' Now delete the registration file
+            File.Delete(AppRegistrationFileName)
+
+        End If
+
         ' Set test platform
         If File.Exists("Test.txt") Then
             TestingVersion = True
@@ -398,13 +413,6 @@ Public Class frmMain
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
-
-        ' Only allow selecting a character if they registered the program
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-        Else
-            mnuSelectionAddChar.Enabled = False
-        End If
 
         ' Display to the user any issues with ESI endpoints
         Call SetProgress("Checking Status of ESI...")
@@ -2270,15 +2278,8 @@ Public Class frmMain
     Private Sub mnuSelectionAddChar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionAddChar.Click
 
         ' Open up the default select box here
-        Dim f2 = New frmSetCharacterDefault
-        f2.ShowDialog()
-
-        ' Only allow selecting a default if they are registered
-        If AppRegistered() Then
-            mnuSelectDefaultChar.Enabled = True
-        Else
-            mnuSelectDefaultChar.Enabled = False
-        End If
+        Dim f1 = New frmAddCharacter
+        f1.ShowDialog()
 
         Call LoadCharacterNamesinMenu()
 
@@ -2292,38 +2293,10 @@ Public Class frmMain
 
         Call f1.ShowDialog()
 
-        ' Only allow selecting a default if they registered the program
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-            mnuSelectDefaultChar.Enabled = True
-        Else
-            mnuSelectionAddChar.Enabled = False
-            mnuSelectDefaultChar.Enabled = False
-            ' Reload the list
-            Call LoadCharacterNamesinMenu()
-        End If
-
         ' Default character set, now set the panel if it changed
         If SelectedCharacter.Name <> mnuCharacter.Text.Substring(mnuCharacter.Text.IndexOf(":") + 2) Then
             ' If we returned, we got a default character set
             Call ResetTabs()
-            Call LoadCharacterNamesinMenu()
-        End If
-
-    End Sub
-
-    Private Sub mnuRegisterProgram_Click(sender As Object, e As EventArgs) Handles mnuRegisterProgram.Click
-        Dim f1 As New frmLoadESIAuthorization
-        f1.ShowDialog()
-        f1.Close()
-
-        Dim ApplicationSettings As AppRegistrationInformationSettings = AllSettings.LoadAppRegistrationInformationSettings
-
-        ' If they registered the program, let them add characters now
-        If AppRegistered() Then
-            mnuSelectionAddChar.Enabled = True
-            Dim f2 As New frmSetCharacterDefault
-            f2.ShowDialog()
             Call LoadCharacterNamesinMenu()
         End If
 
@@ -4498,6 +4471,20 @@ Tabs:
 
     Private Sub lstBPComponentMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseClick
         Call ListClicked(lstBPComponentMats, sender, e)
+    End Sub
+
+    Private Sub lstBPComponentMats_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseDown
+        inhibitAutoCheck = True
+    End Sub
+
+    Private Sub lstBPComponentMats_MouseUp(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseUp
+        inhibitAutoCheck = False
+    End Sub
+
+    Private Sub lstBPComponentMats_ItemCheck(sender As Object, e As ItemCheckEventArgs) Handles lstBPComponentMats.ItemCheck
+        If inhibitAutoCheck Then
+            e.NewValue = e.CurrentValue
+        End If
     End Sub
 
     Private Sub lstBPComponentMats_ItemChecked(sender As Object, e As ItemCheckedEventArgs) Handles lstBPComponentMats.ItemChecked
@@ -17434,7 +17421,7 @@ ExitCalc:
         readerRecordCount = CInt(CMDCount.ExecuteScalar())
 
         ' Read the settings and stats to make the query
-        SQL = "SELECT FACTION, CORPORATION_ID, CORPORATION_NAME, AGENT_NAME, LEVEL, QUALITY, RESEARCH_TYPE_ID, "
+        SQL = "SELECT FACTION, CORPORATION_ID, CORPORATION_NAME, AGENT_NAME, LEVEL, 'QUALITY', RESEARCH_TYPE_ID, "
         SQL = SQL & "RESEARCH_TYPE, REGION_ID, REGION_NAME, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_NAME, SECURITY, STATION "
         SQL = SQL & "FROM RESEARCH_AGENTS, FACTIONS, REGIONS "
         SQL = SQL & "WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "

@@ -32,13 +32,13 @@ Partial Class frmManageAccounts
         Me.colAccessToken = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.colRefreshToken = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.colAccessTokenExpireDate = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.colTokenType = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.btnClose = New System.Windows.Forms.Button()
         Me.btnDeleteCharacter = New System.Windows.Forms.Button()
         Me.btnAddCharacter = New System.Windows.Forms.Button()
         Me.btnSelectDefaultChar = New System.Windows.Forms.Button()
         Me.lstScopes = New System.Windows.Forms.ListView()
         Me.colScopes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.btnRegisterProgram = New System.Windows.Forms.Button()
         Me.gbAccountData = New System.Windows.Forms.GroupBox()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.btnCopyAll = New System.Windows.Forms.Button()
@@ -48,7 +48,6 @@ Partial Class frmManageAccounts
         Me.txtAccessTokenExpDate = New System.Windows.Forms.TextBox()
         Me.txtAccessToken = New System.Windows.Forms.TextBox()
         Me.btnRefreshToken = New System.Windows.Forms.Button()
-        Me.colTokenType = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gbAccountData.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -102,9 +101,13 @@ Partial Class frmManageAccounts
         '
         Me.colAccessTokenExpireDate.Width = 0
         '
+        'colTokenType
+        '
+        Me.colTokenType.Width = 0
+        '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(826, 391)
+        Me.btnClose.Location = New System.Drawing.Point(762, 391)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(122, 30)
         Me.btnClose.TabIndex = 4
@@ -114,7 +117,7 @@ Partial Class frmManageAccounts
         'btnDeleteCharacter
         '
         Me.btnDeleteCharacter.Enabled = False
-        Me.btnDeleteCharacter.Location = New System.Drawing.Point(314, 391)
+        Me.btnDeleteCharacter.Location = New System.Drawing.Point(378, 391)
         Me.btnDeleteCharacter.Name = "btnDeleteCharacter"
         Me.btnDeleteCharacter.Size = New System.Drawing.Size(122, 30)
         Me.btnDeleteCharacter.TabIndex = 6
@@ -123,7 +126,7 @@ Partial Class frmManageAccounts
         '
         'btnAddCharacter
         '
-        Me.btnAddCharacter.Location = New System.Drawing.Point(186, 391)
+        Me.btnAddCharacter.Location = New System.Drawing.Point(250, 391)
         Me.btnAddCharacter.Name = "btnAddCharacter"
         Me.btnAddCharacter.Size = New System.Drawing.Size(122, 30)
         Me.btnAddCharacter.TabIndex = 7
@@ -133,7 +136,7 @@ Partial Class frmManageAccounts
         'btnSelectDefaultChar
         '
         Me.btnSelectDefaultChar.Enabled = False
-        Me.btnSelectDefaultChar.Location = New System.Drawing.Point(442, 391)
+        Me.btnSelectDefaultChar.Location = New System.Drawing.Point(506, 391)
         Me.btnSelectDefaultChar.Name = "btnSelectDefaultChar"
         Me.btnSelectDefaultChar.Size = New System.Drawing.Size(122, 30)
         Me.btnSelectDefaultChar.TabIndex = 8
@@ -158,15 +161,6 @@ Partial Class frmManageAccounts
         '
         Me.colScopes.Text = "Scopes"
         Me.colScopes.Width = 345
-        '
-        'btnRegisterProgram
-        '
-        Me.btnRegisterProgram.Location = New System.Drawing.Point(570, 391)
-        Me.btnRegisterProgram.Name = "btnRegisterProgram"
-        Me.btnRegisterProgram.Size = New System.Drawing.Size(122, 30)
-        Me.btnRegisterProgram.TabIndex = 10
-        Me.btnRegisterProgram.Text = "Register Program"
-        Me.btnRegisterProgram.UseVisualStyleBackColor = True
         '
         'gbAccountData
         '
@@ -245,16 +239,12 @@ Partial Class frmManageAccounts
         '
         'btnRefreshToken
         '
-        Me.btnRefreshToken.Location = New System.Drawing.Point(698, 391)
+        Me.btnRefreshToken.Location = New System.Drawing.Point(634, 391)
         Me.btnRefreshToken.Name = "btnRefreshToken"
         Me.btnRefreshToken.Size = New System.Drawing.Size(122, 30)
         Me.btnRefreshToken.TabIndex = 12
         Me.btnRefreshToken.Text = "Refresh Token Data"
         Me.btnRefreshToken.UseVisualStyleBackColor = True
-        '
-        'colTokenType
-        '
-        Me.colTokenType.Width = 0
         '
         'frmManageAccounts
         '
@@ -264,7 +254,6 @@ Partial Class frmManageAccounts
         Me.ClientSize = New System.Drawing.Size(1134, 430)
         Me.Controls.Add(Me.btnRefreshToken)
         Me.Controls.Add(Me.gbAccountData)
-        Me.Controls.Add(Me.btnRegisterProgram)
         Me.Controls.Add(Me.lstScopes)
         Me.Controls.Add(Me.btnSelectDefaultChar)
         Me.Controls.Add(Me.btnAddCharacter)
@@ -295,7 +284,6 @@ Partial Class frmManageAccounts
     Friend WithEvents colIsDefault As ColumnHeader
     Friend WithEvents colAccountScopes As ColumnHeader
     Friend WithEvents colCharacterID As ColumnHeader
-    Friend WithEvents btnRegisterProgram As Button
     Friend WithEvents gbAccountData As GroupBox
     Friend WithEvents txtRefreshToken As TextBox
     Friend WithEvents txtAccessTokenExpDate As TextBox

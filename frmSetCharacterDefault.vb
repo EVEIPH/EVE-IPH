@@ -11,9 +11,6 @@ Public Class frmSetCharacterDefault
 
         CancelESISSOLogin = False
 
-        btnReloadRegistration.Visible = False
-        btnManualLoad.Visible = False
-
         ' Add any initialization after the InitializeComponent() call.
         Call UpdateCharacterList()
 
@@ -79,39 +76,6 @@ Public Class frmSetCharacterDefault
         Me.Activate()
     End Sub
 
-    Private Sub btnEVESSOLogin_Click(sender As Object, e As EventArgs) Handles btnEVESSOLogin.Click
-        Dim ESIConnection As New ESI
-
-        btnEVESSOLogin.Enabled = False ' Disable until we return
-
-        ' Set the new character data first. This will load the data in the table or update it if they choose a character already loaded
-        If ESIConnection.SetCharacterData() Then
-            ' Refresh the token data to get new scopes if they added
-            Me.Cursor = Cursors.WaitCursor
-            If SelectedCharacter.ID <> DummyCharacterID And SelectedCharacter.ID > 0 Then
-                Call SelectedCharacter.RefreshTokenData()
-            End If
-            Me.Cursor = Cursors.Default
-            Application.DoEvents()
-            ' Now update the character list
-            Call UpdateCharacterList()
-        Else
-            ' Didn't load, so show the re-enter info button
-            If AppRegistered() Then
-                If Not CancelESISSOLogin Then
-                    MsgBox("The Character failed to load. Please check application registration information.")
-                End If
-            Else
-                MsgBox("You have not registered IPH. Please register IPH through the ESI developers system and try again.")
-            End If
-            btnReloadRegistration.Visible = True
-            btnManualLoad.Visible = True
-        End If
-
-        btnEVESSOLogin.Enabled = True ' Enable for another try if they want
-
-    End Sub
-
     ' Update the list with the current loaded characters in the table
     Private Sub UpdateCharacterList()
         Dim readerCharacters As SQLiteDataReader
@@ -158,23 +122,6 @@ Public Class frmSetCharacterDefault
         readerCharacters.Close()
         readerCharacters = Nothing
         DBCommand = Nothing
-
-    End Sub
-
-    Private Sub btnReloadRegistration_Click(sender As Object, e As EventArgs) Handles btnReloadRegistration.Click
-        Dim f1 As New frmLoadESIAuthorization
-        f1.ShowDialog()
-        f1.Close()
-    End Sub
-
-    Private Sub btnManualLoad_Click(sender As Object, e As EventArgs) Handles btnManualLoad.Click
-        ' Show the popup with the URL we are passing to ESI
-        Dim f1 As New frmManualESI
-
-        f1.ShowDialog()
-
-        ' If they return, update the character list anyway
-        Call UpdateCharacterList()
 
     End Sub
 

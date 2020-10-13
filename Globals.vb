@@ -65,6 +65,9 @@ Public Module Public_Variables
     Public Const XMLLatestVersionFileName As String = "LatestVersionIPH.xml"
     Public Const XMLLatestVersionTest As String = "LatestVersionIPH Test.xml"
 
+    ' Only request ESI scopes I need - if I add a scope, the user will need to re-authorize for the new scopes.
+    Public ESIScopesString As String = ""
+
     ' Just because
     Public Const TheForgeTypeID As Long = 10000002
 
@@ -430,9 +433,9 @@ Public Module Public_Variables
         If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
 
             ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA", EVEDB.DBREf)
+            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBREf)
 
-            If CInt(CMDCount.ExecuteScalar()) = 0 Or Not AppRegistered() Then
+            If CInt(CMDCount.ExecuteScalar()) = 0 Then
                 ' No characters loaded yet so load dummy for all
                 Call SelectedCharacter.LoadDummyCharacter(True)
             Else
@@ -466,18 +469,6 @@ Public Module Public_Variables
         End If
 
     End Sub
-
-    ' Returns boolean if the application has been registered (or the user saved the settings file at least)
-    Public Function AppRegistered() As Boolean
-        Dim ESICheck As New ESI()
-
-        If ESICheck.GetClientID = DummyClient Then
-            Return False
-        Else
-            Return True
-        End If
-
-    End Function
 
 #End Region
 

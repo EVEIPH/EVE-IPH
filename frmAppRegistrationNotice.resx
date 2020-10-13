@@ -118,20 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Label1.Text" xml:space="preserve">
-    <value>You must log in to EVE IPH through EVE Secure Sign On. 
-
-First, you must register EVE IPH as an application. 
-Click Register Application to begin the process or the instructions link on how to get started. 
-
-After you have registered the application, enter the
-details on the screen and Save Data. 
-
-If you don't want to use the EVE API, select Skip Entry to use a Dummy character.
-
-Note: All data saved here is saved locally on your 
-computer in your EVE IPH installation directory as
-"AppRegistrationInformation.xml".
-</value>
+    <value>EVE IPH has switched to using a single application registration, which no longer requires users create individual applications through the EVE Developers site here: https://developers.eveonline.com/applications. However, because of this change you will need to re-enter your characters through the new registration system by going to the File Menu, and selecting Add Characters.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
