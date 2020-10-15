@@ -314,9 +314,21 @@ Public Class ManufacturingFacility
                 Call lblFacilityFWUpgrade.SendToBack()
 
                 ' Set initial settings to load 
-                SelectedBPCategoryID = ItemIDs.ShipCategoryID
-                SelectedBPGroupID = ItemIDs.FrigateGroupID
-                SelectedBPTech = BPTechLevel.T1
+                If SelectedBPID = 0 Then
+                    SelectedBPCategoryID = ItemIDs.ShipCategoryID
+                    SelectedBPGroupID = ItemIDs.FrigateGroupID
+                    SelectedBPTech = BPTechLevel.T1
+                Else
+                    ' Set based on BP
+                    Dim rsBP As SQLiteDataReader
+                    DBCommand = New SQLiteCommand(String.Format("SELECT ITEM_GROUP_ID, ITEM_CATEGORY_ID, TECH_LEVEL FROM ALL_BLUEPRINTS_FACT WHERE BLUEPRINT_ID = {0}", SelectedBPID), EVEDB.DBREf)
+                    rsBP = DBCommand.ExecuteReader
+                    rsBP.Read()
+                    SelectedBPGroupID = rsBP.GetInt32(0)
+                    SelectedBPCategoryID = rsBP.GetInt32(1)
+                    SelectedBPTech = rsBP.GetInt32(2)
+                    rsBP.Close()
+                End If
 
                 ' Load all the facilities for full controls tab 
                 Call InitializeFacilities(FacilityView.FullControls)
@@ -1265,7 +1277,7 @@ Public Class ManufacturingFacility
 
             Case StationFacility
 
-                SQL = "SELECT DISTINCT INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_NAME AS SSN, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX AS CI "
+                SQL = "SELECT DISTINCT STATION_FACILITIES.SOLAR_SYSTEM_NAME AS SSN, INDUSTRY_SYSTEMS_COST_INDICIES.COST_INDEX AS CI "
                 SQL &= "FROM STATION_FACILITIES, INDUSTRY_SYSTEMS_COST_INDICIES "
                 SQL &= "WHERE STATION_FACILITIES.SOLAR_SYSTEM_ID = INDUSTRY_SYSTEMS_COST_INDICIES.SOLAR_SYSTEM_ID "
                 SQL &= "AND STATION_FACILITIES.ACTIVITY_ID = INDUSTRY_SYSTEMS_COST_INDICIES.ACTIVITY_ID "

@@ -7246,7 +7246,6 @@ ExitForm:
         ' Check the data
         Dim Text As String = txtBPUpdateCostIndex.Text.Replace("%", "")
         Dim SelectedFacility As IndustryFacility = BPTabFacility.GetSelectedFacility
-        Dim SelectedActivity As String = BPTabFacility.GetSelectedFacility.Activity
 
         If Text <> "" Then
             If Not IsNumeric(Text) Then
@@ -7261,27 +7260,15 @@ ExitForm:
 
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
-        Dim SolarSystemName As String = Trim(FormatDBString(SelectedFacility.SolarSystemName.Substring(0, InStr(SelectedFacility.SolarSystemName, "(") - 1)))
         Dim CostIndex As String = CStr(Val(txtBPUpdateCostIndex.Text.Replace("%", "")) / 100)
 
         ' Look up Solar System ID
-        Dim SSID As String = CStr(GetSolarSystemID(SolarSystemName))
-        Dim TempActivityID As String = ""
-
-        Select Case SelectedActivity
-            Case ManufacturingFacility.ActivityManufacturing ', ManufacturingFacility.ActivityComponentManufacturing, ManufacturingFacility.ActivityCapComponentManufacturing
-                TempActivityID = "1"
-            Case ManufacturingFacility.ActivityCopying
-                TempActivityID = "5"
-            Case ManufacturingFacility.ActivityInvention
-                TempActivityID = "8"
-            Case Else
-                TempActivityID = "1"
-        End Select
+        Dim SSName As String = Trim(FormatDBString(SelectedFacility.SolarSystemName.Substring(0, InStr(SelectedFacility.SolarSystemName, "(") - 1)))
+        Dim SSID As String = CStr(GetSolarSystemID(SSName))
+        Dim SelectedActivityID As String = CStr(GetActivityID(SelectedFacility.Activity))
 
         SQL = "SELECT * FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
-
-        SQL = SQL & "AND ACTIVITY_NAME = '" & SelectedFacility.Activity & "'"
+        SQL = SQL & "AND ACTIVITY_ID = " & SelectedActivityID
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
         rsCheck.Read()
@@ -7290,12 +7277,11 @@ ExitForm:
         If rsCheck.HasRows Then
             ' Update
             SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES SET COST_INDEX = " & CostIndex
-            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_NAME = '" & SelectedActivity & "'"
+            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & SelectedActivityID
         Else
             ' Insert 
-            SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SolarSystemName & "'," & TempActivityID & ",'"
-            SQL = SQL & SelectedActivity & "'," & CostIndex & ")"
-
+            SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SSName & "',"
+            SQL &= SelectedActivityID & ",'" & SelectedFacility.Activity & "'," & CostIndex & ")"
         End If
 
         rsCheck.Close()
