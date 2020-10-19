@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "June_23_2020 Release"
+    Public Const SDEVersion As String = "18.10 10-16.1 Release"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -1021,6 +1021,20 @@ InvalidDate:
         Else
             Return ItemName
         End If
+    End Function
+
+    Public Function GetBPUserID(SentUserID As Long) As Long
+        Dim BPUserID As Long
+
+        If UserApplicationSettings.LoadBPsbyChar Then
+            ' Use the ID sent
+            BPUserID = SentUserID
+        Else
+            BPUserID = CommonLoadBPsID
+        End If
+
+        Return BPUserID
+
     End Function
 
     ' Imports sent blueprint to shopping list
@@ -2224,6 +2238,54 @@ InvalidDate:
         Dim ReturnString As String
 
         SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(TypeID)
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerIT = DBCommand.ExecuteReader()
+
+        If readerIT.Read Then
+            ReturnString = readerIT.GetString(0)
+        Else
+            ReturnString = ""
+        End If
+
+        readerIT.Close()
+        readerIT = Nothing
+
+        Return ReturnString
+
+    End Function
+
+    ' Gets the groupName from inventory groups for the groupID sent
+    Public Function GetGroupName(ByVal groupID As Integer) As String
+        Dim SQL As String
+        Dim readerIT As SQLiteDataReader
+        Dim ReturnString As String
+
+        SQL = "SELECT groupName FROM INVENTORY_CATEGORIES WHERE groupID = " & CStr(groupID)
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerIT = DBCommand.ExecuteReader()
+
+        If readerIT.Read Then
+            ReturnString = readerIT.GetString(0)
+        Else
+            ReturnString = ""
+        End If
+
+        readerIT.Close()
+        readerIT = Nothing
+
+        Return ReturnString
+
+    End Function
+
+    ' Gets the categoryName from inventory categories for the categoryID sent
+    Public Function GetCategoryName(ByVal categoryID As Integer) As String
+        Dim SQL As String
+        Dim readerIT As SQLiteDataReader
+        Dim ReturnString As String
+
+        SQL = "SELECT categoryName FROM INVENTORY_CATEGORIES WHERE categoryID = " & CStr(categoryID)
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerIT = DBCommand.ExecuteReader()

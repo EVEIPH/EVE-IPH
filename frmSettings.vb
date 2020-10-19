@@ -1,4 +1,5 @@
-﻿
+﻿Imports System.Data.SQLite
+
 Public Class frmSettings
 
     Private SSLoaded As Boolean
@@ -616,6 +617,44 @@ Public Class frmSettings
                 .LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
                 .LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
                 .SaveFacilitiesbyChar = CBool(chkSaveFacilitiesbyChar.Checked)
+
+                If UserApplicationSettings.LoadBPsbyChar <> CBool(chkLoadBPsbyChar.Checked) Then
+                    Dim Response As MsgBoxResult
+                    Response = MsgBox("This will reset all Blueprint Data for the program." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+                    If Response = vbYes Then
+                        ' Delete all bps
+                        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS")
+                        ' Also reset all BP cache dates incase they just updated the character or loaded it
+                        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET BLUEPRINTS_CACHE_DATE = NULL")
+
+                        ' Set the current setting to what they want so the BP's load per the setting
+                        UserApplicationSettings.LoadBPsbyChar = CBool(chkLoadBPsbyChar.Checked)
+
+                        ' Need to reload the blueprints for all characters
+                        Dim rsChar As SQLiteDataReader
+                        DBCommand = New SQLiteCommand("SELECT CHARACTER_ID, ACCESS_TOKEN, TOKEN_TYPE, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, SCOPES FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBREf)
+                        rsChar = DBCommand.ExecuteReader
+                        While rsChar.Read
+                            Dim TempToken As New SavedTokenData
+                            With TempToken
+                                .CharacterID = rsChar.GetInt32(0)
+                                .AccessToken = rsChar.GetString(1)
+                                .TokenType = rsChar.GetString(2)
+                                .TokenExpiration = CDate(rsChar.GetString(3))
+                                .RefreshToken = rsChar.GetString(4)
+                                .Scopes = rsChar.GetString(5)
+                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, ScanType.Personal, True)
+                            End With
+                        End While
+                        rsChar.Close()
+                    Else
+                        ' Switch back
+                        chkLoadBPsbyChar.Checked = .LoadBPsbyChar
+                    End If
+                End If
+
+                ' Save change
                 .LoadBPsbyChar = CBool(chkLoadBPsbyChar.Checked)
 
                 ' Standings

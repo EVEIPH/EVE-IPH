@@ -648,16 +648,10 @@ Public Class frmBlueprintManagement
             ' Set the correct ID
             BPUserID = SelectedCharacter.CharacterCorporation.CorporationID
         Else
-            ' Set the correct ID
-            If UserApplicationSettings.LoadBPsbyChar Then
-                ' Use the ID sent
-                BPUserID = SelectedCharacter.ID
-            Else
-                BPUserID = CommonLoadBPsID
-            End If
+            BPUserID = GetBPUserID(SelectedCharacter.ID)
         End If
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", BPUserID) ' need to search for corp ID too
         DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerBP = DBCommand.ExecuteReader
 
@@ -1309,7 +1303,7 @@ Public Class frmBlueprintManagement
             ' Set the correct ID
             BPUserID = SelectedCharacter.ID
 
-        ElseIf rbtnScannedPersonalBPs.Checked Then
+            ElseIf rbtnScannedPersonalBPs.Checked Then
             ' Include all BP's
             If WhereClause = "" Then
                 WhereClause = "WHERE USER_ID = " & SelectedCharacter.ID & " AND SCANNED <> 0 "
@@ -1337,7 +1331,7 @@ Public Class frmBlueprintManagement
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(BPUserID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(BPUserID)) ' need to search for corp ID too
         DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerTypes = DBCommand.ExecuteReader
 
@@ -1427,7 +1421,8 @@ Public Class frmBlueprintManagement
             Me.Refresh()
             Application.DoEvents()
         Else
-            MsgBox("You do not have the scope: " & ESI.ESICorporationBlueprintsScope & " registered for this application. Please update your developer scopes.", vbExclamation, Application.ProductName)
+            MsgBox("You do not have the scope: " & ESI.ESICorporationBlueprintsScope & " registered for this application. Please 
+your developer scopes.", vbExclamation, Application.ProductName)
         End If
 
     End Sub
@@ -1600,7 +1595,7 @@ Public Class frmBlueprintManagement
         SQL = "SELECT * FROM " & USER_BLUEPRINTS & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(API_ID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(API_ID)) ' need to search for corp ID too
         DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerBP = DBCommand.ExecuteReader
 

@@ -266,7 +266,8 @@ Public Class ProgramSettings
     Public DefaultCheckOnlyBuild As Boolean = False
     Public DefaultCheckOnlyInvent As Boolean = False
     Public DefaultCheckIncludeTaxes As Boolean = True
-    Public DefaultIncludeBrokersFees As Boolean = True
+    Public DefaultIncludeBrokersFees As Integer = 0
+    Public DefaultCalcBrokerFeeRate As Double = 0.05
     Public DefaultCheckIncludeUsage As Boolean = True
     Public DefaultCheckRaceAmarr As Boolean = True
     Public DefaultCheckRaceCaldari As Boolean = True
@@ -350,6 +351,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckSovCaldari As Boolean = True
     Public DefaultMiningCheckSovGallente As Boolean = True
     Public DefaultMiningCheckSovMinmatar As Boolean = True
+    Public DefaultMiningCheckSovTriglavian As Boolean = True
     Public DefaultMiningCheckSovWormhole As Boolean = True
     Public DefaultMiningCheckSovMoon As Boolean = True
     Public DefaultMiningCheckSovC1 As Boolean = True
@@ -1969,7 +1971,8 @@ Public Class ProgramSettings
                     .CheckOnlyBuild = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyBuild", DefaultCheckOnlyBuild))
                     .CheckOnlyInvent = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckOnlyInvent", DefaultCheckOnlyInvent))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeTaxes", DefaultCheckIncludeTaxes))
-                    .CheckIncludeBrokersFees = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeBrokersFees", DefaultIncludeBrokersFees))
+                    .CheckIncludeBrokersFees = CInt(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeInteger, ManufacturingSettingsFileName, "CheckIncludeBrokersFees", DefaultIncludeBrokersFees))
+                    .CalcBrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "CalcBrokerFeeRate", DefaultCalcBrokerFeeRate))
                     .CheckIncludeUsage = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeUsage", DefaultCheckIncludeUsage))
                     .CheckRaceAmarr = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceAmarr", DefaultCheckRaceAmarr))
                     .CheckRaceCaldari = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRaceCaldari", DefaultCheckRaceCaldari))
@@ -2082,6 +2085,7 @@ Public Class ProgramSettings
             .CheckOnlyInvent = DefaultCheckOnlyInvent
             .CheckIncludeTaxes = DefaultCheckIncludeTaxes
             .CheckIncludeBrokersFees = DefaultIncludeBrokersFees
+            .CalcBrokerFeeRate = DefaultCalcBrokerFeeRate
             .CheckIncludeUsage = DefaultCheckIncludeUsage
             .CheckRaceAmarr = DefaultCheckRaceAmarr
             .CheckRaceCaldari = DefaultCheckRaceCaldari
@@ -2135,7 +2139,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(86) As Setting
+        Dim ManufacturingSettingsList(87) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2225,6 +2229,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(84) = New Setting("CheckBPTypeReactions", CStr(SentSettings.CheckBPTypeReactions))
             ManufacturingSettingsList(85) = New Setting("CheckBPTypeNPCBPOs", CStr(SentSettings.CheckBPTypeNPCBPOs))
             ManufacturingSettingsList(86) = New Setting("CheckSellExcessItems", CStr(SentSettings.CheckSellExcessItems))
+            ManufacturingSettingsList(87) = New Setting("CalcBrokerFeeRate", CStr(SentSettings.CalcBrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -2557,6 +2562,7 @@ Public Class ProgramSettings
                     .CheckSovCaldari = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovCaldari", DefaultMiningCheckSovCaldari))
                     .CheckSovGallente = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovGallente", DefaultMiningCheckSovGallente))
                     .CheckSovMinmatar = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMinmatar", DefaultMiningCheckSovMinmatar))
+                    .CheckSovTriglavian = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovTriglavian", DefaultMiningCheckSovTriglavian))
                     .CheckIncludeFees = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "BrokerFeeRate", DefaultMiningBrokerFeeRate))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
@@ -2653,6 +2659,7 @@ Public Class ProgramSettings
             .CheckSovCaldari = DefaultMiningCheckSovCaldari
             .CheckSovGallente = DefaultMiningCheckSovGallente
             .CheckSovMinmatar = DefaultMiningCheckSovMinmatar
+            .CheckSovTriglavian = DefaultMiningCheckSovTriglavian
             .CheckSovWormhole = DefaultMiningCheckSovWormhole
             .CheckSovMoon = DefaultMiningCheckSovMoon
             .CheckSovC1 = DefaultMiningCheckSovC1
@@ -2802,6 +2809,7 @@ Public Class ProgramSettings
 
             MiningSettingsList(69) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
             MiningSettingsList(70) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            MiningSettingsList(71) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5133,7 +5141,8 @@ Public Structure ManufacturingTabSettings
     Dim CheckOnlyInvent As Boolean
 
     Dim CheckIncludeTaxes As Boolean
-    Dim CheckIncludeBrokersFees As Boolean
+    Dim CheckIncludeBrokersFees As Integer ' Tri check
+    Dim CalcBrokerFeeRate As Double
     Dim CheckIncludeUsage As Boolean
 
     Dim CheckRaceAmarr As Boolean
@@ -5262,6 +5271,7 @@ Public Structure MiningTabSettings
     Dim CheckSovCaldari As Boolean
     Dim CheckSovGallente As Boolean
     Dim CheckSovMinmatar As Boolean
+    Dim CheckSovTriglavian As Boolean
     Dim CheckSovWormhole As Boolean
     Dim CheckSovMoon As Boolean
     Dim CheckSovC1 As Boolean

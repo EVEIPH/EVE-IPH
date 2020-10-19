@@ -1599,7 +1599,7 @@ Public Class frmMain
 
                     chkBPIgnoreInvention.Checked = False
                 Else
-                    chkBPIgnoreInvention.Checked = True ' mark as t2 bpo
+                    chkBPIgnoreInvention.Checked = True ' mark as t2 bpo or any T2 BPC that wasn't invented
                 End If
 
             End If
@@ -1640,6 +1640,7 @@ Public Class frmMain
             Case BrokerFeeType.SpecialFee
                 chkBPBrokerFees.CheckState = CheckState.Indeterminate
                 txtBPBrokerFeeRate.Text = FormatPercent(BrokerFeeData.FixedRate, 1)
+                txtBPBrokerFeeRate.Visible = True
             Case BrokerFeeType.Fee
                 chkBPBrokerFees.Checked = True
             Case BrokerFeeType.NoFee
@@ -1768,7 +1769,7 @@ Public Class frmMain
             f1.CostSplits.Add(RawCostSplit)
 
             ' Add reaction usage if it's a reaction for main bp
-            If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+            If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                 RawCostSplit.SplitName = "Reaction Facility Usage"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetReactionFacilityUsage
             Else
@@ -1780,7 +1781,7 @@ Public Class frmMain
             f1.CostSplits.Add(RawCostSplit)
 
             If (SelectedBlueprint.HasComponents And chkBPBuildBuy.Checked = True) Or MaterialType = "Raw" Then
-                If ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                     ' Reactions Facility Usage
                     If SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage > 0 Then
                         RawCostSplit.SplitName = "Component Reaction Facilities Usage"
@@ -1794,7 +1795,7 @@ Public Class frmMain
                 End If
 
                 ' The reaction blueprint won't have components or cap components
-                If Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+                If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                     ' Component Facility Usage
                     RawCostSplit.SplitName = "Component Facilities Usage"
                     RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage
@@ -3580,28 +3581,6 @@ Tabs:
     End Sub
 
     Private Sub txtBPInventionLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPInventionLines.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            Else
-                Call ResetRefresh()
-            End If
-        End If
-    End Sub
-
-    Private Sub txtBPRelicLines_DoubleClick(sender As Object, e As System.EventArgs)
-        ' Enter the max lines we have
-        txtBPRelicLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
-    End Sub
-
-    Private Sub txtBPRelicLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs)
-        Call ProcessCutCopyPasteSelect(txtBPRelicLines, e)
-        Call EnterKeyRunBP(e)
-    End Sub
-
-    Private Sub txtBPRelicLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -5876,19 +5855,21 @@ Tabs:
             ' Allow reloading of Decryptors
             InventionDecryptorsLoaded = False
             T3DecryptorsLoaded = False
-            If TempTech = 2 Then
-                cmbBPInventionDecryptor.Text = SelectedDecryptor.Name
-            Else
-                cmbBPT3Decryptor.Text = SelectedDecryptor.Name
+            If Not chkBPIgnoreInvention.Checked Then
+                If TempTech = 2 Then
+                    cmbBPInventionDecryptor.Text = SelectedDecryptor.Name
+                Else
+                    cmbBPT3Decryptor.Text = SelectedDecryptor.Name
+                End If
             End If
             ' Allow loading decryptors on drop down
             LoadingInventionDecryptors = False
-            LoadingT3Decryptors = False
-            ' Allow reloading of relics
-            RelicsLoaded = False
-        End If
+                LoadingT3Decryptors = False
+                ' Allow reloading of relics
+                RelicsLoaded = False
+            End If
 
-        Reaction = IsReaction(ItemGroupID)
+            Reaction = IsReaction(ItemGroupID)
 
         ' If the previous bp was loaded from history and the current bp isn't loaded from history or event, then reset the facilities to default
         If PreviousBPfromHistory And SentFrom <> SentFromLocation.History And Not FromEvent Then
@@ -5902,18 +5883,9 @@ Tabs:
             Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
         End If
 
-        ' See what ID we use for character bps
-        Dim CharID As Long = 0
-        If UserApplicationSettings.LoadBPsbyChar Then
-            ' Use the ID sent
-            CharID = SelectedCharacter.ID
-        Else
-            CharID = CommonLoadBPsID
-        End If
-
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & CharID
+        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
         SQL = SQL & " AND BLUEPRINT_ID = " & BPID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -5975,7 +5947,7 @@ Tabs:
                 End If
                 TempBPType = BPType.NotOwned ' set to not owned for non bp load events
             Else ' Default T2/T3 BPCs are going to be copies
-                If TempBPType = BPType.Original And TempTech = 2 And chkBPIgnoreInvention.Checked = True Then
+                If chkBPIgnoreInvention.Checked = True Then
                     ' T2 BPO
                     txtBPME.Text = CStr(readerBP.GetInt32(0))
                     OwnedBPME = txtBPME.Text
@@ -6336,7 +6308,7 @@ Tabs:
         ' Construct our Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
-                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked, False, BPBuildBuyPref)
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked, BPBuildBuyPref)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -13162,7 +13134,18 @@ CheckTechs:
             FirstManufacturingGridLoad = False ' Change this now so it will load the grids for all on reset
 
             chkCalcTaxes.Checked = .CheckIncludeTaxes
-            chkCalcFees.Checked = .CheckIncludeBrokersFees
+            Select Case .CheckIncludeBrokersFees
+                Case 2
+                    chkCalcFees.CheckState = CheckState.Indeterminate
+                    txtCalcBrokerFeeRate.Visible = True
+                Case 1
+                    chkCalcFees.CheckState = CheckState.Checked
+                Case 0
+                    chkCalcFees.CheckState = CheckState.Unchecked
+            End Select
+
+            txtCalcBrokerFeeRate.Text = FormatPercent(.CalcBrokerFeeRate, 1)
+
             chkCalcSellExessItems.Checked = .CheckSellExcessItems
 
             ' Check wrecked Relics, do not check meta levels or decryptors (NONE)
@@ -13429,7 +13412,15 @@ CheckTechs:
             .TextItemFilter = txtCalcItemFilter.Text
 
             .CheckIncludeTaxes = chkCalcTaxes.Checked
-            .CheckIncludeBrokersFees = chkCalcFees.Checked
+            If chkCalcFees.CheckState = CheckState.Indeterminate Then
+                .CheckIncludeBrokersFees = 2
+            ElseIf chkCalcFees.CheckState = CheckState.Checked Then
+                .CheckIncludeBrokersFees = 1
+            Else
+                .CheckIncludeBrokersFees = 0
+            End If
+            .CalcBrokerFeeRate = FormatManualPercentEntry(txtCalcBrokerFeeRate.Text)
+
             .CheckSellExcessItems = chkCalcSellExessItems.Checked
 
             .CheckDecryptorOptimal = CInt(chkCalcDecryptor0.CheckState)
@@ -13798,7 +13789,7 @@ CheckTechs:
 
             ' Get data
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID)) ' need to search for corp ID too
+            DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
             DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
             readerBPs = DBCommand.ExecuteReader
 
@@ -14361,7 +14352,7 @@ CheckTechs:
                     End If
 
                     ' Build the blueprint(s)
-                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                    Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkCalcFees, txtCalcBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
 
                     ' If checked, Add the values to the array only if we can Build, Invent, or RE it
                     AddItem = True
@@ -14543,7 +14534,7 @@ CheckTechs:
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
                                                         InsertItem.ReactionFacility, chkCalcSellExessItems.Checked)
 
-                            If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And chkCalcIgnoreInvention.Checked = False Then
+                            If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP
                                 ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility,
                                                                        InsertItem.CopyFacility, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
@@ -14551,7 +14542,7 @@ CheckTechs:
                             End If
 
                             ' Get the list of materials
-                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
+                            Call ManufacturingBlueprint.BuildItems(chkCalcTaxes.Checked, GetBrokerFeeData(chkCalcFees, txtCalcBrokerFeeRate), False, chkCalcIgnoreMinerals.Checked, chkCalcIgnoreT1Item.Checked)
 
                             ' Build/Buy (add only if it has components we build)
                             If ManufacturingBlueprint.HasComponents Then
@@ -15366,7 +15357,7 @@ ExitCalc:
         SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID)) ' need to search for corp ID too
+        DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
         DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         readerTypes = DBCommand.ExecuteReader
 
@@ -15669,7 +15660,7 @@ ExitCalc:
         SQLTemp = "SELECT COUNT(*) FROM " & USER_BLUEPRINTS & WhereClause
 
         Dim CMDCount As New SQLiteCommand(SQLTemp, EVEDB.DBREf)
-        CMDCount.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID)) ' need to search for corp ID too
+        CMDCount.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
         CMDCount.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
         RecordCount = CInt(CMDCount.ExecuteScalar())
 
@@ -15782,7 +15773,7 @@ ExitCalc:
                     SQL = SQL & "X.ITEM_TYPE = 1) GROUP BY productTypeID"
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    DBCommand.Parameters.AddWithValue("@USERBP_USERID", CStr(SelectedCharacter.ID)) ' need to search for corp ID too
+                    DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
                     DBCommand.Parameters.AddWithValue("@USERBP_CORPID", CStr(SelectedCharacter.CharacterCorporation.CorporationID))
                     readerT1s = DBCommand.ExecuteReader()
 
@@ -18754,6 +18745,10 @@ Leave:
         Call UpdateOrebySpaceChecks()
     End Sub
 
+    Private Sub chkMineTrig_CheckedChanged(sender As Object, e As EventArgs) Handles chkMineTriglavian.CheckedChanged
+        Call UpdateOrebySpaceChecks()
+    End Sub
+
     Private Sub chkMineIncludeNullSec_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineIncludeNullSec.CheckedChanged
         ' Don't let them choose WH classes unless null checked
         If chkMineIncludeNullSec.Checked And chkMineWH.Checked Then
@@ -18862,6 +18857,7 @@ Leave:
             chkMineCaldari.Checked = .CheckSovCaldari
             chkMineGallente.Checked = .CheckSovGallente
             chkMineMinmatar.Checked = .CheckSovMinmatar
+            chkMineTriglavian.Checked = .CheckSovTriglavian
 
             chkMineC1.Checked = .CheckSovC1
             chkMineC2.Checked = .CheckSovC2
@@ -19145,86 +19141,91 @@ Leave:
 
         ' First determine what type of stuff we are mining
         SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
-        SQL = SQL & "FROM ORES, ORE_LOCATIONS "
-        SQL = SQL & "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
+        SQL &= "FROM ORES, ORE_LOCATIONS "
+        SQL &= "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
-            SQL = SQL & "AND (BELT_TYPE = '" & cmbMineOreType.Text & "' OR BELT_TYPE LIKE '%Moon Asteroid%') "
+            SQL &= "AND (BELT_TYPE = '" & cmbMineOreType.Text & "' OR BELT_TYPE LIKE '%Moon Asteroid%') "
         Else
-            SQL = SQL & "AND BELT_TYPE = '" & cmbMineOreType.Text & "' "
+            SQL &= "AND BELT_TYPE = '" & cmbMineOreType.Text & "' "
         End If
 
         ' See if we want High yield ores
         If IceMining Then
-            SQL = SQL & "AND ORES.HIGH_YIELD_ORE = -1 "
+            SQL &= "AND ORES.HIGH_YIELD_ORE = -1 "
         ElseIf GasMining Then
-            SQL = SQL & "AND ORES.HIGH_YIELD_ORE = -2 "
+            SQL &= "AND ORES.HIGH_YIELD_ORE = -2 "
         Else
             If chkMineIncludeHighYieldOre.Checked = False Then
                 ' Only base ores
-                SQL = SQL & "AND ORES.HIGH_YIELD_ORE = 0 "
+                SQL &= "AND ORES.HIGH_YIELD_ORE = 0 "
             End If
         End If
 
         ' See where we want this for security
-        SQL = SQL & "AND SYSTEM_SECURITY IN ("
+        SQL &= "AND SYSTEM_SECURITY IN ("
 
         If chkMineIncludeHighSec.Checked = True Then
-            SQL = SQL & "'High Sec',"
+            SQL &= "'High Sec',"
         End If
         If chkMineIncludeLowSec.Checked = True Then
-            SQL = SQL & "'Low Sec',"
+            SQL &= "'Low Sec',"
         End If
         If chkMineIncludeNullSec.Checked = True Then
-            SQL = SQL & "'Null Sec',"
+            SQL &= "'Null Sec',"
         End If
 
         ' If WH checked, then add the classes
         If chkMineWH.Checked = True Then
             If chkMineC1.Checked And chkMineC1.Enabled Then
-                SQL = SQL & "'C1',"
+                SQL &= "'C1',"
             End If
             If chkMineC2.Checked And chkMineC2.Enabled Then
-                SQL = SQL & "'C2',"
+                SQL &= "'C2',"
             End If
             If chkMineC3.Checked And chkMineC3.Enabled Then
-                SQL = SQL & "'C3',"
+                SQL &= "'C3',"
             End If
             If chkMineC4.Checked And chkMineC4.Enabled Then
-                SQL = SQL & "'C4',"
+                SQL &= "'C4',"
             End If
             If chkMineC5.Checked And chkMineC5.Enabled Then
-                SQL = SQL & "'C5',"
+                SQL &= "'C5',"
             End If
             If chkMineC6.Checked And chkMineC6.Enabled Then
-                SQL = SQL & "'C6',"
+                SQL &= "'C6',"
             End If
         End If
 
         SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
         ' Now determine what space we are looking at
-        SQL = SQL & "AND SPACE IN ("
+        SQL &= "AND SPACE IN ("
 
-        If chkMineAmarr.Checked = True Then
-            SQL = SQL & "'Amarr',"
+        If chkMineAmarr.Checked Then
+            SQL &= "'Amarr',"
         End If
-        If chkMineCaldari.Checked = True Then
-            SQL = SQL & "'Caldari',"
+        If chkMineCaldari.Checked Then
+            SQL &= "'Caldari',"
         End If
-        If chkMineGallente.Checked = True Then
-            SQL = SQL & "'Gallente',"
+        If chkMineGallente.Checked Then
+            SQL &= "'Gallente',"
         End If
-        If chkMineMinmatar.Checked = True Then
-            SQL = SQL & "'Minmatar',"
+        If chkMineMinmatar.Checked Then
+            SQL &= "'Minmatar',"
         End If
-        If chkMineWH.Checked = True Then
-            SQL = SQL & "'WH',"
+        If chkMineTriglavian.Checked Then
+            SQL &= "'Triglavian',"
         End If
-
+        If chkMineWH.Checked Then
+            SQL &= "'WH',"
+        End If
+        If chkMineMoonMining.Checked Then
+            SQL &= "'Moon',"
+        End If
         SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
         ' Group them
-        SQL = SQL & "GROUP BY ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
+        SQL &= "GROUP BY ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMine = DBCommand.ExecuteReader
@@ -19726,6 +19727,7 @@ Leave:
             .CheckSovCaldari = chkMineCaldari.Checked
             .CheckSovGallente = chkMineGallente.Checked
             .CheckSovMinmatar = chkMineMinmatar.Checked
+            .CheckSovTriglavian = chkMineTriglavian.Checked
             .CheckSovWormhole = chkMineWH.Checked
             .CheckSovMoon = chkMineMoonMining.Checked
 
@@ -20688,7 +20690,7 @@ Leave:
         End If
 
         ' Check the Space types
-        If chkMineAmarr.Checked = False And chkMineCaldari.Checked = False And chkMineGallente.Checked = False And chkMineMinmatar.Checked = False And chkMineWH.Checked = False Then
+        If chkMineAmarr.Checked = False And chkMineCaldari.Checked = False And chkMineGallente.Checked = False And chkMineMinmatar.Checked = False And chkMineWH.Checked = False And chkMineTriglavian.Checked = False And chkMineMoonMining.Checked = False Then
             ' Can't query any ore
             MsgBox("You must select an Ore Space", vbExclamation, Application.ProductName)
             Return False

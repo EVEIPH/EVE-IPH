@@ -3084,7 +3084,7 @@ Public Class ManufacturingFacility
 
             ' Manufacturing Facility usage
             RawCostSplit.UsageName = "Manufacturing Facility Usage"
-            If Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+            If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                 RawCostSplit.UsageValue = GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage
             Else
                 ' Add fuel block usage
@@ -3093,7 +3093,7 @@ Public Class ManufacturingFacility
             f1.UsageSplits.Add(RawCostSplit)
 
             If SelectedBlueprint.HasComponents And SelectedBlueprint.GetItemCategoryID <> ItemIDs.ComponentCategoryID And SelectedBlueprint.GetItemGroupID <> ItemIDs.AdvCapitalComponentGroupID And
-            Not ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+            Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                 ' Component Facility Usage
                 RawCostSplit.UsageName = "Component Facility Usage"
                 RawCostSplit.UsageValue = SelectedComponentManufacturingFacility.FacilityUsage
@@ -3109,7 +3109,7 @@ Public Class ManufacturingFacility
                         f1.UsageSplits.Add(RawCostSplit)
                 End Select
             ElseIf (SelectedBlueprint.GetItemCategoryID = ItemIDs.ComponentCategoryID Or SelectedBlueprint.GetItemGroupID = ItemIDs.AdvCapitalComponentGroupID) Or
-            ReactionTypes.Contains(SelectedBlueprint.GetItemGroup) Then
+            ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
                 ' Load reactions usage
                 RawCostSplit.UsageName = "Reaction Facility Usage"
                 RawCostSplit.UsageValue = SelectedReactionsFacility.FacilityUsage

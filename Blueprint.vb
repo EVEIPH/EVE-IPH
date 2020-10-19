@@ -7,10 +7,9 @@ Public Class Blueprint
     ' Base variables
     Private BlueprintID As Integer
     Private BlueprintName As String
-    Private BlueprintGroup As String
+    Private BlueprintGroupID As Integer
     Private ItemID As Long
     Private ItemName As String
-    Private ItemCategory As String
     Private ItemCategoryID As Integer
     Private ItemGroup As String
     Private ItemGroupID As Integer
@@ -28,7 +27,6 @@ Public Class Blueprint
     Private AdditionalCosts As Double
 
     ' Helps determine if this is a component that might need special processing
-    Private IsComponentBP As Boolean
     Private BBItemtoFind As Long
     Private BBList As New List(Of BuildBuyItem)
     Private NewBPRequest As Boolean
@@ -167,21 +165,22 @@ Public Class Blueprint
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
+    Private ReactionBPGroups As New List(Of Integer)(New Integer() {1888, 1889, 1890})
+
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
                 ByVal NumBlueprints As Integer, ByVal NumProductionLines As Integer, ByVal UserCharacter As Character,
                 ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double,
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
-                ByVal BPSellExcessItems As Boolean, Optional ByVal ComponentBP As Boolean = False, Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
+                ByVal BPSellExcessItems As Boolean, Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
 
         Dim readerBP As SQLiteDataReader
         Dim SQL As String = ""
 
-        SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_NAME, BLUEPRINT_GROUP, ITEM_ID, ITEM_NAME, ITEM_CATEGORY_ID, ITEM_CATEGORY,"
-        SQL = SQL & "ITEM_GROUP_ID, ITEM_GROUP, TECH_LEVEL, PORTION_SIZE, BASE_PRODUCTION_TIME,"
-        SQL = SQL & "MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, packagedVolume "
-        SQL = SQL & "FROM ALL_BLUEPRINTS INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS.ITEM_ID = INVENTORY_TYPES.typeID "
+        SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_GROUP_ID, ITEM_ID, ITEM_GROUP_ID, ITEM_CATEGORY_ID, "
+        SQL = SQL & "TECH_LEVEL, PORTION_SIZE, BASE_PRODUCTION_TIME, MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, packagedVolume "
+        SQL = SQL & "FROM ALL_BLUEPRINTS_FACT INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS_FACT.ITEM_ID = INVENTORY_TYPES.typeID "
         SQL = SQL & "WHERE BLUEPRINT_ID =" & BPBlueprintID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -190,26 +189,27 @@ Public Class Blueprint
         If readerBP.Read Then
             ' Set the variables
             BlueprintID = readerBP.GetInt32(0)
-            BlueprintName = readerBP.GetString(1)
-            BlueprintGroup = readerBP.GetString(2)
-            ItemID = readerBP.GetInt64(3)
-            ItemName = readerBP.GetString(4)
-            ItemCategoryID = readerBP.GetInt32(5)
-            ItemCategory = readerBP.GetString(6)
-            ItemGroupID = readerBP.GetInt32(7)
-            ItemGroup = readerBP.GetString(8)
-            TechLevel = readerBP.GetInt32(9)
-            PortionSize = readerBP.GetInt64(10)
-            BaseProductionTime = readerBP.GetInt64(11)
-            MaxProductionLimit = readerBP.GetInt32(12)
-            ItemType = readerBP.GetInt32(13)
-            If Not readerBP.IsDBNull(12) Then
-                BlueprintRace = readerBP.GetInt32(14)
+            If Developer Then ' Really only need BP name for debugging
+                BlueprintName = GetTypeName(readerBP.GetInt32(0))
+            End If
+            BlueprintGroupID = readerBP.GetInt32(1)
+            ItemID = readerBP.GetInt64(2)
+            ItemName = GetTypeName(readerBP.GetInt32(2))
+            ItemGroupID = readerBP.GetInt32(3)
+            ItemCategoryID = readerBP.GetInt32(4)
+            TechLevel = readerBP.GetInt32(5)
+            PortionSize = readerBP.GetInt64(6)
+            BaseProductionTime = readerBP.GetInt64(7)
+            MaxProductionLimit = readerBP.GetInt32(8)
+            ItemType = readerBP.GetInt32(9)
+
+            If Not readerBP.IsDBNull(10) Then
+                BlueprintRace = readerBP.GetInt32(10)
             Else
                 BlueprintRace = 0
             End If
-            If Not readerBP.IsDBNull(15) Then
-                ItemVolume = readerBP.GetDouble(15) * PortionSize ' Ammo, blocks, bombs, etc have more items per run
+            If Not readerBP.IsDBNull(11) Then
+                ItemVolume = readerBP.GetDouble(11) * PortionSize ' Ammo, blocks, bombs, etc have more items per run
             Else
                 ItemVolume = 10
             End If
@@ -379,8 +379,6 @@ Public Class Blueprint
         ' Implement passing in the runs per copy later based on user, right now though this is unlimited
         MaxRunsPerBP = 0
 
-        IsComponentBP = ComponentBP
-
         ProductionChain = New List(Of List(Of Integer))
 
     End Sub
@@ -542,6 +540,19 @@ Public Class Blueprint
 
             Next
 
+            ' First get the BP's that are components of the main item we are building for future calculations
+            Dim rsBPComps As SQLiteDataReader
+            Dim BPComponentIDs As New List(Of Integer)
+            DBCommand = New SQLiteCommand(String.Format("Select MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID={0} And ACTIVITY=1 And MATERIAL_ID In (Select ITEM_ID FROM ALL_BLUEPRINTS_FACT)", BlueprintID), EVEDB.DBREf)
+            rsBPComps = DBCommand.ExecuteReader
+
+            While rsBPComps.Read
+                ' These are the only items that are built from the base BP
+                BPComponentIDs.Add(rsBPComps.GetInt32(0))
+            End While
+
+            rsBPComps.Close()
+
             ' Now we just build each BP for the runs in the batch and total up all the variables - apply additional costs per batch
             ' Need to revisit for efficiency - will run one batch for each unique runs in the production chain and muliply by number of unique run batches
             For i = 0 To ProductionChain.Count - 1
@@ -549,8 +560,8 @@ Public Class Blueprint
                     Application.DoEvents()
 
                     BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
-                                                CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility,
-                                                CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, False, BBList)
+                                            CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility,
+                                            CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item)
 
@@ -583,7 +594,10 @@ Public Class Blueprint
 
                         ' Add all new components to the blueprint list to rebuild later
                         For Each BI In .GetComponentsList.GetBuiltItemList
-                            Call BuiltComponentList.AddBuiltItem(BI)
+                            ' Only add components from the build that are part of the main BP, any additional components will be added below
+                            If BPComponentIDs.Contains(CInt(BI.ItemTypeID)) Then
+                                Call BuiltComponentList.AddBuiltItem(BI)
+                            End If
                         Next
 
                         ' Save the raw mats on the bp only
@@ -629,161 +643,149 @@ Public Class Blueprint
             ' Reset the production times
             ComponentProductionTimes = New List(Of Double)
 
-            Dim SQL As String
-            Dim rsBP As SQLiteDataReader
-
             ' Now build the components as x runs, with 1 bp, that are connected to the main blueprint
             For i = 0 To BuiltComponentList.GetBuiltItemList.Count - 1
+                Dim TempComponentFacility As IndustryFacility
+                Dim rsCheck As SQLiteDataReader
+                Dim SQL As String
+                Dim CategoryID As String = ""
+                Dim GroupID As Integer = 0
+                Dim MarketPrice As Double = 0
+                Dim PortionSize As Integer = 1
 
-                ' Only process built items that are part of the main blueprint
-                SQL = String.Format("SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0} AND MATERIAL_ID = {1}", BlueprintID, BuiltComponentList.GetBuiltItemList(i).ItemTypeID)
+                With BuiltComponentList.GetBuiltItemList(i)
+                    Application.DoEvents()
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsBP = DBCommand.ExecuteReader
+                    SQL = "Select ALL_BLUEPRINTS_FACT.ITEM_GROUP_ID, ALL_BLUEPRINTS_FACT.ITEM_CATEGORY_ID, ITEM_PRICES_FACT.PRICE, PORTION_SIZE "
+                    SQL = SQL & "FROM ALL_BLUEPRINTS_FACT, ITEM_PRICES_FACT WHERE ALL_BLUEPRINTS_FACT.ITEM_ID = ITEM_PRICES_FACT.ITEM_ID "
+                    SQL = SQL & "And ALL_BLUEPRINTS_FACT.ITEM_ID = " & .ItemTypeID
 
-                If rsBP.HasRows Then
-                    Dim TempComponentFacility As IndustryFacility
-                    Dim rsCheck As SQLiteDataReader
-                    Dim CategoryName As String = ""
-                    Dim GroupID As Integer = 0
-                    Dim MarketPrice As Double = 0
-                    Dim PortionSize As Integer = 1
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsCheck = DBCommand.ExecuteReader
 
-                    With BuiltComponentList.GetBuiltItemList(i)
-                        Application.DoEvents()
+                    If rsCheck.Read() Then
+                        GroupID = rsCheck.GetInt32(0)
+                        CategoryID = CStr(rsCheck.GetInt32(1))
+                        MarketPrice = rsCheck.GetDouble(2)
+                        PortionSize = rsCheck.GetInt32(3)
+                    End If
 
-                        SQL = "SELECT ALL_BLUEPRINTS.ITEM_GROUP_ID, ALL_BLUEPRINTS.ITEM_CATEGORY, ITEM_PRICES_FACT.PRICE, PORTION_SIZE "
-                        SQL = SQL & "FROM ALL_BLUEPRINTS, ITEM_PRICES_FACT WHERE ALL_BLUEPRINTS.ITEM_ID = ITEM_PRICES_FACT.ITEM_ID "
-                        SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = " & .ItemTypeID
+                    ' Build the T1 component
+                    If GroupID = ItemIDs.AdvCapitalComponentGroupID Or GroupID = ItemIDs.CapitalComponentGroupID Then
+                        ' Use capital component facility
+                        TempComponentFacility = CapitalComponentManufacturingFacility
+                    ElseIf IsT1BaseItemforT2(CInt(CategoryID)) Then
+                        ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
+                        TempComponentFacility = MainManufacturingFacility
+                    ElseIf GroupID = ItemIDs.ReactionBiochmeicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
+                        TempComponentFacility = ReactionFacility
+                    Else ' Components
+                        TempComponentFacility = ComponentManufacturingFacility
+                    End If
 
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsCheck = DBCommand.ExecuteReader
+                    ' Set the quantity to what was used - save the old required quantity for component list
+                    Dim ComponentQuantity As Long = .ItemQuantity
+                    '.ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
 
-                        If rsCheck.Read() Then
-                            GroupID = rsCheck.GetInt32(0)
-                            CategoryName = rsCheck.GetString(1)
-                            MarketPrice = rsCheck.GetDouble(2)
-                            PortionSize = rsCheck.GetInt32(3)
-                        End If
+                    ComponentBlueprint = New Blueprint(.BPTypeID, CInt(Math.Ceiling(.UsedQuantity)), .BuildME, .BuildTE, 1,
+                                                       NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, 0,
+                                                       TempComponentFacility, ComponentManufacturingFacility,
+                                                       CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
 
-                        ' Build the T1 component
-                        If GroupID = ItemIDs.AdvCapitalComponentGroupID Or GroupID = ItemIDs.CapitalComponentGroupID Then
-                            ' Use capital component facility
-                            TempComponentFacility = CapitalComponentManufacturingFacility
-                        ElseIf IsT1BaseItemforT2(CategoryName) Then
-                            ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
-                            TempComponentFacility = MainManufacturingFacility
-                        ElseIf GroupID = ItemIDs.ReactionBiochmeicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
-                            TempComponentFacility = ReactionFacility
-                        Else ' Components
-                            TempComponentFacility = ComponentManufacturingFacility
-                        End If
+                    Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
-                        ' Set the quantity to what was used - save the old required quantity for component list
-                        Dim ComponentQuantity As Long = .ItemQuantity
-                        '.ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
+                    ' Save all the materials that are excess - update usage first?
+                    Call ExcessMaterials.InsertMaterialList(ComponentBlueprint.ExcessMaterials.GetMaterialList)
 
-                        ComponentBlueprint = New Blueprint(.BPTypeID, CInt(Math.Ceiling(.UsedQuantity)), .BuildME, .BuildTE, 1,
-                                                    NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
-                                                    0, TempComponentFacility, ComponentManufacturingFacility,
-                                                    CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems)
+                    Dim ExtraItems As Long
+                    Dim BuildExcessAmount As Double = 0
+                    Dim ExtraMaterial As Material = Nothing
 
-                        Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
+                    ' Also, if this built item is more than we need for the main blueprint, add it to excess
+                    If ComponentQuantity < (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) Then
+                        ExtraItems = (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) - ComponentQuantity
+                        ExtraMaterial = New Material(.ItemTypeID, .ItemName, CategoryID, ExtraItems, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE))
+                        Call ExcessMaterials.InsertMaterial(ExtraMaterial)
+                    End If
 
-                        ' Save all the materials that are excess - update usage first?
-                        Call ExcessMaterials.InsertMaterialList(ComponentBlueprint.ExcessMaterials.GetMaterialList)
-
-                        Dim ExtraItems As Long
-                        Dim BuildExcessAmount As Double = 0
-                        Dim ExtraMaterial As Material = Nothing
-
-                        ' Also, if this built item is more than we need for the main blueprint, add it to excess
-                        If ComponentQuantity < (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) Then
-                            ExtraItems = (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) - ComponentQuantity
-                            ExtraMaterial = New Material(.ItemTypeID, .ItemName, CategoryName, ExtraItems, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE))
-                            Call ExcessMaterials.InsertMaterial(ExtraMaterial)
-                        End If
-
-                        ' Get the excss amount cost of the build item for checking build/buy
-                        If SellExcessItems Then
-                            BuildExcessAmount = ComponentBlueprint.GetSellExcessAmount
-                            If Not IsNothing(ExtraMaterial) Then
-                                BuildExcessAmount = ExtraMaterial.GetTotalCost
-                                If SetTaxes Then
-                                    BuildExcessAmount -= GetSalesTax(BuildExcessAmount)
-                                End If
-
-                                BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount, BrokerFeeData)
-
+                    ' Get the excss amount cost of the build item for checking build/buy
+                    If SellExcessItems Then
+                        BuildExcessAmount = ComponentBlueprint.GetSellExcessAmount
+                        If Not IsNothing(ExtraMaterial) Then
+                            BuildExcessAmount = ExtraMaterial.GetTotalCost
+                            If SetTaxes Then
+                                BuildExcessAmount -= GetSalesTax(BuildExcessAmount)
                             End If
+
+                            BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount, BrokerFeeData)
+
                         End If
+                    End If
 
-                        ' Reset the component's material list for shopping list functionality
-                        .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
+                    ' Reset the component's material list for shopping list functionality
+                    .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
-                        ' Set the variables
-                        .ManufacturingFacility = ComponentBlueprint.MainManufacturingFacility
-                        .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
-                        .IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
-                        .IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
+                    ' Add any built components to the list as well
+                    For Each BI In ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                        Call BuiltComponentList.AddBuiltItem(BI)
+                    Next
 
+                    ' Set the variables
+                    .ManufacturingFacility = ComponentBlueprint.MainManufacturingFacility
+                    .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
+                    .IncludeActivityTime = ComponentBlueprint.MainManufacturingFacility.IncludeActivityTime
+                    .IncludeActivityUsage = ComponentBlueprint.MainManufacturingFacility.IncludeActivityUsage
 
-                        Dim ItemPrice As Double = 0
-                        Dim OwnedBP As Boolean
+                    Dim ItemPrice As Double = 0
+                    Dim OwnedBP As Boolean
 
-                        Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
+                    Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
 
-                        ' Reset item name
-                        If .ItemName.Contains("(") Then
-                            .ItemName = Trim(.ItemName.Substring(0, InStr(.ItemName, "(") - 1))
-                        End If
+                    ' Reset item name
+                    If .ItemName.Contains("(") Then
+                        .ItemName = Trim(.ItemName.Substring(0, InStr(.ItemName, "(") - 1))
+                    End If
 
-                        Dim BuildFlag As Boolean = True
-                        If BuildBuy And (((MarketPrice * (.ItemQuantity * PortionSize)) > (ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost - BuildExcessAmount) _
-                        And (BPUserSettings.SuggestBuildBPNotOwned)) _
-                        Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
-                        Or MarketPrice = 0) Then
-                            ' Market cost is greater than build cost, so set the mat cost to the build cost
-                            ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
-                            ' Adjust the runs of this BP in the name for built bps
-                            .ItemName = UpdateItemNamewithRuns(.ItemName, ComponentBlueprint.GetUserRuns)
+                    Dim BuildFlag As Boolean = True
+                    If BuildBuy And (((MarketPrice * (.ItemQuantity * PortionSize)) > (ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost - BuildExcessAmount) _
+                                And (BPUserSettings.SuggestBuildBPNotOwned)) _
+                                Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
+                                Or MarketPrice = 0 Or ManualBuildBuy(ComponentBlueprint.ItemID)) Then
+                        ' Market cost is greater than build cost, so set the mat cost to the build cost
+                        ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
+                        ' Adjust the runs of this BP in the name for built bps
+                        .ItemName = UpdateItemNamewithRuns(.ItemName, ComponentBlueprint.GetUserRuns)
+                    Else
+                        ' Buying item
+                        ItemPrice = MarketPrice
+                        BuildFlag = False
+                    End If
+
+                    ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
+                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GetMaterialGroup, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
+                    ComponentMaterials.InsertMaterial(TempMat)
+
+                    ' Building, so add the raw materials to the raw mats list -check for excess mat usage here?
+                    Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
+                End With
+
+                ' Add the production time of this component to the total production time
+                Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
+
+                ' Get the usage
+                Select Case GroupID
+                    Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
+                        CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
+                    Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                        TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
+                    Case Else
+                        If ReactionBPGroups.Contains(BlueprintGroupID) Then
+                            ' Save the manufacturing cost for fuel blocks
+                            ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                         Else
-                            ' Buying item
-                            ItemPrice = MarketPrice
-                            BuildFlag = False
+                            ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                         End If
-
-                        ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
-                        Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemGroup, .ItemQuantity, .ItemVolume,
-                                            ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
-
-                        ComponentMaterials.InsertMaterial(TempMat)
-
-                        ' Building, so add the raw materials to the raw mats list -check for excess mat usage here?
-                        Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
-                    End With
-
-                    ' Add the production time of this component to the total production time
-                    Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
-
-                    ' Get the usage
-                    Select Case GroupID
-                        Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
-                            CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                        Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
-                            TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
-                        Case Else
-                            If BlueprintGroup.Contains("Reaction") Then
-                                ' Save the manufacturing cost for fuel blocks
-                                ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                            Else
-                                ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                            End If
-                    End Select
-                End If
-
-                rsBP.Close()
-
+                End Select
             Next
 
             ' Add any items that are not built but could be to the raw list
@@ -828,7 +830,8 @@ Public Class Blueprint
         ' The current material we are working with
         Dim CurrentMaterial As Material
         Dim CurrentMatQuantity As Long
-        Dim CurrentMaterialCategory As String
+        Dim CurrentMaterialGroupID As Integer
+        Dim CurrentMaterialCategoryID As Integer
 
         ' The quantity that we want to use to build this item (may be different than quantity need if portionsize <> runs)
         Dim BuildQuantity As Long = 0
@@ -842,12 +845,12 @@ Public Class Blueprint
         Dim SingleRunBuildCost As Double = -1
 
         ' Select all materials to buid this BP
-        SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_CATEGORY, ACTIVITY, "
-        SQL = SQL & "MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, groupID, MATERIAL_GROUP, PORTION_SIZE "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS AS ABM "
-        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID, INVENTORY_TYPES "
+        SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_GROUP_ID, MATERIAL_CATEGORY_ID,  "
+        SQL = SQL & "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE "
+        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES "
+        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
         SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS_FACT ON ALL_BLUEPRINTS_FACT.ITEM_ID = ABM.MATERIAL_ID "
-        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " AND ACTIVITY IN (1,11) AND MATERIAL_ID = INVENTORY_TYPES.typeID "
+        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " And ACTIVITY IN (1,11) AND MATERIAL_ID = INVENTORY_TYPES.typeID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -855,25 +858,26 @@ Public Class Blueprint
         ' For each material in the blueprint, calculate the total mats
         ' and load them into the list
         While readerBP.Read
-            CurrentMaterialCategory = readerBP.GetString(4)
+            CurrentMaterialGroupID = readerBP.GetInt32(4)
+            CurrentMaterialCategoryID = readerBP.GetInt32(5)
 
             ' Adjust the number of runs I need for the main item based on what I have in the excess mats
-            Dim TempMat As Material = New Material(ItemID, ItemName, ItemGroup, UserRuns * PortionSize, ItemVolume, 0, "", "")
+            Dim TempMat As Material = New Material(ItemID, ItemName, CStr(ItemGroupID), UserRuns * PortionSize, ItemVolume, 0, "", "")
             Dim TempRuns As Long = TempMat.GetQuantity
             Call UseExcessMaterials(ExcessBuiltItems, TempMat, TempRuns)
             UserRuns = CLng(Math.Ceiling(TempRuns / PortionSize))
 
-            If CurrentMaterialCategory = "Skill" Then
+            If CurrentMaterialCategoryID = 16 Then
                 ' It's a skill, so just add it to the main list of BP skills
                 ReqBuildSkills.InsertSkill(readerBP.GetInt64(1), readerBP.GetInt32(2), readerBP.GetInt32(2), readerBP.GetInt32(2), 0, False, 0, "", Nothing, True)
 
-            ElseIf AddMaterial(CurrentMaterialCategory, readerBP.GetString(10), IgnoreMinerals, IgnoreT1Item) Then
+            ElseIf AddMaterial(CurrentMaterialCategoryID, CurrentMaterialGroupID, IgnoreMinerals, IgnoreT1Item) Then
 
                 ' Set the current material - adjust with portion size though if sent
-                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CurrentMaterialCategory, readerBP.GetInt64(2), readerBP.GetDouble(6), If(readerBP.IsDBNull(7), 0, readerBP.GetDouble(7)), "", "")
+                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CStr(CurrentMaterialCategoryID), readerBP.GetInt64(2), readerBP.GetDouble(7), If(readerBP.IsDBNull(8), 0, readerBP.GetDouble(8)), "", "")
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
-                BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(8)), 0, readerBP.GetDouble(8))
+                BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
@@ -884,8 +888,8 @@ Public Class Blueprint
                 ' Before going any further, see if we have this material in excess materials and if so, adjust the quantity in excess and either build the remaining or exit this material processing
                 SaveExcessMats = UseExcessMaterials(ExcessBuiltItems, CurrentMaterial, AdjCurrentMatQuantity)
 
-                If Not IsDBNull(readerBP.GetValue(11)) Then
-                    ComponentBPPortionSize = readerBP.GetInt64(11)
+                If Not IsDBNull(readerBP.GetValue(10)) Then
+                    ComponentBPPortionSize = readerBP.GetInt32(10)
                     ' Divide by the portion size if this item has one (component buildable) for the build quantity
                     BuildQuantity = CLng(Math.Ceiling(AdjCurrentMatQuantity / ComponentBPPortionSize))
                 Else
@@ -894,13 +898,14 @@ Public Class Blueprint
                 End If
 
                 Dim UsesReactions As Boolean = False
+
                 ' See what material type this is and if we want to build it (reactions)
-                Select Case readerBP.GetString(10)
-                    Case "Composite" ' will use intermediate material - or raw material, which we need to set this too for full drill down
+                Select Case CurrentMaterialGroupID
+                    Case 429 ' Composite
                         If BPUserSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Or BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
-                    Case "Intermediate Materials", "Hybrid Polymers" ' will use mats: "Moon Material", "Harvestable Cloud"
+                    Case 428, 974 ' Intermediate and Hybrid Polymers
                         If BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
@@ -912,7 +917,7 @@ Public Class Blueprint
                     SQLAdd = ""
                 End If
 
-                ' If it has a value in ALL_BLUEPRINTS, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
+                ' If it has a value in the main bp table, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
                 SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
@@ -930,14 +935,14 @@ Public Class Blueprint
                     Dim TempComponentFacility As IndustryFacility
 
                     ' Build the T1/Reaction component
-                    Select Case readerBP.GetInt32(9)
+                    Select Case CurrentMaterialGroupID
                         Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                             ' Use capital component facility
                             TempComponentFacility = CapitalComponentManufacturingFacility
                         Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
                             TempComponentFacility = ReactionFacility
                         Case Else
-                            If IsT1BaseItemforT2(CurrentMaterialCategory) Then
+                            If IsT1BaseItemforT2(CurrentMaterialCategoryID) Then
                                 ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
                                 TempComponentFacility = MainManufacturingFacility
                             Else
@@ -948,8 +953,8 @@ Public Class Blueprint
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
-                        1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
-                        ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, True)
+                                                       1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
+                                                       ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, True, BBList)
 
                     ' Set this blueprint with the quantity needed and get it's mats
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
@@ -1033,7 +1038,7 @@ Public Class Blueprint
                                 Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
                                     TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
                                 Case Else
-                                    If Not BlueprintGroup.Contains("Reaction") Then
+                                    If Not ReactionBPGroups.Contains(BlueprintGroupID) Then
                                         ' Just a regular component - manufacturing usage for fuel block saved above
                                         ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                                     End If
@@ -1110,7 +1115,7 @@ Public Class Blueprint
                                 TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
                                 ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                             Case Else
-                                If BlueprintGroup.Contains("Reaction") Then
+                                If ReactionBPGroups.Contains(BlueprintGroupID) Then
                                     ' Save fuel block usage
                                     ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
                                 Else
@@ -1636,13 +1641,13 @@ Public Class Blueprint
     End Sub
 
     ' Determines if we should add this material to the list or not, based on passed settings
-    Private Function AddMaterial(CategoryName As String, GroupName As String, IgnoreMinerals As Boolean, IgnoreT1BaseItem As Boolean) As Boolean
+    Private Function AddMaterial(CategoryID As Integer, GroupID As Integer, IgnoreMinerals As Boolean, IgnoreT1BaseItem As Boolean) As Boolean
 
-        If IgnoreT1BaseItem And IsT1BaseItemforT2(CategoryName) Then
+        If IgnoreT1BaseItem And IsT1BaseItemforT2(CategoryID) Then
             Return False
         End If
 
-        If IgnoreMinerals And GroupName = "Mineral" Then
+        If IgnoreMinerals And GroupID = 18 Then ' 18= Minerals
             Return False
         End If
 
@@ -1651,9 +1656,9 @@ Public Class Blueprint
     End Function
 
     ' Determines if the item category sent is a T1 Base item used to make T2
-    Private Function IsT1BaseItemforT2(CategoryName As String) As Boolean
-        Select Case CategoryName
-            Case "Ship", "Drone", "Module", "Charge"
+    Private Function IsT1BaseItemforT2(CategoryID As Integer) As Boolean
+        Select Case CategoryID
+            Case 6, 7, 8, 18 '"Ship", "Drone", "Module", "Charge"
                 Return True
             Case Else
                 Return False
@@ -1683,8 +1688,8 @@ Public Class Blueprint
         End If
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
-        SQL = "SELECT ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
-        SQL = SQL & " AND BLUEPRINT_ID =" & CStr(BlueprintID) & " AND OWNED <> 0 "
+        SQL = "Select Me, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID In (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
+        SQL = SQL & " And BLUEPRINT_ID =" & CStr(BlueprintID) & " And OWNED <> 0 "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
@@ -1707,7 +1712,7 @@ Public Class Blueprint
                     RefTE = 0
                 End If
             End If
-                OwnedBP = False
+            OwnedBP = False
         End If
 
         readerLookup.Close()
@@ -1872,10 +1877,10 @@ Public Class Blueprint
         Dim NumInventionSessions As Integer = 0 ' How many sessions (runs per set of lines) ie. 10 runs 5 lines = 2 sessions
 
         ' First select the datacores needed
-        SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & BlueprintID & " "
-        SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_GROUP = 'Datacores'"
+        SQL = "Select MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
+        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT On ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
+        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " And PRODUCT_ID = " & BlueprintID & " "
+        SQL = SQL & "And ACTIVITY = 8 And MATERIAL_GROUP = 'Datacores'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -2515,11 +2520,6 @@ Public Class Blueprint
         Return BlueprintRace
     End Function
 
-    ' Returns the category for the item this BP builds
-    Public Function GetItemCategory() As String
-        Return ItemCategory
-    End Function
-
     ' Returns the category id for the item this BP builds
     Public Function GetItemCategoryID() As Integer
         Return ItemCategoryID
@@ -2590,16 +2590,6 @@ Public Class Blueprint
         Return BlueprintID
     End Function
 
-    ' Gets the Item Group of the Blueprint
-    Public Function GetItemGroup() As String
-        Return ItemGroup
-    End Function
-
-    ' Returns the group of blueprint
-    Public Function GetGroup() As String
-        Return BlueprintGroup
-    End Function
-
     ' Gets the Item's GroupID of the blueprint
     Public Function GetItemGroupID() As Integer
         Return ItemGroupID
@@ -2652,11 +2642,16 @@ Public Class Blueprint
     ' Returns information on the item that this BP makes, For now, name, runs and the type id
     Public Function GetItemData() As Material
         Dim TempMat As Material
+        Dim rsGroup As SQLiteDataReader
+        DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_GROUPS WHERE groupID = " & CStr(ItemGroupID), EVEDB.DBREf)
+        rsGroup = DBCommand.ExecuteReader
+        rsGroup.Read()
 
         ' Volume doesn't matter
-        TempMat = New Material(ItemID, ItemName, ItemGroup, UserRuns, 0, ItemMarketCost, "", "")
+        TempMat = New Material(ItemID, ItemName, rsGroup.GetString(0), UserRuns, 0, ItemMarketCost, "", "")
 
         Return TempMat
+
     End Function
 
     ' Returns the TypeID of the BP

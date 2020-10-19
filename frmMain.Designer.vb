@@ -329,6 +329,7 @@ Partial Class frmMain
         Me.cmbMineOreType = New System.Windows.Forms.ComboBox()
         Me.gbMineOreLocSov = New System.Windows.Forms.GroupBox()
         Me.chkMineMoonMining = New System.Windows.Forms.CheckBox()
+        Me.chkMineTriglavian = New System.Windows.Forms.CheckBox()
         Me.chkMineWH = New System.Windows.Forms.CheckBox()
         Me.gbMineWHSpace = New System.Windows.Forms.GroupBox()
         Me.chkMineC6 = New System.Windows.Forms.CheckBox()
@@ -3705,7 +3706,7 @@ Partial Class frmMain
         'chkMineIncludeHighSec
         '
         Me.chkMineIncludeHighSec.AutoSize = True
-        Me.chkMineIncludeHighSec.Location = New System.Drawing.Point(9, 23)
+        Me.chkMineIncludeHighSec.Location = New System.Drawing.Point(9, 18)
         Me.chkMineIncludeHighSec.Name = "chkMineIncludeHighSec"
         Me.chkMineIncludeHighSec.Size = New System.Drawing.Size(95, 17)
         Me.chkMineIncludeHighSec.TabIndex = 0
@@ -3715,7 +3716,7 @@ Partial Class frmMain
         'chkMineIncludeNullSec
         '
         Me.chkMineIncludeNullSec.AutoSize = True
-        Me.chkMineIncludeNullSec.Location = New System.Drawing.Point(9, 55)
+        Me.chkMineIncludeNullSec.Location = New System.Drawing.Point(9, 52)
         Me.chkMineIncludeNullSec.Name = "chkMineIncludeNullSec"
         Me.chkMineIncludeNullSec.Size = New System.Drawing.Size(91, 17)
         Me.chkMineIncludeNullSec.TabIndex = 2
@@ -3725,7 +3726,7 @@ Partial Class frmMain
         'chkMineIncludeLowSec
         '
         Me.chkMineIncludeLowSec.AutoSize = True
-        Me.chkMineIncludeLowSec.Location = New System.Drawing.Point(9, 39)
+        Me.chkMineIncludeLowSec.Location = New System.Drawing.Point(9, 35)
         Me.chkMineIncludeLowSec.Name = "chkMineIncludeLowSec"
         Me.chkMineIncludeLowSec.Size = New System.Drawing.Size(93, 17)
         Me.chkMineIncludeLowSec.TabIndex = 1
@@ -3735,7 +3736,7 @@ Partial Class frmMain
         'chkMineIncludeHighYieldOre
         '
         Me.chkMineIncludeHighYieldOre.AutoSize = True
-        Me.chkMineIncludeHighYieldOre.Location = New System.Drawing.Point(9, 78)
+        Me.chkMineIncludeHighYieldOre.Location = New System.Drawing.Point(9, 74)
         Me.chkMineIncludeHighYieldOre.Name = "chkMineIncludeHighYieldOre"
         Me.chkMineIncludeHighYieldOre.Size = New System.Drawing.Size(99, 17)
         Me.chkMineIncludeHighYieldOre.TabIndex = 3
@@ -3763,6 +3764,7 @@ Partial Class frmMain
         'gbMineOreLocSov
         '
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineMoonMining)
+        Me.gbMineOreLocSov.Controls.Add(Me.chkMineTriglavian)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineWH)
         Me.gbMineOreLocSov.Controls.Add(Me.gbMineWHSpace)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineCaldari)
@@ -3779,12 +3781,22 @@ Partial Class frmMain
         'chkMineMoonMining
         '
         Me.chkMineMoonMining.AutoSize = True
-        Me.chkMineMoonMining.Location = New System.Drawing.Point(128, 69)
+        Me.chkMineMoonMining.Location = New System.Drawing.Point(128, 12)
         Me.chkMineMoonMining.Name = "chkMineMoonMining"
         Me.chkMineMoonMining.Size = New System.Drawing.Size(87, 17)
         Me.chkMineMoonMining.TabIndex = 6
         Me.chkMineMoonMining.Text = "Moon Mining"
         Me.chkMineMoonMining.UseVisualStyleBackColor = True
+        '
+        'chkMineTriglavian
+        '
+        Me.chkMineTriglavian.AutoSize = True
+        Me.chkMineTriglavian.Location = New System.Drawing.Point(128, 69)
+        Me.chkMineTriglavian.Name = "chkMineTriglavian"
+        Me.chkMineTriglavian.Size = New System.Drawing.Size(106, 17)
+        Me.chkMineTriglavian.TabIndex = 6
+        Me.chkMineTriglavian.Text = "Triglavian Space"
+        Me.chkMineTriglavian.UseVisualStyleBackColor = True
         '
         'chkMineWH
         '
@@ -3873,7 +3885,7 @@ Partial Class frmMain
         'chkMineCaldari
         '
         Me.chkMineCaldari.AutoSize = True
-        Me.chkMineCaldari.Location = New System.Drawing.Point(128, 23)
+        Me.chkMineCaldari.Location = New System.Drawing.Point(128, 31)
         Me.chkMineCaldari.Name = "chkMineCaldari"
         Me.chkMineCaldari.Size = New System.Drawing.Size(92, 17)
         Me.chkMineCaldari.TabIndex = 1
@@ -3883,7 +3895,7 @@ Partial Class frmMain
         'chkMineMinmatar
         '
         Me.chkMineMinmatar.AutoSize = True
-        Me.chkMineMinmatar.Location = New System.Drawing.Point(128, 44)
+        Me.chkMineMinmatar.Location = New System.Drawing.Point(128, 50)
         Me.chkMineMinmatar.Name = "chkMineMinmatar"
         Me.chkMineMinmatar.Size = New System.Drawing.Size(103, 17)
         Me.chkMineMinmatar.TabIndex = 3
@@ -3893,7 +3905,7 @@ Partial Class frmMain
         'chkMineGallente
         '
         Me.chkMineGallente.AutoSize = True
-        Me.chkMineGallente.Location = New System.Drawing.Point(11, 44)
+        Me.chkMineGallente.Location = New System.Drawing.Point(11, 50)
         Me.chkMineGallente.Name = "chkMineGallente"
         Me.chkMineGallente.Size = New System.Drawing.Size(99, 17)
         Me.chkMineGallente.TabIndex = 2
@@ -3903,7 +3915,7 @@ Partial Class frmMain
         'chkMineAmarr
         '
         Me.chkMineAmarr.AutoSize = True
-        Me.chkMineAmarr.Location = New System.Drawing.Point(11, 23)
+        Me.chkMineAmarr.Location = New System.Drawing.Point(11, 31)
         Me.chkMineAmarr.Name = "chkMineAmarr"
         Me.chkMineAmarr.Size = New System.Drawing.Size(87, 17)
         Me.chkMineAmarr.TabIndex = 0
@@ -5551,6 +5563,7 @@ Partial Class frmMain
         Me.chkCalcFees.Size = New System.Drawing.Size(49, 17)
         Me.chkCalcFees.TabIndex = 1
         Me.chkCalcFees.Text = "Fees"
+        Me.chkCalcFees.ThreeState = True
         Me.chkCalcFees.UseVisualStyleBackColor = True
         '
         'chkCalcTaxes
@@ -12125,4 +12138,5 @@ Partial Class frmMain
     Friend WithEvents txtBPBrokerFeeRate As TextBox
     Friend WithEvents txtCalcBrokerFeeRate As TextBox
     Friend WithEvents txtMineBrokerFeeRate As TextBox
+    Friend WithEvents chkMineTriglavian As CheckBox
 End Class
