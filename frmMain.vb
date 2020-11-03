@@ -4096,6 +4096,13 @@ Tabs:
 
         End If
 
+        ' Reset the ME/TE for the BP based on the invention check
+        If Not IsNothing(SelectedBlueprint) Then
+            With SelectedBlueprint
+                Call SetInventionData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID))
+            End With
+        End If
+
         UpdatingInventionChecks = False
 
         ' If we are inventing, make sure we add or remove the activity based on the check
@@ -5864,12 +5871,12 @@ Tabs:
             End If
             ' Allow loading decryptors on drop down
             LoadingInventionDecryptors = False
-                LoadingT3Decryptors = False
-                ' Allow reloading of relics
-                RelicsLoaded = False
-            End If
+            LoadingT3Decryptors = False
+            ' Allow reloading of relics
+            RelicsLoaded = False
+        End If
 
-            Reaction = IsReaction(ItemGroupID)
+        Reaction = IsReaction(ItemGroupID)
 
         ' If the previous bp was loaded from history and the current bp isn't loaded from history or event, then reset the facilities to default
         If PreviousBPfromHistory And SentFrom <> SentFromLocation.History And Not FromEvent Then
@@ -5883,122 +5890,8 @@ Tabs:
             Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
         End If
 
-        ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
-        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
-        SQL = SQL & " AND BLUEPRINT_ID = " & BPID & " AND OWNED <> 0 " ' Only load user or api owned bps
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerBP = DBCommand.ExecuteReader()
-
-        Dim HasOwnedBP As Boolean = False
-
-        If readerBP.Read() Then
-            HasOwnedBP = True
-        Else
-            ' Try again with corp
-            readerBP.Close()
-            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-            SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL = SQL & " AND BLUEPRINT_ID = " & BPID & " AND SCANNED <> 0 AND OWNED <> 0 "
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerBP = DBCommand.ExecuteReader()
-
-            If readerBP.Read() Then
-                HasOwnedBP = True
-            End If
-        End If
-
-        Dim OwnedBPRuns As Integer
-        Dim TempBPType As BPType
-
-        If HasOwnedBP Then
-            TempBPType = GetBPType(readerBP.GetInt32(4))
-        Else
-            TempBPType = BPType.NotOwned
-        End If
-
-        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
-            txtBPME.Text = CStr(readerBP.GetInt32(0))
-            OwnedBPME = txtBPME.Text
-            txtBPTE.Text = CStr(readerBP.GetInt32(1))
-            OwnedBPPE = txtBPTE.Text
-            OwnedBP = True
-            txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
-            OwnedBPRuns = readerBP.GetInt32(3)
-        Else ' If sent from manufacturing tab, use the values set from there
-            OwnedBP = False
-            OwnedBPRuns = 1
-            If TempTech = 1 Then ' All T1
-                If Reaction Then
-                    ' Reactions can't be researched
-                    txtBPME.Text = "0"
-                    txtBPTE.Text = "0"
-                ElseIf SentFrom <> SentFromLocation.ManufacturingTab Then
-                    txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
-                    txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
-                ElseIf SentFrom = SentFromLocation.ShoppingList Then
-                    ' Will be set already or use default
-                    If Trim(txtBPME.Text) = "" Then
-                        txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
-                    End If
-                    txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
-                End If
-                TempBPType = BPType.NotOwned ' set to not owned for non bp load events
-            Else ' Default T2/T3 BPCs are going to be copies
-                If chkBPIgnoreInvention.Checked = True Then
-                    ' T2 BPO
-                    txtBPME.Text = CStr(readerBP.GetInt32(0))
-                    OwnedBPME = txtBPME.Text
-                    txtBPTE.Text = CStr(readerBP.GetInt32(1))
-                    OwnedBPPE = txtBPTE.Text
-                ElseIf NewBP Then
-                    ' Use invention numbers
-                    txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
-                    txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
-                    TempBPType = BPType.NotOwned
-                End If
-            End If
-        End If
-
-        IgnoreRefresh = True
-
-        If (TempTech <> 1 And TempBPType <> BPType.Original) Then
-            Call SetInventionEnabled("T" & CStr(TempTech), True) ' First enable then let the ignore invention check override if needed
-            chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
-
-            If TempTech = 2 And TempBPType = BPType.Copy Then
-                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention
-                chkBPIgnoreInvention.Checked = True
-            End If
-
-            ' disable the me/te boxes if invented, else enable and ignore invention
-            If chkBPIgnoreInvention.Checked Then
-                txtBPME.Enabled = True
-                txtBPTE.Enabled = True
-                Call SetInventionEnabled("T" & CStr(TempTech), False)
-            Else
-                txtBPME.Enabled = False
-                txtBPTE.Enabled = False
-            End If
-
-        ElseIf TempTech = 2 And TempBPType = BPType.Original Then
-            ' Check the ignore invention, they own this T2 BPO and don't need to invent it
-            chkBPIgnoreInvention.Checked = True
-
-            ' enable the me/te boxes
-            txtBPME.Enabled = True
-            txtBPTE.Enabled = True
-        End If
-
-        IgnoreRefresh = False
-
-        If TempTech <> 2 Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
-        Else
-            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
-        End If
+        ' Set the invention info
+        Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
 
         ' See if it has moon/gas mats
         SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
@@ -6042,51 +5935,6 @@ Tabs:
 
         cmbBPBlueprintSelection.Focus()
 
-        ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
-        If NewBP And SentFrom = SentFromLocation.None Then
-            Dim TempDName As String = ""
-            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
-                ' Load the decryptor based on ME/TE
-                Dim TempD As New DecryptorList
-                LoadingInventionDecryptors = True
-                LoadingT3Decryptors = True
-                InventionDecryptorsLoaded = False
-                T3DecryptorsLoaded = False
-                ' Load up the decryptor based on data entered or BP data from an owned bp
-                SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, TempTech)
-                If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
-                    TempDName = Unknown
-                Else
-                    TempDName = SelectedDecryptor.Name
-                End If
-
-                If TempTech = 2 Then
-                    cmbBPInventionDecryptor.Text = TempDName
-                ElseIf TempTech = 3 Then
-                    cmbBPT3Decryptor.Text = TempDName
-                End If
-
-                LoadingInventionDecryptors = False
-                LoadingT3Decryptors = False
-            Else
-                Call ResetDecryptorCombos(TempTech)
-            End If
-
-            If TempTech = 3 Then
-                ' Load up the relic based on the bp data
-                Call LoadRelicTypes(BPID)
-                Dim Tempstring As String
-                Tempstring = GetRelicfromInputs(SelectedDecryptor, BPID, OwnedBPRuns)
-                If Tempstring <> "" Then
-                    LoadingRelics = True
-                    ' if found, set it else
-                    cmbBPRelic.Text = Tempstring
-                    LoadingRelics = False
-                End If
-            End If
-
-        End If
-
         ' Make sure everything is enabled on first BP load
         If ResetBPTab Then
             btnBPRefreshBP.Enabled = True
@@ -6126,6 +5974,182 @@ Tabs:
         txtBPRuns.SelectAll()
         txtBPRuns.Focus()
         cmbBPBlueprintSelection.SelectionLength = 0
+
+    End Sub
+
+    Private Sub SetInventionData(BlueprintID As Integer, BPTech As Integer, NewBP As Boolean, SentFrom As SentFromLocation, Reaction As Boolean)
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+
+        ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
+        SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
+        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
+        SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintID & " AND OWNED <> 0 " ' Only load user or api owned bps
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader()
+
+        If NewBP Then
+            Call SetInventionEnabled("T" & CStr(BPTech), True) ' First enable then let the ignore invention check override if needed
+            chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+        End If
+
+        Dim HasOwnedBP As Boolean = False
+
+        If readerBP.Read() Then
+            HasOwnedBP = True
+        Else
+            ' Try again with corp
+            readerBP.Close()
+            SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
+            SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
+            SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintID & " AND SCANNED <> 0 AND OWNED <> 0 "
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerBP = DBCommand.ExecuteReader()
+
+            If readerBP.Read() Then
+                HasOwnedBP = True
+            End If
+        End If
+
+        Dim OwnedBPRuns As Integer
+        Dim TempBPType As BPType
+
+        If HasOwnedBP Then
+            TempBPType = GetBPType(readerBP.GetInt32(4))
+        Else
+            TempBPType = BPType.NotOwned
+        End If
+
+        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
+            ' Use owned settings
+            txtBPME.Text = CStr(readerBP.GetInt32(0))
+            OwnedBPME = txtBPME.Text
+            txtBPTE.Text = CStr(readerBP.GetInt32(1))
+            OwnedBPPE = txtBPTE.Text
+            OwnedBP = True
+            txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
+            OwnedBPRuns = readerBP.GetInt32(3)
+        Else ' If sent from manufacturing tab, use the values set from there or it's not owned
+            OwnedBP = False
+            OwnedBPRuns = 1
+            If BPTech = 1 Then ' All T1
+                If Reaction Then
+                    ' Reactions can't be researched
+                    txtBPME.Text = "0"
+                    txtBPTE.Text = "0"
+                ElseIf SentFrom <> SentFromLocation.ManufacturingTab Then
+                    txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
+                    txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
+                ElseIf SentFrom = SentFromLocation.ShoppingList Then
+                    ' Will be set already or use default
+                    If Trim(txtBPME.Text) = "" Then
+                        txtBPME.Text = CStr(UserApplicationSettings.DefaultBPME)
+                    End If
+                    txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
+                End If
+                TempBPType = BPType.NotOwned ' set to not owned for non bp load events
+            Else ' Default T2/T3 BPCs are going to be copies
+                If chkBPIgnoreInvention.Checked = True Then
+                    ' T2 BPO
+                    If readerBP.HasRows Then
+                        txtBPME.Text = CStr(readerBP.GetInt32(0))
+                        OwnedBPME = txtBPME.Text
+                        txtBPTE.Text = CStr(readerBP.GetInt32(1))
+                        OwnedBPPE = txtBPTE.Text
+                    Else
+                        txtBPME.Text = "0"
+                        txtBPTE.Text = "0"
+                    End If
+                Else
+                    ' Use invention numbers
+                    txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
+                    txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
+                    TempBPType = BPType.NotOwned
+                End If
+            End If
+        End If
+
+        IgnoreRefresh = True
+
+        If (BPTech <> 1 And TempBPType <> BPType.Original) Then
+            If BPTech = 2 And TempBPType = BPType.Copy Then
+                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention
+                chkBPIgnoreInvention.Checked = True
+            End If
+
+            ' disable the me/te boxes if invented, else enable and ignore invention
+            If chkBPIgnoreInvention.Checked Then
+                txtBPME.Enabled = True
+                txtBPTE.Enabled = True
+                Call SetInventionEnabled("T" & CStr(BPTech), False)
+            Else
+                txtBPME.Enabled = False
+                txtBPTE.Enabled = False
+            End If
+
+        ElseIf BPTech = 2 And TempBPType = BPType.Original Then
+            ' Check the ignore invention, they own this T2 BPO and don't need to invent it
+            chkBPIgnoreInvention.Checked = True
+
+            ' enable the me/te boxes
+            txtBPME.Enabled = True
+            txtBPTE.Enabled = True
+        End If
+
+        IgnoreRefresh = False
+
+        If BPTech <> 2 Then
+            chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
+        Else
+            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
+        End If
+
+        ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
+        If NewBP And SentFrom = SentFromLocation.None Then
+            Dim TempDName As String = ""
+            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
+                ' Load the decryptor based on ME/TE
+                Dim TempD As New DecryptorList
+                LoadingInventionDecryptors = True
+                LoadingT3Decryptors = True
+                InventionDecryptorsLoaded = False
+                T3DecryptorsLoaded = False
+                ' Load up the decryptor based on data entered or BP data from an owned bp
+                SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, BPTech)
+                If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
+                    TempDName = Unknown
+                Else
+                    TempDName = SelectedDecryptor.Name
+                End If
+
+                If BPTech = 2 Then
+                    cmbBPInventionDecryptor.Text = TempDName
+                ElseIf BPTech = 3 Then
+                    cmbBPT3Decryptor.Text = TempDName
+                End If
+
+                LoadingInventionDecryptors = False
+                LoadingT3Decryptors = False
+            Else
+                Call ResetDecryptorCombos(BPTech)
+            End If
+
+            If BPTech = 3 Then
+                ' Load up the relic based on the bp data
+                Call LoadRelicTypes(BlueprintID)
+                Dim Tempstring As String
+                Tempstring = GetRelicfromInputs(SelectedDecryptor, BlueprintID, OwnedBPRuns)
+                If Tempstring <> "" Then
+                    LoadingRelics = True
+                    ' if found, set it else
+                    cmbBPRelic.Text = Tempstring
+                    LoadingRelics = False
+                End If
+            End If
+
+        End If
 
     End Sub
 
