@@ -1,13 +1,22 @@
 ﻿Public Class frmMaterialListViewer
 
+    Private ItemListColumnClicked As Integer
+    Private ItemListColumnSortOrder As SortOrder
+
     Public Sub New(MaterialList As Materials)
 
         ' This call is required by the designer.
         InitializeComponent()
 
+        ItemListColumnClicked = 0
+        ItemListColumnSortOrder = SortOrder.None
+
         ' Add any initialization after the InitializeComponent() call.
         Dim matLine As ListViewItem
         Dim TotalCost As Double = 0
+
+        Call MaterialList.SortMaterialListByQuantity()
+
         For Each Mat In MaterialList.GetMaterialList
             ' Add all the mats to the grid
             matLine = New ListViewItem(Mat.GetMaterialName)
@@ -29,4 +38,7 @@
         Me.Close()
     End Sub
 
+    Private Sub lstMaterials_ColumnClick(sender As Object, e As ColumnClickEventArgs) Handles lstMaterials.ColumnClick
+        Call ListViewColumnSorter(e.Column, CType(lstMaterials, ListView), ItemListColumnClicked, ItemListColumnSortOrder)
+    End Sub
 End Class

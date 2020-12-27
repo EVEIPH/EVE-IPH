@@ -131,7 +131,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AuthToken, False)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AuthToken, False, "")
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -284,7 +284,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -361,7 +361,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, False)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, UserApplicationSettings.SupressESIStatusMessages, URL)
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -372,7 +372,7 @@ Public Class ESI
             End If
 
         Catch ex As Exception
-            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, False)
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, UserApplicationSettings.SupressESIStatusMessages)
         End Try
 
         If Not IsNothing(Response) Then
@@ -482,7 +482,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, SupressErrorMsgs)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, SupressErrorMsgs, URL)
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -756,7 +756,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.CharacterVerification, False)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.CharacterVerification, False, "")
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -2003,7 +2003,7 @@ Public Class ESIErrorProcessor
         LocalErrorCounter = New ErrorCounter
     End Sub
 
-    Public Sub ProcessWebException(ExceptionData As WebException, Location As ESIErrorLocation, SupressErrorMessage As Boolean)
+    Public Sub ProcessWebException(ExceptionData As WebException, Location As ESIErrorLocation, SupressErrorMessage As Boolean, URL As String)
         Dim ESIJsonError As New ESIError
         Dim MsgBoxText As String = ""
         Dim myWebHeaderCollection As New WebHeaderCollection
@@ -2051,29 +2051,33 @@ Public Class ESIErrorProcessor
             Exit Sub
         End If
 
+        ' Build Messagebox text
+        MsgBoxText = vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ExceptionData.Message & vbCrLf & "Description: " & ErrorResponse
+
+        Select Case Location
+            Case ESIErrorLocation.AccessToken
+                MsgBoxText = "The request failed to get Access Token. " & MsgBoxText
+            Case ESIErrorLocation.AuthToken
+                MsgBoxText = "The request failed to get Authorization Token. " & MsgBoxText
+            Case ESIErrorLocation.CharacterVerification
+                MsgBoxText = "The request failed to get Character Verification data. " & MsgBoxText
+            Case ESIErrorLocation.PrivateAuthData
+                MsgBoxText = "The request failed to get Authorized data. " & MsgBoxText
+            Case ESIErrorLocation.PublicData
+                MsgBoxText = "The request failed to get Public data. " & MsgBoxText
+        End Select
+
+        ' For threading but if we get this error more than 200 times, set the flag to cancel threads 
+        If LocalErrorCounter.GetErrorCount(ErrorCode) > 100 Then
+            CancelThreading = True
+        End If
+
+        If URL <> "" Then
+            MsgBoxText &= vbCrLf & vbCrLf & "URL: " & URL
+        End If
+
+        ' If they have the error more than 5 times, then stop showing the message box
         If Not SupressErrorMessage Then
-            ' Build Messagebox text
-            MsgBoxText = vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ExceptionData.Message & vbCrLf & "Description: " & ErrorResponse
-
-            Select Case Location
-                Case ESIErrorLocation.AccessToken
-                    MsgBoxText = "The request failed to get Access Token. " & MsgBoxText
-                Case ESIErrorLocation.AuthToken
-                    MsgBoxText = "The request failed to get Authorization Token. " & MsgBoxText
-                Case ESIErrorLocation.CharacterVerification
-                    MsgBoxText = "The request failed to get Character Verification data. " & MsgBoxText
-                Case ESIErrorLocation.PrivateAuthData
-                    MsgBoxText = "The request failed to get Authorized data. " & MsgBoxText
-                Case ESIErrorLocation.PublicData
-                    MsgBoxText = "The request failed to get Public data. " & MsgBoxText
-            End Select
-
-            ' For threading but if we get this error more than 200 times, set the flag to cancel threads 
-            If LocalErrorCounter.GetErrorCount(ErrorCode) > 100 Then
-                CancelThreading = True
-            End If
-
-            ' If they have the error more than 5 times, then stop showing the message box
             If ErrorCode <> 420 Then ' 420's are handled above
                 If FindWindowA(Nothing, "ESI Data Import Error") = IntPtr.Zero Then
                     Call MsgBox(MsgBoxText, vbInformation, "ESI Data Import Error")
@@ -2108,6 +2112,7 @@ Public Class ESIErrorProcessor
                     MsgBox("The request failed to get Public data. " & .Message, vbInformation, Application.ProductName)
             End Select
         End With
+
     End Sub
 
     Private Function GetErrorResponseBody(ByVal Webex As WebException, ByRef RefErrorData As ESIError) As String

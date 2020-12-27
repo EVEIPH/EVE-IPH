@@ -585,11 +585,11 @@ Public Class frmMain
         lstPricesView.Columns.Add("Market ID", 0, HorizontalAlignment.Right) ' Hidden
         lstPricesView.Columns.Add("Price Type", 0, HorizontalAlignment.Right) ' Hidden
 
-        ' Columns of update prices raw mats in price profiles
+        ' Columns of update prices raw mats in price profiles - width= 443
         lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
         lstRawPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
-        lstRawPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
-        lstRawPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
+        lstRawPriceProfile.Columns.Add("Region", 90, HorizontalAlignment.Left) ' 119 is to fit all regions
+        lstRawPriceProfile.Columns.Add("Solar System", 75, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstRawPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) 'Hidden
 
         ' Columns of update prices manufactured mats in price profiles
@@ -1351,15 +1351,6 @@ Public Class frmMain
         mnuCharacter.Text = "Character Loaded: " & ToolStripText
         Me.Cursor = Cursors.Default
     End Sub
-
-    ' Predicate for finding the BuildBuyItem in full list
-    Public Function FindBBItem(ByVal Item As BuildBuyItem) As Boolean
-        If BBItemtoFind.ItemID = Item.ItemID Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
 
     ' Predicate for finding the BPBuildBuyItem in full list
     Public Function FindBPBBItem(ByVal Item As BPBBItem) As Boolean
@@ -2611,6 +2602,13 @@ Public Class frmMain
         MsgBox("Minings Tab Default Settings Restored", vbInformation, Application.ProductName)
     End Sub
 
+    Private Sub mnuResetBuildBuyManualSelections_Click(sender As Object, e As EventArgs) Handles mnuResetBuildBuyManualSelections.Click
+        ' Reset the list
+        BPBBItems = New List(Of BPBBItem)
+        Call RefreshBP()
+        MsgBox("Manual Build/Buy List Reset")
+    End Sub
+
     Private Sub chkBPIncludeCopyTime_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeCopyTime.CheckedChanged
         If Not FirstLoad And Not UpdatingInventionChecks Then
             ' Set the copy time check
@@ -3413,15 +3411,13 @@ Tabs:
                     DataEntered = True
                 End If
             ElseIf PriceModifierUpdate Then
-                If allowedNegativePercentChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
+                e.Handled = CheckPercentCharEntry(e, txtListEdit)
+                If e.Handled = False Then
                     DataEntered = True
                 End If
             End If
-
         End If
+
     End Sub
 
     Private Sub txtListEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.LostFocus
@@ -4468,26 +4464,29 @@ Tabs:
     End Sub
 
     Private Sub lstBPComponentMats_ItemCheck(sender As Object, e As ItemCheckEventArgs) Handles lstBPComponentMats.ItemCheck
+        ' If ClickedCheckBox(e, lstBPComponentMats.Items.Count) Then
         If inhibitAutoCheck Then
             e.NewValue = e.CurrentValue
         End If
+        'End If
     End Sub
 
     Private Sub lstBPComponentMats_ItemChecked(sender As Object, e As ItemCheckedEventArgs) Handles lstBPComponentMats.ItemChecked
         If Not IgnoreListViewItemChecks Then
             ' Process user checks, insert the item id and the check state in the bb list
-            Dim TempItem As New BuildBuyItem
+            Dim CheckedItem As New BuildBuyItem
             Dim TempBPItem As New BPBBItem
             Dim FoundBPItem As New BPBBItem
+            Dim FoundItem As New BuildBuyItem
 
-            TempItem.BuildItem = e.Item.Checked
-            TempItem.ItemID = GetTypeID(RemoveItemNameRuns(e.Item.SubItems(0).Text))
+            CheckedItem.BuildItem = e.Item.Checked
+            CheckedItem.ItemID = GetTypeID(RemoveItemNameRuns(e.Item.SubItems(0).Text))
 
-            ' See if we can buid this or not, if not, just uncheck the box and exit - don't refresh the bp
+            ' See if we can build this or not, if not, just uncheck the box and exit - don't refresh the bp
             Dim SQL As String
             Dim readerIT As SQLiteDataReader
 
-            SQL = "SELECT 'X' FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & TempItem.ItemID
+            SQL = "SELECT 'X' FROM ALL_BLUEPRINTS WHERE ITEM_ID = " & CheckedItem.ItemID
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerIT = DBCommand.ExecuteReader()
 
@@ -4507,24 +4506,23 @@ Tabs:
 
             ' See if the item checked is in the list, if so, update the temp, remove the old items and replace
             If FoundBPItem.BPID <> 0 Then
-                ' In list, so remove and refresh
-                Call BPBBItems.Remove(FoundBPItem)
+                ' In list, so just add the item to the found BP item if not there or update if there
+                For Each Item In FoundBPItem.BBItems
+                    If Item.ItemID = CheckedItem.ItemID Then
+                        ' just remove it then add later
+                        FoundBPItem.BBItems.Remove(Item)
+                        Exit For
+                    End If
+                Next
+                ' Add the item with current info
+                FoundBPItem.BBItems.Add(CheckedItem)
+            Else
+                ' New item to add, now add the item that was toggled
+                TempBPItem.BPID = SelectedBlueprint.GetBPID
+                TempBPItem.BBItems = New List(Of BuildBuyItem)
+                TempBPItem.BBItems.Add(CheckedItem)
+                Call BPBBItems.Add(TempBPItem)
             End If
-
-            ' Now add all checked items
-            TempBPItem.BPID = SelectedBlueprint.GetBPID
-            TempBPItem.BBItems = New List(Of BuildBuyItem)
-
-            Dim item As ListViewItem
-
-            For Each item In lstBPComponentMats.CheckedItems
-                TempItem.BuildItem = True
-                TempItem.ItemID = GetTypeID(RemoveItemNameRuns(item.SubItems(0).Text))
-                ' Add checked item
-                TempBPItem.BBItems.Add(TempItem)
-            Next
-
-            Call BPBBItems.Add(TempBPItem)
 
             If Not FirstLoad And Not IgnoreRefresh Then
                 Call RefreshBP()
@@ -6336,7 +6334,7 @@ Tabs:
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
-            ' invent this bp
+            ' Invent this bp
             txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
                                   InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
         End If
@@ -6397,6 +6395,7 @@ Tabs:
 
                 ' If we want to build the item, then override the back color
                 If chkBPBuildBuy.Checked Then
+                    inhibitAutoCheck = False ' Don't let it reset the check based on previous value
                     If BPComponentMats(i).GetBuildItem Then
                         complstViewRow.BackColor = lblBPBuildColor.BackColor
                         complstViewRow.Checked = True
@@ -7108,7 +7107,11 @@ ExitForm:
         Dim ReturnValue As Integer
 
         If SentTechLevel = 1 Then
-            Return SentNumBps
+            If SentRuns >= SentNumBps Then
+                Return SentNumBps
+            Else
+                Return SentRuns
+            End If
         End If
 
         ' Set the number of bps
@@ -8353,23 +8356,11 @@ ExitForm:
     End Sub
 
     Private Sub txtRawPriceModifier_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtRawPriceModifier.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedNegativePercentChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
+        e.Handled = CheckPercentCharEntry(e, txtRawPriceModifier)
     End Sub
 
     Private Sub txtItemsPriceModifier_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtItemsPriceModifier.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedNegativePercentChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
+        e.Handled = CheckPercentCharEntry(e, txtItemsPriceModifier)
     End Sub
 
     Private Sub txtRawPriceModifier_LostFocus(sender As Object, e As System.EventArgs) Handles txtRawPriceModifier.LostFocus
@@ -8389,23 +8380,11 @@ ExitForm:
     End Sub
 
     Private Sub txtRawMaterialsDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtRawMaterialsDefaultsPriceMod.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedNegativePercentChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
+        e.Handled = CheckPercentCharEntry(e, txtRawMaterialsDefaultsPriceMod)
     End Sub
 
     Private Sub txtItemsDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtItemsDefaultsPriceMod.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedNegativePercentChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
+        e.Handled = CheckPercentCharEntry(e, txtItemsDefaultsPriceMod)
     End Sub
 
     Private Sub cmbItemsDefaultsRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbItemsDefaultsRegion.SelectedIndexChanged
@@ -9402,13 +9381,14 @@ ExitForm:
 
     End Sub
 
-    ' Sets the price profile defaults for anything with ID = 0
+    ' Sets the price profile defaults for anything that has a price profile set
     Private Sub SetPriceProfileDefaults(PriceType As String, PriceRegion As String, PriceSystem As String, PriceMod As String, RawMat As Boolean)
         Dim SQL As String = ""
+        Dim PriceModStr As String = PriceMod.Replace("%", "")
 
         SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(PriceType) & "', REGION_NAME = '" & FormatDBString(PriceRegion) & "', "
         SQL = SQL & "SOLAR_SYSTEM_NAME = '" & FormatDBString(PriceSystem) & "', PRICE_MODIFIER = " & CStr(CDbl(PriceMod.Replace("%", "")) / 100) & " "
-        SQL = SQL & "WHERE ID = 0 AND RAW_MATERIAL = "
+        SQL = SQL & "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
         If RawMat Then
             SQL = SQL & "1"
         Else
@@ -9784,6 +9764,8 @@ ExitSub:
                     PriceType = "buyMedian"
                 Case "Percentile Buy"
                     PriceType = "buyPercentile"
+                Case "Split Price"
+                    PriceType = "splitPrice"
             End Select
 
             ' Build the region list for each item
@@ -9796,7 +9778,14 @@ ExitSub:
 
             If rbtnPriceSourceEVEMarketer.Checked Then
                 ' Load the data based on the option selected - regionlist contains a list of regions or the system we wanted to update
-                SQL = "SELECT " & PriceType & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND RegionOrSystem = '" & RegionList & "' ORDER BY DateTime(UPDATEDATE) DESC"
+                Dim SQLPricetype As String = ""
+                If PriceType <> "splitPrice" Then
+                    SQLPricetype = PriceType
+                Else
+                    SQLPricetype = "((buyMax + sellMin) / 2)"
+                End If
+                SQL = "SELECT " & SQLPricetype & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND RegionOrSystem = '" & RegionList & "' ORDER BY DateTime(UPDATEDATE) DESC"
+
             Else
                 Dim LimittoBuy As Boolean = False
                 Dim LimittoSell As Boolean = False
@@ -9839,6 +9828,8 @@ ExitSub:
                         LimittoSell = True
                     Case "sellPercentile"
                         SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, False)
+                    Case "splitPrice"
+                        SQL = SQL & CalcSplit(SentItems(i).TypeID, RegionID, SystemID)
                 End Select
 
                 ' Set the main from using both price locations
@@ -9891,6 +9882,60 @@ ExitSub:
         Application.DoEvents()
 
     End Sub
+
+    Private Function CalcSplit(TypeID As Long, RegionID As String, SystemID As String) As String
+        Dim SQL As String = ""
+        Dim rsData As SQLiteDataReader
+        Dim PriceList As New List(Of Double)
+        Dim SellOrderSQL As String = "AND IS_BUY_ORDER = 0 "
+        Dim BuyOrderSQL As String = "AND IS_BUY_ORDER <> 0 "
+
+        Dim MinSellPrice As Double = 0
+        Dim MaxBuyPrice As Double = 0
+
+        SQL = "SELECT MIN(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
+        If SystemID <> "" Then
+            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+        Else
+            ' Use the region
+            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+        End If
+
+        ' Look up the min sell price
+        DBCommand = New SQLiteCommand(SQL & SellOrderSQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+        rsData.Read()
+
+        If rsData.HasRows Then
+            If Not IsDBNull(rsData.GetValue(0)) Then
+                MinSellPrice = rsData.GetDouble(0)
+            End If
+        End If
+
+        SQL = "SELECT MAX(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
+        If SystemID <> "" Then
+            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+        Else
+            ' Use the region
+            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+        End If
+
+        ' Look up the max buy order
+        DBCommand = New SQLiteCommand(SQL & BuyOrderSQL, EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader
+        rsData.Read()
+
+        If rsData.HasRows Then
+            If Not IsDBNull(rsData.GetValue(0)) Then
+                MaxBuyPrice = rsData.GetDouble(0)
+            End If
+        End If
+
+        rsData.Close()
+
+        Return CStr((MaxBuyPrice + MinSellPrice) / 2)
+
+    End Function
 
     ' Queries market orders and calculates the median and returns the median as a string
     Private Function CalcMedian(TypeID As Long, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As String

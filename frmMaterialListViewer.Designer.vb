@@ -24,10 +24,10 @@ Partial Class frmMaterialListViewer
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMaterialListViewer))
         Me.lstMaterials = New EVE_Isk_per_Hour.MyListView()
-        Me.btnOK = New System.Windows.Forms.Button()
         Me.Material = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.TotalCost = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Quantity = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.TotalCost = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.btnOK = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'lstMaterials
@@ -45,6 +45,22 @@ Partial Class frmMaterialListViewer
         Me.lstMaterials.UseCompatibleStateImageBehavior = False
         Me.lstMaterials.View = System.Windows.Forms.View.Details
         '
+        'Material
+        '
+        Me.Material.Text = "Material"
+        Me.Material.Width = 170
+        '
+        'Quantity
+        '
+        Me.Quantity.Text = "Quantity"
+        Me.Quantity.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'TotalCost
+        '
+        Me.TotalCost.Text = "Total Sell Cost"
+        Me.TotalCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.TotalCost.Width = 100
+        '
         'btnOK
         '
         Me.btnOK.Location = New System.Drawing.Point(138, 249)
@@ -53,22 +69,6 @@ Partial Class frmMaterialListViewer
         Me.btnOK.TabIndex = 41
         Me.btnOK.Text = "OK"
         Me.btnOK.UseVisualStyleBackColor = True
-        '
-        'Material
-        '
-        Me.Material.Text = "Material"
-        Me.Material.Width = 170
-        '
-        'TotalCost
-        '
-        Me.TotalCost.Text = "Total Sell Cost"
-        Me.TotalCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.TotalCost.Width = 100
-        '
-        'Quantity
-        '
-        Me.Quantity.Text = "Quantity"
-        Me.Quantity.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'frmMaterialListViewer
         '

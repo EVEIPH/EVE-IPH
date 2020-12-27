@@ -1251,7 +1251,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(37) As Setting
+        Dim ApplicationSettingsList(38) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1292,7 +1292,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(35) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
             ApplicationSettingsList(36) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
             ApplicationSettingsList(37) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
-            ApplicationSettingsList(36) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
+            ApplicationSettingsList(38) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 

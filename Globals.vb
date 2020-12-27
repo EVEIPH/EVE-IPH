@@ -712,6 +712,24 @@ InvalidDate:
 
 #End Region
 
+    ' Checks entry of percentage chars in keypress
+    Public Function CheckPercentCharEntry(ke As KeyPressEventArgs, box As TextBox) As Boolean
+        Dim Istr As String = box.Text
+
+        ' Only allow numbers or backspace
+        If ke.KeyChar <> ControlChars.Back Then
+            If allowedNegativePercentChars.IndexOf(ke.KeyChar) = -1 Then
+                ' Invalid Character
+                Return True
+            ElseIf (Asc(ke.KeyChar) = 45 And Istr.Contains("-")) Or (Asc(ke.KeyChar) = 37 And Istr.Contains("%")) Or (Asc(ke.KeyChar) = 46 And Istr.Contains(".")) Then ' If the dash, percent, or period is pressed again, don't accept
+                Return True
+            End If
+        End If
+
+        Return False
+
+    End Function
+
     ' Formats the manual entry of a percent in a string
     Public Function FormatManualPercentEntry(Entry As String) As Double
         Dim EntryText As String
