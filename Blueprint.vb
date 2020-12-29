@@ -25,7 +25,6 @@ Public Class Blueprint
     Private BuildBuy As Boolean
     Private HasBuildableComponents As Boolean = False
     Private AdditionalCosts As Double
-    Private BuiltItem As Boolean ' Do we decide to build it or buy it in the end
 
     ' Helps determine if this is a component that might need special processing
     Private BBItemtoFind As Long
@@ -331,7 +330,6 @@ Public Class Blueprint
         CanBuildAll = True ' Can build all components (assume we can until we change it)
 
         HasBuildableComponents = False
-        BuiltItem = False
 
         ' Full cost of items is portion size (ammo, bombs, etc) times runs times cost
         ItemMarketCost = GetItemPrice(ItemID) * UserRuns * PortionSize
@@ -694,9 +692,9 @@ Public Class Blueprint
 
                     ' Set the quantity to what was used - save the old required quantity for component list
                     Dim ComponentQuantity As Long = .ItemQuantity
-                    '.ItemQuantity = CInt(Math.Ceiling(.UsedQuantity))
+                    Dim BuildQuantity As Long = CInt(Math.Ceiling(.UsedQuantity))
 
-                    ComponentBlueprint = New Blueprint(.BPTypeID, CInt(Math.Ceiling(.UsedQuantity)), .BuildME, .BuildTE, 1,
+                    ComponentBlueprint = New Blueprint(.BPTypeID, BuildQuantity, .BuildME, .BuildTE, 1,
                                                        NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, 0,
                                                        TempComponentFacility, ComponentManufacturingFacility,
                                                        CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
@@ -704,7 +702,6 @@ Public Class Blueprint
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
                     Dim ExtraItems As Long
-                    Dim BuildExcessAmount As Double = 0
                     Dim ExtraMaterial As Material = Nothing
 
                     ' Also, if this built item is more than we need for the main blueprint, add it to excess
@@ -712,20 +709,6 @@ Public Class Blueprint
                         ExtraItems = (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) - ComponentQuantity
                         ExtraMaterial = New Material(.ItemTypeID, .ItemName, CategoryID, ExtraItems, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE))
                         Call ExcessMaterials.InsertMaterial(ExtraMaterial)
-                    End If
-
-                    ' Get the excss amount cost of the build item for checking build/buy
-                    If SellExcessItems Then
-                        BuildExcessAmount = ComponentBlueprint.GetSellExcessAmount
-                        If Not IsNothing(ExtraMaterial) Then
-                            BuildExcessAmount = ExtraMaterial.GetTotalCost
-                            If SetTaxes Then
-                                BuildExcessAmount -= GetSalesTax(BuildExcessAmount)
-                            End If
-
-                            BuildExcessAmount -= GetSalesBrokerFee(BuildExcessAmount, BrokerFeeData)
-
-                        End If
                     End If
 
                     ' Reset the component's material list for shopping list functionality
@@ -752,13 +735,12 @@ Public Class Blueprint
                         .ItemName = Trim(.ItemName.Substring(0, InStr(.ItemName, "(") - 1))
                     End If
 
-                    Dim BuildFlag As Boolean = True
+                    ' Figure out if we build or buy
+                    Dim BuildFlag As Boolean = GetBuildBuyFlag(OneItemMarketPrice, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalRawCost,
+                                                               ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
 
-                    If BuildBuy And (((OneItemMarketPrice * PortionSize) > (ComponentBlueprint.GetTotalRawCost - BuildExcessAmount) _
-                                And (BPUserSettings.SuggestBuildBPNotOwned)) _
-                                Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned) _
-                                Or OneItemMarketPrice = 0 Or ManualBuildBuyValue(ComponentBlueprint.ItemID, False)) Then ' TODO Check this default value
-                        ' Market cost is greater than build cost, so set the mat cost to the build cost
+                    If BuildBuy And BuildFlag Then
+                        ' Market cost is greater than build cost, so set the mat cost to the build cost - or just building (not build/buy)
                         ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
                         ' Adjust the runs of this BP in the name for built bps
                         .ItemName = UpdateItemNamewithRuns(.ItemName, ComponentBlueprint.GetUserRuns)
@@ -772,7 +754,7 @@ Public Class Blueprint
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GetMaterialGroup, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
                     ComponentMaterials.InsertMaterial(TempMat)
 
-                    ' Building, so add the raw materials to the raw mats list -check for excess mat usage here?
+                    ' Building, so add the raw materials to the raw mats list
                     Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
                 End With
 
@@ -856,10 +838,10 @@ Public Class Blueprint
         Dim Mat As Material
         Dim LookupMaterial As Material
         Dim UsedExcessMaterial As Material = Nothing
-        Dim ExtraMaterial As Material = Nothing
         Dim ExtraItems As Long
         Dim SellExcessAmount As Double = 0
         Dim AdjCurrentMatQuantity As Long = 0
+        Dim ExtraMaterial As Material = Nothing
 
         ' Select all materials to buid this BP
         SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_GROUP_ID, MATERIAL_CATEGORY_ID,  "
@@ -905,7 +887,7 @@ Public Class Blueprint
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
-                ' Before going any further, see if we have this material in excess materials and if so, adjust the quantity that we will need to build - don't update the list
+                ' Before going any further, see if we have this material in excess materials and if so, adjust the quantity that we will need to build
                 AdjCurrentMatQuantity = GetAdjustedQuantity(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMatQuantity)
 
                 If AdjCurrentMatQuantity = 0 Then
@@ -1002,6 +984,8 @@ Public Class Blueprint
                                     LookupMaterial.SetQuantity(UpdateQuantity)
                                     Call BPExcessMaterials.InsertMaterial(LookupMaterial)
                                 End If
+                            Else
+                                Call UsedExcessMaterials.InsertMaterial(Mat)
                             End If
                             ' Save if we don't end up building this and we can readjust
                             Call SavedUpdateBPExcessMaterialList.InsertMaterial(Mat)
@@ -1020,129 +1004,19 @@ Public Class Blueprint
                         Call ExtraMaterial.SetQuantity(ExtraItems)
                     End If
 
-                    ' Get the excess amount cost of the build item for checking build/buy
-                    Dim ExcessAmount As Double = 0
-                    If SellExcessItems Then
-                        SellExcessAmount = ComponentBlueprint.BPExcessMaterials.GetTotalMaterialsCost
-                        ' Add any excess for the main component too
-                        If SetTaxes Then
-                            SellExcessAmount -= GetSalesTax(SellExcessAmount)
-                        End If
+                    ' Figure out if we build or if cheaper to buy
+                    Dim BuildItem As Boolean = GetBuildBuyFlag(CurrentMaterial.GetCostPerItem, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalRawCost,
+                                                                ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
 
-                        SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount, BrokerFeeData)
-                    End If
-
-                    ' Determine if the component should be bought, or we should build it and add to the correct list
-                    If BuildBuy Then
-                        Dim CheapertoBuild As Boolean = False
-                        ' See if the costs to build are less than buy - cost to buy is greater than cost to build (compare total portion size for component)
-                        If (((CurrentMaterial.GetTotalCost / CurrentMaterial.GetQuantity) * ComponentBlueprint.GetPortionSize) * BuildQuantity) > (ComponentBlueprint.GetTotalRawCost - SellExcessAmount) Then
-                            CheapertoBuild = True
-                        End If
-
-                        ' Regardless of whatever is set, we want to override with what is in the BB list for base items on the main bp
-                        Dim BuildCheck As Boolean = CheapertoBuild
-
-                        ' First time you run the bp, just use the base check 
-                        If NewBPRequest Then
-                            BuildCheck = CurrentMaterial.GetTotalCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
-                        Else
-                            ' Look up the override value and if not found, use the default
-                            BuildCheck = ManualBuildBuyValue(ComponentBlueprint.ItemID, CheapertoBuild)
-                        End If
-
-                        ' Only build BPs that we own (if the user wants us to limit this) and the mat cost is greater than build, or no mat cost loaded (no market price so no idea if it's cheaper to buy or not) - Build it
-                        If BuildCheck Then
-                            '*** BUILD ***
-                            BuiltItem = True
-
-                            ' Use any materials before continuing
-                            Call UseExcessMaterials(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMaterial.GetQuantity - BuiltQuantity,
-                                                SavedExcessMaterialList, UsedExcessMaterial)
-
-                            ' We want to build this item
-                            CurrentMaterial.SetBuildItem(True)
-
-                            ' Save the production time for this component
-                            Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
-
-                            ' Get the skills for BP to build it and add them to the list
-                            TempSkills = ComponentBlueprint.GetReqBPSkills
-
-                            ' Building this, so add fees to current (taxes for mats added in building item)
-                            ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-
-                            ' Get the component usage
-                            Select Case ComponentBlueprint.GetItemGroupID
-                                Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
-                                    CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                                Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
-                                    TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
-                                Case Else
-                                    If Not ReactionBPGroups.Contains(BlueprintGroupID) Then
-                                        ' Just a regular component - manufacturing usage for fuel block saved above
-                                        ComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                                    End If
-                            End Select
-
-                            SingleRunBuildCost = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity
-                            CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
-
-                            ' Set the name of the material to include the build runs
-                            CurrentMaterial.SetName(UpdateItemNamewithRuns(CurrentMaterial.GetMaterialName, BuildQuantity))
-
-                            ' Save the item built, it's ME and the materials it used
-                            Dim TempBuiltItem As New BuiltItem
-
-                            ' Add the built item to the built component list for later use
-                            TempBuiltItem = SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize,
-                                                TempME, TempTE, ComponentBlueprint, BuildQuantity)
-
-                            ' Insert the raw mats of this blueprint
-                            RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
-
-                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
-
-                            If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
-                                ' Add any buildable components to this item list
-                                For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
-                                    TempBuiltItem.ComponentBuildList.Add(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
-                                Next
-                            End If
-
-                            ' Add this item to the main build list
-                            BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
-
-                            ' If this item has buildable components, add those to this main list too so it nests up
-                            For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
-                                BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
-                            Next
-
-                        Else ' *** BUY ***
-                            ' We want to buy this item, don't add raw mats but add the component to the buy list (raw mats)
-                            CurrentMaterial.SetBuildItem(False)
-                            BuiltItem = False
-                            ' Also, not adding the build time to the lists
-                            RawMaterials.InsertMaterial(CurrentMaterial)
-                        End If
-
-                        ' Use the build cost for the material if the item quantity doesn't match portion size, and insert all components into the build/buy list
-                        If CurrentMatQuantity <> BuildQuantity Then
-                            ' Override the total build cost (which for this is the number of runs we need and the cost of each) mostly for items with portion sizes
-                            ComponentMaterials.InsertMaterial(CurrentMaterial, SingleRunBuildCost * BuildQuantity)
-                        Else
-                            ComponentMaterials.InsertMaterial(CurrentMaterial)
-                        End If
-
-                    Else ' *** BUILD COMPONENT ALWAYS ***
+                    If (BuildItem And BuildBuy) Or Not BuildBuy Then
+                        '*** BUILD ***
 
                         ' We want to build this item
                         CurrentMaterial.SetBuildItem(True)
-                        BuiltItem = True
 
-                        ' We want to build it but use any excess materials first
+                        ' Use any materials before continuing
                         Call UseExcessMaterials(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMaterial.GetQuantity - BuiltQuantity,
-                                                SavedExcessMaterialList, UsedExcessMaterial)
+                                            SavedExcessMaterialList, UsedExcessMaterial)
 
                         ' Save the production time for this component
                         Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
@@ -1171,21 +1045,62 @@ Public Class Blueprint
                         ' Set the name of the material to include the build runs
                         CurrentMaterial.SetName(UpdateItemNamewithRuns(CurrentMaterial.GetMaterialName, BuildQuantity))
 
-                        ' Insert the existing component that we are using into the component list as set in the original BP
-                        ComponentMaterials.InsertMaterial(CurrentMaterial)
-
                         ' Insert the raw mats of this blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
-
-                        ' Add the built item to the built component list for later use
-                        BuiltComponentList.AddBuiltItem(CType(SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize, TempME, TempTE,
-                                                            ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
 
                         ' If this item has buildable components, add those to this main list too so it nests up
                         For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
                             BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
                         Next
 
+                        ' *** BUILD OR BUY ***
+                        If BuildBuy Then
+
+                            SingleRunBuildCost = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity
+                            CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
+
+                            ' Save the item built, it's ME and the materials it used
+                            Dim TempBuiltItem As New BuiltItem
+
+                            ' Add the built item to the built component list for later use
+                            TempBuiltItem = SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize,
+                                            TempME, TempTE, ComponentBlueprint, BuildQuantity)
+
+                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
+
+                            If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
+                                ' Add any buildable components to this item list
+                                For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
+                                    TempBuiltItem.ComponentBuildList.Add(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                                Next
+                            End If
+
+                            ' Add this item to the main build list
+                            BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
+
+                            ' Use the build cost for the material if the item quantity doesn't match portion size, and insert all components into the build/buy list
+                            If CurrentMatQuantity <> BuildQuantity Then
+                                ' Override the total build cost (which for this is the number of runs we need and the cost of each) mostly for items with portion sizes
+                                ComponentMaterials.InsertMaterial(CurrentMaterial, SingleRunBuildCost * BuildQuantity)
+                            Else
+                                ComponentMaterials.InsertMaterial(CurrentMaterial)
+                            End If
+
+                        Else '*** BUILD ALL COMPONENTS ***
+                            ' Insert the existing component that we are using into the component list as set in the original BP
+                            ComponentMaterials.InsertMaterial(CurrentMaterial)
+
+                            ' Add the built item to the built component list for later use
+                            BuiltComponentList.AddBuiltItem(CType(SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize, TempME, TempTE,
+                                                            ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
+                        End If
+
+                    Else ' *** BUY ***
+                        ' We want to buy this item, don't add raw mats but add the component to the buy list (raw mats)
+                        CurrentMaterial.SetBuildItem(False)
+                        ' Also, not adding the build time to the lists
+                        RawMaterials.InsertMaterial(CurrentMaterial)
+                        ComponentMaterials.InsertMaterial(CurrentMaterial)
                     End If
 
                     ' If we build this blueprint, add on the skills required
@@ -1209,9 +1124,9 @@ Public Class Blueprint
                             End If
                             ' Add the used material to the BP excess materials since for this BP it was excess 
                             Call BPExcessMaterials.InsertMaterial(ExtraMaterial)
-                            ElseIf Not CurrentMaterial.GetBuildItem Then
-                                ' Not building this item, so replace the copy we made before we started this bp to reset the list back
-                                ExcessBuildMaterials = CType(SavedExcessMaterialList.Clone, Materials)
+                        ElseIf Not CurrentMaterial.GetBuildItem Then
+                            ' Not building this item, so replace the copy we made before we started this bp to reset the list back
+                            ExcessBuildMaterials = CType(SavedExcessMaterialList.Clone, Materials)
                             ' Loop through and add back any used excess since we are buying this item
                             For Each Mat In SavedUpdateBPExcessMaterialList.GetMaterialList
                                 LookupMaterial = BPExcessMaterials.SearchListbyName(Mat.GetMaterialName)
@@ -1320,19 +1235,25 @@ SkipProcessing:
     ' Just look up excess to see if we have enough materials to use for material quantity and return difference needed to build if diff greater than zero (will be used later if so)
     Private Function GetAdjustedQuantity(ByRef ExcessBuildItems As Materials, ByVal MaterialTypeID As Long, ByVal MaterialQuantity As Long) As Long
         Dim ReturnQuantity As Long = MaterialQuantity
+        Dim UsedMat As Material
+        Dim UsedQuantity As Long
 
         If Not IsNothing(ExcessBuildItems) Then
             If ExcessBuildItems.GetMaterialList.Count <> 0 Then
                 Dim TempList As Materials = CType(ExcessBuildItems.Clone, Materials)
                 For Each ExcessMat In TempList.GetMaterialList
                     If ExcessMat.GetMaterialTypeID = MaterialTypeID Then
+                        ' Get a copy first
+                        UsedMat = CType(ExcessMat.Clone, Material)
                         ' If have excess materials from then use those mats, and only build what we need
                         If MaterialQuantity > ExcessMat.GetQuantity Then
-                            ' Need to update current mat quantity and continue to run as we need more now
+                            ' Need to update current mat quantity and continue to run as we need more now but still using all
                             ReturnQuantity = MaterialQuantity - ExcessMat.GetQuantity
+                            UsedQuantity = ReturnQuantity
                         Else
-                            ' We are using what's in the list and can skip processing
+                            ' We are using what's in the list and can skip processing - some left over
                             ReturnQuantity = 0 ' Skip
+                            UsedQuantity = MaterialQuantity
                             ' Adjust the list
                             Call ExcessBuildItems.RemoveMaterial(ExcessMat)
                             ' Update the quantity used from excess and skip processing
@@ -1341,6 +1262,17 @@ SkipProcessing:
                                 Call ExcessBuildItems.InsertMaterial(ExcessMat)
                             End If
                         End If
+
+                        If Not IsNothing(UsedMat) Then
+                            ' If using all mats, then clear out all excess materials below it
+                            If ExcessMat.GetQuantity = 0 Then
+                                UsedExcessMaterials = New Materials
+                            End If
+                            UsedMat.SetQuantity(UsedQuantity)
+                            UsedExcessMaterials.InsertMaterial(UsedMat)
+                        End If
+
+                        Exit For
                     End If
                 Next
             End If
@@ -1746,6 +1678,9 @@ SkipProcessing:
         ' Don't include usage in the total cost above but if we are doing build/buy add it back
         If BuildBuy Then
             TotalComponentCost += (ComponentUsage + RemainingReactionUsage)
+        Else
+            ' For component cost without build/buy, we are buying all the components so nothing to build and sell
+            TotalComponentCost += SellExcessAmount
         End If
 
         ' Profit market cost - total cost of mats and invention and fees
@@ -1969,6 +1904,42 @@ SkipProcessing:
         Next
 
         Return BonusSum
+
+    End Function
+
+    Private Function GetBuildBuyFlag(ByVal OneItemMarketCost As Double, ByVal ItemPortionSize As Long, ByVal Runs As Long, ByVal TotalBuildCost As Double, ByVal BPExcessMaterials As Materials,
+                                     ByVal OwnedBP As Boolean, ByVal ComponentItemID As Long, ByVal SetTaxes As Boolean, ByVal BFData As BrokerFeeInfo) As Boolean
+        Dim CheapertoBuild As Boolean = False
+        Dim ExcessAmount As Double = 0
+
+        ' Get the excess amount cost of the build item for checking build/buy
+        If SellExcessItems Then
+            ExcessAmount = BPExcessMaterials.GetTotalMaterialsCost
+            ' Add any excess for the main component too
+            If SetTaxes Then
+                ExcessAmount -= GetSalesTax(ExcessAmount)
+            End If
+
+            ExcessAmount -= GetSalesBrokerFee(ExcessAmount, BFData)
+        End If
+
+        ' See if the costs to build are less than buy - cost to buy is greater than cost to build (compare total portion size for component)
+        If ((OneItemMarketCost * ItemPortionSize) * Runs) > (TotalBuildCost - ExcessAmount) Then
+            CheapertoBuild = True
+        End If
+
+        ' Regardless of whatever is set, we want to override with what is in the BB list for base items on the main bp
+        Dim BuildItem As Boolean = CheapertoBuild
+
+        ' First time you run the bp, just use the base check 
+        If NewBPRequest Then
+            BuildItem = OneItemMarketCost = 0 Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
+        Else
+            ' Look up the override value and if not found, use the default
+            BuildItem = ManualBuildBuyValue(ComponentItemID, CheapertoBuild)
+        End If
+
+        Return BuildItem
 
     End Function
 

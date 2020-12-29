@@ -1843,12 +1843,15 @@ Public Class frmMain
 
             ' Show the decrease if any excess items sold
             If chkBPSellExcessItems.Checked Then
-                RawCostSplit.SplitName = "Sold Excess Items"
-                RawCostSplit.SplitValue = -1 * SelectedBlueprint.GetSellExcessAmount ' show as negative
-                f1.CostSplits.Add(RawCostSplit)
+                If (Not chkBPBuildBuy.Checked And MaterialType = "Raw") Or chkBPBuildBuy.Checked Then
+                    RawCostSplit.SplitName = "Sold Excess Items"
+                    RawCostSplit.SplitValue = -1 * SelectedBlueprint.GetSellExcessAmount ' show as negative
+                    f1.CostSplits.Add(RawCostSplit)
+                End If
             End If
 
             f1.Show()
+
         End If
 
     End Sub
