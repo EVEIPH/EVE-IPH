@@ -115,8 +115,6 @@ Public Class ProgramSettings
     Public DefaultIgnoreRareandShipSkinBPs As Boolean = True
     Public DefaultSaveBPRelicsDecryptors As Boolean = False
 
-    Public DefaultBuiltMatsType As Integer = 1 ' use enum BuildMatType
-
     Public DefaultSettingME As Integer = 0
     Public DefaultSettingTE As Integer = 0
 
@@ -161,6 +159,8 @@ Public Class ProgramSettings
 
     ' Set here, but use in Update Prices - 6 hours to refresh prices
     Public DefaultEVEMarketerRefreshInterval As Integer = 6
+
+    Public DefaultBuiltMatsType As Integer = 1 ' use enum BuildMatType - both BP and Manufacturing tabs
 
     ' BP Tab Default settings
     Public DefaultBPTechChecks As Boolean = True
@@ -1158,7 +1158,6 @@ Public Class ProgramSettings
                     .AutoUpdateSVRonBPTab = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AutoUpdateSVRonBPTab", DefaultAutoUpdateSVRonBPTab))
                     .ProxyAddress = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "ProxyAddress", DefaultProxyAddress))
                     .ProxyPort = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "ProxyPort", DefaultProxyPort))
-                    .BuildT2T3Materials = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType))
                     .SaveFacilitiesbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveFacilitiesbyChar", DefaultSaveFacilitiesbyChar))
                     .LoadBPsbyChar = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadBPsbyChar", DefaultLoadBPsbyChar))
                     .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultAlphaAccount))
@@ -1239,8 +1238,6 @@ Public Class ProgramSettings
 
             .LoadBPsbyChar = DefaultLoadBPsbyChar
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
-
-            .BuildT2T3Materials = DefaultBuiltMatsType
         End With
 
         ' Save locally
@@ -1251,7 +1248,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(38) As Setting
+        Dim ApplicationSettingsList(37) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1283,16 +1280,15 @@ Public Class ProgramSettings
             ApplicationSettingsList(26) = New Setting("AutoUpdateSVRonBPTab", CStr(SentSettings.AutoUpdateSVRonBPTab))
             ApplicationSettingsList(27) = New Setting("ProxyAddress", CStr(SentSettings.ProxyAddress))
             ApplicationSettingsList(28) = New Setting("ProxyPort", CStr(SentSettings.ProxyPort))
-            ApplicationSettingsList(29) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
-            ApplicationSettingsList(30) = New Setting("SaveFacilitiesbyChar", CStr(SentSettings.SaveFacilitiesbyChar))
-            ApplicationSettingsList(31) = New Setting("LoadBPsbyChar", CStr(SentSettings.LoadBPsbyChar))
-            ApplicationSettingsList(32) = New Setting("LoadESIPublicStructuresonStartup", CStr(SentSettings.LoadESIPublicStructuresonStartup))
-            ApplicationSettingsList(33) = New Setting("DisableGATracking", CStr(SentSettings.DisableGATracking))
-            ApplicationSettingsList(34) = New Setting("AlphaAccount", CStr(SentSettings.AlphaAccount))
-            ApplicationSettingsList(35) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
-            ApplicationSettingsList(36) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
-            ApplicationSettingsList(37) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
-            ApplicationSettingsList(38) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
+            ApplicationSettingsList(29) = New Setting("SaveFacilitiesbyChar", CStr(SentSettings.SaveFacilitiesbyChar))
+            ApplicationSettingsList(30) = New Setting("LoadBPsbyChar", CStr(SentSettings.LoadBPsbyChar))
+            ApplicationSettingsList(31) = New Setting("LoadESIPublicStructuresonStartup", CStr(SentSettings.LoadESIPublicStructuresonStartup))
+            ApplicationSettingsList(32) = New Setting("DisableGATracking", CStr(SentSettings.DisableGATracking))
+            ApplicationSettingsList(33) = New Setting("AlphaAccount", CStr(SentSettings.AlphaAccount))
+            ApplicationSettingsList(34) = New Setting("UseActiveSkillLevels", CStr(SentSettings.UseActiveSkillLevels))
+            ApplicationSettingsList(35) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
+            ApplicationSettingsList(36) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
+            ApplicationSettingsList(37) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1446,6 +1442,7 @@ Public Class ProgramSettings
                     .SimpleCopyCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SimpleCopyCheck", DefaultBPSimpleCopyCheck))
                     .NPCBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "NPCBPOs", DefaultBPNPCBPOs))
                     .SellExcessBuildItems = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SellExcessBuildItems", DefaultBPSellExcessItems))
+                    .BuildT2T3Materials = CType(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType), BuildMatType)
                 End With
 
             Else
@@ -1468,7 +1465,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(42) As Setting
+        Dim BPSettingsList(43) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1521,6 +1518,8 @@ Public Class ProgramSettings
             BPSettingsList(40) = New Setting("NPCBPOs", CStr(SentSettings.NPCBPOs))
             BPSettingsList(41) = New Setting("SellExcessBuildItems", CStr(SentSettings.SellExcessBuildItems))
             BPSettingsList(42) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+
+            BPSettingsList(43) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
 
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -1587,6 +1586,7 @@ Public Class ProgramSettings
 
             .CompressedOre = DefaultBPCompressedOre
             .SellExcessBuildItems = DefaultBPSellExcessItems
+            .BuildT2T3Materials = CType(DefaultBuiltMatsType, BuildMatType)
         End With
 
         ' Save locally
@@ -2016,6 +2016,7 @@ Public Class ProgramSettings
                     .VolumeThreshold = CDbl(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeDouble, ManufacturingSettingsFileName, "VolumeThreshold", DefaultCalcVolumeThreshold))
                     .VolumeThresholdCheck = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "VolumeThresholdCheck", DefaultCalcVolumeThresholdCheck))
                     .CheckSellExcessItems = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckSellExcessItems", DefaultCalcSellExcessItems))
+                    .BuildT2T3Materials = CType(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeString, ManufacturingSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType), BuildMatType)
                 End With
             Else
                 ' Load defaults 
@@ -2129,6 +2130,7 @@ Public Class ProgramSettings
             .ProfitThresholdCheck = DefaultCalcProfitThresholdCheck
             .VolumeThreshold = DefaultCalcVolumeThreshold
             .VolumeThresholdCheck = DefaultCalcVolumeThresholdCheck
+            .BuildT2T3Materials = CType(DefaultBuiltMatsType, BuildMatType)
         End With
 
         ' Save locally
@@ -2139,7 +2141,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(87) As Setting
+        Dim ManufacturingSettingsList(88) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2230,6 +2232,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(85) = New Setting("CheckBPTypeNPCBPOs", CStr(SentSettings.CheckBPTypeNPCBPOs))
             ManufacturingSettingsList(86) = New Setting("CheckSellExcessItems", CStr(SentSettings.CheckSellExcessItems))
             ManufacturingSettingsList(87) = New Setting("CalcBrokerFeeRate", CStr(SentSettings.CalcBrokerFeeRate))
+            ManufacturingSettingsList(88) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -4914,8 +4917,6 @@ Public Structure ApplicationSettings
     Dim ProxyAddress As String
     Dim ProxyPort As Integer
 
-    Dim BuildT2T3Materials As Integer ' How they want to build T2/T3 items (BuildMatType)
-
 End Structure
 
 Public Enum BuildMatType
@@ -4983,6 +4984,8 @@ Public Structure BPTabSettings
     Dim CompressedOre As Boolean
 
     Dim SellExcessBuildItems As Boolean
+
+    Dim BuildT2T3Materials As BuildMatType ' How they want to build T2/T3 items (BuildMatType) - BP Tab
 
 End Structure
 
@@ -5194,6 +5197,8 @@ Public Structure ManufacturingTabSettings
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
+
+    Dim BuildT2T3Materials As BuildMatType ' How they want to build T2/T3 items (BuildMatType) - BP Tab
 
 End Structure
 

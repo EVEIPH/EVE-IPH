@@ -24,6 +24,25 @@ Public Class frmAddCharacter
         chkStructureMarkets.Checked = True
         'chkManagePlanets.Checked = True
 
+        ' Set the tool tips for api
+        With ttAPI
+            .SetToolTip(chkReadAgentsResearch, "Reads a list of research agents' information for a character")
+            .SetToolTip(chkReadAssets, "Reads a list of the character's assets")
+            .SetToolTip(chkReadBlueprints, "Reads a list of blueprints the character owns")
+            .SetToolTip(chkReadCharacterJobs, "Reads a list of the character's industry jobs")
+            .SetToolTip(chkReadStandings, "Reads a list of character standings from agents, NPC corporations, and factions")
+
+            .SetToolTip(chkReadCorporationAssets, "Reads a list of the corporation assets")
+            .SetToolTip(chkReadCorporationBlueprints, "Reads a list of blueprints the corporation owns")
+            .SetToolTip(chkReadCorporationJobs, "List industry jobs run by a corporation")
+            .SetToolTip(chkReadCorporationMembership, "List of the current members a corporation and titles (for corp roles)")
+
+            .SetToolTip(chkReadStructures, "Reads information about specific structures")
+            .SetToolTip(chkStructureMarkets, "Reads market orders from a specific structure")
+
+            .SetToolTip(chkManagePlanets, "Reads a list of all planetary colonies and layouts owned by a character")
+        End With
+
     End Sub
 
     Private Sub btnEVESSOLogin_Click(sender As Object, e As EventArgs) Handles btnEVESSOLogin.Click

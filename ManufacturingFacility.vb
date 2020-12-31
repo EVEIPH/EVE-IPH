@@ -874,12 +874,12 @@ Public Class ManufacturingFacility
             End Select
 
             SQL = ""
-            If UserApplicationSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Then
+            If UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Then
                 SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
                 SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
                 SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0} "
                 SQL &= "AND MATERIAL_GROUP IN ('Composite')))"
-            ElseIf UserApplicationSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+            ElseIf UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
                 SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
                 SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN "
                 SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0} "

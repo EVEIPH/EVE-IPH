@@ -2115,7 +2115,8 @@ Public Class frmUpwellStructureFitting
 
         ' Build T1 BP for the block, standard settings with whatever is on bp tab
         Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
-                                    BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility, UserBPTabSettings.SellExcessBuildItems)
+                                    BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility,
+                                    UserBPTabSettings.SellExcessBuildItems, UserBPTabSettings.BuildT2T3Materials)
         Dim TempBF As BrokerFeeInfo
         TempBF.IncludeFee = BrokerFeeType.NoFee
         Call BlockBP.BuildItems(False, TempBF, False, False, False)

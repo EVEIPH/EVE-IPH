@@ -146,6 +146,8 @@ Public Class Blueprint
     ' Save all the settings here, which has all the standings, fees, etc in it
     Private BPUserSettings As ApplicationSettings
 
+    Private T2T3MaterialType As BuildMatType ' How do we build T2 and T3 items for components that are reactions and how deep they want to go
+
     Private SellExcessItems As Boolean
     Private SellExcessAmount As Double
     Private ExcessMaterials As Materials ' This contains all materials for the entire blueprint as a reference
@@ -175,7 +177,7 @@ Public Class Blueprint
                 ByVal UserSettings As ApplicationSettings, ByVal BPBuildBuy As Boolean, ByVal UserAddlCosts As Double,
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
-                ByVal BPSellExcessItems As Boolean, Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
+                ByVal BPSellExcessItems As Boolean, ByVal BuildT2T3MaterialType As BuildMatType, Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
 
         Dim readerBP As SQLiteDataReader
         Dim SQL As String = ""
@@ -223,6 +225,8 @@ Public Class Blueprint
 
         ' Settings
         BPUserSettings = UserSettings
+
+        T2T3MaterialType = BuildT2T3MaterialType
 
         RawMaterials = New Materials
         ComponentMaterials = New Materials
@@ -568,7 +572,7 @@ Public Class Blueprint
 
                     BatchBlueprint = New Blueprint(BlueprintID, ProductionChain(i)(j), iME, iTE, 1, NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy,
                                             CDbl(AdditionalCosts / ProductionChain.Count), MainManufacturingFacility, ComponentManufacturingFacility,
-                                            CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
+                                            CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, T2T3MaterialType, BBList)
 
                     Call BatchBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, Nothing)
 
@@ -697,7 +701,7 @@ Public Class Blueprint
                     ComponentBlueprint = New Blueprint(.BPTypeID, BuildQuantity, .BuildME, .BuildTE, 1,
                                                        NumberofProductionLines, BPCharacter, BPUserSettings, BuildBuy, 0,
                                                        TempComponentFacility, ComponentManufacturingFacility,
-                                                       CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
+                                                       CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, T2T3MaterialType, BBList)
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
@@ -908,11 +912,11 @@ Public Class Blueprint
                 ' See what material type this is and if we want to build it (reactions)
                 Select Case CurrentMaterialGroupID
                     Case 429 ' Composite
-                        If BPUserSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials Or BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                        If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
                     Case 428, 974 ' Intermediate and Hybrid Polymers
-                        If BPUserSettings.BuildT2T3Materials = BuildMatType.RawMaterials Then
+                        If T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
                 End Select
@@ -959,8 +963,9 @@ Public Class Blueprint
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
-                                                1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
-                                                ComponentManufacturingFacility, CapitalComponentManufacturingFacility, ReactionFacility, SellExcessItems, BBList)
+                                                       1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
+                                                       ComponentManufacturingFacility, CapitalComponentManufacturingFacility,
+                                                       ReactionFacility, SellExcessItems, T2T3MaterialType, BBList)
 
                     ' Set this blueprint with the quantity needed and get it's mats
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessBuildMaterials)

@@ -895,7 +895,7 @@ Public Class ShoppingList
 
                             Dim TempBP As New Blueprint(.BPTypeID, NewRuns, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
-                               .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, True)
+                               .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, True, UserBPTabSettings.BuildT2T3Materials)
 
                             Dim BFI As BrokerFeeInfo
                             BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)

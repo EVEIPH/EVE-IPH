@@ -722,6 +722,30 @@ Partial Class frmMain
         Me.chkIceProducts = New System.Windows.Forms.CheckBox()
         Me.chkMinerals = New System.Windows.Forms.CheckBox()
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
+        Me.pnlPriceProfiles = New System.Windows.Forms.Panel()
+        Me.tabPriceProfile = New System.Windows.Forms.TabControl()
+        Me.tabPriceProfileRaw = New System.Windows.Forms.TabPage()
+        Me.gbRawMaterialsDefaults = New System.Windows.Forms.GroupBox()
+        Me.btnRawMaterialsDefaults = New System.Windows.Forms.Button()
+        Me.cmbRawMaterialsDefaultsPriceType = New System.Windows.Forms.ComboBox()
+        Me.lblRawMaterialsDefaultsSystem = New System.Windows.Forms.Label()
+        Me.lblRawMaterialsDefaultsPriceType = New System.Windows.Forms.Label()
+        Me.cmbRawMaterialsDefaultsSystem = New System.Windows.Forms.ComboBox()
+        Me.cmbRawMaterialsDefaultsRegion = New System.Windows.Forms.ComboBox()
+        Me.lblRawMaterialsDefaultsRegion = New System.Windows.Forms.Label()
+        Me.txtRawMaterialsDefaultsPriceMod = New System.Windows.Forms.TextBox()
+        Me.lblRawMaterialsDefaultsPriceMod = New System.Windows.Forms.Label()
+        Me.tabPriceProfileManufactured = New System.Windows.Forms.TabPage()
+        Me.ItemsDefaults = New System.Windows.Forms.GroupBox()
+        Me.btnItemsDefaults = New System.Windows.Forms.Button()
+        Me.cmbItemsDefaultsPriceType = New System.Windows.Forms.ComboBox()
+        Me.lblItemsDefaultsSystem = New System.Windows.Forms.Label()
+        Me.lblItemsDefaultsPriceType = New System.Windows.Forms.Label()
+        Me.cmbItemsDefaultsSystem = New System.Windows.Forms.ComboBox()
+        Me.cmbItemsDefaultsRegion = New System.Windows.Forms.ComboBox()
+        Me.lblItemsDefaultsRegion = New System.Windows.Forms.Label()
+        Me.txtItemsDefaultsPriceMod = New System.Windows.Forms.TextBox()
+        Me.lblItemsDefaultsPriceMod = New System.Windows.Forms.Label()
         Me.pnlSinglePriceLocationSelect = New System.Windows.Forms.Panel()
         Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
         Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
@@ -800,30 +824,6 @@ Partial Class frmMain
         Me.chkRegion1 = New System.Windows.Forms.CheckBox()
         Me.chkRegion45 = New System.Windows.Forms.CheckBox()
         Me.chkRegion67 = New System.Windows.Forms.CheckBox()
-        Me.pnlPriceProfiles = New System.Windows.Forms.Panel()
-        Me.tabPriceProfile = New System.Windows.Forms.TabControl()
-        Me.tabPriceProfileRaw = New System.Windows.Forms.TabPage()
-        Me.gbRawMaterialsDefaults = New System.Windows.Forms.GroupBox()
-        Me.btnRawMaterialsDefaults = New System.Windows.Forms.Button()
-        Me.cmbRawMaterialsDefaultsPriceType = New System.Windows.Forms.ComboBox()
-        Me.lblRawMaterialsDefaultsSystem = New System.Windows.Forms.Label()
-        Me.lblRawMaterialsDefaultsPriceType = New System.Windows.Forms.Label()
-        Me.cmbRawMaterialsDefaultsSystem = New System.Windows.Forms.ComboBox()
-        Me.cmbRawMaterialsDefaultsRegion = New System.Windows.Forms.ComboBox()
-        Me.lblRawMaterialsDefaultsRegion = New System.Windows.Forms.Label()
-        Me.txtRawMaterialsDefaultsPriceMod = New System.Windows.Forms.TextBox()
-        Me.lblRawMaterialsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.tabPriceProfileManufactured = New System.Windows.Forms.TabPage()
-        Me.ItemsDefaults = New System.Windows.Forms.GroupBox()
-        Me.btnItemsDefaults = New System.Windows.Forms.Button()
-        Me.cmbItemsDefaultsPriceType = New System.Windows.Forms.ComboBox()
-        Me.lblItemsDefaultsSystem = New System.Windows.Forms.Label()
-        Me.lblItemsDefaultsPriceType = New System.Windows.Forms.Label()
-        Me.cmbItemsDefaultsSystem = New System.Windows.Forms.ComboBox()
-        Me.cmbItemsDefaultsRegion = New System.Windows.Forms.ComboBox()
-        Me.lblItemsDefaultsRegion = New System.Windows.Forms.Label()
-        Me.txtItemsDefaultsPriceMod = New System.Windows.Forms.TextBox()
-        Me.lblItemsDefaultsPriceMod = New System.Windows.Forms.Label()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
         Me.btnBPBuiltComponents = New System.Windows.Forms.Button()
         Me.btnBPComponents = New System.Windows.Forms.Button()
@@ -1005,6 +1005,9 @@ Partial Class frmMain
         Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.rbtnCalcRawT2MatType = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcProcT2MatType = New System.Windows.Forms.RadioButton()
+        Me.rbtnCalcAdvT2MatType = New System.Windows.Forms.RadioButton()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1093,15 +1096,15 @@ Partial Class frmMain
         Me.gbItems.SuspendLayout()
         Me.gbPricesTech.SuspendLayout()
         Me.gbRawMaterials.SuspendLayout()
-        Me.pnlSinglePriceLocationSelect.SuspendLayout()
-        Me.gbTradeHubSystems.SuspendLayout()
-        Me.gbRegions.SuspendLayout()
         Me.pnlPriceProfiles.SuspendLayout()
         Me.tabPriceProfile.SuspendLayout()
         Me.tabPriceProfileRaw.SuspendLayout()
         Me.gbRawMaterialsDefaults.SuspendLayout()
         Me.tabPriceProfileManufactured.SuspendLayout()
         Me.ItemsDefaults.SuspendLayout()
+        Me.pnlSinglePriceLocationSelect.SuspendLayout()
+        Me.gbTradeHubSystems.SuspendLayout()
+        Me.gbRegions.SuspendLayout()
         Me.tabBlueprints.SuspendLayout()
         Me.gbBPBlueprintType.SuspendLayout()
         Me.gbBPBlueprintTech.SuspendLayout()
@@ -5533,16 +5536,16 @@ Partial Class frmMain
         Me.gbIncludeTaxesFees.Controls.Add(Me.chkCalcTaxes)
         Me.gbIncludeTaxesFees.Location = New System.Drawing.Point(859, 255)
         Me.gbIncludeTaxesFees.Name = "gbIncludeTaxesFees"
-        Me.gbIncludeTaxesFees.Size = New System.Drawing.Size(256, 39)
+        Me.gbIncludeTaxesFees.Size = New System.Drawing.Size(156, 39)
         Me.gbIncludeTaxesFees.TabIndex = 17
         Me.gbIncludeTaxesFees.TabStop = False
         Me.gbIncludeTaxesFees.Text = "Include:"
         '
         'txtCalcBrokerFeeRate
         '
-        Me.txtCalcBrokerFeeRate.Location = New System.Drawing.Point(162, 14)
+        Me.txtCalcBrokerFeeRate.Location = New System.Drawing.Point(114, 14)
         Me.txtCalcBrokerFeeRate.Name = "txtCalcBrokerFeeRate"
-        Me.txtCalcBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
+        Me.txtCalcBrokerFeeRate.Size = New System.Drawing.Size(37, 20)
         Me.txtCalcBrokerFeeRate.TabIndex = 62
         Me.txtCalcBrokerFeeRate.TabStop = False
         Me.txtCalcBrokerFeeRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -5551,7 +5554,7 @@ Partial Class frmMain
         'chkCalcFees
         '
         Me.chkCalcFees.AutoSize = True
-        Me.chkCalcFees.Location = New System.Drawing.Point(86, 17)
+        Me.chkCalcFees.Location = New System.Drawing.Point(65, 17)
         Me.chkCalcFees.Name = "chkCalcFees"
         Me.chkCalcFees.Size = New System.Drawing.Size(49, 17)
         Me.chkCalcFees.TabIndex = 1
@@ -5571,16 +5574,20 @@ Partial Class frmMain
         '
         'gbCalcSellExessItems
         '
+        Me.gbCalcSellExessItems.Controls.Add(Me.rbtnCalcAdvT2MatType)
+        Me.gbCalcSellExessItems.Controls.Add(Me.rbtnCalcProcT2MatType)
+        Me.gbCalcSellExessItems.Controls.Add(Me.rbtnCalcRawT2MatType)
         Me.gbCalcSellExessItems.Controls.Add(Me.chkCalcSellExessItems)
         Me.gbCalcSellExessItems.Location = New System.Drawing.Point(1021, 197)
         Me.gbCalcSellExessItems.Name = "gbCalcSellExessItems"
-        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 58)
+        Me.gbCalcSellExessItems.Size = New System.Drawing.Size(94, 97)
         Me.gbCalcSellExessItems.TabIndex = 29
         Me.gbCalcSellExessItems.TabStop = False
+        Me.gbCalcSellExessItems.Text = "T2/3 Mat Type"
         '
         'chkCalcSellExessItems
         '
-        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(6, 17)
+        Me.chkCalcSellExessItems.Location = New System.Drawing.Point(7, 65)
         Me.chkCalcSellExessItems.Name = "chkCalcSellExessItems"
         Me.chkCalcSellExessItems.Size = New System.Drawing.Size(83, 32)
         Me.chkCalcSellExessItems.TabIndex = 1
@@ -7909,6 +7916,248 @@ Partial Class frmMain
         Me.btnOpenMarketBrowser.UseVisualStyleBackColor = True
         Me.btnOpenMarketBrowser.Visible = False
         '
+        'pnlPriceProfiles
+        '
+        Me.pnlPriceProfiles.Controls.Add(Me.tabPriceProfile)
+        Me.pnlPriceProfiles.Location = New System.Drawing.Point(671, 3)
+        Me.pnlPriceProfiles.Name = "pnlPriceProfiles"
+        Me.pnlPriceProfiles.Size = New System.Drawing.Size(463, 483)
+        Me.pnlPriceProfiles.TabIndex = 16
+        '
+        'tabPriceProfile
+        '
+        Me.tabPriceProfile.Controls.Add(Me.tabPriceProfileRaw)
+        Me.tabPriceProfile.Controls.Add(Me.tabPriceProfileManufactured)
+        Me.tabPriceProfile.Location = New System.Drawing.Point(3, 6)
+        Me.tabPriceProfile.Name = "tabPriceProfile"
+        Me.tabPriceProfile.SelectedIndex = 0
+        Me.tabPriceProfile.Size = New System.Drawing.Size(457, 471)
+        Me.tabPriceProfile.TabIndex = 0
+        '
+        'tabPriceProfileRaw
+        '
+        Me.tabPriceProfileRaw.Controls.Add(Me.gbRawMaterialsDefaults)
+        Me.tabPriceProfileRaw.Controls.Add(Me.lstRawPriceProfile)
+        Me.tabPriceProfileRaw.Location = New System.Drawing.Point(4, 22)
+        Me.tabPriceProfileRaw.Name = "tabPriceProfileRaw"
+        Me.tabPriceProfileRaw.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabPriceProfileRaw.Size = New System.Drawing.Size(449, 445)
+        Me.tabPriceProfileRaw.TabIndex = 0
+        Me.tabPriceProfileRaw.Text = "Raw Materials"
+        Me.tabPriceProfileRaw.UseVisualStyleBackColor = True
+        '
+        'gbRawMaterialsDefaults
+        '
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.btnRawMaterialsDefaults)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsPriceType)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsSystem)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsPriceType)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsSystem)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsRegion)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsRegion)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.txtRawMaterialsDefaultsPriceMod)
+        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsPriceMod)
+        Me.gbRawMaterialsDefaults.Location = New System.Drawing.Point(9, 343)
+        Me.gbRawMaterialsDefaults.Name = "gbRawMaterialsDefaults"
+        Me.gbRawMaterialsDefaults.Size = New System.Drawing.Size(431, 92)
+        Me.gbRawMaterialsDefaults.TabIndex = 53
+        Me.gbRawMaterialsDefaults.TabStop = False
+        Me.gbRawMaterialsDefaults.Text = "Set Defaults:"
+        '
+        'btnRawMaterialsDefaults
+        '
+        Me.btnRawMaterialsDefaults.Location = New System.Drawing.Point(178, 59)
+        Me.btnRawMaterialsDefaults.Name = "btnRawMaterialsDefaults"
+        Me.btnRawMaterialsDefaults.Size = New System.Drawing.Size(75, 25)
+        Me.btnRawMaterialsDefaults.TabIndex = 4
+        Me.btnRawMaterialsDefaults.Text = "Update"
+        Me.btnRawMaterialsDefaults.UseVisualStyleBackColor = True
+        '
+        'cmbRawMaterialsDefaultsPriceType
+        '
+        Me.cmbRawMaterialsDefaultsPriceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbRawMaterialsDefaultsPriceType.FormattingEnabled = True
+        Me.cmbRawMaterialsDefaultsPriceType.Items.AddRange(New Object() {"Min Sell", "Max Sell", "Avg Sell", "Median Sell", "Percentile Sell", "Min Buy", "Max Buy", "Avg Buy", "Median Buy", "Percentile Buy", "Split Price"})
+        Me.cmbRawMaterialsDefaultsPriceType.Location = New System.Drawing.Point(10, 31)
+        Me.cmbRawMaterialsDefaultsPriceType.Name = "cmbRawMaterialsDefaultsPriceType"
+        Me.cmbRawMaterialsDefaultsPriceType.Size = New System.Drawing.Size(131, 21)
+        Me.cmbRawMaterialsDefaultsPriceType.TabIndex = 0
+        '
+        'lblRawMaterialsDefaultsSystem
+        '
+        Me.lblRawMaterialsDefaultsSystem.AutoSize = True
+        Me.lblRawMaterialsDefaultsSystem.Location = New System.Drawing.Point(285, 16)
+        Me.lblRawMaterialsDefaultsSystem.Name = "lblRawMaterialsDefaultsSystem"
+        Me.lblRawMaterialsDefaultsSystem.Size = New System.Drawing.Size(44, 13)
+        Me.lblRawMaterialsDefaultsSystem.TabIndex = 51
+        Me.lblRawMaterialsDefaultsSystem.Text = "System:"
+        '
+        'lblRawMaterialsDefaultsPriceType
+        '
+        Me.lblRawMaterialsDefaultsPriceType.AutoSize = True
+        Me.lblRawMaterialsDefaultsPriceType.Location = New System.Drawing.Point(7, 17)
+        Me.lblRawMaterialsDefaultsPriceType.Name = "lblRawMaterialsDefaultsPriceType"
+        Me.lblRawMaterialsDefaultsPriceType.Size = New System.Drawing.Size(61, 13)
+        Me.lblRawMaterialsDefaultsPriceType.TabIndex = 47
+        Me.lblRawMaterialsDefaultsPriceType.Text = "Price Type:"
+        '
+        'cmbRawMaterialsDefaultsSystem
+        '
+        Me.cmbRawMaterialsDefaultsSystem.FormattingEnabled = True
+        Me.cmbRawMaterialsDefaultsSystem.Location = New System.Drawing.Point(288, 31)
+        Me.cmbRawMaterialsDefaultsSystem.Name = "cmbRawMaterialsDefaultsSystem"
+        Me.cmbRawMaterialsDefaultsSystem.Size = New System.Drawing.Size(135, 21)
+        Me.cmbRawMaterialsDefaultsSystem.TabIndex = 2
+        Me.cmbRawMaterialsDefaultsSystem.Text = "Select System"
+        '
+        'cmbRawMaterialsDefaultsRegion
+        '
+        Me.cmbRawMaterialsDefaultsRegion.FormattingEnabled = True
+        Me.cmbRawMaterialsDefaultsRegion.Location = New System.Drawing.Point(147, 31)
+        Me.cmbRawMaterialsDefaultsRegion.Name = "cmbRawMaterialsDefaultsRegion"
+        Me.cmbRawMaterialsDefaultsRegion.Size = New System.Drawing.Size(135, 21)
+        Me.cmbRawMaterialsDefaultsRegion.TabIndex = 1
+        Me.cmbRawMaterialsDefaultsRegion.Text = "Select Region"
+        '
+        'lblRawMaterialsDefaultsRegion
+        '
+        Me.lblRawMaterialsDefaultsRegion.AutoSize = True
+        Me.lblRawMaterialsDefaultsRegion.Location = New System.Drawing.Point(144, 17)
+        Me.lblRawMaterialsDefaultsRegion.Name = "lblRawMaterialsDefaultsRegion"
+        Me.lblRawMaterialsDefaultsRegion.Size = New System.Drawing.Size(44, 13)
+        Me.lblRawMaterialsDefaultsRegion.TabIndex = 50
+        Me.lblRawMaterialsDefaultsRegion.Text = "Region:"
+        '
+        'txtRawMaterialsDefaultsPriceMod
+        '
+        Me.txtRawMaterialsDefaultsPriceMod.Location = New System.Drawing.Point(95, 61)
+        Me.txtRawMaterialsDefaultsPriceMod.Name = "txtRawMaterialsDefaultsPriceMod"
+        Me.txtRawMaterialsDefaultsPriceMod.Size = New System.Drawing.Size(46, 20)
+        Me.txtRawMaterialsDefaultsPriceMod.TabIndex = 3
+        Me.txtRawMaterialsDefaultsPriceMod.Text = "0.0%"
+        Me.txtRawMaterialsDefaultsPriceMod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblRawMaterialsDefaultsPriceMod
+        '
+        Me.lblRawMaterialsDefaultsPriceMod.AutoSize = True
+        Me.lblRawMaterialsDefaultsPriceMod.Location = New System.Drawing.Point(15, 64)
+        Me.lblRawMaterialsDefaultsPriceMod.Name = "lblRawMaterialsDefaultsPriceMod"
+        Me.lblRawMaterialsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
+        Me.lblRawMaterialsDefaultsPriceMod.TabIndex = 44
+        Me.lblRawMaterialsDefaultsPriceMod.Text = "Price Modifier:"
+        '
+        'tabPriceProfileManufactured
+        '
+        Me.tabPriceProfileManufactured.Controls.Add(Me.ItemsDefaults)
+        Me.tabPriceProfileManufactured.Controls.Add(Me.lstManufacturedPriceProfile)
+        Me.tabPriceProfileManufactured.Location = New System.Drawing.Point(4, 22)
+        Me.tabPriceProfileManufactured.Name = "tabPriceProfileManufactured"
+        Me.tabPriceProfileManufactured.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabPriceProfileManufactured.Size = New System.Drawing.Size(449, 445)
+        Me.tabPriceProfileManufactured.TabIndex = 1
+        Me.tabPriceProfileManufactured.Text = "Manufactured Items"
+        Me.tabPriceProfileManufactured.UseVisualStyleBackColor = True
+        '
+        'ItemsDefaults
+        '
+        Me.ItemsDefaults.Controls.Add(Me.btnItemsDefaults)
+        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsPriceType)
+        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsSystem)
+        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsPriceType)
+        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsSystem)
+        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsRegion)
+        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsRegion)
+        Me.ItemsDefaults.Controls.Add(Me.txtItemsDefaultsPriceMod)
+        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsPriceMod)
+        Me.ItemsDefaults.Location = New System.Drawing.Point(9, 343)
+        Me.ItemsDefaults.Name = "ItemsDefaults"
+        Me.ItemsDefaults.Size = New System.Drawing.Size(431, 92)
+        Me.ItemsDefaults.TabIndex = 54
+        Me.ItemsDefaults.TabStop = False
+        Me.ItemsDefaults.Text = "Set Defaults:"
+        '
+        'btnItemsDefaults
+        '
+        Me.btnItemsDefaults.Location = New System.Drawing.Point(178, 59)
+        Me.btnItemsDefaults.Name = "btnItemsDefaults"
+        Me.btnItemsDefaults.Size = New System.Drawing.Size(75, 25)
+        Me.btnItemsDefaults.TabIndex = 4
+        Me.btnItemsDefaults.Text = "Update"
+        Me.btnItemsDefaults.UseVisualStyleBackColor = True
+        '
+        'cmbItemsDefaultsPriceType
+        '
+        Me.cmbItemsDefaultsPriceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbItemsDefaultsPriceType.FormattingEnabled = True
+        Me.cmbItemsDefaultsPriceType.Items.AddRange(New Object() {"Min Sell", "Max Sell", "Avg Sell", "Median Sell", "Percentile Sell", "Min Buy", "Max Buy", "Avg Buy", "Median Buy", "Percentile Buy", "Min Buy & Sell", "Max Buy & Sell", "Avg Buy & Sell", "Median Buy & Sell", "Percentile Buy & Sell"})
+        Me.cmbItemsDefaultsPriceType.Location = New System.Drawing.Point(10, 31)
+        Me.cmbItemsDefaultsPriceType.Name = "cmbItemsDefaultsPriceType"
+        Me.cmbItemsDefaultsPriceType.Size = New System.Drawing.Size(131, 21)
+        Me.cmbItemsDefaultsPriceType.TabIndex = 0
+        '
+        'lblItemsDefaultsSystem
+        '
+        Me.lblItemsDefaultsSystem.AutoSize = True
+        Me.lblItemsDefaultsSystem.Location = New System.Drawing.Point(285, 16)
+        Me.lblItemsDefaultsSystem.Name = "lblItemsDefaultsSystem"
+        Me.lblItemsDefaultsSystem.Size = New System.Drawing.Size(44, 13)
+        Me.lblItemsDefaultsSystem.TabIndex = 51
+        Me.lblItemsDefaultsSystem.Text = "System:"
+        '
+        'lblItemsDefaultsPriceType
+        '
+        Me.lblItemsDefaultsPriceType.AutoSize = True
+        Me.lblItemsDefaultsPriceType.Location = New System.Drawing.Point(7, 17)
+        Me.lblItemsDefaultsPriceType.Name = "lblItemsDefaultsPriceType"
+        Me.lblItemsDefaultsPriceType.Size = New System.Drawing.Size(61, 13)
+        Me.lblItemsDefaultsPriceType.TabIndex = 47
+        Me.lblItemsDefaultsPriceType.Text = "Price Type:"
+        '
+        'cmbItemsDefaultsSystem
+        '
+        Me.cmbItemsDefaultsSystem.FormattingEnabled = True
+        Me.cmbItemsDefaultsSystem.Location = New System.Drawing.Point(288, 31)
+        Me.cmbItemsDefaultsSystem.Name = "cmbItemsDefaultsSystem"
+        Me.cmbItemsDefaultsSystem.Size = New System.Drawing.Size(135, 21)
+        Me.cmbItemsDefaultsSystem.TabIndex = 2
+        Me.cmbItemsDefaultsSystem.Text = "Select System"
+        '
+        'cmbItemsDefaultsRegion
+        '
+        Me.cmbItemsDefaultsRegion.FormattingEnabled = True
+        Me.cmbItemsDefaultsRegion.Location = New System.Drawing.Point(147, 31)
+        Me.cmbItemsDefaultsRegion.Name = "cmbItemsDefaultsRegion"
+        Me.cmbItemsDefaultsRegion.Size = New System.Drawing.Size(135, 21)
+        Me.cmbItemsDefaultsRegion.TabIndex = 1
+        Me.cmbItemsDefaultsRegion.Text = "Select Region"
+        '
+        'lblItemsDefaultsRegion
+        '
+        Me.lblItemsDefaultsRegion.AutoSize = True
+        Me.lblItemsDefaultsRegion.Location = New System.Drawing.Point(144, 17)
+        Me.lblItemsDefaultsRegion.Name = "lblItemsDefaultsRegion"
+        Me.lblItemsDefaultsRegion.Size = New System.Drawing.Size(44, 13)
+        Me.lblItemsDefaultsRegion.TabIndex = 50
+        Me.lblItemsDefaultsRegion.Text = "Region:"
+        '
+        'txtItemsDefaultsPriceMod
+        '
+        Me.txtItemsDefaultsPriceMod.Location = New System.Drawing.Point(95, 61)
+        Me.txtItemsDefaultsPriceMod.Name = "txtItemsDefaultsPriceMod"
+        Me.txtItemsDefaultsPriceMod.Size = New System.Drawing.Size(46, 20)
+        Me.txtItemsDefaultsPriceMod.TabIndex = 3
+        Me.txtItemsDefaultsPriceMod.Text = "0.0%"
+        Me.txtItemsDefaultsPriceMod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'lblItemsDefaultsPriceMod
+        '
+        Me.lblItemsDefaultsPriceMod.AutoSize = True
+        Me.lblItemsDefaultsPriceMod.Location = New System.Drawing.Point(15, 64)
+        Me.lblItemsDefaultsPriceMod.Name = "lblItemsDefaultsPriceMod"
+        Me.lblItemsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
+        Me.lblItemsDefaultsPriceMod.TabIndex = 44
+        Me.lblItemsDefaultsPriceMod.Text = "Price Modifier:"
+        '
         'pnlSinglePriceLocationSelect
         '
         Me.pnlSinglePriceLocationSelect.Controls.Add(Me.gbTradeHubSystems)
@@ -8760,248 +9009,6 @@ Partial Class frmMain
         Me.chkRegion67.TabIndex = 70
         Me.chkRegion67.Text = "Wicked Creek"
         Me.chkRegion67.UseVisualStyleBackColor = True
-        '
-        'pnlPriceProfiles
-        '
-        Me.pnlPriceProfiles.Controls.Add(Me.tabPriceProfile)
-        Me.pnlPriceProfiles.Location = New System.Drawing.Point(671, 3)
-        Me.pnlPriceProfiles.Name = "pnlPriceProfiles"
-        Me.pnlPriceProfiles.Size = New System.Drawing.Size(463, 483)
-        Me.pnlPriceProfiles.TabIndex = 16
-        '
-        'tabPriceProfile
-        '
-        Me.tabPriceProfile.Controls.Add(Me.tabPriceProfileRaw)
-        Me.tabPriceProfile.Controls.Add(Me.tabPriceProfileManufactured)
-        Me.tabPriceProfile.Location = New System.Drawing.Point(3, 6)
-        Me.tabPriceProfile.Name = "tabPriceProfile"
-        Me.tabPriceProfile.SelectedIndex = 0
-        Me.tabPriceProfile.Size = New System.Drawing.Size(457, 471)
-        Me.tabPriceProfile.TabIndex = 0
-        '
-        'tabPriceProfileRaw
-        '
-        Me.tabPriceProfileRaw.Controls.Add(Me.gbRawMaterialsDefaults)
-        Me.tabPriceProfileRaw.Controls.Add(Me.lstRawPriceProfile)
-        Me.tabPriceProfileRaw.Location = New System.Drawing.Point(4, 22)
-        Me.tabPriceProfileRaw.Name = "tabPriceProfileRaw"
-        Me.tabPriceProfileRaw.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabPriceProfileRaw.Size = New System.Drawing.Size(449, 445)
-        Me.tabPriceProfileRaw.TabIndex = 0
-        Me.tabPriceProfileRaw.Text = "Raw Materials"
-        Me.tabPriceProfileRaw.UseVisualStyleBackColor = True
-        '
-        'gbRawMaterialsDefaults
-        '
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.btnRawMaterialsDefaults)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsPriceType)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsSystem)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsPriceType)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsSystem)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.cmbRawMaterialsDefaultsRegion)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsRegion)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.txtRawMaterialsDefaultsPriceMod)
-        Me.gbRawMaterialsDefaults.Controls.Add(Me.lblRawMaterialsDefaultsPriceMod)
-        Me.gbRawMaterialsDefaults.Location = New System.Drawing.Point(9, 343)
-        Me.gbRawMaterialsDefaults.Name = "gbRawMaterialsDefaults"
-        Me.gbRawMaterialsDefaults.Size = New System.Drawing.Size(431, 92)
-        Me.gbRawMaterialsDefaults.TabIndex = 53
-        Me.gbRawMaterialsDefaults.TabStop = False
-        Me.gbRawMaterialsDefaults.Text = "Set Defaults:"
-        '
-        'btnRawMaterialsDefaults
-        '
-        Me.btnRawMaterialsDefaults.Location = New System.Drawing.Point(178, 59)
-        Me.btnRawMaterialsDefaults.Name = "btnRawMaterialsDefaults"
-        Me.btnRawMaterialsDefaults.Size = New System.Drawing.Size(75, 25)
-        Me.btnRawMaterialsDefaults.TabIndex = 4
-        Me.btnRawMaterialsDefaults.Text = "Update"
-        Me.btnRawMaterialsDefaults.UseVisualStyleBackColor = True
-        '
-        'cmbRawMaterialsDefaultsPriceType
-        '
-        Me.cmbRawMaterialsDefaultsPriceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbRawMaterialsDefaultsPriceType.FormattingEnabled = True
-        Me.cmbRawMaterialsDefaultsPriceType.Items.AddRange(New Object() {"Min Sell", "Max Sell", "Avg Sell", "Median Sell", "Percentile Sell", "Min Buy", "Max Buy", "Avg Buy", "Median Buy", "Percentile Buy", "Split Price"})
-        Me.cmbRawMaterialsDefaultsPriceType.Location = New System.Drawing.Point(10, 31)
-        Me.cmbRawMaterialsDefaultsPriceType.Name = "cmbRawMaterialsDefaultsPriceType"
-        Me.cmbRawMaterialsDefaultsPriceType.Size = New System.Drawing.Size(131, 21)
-        Me.cmbRawMaterialsDefaultsPriceType.TabIndex = 0
-        '
-        'lblRawMaterialsDefaultsSystem
-        '
-        Me.lblRawMaterialsDefaultsSystem.AutoSize = True
-        Me.lblRawMaterialsDefaultsSystem.Location = New System.Drawing.Point(285, 16)
-        Me.lblRawMaterialsDefaultsSystem.Name = "lblRawMaterialsDefaultsSystem"
-        Me.lblRawMaterialsDefaultsSystem.Size = New System.Drawing.Size(44, 13)
-        Me.lblRawMaterialsDefaultsSystem.TabIndex = 51
-        Me.lblRawMaterialsDefaultsSystem.Text = "System:"
-        '
-        'lblRawMaterialsDefaultsPriceType
-        '
-        Me.lblRawMaterialsDefaultsPriceType.AutoSize = True
-        Me.lblRawMaterialsDefaultsPriceType.Location = New System.Drawing.Point(7, 17)
-        Me.lblRawMaterialsDefaultsPriceType.Name = "lblRawMaterialsDefaultsPriceType"
-        Me.lblRawMaterialsDefaultsPriceType.Size = New System.Drawing.Size(61, 13)
-        Me.lblRawMaterialsDefaultsPriceType.TabIndex = 47
-        Me.lblRawMaterialsDefaultsPriceType.Text = "Price Type:"
-        '
-        'cmbRawMaterialsDefaultsSystem
-        '
-        Me.cmbRawMaterialsDefaultsSystem.FormattingEnabled = True
-        Me.cmbRawMaterialsDefaultsSystem.Location = New System.Drawing.Point(288, 31)
-        Me.cmbRawMaterialsDefaultsSystem.Name = "cmbRawMaterialsDefaultsSystem"
-        Me.cmbRawMaterialsDefaultsSystem.Size = New System.Drawing.Size(135, 21)
-        Me.cmbRawMaterialsDefaultsSystem.TabIndex = 2
-        Me.cmbRawMaterialsDefaultsSystem.Text = "Select System"
-        '
-        'cmbRawMaterialsDefaultsRegion
-        '
-        Me.cmbRawMaterialsDefaultsRegion.FormattingEnabled = True
-        Me.cmbRawMaterialsDefaultsRegion.Location = New System.Drawing.Point(147, 31)
-        Me.cmbRawMaterialsDefaultsRegion.Name = "cmbRawMaterialsDefaultsRegion"
-        Me.cmbRawMaterialsDefaultsRegion.Size = New System.Drawing.Size(135, 21)
-        Me.cmbRawMaterialsDefaultsRegion.TabIndex = 1
-        Me.cmbRawMaterialsDefaultsRegion.Text = "Select Region"
-        '
-        'lblRawMaterialsDefaultsRegion
-        '
-        Me.lblRawMaterialsDefaultsRegion.AutoSize = True
-        Me.lblRawMaterialsDefaultsRegion.Location = New System.Drawing.Point(144, 17)
-        Me.lblRawMaterialsDefaultsRegion.Name = "lblRawMaterialsDefaultsRegion"
-        Me.lblRawMaterialsDefaultsRegion.Size = New System.Drawing.Size(44, 13)
-        Me.lblRawMaterialsDefaultsRegion.TabIndex = 50
-        Me.lblRawMaterialsDefaultsRegion.Text = "Region:"
-        '
-        'txtRawMaterialsDefaultsPriceMod
-        '
-        Me.txtRawMaterialsDefaultsPriceMod.Location = New System.Drawing.Point(95, 61)
-        Me.txtRawMaterialsDefaultsPriceMod.Name = "txtRawMaterialsDefaultsPriceMod"
-        Me.txtRawMaterialsDefaultsPriceMod.Size = New System.Drawing.Size(46, 20)
-        Me.txtRawMaterialsDefaultsPriceMod.TabIndex = 3
-        Me.txtRawMaterialsDefaultsPriceMod.Text = "0.0%"
-        Me.txtRawMaterialsDefaultsPriceMod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblRawMaterialsDefaultsPriceMod
-        '
-        Me.lblRawMaterialsDefaultsPriceMod.AutoSize = True
-        Me.lblRawMaterialsDefaultsPriceMod.Location = New System.Drawing.Point(15, 64)
-        Me.lblRawMaterialsDefaultsPriceMod.Name = "lblRawMaterialsDefaultsPriceMod"
-        Me.lblRawMaterialsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
-        Me.lblRawMaterialsDefaultsPriceMod.TabIndex = 44
-        Me.lblRawMaterialsDefaultsPriceMod.Text = "Price Modifier:"
-        '
-        'tabPriceProfileManufactured
-        '
-        Me.tabPriceProfileManufactured.Controls.Add(Me.ItemsDefaults)
-        Me.tabPriceProfileManufactured.Controls.Add(Me.lstManufacturedPriceProfile)
-        Me.tabPriceProfileManufactured.Location = New System.Drawing.Point(4, 22)
-        Me.tabPriceProfileManufactured.Name = "tabPriceProfileManufactured"
-        Me.tabPriceProfileManufactured.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabPriceProfileManufactured.Size = New System.Drawing.Size(449, 445)
-        Me.tabPriceProfileManufactured.TabIndex = 1
-        Me.tabPriceProfileManufactured.Text = "Manufactured Items"
-        Me.tabPriceProfileManufactured.UseVisualStyleBackColor = True
-        '
-        'ItemsDefaults
-        '
-        Me.ItemsDefaults.Controls.Add(Me.btnItemsDefaults)
-        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsPriceType)
-        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsSystem)
-        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsPriceType)
-        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsSystem)
-        Me.ItemsDefaults.Controls.Add(Me.cmbItemsDefaultsRegion)
-        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsRegion)
-        Me.ItemsDefaults.Controls.Add(Me.txtItemsDefaultsPriceMod)
-        Me.ItemsDefaults.Controls.Add(Me.lblItemsDefaultsPriceMod)
-        Me.ItemsDefaults.Location = New System.Drawing.Point(9, 343)
-        Me.ItemsDefaults.Name = "ItemsDefaults"
-        Me.ItemsDefaults.Size = New System.Drawing.Size(431, 92)
-        Me.ItemsDefaults.TabIndex = 54
-        Me.ItemsDefaults.TabStop = False
-        Me.ItemsDefaults.Text = "Set Defaults:"
-        '
-        'btnItemsDefaults
-        '
-        Me.btnItemsDefaults.Location = New System.Drawing.Point(178, 59)
-        Me.btnItemsDefaults.Name = "btnItemsDefaults"
-        Me.btnItemsDefaults.Size = New System.Drawing.Size(75, 25)
-        Me.btnItemsDefaults.TabIndex = 4
-        Me.btnItemsDefaults.Text = "Update"
-        Me.btnItemsDefaults.UseVisualStyleBackColor = True
-        '
-        'cmbItemsDefaultsPriceType
-        '
-        Me.cmbItemsDefaultsPriceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbItemsDefaultsPriceType.FormattingEnabled = True
-        Me.cmbItemsDefaultsPriceType.Items.AddRange(New Object() {"Min Sell", "Max Sell", "Avg Sell", "Median Sell", "Percentile Sell", "Min Buy", "Max Buy", "Avg Buy", "Median Buy", "Percentile Buy", "Min Buy & Sell", "Max Buy & Sell", "Avg Buy & Sell", "Median Buy & Sell", "Percentile Buy & Sell"})
-        Me.cmbItemsDefaultsPriceType.Location = New System.Drawing.Point(10, 31)
-        Me.cmbItemsDefaultsPriceType.Name = "cmbItemsDefaultsPriceType"
-        Me.cmbItemsDefaultsPriceType.Size = New System.Drawing.Size(131, 21)
-        Me.cmbItemsDefaultsPriceType.TabIndex = 0
-        '
-        'lblItemsDefaultsSystem
-        '
-        Me.lblItemsDefaultsSystem.AutoSize = True
-        Me.lblItemsDefaultsSystem.Location = New System.Drawing.Point(285, 16)
-        Me.lblItemsDefaultsSystem.Name = "lblItemsDefaultsSystem"
-        Me.lblItemsDefaultsSystem.Size = New System.Drawing.Size(44, 13)
-        Me.lblItemsDefaultsSystem.TabIndex = 51
-        Me.lblItemsDefaultsSystem.Text = "System:"
-        '
-        'lblItemsDefaultsPriceType
-        '
-        Me.lblItemsDefaultsPriceType.AutoSize = True
-        Me.lblItemsDefaultsPriceType.Location = New System.Drawing.Point(7, 17)
-        Me.lblItemsDefaultsPriceType.Name = "lblItemsDefaultsPriceType"
-        Me.lblItemsDefaultsPriceType.Size = New System.Drawing.Size(61, 13)
-        Me.lblItemsDefaultsPriceType.TabIndex = 47
-        Me.lblItemsDefaultsPriceType.Text = "Price Type:"
-        '
-        'cmbItemsDefaultsSystem
-        '
-        Me.cmbItemsDefaultsSystem.FormattingEnabled = True
-        Me.cmbItemsDefaultsSystem.Location = New System.Drawing.Point(288, 31)
-        Me.cmbItemsDefaultsSystem.Name = "cmbItemsDefaultsSystem"
-        Me.cmbItemsDefaultsSystem.Size = New System.Drawing.Size(135, 21)
-        Me.cmbItemsDefaultsSystem.TabIndex = 2
-        Me.cmbItemsDefaultsSystem.Text = "Select System"
-        '
-        'cmbItemsDefaultsRegion
-        '
-        Me.cmbItemsDefaultsRegion.FormattingEnabled = True
-        Me.cmbItemsDefaultsRegion.Location = New System.Drawing.Point(147, 31)
-        Me.cmbItemsDefaultsRegion.Name = "cmbItemsDefaultsRegion"
-        Me.cmbItemsDefaultsRegion.Size = New System.Drawing.Size(135, 21)
-        Me.cmbItemsDefaultsRegion.TabIndex = 1
-        Me.cmbItemsDefaultsRegion.Text = "Select Region"
-        '
-        'lblItemsDefaultsRegion
-        '
-        Me.lblItemsDefaultsRegion.AutoSize = True
-        Me.lblItemsDefaultsRegion.Location = New System.Drawing.Point(144, 17)
-        Me.lblItemsDefaultsRegion.Name = "lblItemsDefaultsRegion"
-        Me.lblItemsDefaultsRegion.Size = New System.Drawing.Size(44, 13)
-        Me.lblItemsDefaultsRegion.TabIndex = 50
-        Me.lblItemsDefaultsRegion.Text = "Region:"
-        '
-        'txtItemsDefaultsPriceMod
-        '
-        Me.txtItemsDefaultsPriceMod.Location = New System.Drawing.Point(95, 61)
-        Me.txtItemsDefaultsPriceMod.Name = "txtItemsDefaultsPriceMod"
-        Me.txtItemsDefaultsPriceMod.Size = New System.Drawing.Size(46, 20)
-        Me.txtItemsDefaultsPriceMod.TabIndex = 3
-        Me.txtItemsDefaultsPriceMod.Text = "0.0%"
-        Me.txtItemsDefaultsPriceMod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblItemsDefaultsPriceMod
-        '
-        Me.lblItemsDefaultsPriceMod.AutoSize = True
-        Me.lblItemsDefaultsPriceMod.Location = New System.Drawing.Point(15, 64)
-        Me.lblItemsDefaultsPriceMod.Name = "lblItemsDefaultsPriceMod"
-        Me.lblItemsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
-        Me.lblItemsDefaultsPriceMod.TabIndex = 44
-        Me.lblItemsDefaultsPriceMod.Text = "Price Modifier:"
         '
         'tabBlueprints
         '
@@ -10951,6 +10958,42 @@ Partial Class frmMain
         Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
         Me.CalcReactionsFacility.TabIndex = 1
         '
+        'rbtnCalcRawT2MatType
+        '
+        Me.rbtnCalcRawT2MatType.AutoSize = True
+        Me.rbtnCalcRawT2MatType.BackColor = System.Drawing.Color.Transparent
+        Me.rbtnCalcRawT2MatType.Location = New System.Drawing.Point(7, 49)
+        Me.rbtnCalcRawT2MatType.Name = "rbtnCalcRawT2MatType"
+        Me.rbtnCalcRawT2MatType.Size = New System.Drawing.Size(47, 17)
+        Me.rbtnCalcRawT2MatType.TabIndex = 78
+        Me.rbtnCalcRawT2MatType.TabStop = True
+        Me.rbtnCalcRawT2MatType.Text = "Raw"
+        Me.rbtnCalcRawT2MatType.UseVisualStyleBackColor = False
+        '
+        'rbtnCalcProcT2MatType
+        '
+        Me.rbtnCalcProcT2MatType.AutoSize = True
+        Me.rbtnCalcProcT2MatType.BackColor = System.Drawing.Color.Transparent
+        Me.rbtnCalcProcT2MatType.Location = New System.Drawing.Point(7, 33)
+        Me.rbtnCalcProcT2MatType.Name = "rbtnCalcProcT2MatType"
+        Me.rbtnCalcProcT2MatType.Size = New System.Drawing.Size(75, 17)
+        Me.rbtnCalcProcT2MatType.TabIndex = 77
+        Me.rbtnCalcProcT2MatType.TabStop = True
+        Me.rbtnCalcProcT2MatType.Text = "Processed"
+        Me.rbtnCalcProcT2MatType.UseVisualStyleBackColor = False
+        '
+        'rbtnCalcAdvT2MatType
+        '
+        Me.rbtnCalcAdvT2MatType.AutoSize = True
+        Me.rbtnCalcAdvT2MatType.BackColor = System.Drawing.Color.Transparent
+        Me.rbtnCalcAdvT2MatType.Location = New System.Drawing.Point(7, 17)
+        Me.rbtnCalcAdvT2MatType.Name = "rbtnCalcAdvT2MatType"
+        Me.rbtnCalcAdvT2MatType.Size = New System.Drawing.Size(74, 17)
+        Me.rbtnCalcAdvT2MatType.TabIndex = 76
+        Me.rbtnCalcAdvT2MatType.TabStop = True
+        Me.rbtnCalcAdvT2MatType.Text = "Advanced"
+        Me.rbtnCalcAdvT2MatType.UseVisualStyleBackColor = False
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11059,6 +11102,7 @@ Partial Class frmMain
         Me.gbIncludeTaxesFees.ResumeLayout(False)
         Me.gbIncludeTaxesFees.PerformLayout()
         Me.gbCalcSellExessItems.ResumeLayout(False)
+        Me.gbCalcSellExessItems.PerformLayout()
         Me.gbCalcIncludeItems.ResumeLayout(False)
         Me.gbCalcIncludeItems.PerformLayout()
         Me.gbCalcMarketFilters.ResumeLayout(False)
@@ -11122,11 +11166,6 @@ Partial Class frmMain
         Me.gbPricesTech.PerformLayout()
         Me.gbRawMaterials.ResumeLayout(False)
         Me.gbRawMaterials.PerformLayout()
-        Me.pnlSinglePriceLocationSelect.ResumeLayout(False)
-        Me.gbTradeHubSystems.ResumeLayout(False)
-        Me.gbTradeHubSystems.PerformLayout()
-        Me.gbRegions.ResumeLayout(False)
-        Me.gbRegions.PerformLayout()
         Me.pnlPriceProfiles.ResumeLayout(False)
         Me.tabPriceProfile.ResumeLayout(False)
         Me.tabPriceProfileRaw.ResumeLayout(False)
@@ -11135,6 +11174,11 @@ Partial Class frmMain
         Me.tabPriceProfileManufactured.ResumeLayout(False)
         Me.ItemsDefaults.ResumeLayout(False)
         Me.ItemsDefaults.PerformLayout()
+        Me.pnlSinglePriceLocationSelect.ResumeLayout(False)
+        Me.gbTradeHubSystems.ResumeLayout(False)
+        Me.gbTradeHubSystems.PerformLayout()
+        Me.gbRegions.ResumeLayout(False)
+        Me.gbRegions.PerformLayout()
         Me.tabBlueprints.ResumeLayout(False)
         Me.tabBlueprints.PerformLayout()
         Me.gbBPBlueprintType.ResumeLayout(False)
@@ -12147,4 +12191,7 @@ Partial Class frmMain
     Friend WithEvents txtMineBrokerFeeRate As TextBox
     Friend WithEvents chkMineTriglavian As CheckBox
     Friend WithEvents mnuResetBuildBuyManualSelections As ToolStripMenuItem
+    Friend WithEvents rbtnCalcAdvT2MatType As RadioButton
+    Private WithEvents rbtnCalcProcT2MatType As RadioButton
+    Friend WithEvents rbtnCalcRawT2MatType As RadioButton
 End Class

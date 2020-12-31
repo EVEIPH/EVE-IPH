@@ -49,12 +49,9 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
-        Me.rbtnBuildT2T3AdvancedMats = New System.Windows.Forms.RadioButton()
-        Me.rbtnBuildT2T3RawMats = New System.Windows.Forms.RadioButton()
         Me.chkSaveBPRelicsDecryptors = New System.Windows.Forms.CheckBox()
         Me.chkBuildBuyDefault = New System.Windows.Forms.CheckBox()
         Me.chkSuggestBuildwhenBPnotOwned = New System.Windows.Forms.CheckBox()
-        Me.rbtnBuildT2ProcessedMats = New System.Windows.Forms.RadioButton()
         Me.chkBeanCounterCopy = New System.Windows.Forms.CheckBox()
         Me.cmbBeanCounterCopy = New System.Windows.Forms.ComboBox()
         Me.gbDefaultMEPE = New System.Windows.Forms.GroupBox()
@@ -354,40 +351,15 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
-        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2T3AdvancedMats)
-        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2T3RawMats)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildBuyDefault)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
-        Me.gbBuildBuySettings.Controls.Add(Me.rbtnBuildT2ProcessedMats)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
         Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 174)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
-        '
-        'rbtnBuildT2T3AdvancedMats
-        '
-        Me.rbtnBuildT2T3AdvancedMats.AutoSize = True
-        Me.rbtnBuildT2T3AdvancedMats.Location = New System.Drawing.Point(9, 81)
-        Me.rbtnBuildT2T3AdvancedMats.Name = "rbtnBuildT2T3AdvancedMats"
-        Me.rbtnBuildT2T3AdvancedMats.Size = New System.Drawing.Size(228, 17)
-        Me.rbtnBuildT2T3AdvancedMats.TabIndex = 41
-        Me.rbtnBuildT2T3AdvancedMats.TabStop = True
-        Me.rbtnBuildT2T3AdvancedMats.Text = "Build T2/T3 with Adv. Moon/Gas Materials"
-        Me.rbtnBuildT2T3AdvancedMats.UseVisualStyleBackColor = True
-        '
-        'rbtnBuildT2T3RawMats
-        '
-        Me.rbtnBuildT2T3RawMats.AutoSize = True
-        Me.rbtnBuildT2T3RawMats.Location = New System.Drawing.Point(9, 121)
-        Me.rbtnBuildT2T3RawMats.Name = "rbtnBuildT2T3RawMats"
-        Me.rbtnBuildT2T3RawMats.Size = New System.Drawing.Size(228, 17)
-        Me.rbtnBuildT2T3RawMats.TabIndex = 40
-        Me.rbtnBuildT2T3RawMats.TabStop = True
-        Me.rbtnBuildT2T3RawMats.Text = "Build T2/T3 with Raw Moon/Gas Materials"
-        Me.rbtnBuildT2T3RawMats.UseVisualStyleBackColor = True
         '
         'chkSaveBPRelicsDecryptors
         '
@@ -418,17 +390,6 @@ Partial Class frmSettings
         Me.chkSuggestBuildwhenBPnotOwned.TabIndex = 37
         Me.chkSuggestBuildwhenBPnotOwned.Text = "Suggest Build option when BP not owned"
         Me.chkSuggestBuildwhenBPnotOwned.UseVisualStyleBackColor = True
-        '
-        'rbtnBuildT2ProcessedMats
-        '
-        Me.rbtnBuildT2ProcessedMats.AutoSize = True
-        Me.rbtnBuildT2ProcessedMats.Location = New System.Drawing.Point(9, 101)
-        Me.rbtnBuildT2ProcessedMats.Name = "rbtnBuildT2ProcessedMats"
-        Me.rbtnBuildT2ProcessedMats.Size = New System.Drawing.Size(214, 17)
-        Me.rbtnBuildT2ProcessedMats.TabIndex = 39
-        Me.rbtnBuildT2ProcessedMats.TabStop = True
-        Me.rbtnBuildT2ProcessedMats.Text = "Build T2 with Processed Moon Materials"
-        Me.rbtnBuildT2ProcessedMats.UseVisualStyleBackColor = True
         '
         'chkBeanCounterCopy
         '
@@ -956,9 +917,6 @@ Partial Class frmSettings
     Friend WithEvents lblProxyAddress As System.Windows.Forms.Label
     Friend WithEvents txtProxyPort As System.Windows.Forms.TextBox
     Friend WithEvents lblProxyPort As System.Windows.Forms.Label
-    Friend WithEvents rbtnBuildT2T3RawMats As RadioButton
-    Friend WithEvents rbtnBuildT2ProcessedMats As RadioButton
-    Friend WithEvents rbtnBuildT2T3AdvancedMats As RadioButton
     Friend WithEvents chkLoadBPsbyChar As CheckBox
     Friend WithEvents chkSaveFacilitiesbyChar As CheckBox
     Friend WithEvents chkRefreshPublicStructureDataonStartup As CheckBox

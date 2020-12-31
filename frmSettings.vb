@@ -211,15 +211,15 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2T3AdvancedMats.CheckedChanged
+    Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs)
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub rbtnBuildT2ProcessedMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2ProcessedMats.CheckedChanged
+    Private Sub rbtnBuildT2ProcessedMats_CheckedChanged(sender As Object, e As EventArgs)
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub rbtnBuildT2T3RawMats_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBuildT2T3RawMats.CheckedChanged
+    Private Sub rbtnBuildT2T3RawMats_CheckedChanged(sender As Object, e As EventArgs)
         btnSave.Text = "Save"
     End Sub
 
@@ -346,14 +346,6 @@ Public Class frmSettings
                 .SetToolTip(chkUseActiveSkills, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha)")
                 .SetToolTip(chkLoadMaxAlphaSkills, "When checked, IPH will load the maximum trainable alpha skills for a dummy character.")
 
-                ' Build Settings
-                .SetToolTip(chkBuildBuyDefault, "When checked, BP builds will use Build/Buy calcuations for final costs")
-                .SetToolTip(chkSuggestBuildwhenBPnotOwned, "If you do not own a component BP and this is checked, then IPH will suggest you build the item anyway if the price is cheaper than buying it")
-                .SetToolTip(chkSaveBPRelicsDecryptors, "When selected, Saving Settings on the BP tab will also save the Decryptor and Relic Types if selected and autoload them for each relevant BP")
-                .SetToolTip(rbtnBuildT2T3AdvancedMats, "When selected, blueprints will be built using Advanced Moon materials (e.g. Fullerides)")
-                .SetToolTip(rbtnBuildT2ProcessedMats, "When selected, blueprints will be built using Processed Moon materials, which are used in reactions to make Advanced Moon Materials")
-                .SetToolTip(rbtnBuildT2T3RawMats, "When selected, blueprints will be built using Raw Moon materials, which are used in reactions to make Processed Moon Materials")
-
                 ' Tips by Group box
                 .SetToolTip(gbImplants, "Select implants to use with selected characters for industry calculations")
                 .SetToolTip(gbDefaultMEPE, "On the BP and Manufacturing tabs, these default ME and TE values will be used for non-owned blueprints")
@@ -471,15 +463,6 @@ Public Class frmSettings
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
-
-            Select Case .BuildT2T3Materials
-                Case BuildMatType.AdvMaterials
-                    rbtnBuildT2T3AdvancedMats.Checked = True
-                Case BuildMatType.ProcessedMaterials
-                    rbtnBuildT2ProcessedMats.Checked = True
-                Case BuildMatType.RawMaterials
-                    rbtnBuildT2T3RawMats.Checked = True
-            End Select
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
@@ -663,15 +646,6 @@ Public Class frmSettings
 
                 ' Default build/buy
                 .CheckBuildBuy = CBool(chkBuildBuyDefault.Checked)
-
-                ' How they want to build T2/T3 items
-                If rbtnBuildT2T3AdvancedMats.Checked Then
-                    .BuildT2T3Materials = BuildMatType.AdvMaterials
-                ElseIf rbtnBuildT2ProcessedMats.Checked Then
-                    .BuildT2T3Materials = BuildMatType.ProcessedMaterials
-                ElseIf rbtnBuildT2T3RawMats.Checked Then
-                    .BuildT2T3Materials = BuildMatType.RawMaterials
-                End If
 
                 .DefaultBPME = CInt(txtDefaultME.Text)
                 .DefaultBPTE = CInt(txtDefaultTE.Text)

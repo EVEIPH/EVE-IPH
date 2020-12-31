@@ -1361,6 +1361,14 @@ Public Class frmMain
         End If
     End Function
 
+    Private Sub ProcessT2MatSelection()
+        If Not FirstLoad And Not UpdatingCheck Then
+            If Not IsNothing(SelectedBlueprint) Then
+                Call RefreshBP()
+            End If
+        End If
+    End Sub
+
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
     Private Sub ToolStripMenuItem1_Click(sender As System.Object, e As System.EventArgs) Handles tsCharacter1.Click
         Call LoadSelectedCharacter(tsCharacter1.Text)
@@ -3508,34 +3516,22 @@ Tabs:
 
     Private Sub rbtnBPAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPAdvT2MatType.CheckedChanged
         If rbtnBPAdvT2MatType.Checked Then
+            UserBPTabSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
             Call ProcessT2MatSelection()
         End If
     End Sub
 
     Private Sub rbtnBPProcT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPProcT2MatType.CheckedChanged
         If rbtnBPProcT2MatType.Checked Then
+            UserBPTabSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials
             Call ProcessT2MatSelection()
         End If
     End Sub
 
     Private Sub rbtnBPRawT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPRawT2MatType.CheckedChanged
         If rbtnBPRawT2MatType.Checked Then
+            UserBPTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials
             Call ProcessT2MatSelection()
-        End If
-    End Sub
-
-    Private Sub ProcessT2MatSelection()
-        If Not FirstLoad And Not UpdatingCheck Then
-            If rbtnBPAdvT2MatType.Checked Then
-                UserApplicationSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
-                Call RefreshBP()
-            ElseIf rbtnBPProcT2MatType.Checked Then
-                UserApplicationSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials
-                Call RefreshBP()
-            ElseIf rbtnBPRawT2MatType.Checked Then
-                UserApplicationSettings.BuildT2T3Materials = BuildMatType.RawMaterials
-                Call RefreshBP()
-            End If
         End If
     End Sub
 
@@ -5443,7 +5439,7 @@ Tabs:
             rbtnBPProcT2MatType.Enabled = False
             rbtnBPRawT2MatType.Enabled = False
 
-            Select Case UserApplicationSettings.BuildT2T3Materials
+            Select Case .BuildT2T3Materials
                 Case BuildMatType.AdvMaterials
                     rbtnBPAdvT2MatType.Checked = True
                 Case BuildMatType.ProcessedMaterials
@@ -5712,6 +5708,15 @@ Tabs:
                 .CompProfitType = "Percent"
             Else
                 .CompProfitType = "Profit"
+            End If
+
+            ' How they want to build T2/T3 items
+            If rbtnBPAdvT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.AdvMaterials
+            ElseIf rbtnBPProcT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.ProcessedMaterials
+            ElseIf rbtnBPRawT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.RawMaterials
             End If
 
         End With
@@ -6330,10 +6335,11 @@ Tabs:
             BPBuildBuyPref = Nothing
         End If
 
-        ' Construct our Blueprint
+        ' Construct Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
-                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked, BPBuildBuyPref)
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+                                          UserBPTabSettings.BuildT2T3Materials, BPBuildBuyPref)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -11119,6 +11125,30 @@ CheckTechs:
 
     End Sub
 
+    Private Sub rbtnCalcRawT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCalcRawT2MatType.CheckedChanged
+        If rbtnCalcRawT2MatType.Checked Then
+            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
+            Call ResetRefresh()
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
+    Private Sub rbtnCalcProcT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCalcProcT2MatType.CheckedChanged
+        If rbtnCalcProcT2MatType.Checked Then
+            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials
+            Call ResetRefresh()
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
+    Private Sub rbtnCalcAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCalcAdvT2MatType.CheckedChanged
+        If rbtnCalcAdvT2MatType.Checked Then
+            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials
+            Call ResetRefresh()
+            Call ProcessT2MatSelection()
+        End If
+    End Sub
+
     Private Sub txtCalcProdLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtCalcProdLines.DoubleClick
         ' Enter the max lines we have
         txtCalcProdLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
@@ -13220,6 +13250,15 @@ CheckTechs:
 
             chkCalcSellExessItems.Checked = .CheckSellExcessItems
 
+            Select Case .BuildT2T3Materials
+                Case BuildMatType.AdvMaterials
+                    rbtnCalcAdvT2MatType.Checked = True
+                Case BuildMatType.ProcessedMaterials
+                    rbtnCalcProcT2MatType.Checked = True
+                Case BuildMatType.RawMaterials
+                    rbtnCalcRawT2MatType.Checked = True
+            End Select
+
             ' Check wrecked Relics, do not check meta levels or decryptors (NONE)
             chkCalcDecryptor0.CheckState = CType(.CheckDecryptorOptimal, CheckState)
             chkCalcDecryptor1.Checked = .CheckDecryptorNone ' No decryptor
@@ -13582,6 +13621,15 @@ CheckTechs:
             .VolumeThresholdCheck = chkCalcVolumeThreshold.Checked
             .VolumeThreshold = CDbl(txtCalcVolumeThreshold.Text)
 
+            ' How they want to build T2/T3 items
+            If rbtnCalcAdvT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.AdvMaterials
+            ElseIf rbtnCalcProcT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.ProcessedMaterials
+            ElseIf rbtnCalcRawT2MatType.Checked Then
+                .BuildT2T3Materials = BuildMatType.RawMaterials
+            End If
+
             Select Case chkCalcProfitThreshold.CheckState
                 Case CheckState.Checked
                     .ProfitThresholdCheck = CheckState.Checked
@@ -13596,16 +13644,19 @@ CheckTechs:
             End Select
 
             ' Save these here as well as in settings
-            UserApplicationSettings.DefaultBPME = CInt(txtCalcTempME.Text)
-            UserApplicationSettings.DefaultBPTE = CInt(txtCalcTempTE.Text)
+            With UserApplicationSettings
+                .DefaultBPME = CInt(txtCalcTempME.Text)
+                .DefaultBPTE = CInt(txtCalcTempTE.Text)
 
-            UserApplicationSettings.IgnoreSVRThresholdValue = CDbl(txtCalcSVRThreshold.Text)
-            UserApplicationSettings.SVRAveragePriceRegion = cmbCalcHistoryRegion.Text
-            UserApplicationSettings.SVRAveragePriceDuration = cmbCalcAvgPriceDuration.Text
+                .IgnoreSVRThresholdValue = CDbl(txtCalcSVRThreshold.Text)
+                .SVRAveragePriceRegion = cmbCalcHistoryRegion.Text
+                .SVRAveragePriceDuration = cmbCalcAvgPriceDuration.Text
+            End With
 
             Call Settings.SaveApplicationSettings(UserApplicationSettings)
 
         End With
+
 
         ' Save the data in the XML file
         Call Settings.SaveManufacturingSettings(TempSettings)
@@ -14397,9 +14448,10 @@ CheckTechs:
 
                     ' Construct the BP
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
-                                   NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                   UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
-                                   InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility, chkCalcSellExessItems.Checked)
+                                                           NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
+                                                           UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
+                                                           InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility,
+                                                           chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials)
 
                     ' Set the T2 and T3 inputs if necessary
                     If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
@@ -14604,7 +14656,7 @@ CheckTechs:
                                                         NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                                         UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
-                                                        InsertItem.ReactionFacility, chkCalcSellExessItems.Checked)
+                                                        InsertItem.ReactionFacility, chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials)
 
                             If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP

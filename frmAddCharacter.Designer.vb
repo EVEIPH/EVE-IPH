@@ -22,6 +22,7 @@ Partial Class frmAddCharacter
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmAddCharacter))
         Me.btnEVESSOLogin = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
@@ -40,11 +41,12 @@ Partial Class frmAddCharacter
         Me.gbCorp = New System.Windows.Forms.GroupBox()
         Me.gbCharacter = New System.Windows.Forms.GroupBox()
         Me.gbStructures = New System.Windows.Forms.GroupBox()
+        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
+        Me.CheckBox4 = New System.Windows.Forms.CheckBox()
+        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox4 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
+        Me.ttAPI = New System.Windows.Forms.ToolTip(Me.components)
         Me.gbCorp.SuspendLayout()
         Me.gbCharacter.SuspendLayout()
         Me.gbStructures.SuspendLayout()
@@ -233,6 +235,36 @@ Partial Class frmAddCharacter
         Me.gbStructures.TabStop = False
         Me.gbStructures.Text = "Structures"
         '
+        'CheckBox5
+        '
+        Me.CheckBox5.AutoSize = True
+        Me.CheckBox5.Location = New System.Drawing.Point(-232, -53)
+        Me.CheckBox5.Name = "CheckBox5"
+        Me.CheckBox5.Size = New System.Drawing.Size(193, 17)
+        Me.CheckBox5.TabIndex = 17
+        Me.CheckBox5.Text = "esi-industry.read_character_jobs.v1"
+        Me.CheckBox5.UseVisualStyleBackColor = True
+        '
+        'CheckBox4
+        '
+        Me.CheckBox4.AutoSize = True
+        Me.CheckBox4.Location = New System.Drawing.Point(-232, -99)
+        Me.CheckBox4.Name = "CheckBox4"
+        Me.CheckBox4.Size = New System.Drawing.Size(182, 17)
+        Me.CheckBox4.TabIndex = 16
+        Me.CheckBox4.Text = "esi-characters.read_standings.v1"
+        Me.CheckBox4.UseVisualStyleBackColor = True
+        '
+        'CheckBox3
+        '
+        Me.CheckBox3.AutoSize = True
+        Me.CheckBox3.Location = New System.Drawing.Point(-232, -76)
+        Me.CheckBox3.Name = "CheckBox3"
+        Me.CheckBox3.Size = New System.Drawing.Size(216, 17)
+        Me.CheckBox3.TabIndex = 18
+        Me.CheckBox3.Text = "esi-characters.read_agents_research.v1"
+        Me.CheckBox3.UseVisualStyleBackColor = True
+        '
         'CheckBox1
         '
         Me.CheckBox1.AutoSize = True
@@ -252,36 +284,6 @@ Partial Class frmAddCharacter
         Me.CheckBox2.TabIndex = 19
         Me.CheckBox2.Text = "esi-assets.read_assets.v1"
         Me.CheckBox2.UseVisualStyleBackColor = True
-        '
-        'CheckBox3
-        '
-        Me.CheckBox3.AutoSize = True
-        Me.CheckBox3.Location = New System.Drawing.Point(-232, -76)
-        Me.CheckBox3.Name = "CheckBox3"
-        Me.CheckBox3.Size = New System.Drawing.Size(216, 17)
-        Me.CheckBox3.TabIndex = 18
-        Me.CheckBox3.Text = "esi-characters.read_agents_research.v1"
-        Me.CheckBox3.UseVisualStyleBackColor = True
-        '
-        'CheckBox4
-        '
-        Me.CheckBox4.AutoSize = True
-        Me.CheckBox4.Location = New System.Drawing.Point(-232, -99)
-        Me.CheckBox4.Name = "CheckBox4"
-        Me.CheckBox4.Size = New System.Drawing.Size(182, 17)
-        Me.CheckBox4.TabIndex = 16
-        Me.CheckBox4.Text = "esi-characters.read_standings.v1"
-        Me.CheckBox4.UseVisualStyleBackColor = True
-        '
-        'CheckBox5
-        '
-        Me.CheckBox5.AutoSize = True
-        Me.CheckBox5.Location = New System.Drawing.Point(-232, -53)
-        Me.CheckBox5.Name = "CheckBox5"
-        Me.CheckBox5.Size = New System.Drawing.Size(193, 17)
-        Me.CheckBox5.TabIndex = 17
-        Me.CheckBox5.Text = "esi-industry.read_character_jobs.v1"
-        Me.CheckBox5.UseVisualStyleBackColor = True
         '
         'frmAddCharacter
         '
@@ -332,4 +334,5 @@ Partial Class frmAddCharacter
     Friend WithEvents CheckBox3 As CheckBox
     Friend WithEvents CheckBox1 As CheckBox
     Friend WithEvents CheckBox2 As CheckBox
+    Friend WithEvents ttAPI As ToolTip
 End Class
