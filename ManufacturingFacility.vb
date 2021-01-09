@@ -1185,6 +1185,7 @@ Public Class ManufacturingFacility
             ' Make sure default is not checked yet
             Call SetDefaultVisuals(False)
             btnFacilitySave.Enabled = False
+            btnFacilityFitting.Visible = False
             chkFacilityIncludeUsage.Enabled = False
             chkFacilityIncludeCost.Enabled = False
             chkFacilityIncludeTime.Enabled = False
@@ -2881,7 +2882,9 @@ Public Class ManufacturingFacility
             lblFacilityDefault.ForeColor = FacilityLabelNonDefaultColor
             lblFacilityDefault.Visible = True
             Call ResetToolTipforDefaultFacilityLabel(True)
-            btnFacilitySave.Enabled = True
+            If SelectedFacility.FullyLoaded Then
+                btnFacilitySave.Enabled = True
+            End If
         End If
     End Sub
 

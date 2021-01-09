@@ -4636,7 +4636,11 @@ Tabs:
     End Sub
 
     Private Sub lblBPBPSVR_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBPBPSVR.DoubleClick
-        lblBPBPSVR.Text = GetBPItemSVR(SelectedBlueprint.GetProductionTime) ' just bp time
+        If chkBPBuildBuy.Checked Then
+            lblBPBPSVR.Text = GetBPItemSVR(SelectedBlueprint.GetTotalProductionTime) ' use total time since they are both the same
+        Else
+            lblBPBPSVR.Text = GetBPItemSVR(SelectedBlueprint.GetProductionTime) ' just bp time
+        End If
     End Sub
 
     Private Sub lblBPRawSVR_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBPRawSVR.DoubleClick
@@ -7018,15 +7022,20 @@ ExitForm:
         lblBPRawSVR.Text = "-"
 
         If UserApplicationSettings.AutoUpdateSVRonBPTab Then
-            Dim TempBPSVR As String = GetBPItemSVR(SelectedBlueprint.GetProductionTime)
             Dim TempRawSVR As String = GetBPItemSVR(SelectedBlueprint.GetTotalProductionTime)
+            Dim TempBPSVR As String
+            If chkBPBuildBuy.Checked Then
+                TempBPSVR = TempRawSVR
+            Else
+                TempBPSVR = GetBPItemSVR(SelectedBlueprint.GetProductionTime)
+            End If
             ' Get the values before setting so they update at the same time on the form
             lblBPBPSVR.Text = TempBPSVR
-            lblBPRawSVR.Text = TempRawSVR
-        End If
+                lblBPRawSVR.Text = TempRawSVR
+            End If
 
-        ' Set the ME and TE values if they changed
-        txtBPME.Text = CStr(SelectedBlueprint.GetME)
+            ' Set the ME and TE values if they changed
+            txtBPME.Text = CStr(SelectedBlueprint.GetME)
         txtBPTE.Text = CStr(SelectedBlueprint.GetTE)
 
     End Sub
@@ -10888,6 +10897,7 @@ ExitSub:
         Dim BPStream As StreamReader = Nothing
         Dim openFileDialog1 As New OpenFileDialog()
         Dim Line As String
+        Dim Header As String = ""
         Dim ParsedLine As String()
         Dim Separator As String = ""
         Dim FileType As String
@@ -10918,7 +10928,7 @@ ExitSub:
 
                 If (BPStream IsNot Nothing) Then
                     ' Read the file line by line here, start with headers
-                    Line = BPStream.ReadLine
+                    Header = BPStream.ReadLine
                     Line = BPStream.ReadLine ' First line of data
 
                     If Line Is Nothing Then
@@ -10934,7 +10944,7 @@ ExitSub:
 
                     While Line IsNot Nothing
                         Application.DoEvents()
-                        ' Format is: Group Name, Item Name, Price, Price Type, Raw Material, Type ID
+                        ' Format for IPH saved file is is: Group Name, Item Name, Price, Price Type, Raw Material, Type ID
 
                         ' Parse it
                         Select Case FileType
@@ -10942,8 +10952,17 @@ ExitSub:
                                 ParsedLine = Line.Split(New Char() {","c}, StringSplitOptions.RemoveEmptyEntries)
                             Case SSVDataExport
                                 ParsedLine = Line.Split(New Char() {";"c}, StringSplitOptions.RemoveEmptyEntries)
-                            Case Else
-                                ParsedLine = Line.Split(New Char() {"|"c}, StringSplitOptions.RemoveEmptyEntries)
+                            Case Else ' Text
+                                ' See if this is an IPH saved file or an EVE Client file
+                                If Header = "price,volRemaining,typeID,range,orderID,volEntered,minVolume,bid,issueDate,duration,stationID,regionID,solarSystemID,jumps," Then
+                                    ' This is the EVE Client format so just throw a message and exit
+                                    ParsedLine = Nothing
+                                    MsgBox("This file was exprted by the EVE Client. IPH does not load prices from the EVE Client export.", vbInformation, Application.ProductName)
+                                    GoTo ExitPRocessing
+                                Else
+                                    ' IPH format
+                                    ParsedLine = Line.Split(New Char() {"|"c}, StringSplitOptions.RemoveEmptyEntries)
+                                End If
                         End Select
 
                         ' Loop through and update the price and price type, the rest is static
@@ -10983,6 +11002,8 @@ ExitSub:
                 End If
             End Try
         End If
+
+ExitPRocessing:
 
         Application.UseWaitCursor = False
         ' Enable the tab
@@ -11127,7 +11148,7 @@ CheckTechs:
 
     Private Sub rbtnCalcRawT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCalcRawT2MatType.CheckedChanged
         If rbtnCalcRawT2MatType.Checked Then
-            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
+            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials
             Call ResetRefresh()
             Call ProcessT2MatSelection()
         End If
@@ -11143,7 +11164,7 @@ CheckTechs:
 
     Private Sub rbtnCalcAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnCalcAdvT2MatType.CheckedChanged
         If rbtnCalcAdvT2MatType.Checked Then
-            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials
+            UserManufacturingTabSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
             Call ResetRefresh()
             Call ProcessT2MatSelection()
         End If

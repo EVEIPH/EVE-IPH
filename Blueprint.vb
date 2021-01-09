@@ -1024,7 +1024,7 @@ Public Class Blueprint
                                             SavedExcessMaterialList, UsedExcessMaterial)
 
                         ' Save the production time for this component
-                        Call ComponentProductionTimes.Add(ComponentBlueprint.GetProductionTime)
+                        Call ComponentProductionTimes.Add(ComponentBlueprint.GetTotalProductionTime)
 
                         ' Get the skills for BP to build it and add them to the list
                         TempSkills = ComponentBlueprint.GetReqBPSkills
@@ -1121,32 +1121,30 @@ Public Class Blueprint
                         End If
                     End If
 
-                    If SellExcessItems Then
-                        If CurrentMaterial.GetBuildItem Then
-                            ' Save the excess for this item
-                            If Not IsNothing(ExcessBuildMaterials) Then
-                                Call ExcessBuildMaterials.InsertMaterial(ExtraMaterial)
-                            End If
-                            ' Add the used material to the BP excess materials since for this BP it was excess 
-                            Call BPExcessMaterials.InsertMaterial(ExtraMaterial)
-                        ElseIf Not CurrentMaterial.GetBuildItem Then
-                            ' Not building this item, so replace the copy we made before we started this bp to reset the list back
-                            ExcessBuildMaterials = CType(SavedExcessMaterialList.Clone, Materials)
-                            ' Loop through and add back any used excess since we are buying this item
-                            For Each Mat In SavedUpdateBPExcessMaterialList.GetMaterialList
-                                LookupMaterial = BPExcessMaterials.SearchListbyName(Mat.GetMaterialName)
-                                If Not IsNothing(LookupMaterial) Then
-                                    ' Remove from list to update total list amount
-                                    Call BPExcessMaterials.RemoveMaterial(LookupMaterial)
-                                    ' Update what we used and insert back into list
-                                    LookupMaterial.SetQuantity(LookupMaterial.GetQuantity + Mat.GetQuantity)
-                                    Call BPExcessMaterials.InsertMaterial(LookupMaterial)
-                                Else
-                                    ' Just add it back to the list
-                                    BPExcessMaterials.InsertMaterial(Mat)
-                                End If
-                            Next
+                    If CurrentMaterial.GetBuildItem Then
+                        ' Save the excess for this item
+                        If Not IsNothing(ExcessBuildMaterials) Then
+                            Call ExcessBuildMaterials.InsertMaterial(ExtraMaterial)
                         End If
+                        ' Add the used material to the BP excess materials since for this BP it was excess 
+                        Call BPExcessMaterials.InsertMaterial(ExtraMaterial)
+                    ElseIf Not CurrentMaterial.GetBuildItem Then
+                        ' Not building this item, so replace the copy we made before we started this bp to reset the list back
+                        ExcessBuildMaterials = CType(SavedExcessMaterialList.Clone, Materials)
+                        ' Loop through and add back any used excess since we are buying this item
+                        For Each Mat In SavedUpdateBPExcessMaterialList.GetMaterialList
+                            LookupMaterial = BPExcessMaterials.SearchListbyName(Mat.GetMaterialName)
+                            If Not IsNothing(LookupMaterial) Then
+                                ' Remove from list to update total list amount
+                                Call BPExcessMaterials.RemoveMaterial(LookupMaterial)
+                                ' Update what we used and insert back into list
+                                LookupMaterial.SetQuantity(LookupMaterial.GetQuantity + Mat.GetQuantity)
+                                Call BPExcessMaterials.InsertMaterial(LookupMaterial)
+                            Else
+                                ' Just add it back to the list
+                                BPExcessMaterials.InsertMaterial(Mat)
+                            End If
+                        Next
                     End If
 
                 Else ' Just raw material 
@@ -1319,7 +1317,7 @@ SkipProcessing:
             End If
         End If
 
-        If SellExcessItems And Not IsNothing(SavedExcessList) Then
+        If Not IsNothing(SavedExcessList) Then
             ' We used excess mats so no need to build - however, need to restore excess for anything we built and used in drill down
             For Each Mat In SavedExcessList.GetMaterialList
                 If Mat.GetMaterialTypeID <> MaterialTypeID Then
