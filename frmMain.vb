@@ -1500,7 +1500,7 @@ Public Class frmMain
                                 MEValue As String, TEValue As String, SentRuns As String,
                                 ManufacturingLines As String, LaboratoryLines As String, NumBPs As String,
                                 AddlCosts As String, PPUCheck As Boolean,
-                                Optional CompareType As String = "")
+                                Optional CompareType As String = "", Optional T2T3MatType As BuildMatType = Nothing)
         Dim BPTech As Integer
         Dim DecryptorName As String = None
         Dim BPDecryptor As New Decryptor
@@ -1657,6 +1657,18 @@ Public Class frmMain
         UpdatingCheck = True
         chkBPPricePerUnit.Checked = PPUCheck
         UpdatingCheck = False
+
+        ' T2/T3 Mat
+        If Not IsNothing(T2T3MatType) Then
+            Select Case T2T3MatType
+                Case BuildMatType.AdvMaterials
+                    rbtnBPAdvT2MatType.Checked = True
+                Case BuildMatType.ProcessedMaterials
+                    rbtnBPProcT2MatType.Checked = True
+                Case BuildMatType.RawMaterials
+                    rbtnBPRawT2MatType.Checked = True
+            End Select
+        End If
 
         ' Set the optimize check
         UpdatingCheck = True
@@ -16332,12 +16344,23 @@ ExitCalc:
                     CompareType = "Raw"
                 End If
 
+                Dim T2T3Type As BuildMatType
+                If rbtnCalcAdvT2MatType.Checked Then
+                    T2T3Type = BuildMatType.AdvMaterials
+                ElseIf rbtnCalcProcT2MatType.Checked Then
+                    T2T3Type = BuildMatType.ProcessedMaterials
+                ElseIf rbtnCalcRawT2MatType.Checked Then
+                    T2T3Type = BuildMatType.RawMaterials
+                Else
+                    T2T3Type = Nothing
+                End If
+
                 Call LoadBPfromEvent(.BPID, .CalcType, .Inputs, SentFromLocation.ManufacturingTab,
                                      .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility,
                                      .InventionFacility, .CopyFacility,
                                      chkCalcTaxes.Checked, GetBrokerFeeData(chkCalcFees, txtCalcBrokerFeeRate),
                                      CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
-                                     txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType)
+                                     txtCalcNumBPs.Text, FormatNumber(.AddlCosts, 2), chkCalcPPU.Checked, CompareType, T2T3Type)
             End With
         End If
 
