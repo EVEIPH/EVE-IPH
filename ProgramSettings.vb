@@ -41,8 +41,6 @@ Public Module SettingsVariables
     Public UserAssetWindowDefaultSettings As AssetWindowSettings
     Public UserAssetWindowManufacturingTabSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
-    ' For LP store
-    Public UserLPStoreSettings As LPStore
     ' For the Blueprint List Viewer
     Public UserBPViewerSettings As BPViewerSettings
     ' For Upwell Structure viewer
@@ -411,6 +409,8 @@ Public Class ProgramSettings
     Public DefaultMiningNumberofMiners As Integer = 1
     Public DefaultMiningColumnSort As Integer = 8
     Public DefaultMiningColumnSortType As String = "Decending"
+    Public DefaultMiningDrone As String = "None"
+    Public DefaultIceMiningDrone As String = "None"
 
     ' Industry Jobs column settings
     Public DefaultJobState As Integer = 1
@@ -910,7 +910,6 @@ Public Class ProgramSettings
     Private ManufacturingTabColumnSettings As ManufacturingTabColumnSettings
     Private IndustryFlipBeltsSettings As IndustryFlipBeltSettings
     Private ShoppingListTabSettings As ShoppingListSettings
-    Private LPStoreSettings As LPStore
     Private MarketHistoryViewSettings As MarketHistoryViewerSettings
     Private UpwellStructureViewerSettings As UpwellStructureSettings
     Private BPViewSettings As BPViewerSettings
@@ -980,7 +979,6 @@ Public Class ProgramSettings
         ManufacturingTabColumnSettings = Nothing
         IndustryFlipBeltsSettings = Nothing
         ShoppingListTabSettings = Nothing
-        LPStoreSettings = Nothing
         MarketHistoryViewSettings = Nothing
         UpwellStructureViewerSettings = Nothing
         BPViewSettings = Nothing
@@ -2569,11 +2567,6 @@ Public Class ProgramSettings
                     .CheckIncludeFees = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "BrokerFeeRate", DefaultMiningBrokerFeeRate))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
-                    .CheckIncludeJumpFuelCosts = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeJumpFuelCosts", DefaultMiningCheckIncludeJumpFuelCosts))
-                    .TotalJumpFuelCost = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelCost", DefaultMiningTotalJumpFuelCost))
-                    .TotalJumpFuelM3 = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelM3", DefaultMiningTotalJumpFuelM3))
-                    .JumpCompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpCompressedOre", DefaultMiningJumpCompressedOre))
-                    .JumpMinerals = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpMinerals", DefaultMiningJumpMinerals))
                     .OreMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreMiningShip", DefaultMiningMiningShip))
                     .IceMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningShip", DefaultMiningIceMiningShip))
                     .GasMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasMiningShip", DefaultMiningGasMiningShip))
@@ -2607,7 +2600,6 @@ Public Class ProgramSettings
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
                     .CheckRorqDeployed = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
-                    .MiningDroneM3perHour = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "MiningDroneM3perHour", DefaultMiningDroneM3perHour))
                     .RefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
                     .UnrefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
@@ -2628,6 +2620,8 @@ Public Class ProgramSettings
                     .RefiningTax = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ColumnSort", DefaultMiningColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ColumnSortType", DefaultMiningColumnSortType))
+                    .MiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningDrone", DefaultMiningDrone))
+                    .IceMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningDrone", DefaultIceMiningDrone))
                 End With
 
             Else
@@ -2674,11 +2668,6 @@ Public Class ProgramSettings
             .CheckIncludeFees = DefaultMiningCheckIncludeFees
             .BrokerFeeRate = DefaultMiningBrokerFeeRate
             .CheckIncludeTaxes = DefaultMiningCheckIncludeTaxes
-            .CheckIncludeJumpFuelCosts = DefaultMiningCheckIncludeJumpFuelCosts
-            .TotalJumpFuelCost = DefaultMiningTotalJumpFuelCost
-            .TotalJumpFuelM3 = DefaultMiningTotalJumpFuelM3
-            .JumpCompressedOre = DefaultMiningJumpCompressedOre
-            .JumpMinerals = DefaultMiningJumpMinerals
             .OreMiningShip = DefaultMiningMiningShip
             .IceMiningShip = DefaultMiningIceMiningShip
             .GasMiningShip = DefaultMiningGasMiningShip
@@ -2712,7 +2701,6 @@ Public Class ProgramSettings
             .CheckMineForemanLaserRangeBoost = DefaultMiningCheckMineForemanLaserOpBoost
             .CheckMiningForemanMindLink = DefaultMiningCheckMiningForemanMindLink
             .CheckRorqDeployed = DefaultMiningRorqDeployed
-            .MiningDroneM3perHour = DefaultMiningDroneM3perHour
             .RefinedOre = DefaultMiningRefinedOre
             .UnrefinedOre = DefaultMiningUnrefinedOre
             .CompressedOre = DefaultMiningCompressedOre
@@ -2725,6 +2713,8 @@ Public Class ProgramSettings
             .RefiningTax = DefaultRefineTax
             .ColumnSort = DefaultMiningColumnSort
             .ColumnSortType = DefaultMiningColumnSortType
+            .MiningDrone = DefaultMiningDrone
+            .IceMiningDrone = DefaultIceMiningDrone
         End With
 
         ' Save locally
@@ -2735,7 +2725,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(71) As Setting
+        Dim MiningSettingsList(67) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2749,70 +2739,67 @@ Public Class ProgramSettings
             MiningSettingsList(8) = New Setting("CheckSovMinmatar", CStr(SentSettings.CheckSovMinmatar))
             MiningSettingsList(9) = New Setting("CheckIncludeFees", CStr(SentSettings.CheckIncludeFees))
             MiningSettingsList(10) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
-            MiningSettingsList(11) = New Setting("CheckIncludeJumpFuelCosts", CStr(SentSettings.CheckIncludeJumpFuelCosts))
-            MiningSettingsList(12) = New Setting("TotalJumpFuelCost", CStr(SentSettings.TotalJumpFuelCost))
-            MiningSettingsList(13) = New Setting("TotalJumpFuelM3", CStr(SentSettings.TotalJumpFuelM3))
-            MiningSettingsList(14) = New Setting("JumpCompressedOre", CStr(SentSettings.JumpCompressedOre))
-            MiningSettingsList(15) = New Setting("JumpMinerals", CStr(SentSettings.JumpMinerals))
-            MiningSettingsList(16) = New Setting("OreMiningShip", CStr(SentSettings.OreMiningShip))
-            MiningSettingsList(17) = New Setting("IceMiningShip", CStr(SentSettings.IceMiningShip))
-            MiningSettingsList(18) = New Setting("OreStrip", CStr(SentSettings.OreStrip))
-            MiningSettingsList(19) = New Setting("IceStrip", CStr(SentSettings.IceStrip))
-            MiningSettingsList(20) = New Setting("NumOreMiners", CStr(SentSettings.NumOreMiners))
-            MiningSettingsList(21) = New Setting("NumIceMiners", CStr(SentSettings.NumIceMiners))
-            MiningSettingsList(22) = New Setting("OreUpgrade", CStr(SentSettings.OreUpgrade))
-            MiningSettingsList(23) = New Setting("IceUpgrade", CStr(SentSettings.IceUpgrade))
-            MiningSettingsList(24) = New Setting("NumOreUpgrades", CStr(SentSettings.NumOreUpgrades))
-            MiningSettingsList(25) = New Setting("NumIceUpgrades", CStr(SentSettings.NumIceUpgrades))
-            MiningSettingsList(26) = New Setting("MichiiImplant", CStr(SentSettings.MichiiImplant))
-            MiningSettingsList(27) = New Setting("T2Crystals", CStr(SentSettings.T2Crystals))
-            MiningSettingsList(28) = New Setting("OreImplant", CStr(SentSettings.OreImplant))
-            MiningSettingsList(29) = New Setting("IceImplant", CStr(SentSettings.IceImplant))
-            MiningSettingsList(30) = New Setting("CheckUseHauler", CStr(SentSettings.CheckUseHauler))
-            MiningSettingsList(31) = New Setting("RoundTripMin", CStr(SentSettings.RoundTripMin))
-            MiningSettingsList(32) = New Setting("RoundTripSec", CStr(SentSettings.RoundTripSec))
-            MiningSettingsList(33) = New Setting("Haulerm3", CStr(SentSettings.Haulerm3))
-            MiningSettingsList(34) = New Setting("CheckUseFleetBooster", CStr(SentSettings.CheckUseFleetBooster))
-            MiningSettingsList(35) = New Setting("BoosterShip", CStr(SentSettings.BoosterShip))
-            MiningSettingsList(36) = New Setting("BoosterShipSkill", CStr(SentSettings.BoosterShipSkill))
-            MiningSettingsList(37) = New Setting("MiningFormanSkill", CStr(SentSettings.MiningFormanSkill))
-            MiningSettingsList(38) = New Setting("MiningDirectorSkill", CStr(SentSettings.MiningDirectorSkill))
-            MiningSettingsList(39) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
-            MiningSettingsList(40) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
-            MiningSettingsList(41) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
-            MiningSettingsList(42) = New Setting("MiningDroneM3perHour", CStr(SentSettings.MiningDroneM3perHour))
-            MiningSettingsList(43) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
-            MiningSettingsList(44) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
-            MiningSettingsList(45) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
-            MiningSettingsList(46) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
-            MiningSettingsList(47) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
-            MiningSettingsList(48) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
-            MiningSettingsList(49) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
-            MiningSettingsList(50) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
-            MiningSettingsList(51) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
-            MiningSettingsList(52) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
-            MiningSettingsList(53) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
-            MiningSettingsList(54) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
-            MiningSettingsList(55) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
-            MiningSettingsList(56) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
-            MiningSettingsList(57) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
-            MiningSettingsList(58) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
-            MiningSettingsList(59) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
-            MiningSettingsList(60) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
-            MiningSettingsList(61) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            MiningSettingsList(62) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
-            MiningSettingsList(63) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
+            MiningSettingsList(11) = New Setting("OreMiningShip", CStr(SentSettings.OreMiningShip))
+            MiningSettingsList(12) = New Setting("IceMiningShip", CStr(SentSettings.IceMiningShip))
+            MiningSettingsList(13) = New Setting("OreStrip", CStr(SentSettings.OreStrip))
+            MiningSettingsList(14) = New Setting("IceStrip", CStr(SentSettings.IceStrip))
+            MiningSettingsList(15) = New Setting("NumOreMiners", CStr(SentSettings.NumOreMiners))
+            MiningSettingsList(16) = New Setting("NumIceMiners", CStr(SentSettings.NumIceMiners))
+            MiningSettingsList(17) = New Setting("OreUpgrade", CStr(SentSettings.OreUpgrade))
+            MiningSettingsList(18) = New Setting("IceUpgrade", CStr(SentSettings.IceUpgrade))
+            MiningSettingsList(19) = New Setting("NumOreUpgrades", CStr(SentSettings.NumOreUpgrades))
+            MiningSettingsList(20) = New Setting("NumIceUpgrades", CStr(SentSettings.NumIceUpgrades))
+            MiningSettingsList(21) = New Setting("MichiiImplant", CStr(SentSettings.MichiiImplant))
+            MiningSettingsList(22) = New Setting("T2Crystals", CStr(SentSettings.T2Crystals))
+            MiningSettingsList(23) = New Setting("OreImplant", CStr(SentSettings.OreImplant))
+            MiningSettingsList(24) = New Setting("IceImplant", CStr(SentSettings.IceImplant))
+            MiningSettingsList(25) = New Setting("CheckUseHauler", CStr(SentSettings.CheckUseHauler))
+            MiningSettingsList(26) = New Setting("RoundTripMin", CStr(SentSettings.RoundTripMin))
+            MiningSettingsList(27) = New Setting("RoundTripSec", CStr(SentSettings.RoundTripSec))
+            MiningSettingsList(28) = New Setting("Haulerm3", CStr(SentSettings.Haulerm3))
+            MiningSettingsList(29) = New Setting("CheckUseFleetBooster", CStr(SentSettings.CheckUseFleetBooster))
+            MiningSettingsList(30) = New Setting("BoosterShip", CStr(SentSettings.BoosterShip))
+            MiningSettingsList(31) = New Setting("BoosterShipSkill", CStr(SentSettings.BoosterShipSkill))
+            MiningSettingsList(32) = New Setting("MiningFormanSkill", CStr(SentSettings.MiningFormanSkill))
+            MiningSettingsList(33) = New Setting("MiningDirectorSkill", CStr(SentSettings.MiningDirectorSkill))
+            MiningSettingsList(34) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
+            MiningSettingsList(35) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
+            MiningSettingsList(36) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
+            MiningSettingsList(37) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
+            MiningSettingsList(38) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
+            MiningSettingsList(39) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
+            MiningSettingsList(40) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
+            MiningSettingsList(41) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
+            MiningSettingsList(42) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
+            MiningSettingsList(43) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
+            MiningSettingsList(44) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
+            MiningSettingsList(45) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
+            MiningSettingsList(46) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
+            MiningSettingsList(47) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
+            MiningSettingsList(48) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
+            MiningSettingsList(49) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
+            MiningSettingsList(50) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
+            MiningSettingsList(51) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
+            MiningSettingsList(52) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
+            MiningSettingsList(53) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
+            MiningSettingsList(54) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
+            MiningSettingsList(55) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
+            MiningSettingsList(56) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
+            MiningSettingsList(57) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
 
-            MiningSettingsList(64) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            MiningSettingsList(65) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            MiningSettingsList(66) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
+            MiningSettingsList(58) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
+            MiningSettingsList(59) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
+            MiningSettingsList(60) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
 
-            MiningSettingsList(67) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            MiningSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            MiningSettingsList(61) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            MiningSettingsList(62) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
 
-            MiningSettingsList(69) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
-            MiningSettingsList(70) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
-            MiningSettingsList(71) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
+            MiningSettingsList(63) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
+            MiningSettingsList(64) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            MiningSettingsList(65) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
+
+            MiningSettingsList(66) = New Setting("MiningDrone", CStr(SentSettings.MiningDrone))
+            MiningSettingsList(67) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -4356,124 +4343,6 @@ Public Class ProgramSettings
 
 #End Region
 
-#Region "LP Store Settings"
-
-    ' Loads the tab settings
-    Public Function LoadLPStoreSettings() As LPStore
-        Dim TempSettings As LPStore = Nothing
-
-        Try
-
-            If FileExists(SettingsFolder, LPStoreSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .RewardType = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "RewardType", DefaultLPRewardType))
-                    .CheckAgentLevel1 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel1", DefaultLPCheckAgentLevel1))
-                    .CheckAgentLevel2 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel2", DefaultLPCheckAgentLevel2))
-                    .CheckAgentLevel3 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel3", DefaultLPCheckAgentLevel3))
-                    .CheckAgentLevel4 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel4", DefaultLPCheckAgentLevel4))
-                    .CheckAgentLevel5 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel5", DefaultLPCheckAgentLevel5))
-                    .TextItemSearch = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "TextItemSearch", DefaultLPTextItemSearch))
-                    .LPCostLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostLessThan", DefaultLPLPCostLessThan))
-                    .LPCostGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostGreaterThan", DefaultLPLPCostGreaterThan))
-                    .ISKCostLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostLessThan", DefaultLPISKCostLessThan))
-                    .ISKCostGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostGreaterThan", DefaultLPISKCostGreaterThan))
-                    .StandingLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingLessThan", DefaultLPStandingLessThan))
-                    .StandingGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingGreaterThan", DefaultLPStandingGreaterThan))
-                    .SearchOption = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SearchOption", DefaultLPSearchOption))
-                    .HighlightCheck = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "HighlightCheck", DefaultLPHighlightCheck))
-                    .SelectedCorporations = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SelectedCorporations", DefaultLPSelectedCorporations))
-                    .SortByOption = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SortByOption", DefaultLPSortByOption))
-                    .CorpFilter = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "CorpFilter", DefaultLPCorpFilter))
-                End With
-
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultLPStoreSettings()
-            End If
-
-        Catch ex As Exception
-            MsgBox("An error occured when loading LPStore Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultLPStoreSettings()
-        End Try
-
-        ' Save them locally and then export
-        LPStoreSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    Public Function SetDefaultLPStoreSettings() As LPStore
-        Dim LocalSettings As LPStore
-
-        With LocalSettings
-            .RewardType = DefaultLPRewardType
-            .CorpFilter = DefaultLPCorpFilter
-            .CheckAgentLevel1 = DefaultLPCheckAgentLevel1
-            .CheckAgentLevel2 = DefaultLPCheckAgentLevel2
-            .CheckAgentLevel3 = DefaultLPCheckAgentLevel3
-            .CheckAgentLevel4 = DefaultLPCheckAgentLevel4
-            .CheckAgentLevel5 = DefaultLPCheckAgentLevel5
-            .TextItemSearch = DefaultLPTextItemSearch
-            .LPCostLessThan = DefaultLPLPCostLessThan
-            .LPCostGreaterThan = DefaultLPLPCostGreaterThan
-            .ISKCostLessThan = DefaultLPISKCostLessThan
-            .ISKCostGreaterThan = DefaultLPISKCostGreaterThan
-            .StandingLessThan = DefaultLPStandingLessThan
-            .StandingGreaterThan = DefaultLPStandingGreaterThan
-            .SearchOption = DefaultLPSearchOption
-            .HighlightCheck = DefaultLPHighlightCheck
-            .SelectedCorporations = DefaultLPSelectedCorporations
-            .SortByOption = DefaultLPSortByOption
-        End With
-
-        ' Save locally
-        LPStoreSettings = LocalSettings
-        Return LocalSettings
-
-    End Function
-
-    ' Saves the tab settings to XML
-    Public Sub SaveLPStoreSettings(SentSettings As LPStore)
-        Dim LPStoreSettingsList(17) As Setting
-
-        Try
-            LPStoreSettingsList(0) = New Setting("RewardType", CStr(SentSettings.RewardType))
-            LPStoreSettingsList(1) = New Setting("CheckAgentLevel1", CStr(SentSettings.CheckAgentLevel1))
-            LPStoreSettingsList(2) = New Setting("CheckAgentLevel2", CStr(SentSettings.CheckAgentLevel2))
-            LPStoreSettingsList(3) = New Setting("CheckAgentLevel3", CStr(SentSettings.CheckAgentLevel3))
-            LPStoreSettingsList(4) = New Setting("CheckAgentLevel4", CStr(SentSettings.CheckAgentLevel4))
-            LPStoreSettingsList(5) = New Setting("CheckAgentLevel5", CStr(SentSettings.CheckAgentLevel5))
-            LPStoreSettingsList(6) = New Setting("TextItemSearch", CStr(SentSettings.TextItemSearch))
-            LPStoreSettingsList(7) = New Setting("LPCostLessThan", CStr(SentSettings.LPCostLessThan))
-            LPStoreSettingsList(8) = New Setting("LPCostGreaterThan", CStr(SentSettings.LPCostGreaterThan))
-            LPStoreSettingsList(9) = New Setting("ISKCostLessThan", CStr(SentSettings.ISKCostLessThan))
-            LPStoreSettingsList(10) = New Setting("ISKCostGreaterThan", CStr(SentSettings.ISKCostGreaterThan))
-            LPStoreSettingsList(11) = New Setting("StandingLessThan", CStr(SentSettings.StandingLessThan))
-            LPStoreSettingsList(12) = New Setting("StandingGreaterThan", CStr(SentSettings.StandingGreaterThan))
-            LPStoreSettingsList(13) = New Setting("SearchOption", CStr(SentSettings.SearchOption))
-            LPStoreSettingsList(14) = New Setting("HighlightCheck", CStr(SentSettings.HighlightCheck))
-            LPStoreSettingsList(15) = New Setting("SelectedCorporations", CStr(SentSettings.SelectedCorporations))
-            LPStoreSettingsList(16) = New Setting("SortByOption", CStr(SentSettings.SortByOption))
-            LPStoreSettingsList(17) = New Setting("CorpFilter", CStr(SentSettings.CorpFilter))
-
-            Call WriteSettingsToFile(SettingsFolder, LPStoreSettingsFileName, LPStoreSettingsList, LPStoreSettingsFileName)
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving LP Store Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the tab settings
-    Public Function GetLPStoreSettings() As LPStore
-        Return LPStoreSettings
-    End Function
-
-#End Region
-
 #Region "Market History Viewer Settings"
 
     ' Loads the tab settings
@@ -5290,12 +5159,6 @@ Public Structure MiningTabSettings
     Dim CheckIncludeTaxes As Boolean
     Dim BrokerFeeRate As Double
 
-    Dim CheckIncludeJumpFuelCosts As Boolean
-    Dim TotalJumpFuelCost As Double
-    Dim TotalJumpFuelM3 As Double
-    Dim JumpCompressedOre As Boolean
-    Dim JumpMinerals As Boolean
-
     Dim OreMiningShip As String
     Dim IceMiningShip As String
     Dim GasMiningShip As String
@@ -5314,6 +5177,9 @@ Public Structure MiningTabSettings
     Dim OreImplant As String
     Dim IceImplant As String
     Dim GasImplant As String
+
+    Dim MiningDrone As String
+    Dim IceMiningDrone As String
 
     Dim MichiiImplant As Boolean
     Dim T2Crystals As Boolean
@@ -5335,7 +5201,6 @@ Public Structure MiningTabSettings
     Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer
 
-    Dim MiningDroneM3perHour As Double
     Dim NumberofMiners As Integer
 
     Dim RefinedOre As Boolean
@@ -5787,35 +5652,6 @@ Public Structure BPViewerSettings
     Dim MediumCheck As Boolean
     Dim LargeCheck As Boolean
     Dim XLCheck As Boolean
-End Structure
-
-' Settings on LP Store form
-Public Structure LPStore
-    Dim RewardType As String
-    Dim CorpFilter As String
-
-    Dim CheckAgentLevel1 As Boolean
-    Dim CheckAgentLevel2 As Boolean
-    Dim CheckAgentLevel3 As Boolean
-    Dim CheckAgentLevel4 As Boolean
-    Dim CheckAgentLevel5 As Boolean
-
-    Dim TextItemSearch As String
-
-    Dim LPCostLessThan As String
-    Dim LPCostGreaterThan As String
-    Dim ISKCostLessThan As String
-    Dim ISKCostGreaterThan As String
-    Dim StandingLessThan As String
-    Dim StandingGreaterThan As String
-
-    Dim SearchOption As String
-    Dim SortByOption As String
-
-    Dim HighlightCheck As Boolean
-
-    Dim SelectedCorporations As String ' CSV string with all the corp names checked
-
 End Structure
 
 ' For Upwell Structures fitting window

@@ -18319,12 +18319,13 @@ Leave:
             Call LoadMiningshipImage()
             Call UpdateMiningSkills()
             Call UpdateMiningShipEquipment()
+            Call UpdateMiningDrones()
             ' Clear the grid
             lstMineGrid.Items.Clear()
         End If
     End Sub
 
-    Private Sub cmbMineShipType_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbMineShipType.DropDown
+    Private Sub cmbMineShipType_DropDown(ByVal sender As Object, ByVal e As System.EventArgs)
         Call UpdateMiningShipsCombo()
     End Sub
 
@@ -18334,7 +18335,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub cmbMineExhumers_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbMineExhumers.SelectedIndexChanged
+    Private Sub cmbMineExhumers_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbMineExhumers.SelectedIndexChanged, cmbMineShipType.DropDown
         If Not FirstLoad Then
             Call UpdateMiningShipForm(False)
         End If
@@ -18374,7 +18375,7 @@ Leave:
             chkMineIncludeLowSec.Text = "Low Sec Ice"
             chkMineIncludeNullSec.Text = "Null Sec Ice"
             lstMineGrid.Columns(1).Text = "Ice Name"
-            gbMineMiningDroneM3.Enabled = False ' drones don't apply to ice
+            gbMineDrones.Enabled = True
             If UserMiningTabSettings.IceMiningRig Then
                 rbtnMineIceRig.Checked = True
             Else
@@ -18406,7 +18407,7 @@ Leave:
             chkMineIncludeLowSec.Text = "Low Sec Ore"
             chkMineIncludeNullSec.Text = "Null Sec Ore"
             lstMineGrid.Columns(1).Text = "Ore Name"
-            gbMineMiningDroneM3.Enabled = True
+            gbMineDrones.Enabled = True
             rbtnMineMercoxitRig.Enabled = True
             rbtnMineIceRig.Enabled = False
             chkMineMoonMining.Enabled = True ' Moon mining
@@ -18439,7 +18440,7 @@ Leave:
             chkMineIncludeLowSec.Text = "Low Sec Gas"
             chkMineIncludeNullSec.Text = "Null Sec Gas"
             lstMineGrid.Columns(1).Text = "Gas Name"
-            gbMineMiningDroneM3.Enabled = False
+            gbMineDrones.Enabled = False
             rbtnMineMercoxitRig.Enabled = False
             rbtnMineIceRig.Enabled = False
             rbtnMineNoRigs.Checked = True
@@ -18519,7 +18520,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub txtMineTotalJumpM3_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineTotalJumpM3.KeyPress
+    Private Sub txtMineTotalJumpM3_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -18529,7 +18530,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub txtMineTotalJumpFuel_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineTotalJumpFuel.KeyPress
+    Private Sub txtMineTotalJumpFuel_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -18567,14 +18568,6 @@ Leave:
 
     Private Sub txtMineHaulerM3_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtMineHaulerM3.GotFocus
         Call txtMineHaulerM3.SelectAll()
-    End Sub
-
-    Private Sub txtMineTotalJumpM3_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtMineTotalJumpM3.GotFocus
-        Call txtMineTotalJumpM3.SelectAll()
-    End Sub
-
-    Private Sub txtMineTotalJumpFuel_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtMineTotalJumpFuel.GotFocus
-        Call txtMineTotalJumpFuel.SelectAll()
     End Sub
 
     Private Sub txtMineHaulerM3_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineHaulerM3.KeyPress
@@ -18623,44 +18616,12 @@ Leave:
         End If
     End Sub
 
-    Private Sub txtMineMiningDroneM3_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineMiningDroneM3.KeyPress
-        ' Only allow numbers, decmial or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
     Private Sub btnMineRefresh_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineRefresh.Click
         Call LoadMiningGrid()
     End Sub
 
     Private Sub btnMineReset_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMineReset.Click
         Call LoadMiningTab()
-    End Sub
-
-    Private Sub chkMineIncludeJumpCosts_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMineIncludeJumpCosts.CheckedChanged
-        If chkMineIncludeJumpCosts.Checked Then
-            lblMineTotalJumpFuel.Enabled = True
-            txtMineTotalJumpFuel.Enabled = True
-            lblMineTotalJumpM3.Enabled = True
-            txtMineTotalJumpM3.Enabled = True
-            rbtnMineJumpCompress.Enabled = True
-            If chkMineRefinedOre.Checked And chkMineRefinedOre.Enabled Then
-                rbtnMineJumpMinerals.Enabled = True
-            Else
-                rbtnMineJumpMinerals.Enabled = False
-            End If
-        Else
-            lblMineTotalJumpFuel.Enabled = False
-            txtMineTotalJumpFuel.Enabled = False
-            lblMineTotalJumpM3.Enabled = False
-            txtMineTotalJumpM3.Enabled = False
-            rbtnMineJumpCompress.Enabled = False
-            rbtnMineJumpMinerals.Enabled = False
-        End If
     End Sub
 
     Private Sub cmbMineRefining_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbMineRefining.SelectedIndexChanged
@@ -18959,13 +18920,14 @@ Leave:
     Private Const ReprocessingSkillTypeID As Integer = 3385
     Private Const ReprocessingEfficiencySkillTypeID As Integer = 3389
 
+    ' Drone skills
+    Private Const DroneInterfacingSkillTypeID As Integer = 3442
+    Private Const MiningDroneOperationSkillTypeID As Integer = 3438
+    Private Const MiningDroneSpecializationSkillTypeID As Integer = 22541
+    Private Const IceHarvestingDroneOperationSkillTypeID As Integer = 43702
+    Private Const IceHarvestingDroneSpecializationSkillTypeID As Integer = 43703
+
     Private Enum MiningShipTypeID
-        'Bantam = 582
-        'Tormentor = 591
-        'Navitas = 592
-        'Burst = 599
-        'Osprey = 620
-        'Scythe = 631
         Venture = 32880
         Covetor = 17476
         Retriever = 17478
@@ -18980,6 +18942,17 @@ Leave:
         Rokh = 24688
         Prospect = 33697
         Endurance = 37135
+    End Enum
+
+    Private Enum MiningAttributeIDs
+        MaxRange = 54
+        MiningDroneDuration = 73
+        MiningAmount = 77 ' in m3
+        DroneBandwith = 1271
+        DroneBandwithNeeded = 1272
+        DroneCapacity = 283 ' ships capacity
+        MiningAmountBonus = 434
+        RateofFireBonus = 293 ' For ice harvesting drones
     End Enum
 
     Private Sub InitMiningTab()
@@ -19034,9 +19007,6 @@ Leave:
             chkMineC5.Checked = .CheckSovC5
             chkMineC6.Checked = .CheckSovC6
 
-            ' Drones
-            txtMineMiningDroneM3.Text = FormatNumber(.MiningDroneM3perHour, 2)
-
             ' Fleet booster
             chkMineUseFleetBooster.Checked = .CheckUseFleetBooster
             cmbMineBoosterShip.Text = .BoosterShip
@@ -19089,29 +19059,6 @@ Leave:
             txtMineStationEff.Text = FormatPercent(.RefiningEfficiency, 0)
             txtMineRefineStanding.Text = FormatNumber(.RefineCorpStanding, 2)
             txtMineReprocessingTax.Text = FormatPercent(.RefiningTax, 1)
-
-            ' Jump Ore
-            If .CheckIncludeJumpFuelCosts Then
-                rbtnMineJumpCompress.Enabled = True
-                rbtnMineJumpMinerals.Enabled = True
-                lblMineTotalJumpFuel.Enabled = True
-                txtMineTotalJumpFuel.Enabled = True
-                lblMineTotalJumpM3.Enabled = True
-                txtMineTotalJumpM3.Enabled = True
-            Else
-                rbtnMineJumpCompress.Enabled = False
-                rbtnMineJumpMinerals.Enabled = False
-                lblMineTotalJumpFuel.Enabled = False
-                txtMineTotalJumpFuel.Enabled = False
-                lblMineTotalJumpM3.Enabled = False
-                txtMineTotalJumpM3.Enabled = False
-            End If
-
-            chkMineIncludeJumpCosts.Checked = .CheckIncludeJumpFuelCosts
-            rbtnMineJumpCompress.Checked = .JumpCompressedOre
-            rbtnMineJumpMinerals.Checked = .JumpMinerals
-            txtMineTotalJumpFuel.Text = FormatNumber(.TotalJumpFuelCost, 2)
-            txtMineTotalJumpM3.Text = FormatNumber(.TotalJumpFuelM3)
 
             ' Hauler
             If .CheckUseHauler Then
@@ -19461,7 +19408,7 @@ Leave:
                 TempOre.OreUnitsPerCycle = CrystalMiningYield
 
                 ' Calculate the m3 per second for this ore including mining drone input
-                Orem3PerSecond = (CrystalMiningYield / BaseCycleTime) + (CDbl(txtMineMiningDroneM3.Text) / 3600)
+                Orem3PerSecond = (CrystalMiningYield / BaseCycleTime) + (CDbl(lblMineMiningDroneYield.Text) / 3600)
 
                 ' This is the m3 per second, but need to get this ORE per second based on it's volume
                 OrePerSecond = Orem3PerSecond / TempOre.OreVolume
@@ -19499,7 +19446,7 @@ Leave:
 
                     ' Recalculate with new cycle time
                     If cmbMineOreType.Text = "Ore" Then
-                        Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(txtMineMiningDroneM3.Text) / 3600)
+                        Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(lblMineMiningDroneYield.Text) / 3600)
                     Else ' Gas
                         Orem3PerSecond = ShipMiningYield / CycleTime
                     End If
@@ -19550,7 +19497,7 @@ Leave:
 
                 TempOre.RefineYield = ReprocessingYield
 
-                TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost - GetJumpCosts(ReprocessedMaterials, TempOre, TempOre.UnitsPerHour)
+                TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
                 If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
                     ' Add (subtract from total isk) the heavy water cost
                     TempOre.IPH = TempOre.IPH - HeavyWaterCost
@@ -19580,8 +19527,8 @@ Leave:
                         TempOre.UnitsPerHour = TempOre.UnitsPerHour / 100
                     End If
 
-                    ' Units we mined, times unit price is IPH (minus Jump fuel costs)
-                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice) - GetJumpCosts(Nothing, TempOre, SavedUnits) ' Treat the compression for jump costs individually, so use original value
+                    ' Units we mined, times unit price is IPH
+                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
                     TempOre.RefineYield = 0
                     TempOre.RefineType = "Compressed"
                     OreList.Add(TempOre)
@@ -19601,8 +19548,8 @@ Leave:
 
                 If readerOre.Read() Then
                     TempOre.OreUnitPrice = readerOre.GetDouble(0)
-                    ' Units we mined, times unit price is IPH (minus Jump fuel costs)
-                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice) - GetJumpCosts(Nothing, TempOre, TempOre.UnitsPerHour)
+                    ' Units we mined, times unit price is IPH 
+                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
 
                     TempOre.RefineYield = 0
                     TempOre.RefineType = "Unrefined"
@@ -19692,6 +19639,17 @@ Leave:
         cmbMineRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingEfficiencySkillTypeID))
         cmbMineRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(ReprocessingSkillTypeID))
 
+        ' Drone skills
+        If cmbMineOreType.Text = "Ice" Then
+            cmbMineDroneSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(IceHarvestingDroneOperationSkillTypeID))
+            cmbMineDroneSpecSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(IceHarvestingDroneSpecializationSkillTypeID))
+            cmbMineDroneInterfacingSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(DroneInterfacingSkillTypeID))
+        Else
+            cmbMineDroneSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(MiningDroneOperationSkillTypeID))
+            cmbMineDroneSpecSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(MiningDroneSpecializationSkillTypeID))
+            cmbMineDroneInterfacingSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(DroneInterfacingSkillTypeID))
+        End If
+
         ' If this is a dummy account, set these all to 1 - TODO Remove, or re-check so they work even if 0
         If cmbMineAstrogeology.Text = "" Then
             cmbMineAstrogeology.Text = "1"
@@ -19699,7 +19657,6 @@ Leave:
         If cmbMineSkill.Text = "" Then
             cmbMineSkill.Text = "1"
         End If
-
 
         If cmbMineOreType.Text = "Gas" Then
             If SelectedCharacter.Skills.GetSkillLevel(GasCloudHarvestingSkillTypeID) = 0 Then
@@ -19757,7 +19714,6 @@ Leave:
             .CheckNullSecOres = chkMineIncludeNullSec.Checked
             .CheckHighYieldOres = chkMineIncludeHighYieldOre.Checked
 
-            .MiningDroneM3perHour = CDbl(txtMineMiningDroneM3.Text)
             .RefinedOre = chkMineRefinedOre.Checked
             .UnrefinedOre = chkMineUnrefinedOre.Checked
             .CompressedOre = chkMineCompressedOre.Checked
@@ -19924,13 +19880,6 @@ Leave:
 
             ' Save it in the Application settings
             Settings.SaveApplicationSettings(UserApplicationSettings)
-
-            ' Jump costs
-            .CheckIncludeJumpFuelCosts = chkMineIncludeJumpCosts.Checked
-            .JumpCompressedOre = rbtnMineJumpCompress.Checked
-            .JumpMinerals = rbtnMineJumpMinerals.Checked
-            .TotalJumpFuelCost = CDbl(txtMineTotalJumpFuel.Text)
-            .TotalJumpFuelM3 = CDbl(txtMineTotalJumpM3.Text)
 
             .ColumnSort = MiningColumnClicked
             If MiningColumnSortType = SortOrder.Ascending Then
@@ -20124,6 +20073,75 @@ Leave:
             Call UpdateMiningShipEquipment()
         End If
 
+        ' Update Drone list and stats
+        Call UpdateMiningDrones()
+
+    End Sub
+
+    ' Updates the mining drones for use
+    Private Sub UpdateMiningDrones()
+
+        ' Load up drones into the combo based on skills selected
+        cmbMineDroneSkill.BeginUpdate()
+        cmbMineDroneName.Items.Clear()
+        cmbMineDroneName.Items.Add(None) ' Always add none
+        cmbMineDroneName.Text = None ' Set as default and we can change below
+
+        Select Case cmbMineOreType.Text
+            Case "Ore"
+                gbMineDrones.Enabled = True
+                If CInt(cmbMineDroneSkill.Text) >= 1 Then
+                    cmbMineDroneName.Items.Add("Civilian Mining Drone")
+                    cmbMineDroneName.Items.Add("Mining Drone I")
+                    cmbMineDroneName.Items.Add("Harvester Mining Drone")
+                End If
+                If CInt(cmbMineDroneSpecSkill.Text) >= 1 And cmbMineDroneSpecSkill.Enabled = True Then
+                    cmbMineDroneName.Items.Add("Mining Drone II")
+                    cmbMineDroneName.Items.Add("'Augmented' Mining Drone")
+                    If cmbMineShipType.Text = Rorqual Then
+                        cmbMineDroneName.Items.Add("'Excavator' Mining Drone")
+                    End If
+                End If
+
+                If cmbMineDroneName.Items.Contains(UserMiningTabSettings.MiningDrone) Then
+                    cmbMineDroneName.Text = UserMiningTabSettings.MiningDrone
+                End If
+
+            Case "Ice"
+                gbMineDrones.Enabled = True
+                If CInt(cmbMineDroneSkill.Text) >= 1 Then
+                    cmbMineDroneName.Items.Add("Ice Harvesting Drone I")
+                End If
+                If CInt(cmbMineDroneSpecSkill.Text) >= 1 And cmbMineDroneSpecSkill.Enabled = True Then
+                    cmbMineDroneName.Items.Add("Ice Harvesting II")
+                    cmbMineDroneName.Items.Add("'Augmented' Ice Harvesting Drone")
+                    If cmbMineShipType.Text = Rorqual Then
+                        cmbMineDroneName.Items.Add("'Excavator' Ice Harvesting Drone")
+                    End If
+                End If
+
+                If cmbMineDroneName.Items.Contains(UserMiningTabSettings.IceMiningDrone) Then
+                    cmbMineDroneName.Text = UserMiningTabSettings.IceMiningDrone
+                End If
+
+            Case "Gas"
+                gbMineDrones.Enabled = False ' No gas drones
+        End Select
+
+        cmbMineDroneSkill.EndUpdate()
+
+        ' Calculate the m3 and range based on ship selected
+        If cmbMineDroneName.Text <> None Then
+            Dim DroneMiningBonus As Double
+            Dim DronetypeID As Long = GetTypeID(cmbMineDroneName.Text)
+            Dim AttribLookup As New EVEAttributes
+
+        Else
+            ' Blank it out
+            lblMineDroneIdealRange.Text = ""
+            lblMineMiningDroneYield.Text = "-"
+        End If
+
     End Sub
 
     ' Updates the mining skills for the ships and equipment
@@ -20177,6 +20195,13 @@ Leave:
 
         If cmbMineAstrogeology.Text = "" Then
             cmbMineAstrogeology.Text = "1"
+        End If
+
+        ' Drone specialization skill needs drone op 5
+        If CInt(cmbMineDroneSkill.Text) = 5 Then
+            cmbMineDroneSpecSkill.Enabled = True
+        Else
+            cmbMineDroneSpecSkill.Enabled = False
         End If
 
         ' Deep core only for asteroid mining
@@ -20275,6 +20300,19 @@ Leave:
                 cmbMineShipType.Items.Add(Hulk)
                 MaxShipName = Hulk
             End If
+
+            ' Add all three cap mining vessels - have ore and ice bonuses 
+            If CInt(cmbMineBaseShipSkill.Text) >= 1 Then
+                cmbMineShipType.Items.Add(Porpoise)
+                MaxShipName = Porpoise
+                cmbMineShipType.Items.Add(Orca)
+                MaxShipName = Orca
+                ' Need industrial command ships 3 and capital industrial ships 1 to use rorq
+                If CInt(cmbMineBaseShipSkill.Text) >= 3 And CInt(cmbMineExhumers.Text) >= 1 Then
+                    cmbMineShipType.Items.Add(Rorqual)
+                    MaxShipName = Rorqual
+                End If
+            End If
         End If
 
         If cmbMineOreType.Text = "Ice" And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineExhumers.Text) >= 1 Then
@@ -20343,6 +20381,7 @@ Leave:
 
         Select Case ShipName
             Case Hulk, Mackinaw, Skiff, Covetor, Retriever, Procurer
+                gbMineShipEquipment.Enabled = True
                 ' Get the numbers
                 LaserCount = CInt(GetAttribute("High Slots", ShipName))
                 MLUCount = CInt(GetAttribute("Low Slots", ShipName))
@@ -20422,7 +20461,12 @@ Leave:
                 lblMineLaserNumber.Enabled = True
                 cmbMineNumLasers.Enabled = True
 
+            Case Porpoise, Orca, Rorqual
+                ' Just disable the equipment grid
+                gbMineShipEquipment.Enabled = False
+
             Case Else ' Other ships that are not mining barges
+                gbMineShipEquipment.Enabled = True
                 LaserCount = CInt(GetAttribute("Turret Hardpoints", ShipName)) ' Use turret hardpoints for this
                 MLUCount = CInt(GetAttribute("Low Slots", ShipName))
 
@@ -20878,27 +20922,6 @@ Leave:
             Return False
         End If
 
-        ' Check jump costs
-        If chkMineIncludeJumpCosts.Checked = True Then
-            If Not IsNumeric(txtMineTotalJumpFuel.Text) Or Trim(txtMineTotalJumpFuel.Text) = "" Then
-                MsgBox("Invalid Jump Fuel Value", vbExclamation, Application.ProductName)
-                txtMineTotalJumpFuel.Focus()
-                Return False
-            End If
-
-            If Not IsNumeric(txtMineTotalJumpM3.Text) Or Trim(txtMineTotalJumpM3.Text) = "" Then
-                MsgBox("Invalid Jump m3 Value", vbExclamation, Application.ProductName)
-                txtMineTotalJumpM3.Focus()
-                Return False
-            End If
-
-            If CDbl(txtMineTotalJumpM3.Text) <= 0 Then
-                MsgBox("Jump m3 Value must be greater than zero", vbExclamation, Application.ProductName)
-                txtMineTotalJumpM3.Focus()
-                Return False
-            End If
-        End If
-
         ' Number of miners
         If Trim(txtMineNumberMiners.Text) = "" Or Trim(txtMineNumberMiners.Text) = "0" Then
             MsgBox("Invalid number of miners", vbExclamation, Application.ProductName)
@@ -20932,21 +20955,6 @@ Leave:
             ' Can't query any ore
             MsgBox("Invalid station tax rate value", vbExclamation, Application.ProductName)
             txtMineReprocessingTax.Focus()
-            Return False
-        End If
-
-        ' Mining drones
-        If Trim(txtMineMiningDroneM3.Text) = "" Then
-            ' Can't query any ore
-            MsgBox("Invalid mining drone m3/hour amount", vbExclamation, Application.ProductName)
-            txtMineMiningDroneM3.Focus()
-            Return False
-        End If
-
-        If CDbl(txtMineMiningDroneM3.Text) < 0 Then
-            ' Can't query any ore
-            MsgBox("Invalid mining drone m3/hour amount", vbExclamation, Application.ProductName)
-            txtMineMiningDroneM3.Focus()
             Return False
         End If
 
@@ -21380,60 +21388,6 @@ Leave:
         End If
 
         Return 0
-
-    End Function
-
-    ' Gets the amount per hour that we need to adjust the isk/hour for jump costs
-    Private Function GetJumpCosts(RefinedMats As Materials, Ore As MiningOre, OreAmount As Double) As Double
-        Dim SQL As String
-        Dim readerORE As SQLiteDataReader
-        Dim ReturnValue As Double
-        Dim IskperM3 As Double ' How much each m3 in the jump ship costs based on jump fuel
-
-        ' Ore stuff
-        Dim CompressedBlocks As Double
-        Dim CompressedBlockVolume As Double
-
-        If chkMineIncludeJumpCosts.Checked = True Then
-            IskperM3 = CDbl(txtMineTotalJumpFuel.Text) / CDbl(txtMineTotalJumpM3.Text)
-
-            If rbtnMineJumpMinerals.Checked = True Then
-                ' Take the volume of minerals for the hour, then multiple by the isk per m3 for total cost
-                ReturnValue = IskperM3 * RefinedMats.GetTotalVolume
-            Else
-                ' Compressed ORE
-                ' Get quanity to build 1 compressed block, divide into ore amount (allow partial). 
-                ' Multiply by Compressed block m3, then multiply by iskper m3 to get cost
-                SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE MATERIAL ='" & Ore.OreName & "' AND BLUEPRINT_NAME = 'Compressed " & Ore.OreName & " Blueprint'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerORE = DBCommand.ExecuteReader
-
-                If readerORE.Read Then
-                    CompressedBlocks = OreAmount / CLng(readerORE.GetValue(0))
-                Else
-                    Return 0
-                End If
-
-                readerORE.Close()
-                SQL = "SELECT volume FROM INVENTORY_TYPES WHERE typeName ='" & Ore.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerORE = DBCommand.ExecuteReader
-
-                If readerORE.Read Then
-                    CompressedBlockVolume = readerORE.GetDouble(0)
-                Else
-                    Return 0
-                End If
-
-                ' Final value to jump this ore
-                Return CompressedBlocks * CompressedBlockVolume * IskperM3
-
-            End If
-
-            Return ReturnValue
-        Else
-            Return 0
-        End If
 
     End Function
 
