@@ -654,8 +654,10 @@ Public Class Blueprint
             ' Reset the production times
             ComponentProductionTimes = New List(Of Double)
 
+            Dim TempBuiltComponents As BuiltItemList = CType(BuiltComponentList.Clone, BuiltItemList)
+
             ' Now build the components as x runs, with 1 bp, that are connected to the main blueprint
-            For i = 0 To BuiltComponentList.GetBuiltItemList.Count - 1
+            For i = 0 To TempBuiltComponents.GetBuiltItemList.Count - 1
                 Dim TempComponentFacility As IndustryFacility
                 Dim rsCheck As SQLiteDataReader
                 Dim SQL As String
@@ -664,7 +666,7 @@ Public Class Blueprint
                 Dim OneItemMarketPrice As Double = 0
                 Dim PortionSize As Integer = 1
 
-                With BuiltComponentList.GetBuiltItemList(i)
+                With TempBuiltComponents.GetBuiltItemList(i)
                     Application.DoEvents()
 
                     SQL = "SELECT ALL_BLUEPRINTS_FACT.ITEM_GROUP_ID, ALL_BLUEPRINTS_FACT.ITEM_CATEGORY_ID, ITEM_PRICES_FACT.PRICE, PORTION_SIZE "
@@ -705,13 +707,25 @@ Public Class Blueprint
 
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessMaterials)
 
+                    ' Update the BuiltComponetList quantity with what the build quantity needs are
+                    For Each Mat In ComponentBlueprint.UsedExcessMaterials.GetMaterialList
+                        For Each BC In BuiltComponentList.GetBuiltItemList
+                            If BC.ItemTypeID = Mat.GetMaterialTypeID Then
+                                ' Update the built item
+                                BC.ItemQuantity = BC.ItemQuantity + Mat.GetQuantity
+                                BC.BPRuns = CLng(Math.Ceiling(BC.ItemQuantity / BC.PortionSize))
+                                Exit For
+                            End If
+                        Next
+                    Next
+
                     Dim ExtraItems As Long
                     Dim ExtraMaterial As Material = Nothing
 
                     ' Also, if this built item is more than we need for the main blueprint, add it to excess
                     If ComponentQuantity < (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) Then
                         ExtraItems = (ComponentBlueprint.PortionSize * ComponentBlueprint.GetUserRuns) - ComponentQuantity
-                        ExtraMaterial = New Material(.ItemTypeID, .ItemName, CategoryID, ExtraItems, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE))
+                        ExtraMaterial = New Material(.ItemTypeID, RemoveItemNameRuns(.ItemName), CategoryID, ExtraItems, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE))
                         Call ExcessMaterials.InsertMaterial(ExtraMaterial)
                     End If
 
@@ -743,7 +757,7 @@ Public Class Blueprint
                     Dim BuildFlag As Boolean = GetBuildBuyFlag(OneItemMarketPrice, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalRawCost,
                                                                ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
 
-                    If BuildBuy And BuildFlag Then
+                    If (BuildBuy And BuildFlag) Or Not BuildBuy Then
                         ' Market cost is greater than build cost, so set the mat cost to the build cost - or just building (not build/buy)
                         ItemPrice = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / .ItemQuantity
                         ' Adjust the runs of this BP in the name for built bps
@@ -849,11 +863,12 @@ Public Class Blueprint
 
         ' Select all materials to buid this BP
         SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_GROUP_ID, MATERIAL_CATEGORY_ID,  "
-        SQL = SQL & "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES "
+        SQL = SQL & "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE, groupName "
+        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES, INVENTORY_GROUPS "
         SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
         SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS_FACT ON ALL_BLUEPRINTS_FACT.ITEM_ID = ABM.MATERIAL_ID "
-        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " And ACTIVITY IN (1,11) AND MATERIAL_ID = INVENTORY_TYPES.typeID "
+        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " And ACTIVITY IN (1,11) "
+        SQL = SQL & "AND MATERIAL_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -881,7 +896,7 @@ Public Class Blueprint
                 End If
 
                 ' Set the current material - adjust with portion size though if sent
-                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), CStr(CurrentMaterialCategoryID), readerBP.GetInt64(2), readerBP.GetDouble(7), If(readerBP.IsDBNull(8), 0, readerBP.GetDouble(8)), "", "")
+                CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), readerBP.GetString(11), readerBP.GetInt64(2), readerBP.GetDouble(7), If(readerBP.IsDBNull(8), 0, readerBP.GetDouble(8)), "", "")
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
                 BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
@@ -892,7 +907,11 @@ Public Class Blueprint
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
                 ' Before going any further, see if we have this material in excess materials and if so, adjust the quantity that we will need to build
-                AdjCurrentMatQuantity = GetAdjustedQuantity(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMatQuantity)
+                If IsNothing(ExcessBuildMaterials) Then
+                    AdjCurrentMatQuantity = CurrentMatQuantity
+                Else
+                    AdjCurrentMatQuantity = GetAdjustedQuantity(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMatQuantity)
+                End If
 
                 If AdjCurrentMatQuantity = 0 Then
                     GoTo SkipProcessing
@@ -994,6 +1013,15 @@ Public Class Blueprint
                             End If
                             ' Save if we don't end up building this and we can readjust
                             Call SavedUpdateBPExcessMaterialList.InsertMaterial(Mat)
+
+                            ' Update the BuiltComponetList quantity with what the build quantity needs are
+                            For Each BC In BuiltComponentList.GetBuiltItemList
+                                If BC.ItemTypeID = Mat.GetMaterialTypeID Then
+                                    BC.ItemQuantity += Mat.GetQuantity
+                                    Exit For
+                                End If
+                            Next
+
                         End If
                     Next
 
@@ -1020,8 +1048,10 @@ Public Class Blueprint
                         CurrentMaterial.SetBuildItem(True)
 
                         ' Use any materials before continuing
-                        Call UseExcessMaterials(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMaterial.GetQuantity - BuiltQuantity,
-                                            SavedExcessMaterialList, UsedExcessMaterial)
+                        If Not IsNothing(ExcessBuildMaterials) Then
+                            Call UseExcessMaterials(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMaterial.GetQuantity - BuiltQuantity,
+                                                    SavedExcessMaterialList, UsedExcessMaterial)
+                        End If
 
                         ' Save the production time for this component
                         Call ComponentProductionTimes.Add(ComponentBlueprint.GetTotalProductionTime)
@@ -1054,9 +1084,11 @@ Public Class Blueprint
                         RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
 
                         ' If this item has buildable components, add those to this main list too so it nests up
-                        For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
-                            BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
-                        Next
+                        If Not IsNothing(ExcessBuildMaterials) Then
+                            For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
+                                BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                            Next
+                        End If
 
                         ' *** BUILD OR BUY ***
                         If BuildBuy Then
@@ -1069,7 +1101,7 @@ Public Class Blueprint
 
                             ' Add the built item to the built component list for later use
                             TempBuiltItem = SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize,
-                                            TempME, TempTE, ComponentBlueprint, BuildQuantity)
+                                        TempME, TempTE, ComponentBlueprint, BuildQuantity)
 
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
 
@@ -1097,7 +1129,7 @@ Public Class Blueprint
 
                             ' Add the built item to the built component list for later use
                             BuiltComponentList.AddBuiltItem(CType(SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize, TempME, TempTE,
-                                                            ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
+                                                        ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
                         End If
 
                     Else ' *** BUY ***
