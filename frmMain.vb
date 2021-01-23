@@ -3519,11 +3519,13 @@ Tabs:
     Private Sub btnBPComponents_Click(sender As Object, e As EventArgs) Handles btnBPComponents.Click
         lstBPComponentMats.Visible = True
         lstBPBuiltComponents.Visible = False
+        lblBPComponentMats.Text = "Component Material List"
     End Sub
 
     Private Sub btnBPBuiltComponents_Click(sender As Object, e As EventArgs) Handles btnBPBuiltComponents.Click
         lstBPComponentMats.Visible = False
         lstBPBuiltComponents.Visible = True
+        lblBPComponentMats.Text = "Built Component Material List"
     End Sub
 
     Private Sub rbtnBPAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPAdvT2MatType.CheckedChanged
@@ -5749,6 +5751,8 @@ Tabs:
 
         MsgBox("Settings Saved", vbInformation, Application.ProductName)
 
+        cmbBPBlueprintSelection.Focus()
+
     End Sub
 
     ' Saves the BP data
@@ -6411,8 +6415,8 @@ Tabs:
                         Reaction = False
                 End Select
 
-                ' Mark line grey if the blueprint for this item has no ME stored except if reaction
-                If TempME = "0" And Not Reaction Then
+                ' Mark line grey if the blueprint for this item has no ME stored
+                If TempME = "0" Then
                     complstViewRow.BackColor = Color.LightGray
                 Else
                     complstViewRow.BackColor = Color.White
