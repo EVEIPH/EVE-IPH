@@ -68,6 +68,7 @@ Partial Class frmMain
         Me.mnuViewESIStatus = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuIndustryUpgradeBelts = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuIceAnomalyBelts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRefinery = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuLPStore = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSettings = New System.Windows.Forms.ToolStripMenuItem()
@@ -144,20 +145,35 @@ Partial Class frmMain
         Me.chkPITemperate = New System.Windows.Forms.CheckBox()
         Me.btnPIReset = New System.Windows.Forms.Button()
         Me.tabMining = New System.Windows.Forms.TabPage()
-        Me.gbMineDrones = New System.Windows.Forms.GroupBox()
+        Me.tabMiningDrones = New System.Windows.Forms.TabControl()
+        Me.tabShipDrones = New System.Windows.Forms.TabPage()
         Me.lblMineDroneIdealRange = New System.Windows.Forms.Label()
-        Me.lblMineMiningDroneYield = New System.Windows.Forms.Label()
-        Me.lblMineMiningDroneM3 = New System.Windows.Forms.Label()
-        Me.lblMineNumMiningDrones = New System.Windows.Forms.Label()
-        Me.cmbMineNumMiningDrones = New System.Windows.Forms.ComboBox()
         Me.cmbMineDroneName = New System.Windows.Forms.ComboBox()
+        Me.lblMineMiningDroneYield = New System.Windows.Forms.Label()
+        Me.cmbMineDroneOpSkill = New System.Windows.Forms.ComboBox()
+        Me.lblMineMiningDroneM3 = New System.Windows.Forms.Label()
+        Me.lblMineDroneOpSkill = New System.Windows.Forms.Label()
+        Me.lblMineNumMiningDrones = New System.Windows.Forms.Label()
+        Me.cmbMineDroneSpecSkill = New System.Windows.Forms.ComboBox()
+        Me.cmbMineNumMiningDrones = New System.Windows.Forms.ComboBox()
+        Me.lblMineDroneSpecSkill = New System.Windows.Forms.Label()
+        Me.lblMineDroneInterfacingSkill = New System.Windows.Forms.Label()
         Me.lblMineDroneName = New System.Windows.Forms.Label()
         Me.cmbMineDroneInterfacingSkill = New System.Windows.Forms.ComboBox()
-        Me.lblMineDroneInterfacingSkill = New System.Windows.Forms.Label()
-        Me.lblMineDroneSpecSkill = New System.Windows.Forms.Label()
-        Me.cmbMineDroneSpecSkill = New System.Windows.Forms.ComboBox()
-        Me.lblMineDroneOpSkill = New System.Windows.Forms.Label()
-        Me.cmbMineDroneSkill = New System.Windows.Forms.ComboBox()
+        Me.tabBoosterDrones = New System.Windows.Forms.TabPage()
+        Me.lblMineBoosterDroneIdealRange = New System.Windows.Forms.Label()
+        Me.cmbMineBoosterDroneName = New System.Windows.Forms.ComboBox()
+        Me.lblMineBoosterMiningDroneYield = New System.Windows.Forms.Label()
+        Me.cmbMineBoosterDroneOpSkill = New System.Windows.Forms.ComboBox()
+        Me.lblMineBoosterMiningDroneM3 = New System.Windows.Forms.Label()
+        Me.lblMineBoosterDroneOpSkill = New System.Windows.Forms.Label()
+        Me.lblMineBoosterNumMiningDrones = New System.Windows.Forms.Label()
+        Me.cmbMineBoosterDroneSpecSkill = New System.Windows.Forms.ComboBox()
+        Me.cmbMineBoosterNumMiningDrones = New System.Windows.Forms.ComboBox()
+        Me.lblMineBoosterDroneSpecSkill = New System.Windows.Forms.Label()
+        Me.lblMineBoosterDroneInterfacingSkill = New System.Windows.Forms.Label()
+        Me.lblMineBoosterDroneName = New System.Windows.Forms.Label()
+        Me.cmbMineBoosterDroneInterfacingSkill = New System.Windows.Forms.ComboBox()
         Me.gbMineNumberMiners = New System.Windows.Forms.GroupBox()
         Me.txtMineNumberMiners = New System.Windows.Forms.TextBox()
         Me.lblMineNumberMiners = New System.Windows.Forms.Label()
@@ -188,18 +204,18 @@ Partial Class frmMain
         Me.lblMineRoundTripTime = New System.Windows.Forms.Label()
         Me.btnMineRefresh = New System.Windows.Forms.Button()
         Me.gbMineBooster = New System.Windows.Forms.GroupBox()
-        Me.chkMineBoosterUseDrones = New System.Windows.Forms.CheckBox()
-        Me.lblMineDoubleClick = New System.Windows.Forms.Label()
         Me.pictMineLaserOptmize = New System.Windows.Forms.PictureBox()
         Me.pictMineRangeLink = New System.Windows.Forms.PictureBox()
+        Me.chkMineBoosterDroneRig2 = New System.Windows.Forms.CheckBox()
+        Me.chkMineBoosterDroneRig1 = New System.Windows.Forms.CheckBox()
+        Me.chkMineBoosterUseDrones = New System.Windows.Forms.CheckBox()
+        Me.lblMineDoubleClick = New System.Windows.Forms.Label()
         Me.pictMineFleetBoostShip = New System.Windows.Forms.PictureBox()
         Me.chkMineForemanLaserRangeBoost = New System.Windows.Forms.CheckBox()
-        Me.cmbMineIndustReconfig = New System.Windows.Forms.ComboBox()
-        Me.lblMineIndustrialReconfig = New System.Windows.Forms.Label()
         Me.chkMineRorqDeployedMode = New System.Windows.Forms.CheckBox()
         Me.cmbMineBoosterShipSkill = New System.Windows.Forms.ComboBox()
         Me.chkMineForemanMindlink = New System.Windows.Forms.CheckBox()
-        Me.cmbMineBoosterShip = New System.Windows.Forms.ComboBox()
+        Me.cmbMineBoosterShipName = New System.Windows.Forms.ComboBox()
         Me.cmbMineMiningDirector = New System.Windows.Forms.ComboBox()
         Me.chkMineForemanLaserOpBoost = New System.Windows.Forms.CheckBox()
         Me.lblMineMiningDirector = New System.Windows.Forms.Label()
@@ -207,6 +223,8 @@ Partial Class frmMain
         Me.lblMineFleetBoosterShip = New System.Windows.Forms.Label()
         Me.lblMineMiningForeman = New System.Windows.Forms.Label()
         Me.lblMineBoosterShipSkill = New System.Windows.Forms.Label()
+        Me.cmbMineIndustReconfig = New System.Windows.Forms.ComboBox()
+        Me.lblMineIndustrialReconfig = New System.Windows.Forms.Label()
         Me.gbMineRefining = New System.Windows.Forms.GroupBox()
         Me.gbMineProcessingSkills = New System.Windows.Forms.GroupBox()
         Me.cmbOreProcessing22 = New System.Windows.Forms.ComboBox()
@@ -292,15 +310,15 @@ Partial Class frmMain
         Me.pictMineSelectedShip = New System.Windows.Forms.PictureBox()
         Me.lblMineSelectShip = New System.Windows.Forms.Label()
         Me.cmbMineBaseShipSkill = New System.Windows.Forms.ComboBox()
-        Me.cmbMineExhumers = New System.Windows.Forms.ComboBox()
-        Me.cmbMineShipType = New System.Windows.Forms.ComboBox()
+        Me.cmbMineAdvShipSkill = New System.Windows.Forms.ComboBox()
+        Me.cmbMineShipName = New System.Windows.Forms.ComboBox()
         Me.lblMineBaseShipSkill = New System.Windows.Forms.Label()
         Me.lblMineExhumers = New System.Windows.Forms.Label()
         Me.gbMineShipEquipment = New System.Windows.Forms.GroupBox()
         Me.gbMiningRigs = New System.Windows.Forms.GroupBox()
-        Me.rbtnMineNoRigs = New System.Windows.Forms.RadioButton()
-        Me.rbtnMineIceRig = New System.Windows.Forms.RadioButton()
-        Me.rbtnMineMercoxitRig = New System.Windows.Forms.RadioButton()
+        Me.chkMineDroneRig2 = New System.Windows.Forms.CheckBox()
+        Me.chkMineDroneRig1 = New System.Windows.Forms.CheckBox()
+        Me.chkMineIceMercoxitRig = New System.Windows.Forms.CheckBox()
         Me.cmbMineMiningLaser = New System.Windows.Forms.ComboBox()
         Me.lblMineMiningUpgrade = New System.Windows.Forms.Label()
         Me.gbMineCrystals = New System.Windows.Forms.GroupBox()
@@ -330,7 +348,6 @@ Partial Class frmMain
         Me.chkMineIncludeNullSec = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeLowSec = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeHighYieldOre = New System.Windows.Forms.CheckBox()
-        Me.lblMineType = New System.Windows.Forms.Label()
         Me.cmbMineOreType = New System.Windows.Forms.ComboBox()
         Me.gbMineOreLocSov = New System.Windows.Forms.GroupBox()
         Me.chkMineMoonMining = New System.Windows.Forms.CheckBox()
@@ -338,15 +355,16 @@ Partial Class frmMain
         Me.chkMineWH = New System.Windows.Forms.CheckBox()
         Me.gbMineWHSpace = New System.Windows.Forms.GroupBox()
         Me.chkMineC6 = New System.Windows.Forms.CheckBox()
-        Me.chkMineC2 = New System.Windows.Forms.CheckBox()
-        Me.chkMineC4 = New System.Windows.Forms.CheckBox()
-        Me.chkMineC1 = New System.Windows.Forms.CheckBox()
         Me.chkMineC5 = New System.Windows.Forms.CheckBox()
+        Me.chkMineC4 = New System.Windows.Forms.CheckBox()
         Me.chkMineC3 = New System.Windows.Forms.CheckBox()
+        Me.chkMineC2 = New System.Windows.Forms.CheckBox()
+        Me.chkMineC1 = New System.Windows.Forms.CheckBox()
         Me.chkMineCaldari = New System.Windows.Forms.CheckBox()
         Me.chkMineMinmatar = New System.Windows.Forms.CheckBox()
         Me.chkMineGallente = New System.Windows.Forms.CheckBox()
         Me.chkMineAmarr = New System.Windows.Forms.CheckBox()
+        Me.lblMineType = New System.Windows.Forms.Label()
         Me.lstMineGrid = New System.Windows.Forms.ListView()
         Me.tabDatacores = New System.Windows.Forms.TabPage()
         Me.lstDC = New System.Windows.Forms.ListView()
@@ -497,7 +515,6 @@ Partial Class frmMain
         Me.lblDCStanding3 = New System.Windows.Forms.Label()
         Me.btnDCRefresh = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
-        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
         Me.gbCalcIgnoreinCalcs = New System.Windows.Forms.GroupBox()
         Me.chkCalcIgnoreMinerals = New System.Windows.Forms.CheckBox()
@@ -519,9 +536,7 @@ Partial Class frmMain
         Me.chkCalcCanBuild = New System.Windows.Forms.CheckBox()
         Me.gbCalcMarketFilters = New System.Windows.Forms.GroupBox()
         Me.txtCalcProfitThreshold = New System.Windows.Forms.TextBox()
-        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.txtCalcSVRThreshold = New System.Windows.Forms.TextBox()
-        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.chkCalcMaxBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.chkCalcMinBuildTimeFilter = New System.Windows.Forms.CheckBox()
         Me.cmbCalcPriceTrend = New System.Windows.Forms.ComboBox()
@@ -596,27 +611,16 @@ Partial Class frmMain
         Me.lblTempME = New System.Windows.Forms.Label()
         Me.tabCalcFacilities = New System.Windows.Forms.TabControl()
         Me.tabCalcFacilityBase = New System.Windows.Forms.TabPage()
-        Me.CalcBaseFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityComponents = New System.Windows.Forms.TabPage()
-        Me.CalcComponentsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityCopy = New System.Windows.Forms.TabPage()
-        Me.CalcCopyFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT2Invention = New System.Windows.Forms.TabPage()
-        Me.CalcInventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT3Invention = New System.Windows.Forms.TabPage()
-        Me.CalcT3InventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilitySupers = New System.Windows.Forms.TabPage()
-        Me.CalcSupersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityCapitals = New System.Windows.Forms.TabPage()
-        Me.CalcCapitalsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityT3Ships = New System.Windows.Forms.TabPage()
-        Me.CalcT3ShipsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilitySubsystems = New System.Windows.Forms.TabPage()
-        Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityBoosters = New System.Windows.Forms.TabPage()
-        Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabCalcFacilityReactions = New System.Windows.Forms.TabPage()
-        Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.gbCalcFilter = New System.Windows.Forms.GroupBox()
         Me.cmbCalcBPTypeFilter = New System.Windows.Forms.ComboBox()
         Me.gbCalcBPTech = New System.Windows.Forms.GroupBox()
@@ -663,7 +667,6 @@ Partial Class frmMain
         Me.tabUpdatePrices = New System.Windows.Forms.TabPage()
         Me.btnLoadPricesfromFile = New System.Windows.Forms.Button()
         Me.btnSavePricestoFile = New System.Windows.Forms.Button()
-        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
         Me.txtPriceItemFilter = New System.Windows.Forms.TextBox()
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
         Me.txtItemsPriceModifier = New System.Windows.Forms.TextBox()
@@ -757,7 +760,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtRawMaterialsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblRawMaterialsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.tabPriceProfileManufactured = New System.Windows.Forms.TabPage()
         Me.ItemsDefaults = New System.Windows.Forms.GroupBox()
         Me.btnItemsDefaults = New System.Windows.Forms.Button()
@@ -769,7 +771,6 @@ Partial Class frmMain
         Me.lblItemsDefaultsRegion = New System.Windows.Forms.Label()
         Me.txtItemsDefaultsPriceMod = New System.Windows.Forms.TextBox()
         Me.lblItemsDefaultsPriceMod = New System.Windows.Forms.Label()
-        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
         Me.pnlSinglePriceLocationSelect = New System.Windows.Forms.Panel()
         Me.gbTradeHubSystems = New System.Windows.Forms.GroupBox()
         Me.cmbPriceSystems = New System.Windows.Forms.ComboBox()
@@ -935,7 +936,6 @@ Partial Class frmMain
         Me.btnBPSaveBP = New System.Windows.Forms.Button()
         Me.tabBPInventionEquip = New System.Windows.Forms.TabControl()
         Me.tabFacility = New System.Windows.Forms.TabPage()
-        Me.BPTabFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabT3Calcs = New System.Windows.Forms.TabPage()
         Me.lblBPT3Decryptor = New System.Windows.Forms.Label()
         Me.cmbBPT3Decryptor = New System.Windows.Forms.ComboBox()
@@ -1008,17 +1008,37 @@ Partial Class frmMain
         Me.lblBPComponentMatCost = New System.Windows.Forms.Label()
         Me.lblBPComponentMats = New System.Windows.Forms.Label()
         Me.lblBPComponentMatCost1 = New System.Windows.Forms.Label()
+        Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.BPTabFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstBPComponentMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
-        Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.lstPricesView = New EVE_Isk_per_Hour.MyListView()
+        Me.lstRawPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturedPriceProfile = New EVE_Isk_per_Hour.MyListView()
+        Me.lstManufacturing = New EVE_Isk_per_Hour.ManufacturingListView()
+        Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.tpMinBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
+        Me.CalcBaseFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcComponentsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcCopyFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcInventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcT3InventionFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcSupersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcCapitalsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcT3ShipsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcSubsystemsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
         Me.tabPI.SuspendLayout()
         Me.gbPIPlanets.SuspendLayout()
         Me.tabMining.SuspendLayout()
-        Me.gbMineDrones.SuspendLayout()
+        Me.tabMiningDrones.SuspendLayout()
+        Me.tabShipDrones.SuspendLayout()
+        Me.tabBoosterDrones.SuspendLayout()
         Me.gbMineNumberMiners.SuspendLayout()
         Me.gbMineOreProcessingType.SuspendLayout()
         Me.gbMineTaxBroker.SuspendLayout()
@@ -1384,7 +1404,7 @@ Partial Class frmMain
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuIndustryUpgradeBelts, Me.mnuRefinery, Me.mnuLPStore})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuIndustryUpgradeBelts, Me.mnuIceAnomalyBelts, Me.mnuRefinery, Me.mnuLPStore})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(46, 20)
         Me.mnuTools.Text = "Tools"
@@ -1392,19 +1412,25 @@ Partial Class frmMain
         'mnuIndustryUpgradeBelts
         '
         Me.mnuIndustryUpgradeBelts.Name = "mnuIndustryUpgradeBelts"
-        Me.mnuIndustryUpgradeBelts.Size = New System.Drawing.Size(193, 22)
-        Me.mnuIndustryUpgradeBelts.Text = "Industry Upgrade Belts"
+        Me.mnuIndustryUpgradeBelts.Size = New System.Drawing.Size(194, 22)
+        Me.mnuIndustryUpgradeBelts.Text = "Ore Sov Anomaly Belts"
+        '
+        'mnuIceAnomalyBelts
+        '
+        Me.mnuIceAnomalyBelts.Name = "mnuIceAnomalyBelts"
+        Me.mnuIceAnomalyBelts.Size = New System.Drawing.Size(194, 22)
+        Me.mnuIceAnomalyBelts.Text = "Ice Anomaly Belts"
         '
         'mnuRefinery
         '
         Me.mnuRefinery.Name = "mnuRefinery"
-        Me.mnuRefinery.Size = New System.Drawing.Size(193, 22)
+        Me.mnuRefinery.Size = New System.Drawing.Size(194, 22)
         Me.mnuRefinery.Text = "Refinery"
         '
         'mnuLPStore
         '
         Me.mnuLPStore.Name = "mnuLPStore"
-        Me.mnuLPStore.Size = New System.Drawing.Size(193, 22)
+        Me.mnuLPStore.Size = New System.Drawing.Size(194, 22)
         Me.mnuLPStore.Text = "LP Store"
         '
         'mnuSettings
@@ -1899,7 +1925,7 @@ Partial Class frmMain
         '
         'tabMining
         '
-        Me.tabMining.Controls.Add(Me.gbMineDrones)
+        Me.tabMining.Controls.Add(Me.tabMiningDrones)
         Me.tabMining.Controls.Add(Me.gbMineNumberMiners)
         Me.tabMining.Controls.Add(Me.gbMineOreProcessingType)
         Me.tabMining.Controls.Add(Me.btnMineSaveAllSettings)
@@ -1921,146 +1947,309 @@ Partial Class frmMain
         Me.tabMining.Text = "Mining"
         Me.tabMining.UseVisualStyleBackColor = True
         '
-        'gbMineDrones
+        'tabMiningDrones
         '
-        Me.gbMineDrones.Controls.Add(Me.lblMineDroneIdealRange)
-        Me.gbMineDrones.Controls.Add(Me.lblMineMiningDroneYield)
-        Me.gbMineDrones.Controls.Add(Me.lblMineMiningDroneM3)
-        Me.gbMineDrones.Controls.Add(Me.lblMineNumMiningDrones)
-        Me.gbMineDrones.Controls.Add(Me.cmbMineNumMiningDrones)
-        Me.gbMineDrones.Controls.Add(Me.cmbMineDroneName)
-        Me.gbMineDrones.Controls.Add(Me.lblMineDroneName)
-        Me.gbMineDrones.Controls.Add(Me.cmbMineDroneInterfacingSkill)
-        Me.gbMineDrones.Controls.Add(Me.lblMineDroneInterfacingSkill)
-        Me.gbMineDrones.Controls.Add(Me.lblMineDroneSpecSkill)
-        Me.gbMineDrones.Controls.Add(Me.cmbMineDroneSpecSkill)
-        Me.gbMineDrones.Controls.Add(Me.lblMineDroneOpSkill)
-        Me.gbMineDrones.Controls.Add(Me.cmbMineDroneSkill)
-        Me.gbMineDrones.Location = New System.Drawing.Point(408, 8)
-        Me.gbMineDrones.Name = "gbMineDrones"
-        Me.gbMineDrones.Size = New System.Drawing.Size(297, 105)
-        Me.gbMineDrones.TabIndex = 119
-        Me.gbMineDrones.TabStop = False
+        Me.tabMiningDrones.Controls.Add(Me.tabShipDrones)
+        Me.tabMiningDrones.Controls.Add(Me.tabBoosterDrones)
+        Me.tabMiningDrones.Location = New System.Drawing.Point(374, 14)
+        Me.tabMiningDrones.Name = "tabMiningDrones"
+        Me.tabMiningDrones.SelectedIndex = 0
+        Me.tabMiningDrones.Size = New System.Drawing.Size(261, 138)
+        Me.tabMiningDrones.TabIndex = 120
+        '
+        'tabShipDrones
+        '
+        Me.tabShipDrones.Controls.Add(Me.lblMineDroneIdealRange)
+        Me.tabShipDrones.Controls.Add(Me.cmbMineDroneName)
+        Me.tabShipDrones.Controls.Add(Me.lblMineMiningDroneYield)
+        Me.tabShipDrones.Controls.Add(Me.cmbMineDroneOpSkill)
+        Me.tabShipDrones.Controls.Add(Me.lblMineMiningDroneM3)
+        Me.tabShipDrones.Controls.Add(Me.lblMineDroneOpSkill)
+        Me.tabShipDrones.Controls.Add(Me.lblMineNumMiningDrones)
+        Me.tabShipDrones.Controls.Add(Me.cmbMineDroneSpecSkill)
+        Me.tabShipDrones.Controls.Add(Me.cmbMineNumMiningDrones)
+        Me.tabShipDrones.Controls.Add(Me.lblMineDroneSpecSkill)
+        Me.tabShipDrones.Controls.Add(Me.lblMineDroneInterfacingSkill)
+        Me.tabShipDrones.Controls.Add(Me.lblMineDroneName)
+        Me.tabShipDrones.Controls.Add(Me.cmbMineDroneInterfacingSkill)
+        Me.tabShipDrones.Location = New System.Drawing.Point(4, 22)
+        Me.tabShipDrones.Name = "tabShipDrones"
+        Me.tabShipDrones.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabShipDrones.Size = New System.Drawing.Size(253, 112)
+        Me.tabShipDrones.TabIndex = 0
+        Me.tabShipDrones.Text = "Ship Mining Drones"
+        Me.tabShipDrones.UseVisualStyleBackColor = True
         '
         'lblMineDroneIdealRange
         '
-        Me.lblMineDroneIdealRange.Location = New System.Drawing.Point(141, 85)
+        Me.lblMineDroneIdealRange.Location = New System.Drawing.Point(112, 87)
         Me.lblMineDroneIdealRange.Name = "lblMineDroneIdealRange"
-        Me.lblMineDroneIdealRange.Size = New System.Drawing.Size(150, 16)
+        Me.lblMineDroneIdealRange.Size = New System.Drawing.Size(134, 16)
         Me.lblMineDroneIdealRange.TabIndex = 137
         Me.lblMineDroneIdealRange.Text = "Ideal Range:"
         Me.lblMineDroneIdealRange.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'lblMineMiningDroneYield
-        '
-        Me.lblMineMiningDroneYield.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblMineMiningDroneYield.Location = New System.Drawing.Point(211, 60)
-        Me.lblMineMiningDroneYield.Name = "lblMineMiningDroneYield"
-        Me.lblMineMiningDroneYield.Size = New System.Drawing.Size(80, 23)
-        Me.lblMineMiningDroneYield.TabIndex = 136
-        Me.lblMineMiningDroneYield.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'lblMineMiningDroneM3
-        '
-        Me.lblMineMiningDroneM3.Location = New System.Drawing.Point(138, 56)
-        Me.lblMineMiningDroneM3.Name = "lblMineMiningDroneM3"
-        Me.lblMineMiningDroneM3.Size = New System.Drawing.Size(73, 30)
-        Me.lblMineMiningDroneM3.TabIndex = 9
-        Me.lblMineMiningDroneM3.Text = "Mining Drone Yield (m3/Hr):"
-        '
-        'lblMineNumMiningDrones
-        '
-        Me.lblMineNumMiningDrones.AutoSize = True
-        Me.lblMineNumMiningDrones.Location = New System.Drawing.Point(153, 41)
-        Me.lblMineNumMiningDrones.Name = "lblMineNumMiningDrones"
-        Me.lblMineNumMiningDrones.Size = New System.Drawing.Size(96, 13)
-        Me.lblMineNumMiningDrones.TabIndex = 135
-        Me.lblMineNumMiningDrones.Text = "Number of Drones:"
-        '
-        'cmbMineNumMiningDrones
-        '
-        Me.cmbMineNumMiningDrones.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineNumMiningDrones.FormattingEnabled = True
-        Me.cmbMineNumMiningDrones.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineNumMiningDrones.Location = New System.Drawing.Point(255, 37)
-        Me.cmbMineNumMiningDrones.Name = "cmbMineNumMiningDrones"
-        Me.cmbMineNumMiningDrones.Size = New System.Drawing.Size(36, 21)
-        Me.cmbMineNumMiningDrones.TabIndex = 134
         '
         'cmbMineDroneName
         '
         Me.cmbMineDroneName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineDroneName.FormattingEnabled = True
-        Me.cmbMineDroneName.Location = New System.Drawing.Point(73, 13)
+        Me.cmbMineDroneName.Location = New System.Drawing.Point(74, 6)
         Me.cmbMineDroneName.Name = "cmbMineDroneName"
-        Me.cmbMineDroneName.Size = New System.Drawing.Size(218, 21)
+        Me.cmbMineDroneName.Size = New System.Drawing.Size(172, 21)
         Me.cmbMineDroneName.TabIndex = 132
         '
-        'lblMineDroneName
+        'lblMineMiningDroneYield
         '
-        Me.lblMineDroneName.AutoSize = True
-        Me.lblMineDroneName.Location = New System.Drawing.Point(6, 16)
-        Me.lblMineDroneName.Name = "lblMineDroneName"
-        Me.lblMineDroneName.Size = New System.Drawing.Size(70, 13)
-        Me.lblMineDroneName.TabIndex = 133
-        Me.lblMineDroneName.Text = "Drone Name:"
+        Me.lblMineMiningDroneYield.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblMineMiningDroneYield.Location = New System.Drawing.Point(167, 56)
+        Me.lblMineMiningDroneYield.Name = "lblMineMiningDroneYield"
+        Me.lblMineMiningDroneYield.Size = New System.Drawing.Size(79, 23)
+        Me.lblMineMiningDroneYield.TabIndex = 136
+        Me.lblMineMiningDroneYield.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'cmbMineDroneInterfacingSkill
+        'cmbMineDroneOpSkill
         '
-        Me.cmbMineDroneInterfacingSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineDroneInterfacingSkill.FormattingEnabled = True
-        Me.cmbMineDroneInterfacingSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineDroneInterfacingSkill.Location = New System.Drawing.Point(96, 80)
-        Me.cmbMineDroneInterfacingSkill.Name = "cmbMineDroneInterfacingSkill"
-        Me.cmbMineDroneInterfacingSkill.Size = New System.Drawing.Size(36, 21)
-        Me.cmbMineDroneInterfacingSkill.TabIndex = 114
+        Me.cmbMineDroneOpSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineDroneOpSkill.FormattingEnabled = True
+        Me.cmbMineDroneOpSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineDroneOpSkill.Location = New System.Drawing.Point(74, 32)
+        Me.cmbMineDroneOpSkill.Name = "cmbMineDroneOpSkill"
+        Me.cmbMineDroneOpSkill.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineDroneOpSkill.TabIndex = 110
         '
-        'lblMineDroneInterfacingSkill
+        'lblMineMiningDroneM3
         '
-        Me.lblMineDroneInterfacingSkill.AutoSize = True
-        Me.lblMineDroneInterfacingSkill.Location = New System.Drawing.Point(6, 83)
-        Me.lblMineDroneInterfacingSkill.Name = "lblMineDroneInterfacingSkill"
-        Me.lblMineDroneInterfacingSkill.Size = New System.Drawing.Size(92, 13)
-        Me.lblMineDroneInterfacingSkill.TabIndex = 115
-        Me.lblMineDroneInterfacingSkill.Text = "Drone Interfacing:"
+        Me.lblMineMiningDroneM3.Location = New System.Drawing.Point(112, 53)
+        Me.lblMineMiningDroneM3.Name = "lblMineMiningDroneM3"
+        Me.lblMineMiningDroneM3.Size = New System.Drawing.Size(53, 30)
+        Me.lblMineMiningDroneM3.TabIndex = 9
+        Me.lblMineMiningDroneM3.Text = "Yield (m3/Hr):"
+        Me.lblMineMiningDroneM3.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'lblMineDroneSpecSkill
+        'lblMineDroneOpSkill
         '
-        Me.lblMineDroneSpecSkill.AutoSize = True
-        Me.lblMineDroneSpecSkill.Location = New System.Drawing.Point(6, 61)
-        Me.lblMineDroneSpecSkill.Name = "lblMineDroneSpecSkill"
-        Me.lblMineDroneSpecSkill.Size = New System.Drawing.Size(89, 13)
-        Me.lblMineDroneSpecSkill.TabIndex = 113
-        Me.lblMineDroneSpecSkill.Text = "Drone Spec Skill:"
+        Me.lblMineDroneOpSkill.AutoSize = True
+        Me.lblMineDroneOpSkill.Location = New System.Drawing.Point(27, 36)
+        Me.lblMineDroneOpSkill.Name = "lblMineDroneOpSkill"
+        Me.lblMineDroneOpSkill.Size = New System.Drawing.Size(46, 13)
+        Me.lblMineDroneOpSkill.TabIndex = 111
+        Me.lblMineDroneOpSkill.Text = "Op Skill:"
+        Me.lblMineDroneOpSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineNumMiningDrones
+        '
+        Me.lblMineNumMiningDrones.AutoSize = True
+        Me.lblMineNumMiningDrones.Location = New System.Drawing.Point(113, 36)
+        Me.lblMineNumMiningDrones.Name = "lblMineNumMiningDrones"
+        Me.lblMineNumMiningDrones.Size = New System.Drawing.Size(96, 13)
+        Me.lblMineNumMiningDrones.TabIndex = 135
+        Me.lblMineNumMiningDrones.Text = "Number of Drones:"
         '
         'cmbMineDroneSpecSkill
         '
         Me.cmbMineDroneSpecSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineDroneSpecSkill.FormattingEnabled = True
         Me.cmbMineDroneSpecSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineDroneSpecSkill.Location = New System.Drawing.Point(96, 58)
+        Me.cmbMineDroneSpecSkill.Location = New System.Drawing.Point(74, 58)
         Me.cmbMineDroneSpecSkill.Name = "cmbMineDroneSpecSkill"
         Me.cmbMineDroneSpecSkill.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineDroneSpecSkill.TabIndex = 112
         '
-        'lblMineDroneOpSkill
+        'cmbMineNumMiningDrones
         '
-        Me.lblMineDroneOpSkill.AutoSize = True
-        Me.lblMineDroneOpSkill.Location = New System.Drawing.Point(6, 39)
-        Me.lblMineDroneOpSkill.Name = "lblMineDroneOpSkill"
-        Me.lblMineDroneOpSkill.Size = New System.Drawing.Size(78, 13)
-        Me.lblMineDroneOpSkill.TabIndex = 111
-        Me.lblMineDroneOpSkill.Text = "Drone Op Skill:"
+        Me.cmbMineNumMiningDrones.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineNumMiningDrones.FormattingEnabled = True
+        Me.cmbMineNumMiningDrones.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineNumMiningDrones.Location = New System.Drawing.Point(210, 32)
+        Me.cmbMineNumMiningDrones.Name = "cmbMineNumMiningDrones"
+        Me.cmbMineNumMiningDrones.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineNumMiningDrones.TabIndex = 134
         '
-        'cmbMineDroneSkill
+        'lblMineDroneSpecSkill
         '
-        Me.cmbMineDroneSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineDroneSkill.FormattingEnabled = True
-        Me.cmbMineDroneSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineDroneSkill.Location = New System.Drawing.Point(96, 36)
-        Me.cmbMineDroneSkill.Name = "cmbMineDroneSkill"
-        Me.cmbMineDroneSkill.Size = New System.Drawing.Size(36, 21)
-        Me.cmbMineDroneSkill.TabIndex = 110
+        Me.lblMineDroneSpecSkill.AutoSize = True
+        Me.lblMineDroneSpecSkill.Location = New System.Drawing.Point(16, 60)
+        Me.lblMineDroneSpecSkill.Name = "lblMineDroneSpecSkill"
+        Me.lblMineDroneSpecSkill.Size = New System.Drawing.Size(57, 13)
+        Me.lblMineDroneSpecSkill.TabIndex = 113
+        Me.lblMineDroneSpecSkill.Text = "Spec Skill:"
+        Me.lblMineDroneSpecSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineDroneInterfacingSkill
+        '
+        Me.lblMineDroneInterfacingSkill.Location = New System.Drawing.Point(12, 78)
+        Me.lblMineDroneInterfacingSkill.Name = "lblMineDroneInterfacingSkill"
+        Me.lblMineDroneInterfacingSkill.Size = New System.Drawing.Size(61, 29)
+        Me.lblMineDroneInterfacingSkill.TabIndex = 115
+        Me.lblMineDroneInterfacingSkill.Text = "Drone Interfacing:"
+        Me.lblMineDroneInterfacingSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineDroneName
+        '
+        Me.lblMineDroneName.AutoSize = True
+        Me.lblMineDroneName.Location = New System.Drawing.Point(3, 9)
+        Me.lblMineDroneName.Name = "lblMineDroneName"
+        Me.lblMineDroneName.Size = New System.Drawing.Size(70, 13)
+        Me.lblMineDroneName.TabIndex = 133
+        Me.lblMineDroneName.Text = "Drone Name:"
+        Me.lblMineDroneName.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'cmbMineDroneInterfacingSkill
+        '
+        Me.cmbMineDroneInterfacingSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineDroneInterfacingSkill.FormattingEnabled = True
+        Me.cmbMineDroneInterfacingSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineDroneInterfacingSkill.Location = New System.Drawing.Point(74, 84)
+        Me.cmbMineDroneInterfacingSkill.Name = "cmbMineDroneInterfacingSkill"
+        Me.cmbMineDroneInterfacingSkill.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineDroneInterfacingSkill.TabIndex = 114
+        '
+        'tabBoosterDrones
+        '
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterDroneIdealRange)
+        Me.tabBoosterDrones.Controls.Add(Me.cmbMineBoosterDroneName)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterMiningDroneYield)
+        Me.tabBoosterDrones.Controls.Add(Me.cmbMineBoosterDroneOpSkill)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterMiningDroneM3)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterDroneOpSkill)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterNumMiningDrones)
+        Me.tabBoosterDrones.Controls.Add(Me.cmbMineBoosterDroneSpecSkill)
+        Me.tabBoosterDrones.Controls.Add(Me.cmbMineBoosterNumMiningDrones)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterDroneSpecSkill)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterDroneInterfacingSkill)
+        Me.tabBoosterDrones.Controls.Add(Me.lblMineBoosterDroneName)
+        Me.tabBoosterDrones.Controls.Add(Me.cmbMineBoosterDroneInterfacingSkill)
+        Me.tabBoosterDrones.Location = New System.Drawing.Point(4, 22)
+        Me.tabBoosterDrones.Name = "tabBoosterDrones"
+        Me.tabBoosterDrones.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabBoosterDrones.Size = New System.Drawing.Size(253, 112)
+        Me.tabBoosterDrones.TabIndex = 1
+        Me.tabBoosterDrones.Text = "Booster Mining Drones"
+        Me.tabBoosterDrones.UseVisualStyleBackColor = True
+        '
+        'lblMineBoosterDroneIdealRange
+        '
+        Me.lblMineBoosterDroneIdealRange.Location = New System.Drawing.Point(112, 87)
+        Me.lblMineBoosterDroneIdealRange.Name = "lblMineBoosterDroneIdealRange"
+        Me.lblMineBoosterDroneIdealRange.Size = New System.Drawing.Size(134, 16)
+        Me.lblMineBoosterDroneIdealRange.TabIndex = 150
+        Me.lblMineBoosterDroneIdealRange.Text = "Ideal Range:"
+        Me.lblMineBoosterDroneIdealRange.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'cmbMineBoosterDroneName
+        '
+        Me.cmbMineBoosterDroneName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterDroneName.FormattingEnabled = True
+        Me.cmbMineBoosterDroneName.Location = New System.Drawing.Point(74, 6)
+        Me.cmbMineBoosterDroneName.Name = "cmbMineBoosterDroneName"
+        Me.cmbMineBoosterDroneName.Size = New System.Drawing.Size(172, 21)
+        Me.cmbMineBoosterDroneName.TabIndex = 145
+        '
+        'lblMineBoosterMiningDroneYield
+        '
+        Me.lblMineBoosterMiningDroneYield.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblMineBoosterMiningDroneYield.Location = New System.Drawing.Point(167, 56)
+        Me.lblMineBoosterMiningDroneYield.Name = "lblMineBoosterMiningDroneYield"
+        Me.lblMineBoosterMiningDroneYield.Size = New System.Drawing.Size(79, 23)
+        Me.lblMineBoosterMiningDroneYield.TabIndex = 149
+        Me.lblMineBoosterMiningDroneYield.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'cmbMineBoosterDroneOpSkill
+        '
+        Me.cmbMineBoosterDroneOpSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterDroneOpSkill.FormattingEnabled = True
+        Me.cmbMineBoosterDroneOpSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineBoosterDroneOpSkill.Location = New System.Drawing.Point(74, 32)
+        Me.cmbMineBoosterDroneOpSkill.Name = "cmbMineBoosterDroneOpSkill"
+        Me.cmbMineBoosterDroneOpSkill.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineBoosterDroneOpSkill.TabIndex = 139
+        '
+        'lblMineBoosterMiningDroneM3
+        '
+        Me.lblMineBoosterMiningDroneM3.Location = New System.Drawing.Point(112, 53)
+        Me.lblMineBoosterMiningDroneM3.Name = "lblMineBoosterMiningDroneM3"
+        Me.lblMineBoosterMiningDroneM3.Size = New System.Drawing.Size(53, 30)
+        Me.lblMineBoosterMiningDroneM3.TabIndex = 138
+        Me.lblMineBoosterMiningDroneM3.Text = "Yield (m3/Hr):"
+        Me.lblMineBoosterMiningDroneM3.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineBoosterDroneOpSkill
+        '
+        Me.lblMineBoosterDroneOpSkill.AutoSize = True
+        Me.lblMineBoosterDroneOpSkill.Location = New System.Drawing.Point(27, 36)
+        Me.lblMineBoosterDroneOpSkill.Name = "lblMineBoosterDroneOpSkill"
+        Me.lblMineBoosterDroneOpSkill.Size = New System.Drawing.Size(46, 13)
+        Me.lblMineBoosterDroneOpSkill.TabIndex = 140
+        Me.lblMineBoosterDroneOpSkill.Text = "Op Skill:"
+        Me.lblMineBoosterDroneOpSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineBoosterNumMiningDrones
+        '
+        Me.lblMineBoosterNumMiningDrones.AutoSize = True
+        Me.lblMineBoosterNumMiningDrones.Location = New System.Drawing.Point(113, 36)
+        Me.lblMineBoosterNumMiningDrones.Name = "lblMineBoosterNumMiningDrones"
+        Me.lblMineBoosterNumMiningDrones.Size = New System.Drawing.Size(96, 13)
+        Me.lblMineBoosterNumMiningDrones.TabIndex = 148
+        Me.lblMineBoosterNumMiningDrones.Text = "Number of Drones:"
+        '
+        'cmbMineBoosterDroneSpecSkill
+        '
+        Me.cmbMineBoosterDroneSpecSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterDroneSpecSkill.FormattingEnabled = True
+        Me.cmbMineBoosterDroneSpecSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineBoosterDroneSpecSkill.Location = New System.Drawing.Point(74, 58)
+        Me.cmbMineBoosterDroneSpecSkill.Name = "cmbMineBoosterDroneSpecSkill"
+        Me.cmbMineBoosterDroneSpecSkill.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineBoosterDroneSpecSkill.TabIndex = 141
+        '
+        'cmbMineBoosterNumMiningDrones
+        '
+        Me.cmbMineBoosterNumMiningDrones.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterNumMiningDrones.FormattingEnabled = True
+        Me.cmbMineBoosterNumMiningDrones.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineBoosterNumMiningDrones.Location = New System.Drawing.Point(210, 32)
+        Me.cmbMineBoosterNumMiningDrones.Name = "cmbMineBoosterNumMiningDrones"
+        Me.cmbMineBoosterNumMiningDrones.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineBoosterNumMiningDrones.TabIndex = 147
+        '
+        'lblMineBoosterDroneSpecSkill
+        '
+        Me.lblMineBoosterDroneSpecSkill.AutoSize = True
+        Me.lblMineBoosterDroneSpecSkill.Location = New System.Drawing.Point(16, 60)
+        Me.lblMineBoosterDroneSpecSkill.Name = "lblMineBoosterDroneSpecSkill"
+        Me.lblMineBoosterDroneSpecSkill.Size = New System.Drawing.Size(57, 13)
+        Me.lblMineBoosterDroneSpecSkill.TabIndex = 142
+        Me.lblMineBoosterDroneSpecSkill.Text = "Spec Skill:"
+        Me.lblMineBoosterDroneSpecSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineBoosterDroneInterfacingSkill
+        '
+        Me.lblMineBoosterDroneInterfacingSkill.Location = New System.Drawing.Point(12, 78)
+        Me.lblMineBoosterDroneInterfacingSkill.Name = "lblMineBoosterDroneInterfacingSkill"
+        Me.lblMineBoosterDroneInterfacingSkill.Size = New System.Drawing.Size(61, 29)
+        Me.lblMineBoosterDroneInterfacingSkill.TabIndex = 144
+        Me.lblMineBoosterDroneInterfacingSkill.Text = "Drone Interfacing:"
+        Me.lblMineBoosterDroneInterfacingSkill.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblMineBoosterDroneName
+        '
+        Me.lblMineBoosterDroneName.AutoSize = True
+        Me.lblMineBoosterDroneName.Location = New System.Drawing.Point(3, 9)
+        Me.lblMineBoosterDroneName.Name = "lblMineBoosterDroneName"
+        Me.lblMineBoosterDroneName.Size = New System.Drawing.Size(70, 13)
+        Me.lblMineBoosterDroneName.TabIndex = 146
+        Me.lblMineBoosterDroneName.Text = "Drone Name:"
+        Me.lblMineBoosterDroneName.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'cmbMineBoosterDroneInterfacingSkill
+        '
+        Me.cmbMineBoosterDroneInterfacingSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterDroneInterfacingSkill.FormattingEnabled = True
+        Me.cmbMineBoosterDroneInterfacingSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineBoosterDroneInterfacingSkill.Location = New System.Drawing.Point(74, 84)
+        Me.cmbMineBoosterDroneInterfacingSkill.Name = "cmbMineBoosterDroneInterfacingSkill"
+        Me.cmbMineBoosterDroneInterfacingSkill.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineBoosterDroneInterfacingSkill.TabIndex = 143
         '
         'gbMineNumberMiners
         '
@@ -2138,9 +2327,9 @@ Partial Class frmMain
         '
         'btnMineSaveAllSettings
         '
-        Me.btnMineSaveAllSettings.Location = New System.Drawing.Point(607, 116)
+        Me.btnMineSaveAllSettings.Location = New System.Drawing.Point(637, 114)
         Me.btnMineSaveAllSettings.Name = "btnMineSaveAllSettings"
-        Me.btnMineSaveAllSettings.Size = New System.Drawing.Size(90, 34)
+        Me.btnMineSaveAllSettings.Size = New System.Drawing.Size(68, 34)
         Me.btnMineSaveAllSettings.TabIndex = 3
         Me.btnMineSaveAllSettings.Text = "Save Settings"
         Me.btnMineSaveAllSettings.UseVisualStyleBackColor = True
@@ -2255,9 +2444,9 @@ Partial Class frmMain
         '
         'btnMineReset
         '
-        Me.btnMineReset.Location = New System.Drawing.Point(511, 116)
+        Me.btnMineReset.Location = New System.Drawing.Point(637, 76)
         Me.btnMineReset.Name = "btnMineReset"
-        Me.btnMineReset.Size = New System.Drawing.Size(90, 34)
+        Me.btnMineReset.Size = New System.Drawing.Size(68, 34)
         Me.btnMineReset.TabIndex = 2
         Me.btnMineReset.Text = "Reset"
         Me.btnMineReset.UseVisualStyleBackColor = True
@@ -2352,27 +2541,27 @@ Partial Class frmMain
         '
         'btnMineRefresh
         '
-        Me.btnMineRefresh.Location = New System.Drawing.Point(415, 116)
+        Me.btnMineRefresh.Location = New System.Drawing.Point(637, 38)
         Me.btnMineRefresh.Name = "btnMineRefresh"
-        Me.btnMineRefresh.Size = New System.Drawing.Size(90, 34)
+        Me.btnMineRefresh.Size = New System.Drawing.Size(68, 34)
         Me.btnMineRefresh.TabIndex = 1
         Me.btnMineRefresh.Text = "Calculate"
         Me.btnMineRefresh.UseVisualStyleBackColor = True
         '
         'gbMineBooster
         '
-        Me.gbMineBooster.Controls.Add(Me.chkMineBoosterUseDrones)
-        Me.gbMineBooster.Controls.Add(Me.lblMineDoubleClick)
         Me.gbMineBooster.Controls.Add(Me.pictMineLaserOptmize)
         Me.gbMineBooster.Controls.Add(Me.pictMineRangeLink)
+        Me.gbMineBooster.Controls.Add(Me.chkMineBoosterDroneRig2)
+        Me.gbMineBooster.Controls.Add(Me.chkMineBoosterDroneRig1)
+        Me.gbMineBooster.Controls.Add(Me.chkMineBoosterUseDrones)
+        Me.gbMineBooster.Controls.Add(Me.lblMineDoubleClick)
         Me.gbMineBooster.Controls.Add(Me.pictMineFleetBoostShip)
         Me.gbMineBooster.Controls.Add(Me.chkMineForemanLaserRangeBoost)
-        Me.gbMineBooster.Controls.Add(Me.cmbMineIndustReconfig)
-        Me.gbMineBooster.Controls.Add(Me.lblMineIndustrialReconfig)
         Me.gbMineBooster.Controls.Add(Me.chkMineRorqDeployedMode)
         Me.gbMineBooster.Controls.Add(Me.cmbMineBoosterShipSkill)
         Me.gbMineBooster.Controls.Add(Me.chkMineForemanMindlink)
-        Me.gbMineBooster.Controls.Add(Me.cmbMineBoosterShip)
+        Me.gbMineBooster.Controls.Add(Me.cmbMineBoosterShipName)
         Me.gbMineBooster.Controls.Add(Me.cmbMineMiningDirector)
         Me.gbMineBooster.Controls.Add(Me.chkMineForemanLaserOpBoost)
         Me.gbMineBooster.Controls.Add(Me.lblMineMiningDirector)
@@ -2380,32 +2569,13 @@ Partial Class frmMain
         Me.gbMineBooster.Controls.Add(Me.lblMineFleetBoosterShip)
         Me.gbMineBooster.Controls.Add(Me.lblMineMiningForeman)
         Me.gbMineBooster.Controls.Add(Me.lblMineBoosterShipSkill)
+        Me.gbMineBooster.Controls.Add(Me.cmbMineIndustReconfig)
+        Me.gbMineBooster.Controls.Add(Me.lblMineIndustrialReconfig)
         Me.gbMineBooster.Location = New System.Drawing.Point(6, 156)
         Me.gbMineBooster.Name = "gbMineBooster"
         Me.gbMineBooster.Size = New System.Drawing.Size(568, 117)
         Me.gbMineBooster.TabIndex = 3
         Me.gbMineBooster.TabStop = False
-        '
-        'chkMineBoosterUseDrones
-        '
-        Me.chkMineBoosterUseDrones.AutoSize = True
-        Me.chkMineBoosterUseDrones.Location = New System.Drawing.Point(18, 96)
-        Me.chkMineBoosterUseDrones.Name = "chkMineBoosterUseDrones"
-        Me.chkMineBoosterUseDrones.Size = New System.Drawing.Size(116, 17)
-        Me.chkMineBoosterUseDrones.TabIndex = 141
-        Me.chkMineBoosterUseDrones.Text = "Use Mining Drones"
-        Me.chkMineBoosterUseDrones.ThreeState = True
-        Me.chkMineBoosterUseDrones.UseVisualStyleBackColor = True
-        '
-        'lblMineDoubleClick
-        '
-        Me.lblMineDoubleClick.AutoSize = True
-        Me.lblMineDoubleClick.Location = New System.Drawing.Point(408, 99)
-        Me.lblMineDoubleClick.Name = "lblMineDoubleClick"
-        Me.lblMineDoubleClick.Size = New System.Drawing.Size(132, 13)
-        Me.lblMineDoubleClick.TabIndex = 140
-        Me.lblMineDoubleClick.Text = "(Check again for T2 Links)"
-        Me.lblMineDoubleClick.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'pictMineLaserOptmize
         '
@@ -2423,6 +2593,48 @@ Partial Class frmMain
         Me.pictMineRangeLink.TabIndex = 138
         Me.pictMineRangeLink.TabStop = False
         '
+        'chkMineBoosterDroneRig2
+        '
+        Me.chkMineBoosterDroneRig2.AutoSize = True
+        Me.chkMineBoosterDroneRig2.Location = New System.Drawing.Point(254, 96)
+        Me.chkMineBoosterDroneRig2.Name = "chkMineBoosterDroneRig2"
+        Me.chkMineBoosterDroneRig2.Size = New System.Drawing.Size(90, 17)
+        Me.chkMineBoosterDroneRig2.TabIndex = 145
+        Me.chkMineBoosterDroneRig2.Text = "T1 Drone Rig"
+        Me.chkMineBoosterDroneRig2.ThreeState = True
+        Me.chkMineBoosterDroneRig2.UseVisualStyleBackColor = True
+        '
+        'chkMineBoosterDroneRig1
+        '
+        Me.chkMineBoosterDroneRig1.AutoSize = True
+        Me.chkMineBoosterDroneRig1.Location = New System.Drawing.Point(158, 96)
+        Me.chkMineBoosterDroneRig1.Name = "chkMineBoosterDroneRig1"
+        Me.chkMineBoosterDroneRig1.Size = New System.Drawing.Size(90, 17)
+        Me.chkMineBoosterDroneRig1.TabIndex = 144
+        Me.chkMineBoosterDroneRig1.Text = "T1 Drone Rig"
+        Me.chkMineBoosterDroneRig1.ThreeState = True
+        Me.chkMineBoosterDroneRig1.UseVisualStyleBackColor = True
+        '
+        'chkMineBoosterUseDrones
+        '
+        Me.chkMineBoosterUseDrones.AutoSize = True
+        Me.chkMineBoosterUseDrones.Location = New System.Drawing.Point(18, 96)
+        Me.chkMineBoosterUseDrones.Name = "chkMineBoosterUseDrones"
+        Me.chkMineBoosterUseDrones.Size = New System.Drawing.Size(116, 17)
+        Me.chkMineBoosterUseDrones.TabIndex = 141
+        Me.chkMineBoosterUseDrones.Text = "Use Mining Drones"
+        Me.chkMineBoosterUseDrones.UseVisualStyleBackColor = True
+        '
+        'lblMineDoubleClick
+        '
+        Me.lblMineDoubleClick.AutoSize = True
+        Me.lblMineDoubleClick.Location = New System.Drawing.Point(375, 99)
+        Me.lblMineDoubleClick.Name = "lblMineDoubleClick"
+        Me.lblMineDoubleClick.Size = New System.Drawing.Size(132, 13)
+        Me.lblMineDoubleClick.TabIndex = 140
+        Me.lblMineDoubleClick.Text = "(Check again for T2 Links)"
+        Me.lblMineDoubleClick.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
         'pictMineFleetBoostShip
         '
         Me.pictMineFleetBoostShip.BackColor = System.Drawing.Color.White
@@ -2437,31 +2649,11 @@ Partial Class frmMain
         '
         Me.chkMineForemanLaserRangeBoost.Location = New System.Drawing.Point(370, 18)
         Me.chkMineForemanLaserRangeBoost.Name = "chkMineForemanLaserRangeBoost"
-        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(160, 45)
+        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(152, 45)
         Me.chkMineForemanLaserRangeBoost.TabIndex = 9
         Me.chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
         Me.chkMineForemanLaserRangeBoost.ThreeState = True
         Me.chkMineForemanLaserRangeBoost.UseVisualStyleBackColor = True
-        '
-        'cmbMineIndustReconfig
-        '
-        Me.cmbMineIndustReconfig.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineIndustReconfig.FormattingEnabled = True
-        Me.cmbMineIndustReconfig.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineIndustReconfig.Location = New System.Drawing.Point(326, 87)
-        Me.cmbMineIndustReconfig.Name = "cmbMineIndustReconfig"
-        Me.cmbMineIndustReconfig.Size = New System.Drawing.Size(36, 21)
-        Me.cmbMineIndustReconfig.TabIndex = 8
-        '
-        'lblMineIndustrialReconfig
-        '
-        Me.lblMineIndustrialReconfig.AutoSize = True
-        Me.lblMineIndustrialReconfig.Location = New System.Drawing.Point(195, 90)
-        Me.lblMineIndustrialReconfig.Name = "lblMineIndustrialReconfig"
-        Me.lblMineIndustrialReconfig.Size = New System.Drawing.Size(130, 13)
-        Me.lblMineIndustrialReconfig.TabIndex = 135
-        Me.lblMineIndustrialReconfig.Text = "Industrial Reconfiguration:"
-        Me.lblMineIndustrialReconfig.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'chkMineRorqDeployedMode
         '
@@ -2494,15 +2686,15 @@ Partial Class frmMain
         Me.chkMineForemanMindlink.Text = "Mining Foreman Mindlink"
         Me.chkMineForemanMindlink.UseVisualStyleBackColor = True
         '
-        'cmbMineBoosterShip
+        'cmbMineBoosterShipName
         '
-        Me.cmbMineBoosterShip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineBoosterShip.FormattingEnabled = True
-        Me.cmbMineBoosterShip.Items.AddRange(New Object() {"Orca", "Rorqual", "Battlecruiser", "Other"})
-        Me.cmbMineBoosterShip.Location = New System.Drawing.Point(77, 17)
-        Me.cmbMineBoosterShip.Name = "cmbMineBoosterShip"
-        Me.cmbMineBoosterShip.Size = New System.Drawing.Size(85, 21)
-        Me.cmbMineBoosterShip.TabIndex = 1
+        Me.cmbMineBoosterShipName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineBoosterShipName.FormattingEnabled = True
+        Me.cmbMineBoosterShipName.Items.AddRange(New Object() {"Orca", "Rorqual", "Battlecruiser", "Other"})
+        Me.cmbMineBoosterShipName.Location = New System.Drawing.Point(77, 17)
+        Me.cmbMineBoosterShipName.Name = "cmbMineBoosterShipName"
+        Me.cmbMineBoosterShipName.Size = New System.Drawing.Size(85, 21)
+        Me.cmbMineBoosterShipName.TabIndex = 1
         '
         'cmbMineMiningDirector
         '
@@ -2518,7 +2710,7 @@ Partial Class frmMain
         '
         Me.chkMineForemanLaserOpBoost.Location = New System.Drawing.Point(370, 60)
         Me.chkMineForemanLaserOpBoost.Name = "chkMineForemanLaserOpBoost"
-        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(160, 40)
+        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(152, 40)
         Me.chkMineForemanLaserOpBoost.TabIndex = 10
         Me.chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
         Me.chkMineForemanLaserOpBoost.ThreeState = True
@@ -2569,6 +2761,25 @@ Partial Class frmMain
         Me.lblMineBoosterShipSkill.Size = New System.Drawing.Size(53, 13)
         Me.lblMineBoosterShipSkill.TabIndex = 131
         Me.lblMineBoosterShipSkill.Text = "Ship Skill:"
+        '
+        'cmbMineIndustReconfig
+        '
+        Me.cmbMineIndustReconfig.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineIndustReconfig.FormattingEnabled = True
+        Me.cmbMineIndustReconfig.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineIndustReconfig.Location = New System.Drawing.Point(326, 64)
+        Me.cmbMineIndustReconfig.Name = "cmbMineIndustReconfig"
+        Me.cmbMineIndustReconfig.Size = New System.Drawing.Size(36, 21)
+        Me.cmbMineIndustReconfig.TabIndex = 8
+        '
+        'lblMineIndustrialReconfig
+        '
+        Me.lblMineIndustrialReconfig.Location = New System.Drawing.Point(232, 55)
+        Me.lblMineIndustrialReconfig.Name = "lblMineIndustrialReconfig"
+        Me.lblMineIndustrialReconfig.Size = New System.Drawing.Size(93, 39)
+        Me.lblMineIndustrialReconfig.TabIndex = 135
+        Me.lblMineIndustrialReconfig.Text = "Industrial Reconfiguration:"
+        Me.lblMineIndustrialReconfig.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'gbMineRefining
         '
@@ -3364,8 +3575,8 @@ Partial Class frmMain
         Me.gbMineSelectShip.Controls.Add(Me.pictMineSelectedShip)
         Me.gbMineSelectShip.Controls.Add(Me.lblMineSelectShip)
         Me.gbMineSelectShip.Controls.Add(Me.cmbMineBaseShipSkill)
-        Me.gbMineSelectShip.Controls.Add(Me.cmbMineExhumers)
-        Me.gbMineSelectShip.Controls.Add(Me.cmbMineShipType)
+        Me.gbMineSelectShip.Controls.Add(Me.cmbMineAdvShipSkill)
+        Me.gbMineSelectShip.Controls.Add(Me.cmbMineShipName)
         Me.gbMineSelectShip.Controls.Add(Me.lblMineBaseShipSkill)
         Me.gbMineSelectShip.Controls.Add(Me.lblMineExhumers)
         Me.gbMineSelectShip.Location = New System.Drawing.Point(6, 18)
@@ -3404,24 +3615,24 @@ Partial Class frmMain
         Me.cmbMineBaseShipSkill.Size = New System.Drawing.Size(48, 21)
         Me.cmbMineBaseShipSkill.TabIndex = 1
         '
-        'cmbMineExhumers
+        'cmbMineAdvShipSkill
         '
-        Me.cmbMineExhumers.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineExhumers.FormattingEnabled = True
-        Me.cmbMineExhumers.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineExhumers.Location = New System.Drawing.Point(57, 70)
-        Me.cmbMineExhumers.Name = "cmbMineExhumers"
-        Me.cmbMineExhumers.Size = New System.Drawing.Size(48, 21)
-        Me.cmbMineExhumers.TabIndex = 2
+        Me.cmbMineAdvShipSkill.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineAdvShipSkill.FormattingEnabled = True
+        Me.cmbMineAdvShipSkill.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbMineAdvShipSkill.Location = New System.Drawing.Point(57, 70)
+        Me.cmbMineAdvShipSkill.Name = "cmbMineAdvShipSkill"
+        Me.cmbMineAdvShipSkill.Size = New System.Drawing.Size(48, 21)
+        Me.cmbMineAdvShipSkill.TabIndex = 2
         '
-        'cmbMineShipType
+        'cmbMineShipName
         '
-        Me.cmbMineShipType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbMineShipType.FormattingEnabled = True
-        Me.cmbMineShipType.Location = New System.Drawing.Point(6, 30)
-        Me.cmbMineShipType.Name = "cmbMineShipType"
-        Me.cmbMineShipType.Size = New System.Drawing.Size(99, 21)
-        Me.cmbMineShipType.TabIndex = 0
+        Me.cmbMineShipName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbMineShipName.FormattingEnabled = True
+        Me.cmbMineShipName.Location = New System.Drawing.Point(6, 30)
+        Me.cmbMineShipName.Name = "cmbMineShipName"
+        Me.cmbMineShipName.Size = New System.Drawing.Size(99, 21)
+        Me.cmbMineShipName.TabIndex = 0
         '
         'lblMineBaseShipSkill
         '
@@ -3465,9 +3676,9 @@ Partial Class frmMain
         '
         'gbMiningRigs
         '
-        Me.gbMiningRigs.Controls.Add(Me.rbtnMineNoRigs)
-        Me.gbMiningRigs.Controls.Add(Me.rbtnMineIceRig)
-        Me.gbMiningRigs.Controls.Add(Me.rbtnMineMercoxitRig)
+        Me.gbMiningRigs.Controls.Add(Me.chkMineDroneRig2)
+        Me.gbMiningRigs.Controls.Add(Me.chkMineDroneRig1)
+        Me.gbMiningRigs.Controls.Add(Me.chkMineIceMercoxitRig)
         Me.gbMiningRigs.Location = New System.Drawing.Point(6, 127)
         Me.gbMiningRigs.Name = "gbMiningRigs"
         Me.gbMiningRigs.Size = New System.Drawing.Size(279, 38)
@@ -3475,38 +3686,37 @@ Partial Class frmMain
         Me.gbMiningRigs.TabStop = False
         Me.gbMiningRigs.Text = "Mining Rigs:"
         '
-        'rbtnMineNoRigs
+        'chkMineDroneRig2
         '
-        Me.rbtnMineNoRigs.AutoSize = True
-        Me.rbtnMineNoRigs.Location = New System.Drawing.Point(11, 15)
-        Me.rbtnMineNoRigs.Name = "rbtnMineNoRigs"
-        Me.rbtnMineNoRigs.Size = New System.Drawing.Size(51, 17)
-        Me.rbtnMineNoRigs.TabIndex = 1
-        Me.rbtnMineNoRigs.TabStop = True
-        Me.rbtnMineNoRigs.Text = "None"
-        Me.rbtnMineNoRigs.UseVisualStyleBackColor = True
+        Me.chkMineDroneRig2.AutoSize = True
+        Me.chkMineDroneRig2.Location = New System.Drawing.Point(191, 15)
+        Me.chkMineDroneRig2.Name = "chkMineDroneRig2"
+        Me.chkMineDroneRig2.Size = New System.Drawing.Size(90, 17)
+        Me.chkMineDroneRig2.TabIndex = 143
+        Me.chkMineDroneRig2.Text = "T1 Drone Rig"
+        Me.chkMineDroneRig2.ThreeState = True
+        Me.chkMineDroneRig2.UseVisualStyleBackColor = True
         '
-        'rbtnMineIceRig
+        'chkMineDroneRig1
         '
-        Me.rbtnMineIceRig.AutoSize = True
-        Me.rbtnMineIceRig.Location = New System.Drawing.Point(85, 15)
-        Me.rbtnMineIceRig.Name = "rbtnMineIceRig"
-        Me.rbtnMineIceRig.Size = New System.Drawing.Size(94, 17)
-        Me.rbtnMineIceRig.TabIndex = 2
-        Me.rbtnMineIceRig.TabStop = True
-        Me.rbtnMineIceRig.Text = "Ice Harvesting"
-        Me.rbtnMineIceRig.UseVisualStyleBackColor = True
+        Me.chkMineDroneRig1.AutoSize = True
+        Me.chkMineDroneRig1.Location = New System.Drawing.Point(101, 15)
+        Me.chkMineDroneRig1.Name = "chkMineDroneRig1"
+        Me.chkMineDroneRig1.Size = New System.Drawing.Size(90, 17)
+        Me.chkMineDroneRig1.TabIndex = 142
+        Me.chkMineDroneRig1.Text = "T1 Drone Rig"
+        Me.chkMineDroneRig1.ThreeState = True
+        Me.chkMineDroneRig1.UseVisualStyleBackColor = True
         '
-        'rbtnMineMercoxitRig
+        'chkMineIceMercoxitRig
         '
-        Me.rbtnMineMercoxitRig.AutoSize = True
-        Me.rbtnMineMercoxitRig.Location = New System.Drawing.Point(202, 15)
-        Me.rbtnMineMercoxitRig.Name = "rbtnMineMercoxitRig"
-        Me.rbtnMineMercoxitRig.Size = New System.Drawing.Size(65, 17)
-        Me.rbtnMineMercoxitRig.TabIndex = 3
-        Me.rbtnMineMercoxitRig.TabStop = True
-        Me.rbtnMineMercoxitRig.Text = "Mercoxit"
-        Me.rbtnMineMercoxitRig.UseVisualStyleBackColor = True
+        Me.chkMineIceMercoxitRig.AutoSize = True
+        Me.chkMineIceMercoxitRig.Location = New System.Drawing.Point(6, 15)
+        Me.chkMineIceMercoxitRig.Name = "chkMineIceMercoxitRig"
+        Me.chkMineIceMercoxitRig.Size = New System.Drawing.Size(95, 17)
+        Me.chkMineIceMercoxitRig.TabIndex = 144
+        Me.chkMineIceMercoxitRig.Text = "Ice Harvesting"
+        Me.chkMineIceMercoxitRig.UseVisualStyleBackColor = True
         '
         'cmbMineMiningLaser
         '
@@ -3736,12 +3946,12 @@ Partial Class frmMain
         'gbMineMain
         '
         Me.gbMineMain.Controls.Add(Me.gbMineIncludeOres)
-        Me.gbMineMain.Controls.Add(Me.lblMineType)
         Me.gbMineMain.Controls.Add(Me.cmbMineOreType)
         Me.gbMineMain.Controls.Add(Me.gbMineOreLocSov)
+        Me.gbMineMain.Controls.Add(Me.lblMineType)
         Me.gbMineMain.Location = New System.Drawing.Point(6, 8)
         Me.gbMineMain.Name = "gbMineMain"
-        Me.gbMineMain.Size = New System.Drawing.Size(396, 144)
+        Me.gbMineMain.Size = New System.Drawing.Size(362, 144)
         Me.gbMineMain.TabIndex = 0
         Me.gbMineMain.TabStop = False
         Me.gbMineMain.Text = "Options:"
@@ -3752,9 +3962,9 @@ Partial Class frmMain
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeNullSec)
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeLowSec)
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeHighYieldOre)
-        Me.gbMineIncludeOres.Location = New System.Drawing.Point(9, 36)
+        Me.gbMineIncludeOres.Location = New System.Drawing.Point(6, 38)
         Me.gbMineIncludeOres.Name = "gbMineIncludeOres"
-        Me.gbMineIncludeOres.Size = New System.Drawing.Size(114, 103)
+        Me.gbMineIncludeOres.Size = New System.Drawing.Size(105, 100)
         Me.gbMineIncludeOres.TabIndex = 4
         Me.gbMineIncludeOres.TabStop = False
         Me.gbMineIncludeOres.Text = "Include:"
@@ -3799,20 +4009,11 @@ Partial Class frmMain
         Me.chkMineIncludeHighYieldOre.Text = "High Yield Ores"
         Me.chkMineIncludeHighYieldOre.UseVisualStyleBackColor = True
         '
-        'lblMineType
-        '
-        Me.lblMineType.AutoSize = True
-        Me.lblMineType.Location = New System.Drawing.Point(6, 16)
-        Me.lblMineType.Name = "lblMineType"
-        Me.lblMineType.Size = New System.Drawing.Size(67, 13)
-        Me.lblMineType.TabIndex = 60
-        Me.lblMineType.Text = "Select Type:"
-        '
         'cmbMineOreType
         '
         Me.cmbMineOreType.FormattingEnabled = True
         Me.cmbMineOreType.Items.AddRange(New Object() {"Ore", "Ice", "Gas"})
-        Me.cmbMineOreType.Location = New System.Drawing.Point(79, 12)
+        Me.cmbMineOreType.Location = New System.Drawing.Point(67, 15)
         Me.cmbMineOreType.Name = "cmbMineOreType"
         Me.cmbMineOreType.Size = New System.Drawing.Size(44, 21)
         Me.cmbMineOreType.TabIndex = 0
@@ -3827,9 +4028,9 @@ Partial Class frmMain
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineMinmatar)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineGallente)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineAmarr)
-        Me.gbMineOreLocSov.Location = New System.Drawing.Point(129, 10)
+        Me.gbMineOreLocSov.Location = New System.Drawing.Point(114, 9)
         Me.gbMineOreLocSov.Name = "gbMineOreLocSov"
-        Me.gbMineOreLocSov.Size = New System.Drawing.Size(257, 129)
+        Me.gbMineOreLocSov.Size = New System.Drawing.Size(243, 129)
         Me.gbMineOreLocSov.TabIndex = 5
         Me.gbMineOreLocSov.TabStop = False
         Me.gbMineOreLocSov.Text = "Ore Location:"
@@ -3837,7 +4038,7 @@ Partial Class frmMain
         'chkMineMoonMining
         '
         Me.chkMineMoonMining.AutoSize = True
-        Me.chkMineMoonMining.Location = New System.Drawing.Point(128, 12)
+        Me.chkMineMoonMining.Location = New System.Drawing.Point(119, 12)
         Me.chkMineMoonMining.Name = "chkMineMoonMining"
         Me.chkMineMoonMining.Size = New System.Drawing.Size(87, 17)
         Me.chkMineMoonMining.TabIndex = 6
@@ -3847,7 +4048,7 @@ Partial Class frmMain
         'chkMineTriglavian
         '
         Me.chkMineTriglavian.AutoSize = True
-        Me.chkMineTriglavian.Location = New System.Drawing.Point(128, 69)
+        Me.chkMineTriglavian.Location = New System.Drawing.Point(119, 69)
         Me.chkMineTriglavian.Name = "chkMineTriglavian"
         Me.chkMineTriglavian.Size = New System.Drawing.Size(106, 17)
         Me.chkMineTriglavian.TabIndex = 6
@@ -3867,46 +4068,66 @@ Partial Class frmMain
         'gbMineWHSpace
         '
         Me.gbMineWHSpace.Controls.Add(Me.chkMineC6)
-        Me.gbMineWHSpace.Controls.Add(Me.chkMineC2)
-        Me.gbMineWHSpace.Controls.Add(Me.chkMineC4)
-        Me.gbMineWHSpace.Controls.Add(Me.chkMineC1)
         Me.gbMineWHSpace.Controls.Add(Me.chkMineC5)
+        Me.gbMineWHSpace.Controls.Add(Me.chkMineC4)
         Me.gbMineWHSpace.Controls.Add(Me.chkMineC3)
+        Me.gbMineWHSpace.Controls.Add(Me.chkMineC2)
+        Me.gbMineWHSpace.Controls.Add(Me.chkMineC1)
         Me.gbMineWHSpace.Location = New System.Drawing.Point(6, 87)
         Me.gbMineWHSpace.Name = "gbMineWHSpace"
-        Me.gbMineWHSpace.Size = New System.Drawing.Size(245, 37)
+        Me.gbMineWHSpace.Size = New System.Drawing.Size(230, 37)
         Me.gbMineWHSpace.TabIndex = 5
         Me.gbMineWHSpace.TabStop = False
         '
         'chkMineC6
         '
         Me.chkMineC6.AutoSize = True
-        Me.chkMineC6.Location = New System.Drawing.Point(200, 13)
+        Me.chkMineC6.Location = New System.Drawing.Point(190, 13)
         Me.chkMineC6.Name = "chkMineC6"
         Me.chkMineC6.Size = New System.Drawing.Size(39, 17)
         Me.chkMineC6.TabIndex = 10
         Me.chkMineC6.Text = "C6"
         Me.chkMineC6.UseVisualStyleBackColor = True
         '
-        'chkMineC2
+        'chkMineC5
         '
-        Me.chkMineC2.AutoSize = True
-        Me.chkMineC2.Location = New System.Drawing.Point(44, 13)
-        Me.chkMineC2.Name = "chkMineC2"
-        Me.chkMineC2.Size = New System.Drawing.Size(39, 17)
-        Me.chkMineC2.TabIndex = 6
-        Me.chkMineC2.Text = "C2"
-        Me.chkMineC2.UseVisualStyleBackColor = True
+        Me.chkMineC5.AutoSize = True
+        Me.chkMineC5.Location = New System.Drawing.Point(153, 13)
+        Me.chkMineC5.Name = "chkMineC5"
+        Me.chkMineC5.Size = New System.Drawing.Size(39, 17)
+        Me.chkMineC5.TabIndex = 9
+        Me.chkMineC5.Text = "C5"
+        Me.chkMineC5.UseVisualStyleBackColor = True
         '
         'chkMineC4
         '
         Me.chkMineC4.AutoSize = True
-        Me.chkMineC4.Location = New System.Drawing.Point(122, 13)
+        Me.chkMineC4.Location = New System.Drawing.Point(116, 13)
         Me.chkMineC4.Name = "chkMineC4"
         Me.chkMineC4.Size = New System.Drawing.Size(39, 17)
         Me.chkMineC4.TabIndex = 8
         Me.chkMineC4.Text = "C4"
         Me.chkMineC4.UseVisualStyleBackColor = True
+        '
+        'chkMineC3
+        '
+        Me.chkMineC3.AutoSize = True
+        Me.chkMineC3.Location = New System.Drawing.Point(79, 13)
+        Me.chkMineC3.Name = "chkMineC3"
+        Me.chkMineC3.Size = New System.Drawing.Size(39, 17)
+        Me.chkMineC3.TabIndex = 7
+        Me.chkMineC3.Text = "C3"
+        Me.chkMineC3.UseVisualStyleBackColor = True
+        '
+        'chkMineC2
+        '
+        Me.chkMineC2.AutoSize = True
+        Me.chkMineC2.Location = New System.Drawing.Point(42, 13)
+        Me.chkMineC2.Name = "chkMineC2"
+        Me.chkMineC2.Size = New System.Drawing.Size(39, 17)
+        Me.chkMineC2.TabIndex = 6
+        Me.chkMineC2.Text = "C2"
+        Me.chkMineC2.UseVisualStyleBackColor = True
         '
         'chkMineC1
         '
@@ -3918,30 +4139,10 @@ Partial Class frmMain
         Me.chkMineC1.Text = "C1"
         Me.chkMineC1.UseVisualStyleBackColor = True
         '
-        'chkMineC5
-        '
-        Me.chkMineC5.AutoSize = True
-        Me.chkMineC5.Location = New System.Drawing.Point(161, 13)
-        Me.chkMineC5.Name = "chkMineC5"
-        Me.chkMineC5.Size = New System.Drawing.Size(39, 17)
-        Me.chkMineC5.TabIndex = 9
-        Me.chkMineC5.Text = "C5"
-        Me.chkMineC5.UseVisualStyleBackColor = True
-        '
-        'chkMineC3
-        '
-        Me.chkMineC3.AutoSize = True
-        Me.chkMineC3.Location = New System.Drawing.Point(83, 13)
-        Me.chkMineC3.Name = "chkMineC3"
-        Me.chkMineC3.Size = New System.Drawing.Size(39, 17)
-        Me.chkMineC3.TabIndex = 7
-        Me.chkMineC3.Text = "C3"
-        Me.chkMineC3.UseVisualStyleBackColor = True
-        '
         'chkMineCaldari
         '
         Me.chkMineCaldari.AutoSize = True
-        Me.chkMineCaldari.Location = New System.Drawing.Point(128, 31)
+        Me.chkMineCaldari.Location = New System.Drawing.Point(119, 31)
         Me.chkMineCaldari.Name = "chkMineCaldari"
         Me.chkMineCaldari.Size = New System.Drawing.Size(92, 17)
         Me.chkMineCaldari.TabIndex = 1
@@ -3951,7 +4152,7 @@ Partial Class frmMain
         'chkMineMinmatar
         '
         Me.chkMineMinmatar.AutoSize = True
-        Me.chkMineMinmatar.Location = New System.Drawing.Point(128, 50)
+        Me.chkMineMinmatar.Location = New System.Drawing.Point(119, 50)
         Me.chkMineMinmatar.Name = "chkMineMinmatar"
         Me.chkMineMinmatar.Size = New System.Drawing.Size(103, 17)
         Me.chkMineMinmatar.TabIndex = 3
@@ -3977,6 +4178,15 @@ Partial Class frmMain
         Me.chkMineAmarr.TabIndex = 0
         Me.chkMineAmarr.Text = "Amarr Space"
         Me.chkMineAmarr.UseVisualStyleBackColor = True
+        '
+        'lblMineType
+        '
+        Me.lblMineType.AutoSize = True
+        Me.lblMineType.Location = New System.Drawing.Point(2, 18)
+        Me.lblMineType.Name = "lblMineType"
+        Me.lblMineType.Size = New System.Drawing.Size(67, 13)
+        Me.lblMineType.TabIndex = 60
+        Me.lblMineType.Text = "Select Type:"
         '
         'lstMineGrid
         '
@@ -5495,20 +5705,6 @@ Partial Class frmMain
         Me.tabManufacturing.Text = "Manufacturing List"
         Me.tabManufacturing.UseVisualStyleBackColor = True
         '
-        'lstManufacturing
-        '
-        Me.lstManufacturing.AllowColumnReorder = True
-        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
-        Me.lstManufacturing.FullRowSelect = True
-        Me.lstManufacturing.GridLines = True
-        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
-        Me.lstManufacturing.Name = "lstManufacturing"
-        Me.lstManufacturing.OwnerDraw = True
-        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
-        Me.lstManufacturing.TabIndex = 1
-        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturing.View = System.Windows.Forms.View.Details
-        '
         'gbCalcBPSelectOptions
         '
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
@@ -5780,15 +5976,6 @@ Partial Class frmMain
         Me.txtCalcProfitThreshold.Text = "0.00"
         Me.txtCalcProfitThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'tpMaxBuildTimeFilter
-        '
-        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMaxBuildTimeFilter.Enabled = False
-        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 39)
-        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
-        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMaxBuildTimeFilter.TabIndex = 70
-        '
         'txtCalcSVRThreshold
         '
         Me.txtCalcSVRThreshold.Location = New System.Drawing.Point(65, 40)
@@ -5797,15 +5984,6 @@ Partial Class frmMain
         Me.txtCalcSVRThreshold.Size = New System.Drawing.Size(60, 20)
         Me.txtCalcSVRThreshold.TabIndex = 1
         Me.txtCalcSVRThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'tpMinBuildTimeFilter
-        '
-        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.tpMinBuildTimeFilter.Enabled = False
-        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
-        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
-        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
-        Me.tpMinBuildTimeFilter.TabIndex = 69
         '
         'chkCalcMaxBuildTimeFilter
         '
@@ -6593,13 +6771,6 @@ Partial Class frmMain
         Me.tabCalcFacilityBase.Text = "Base"
         Me.tabCalcFacilityBase.UseVisualStyleBackColor = True
         '
-        'CalcBaseFacility
-        '
-        Me.CalcBaseFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcBaseFacility.Name = "CalcBaseFacility"
-        Me.CalcBaseFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcBaseFacility.TabIndex = 0
-        '
         'tabCalcFacilityComponents
         '
         Me.tabCalcFacilityComponents.Controls.Add(Me.CalcComponentsFacility)
@@ -6609,13 +6780,6 @@ Partial Class frmMain
         Me.tabCalcFacilityComponents.TabIndex = 10
         Me.tabCalcFacilityComponents.Text = "Components"
         Me.tabCalcFacilityComponents.UseVisualStyleBackColor = True
-        '
-        'CalcComponentsFacility
-        '
-        Me.CalcComponentsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcComponentsFacility.Name = "CalcComponentsFacility"
-        Me.CalcComponentsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcComponentsFacility.TabIndex = 1
         '
         'tabCalcFacilityCopy
         '
@@ -6627,13 +6791,6 @@ Partial Class frmMain
         Me.tabCalcFacilityCopy.Text = "Copy"
         Me.tabCalcFacilityCopy.UseVisualStyleBackColor = True
         '
-        'CalcCopyFacility
-        '
-        Me.CalcCopyFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcCopyFacility.Name = "CalcCopyFacility"
-        Me.CalcCopyFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcCopyFacility.TabIndex = 1
-        '
         'tabCalcFacilityT2Invention
         '
         Me.tabCalcFacilityT2Invention.Controls.Add(Me.CalcInventionFacility)
@@ -6643,13 +6800,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT2Invention.TabIndex = 2
         Me.tabCalcFacilityT2Invention.Text = "T2 Inv"
         Me.tabCalcFacilityT2Invention.UseVisualStyleBackColor = True
-        '
-        'CalcInventionFacility
-        '
-        Me.CalcInventionFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcInventionFacility.Name = "CalcInventionFacility"
-        Me.CalcInventionFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcInventionFacility.TabIndex = 1
         '
         'tabCalcFacilityT3Invention
         '
@@ -6661,13 +6811,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT3Invention.Text = "T3 Inv"
         Me.tabCalcFacilityT3Invention.UseVisualStyleBackColor = True
         '
-        'CalcT3InventionFacility
-        '
-        Me.CalcT3InventionFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcT3InventionFacility.Name = "CalcT3InventionFacility"
-        Me.CalcT3InventionFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcT3InventionFacility.TabIndex = 1
-        '
         'tabCalcFacilitySupers
         '
         Me.tabCalcFacilitySupers.Controls.Add(Me.CalcSupersFacility)
@@ -6677,13 +6820,6 @@ Partial Class frmMain
         Me.tabCalcFacilitySupers.TabIndex = 6
         Me.tabCalcFacilitySupers.Text = "Supers"
         Me.tabCalcFacilitySupers.UseVisualStyleBackColor = True
-        '
-        'CalcSupersFacility
-        '
-        Me.CalcSupersFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcSupersFacility.Name = "CalcSupersFacility"
-        Me.CalcSupersFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcSupersFacility.TabIndex = 1
         '
         'tabCalcFacilityCapitals
         '
@@ -6695,13 +6831,6 @@ Partial Class frmMain
         Me.tabCalcFacilityCapitals.Text = "Capitals"
         Me.tabCalcFacilityCapitals.UseVisualStyleBackColor = True
         '
-        'CalcCapitalsFacility
-        '
-        Me.CalcCapitalsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcCapitalsFacility.Name = "CalcCapitalsFacility"
-        Me.CalcCapitalsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcCapitalsFacility.TabIndex = 1
-        '
         'tabCalcFacilityT3Ships
         '
         Me.tabCalcFacilityT3Ships.Controls.Add(Me.CalcT3ShipsFacility)
@@ -6711,13 +6840,6 @@ Partial Class frmMain
         Me.tabCalcFacilityT3Ships.TabIndex = 9
         Me.tabCalcFacilityT3Ships.Text = "T3 Ships"
         Me.tabCalcFacilityT3Ships.UseVisualStyleBackColor = True
-        '
-        'CalcT3ShipsFacility
-        '
-        Me.CalcT3ShipsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcT3ShipsFacility.Name = "CalcT3ShipsFacility"
-        Me.CalcT3ShipsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcT3ShipsFacility.TabIndex = 1
         '
         'tabCalcFacilitySubsystems
         '
@@ -6729,13 +6851,6 @@ Partial Class frmMain
         Me.tabCalcFacilitySubsystems.Text = "Subsystems"
         Me.tabCalcFacilitySubsystems.UseVisualStyleBackColor = True
         '
-        'CalcSubsystemsFacility
-        '
-        Me.CalcSubsystemsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcSubsystemsFacility.Name = "CalcSubsystemsFacility"
-        Me.CalcSubsystemsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcSubsystemsFacility.TabIndex = 1
-        '
         'tabCalcFacilityBoosters
         '
         Me.tabCalcFacilityBoosters.Controls.Add(Me.CalcBoostersFacility)
@@ -6746,13 +6861,6 @@ Partial Class frmMain
         Me.tabCalcFacilityBoosters.Text = "Boosters"
         Me.tabCalcFacilityBoosters.UseVisualStyleBackColor = True
         '
-        'CalcBoostersFacility
-        '
-        Me.CalcBoostersFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcBoostersFacility.Name = "CalcBoostersFacility"
-        Me.CalcBoostersFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcBoostersFacility.TabIndex = 1
-        '
         'tabCalcFacilityReactions
         '
         Me.tabCalcFacilityReactions.Controls.Add(Me.CalcReactionsFacility)
@@ -6762,13 +6870,6 @@ Partial Class frmMain
         Me.tabCalcFacilityReactions.TabIndex = 4
         Me.tabCalcFacilityReactions.Text = "Reactions"
         Me.tabCalcFacilityReactions.UseVisualStyleBackColor = True
-        '
-        'CalcReactionsFacility
-        '
-        Me.CalcReactionsFacility.Location = New System.Drawing.Point(0, 0)
-        Me.CalcReactionsFacility.Name = "CalcReactionsFacility"
-        Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
-        Me.CalcReactionsFacility.TabIndex = 1
         '
         'gbCalcFilter
         '
@@ -7260,19 +7361,6 @@ Partial Class frmMain
         Me.btnSavePricestoFile.TabIndex = 41
         Me.btnSavePricestoFile.Text = "Save Prices"
         Me.btnSavePricestoFile.UseVisualStyleBackColor = True
-        '
-        'lstPricesView
-        '
-        Me.lstPricesView.FullRowSelect = True
-        Me.lstPricesView.GridLines = True
-        Me.lstPricesView.HideSelection = False
-        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
-        Me.lstPricesView.MultiSelect = False
-        Me.lstPricesView.Name = "lstPricesView"
-        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
-        Me.lstPricesView.TabIndex = 0
-        Me.lstPricesView.UseCompatibleStateImageBehavior = False
-        Me.lstPricesView.View = System.Windows.Forms.View.Details
         '
         'txtPriceItemFilter
         '
@@ -8250,19 +8338,6 @@ Partial Class frmMain
         Me.lblRawMaterialsDefaultsPriceMod.TabIndex = 44
         Me.lblRawMaterialsDefaultsPriceMod.Text = "Price Modifier:"
         '
-        'lstRawPriceProfile
-        '
-        Me.lstRawPriceProfile.FullRowSelect = True
-        Me.lstRawPriceProfile.GridLines = True
-        Me.lstRawPriceProfile.HideSelection = False
-        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstRawPriceProfile.MultiSelect = False
-        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
-        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstRawPriceProfile.TabIndex = 1
-        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
-        '
         'tabPriceProfileManufactured
         '
         Me.tabPriceProfileManufactured.Controls.Add(Me.ItemsDefaults)
@@ -8374,19 +8449,6 @@ Partial Class frmMain
         Me.lblItemsDefaultsPriceMod.Size = New System.Drawing.Size(74, 13)
         Me.lblItemsDefaultsPriceMod.TabIndex = 44
         Me.lblItemsDefaultsPriceMod.Text = "Price Modifier:"
-        '
-        'lstManufacturedPriceProfile
-        '
-        Me.lstManufacturedPriceProfile.FullRowSelect = True
-        Me.lstManufacturedPriceProfile.GridLines = True
-        Me.lstManufacturedPriceProfile.HideSelection = False
-        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
-        Me.lstManufacturedPriceProfile.MultiSelect = False
-        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
-        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
-        Me.lstManufacturedPriceProfile.TabIndex = 2
-        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
-        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
         '
         'pnlSinglePriceLocationSelect
         '
@@ -10253,13 +10315,6 @@ Partial Class frmMain
         Me.tabFacility.Text = "Facility"
         Me.tabFacility.UseVisualStyleBackColor = True
         '
-        'BPTabFacility
-        '
-        Me.BPTabFacility.Location = New System.Drawing.Point(0, 0)
-        Me.BPTabFacility.Name = "BPTabFacility"
-        Me.BPTabFacility.Size = New System.Drawing.Size(280, 142)
-        Me.BPTabFacility.TabIndex = 0
-        '
         'tabT3Calcs
         '
         Me.tabT3Calcs.Controls.Add(Me.lblBPT3Decryptor)
@@ -10980,6 +11035,29 @@ Partial Class frmMain
         Me.lblBPComponentMatCost1.Text = "Component Mat Cost:"
         Me.lblBPComponentMatCost1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
+        'tabMain
+        '
+        Me.tabMain.Controls.Add(Me.tabBlueprints)
+        Me.tabMain.Controls.Add(Me.tabUpdatePrices)
+        Me.tabMain.Controls.Add(Me.tabManufacturing)
+        Me.tabMain.Controls.Add(Me.tabDatacores)
+        Me.tabMain.Controls.Add(Me.tabMining)
+        Me.tabMain.Controls.Add(Me.tabPI)
+        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
+        Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
+        Me.tabMain.Location = New System.Drawing.Point(2, 26)
+        Me.tabMain.Name = "tabMain"
+        Me.tabMain.SelectedIndex = 0
+        Me.tabMain.Size = New System.Drawing.Size(1145, 641)
+        Me.tabMain.TabIndex = 1
+        '
+        'BPTabFacility
+        '
+        Me.BPTabFacility.Location = New System.Drawing.Point(0, 0)
+        Me.BPTabFacility.Name = "BPTabFacility"
+        Me.BPTabFacility.Size = New System.Drawing.Size(280, 142)
+        Me.BPTabFacility.TabIndex = 0
+        '
         'lstBPComponentMats
         '
         Me.lstBPComponentMats.CheckBoxes = True
@@ -11024,21 +11102,153 @@ Partial Class frmMain
         Me.lstBPBuiltComponents.View = System.Windows.Forms.View.Details
         Me.lstBPBuiltComponents.Visible = False
         '
-        'tabMain
+        'lstPricesView
         '
-        Me.tabMain.Controls.Add(Me.tabBlueprints)
-        Me.tabMain.Controls.Add(Me.tabUpdatePrices)
-        Me.tabMain.Controls.Add(Me.tabManufacturing)
-        Me.tabMain.Controls.Add(Me.tabDatacores)
-        Me.tabMain.Controls.Add(Me.tabMining)
-        Me.tabMain.Controls.Add(Me.tabPI)
-        Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
-        Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
-        Me.tabMain.Location = New System.Drawing.Point(2, 26)
-        Me.tabMain.Name = "tabMain"
-        Me.tabMain.SelectedIndex = 0
-        Me.tabMain.Size = New System.Drawing.Size(1145, 641)
-        Me.tabMain.TabIndex = 1
+        Me.lstPricesView.FullRowSelect = True
+        Me.lstPricesView.GridLines = True
+        Me.lstPricesView.HideSelection = False
+        Me.lstPricesView.Location = New System.Drawing.Point(8, 10)
+        Me.lstPricesView.MultiSelect = False
+        Me.lstPricesView.Name = "lstPricesView"
+        Me.lstPricesView.Size = New System.Drawing.Size(660, 321)
+        Me.lstPricesView.TabIndex = 0
+        Me.lstPricesView.UseCompatibleStateImageBehavior = False
+        Me.lstPricesView.View = System.Windows.Forms.View.Details
+        '
+        'lstRawPriceProfile
+        '
+        Me.lstRawPriceProfile.FullRowSelect = True
+        Me.lstRawPriceProfile.GridLines = True
+        Me.lstRawPriceProfile.HideSelection = False
+        Me.lstRawPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstRawPriceProfile.MultiSelect = False
+        Me.lstRawPriceProfile.Name = "lstRawPriceProfile"
+        Me.lstRawPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstRawPriceProfile.TabIndex = 1
+        Me.lstRawPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstRawPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturedPriceProfile
+        '
+        Me.lstManufacturedPriceProfile.FullRowSelect = True
+        Me.lstManufacturedPriceProfile.GridLines = True
+        Me.lstManufacturedPriceProfile.HideSelection = False
+        Me.lstManufacturedPriceProfile.Location = New System.Drawing.Point(3, 3)
+        Me.lstManufacturedPriceProfile.MultiSelect = False
+        Me.lstManufacturedPriceProfile.Name = "lstManufacturedPriceProfile"
+        Me.lstManufacturedPriceProfile.Size = New System.Drawing.Size(443, 334)
+        Me.lstManufacturedPriceProfile.TabIndex = 2
+        Me.lstManufacturedPriceProfile.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturedPriceProfile.View = System.Windows.Forms.View.Details
+        '
+        'lstManufacturing
+        '
+        Me.lstManufacturing.AllowColumnReorder = True
+        Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
+        Me.lstManufacturing.FullRowSelect = True
+        Me.lstManufacturing.GridLines = True
+        Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
+        Me.lstManufacturing.Name = "lstManufacturing"
+        Me.lstManufacturing.OwnerDraw = True
+        Me.lstManufacturing.Size = New System.Drawing.Size(1121, 300)
+        Me.lstManufacturing.TabIndex = 1
+        Me.lstManufacturing.UseCompatibleStateImageBehavior = False
+        Me.lstManufacturing.View = System.Windows.Forms.View.Details
+        '
+        'tpMaxBuildTimeFilter
+        '
+        Me.tpMaxBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMaxBuildTimeFilter.Enabled = False
+        Me.tpMaxBuildTimeFilter.Location = New System.Drawing.Point(328, 39)
+        Me.tpMaxBuildTimeFilter.Name = "tpMaxBuildTimeFilter"
+        Me.tpMaxBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMaxBuildTimeFilter.TabIndex = 70
+        '
+        'tpMinBuildTimeFilter
+        '
+        Me.tpMinBuildTimeFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.tpMinBuildTimeFilter.Enabled = False
+        Me.tpMinBuildTimeFilter.Location = New System.Drawing.Point(328, 14)
+        Me.tpMinBuildTimeFilter.Name = "tpMinBuildTimeFilter"
+        Me.tpMinBuildTimeFilter.Size = New System.Drawing.Size(113, 22)
+        Me.tpMinBuildTimeFilter.TabIndex = 69
+        '
+        'CalcBaseFacility
+        '
+        Me.CalcBaseFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcBaseFacility.Name = "CalcBaseFacility"
+        Me.CalcBaseFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcBaseFacility.TabIndex = 0
+        '
+        'CalcComponentsFacility
+        '
+        Me.CalcComponentsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcComponentsFacility.Name = "CalcComponentsFacility"
+        Me.CalcComponentsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcComponentsFacility.TabIndex = 1
+        '
+        'CalcCopyFacility
+        '
+        Me.CalcCopyFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcCopyFacility.Name = "CalcCopyFacility"
+        Me.CalcCopyFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcCopyFacility.TabIndex = 1
+        '
+        'CalcInventionFacility
+        '
+        Me.CalcInventionFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcInventionFacility.Name = "CalcInventionFacility"
+        Me.CalcInventionFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcInventionFacility.TabIndex = 1
+        '
+        'CalcT3InventionFacility
+        '
+        Me.CalcT3InventionFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcT3InventionFacility.Name = "CalcT3InventionFacility"
+        Me.CalcT3InventionFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcT3InventionFacility.TabIndex = 1
+        '
+        'CalcSupersFacility
+        '
+        Me.CalcSupersFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcSupersFacility.Name = "CalcSupersFacility"
+        Me.CalcSupersFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcSupersFacility.TabIndex = 1
+        '
+        'CalcCapitalsFacility
+        '
+        Me.CalcCapitalsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcCapitalsFacility.Name = "CalcCapitalsFacility"
+        Me.CalcCapitalsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcCapitalsFacility.TabIndex = 1
+        '
+        'CalcT3ShipsFacility
+        '
+        Me.CalcT3ShipsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcT3ShipsFacility.Name = "CalcT3ShipsFacility"
+        Me.CalcT3ShipsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcT3ShipsFacility.TabIndex = 1
+        '
+        'CalcSubsystemsFacility
+        '
+        Me.CalcSubsystemsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcSubsystemsFacility.Name = "CalcSubsystemsFacility"
+        Me.CalcSubsystemsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcSubsystemsFacility.TabIndex = 1
+        '
+        'CalcBoostersFacility
+        '
+        Me.CalcBoostersFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcBoostersFacility.Name = "CalcBoostersFacility"
+        Me.CalcBoostersFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcBoostersFacility.TabIndex = 1
+        '
+        'CalcReactionsFacility
+        '
+        Me.CalcReactionsFacility.Location = New System.Drawing.Point(0, 0)
+        Me.CalcReactionsFacility.Name = "CalcReactionsFacility"
+        Me.CalcReactionsFacility.Size = New System.Drawing.Size(303, 128)
+        Me.CalcReactionsFacility.TabIndex = 1
         '
         'frmMain
         '
@@ -11070,8 +11280,11 @@ Partial Class frmMain
         Me.gbPIPlanets.PerformLayout()
         Me.tabMining.ResumeLayout(False)
         Me.tabMining.PerformLayout()
-        Me.gbMineDrones.ResumeLayout(False)
-        Me.gbMineDrones.PerformLayout()
+        Me.tabMiningDrones.ResumeLayout(False)
+        Me.tabShipDrones.ResumeLayout(False)
+        Me.tabShipDrones.PerformLayout()
+        Me.tabBoosterDrones.ResumeLayout(False)
+        Me.tabBoosterDrones.PerformLayout()
         Me.gbMineNumberMiners.ResumeLayout(False)
         Me.gbMineNumberMiners.PerformLayout()
         Me.gbMineOreProcessingType.ResumeLayout(False)
@@ -11401,7 +11614,6 @@ Partial Class frmMain
     Friend WithEvents lblMineRoundTripTime As Label
     Friend WithEvents btnMineRefresh As Button
     Friend WithEvents gbMineBooster As GroupBox
-    Friend WithEvents lblMineDoubleClick As Label
     Friend WithEvents pictMineLaserOptmize As PictureBox
     Friend WithEvents pictMineRangeLink As PictureBox
     Friend WithEvents pictMineFleetBoostShip As PictureBox
@@ -11411,7 +11623,7 @@ Partial Class frmMain
     Friend WithEvents chkMineRorqDeployedMode As CheckBox
     Friend WithEvents cmbMineBoosterShipSkill As ComboBox
     Friend WithEvents chkMineForemanMindlink As CheckBox
-    Friend WithEvents cmbMineBoosterShip As ComboBox
+    Friend WithEvents cmbMineBoosterShipName As ComboBox
     Friend WithEvents cmbMineMiningDirector As ComboBox
     Friend WithEvents chkMineForemanLaserOpBoost As CheckBox
     Friend WithEvents lblMineMiningDirector As Label
@@ -11504,15 +11716,12 @@ Partial Class frmMain
     Friend WithEvents pictMineSelectedShip As PictureBox
     Friend WithEvents lblMineSelectShip As Label
     Friend WithEvents cmbMineBaseShipSkill As ComboBox
-    Friend WithEvents cmbMineExhumers As ComboBox
-    Friend WithEvents cmbMineShipType As ComboBox
+    Friend WithEvents cmbMineAdvShipSkill As ComboBox
+    Friend WithEvents cmbMineShipName As ComboBox
     Friend WithEvents lblMineBaseShipSkill As Label
     Friend WithEvents lblMineExhumers As Label
     Friend WithEvents gbMineShipEquipment As GroupBox
     Friend WithEvents gbMiningRigs As GroupBox
-    Friend WithEvents rbtnMineNoRigs As RadioButton
-    Friend WithEvents rbtnMineIceRig As RadioButton
-    Friend WithEvents rbtnMineMercoxitRig As RadioButton
     Friend WithEvents cmbMineMiningLaser As ComboBox
     Friend WithEvents lblMineMiningUpgrade As Label
     Friend WithEvents gbMineCrystals As GroupBox
@@ -12228,11 +12437,10 @@ Partial Class frmMain
     Private WithEvents rbtnCalcProcT2MatType As RadioButton
     Friend WithEvents rbtnCalcRawT2MatType As RadioButton
     Friend WithEvents lblMineMiningDroneM3 As Label
-    Friend WithEvents gbMineDrones As GroupBox
     Friend WithEvents lblMineDroneSpecSkill As Label
     Friend WithEvents cmbMineDroneSpecSkill As ComboBox
     Friend WithEvents lblMineDroneOpSkill As Label
-    Friend WithEvents cmbMineDroneSkill As ComboBox
+    Friend WithEvents cmbMineDroneOpSkill As ComboBox
     Friend WithEvents cmbMineDroneName As ComboBox
     Friend WithEvents lblMineDroneName As Label
     Friend WithEvents cmbMineDroneInterfacingSkill As ComboBox
@@ -12242,4 +12450,27 @@ Partial Class frmMain
     Friend WithEvents cmbMineNumMiningDrones As ComboBox
     Friend WithEvents lblMineMiningDroneYield As Label
     Friend WithEvents lblMineDroneIdealRange As Label
+    Friend WithEvents mnuIceAnomalyBelts As ToolStripMenuItem
+    Friend WithEvents chkMineIceMercoxitRig As CheckBox
+    Friend WithEvents chkMineDroneRig2 As CheckBox
+    Friend WithEvents chkMineDroneRig1 As CheckBox
+    Friend WithEvents chkMineBoosterDroneRig2 As CheckBox
+    Friend WithEvents chkMineBoosterDroneRig1 As CheckBox
+    Friend WithEvents tabMiningDrones As TabControl
+    Friend WithEvents tabShipDrones As TabPage
+    Friend WithEvents tabBoosterDrones As TabPage
+    Friend WithEvents lblMineBoosterDroneIdealRange As Label
+    Friend WithEvents cmbMineBoosterDroneName As ComboBox
+    Friend WithEvents lblMineBoosterMiningDroneYield As Label
+    Friend WithEvents cmbMineBoosterDroneOpSkill As ComboBox
+    Friend WithEvents lblMineBoosterMiningDroneM3 As Label
+    Friend WithEvents lblMineBoosterDroneOpSkill As Label
+    Friend WithEvents lblMineBoosterNumMiningDrones As Label
+    Friend WithEvents cmbMineBoosterDroneSpecSkill As ComboBox
+    Friend WithEvents cmbMineBoosterNumMiningDrones As ComboBox
+    Friend WithEvents lblMineBoosterDroneSpecSkill As Label
+    Friend WithEvents lblMineBoosterDroneInterfacingSkill As Label
+    Friend WithEvents lblMineBoosterDroneName As Label
+    Friend WithEvents cmbMineBoosterDroneInterfacingSkill As ComboBox
+    Friend WithEvents lblMineDoubleClick As Label
 End Class

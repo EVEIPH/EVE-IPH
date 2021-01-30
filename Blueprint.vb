@@ -616,6 +616,11 @@ Public Class Blueprint
                             Call BPRawMats.InsertMaterialList(.GetBPRawMaterials.GetMaterialList)
                         End If
 
+                        ' If we build this blueprint, add on the skills required
+                        If BatchBlueprint.ReqBuildSkills.NumSkills <> 0 Then
+                            ReqBuildSkills.InsertSkills(BatchBlueprint.ReqBuildSkills, True)
+                        End If
+
                         ' Don't add this, it's only the largest time from the batch session and then multiply it later
                         If .GetProductionTime > BPProductionTime Then
                             BPProductionTime = .GetProductionTime
@@ -766,6 +771,11 @@ Public Class Blueprint
                         ' Buying item
                         ItemPrice = OneItemMarketPrice
                         BuildFlag = False
+                    End If
+
+                    ' If we build this blueprint, add on the skills required
+                    If ComponentBlueprint.ReqBuildSkills.NumSkills <> 0 Then
+                        ReqBuildComponentSkills.InsertSkills(ComponentBlueprint.ReqBuildSkills, True)
                     End If
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity

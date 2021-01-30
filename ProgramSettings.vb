@@ -410,7 +410,12 @@ Public Class ProgramSettings
     Public DefaultMiningColumnSort As Integer = 8
     Public DefaultMiningColumnSortType As String = "Decending"
     Public DefaultMiningDrone As String = "None"
+    Public DefaultNumMiningDrone As String = "0"
     Public DefaultIceMiningDrone As String = "None"
+    Public DefaultNumIceMiningdrone As String = "0"
+    Public DefaultDroneSkills As String = "-1"
+    Public DefaultDroneRigs As Integer = 0
+    Public DefaultBoosterUseDrones As Boolean = False
 
     ' Industry Jobs column settings
     Public DefaultJobState As Integer = 1
@@ -2620,8 +2625,35 @@ Public Class ProgramSettings
                     .RefiningTax = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ColumnSort", DefaultMiningColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ColumnSortType", DefaultMiningColumnSortType))
-                    .MiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "MiningDrone", DefaultMiningDrone))
+                    .MiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "MiningDrone", DefaultMiningDrone))
                     .IceMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningDrone", DefaultIceMiningDrone))
+                    .NumMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "NumMiningDrones", DefaultNumMiningDrone))
+                    .NumIceMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "NumIceMiningDrones", DefaultNumIceMiningdrone))
+                    .DroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneOpSkill", DefaultDroneSkills))
+                    .DroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneSpecSkill", DefaultDroneSkills))
+                    .DroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneInterfaceSkill", DefaultDroneSkills))
+                    .IceDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneOpSkill", DefaultDroneSkills))
+                    .IceDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneSpecSkill", DefaultDroneSkills))
+                    .IceDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterMiningDrone", DefaultMiningDrone))
+                    .BoosterIceMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceMiningDrone", DefaultIceMiningDrone))
+                    .BoosterNumMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterNumMiningDrones", DefaultNumMiningDrone))
+                    .BoosterNumIceMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterNumIceMiningDrones", DefaultNumIceMiningdrone))
+                    .BoosterDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneOpSkill", DefaultDroneSkills))
+                    .BoosterDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneSpecSkill", DefaultDroneSkills))
+                    .BoosterDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterIceDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneOpSkill", DefaultDroneSkills))
+                    .BoosterIceDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneSpecSkill", DefaultDroneSkills))
+                    .BoosterIceDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterUseDrones = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "BoosterUseDrones", DefaultBoosterUseDrones))
+                    .ShipDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipDroneRig1", DefaultDroneSkills))
+                    .ShipDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipDroneRig2", DefaultDroneSkills))
+                    .BoosterDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig1", DefaultDroneSkills))
+                    .BoosterDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig2", DefaultDroneSkills))
+                    .ShipIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipIceDroneRig1", DefaultDroneSkills))
+                    .ShipIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipIceDroneRig2", DefaultDroneSkills))
+                    .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultDroneSkills))
+                    .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultDroneSkills))
                 End With
 
             Else
@@ -2713,8 +2745,39 @@ Public Class ProgramSettings
             .RefiningTax = DefaultRefineTax
             .ColumnSort = DefaultMiningColumnSort
             .ColumnSortType = DefaultMiningColumnSortType
+
             .MiningDrone = DefaultMiningDrone
+            .NumMiningDrones = DefaultNumMiningDrone
             .IceMiningDrone = DefaultIceMiningDrone
+            .NumIceMiningDrones = DefaultNumIceMiningdrone
+            .DroneOpSkill = DefaultDroneSkills
+            .DroneSpecSkill = DefaultDroneSkills
+            .DroneInterfaceSkill = DefaultDroneSkills
+            .IceDroneOpSkill = DefaultDroneSkills
+            .IceDroneSpecSkill = DefaultDroneSkills
+            .IceDroneInterfaceSkill = DefaultDroneSkills
+
+            .BoosterMiningDrone = DefaultMiningDrone
+            .BoosterNumMiningDrones = DefaultNumMiningDrone
+            .BoosterIceMiningDrone = DefaultIceMiningDrone
+            .BoosterNumIceMiningDrones = DefaultNumIceMiningdrone
+            .BoosterDroneOpSkill = DefaultDroneSkills
+            .BoosterDroneSpecSkill = DefaultDroneSkills
+            .BoosterDroneInterfaceSkill = DefaultDroneSkills
+            .BoosterIceDroneOpSkill = DefaultDroneSkills
+            .BoosterIceDroneSpecSkill = DefaultDroneSkills
+            .BoosterIceDroneInterfaceSkill = DefaultDroneSkills
+
+            .BoosterUseDrones = DefaultBoosterUseDrones
+            .ShipDroneRig1 = DefaultDroneRigs
+            .ShipDroneRig2 = DefaultDroneRigs
+            .BoosterDroneRig1 = DefaultDroneRigs
+            .BoosterDroneRig2 = DefaultDroneRigs
+            .ShipIceDroneRig1 = DefaultDroneRigs
+            .ShipIceDroneRig2 = DefaultDroneRigs
+            .BoosterIceDroneRig1 = DefaultDroneRigs
+            .BoosterIceDroneRig2 = DefaultDroneRigs
+
         End With
 
         ' Save locally
@@ -2725,7 +2788,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(67) As Setting
+        Dim MiningSettingsList(94) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2799,7 +2862,38 @@ Public Class ProgramSettings
             MiningSettingsList(65) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
 
             MiningSettingsList(66) = New Setting("MiningDrone", CStr(SentSettings.MiningDrone))
-            MiningSettingsList(67) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
+            MiningSettingsList(67) = New Setting("NumMiningDrones", CStr(SentSettings.NumMiningDrones))
+            MiningSettingsList(68) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
+            MiningSettingsList(69) = New Setting("NumIceMiningDrones", CStr(SentSettings.NumIceMiningDrones))
+            MiningSettingsList(70) = New Setting("DroneOpSkill", CStr(SentSettings.DroneOpSkill))
+            MiningSettingsList(71) = New Setting("DroneSpecSkill", CStr(SentSettings.DroneSpecSkill))
+            MiningSettingsList(72) = New Setting("DroneInterfaceSkill", CStr(SentSettings.DroneInterfaceSkill))
+
+            MiningSettingsList(73) = New Setting("BoosterMiningDrone", CStr(SentSettings.BoosterMiningDrone))
+            MiningSettingsList(74) = New Setting("BoosterNumMiningDrones", CStr(SentSettings.BoosterNumMiningDrones))
+            MiningSettingsList(75) = New Setting("BoosterIceMiningDrone", CStr(SentSettings.BoosterIceMiningDrone))
+            MiningSettingsList(76) = New Setting("BoosterNumIceMiningDrones", CStr(SentSettings.BoosterNumIceMiningDrones))
+            MiningSettingsList(77) = New Setting("BoosterDroneOpSkill", CStr(SentSettings.BoosterDroneOpSkill))
+            MiningSettingsList(78) = New Setting("BoosterDroneSpecSkill", CStr(SentSettings.BoosterDroneSpecSkill))
+            MiningSettingsList(79) = New Setting("BoosterDroneInterfaceSkill", CStr(SentSettings.BoosterDroneInterfaceSkill))
+
+            MiningSettingsList(80) = New Setting("BoosterUseDrones", CStr(SentSettings.BoosterUseDrones))
+            MiningSettingsList(81) = New Setting("ShipDroneRig1", CStr(SentSettings.ShipDroneRig1))
+            MiningSettingsList(82) = New Setting("ShipDroneRig2", CStr(SentSettings.ShipDroneRig2))
+            MiningSettingsList(83) = New Setting("BoosterDroneRig1", CStr(SentSettings.BoosterDroneRig1))
+            MiningSettingsList(84) = New Setting("BoosterDroneRig2", CStr(SentSettings.BoosterDroneRig2))
+
+            MiningSettingsList(85) = New Setting("ShipIceDroneRig1", CStr(SentSettings.ShipIceDroneRig1))
+            MiningSettingsList(86) = New Setting("ShipIceDroneRig2", CStr(SentSettings.ShipIceDroneRig2))
+            MiningSettingsList(87) = New Setting("BoosterIceDroneRig1", CStr(SentSettings.BoosterIceDroneRig1))
+            MiningSettingsList(88) = New Setting("BoosterIceDroneRig2", CStr(SentSettings.BoosterIceDroneRig2))
+
+            MiningSettingsList(89) = New Setting("IceDroneOpSkill", CStr(SentSettings.IceDroneOpSkill))
+            MiningSettingsList(90) = New Setting("IceDroneSpecSkill", CStr(SentSettings.IceDroneSpecSkill))
+            MiningSettingsList(91) = New Setting("IceDroneInterfaceSkill", CStr(SentSettings.IceDroneInterfaceSkill))
+            MiningSettingsList(92) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
+            MiningSettingsList(93) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
+            MiningSettingsList(94) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5177,9 +5271,32 @@ Public Structure MiningTabSettings
     Dim OreImplant As String
     Dim IceImplant As String
     Dim GasImplant As String
+    Dim ShipDroneRig1 As Integer
+    Dim ShipDroneRig2 As Integer
+    Dim ShipIceDroneRig1 As Integer
+    Dim ShipIceDroneRig2 As Integer
 
     Dim MiningDrone As String
+    Dim NumMiningDrones As String
     Dim IceMiningDrone As String
+    Dim NumIceMiningDrones As String
+    Dim DroneOpSkill As String
+    Dim DroneSpecSkill As String
+    Dim DroneInterfaceSkill As String
+    Dim IceDroneOpSkill As String
+    Dim IceDroneSpecSkill As String
+    Dim IceDroneInterfaceSkill As String
+
+    Dim BoosterMiningDrone As String
+    Dim BoosterNumMiningDrones As String
+    Dim BoosterIceMiningDrone As String
+    Dim BoosterNumIceMiningDrones As String
+    Dim BoosterDroneOpSkill As String
+    Dim BoosterDroneSpecSkill As String
+    Dim BoosterDroneInterfaceSkill As String
+    Dim BoosterIceDroneOpSkill As String
+    Dim BoosterIceDroneSpecSkill As String
+    Dim BoosterIceDroneInterfaceSkill As String
 
     Dim MichiiImplant As Boolean
     Dim T2Crystals As Boolean
@@ -5197,6 +5314,11 @@ Public Structure MiningTabSettings
     Dim CheckMineForemanLaserOpBoost As Integer ' 0,1,2
     Dim CheckMineForemanLaserRangeBoost As Integer '0,1,2
     Dim CheckMiningForemanMindLink As Boolean
+    Dim BoosterUseDrones As Boolean
+    Dim BoosterDroneRig1 As Integer
+    Dim BoosterDroneRig2 As Integer
+    Dim BoosterIceDroneRig1 As Integer
+    Dim BoosterIceDroneRig2 As Integer
 
     Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer

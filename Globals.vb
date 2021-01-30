@@ -159,9 +159,6 @@ Public Module Public_Variables
     ' For update prices
     Public Const DefaultSystemPriceCombo As String = "Select System"
 
-    ' For getting mining ammount attribute
-    Public Const MiningAmountBonus As String = "miningAmountBonus"
-
     Public Const AllSystems As String = "All Systems"
 
     ' For unhandled exceptions

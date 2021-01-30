@@ -215,6 +215,12 @@
     <Compile Include="frmESIStatus.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmIceBeltFlip.Designer.vb">
+      <DependentUpon>frmIceBeltFlip.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIceBeltFlip.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmMaterialListViewer.Designer.vb">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
     </Compile>
@@ -529,6 +535,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmIceBeltFlip.resx">
+      <DependentUpon>frmIceBeltFlip.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMaterialListViewer.resx">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>

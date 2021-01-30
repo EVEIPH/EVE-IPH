@@ -216,8 +216,6 @@ Partial Class frmIndustryBeltFlip
         Me.totaliskGiant = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.lblGiantBeltOreComp = New System.Windows.Forms.Label()
         Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
-        Me.rbtn = New System.Windows.Forms.RadioButton()
-        Me.RadioButton1 = New System.Windows.Forms.RadioButton()
         Me.gbMineStationYield.SuspendLayout()
         Me.gbMineTaxBroker.SuspendLayout()
         Me.tabIndustryBelts.SuspendLayout()
@@ -641,7 +639,7 @@ Partial Class frmIndustryBeltFlip
         Me.tabIndustryBelts.Controls.Add(Me.tabLarge)
         Me.tabIndustryBelts.Controls.Add(Me.tabEnormous)
         Me.tabIndustryBelts.Controls.Add(Me.tabColossal)
-        Me.tabIndustryBelts.Location = New System.Drawing.Point(7, 31)
+        Me.tabIndustryBelts.Location = New System.Drawing.Point(7, 12)
         Me.tabIndustryBelts.Name = "tabIndustryBelts"
         Me.tabIndustryBelts.SelectedIndex = 0
         Me.tabIndustryBelts.Size = New System.Drawing.Size(504, 575)
@@ -2161,40 +2159,12 @@ Partial Class frmIndustryBeltFlip
         '
         Me.ttMain.IsBalloon = True
         '
-        'rbtn
-        '
-        Me.rbtn.AutoSize = True
-        Me.rbtn.Checked = True
-        Me.rbtn.Location = New System.Drawing.Point(177, 8)
-        Me.rbtn.Name = "rbtn"
-        Me.rbtn.Size = New System.Drawing.Size(93, 17)
-        Me.rbtn.TabIndex = 140
-        Me.rbtn.TabStop = True
-        Me.rbtn.Text = "Ore Anomalies"
-        Me.rbtn.UseVisualStyleBackColor = True
-        Me.rbtn.Visible = False
-        '
-        'RadioButton1
-        '
-        Me.RadioButton1.AutoSize = True
-        Me.RadioButton1.Checked = True
-        Me.RadioButton1.Location = New System.Drawing.Point(276, 8)
-        Me.RadioButton1.Name = "RadioButton1"
-        Me.RadioButton1.Size = New System.Drawing.Size(66, 17)
-        Me.RadioButton1.TabIndex = 141
-        Me.RadioButton1.TabStop = True
-        Me.RadioButton1.Text = "Ice Belts"
-        Me.RadioButton1.UseVisualStyleBackColor = True
-        Me.RadioButton1.Visible = False
-        '
         'frmIndustryBeltFlip
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(519, 614)
-        Me.Controls.Add(Me.RadioButton1)
-        Me.Controls.Add(Me.rbtn)
+        Me.ClientSize = New System.Drawing.Size(519, 592)
         Me.Controls.Add(Me.tabIndustryBelts)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -2242,7 +2212,6 @@ Partial Class frmIndustryBeltFlip
         Me.gbSum5.ResumeLayout(False)
         Me.gbSum5.PerformLayout()
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
     Friend WithEvents lstOresLevel1 As System.Windows.Forms.ListView
@@ -2435,8 +2404,6 @@ Partial Class frmIndustryBeltFlip
     Friend WithEvents rbtn0percent As System.Windows.Forms.RadioButton
     Friend WithEvents ttMain As System.Windows.Forms.ToolTip
     Friend WithEvents cmbRefineStationTax As System.Windows.Forms.ComboBox
-    Friend WithEvents rbtn As RadioButton
-    Friend WithEvents RadioButton1 As RadioButton
     Friend WithEvents txtBrokerFeeRate As TextBox
     Friend WithEvents txtMineStationEff As TextBox
 End Class

@@ -8,7 +8,7 @@ Public Class EVEAttributes
         Dim SQL As String
         Dim readerSearch As SQLiteDataReader
 
-        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & TypeName & "'"
+        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSearch = DBCommand.ExecuteReader
@@ -2613,7 +2613,8 @@ Public Enum ItemAttributes
     structureRequiresDeedType = 3101
     onlyTractorCorpses = 3102
     reclonerFuelQuantity = 3104
-    reclonerFuelType = 3105
+    reclonerFuelType = 3105
+
 
 End Enum
 
