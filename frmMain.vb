@@ -588,15 +588,15 @@ Public Class frmMain
         ' Columns of update prices raw mats in price profiles - width= 443
         lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
         lstRawPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
-        lstRawPriceProfile.Columns.Add("Region", 90, HorizontalAlignment.Left) ' 119 is to fit all regions
-        lstRawPriceProfile.Columns.Add("Solar System", 75, HorizontalAlignment.Left) ' 104 is to fit all systems
+        lstRawPriceProfile.Columns.Add("Region", 92, HorizontalAlignment.Left) ' 119 is to fit all regions
+        lstRawPriceProfile.Columns.Add("Solar System", 73, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstRawPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) 'Hidden
 
         ' Columns of update prices manufactured mats in price profiles
         lstManufacturedPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
         lstManufacturedPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
-        lstManufacturedPriceProfile.Columns.Add("Region", 98, HorizontalAlignment.Left) ' 119 is to fit all regions
-        lstManufacturedPriceProfile.Columns.Add("Solar System", 84, HorizontalAlignment.Left) ' 104 is to fit all systems
+        lstManufacturedPriceProfile.Columns.Add("Region", 92, HorizontalAlignment.Left) ' 119 is to fit all regions
+        lstManufacturedPriceProfile.Columns.Add("Solar System", 73, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
 
         ' If they don't have access to the correct scopes for structures, then don't enable the structure ID look up option
@@ -853,17 +853,6 @@ Public Class frmMain
             Return m_ControlsCollection.Controls
         End Get
     End Property
-
-    ' Inits the Invention tab so it shows correctly with themes
-    Public Sub InitInventionTab()
-        Dim sb As String = String.Empty
-        Dim v As String = String.Empty
-
-        On Error Resume Next
-        SetWindowTheme(Me.tabBPInventionEquip.Handle, " ", " ")
-        On Error GoTo 0
-
-    End Sub
 
     ' Loads up the facilities for the selected character
     Public Sub LoadFacilities(Optional FacilityLocation As ProgramLocation = Nothing, Optional FacilityType As ProductionType = ProductionType.None)
@@ -2971,7 +2960,7 @@ Public Class frmMain
 
             ElseIf ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
                 ' Price List Update
-                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(CurrentRow.SubItems(0).Text)
+                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
@@ -3538,6 +3527,17 @@ Tabs:
         lstBPComponentMats.Visible = True
         lstBPBuiltComponents.Visible = False
         lblBPComponentMats.Text = "Component Material List"
+    End Sub
+
+    ' Inits the Invention tab so it shows correctly with themes
+    Public Sub InitInventionTab()
+        Dim sb As String = String.Empty
+        Dim v As String = String.Empty
+
+        On Error Resume Next
+        SetWindowTheme(Me.tabBPInventionEquip.Handle, " ", " ")
+        On Error GoTo 0
+
     End Sub
 
     Private Sub btnBPBuiltComponents_Click(sender As Object, e As EventArgs) Handles btnBPBuiltComponents.Click
@@ -4250,11 +4250,25 @@ Tabs:
             ExportFormat = MultiBuyDataExport
         End If
 
-        If rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked Then
+        If (rbtnBPRawmatCopy.Checked Or chkBPBuildBuy.Checked) And lstBPBuiltComponents.Visible = False Then
             If chkBPSimpleCopy.Checked = False Then
                 OutputText = "Raw Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
             End If
             OutputText = OutputText & SelectedBlueprint.GetRawMaterials.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText)
+        ElseIf lstBPBuiltComponents.Visible Then
+            If chkBPSimpleCopy.Checked = False Then
+                OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
+            End If
+            ' Put the list into materials
+            Dim BuiltList As New Materials
+            Dim BIMat As Material
+            For Each BI In SelectedBlueprint.BuiltComponentList.GetBuiltItemList
+                With BI
+                    BIMat = New Material(.BPTypeID, .ItemName, "", .ItemQuantity, .ItemVolume, 0, CStr(.BuildME), CStr(.BuildTE), True)
+                    Call BuiltList.InsertMaterial(BIMat)
+                End With
+            Next
+            OutputText = OutputText & BuiltList.GetClipboardList(ExportFormat, False, False, False, UserApplicationSettings.IncludeInGameLinksinCopyText, True)
         Else
             If chkBPSimpleCopy.Checked = False Then
                 OutputText = "Component Material List for " & txtBPRuns.Text & " Units of '" & cmbBPBlueprintSelection.Text & "' (ME: " & CStr(txtBPME.Text) & AddlText
@@ -4399,12 +4413,17 @@ Tabs:
     End Sub
 
     Private Sub chkBPNPCBPOs_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPNPCBPOs.CheckedChanged
-        Call ResetBlueprintCombo(True, True, True, True, True, True)
+        Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
     Private Sub chkbpT1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBPT1.CheckedChanged
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
+            If chkBPT1.Checked Then
+                chkBPNPCBPOs.Enabled = True
+            Else
+                chkBPNPCBPOs.Enabled = False
+            End If
         End If
     End Sub
 
@@ -5204,7 +5223,7 @@ Tabs:
 
         Dim NPCBPOsClause As String = ""
 
-        If chkBPNPCBPOs.Checked Then
+        If chkBPNPCBPOs.Checked And chkBPNPCBPOs.Enabled Then
             NPCBPOsClause = " AND IT2.marketGroupID IS NOT NULL AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 
@@ -5238,28 +5257,27 @@ Tabs:
 
     ' Reloads the BP combo when run
     Private Sub ResetBlueprintCombo(ByVal T1 As Boolean, ByVal T2 As Boolean, ByVal T3 As Boolean, ByVal Storyline As Boolean, ByVal NavyFaction As Boolean, ByVal PirateFaction As Boolean)
-        If Not FirstLoad Then
-            cmbBPsLoaded = False
-            chkBPT1.Enabled = T1
-            chkBPT2.Enabled = T2
-            chkBPT3.Enabled = T3
-            chkBPNavyFaction.Enabled = NavyFaction
-            chkBPPirateFaction.Enabled = PirateFaction
-            chkBPStoryline.Enabled = Storyline
+        cmbBPsLoaded = False
+        chkBPT1.Enabled = T1
+        chkBPT2.Enabled = T2
+        chkBPT3.Enabled = T3
+        chkBPNavyFaction.Enabled = NavyFaction
+        chkBPPirateFaction.Enabled = PirateFaction
+        chkBPStoryline.Enabled = Storyline
 
-            ComboMenuDown = False
-            MouseWheelSelection = False
-            ComboBoxArrowKeys = False
-            BPComboKeyDown = False
+        ComboMenuDown = False
+        MouseWheelSelection = False
+        ComboBoxArrowKeys = False
+        BPComboKeyDown = False
 
-            ' Make sure we have something checked
-            Call EnsureBPTechCheck()
-            ' Load the New data
-            Call LoadBlueprintCombo()
+        ' Make sure we have something checked
+        Call EnsureBPTechCheck()
+        ' Load the New data
+        Call LoadBlueprintCombo()
 
-            cmbBPBlueprintSelection.Text = "Select Blueprint"
-            cmbBPBlueprintSelection.Focus()
-        End If
+        cmbBPBlueprintSelection.Text = "Select Blueprint"
+        cmbBPBlueprintSelection.Focus()
+
     End Sub
 
     Private Sub UpdateSelectedBPText(bpName As String)
@@ -5348,6 +5366,22 @@ Tabs:
             lblBPCanMakeBPAll.Visible = False
 
             ' Saved settings
+            chkBPT1.Checked = .Tech1Check
+            chkBPT2.Checked = .Tech2Check
+            chkBPT3.Checked = .Tech3Check
+            chkBPNavyFaction.Checked = .TechFactionCheck
+            chkBPStoryline.Checked = .TechStorylineCheck
+            chkBPPirateFaction.Checked = .TechPirateCheck
+
+            chkBPSimpleCopy.Checked = .SimpleCopyCheck
+            chkBPNPCBPOs.Checked = .NPCBPOs
+            chkBPSellExcessItems.Checked = .SellExcessBuildItems
+
+            chkBPSmall.Checked = .SmallCheck
+            chkBPMedium.Checked = .MediumCheck
+            chkBPLarge.Checked = .LargeCheck
+            chkBPXL.Checked = .XLCheck
+
             Select Case .BlueprintTypeSelection
                 Case rbtnBPAllBlueprints.Text
                     rbtnBPAllBlueprints.Checked = True
@@ -5385,25 +5419,10 @@ Tabs:
                     rbtnBPReactionsBlueprints.Checked = True
             End Select
 
-            chkBPT1.Checked = .Tech1Check
-            chkBPT2.Checked = .Tech2Check
-            chkBPT3.Checked = .Tech3Check
-            chkBPNavyFaction.Checked = .TechFactionCheck
-            chkBPStoryline.Checked = .TechStorylineCheck
-            chkBPPirateFaction.Checked = .TechPirateCheck
-
-            chkBPSimpleCopy.Checked = .SimpleCopyCheck
-            chkBPNPCBPOs.Checked = .NPCBPOs
-            chkBPSellExcessItems.Checked = .SellExcessBuildItems
-
-            chkBPSmall.Checked = .SmallCheck
-            chkBPMedium.Checked = .MediumCheck
-            chkBPLarge.Checked = .LargeCheck
-            chkBPXL.Checked = .XLCheck
-
             SetTaxFeeChecks = False
             chkBPTaxes.Checked = .IncludeTaxes
             txtBPBrokerFeeRate.Visible = False
+
             Select Case .IncludeFees
                 Case 2
                     chkBPBrokerFees.CheckState = CheckState.Indeterminate
@@ -6035,7 +6054,9 @@ Tabs:
 
         If NewBP Then
             Call SetInventionEnabled("T" & CStr(BPTech), True) ' First enable then let the ignore invention check override if needed
-            chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+            If BPTech = 2 Then
+                chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+            End If
         End If
 
         Dim HasOwnedBP As Boolean = False
@@ -6377,7 +6398,7 @@ Tabs:
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
                                           ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-                                          UserBPTabSettings.BuildT2T3Materials, BPBuildBuyPref)
+                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6388,7 +6409,6 @@ Tabs:
 
         ' Build the item and get the list of materials
         Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
-        'Call SelectedBlueprint.BuildItems2(chkBPTaxes.Checked, chkBPBrokerFees.Checked, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -11525,6 +11545,14 @@ CheckTechs:
         If Not FirstManufacturingGridLoad Then
             FirstLoadCalcBPTypes = True
             cmbCalcBPTypeFilter.Text = "All Types"
+
+            ' Disable NPC BPOs
+            If chkCalcT1.Checked = False Then
+                chkCalcNPCBPOs.Enabled = False
+            Else
+                chkCalcNPCBPOs.Enabled = True
+            End If
+
             Call ResetRefresh()
         End If
     End Sub
@@ -14506,7 +14534,7 @@ CheckTechs:
                                                            NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                                            UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
                                                            InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility,
-                                                           chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials)
+                                                           chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
                     ' Set the T2 and T3 inputs if necessary
                     If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
@@ -14711,7 +14739,7 @@ CheckTechs:
                                                         NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
                                                         UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
-                                                        InsertItem.ReactionFacility, chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials)
+                                                        InsertItem.ReactionFacility, chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
                             If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
                                 ' Construct the T2/T3 BP
@@ -16086,7 +16114,7 @@ ExitCalc:
             SizesClause = " AND SIZE_GROUP IN (" & SizesClause.Substring(0, Len(SizesClause) - 1) & ") "
         End If
 
-        If chkCalcNPCBPOs.Checked Then
+        If chkCalcNPCBPOs.Checked And chkCalcNPCBPOs.Enabled Then
             NPCBPOsClause = " AND NPC_BPO = 1 AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 

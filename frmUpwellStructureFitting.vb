@@ -23,7 +23,7 @@ Public Class frmUpwellStructureFitting
 
     Private Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
-    Private UpwellStructureStats As New CitadelAttributes
+    Private UpwellStructureStats As New StructureAttributes
 
     Private Const UsesMissilesEffectID As Integer = 101
 
@@ -57,6 +57,8 @@ Public Class frmUpwellStructureFitting
 
     Private ColumnClicked As Integer
     Private ColumnSortType As SortOrder
+    Private ModulesColumnClicked As Integer
+    Private ModulesColumnSortType As SortOrder
 
     ' Fuel block IDs
     Private Enum FuelBlocks
@@ -88,8 +90,21 @@ Public Class frmUpwellStructureFitting
         Dim GroupID As Integer
     End Structure
 
+    Private Enum ServiceType
+        Citadel = 1321
+        Resource = 1322
+        Engineering = 1415
+        MoonDrill = 1887
+    End Enum
+
+    Private Enum StructureGroup
+        Citadel = 1657
+        Refinery = 1406
+        Engineering = 1404
+    End Enum
+
     ' For saving and updating the selected upwell structure
-    Private Structure CitadelAttributes
+    Private Structure StructureAttributes
         Dim CPU As Double
         Dim MaxCPU As Double
         Dim PG As Double
@@ -102,7 +117,7 @@ Public Class frmUpwellStructureFitting
         Dim BaseCapRechargeRate As Double
         Dim ServiceModuleFuelBPH As Integer ' Blocks per hour
         Dim OnlineFuelAmount As Integer ' Blocks to bring services online
-
+        Dim FuelBonus As Double ' Bonus for the type of modules it supports
         Dim LauncherSlots As Integer
 
     End Structure
@@ -243,6 +258,12 @@ Public Class frmUpwellStructureFitting
                     rbtnBuildBlocks.Checked = True
             End Select
 
+            If .IconListView Then
+                rbtnViewIcons.Checked = True
+            Else
+                rbtnListView.Checked = True
+            End If
+
         End With
 
         ' Get all data on structures for DB look ups first
@@ -269,6 +290,7 @@ Public Class frmUpwellStructureFitting
                 .SetToolTip(btnSavePrices, "Saves prices entered for buying fuel blocks or materials if building")
                 .SetToolTip(btnUpdateBuildCost, "Updated the build cost after updating a Fuel Block ME value")
                 .SetToolTip(btnSaveFuelBlockInfo, "Saves the Fuel Block BP ME data if changed")
+                .SetToolTip(lblFuelReductionBonus, "Fuel bonus only applies to certain services for the structure.")
             End With
         End If
 
@@ -386,6 +408,14 @@ Public Class frmUpwellStructureFitting
             Call LoadImageInFreeSlot(CInt(Selection.ImageKey), Selection.Text, CStr(Selection.Group.Tag), Selection.Group.Name)
         End If
 
+    End Sub
+
+    Private Sub FittingListViewDetails_DoubleClick(sender As Object, e As EventArgs) Handles FittingListViewDetails.DoubleClick
+        Dim Selection As ListViewItem = FittingListViewDetails.SelectedItems(0)
+
+        If Not IsNothing(Selection) Then
+            Call LoadImageInFreeSlot(CInt(Selection.SubItems(2).Text), Selection.SubItems(0).Text, Selection.SubItems(3).Text, Selection.SubItems(1).Text)
+        End If
     End Sub
 
     ' Loads the image in the first free slot if available - use for double-click an item
@@ -611,7 +641,7 @@ Public Class frmUpwellStructureFitting
                         Rig = True
                     End If
 
-                    If GroupID = 1321 Or GroupID = 1322 Or GroupID = 1415 Or GroupID = 1717 Then
+                    If GroupID = ServiceType.Citadel Or GroupID = ServiceType.Engineering Or GroupID = ServiceType.Resource Or GroupID = ServiceType.MoonDrill Then
                         GroupName = "ServiceSlots"
                         GroupTag = "ServiceSlot"
                     ElseIf EffID = SlotSizes.HighSlot Then
@@ -810,6 +840,8 @@ Public Class frmUpwellStructureFitting
                 Case ItemAttributes.rechargeRate
                     UpwellStructureStats.CapacitorRechargeRate = 100
                     UpwellStructureStats.BaseCapRechargeRate = Stat.Value
+                Case ItemAttributes.structureServiceRoleBonus
+                    UpwellStructureStats.FuelBonus = Stat.Value
                 Case ItemAttributes.launcherSlotsLeft
                     If Not IgnoreLabelUpdate Then
                         ' Only update this if we are updating the label too
@@ -872,6 +904,7 @@ Public Class frmUpwellStructureFitting
         Dim InstalledSlots As New List(Of StructureModule)
         Dim Attributes As New List(Of AttributeRecord)
         Dim AttribLookup As New EVEAttributes
+        Dim FuelBlocks As Integer = 0
 
         InstalledSlots = GetInstalledSlots()
 
@@ -897,7 +930,13 @@ Public Class frmUpwellStructureFitting
                     Case ItemAttributes.powerOutputMultiplier
                         UpwellStructureStats.MaxPG = UpwellStructureStats.MaxPG * Attribute.Value
                     Case ItemAttributes.serviceModuleFuelAmount
-                        UpwellStructureStats.ServiceModuleFuelBPH += CInt(Attribute.Value)
+                        ' Apply fuel bonus for this type of structure
+                        FuelBlocks = CInt(Attribute.Value)
+                        If FuelBonusApplies(Item.typeID) Then
+                            FuelBlocks = CInt(Math.Floor(FuelBlocks * (1 + (UpwellStructureStats.FuelBonus / 100))))
+                        End If
+                        UpwellStructureStats.ServiceModuleFuelBPH += FuelBlocks
+
                     Case ItemAttributes.serviceModuleFuelOnlineAmount
                         UpwellStructureStats.OnlineFuelAmount += CInt(Attribute.Value)
                 End Select
@@ -911,6 +950,43 @@ Public Class frmUpwellStructureFitting
         Call UpdateUpwellStructureBonuses()
 
     End Sub
+
+    Private Function FuelBonusApplies(StructureModuleID As Integer) As Boolean
+        Dim SQL As String = ""
+        Dim rsReader As SQLiteDataReader
+        Dim DBCommand As SQLiteCommand
+        Dim GroupID As Integer
+
+        Try
+            SQL = "SELECT groupID FROM INVENTORY_TYPES WHERE typeID = " & StructureModuleID
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsReader = DBCommand.ExecuteReader
+            rsReader.Read()
+            GroupID = rsReader.GetInt32(0)
+            rsReader.Close()
+
+            Select Case SelectedUpwellStructure.GroupID
+                Case StructureGroup.Citadel
+                    If GroupID = ServiceType.Citadel Then
+                        Return True
+                    End If
+                Case StructureGroup.Engineering
+                    If GroupID = ServiceType.Engineering Then
+                        Return True
+                    End If
+                Case StructureGroup.Refinery ' no bonus for moon drill
+                    If GroupID = ServiceType.Resource Then
+                        Return True
+                    End If
+            End Select
+        Catch ex As Exception
+            Return False
+        End Try
+
+        Return False
+
+    End Function
 
     ' If true, increments the launcher slots, else decrements
     Private Sub UpdateLauncherSlots(ByVal Increment As Boolean, ByVal ModuleTypeID As Integer)
@@ -1147,10 +1223,14 @@ Public Class frmUpwellStructureFitting
             lblServiceModuleBPH.Text = FormatNumber(UpwellStructureStats.ServiceModuleFuelBPH, 0) & " Blocks per Hour"
             lblServiceModuleOnlineAmt.Text = FormatNumber(UpwellStructureStats.OnlineFuelAmount, 0) & " Blocks"
             lblServiceModuleFCPH.Text = GetFuelCost(UpwellStructureStats.ServiceModuleFuelBPH)
+            lblServiceModuleBPD.Text = FormatNumber(UpwellStructureStats.ServiceModuleFuelBPH * 24, 0) & " Blocks per Day"
+            lblFuelReductionBonus.Text = "Fuel Bonus: " & FormatPercent(UpwellStructureStats.FuelBonus / 100, 0)
         Else
             lblServiceModuleBPH.Text = "-"
+            lblServiceModuleBPD.Text = "-"
             lblServiceModuleOnlineAmt.Text = "-"
             lblServiceModuleFCPH.Text = "-"
+            lblFuelReductionBonus.Text = "-"
         End If
     End Sub
 
@@ -1191,157 +1271,188 @@ Public Class frmUpwellStructureFitting
         End Try
     End Sub
 
+    Private Function ModuleTypeSelected() As Boolean
+        If chkItemViewTypeHigh.Checked Or chkItemViewTypeLow.Checked Or chkItemViewTypeMedium.Checked Or
+           chkItemViewTypeServices.Checked Or chkRigTypeViewCombat.Checked Or chkRigTypeViewDrilling.Checked Or
+           chkRigTypeViewEngineering.Checked Or chkRigTypeViewReaction.Checked Or chkRigTypeViewReprocessing.Checked Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     ' Updates all the fitting images based on the check boxes in the list view
     Private Sub UpdateFittingImages()
 
         If Not FirstLoad Then
 
-            ' Clear current images
+            ' Clear current images and items
+            FittingListViewIcons.BeginUpdate()
+            FittingListViewDetails.BeginUpdate()
             FittingListViewIcons.Items.Clear()
+            FittingListViewDetails.Items.Clear()
 
-            Dim SQL As String = ""
-            Dim RigString As String = ""
-            Dim SlotString As String = ""
-            Dim SQLList As New List(Of String)
-            Dim rsReader As SQLiteDataReader
-            Dim DBCommand As SQLiteCommand
+            If ModuleTypeSelected() Then
 
-            ' query for all types of modules, rigs, and services to fit
-            SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
-            SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
-            SQL &= "CASE WHEN value IS NULL THEN -1 ELSE value END AS RIG_SIZE, "
-            SQL &= "CASE WHEN (SELECT value FROM TYPE_ATTRIBUTES "
-            SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND (attributeID = " & ItemAttributes.disallowInHighSec & " OR attributeID = " & ItemAttributes.disallowInEmpireSpace & ") "
-            SQL &= ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
-            SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
-            SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
-            SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
-            SQL &= "AND attributeID = " & CStr(ItemAttributes.rigSize) & " "
-            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID And ABS(categoryID) = 66 " ' I save structure rigs as -66
-            SQL &= "AND INVENTORY_TYPES.published <> 0 "
+                Dim SQL As String = ""
+                Dim RigString As String = ""
+                Dim SlotString As String = ""
+                Dim SQLList As New List(Of String)
+                Dim rsReader As SQLiteDataReader
+                Dim DBCommand As SQLiteCommand
+                Dim DVI As New ListViewItem
 
-            ' Add text first
-            If Trim(txtItemFilter.Text) <> "" Then
-                SQL &= "And " & GetSearchText(txtItemFilter.Text, "typeName") & " "
-            End If
+                ' query for all types of modules, rigs, and services to fit
+                SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
+                SQL &= "CASE WHEN effectID IS NULL THEN -1 ELSE effectID END AS EffID, groupName, "
+                SQL &= "CASE WHEN value IS NULL THEN -1 ELSE value END AS RIG_SIZE, "
+                SQL &= "CASE WHEN (SELECT value FROM TYPE_ATTRIBUTES "
+                SQL &= "WHERE typeID = INVENTORY_TYPES.typeID AND (attributeID = " & ItemAttributes.disallowInHighSec & " OR attributeID = " & ItemAttributes.disallowInEmpireSpace & ") "
+                SQL &= ") = 1 THEN 0 ELSE 1 END AS ALLOW_IN_HS "
+                SQL &= "FROM INVENTORY_GROUPS, INVENTORY_TYPES "
+                SQL &= "LEFT JOIN TYPE_EFFECTS ON INVENTORY_TYPES.typeID = TYPE_EFFECTS.typeID AND effectID IN (12,13,11) "
+                SQL &= "LEFT JOIN TYPE_ATTRIBUTES ON INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
+                SQL &= "AND attributeID = " & CStr(ItemAttributes.rigSize) & " "
+                SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID And ABS(categoryID) = 66 " ' I save structure rigs as -66
+                SQL &= "AND INVENTORY_TYPES.published <> 0 "
 
-            If chkItemViewTypeServices.Checked Then
-                ' Add the sql
-                Call SQLList.Add("(INVENTORY_TYPES.groupID In (1321, 1322, 1415, 1717, 1887)) ")
-            End If
-
-            ' Process high, medium, and low slots together
-            If chkItemViewTypeHigh.Checked Then
-                SlotString &= CStr(SlotSizes.HighSlot) & ","
-            End If
-
-            If chkItemViewTypeMedium.Checked Then
-                SlotString &= CStr(SlotSizes.MediumSlot) & ","
-            End If
-
-            If chkItemViewTypeLow.Checked Then
-                SlotString &= CStr(SlotSizes.LowSlot) & ","
-            End If
-
-            If SlotString <> "" Then
-                SlotString = SlotString.Substring(0, Len(SlotString) - 1)
-                SlotString = "(EffID In (" & SlotString & "))"
-                ' Add the sql
-                Call SQLList.Add(SlotString)
-            End If
-
-            If chkRigTypeViewCombat.Checked Or chkRigTypeViewEngineering.Checked Or chkRigTypeViewReprocessing.Checked _
-                Or chkRigTypeViewDrilling.Checked Or chkRigTypeViewReaction.Checked Then
-                If chkRigTypeViewCombat.Checked Then
-                    Call SQLList.Add("(groupName Like '%Combat Rig%')")
+                ' Add text first
+                If Trim(txtItemFilter.Text) <> "" Then
+                    SQL &= "And " & GetSearchText(txtItemFilter.Text, "typeName") & " "
                 End If
 
-                If chkRigTypeViewEngineering.Checked Then
-                    Call SQLList.Add("(groupName LIKE '%Engineering Rig%')")
+                If chkItemViewTypeServices.Checked Then
+                    ' Add the sql
+                    Call SQLList.Add("(INVENTORY_TYPES.groupID In (" & CStr(ServiceType.Citadel) & "," & CStr(ServiceType.Engineering) & "," & CStr(ServiceType.MoonDrill) & "," & CStr(ServiceType.Resource) & ")) ")
                 End If
 
-                If chkRigTypeViewReprocessing.Checked Then
-                    Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
+                ' Process high, medium, and low slots together
+                If chkItemViewTypeHigh.Checked Then
+                    SlotString &= CStr(SlotSizes.HighSlot) & ","
                 End If
 
-                If chkRigTypeViewReaction.Checked Then
-                    Call SQLList.Add("(groupName LIKE '%Reactor Rig%')")
+                If chkItemViewTypeMedium.Checked Then
+                    SlotString &= CStr(SlotSizes.MediumSlot) & ","
                 End If
 
-                If chkRigTypeViewDrilling.Checked Then
-                    Call SQLList.Add("(groupName LIKE '%Drilling Rig%')")
+                If chkItemViewTypeLow.Checked Then
+                    SlotString &= CStr(SlotSizes.LowSlot) & ","
                 End If
 
-                Dim Attrib As New EVEAttributes
-
-                ' Add the check for rig size to limit, -1 is the default value
-                SQL &= "AND RIG_SIZE IN (-1," & CInt(Attrib.GetAttribute(SelectedUpwellStructure.TypeID, ItemAttributes.rigSize)) & ") "
-
-            End If
-
-            ' Set the SQL
-            If SQLList.Count > 0 Then
-                SQL &= "AND ("
-                For Each entry In SQLList
-                    SQL &= "(" & entry & ") OR "
-                Next
-                ' Strip last OR
-                SQL = SQL.Substring(0, Len(SQL) - 4)
-                SQL &= ")"
-            Else
-                Exit Sub
-            End If
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsReader = DBCommand.ExecuteReader
-
-            While rsReader.Read()
-                Dim GID As Integer = rsReader.GetInt32(1)
-                Dim EID As Integer = rsReader.GetInt32(3)
-                Dim LVI As New ListViewItem
-
-                Dim AllowinHighSec As Boolean
-                If rsReader.GetInt32(6) <> 0 Then
-                    AllowinHighSec = True
-                Else
-                    AllowinHighSec = False
+                If SlotString <> "" Then
+                    SlotString = SlotString.Substring(0, Len(SlotString) - 1)
+                    SlotString = "(EffID In (" & SlotString & "))"
+                    ' Add the sql
+                    Call SQLList.Add(SlotString)
                 End If
 
-                ' Only add if it can be fit to the selected upwell structure and it meets the space requirements
-                If StructureCanFitItem(SelectedUpwellStructure.TypeID, SelectedUpwellStructure.GroupID, rsReader.GetInt32(0)) _
-                    And ((chkHighSec.Checked = True And AllowinHighSec) Or chkHighSec.Checked = False) Then
-
-                    '& CStr(ItemAttributes.disallowInHighSec) & ") "
-                    If GID = 1321 Or GID = 1322 Or GID = 1415 Or GID = 1717 Or GID = 1887 Then
-                        LVI.Group = FittingListViewIcons.Groups(0) ' 0 is services
-                    ElseIf EID = SlotSizes.HighSlot Then
-                        LVI.Group = FittingListViewIcons.Groups(1) ' 1 is high
-                    ElseIf EID = SlotSizes.MediumSlot Then
-                        LVI.Group = FittingListViewIcons.Groups(2) ' 2 is medium
-                    ElseIf EID = SlotSizes.LowSlot Then
-                        LVI.Group = FittingListViewIcons.Groups(3) ' 3 is low
-                    Else
-                        ' Rigs
-                        If rsReader.GetString(4).Contains("Combat") Then
-                            LVI.Group = FittingListViewIcons.Groups(4) ' 4 is Combat rigs
-                        ElseIf rsReader.GetString(4).Contains("Reprocessing") Or rsReader.GetString(4).Contains("Grading") Then
-                            LVI.Group = FittingListViewIcons.Groups(5) ' 5 is Reprocessing rigs
-                        ElseIf rsReader.GetString(4).Contains("Engineering") Then
-                            LVI.Group = FittingListViewIcons.Groups(6) ' 6 is Engineering rigs
-                        ElseIf rsReader.GetString(4).Contains("Reactor") Then
-                            LVI.Group = FittingListViewIcons.Groups(7) ' 7 is Reaction rigs
-                        ElseIf rsReader.GetString(4).Contains("Drilling") Then
-                            LVI.Group = FittingListViewIcons.Groups(8) ' 8 is Drilling rigs
-                        End If
+                If chkRigTypeViewCombat.Checked Or chkRigTypeViewEngineering.Checked Or chkRigTypeViewReprocessing.Checked Or
+                    chkRigTypeViewDrilling.Checked Or chkRigTypeViewReaction.Checked Then
+                    If chkRigTypeViewCombat.Checked Then
+                        Call SQLList.Add("(groupName Like '%Combat Rig%')")
                     End If
 
-                    ' add the image
-                    LVI.ImageKey = CStr(rsReader.GetInt32(0))
-                    LVI.Text = rsReader.GetString(2)
-                    FittingListViewIcons.Items.Add(LVI)
+                    If chkRigTypeViewEngineering.Checked Then
+                        Call SQLList.Add("(groupName LIKE '%Engineering Rig%')")
+                    End If
+
+                    If chkRigTypeViewReprocessing.Checked Then
+                        Call SQLList.Add("(groupName LIKE '%Resource Rig%')")
+                    End If
+
+                    If chkRigTypeViewReaction.Checked Then
+                        Call SQLList.Add("(groupName LIKE '%Reactor Rig%')")
+                    End If
+
+                    If chkRigTypeViewDrilling.Checked Then
+                        Call SQLList.Add("(groupName LIKE '%Drilling Rig%')")
+                    End If
+
+                    Dim Attrib As New EVEAttributes
+
+                    ' Add the check for rig size to limit, -1 is the default value
+                    SQL &= "AND RIG_SIZE IN (-1," & CInt(Attrib.GetAttribute(SelectedUpwellStructure.TypeID, ItemAttributes.rigSize)) & ") "
+
                 End If
 
-            End While
+                ' Set the SQL
+                If SQLList.Count > 0 Then
+                    SQL &= "AND ("
+                    For Each entry In SQLList
+                        SQL &= "(" & entry & ") OR "
+                    Next
+                    ' Strip last OR
+                    SQL = SQL.Substring(0, Len(SQL) - 4)
+                    SQL &= ")"
+                Else
+                    Exit Sub
+                End If
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsReader = DBCommand.ExecuteReader
+
+                While rsReader.Read()
+                    Dim GID As Integer = rsReader.GetInt32(1)
+                    Dim EID As Integer = rsReader.GetInt32(3)
+                    Dim LVI As New ListViewItem
+                    Dim AllowinHighSec As Boolean
+
+                    If rsReader.GetInt32(6) <> 0 Then
+                        AllowinHighSec = True
+                    Else
+                        AllowinHighSec = False
+                    End If
+
+                    ' Only add if it can be fit to the selected upwell structure and it meets the space requirements
+                    If StructureCanFitItem(SelectedUpwellStructure.TypeID, SelectedUpwellStructure.GroupID, rsReader.GetInt32(0)) And
+                        ((chkHighSec.Checked = True And AllowinHighSec) Or chkHighSec.Checked = False) Then
+
+                        '& CStr(ItemAttributes.disallowInHighSec) & ") "
+                        If GID = ServiceType.Citadel Or GID = ServiceType.Engineering Or GID = ServiceType.Resource Or GID = ServiceType.MoonDrill Then
+                            LVI.Group = FittingListViewIcons.Groups(0) ' 0 is services
+                        ElseIf EID = SlotSizes.HighSlot Then
+                            LVI.Group = FittingListViewIcons.Groups(1) ' 1 is high
+                        ElseIf EID = SlotSizes.MediumSlot Then
+                            LVI.Group = FittingListViewIcons.Groups(2) ' 2 is medium
+                        ElseIf EID = SlotSizes.LowSlot Then
+                            LVI.Group = FittingListViewIcons.Groups(3) ' 3 is low
+                        Else
+                            ' Rigs
+                            If rsReader.GetString(4).Contains("Combat") Then
+                                LVI.Group = FittingListViewIcons.Groups(4) ' 4 is Combat rigs
+                            ElseIf rsReader.GetString(4).Contains("Reprocessing") Or rsReader.GetString(4).Contains("Grading") Then
+                                LVI.Group = FittingListViewIcons.Groups(5) ' 5 is Reprocessing rigs
+                            ElseIf rsReader.GetString(4).Contains("Engineering") Then
+                                LVI.Group = FittingListViewIcons.Groups(6) ' 6 is Engineering rigs
+                            ElseIf rsReader.GetString(4).Contains("Reactor") Then
+                                LVI.Group = FittingListViewIcons.Groups(7) ' 7 is Reaction rigs
+                            ElseIf rsReader.GetString(4).Contains("Drilling") Then
+                                LVI.Group = FittingListViewIcons.Groups(8) ' 8 is Drilling rigs
+                            End If
+                        End If
+
+                        ' add the image
+                        LVI.ImageKey = CStr(rsReader.GetInt32(0))
+                        LVI.Text = rsReader.GetString(2)
+                        FittingListViewIcons.Items.Add(LVI)
+
+                        ' Add the details list too
+                        DVI = New ListViewItem(rsReader.GetString(2)) ' Name
+                        DVI.SubItems.Add(LVI.Group.Name) ' Group name
+                        DVI.SubItems.Add(LVI.ImageKey) ' Module type id - Hidden
+                        DVI.SubItems.Add(CStr(LVI.Group.Tag)) ' Group tag - Hidden
+                        Call FittingListViewDetails.Items.Add(DVI)
+                    End If
+
+                End While
+
+                ' Sort the grid
+                Call ListViewColumnSorter(1, CType(FittingListViewDetails, ListView), 1, SortOrder.Ascending)
+
+            End If
+
+            FittingListViewDetails.EndUpdate()
+            FittingListViewIcons.EndUpdate()
 
         End If
 
@@ -2116,7 +2227,7 @@ Public Class frmUpwellStructureFitting
         ' Build T1 BP for the block, standard settings with whatever is on bp tab
         Dim BlockBP = New Blueprint(BPID, 1, bpME, 0, 1, 1, SelectedCharacter, UserApplicationSettings, False, 0,
                                     BuildFacility, ComponentFacility, CapComponentFacility, ReactionFacility,
-                                    UserBPTabSettings.SellExcessBuildItems, UserBPTabSettings.BuildT2T3Materials)
+                                    UserBPTabSettings.SellExcessBuildItems, UserBPTabSettings.BuildT2T3Materials, True)
         Dim TempBF As BrokerFeeInfo
         TempBF.IncludeFee = BrokerFeeType.NoFee
         Call BlockBP.BuildItems(False, TempBF, False, False, False)
@@ -2338,7 +2449,7 @@ Public Class frmUpwellStructureFitting
         Call UpdateFittingImages()
     End Sub
 
-    Private Sub chkRigViewTypeDrilling_CheckedChanged(sender As Object, e As EventArgs) Handles chkRigTypeViewDrilling.CheckedChanged
+    Private Sub chkRigTypeViewDrilling_CheckedChanged(sender As Object, e As EventArgs) Handles chkRigTypeViewDrilling.CheckedChanged
         Call UpdateFittingImages()
     End Sub
 
@@ -2685,6 +2796,12 @@ Public Class frmUpwellStructureFitting
                 .BuyBuildBlockOption = rbtnBuildBlocks.Text
             ElseIf rbtnBuyBlocks.Checked Then
                 .BuyBuildBlockOption = rbtnBuyBlocks.Text
+            End If
+
+            If rbtnListView.Checked Then
+                .IconListView = False
+            ElseIf rbtnViewIcons.Checked Then
+                .IconListView = True
             End If
 
             .SelectedStructureName = cmbUpwellStructureName.Text
@@ -3217,6 +3334,28 @@ Public Class frmUpwellStructureFitting
 
     Private Sub lstUpwellStructureBonuses_ColumnClick(sender As Object, e As ColumnClickEventArgs) Handles lstUpwellStructureBonuses.ColumnClick
         Call ListViewColumnSorter(e.Column, CType(lstUpwellStructureBonuses, ListView), ColumnClicked, ColumnSortType)
+    End Sub
+
+    Private Sub FittingListViewDetails_ColumnClick(sender As Object, e As ColumnClickEventArgs) Handles FittingListViewDetails.ColumnClick
+        Call ListViewColumnSorter(e.Column, CType(FittingListViewDetails, ListView), ModulesColumnClicked, ModulesColumnSortType)
+    End Sub
+
+    Private Sub rbtnListView_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnListView.CheckedChanged
+        Call DisplayListView()
+    End Sub
+
+    Private Sub rbtnViewIcons_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnViewIcons.CheckedChanged
+        Call DisplayListView()
+    End Sub
+
+    Private Sub DisplayListView()
+        If rbtnViewIcons.Checked Then
+            FittingListViewIcons.Visible = True
+            FittingListViewDetails.Visible = False
+        Else
+            FittingListViewIcons.Visible = False
+            FittingListViewDetails.Visible = True
+        End If
     End Sub
 
 #End Region
