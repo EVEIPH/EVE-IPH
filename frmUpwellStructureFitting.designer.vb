@@ -180,10 +180,14 @@ Partial Class frmUpwellStructureFitting
         Me.chkLowSec = New System.Windows.Forms.CheckBox()
         Me.chkHighSec = New System.Windows.Forms.CheckBox()
         Me.gbIncludeFuelBlocks = New System.Windows.Forms.GroupBox()
+        Me.lblServiceModuleBPD = New System.Windows.Forms.Label()
+        Me.lblFuelBlocksperDay = New System.Windows.Forms.Label()
+        Me.gbSelectedFuelBlock = New System.Windows.Forms.GroupBox()
+        Me.rbtnHeliumFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.rbtnHydrogenFuelBlock = New System.Windows.Forms.RadioButton()
         Me.rbtnOxygenFuelBlock = New System.Windows.Forms.RadioButton()
         Me.rbtnNitrogenFuelBlock = New System.Windows.Forms.RadioButton()
-        Me.rbtnHydrogenFuelBlock = New System.Windows.Forms.RadioButton()
-        Me.rbtnHeliumFuelBlock = New System.Windows.Forms.RadioButton()
+        Me.lblFuelReductionBonus = New System.Windows.Forms.Label()
         Me.lblServiceModuleOnlineAmt = New System.Windows.Forms.Label()
         Me.lblOnlineAmt = New System.Windows.Forms.Label()
         Me.lblFuelBPH = New System.Windows.Forms.Label()
@@ -208,10 +212,14 @@ Partial Class frmUpwellStructureFitting
         Me.EventLog1 = New System.Diagnostics.EventLog()
         Me.pbFloat = New System.Windows.Forms.PictureBox()
         Me.MainToolTip = New System.Windows.Forms.ToolTip(Me.components)
-        Me.FittingListViewDetails = New EVE_Isk_per_Hour.ManufacturingListView()
         Me.gbViewType = New System.Windows.Forms.GroupBox()
-        Me.rbtnViewIcons = New System.Windows.Forms.RadioButton()
         Me.rbtnListView = New System.Windows.Forms.RadioButton()
+        Me.rbtnViewIcons = New System.Windows.Forms.RadioButton()
+        Me.FittingListViewDetails = New EVE_Isk_per_Hour.ManufacturingListView()
+        Me.ModuleName = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.ModuleType = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.GroupTag = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.ModuleTypeID = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.tabUpwellStructure.SuspendLayout()
         Me.tabFitting.SuspendLayout()
         CType(Me.LowSlot3, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -274,6 +282,7 @@ Partial Class frmUpwellStructureFitting
         Me.gbStatsandOptions.SuspendLayout()
         Me.gbOptions.SuspendLayout()
         Me.gbIncludeFuelBlocks.SuspendLayout()
+        Me.gbSelectedFuelBlock.SuspendLayout()
         Me.gbTextFilter.SuspendLayout()
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pbFloat, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -322,10 +331,10 @@ Partial Class frmUpwellStructureFitting
         Me.FittingListViewIcons.Groups.AddRange(New System.Windows.Forms.ListViewGroup() {ListViewGroup1, ListViewGroup2, ListViewGroup3, ListViewGroup4, ListViewGroup5, ListViewGroup6, ListViewGroup7, ListViewGroup8, ListViewGroup9})
         Me.FittingListViewIcons.HoverSelection = True
         Me.FittingListViewIcons.LargeImageList = Me.FittingImages
-        Me.FittingListViewIcons.Location = New System.Drawing.Point(6, 208)
+        Me.FittingListViewIcons.Location = New System.Drawing.Point(6, 210)
         Me.FittingListViewIcons.MultiSelect = False
         Me.FittingListViewIcons.Name = "FittingListViewIcons"
-        Me.FittingListViewIcons.Size = New System.Drawing.Size(342, 399)
+        Me.FittingListViewIcons.Size = New System.Drawing.Size(342, 363)
         Me.FittingListViewIcons.TabIndex = 8
         Me.FittingListViewIcons.UseCompatibleStateImageBehavior = False
         '
@@ -377,7 +386,6 @@ Partial Class frmUpwellStructureFitting
         '
         'tabFitting
         '
-        Me.tabFitting.Controls.Add(Me.FittingListViewDetails)
         Me.tabFitting.Controls.Add(Me.LowSlot3)
         Me.tabFitting.Controls.Add(Me.RigSlot2)
         Me.tabFitting.Controls.Add(Me.LowSlot6)
@@ -1872,7 +1880,7 @@ Partial Class frmUpwellStructureFitting
         Me.gbOptions.Controls.Add(Me.chkNullSec)
         Me.gbOptions.Controls.Add(Me.chkLowSec)
         Me.gbOptions.Controls.Add(Me.chkHighSec)
-        Me.gbOptions.Location = New System.Drawing.Point(6, 405)
+        Me.gbOptions.Location = New System.Drawing.Point(6, 485)
         Me.gbOptions.Name = "gbOptions"
         Me.gbOptions.Size = New System.Drawing.Size(155, 63)
         Me.gbOptions.TabIndex = 11
@@ -1920,10 +1928,10 @@ Partial Class frmUpwellStructureFitting
         '
         'gbIncludeFuelBlocks
         '
-        Me.gbIncludeFuelBlocks.Controls.Add(Me.rbtnOxygenFuelBlock)
-        Me.gbIncludeFuelBlocks.Controls.Add(Me.rbtnNitrogenFuelBlock)
-        Me.gbIncludeFuelBlocks.Controls.Add(Me.rbtnHydrogenFuelBlock)
-        Me.gbIncludeFuelBlocks.Controls.Add(Me.rbtnHeliumFuelBlock)
+        Me.gbIncludeFuelBlocks.Controls.Add(Me.lblServiceModuleBPD)
+        Me.gbIncludeFuelBlocks.Controls.Add(Me.lblFuelBlocksperDay)
+        Me.gbIncludeFuelBlocks.Controls.Add(Me.gbSelectedFuelBlock)
+        Me.gbIncludeFuelBlocks.Controls.Add(Me.lblFuelReductionBonus)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblServiceModuleOnlineAmt)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblOnlineAmt)
         Me.gbIncludeFuelBlocks.Controls.Add(Me.lblFuelBPH)
@@ -1933,14 +1941,66 @@ Partial Class frmUpwellStructureFitting
         Me.gbIncludeFuelBlocks.Enabled = False
         Me.gbIncludeFuelBlocks.Location = New System.Drawing.Point(6, 195)
         Me.gbIncludeFuelBlocks.Name = "gbIncludeFuelBlocks"
-        Me.gbIncludeFuelBlocks.Size = New System.Drawing.Size(155, 204)
+        Me.gbIncludeFuelBlocks.Size = New System.Drawing.Size(155, 284)
         Me.gbIncludeFuelBlocks.TabIndex = 10
         Me.gbIncludeFuelBlocks.TabStop = False
+        '
+        'lblServiceModuleBPD
+        '
+        Me.lblServiceModuleBPD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblServiceModuleBPD.Location = New System.Drawing.Point(7, 131)
+        Me.lblServiceModuleBPD.Name = "lblServiceModuleBPD"
+        Me.lblServiceModuleBPD.Size = New System.Drawing.Size(140, 16)
+        Me.lblServiceModuleBPD.TabIndex = 13
+        Me.lblServiceModuleBPD.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblFuelBlocksperDay
+        '
+        Me.lblFuelBlocksperDay.Location = New System.Drawing.Point(7, 113)
+        Me.lblFuelBlocksperDay.Name = "lblFuelBlocksperDay"
+        Me.lblFuelBlocksperDay.Size = New System.Drawing.Size(140, 16)
+        Me.lblFuelBlocksperDay.TabIndex = 12
+        Me.lblFuelBlocksperDay.Text = "Fuel Blocks per Day"
+        Me.lblFuelBlocksperDay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'gbSelectedFuelBlock
+        '
+        Me.gbSelectedFuelBlock.Controls.Add(Me.rbtnHeliumFuelBlock)
+        Me.gbSelectedFuelBlock.Controls.Add(Me.rbtnHydrogenFuelBlock)
+        Me.gbSelectedFuelBlock.Controls.Add(Me.rbtnOxygenFuelBlock)
+        Me.gbSelectedFuelBlock.Controls.Add(Me.rbtnNitrogenFuelBlock)
+        Me.gbSelectedFuelBlock.Location = New System.Drawing.Point(7, 184)
+        Me.gbSelectedFuelBlock.Name = "gbSelectedFuelBlock"
+        Me.gbSelectedFuelBlock.Size = New System.Drawing.Size(140, 93)
+        Me.gbSelectedFuelBlock.TabIndex = 11
+        Me.gbSelectedFuelBlock.TabStop = False
+        '
+        'rbtnHeliumFuelBlock
+        '
+        Me.rbtnHeliumFuelBlock.AutoSize = True
+        Me.rbtnHeliumFuelBlock.Location = New System.Drawing.Point(12, 13)
+        Me.rbtnHeliumFuelBlock.Name = "rbtnHeliumFuelBlock"
+        Me.rbtnHeliumFuelBlock.Size = New System.Drawing.Size(110, 17)
+        Me.rbtnHeliumFuelBlock.TabIndex = 6
+        Me.rbtnHeliumFuelBlock.TabStop = True
+        Me.rbtnHeliumFuelBlock.Text = "Helium Fuel Block"
+        Me.rbtnHeliumFuelBlock.UseVisualStyleBackColor = True
+        '
+        'rbtnHydrogenFuelBlock
+        '
+        Me.rbtnHydrogenFuelBlock.AutoSize = True
+        Me.rbtnHydrogenFuelBlock.Location = New System.Drawing.Point(12, 32)
+        Me.rbtnHydrogenFuelBlock.Name = "rbtnHydrogenFuelBlock"
+        Me.rbtnHydrogenFuelBlock.Size = New System.Drawing.Size(124, 17)
+        Me.rbtnHydrogenFuelBlock.TabIndex = 7
+        Me.rbtnHydrogenFuelBlock.TabStop = True
+        Me.rbtnHydrogenFuelBlock.Text = "Hydrogen Fuel Block"
+        Me.rbtnHydrogenFuelBlock.UseVisualStyleBackColor = True
         '
         'rbtnOxygenFuelBlock
         '
         Me.rbtnOxygenFuelBlock.AutoSize = True
-        Me.rbtnOxygenFuelBlock.Location = New System.Drawing.Point(10, 180)
+        Me.rbtnOxygenFuelBlock.Location = New System.Drawing.Point(12, 70)
         Me.rbtnOxygenFuelBlock.Name = "rbtnOxygenFuelBlock"
         Me.rbtnOxygenFuelBlock.Size = New System.Drawing.Size(114, 17)
         Me.rbtnOxygenFuelBlock.TabIndex = 9
@@ -1951,7 +2011,7 @@ Partial Class frmUpwellStructureFitting
         'rbtnNitrogenFuelBlock
         '
         Me.rbtnNitrogenFuelBlock.AutoSize = True
-        Me.rbtnNitrogenFuelBlock.Location = New System.Drawing.Point(10, 161)
+        Me.rbtnNitrogenFuelBlock.Location = New System.Drawing.Point(12, 51)
         Me.rbtnNitrogenFuelBlock.Name = "rbtnNitrogenFuelBlock"
         Me.rbtnNitrogenFuelBlock.Size = New System.Drawing.Size(118, 17)
         Me.rbtnNitrogenFuelBlock.TabIndex = 8
@@ -1959,32 +2019,21 @@ Partial Class frmUpwellStructureFitting
         Me.rbtnNitrogenFuelBlock.Text = "Nitrogen Fuel Block"
         Me.rbtnNitrogenFuelBlock.UseVisualStyleBackColor = True
         '
-        'rbtnHydrogenFuelBlock
+        'lblFuelReductionBonus
         '
-        Me.rbtnHydrogenFuelBlock.AutoSize = True
-        Me.rbtnHydrogenFuelBlock.Location = New System.Drawing.Point(10, 142)
-        Me.rbtnHydrogenFuelBlock.Name = "rbtnHydrogenFuelBlock"
-        Me.rbtnHydrogenFuelBlock.Size = New System.Drawing.Size(124, 17)
-        Me.rbtnHydrogenFuelBlock.TabIndex = 7
-        Me.rbtnHydrogenFuelBlock.TabStop = True
-        Me.rbtnHydrogenFuelBlock.Text = "Hydrogen Fuel Block"
-        Me.rbtnHydrogenFuelBlock.UseVisualStyleBackColor = True
-        '
-        'rbtnHeliumFuelBlock
-        '
-        Me.rbtnHeliumFuelBlock.AutoSize = True
-        Me.rbtnHeliumFuelBlock.Location = New System.Drawing.Point(10, 123)
-        Me.rbtnHeliumFuelBlock.Name = "rbtnHeliumFuelBlock"
-        Me.rbtnHeliumFuelBlock.Size = New System.Drawing.Size(110, 17)
-        Me.rbtnHeliumFuelBlock.TabIndex = 6
-        Me.rbtnHeliumFuelBlock.TabStop = True
-        Me.rbtnHeliumFuelBlock.Text = "Helium Fuel Block"
-        Me.rbtnHeliumFuelBlock.UseVisualStyleBackColor = True
+        Me.lblFuelReductionBonus.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.lblFuelReductionBonus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblFuelReductionBonus.Location = New System.Drawing.Point(7, 18)
+        Me.lblFuelReductionBonus.Name = "lblFuelReductionBonus"
+        Me.lblFuelReductionBonus.Size = New System.Drawing.Size(140, 20)
+        Me.lblFuelReductionBonus.TabIndex = 10
+        Me.lblFuelReductionBonus.Text = "Fuel Reduction Bonus:"
+        Me.lblFuelReductionBonus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblServiceModuleOnlineAmt
         '
         Me.lblServiceModuleOnlineAmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(7, 101)
+        Me.lblServiceModuleOnlineAmt.Location = New System.Drawing.Point(7, 165)
         Me.lblServiceModuleOnlineAmt.Name = "lblServiceModuleOnlineAmt"
         Me.lblServiceModuleOnlineAmt.Size = New System.Drawing.Size(140, 16)
         Me.lblServiceModuleOnlineAmt.TabIndex = 5
@@ -1992,7 +2041,7 @@ Partial Class frmUpwellStructureFitting
         '
         'lblOnlineAmt
         '
-        Me.lblOnlineAmt.Location = New System.Drawing.Point(7, 85)
+        Me.lblOnlineAmt.Location = New System.Drawing.Point(7, 149)
         Me.lblOnlineAmt.Name = "lblOnlineAmt"
         Me.lblOnlineAmt.Size = New System.Drawing.Size(140, 16)
         Me.lblOnlineAmt.TabIndex = 4
@@ -2001,7 +2050,7 @@ Partial Class frmUpwellStructureFitting
         '
         'lblFuelBPH
         '
-        Me.lblFuelBPH.Location = New System.Drawing.Point(7, 21)
+        Me.lblFuelBPH.Location = New System.Drawing.Point(7, 47)
         Me.lblFuelBPH.Name = "lblFuelBPH"
         Me.lblFuelBPH.Size = New System.Drawing.Size(140, 16)
         Me.lblFuelBPH.TabIndex = 0
@@ -2011,7 +2060,7 @@ Partial Class frmUpwellStructureFitting
         'lblServiceModuleBPH
         '
         Me.lblServiceModuleBPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(7, 37)
+        Me.lblServiceModuleBPH.Location = New System.Drawing.Point(7, 63)
         Me.lblServiceModuleBPH.Name = "lblServiceModuleBPH"
         Me.lblServiceModuleBPH.Size = New System.Drawing.Size(140, 16)
         Me.lblServiceModuleBPH.TabIndex = 1
@@ -2020,7 +2069,7 @@ Partial Class frmUpwellStructureFitting
         'lblServiceModuleFCPH
         '
         Me.lblServiceModuleFCPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(7, 69)
+        Me.lblServiceModuleFCPH.Location = New System.Drawing.Point(7, 95)
         Me.lblServiceModuleFCPH.Name = "lblServiceModuleFCPH"
         Me.lblServiceModuleFCPH.Size = New System.Drawing.Size(140, 16)
         Me.lblServiceModuleFCPH.TabIndex = 3
@@ -2028,7 +2077,7 @@ Partial Class frmUpwellStructureFitting
         '
         'lblFuelCost
         '
-        Me.lblFuelCost.Location = New System.Drawing.Point(7, 53)
+        Me.lblFuelCost.Location = New System.Drawing.Point(7, 79)
         Me.lblFuelCost.Name = "lblFuelCost"
         Me.lblFuelCost.Size = New System.Drawing.Size(140, 16)
         Me.lblFuelCost.TabIndex = 2
@@ -2190,30 +2239,26 @@ Partial Class frmUpwellStructureFitting
         Me.pbFloat.TabStop = False
         Me.pbFloat.Visible = False
         '
-        'FittingListViewDetails
-        '
-        Me.FittingListViewDetails.AllowColumnReorder = True
-        Me.FittingListViewDetails.FullRowSelect = True
-        Me.FittingListViewDetails.GridLines = True
-        Me.FittingListViewDetails.Location = New System.Drawing.Point(134, 79)
-        Me.FittingListViewDetails.Name = "FittingListViewDetails"
-        Me.FittingListViewDetails.OwnerDraw = True
-        Me.FittingListViewDetails.Size = New System.Drawing.Size(342, 397)
-        Me.FittingListViewDetails.TabIndex = 42
-        Me.FittingListViewDetails.UseCompatibleStateImageBehavior = False
-        Me.FittingListViewDetails.View = System.Windows.Forms.View.Details
-        Me.FittingListViewDetails.Visible = False
-        '
         'gbViewType
         '
         Me.gbViewType.Controls.Add(Me.rbtnListView)
         Me.gbViewType.Controls.Add(Me.rbtnViewIcons)
-        Me.gbViewType.Location = New System.Drawing.Point(6, 208)
+        Me.gbViewType.Location = New System.Drawing.Point(93, 574)
         Me.gbViewType.Name = "gbViewType"
         Me.gbViewType.Size = New System.Drawing.Size(168, 33)
         Me.gbViewType.TabIndex = 8
         Me.gbViewType.TabStop = False
-        Me.gbViewType.Visible = False
+        '
+        'rbtnListView
+        '
+        Me.rbtnListView.AutoSize = True
+        Me.rbtnListView.Location = New System.Drawing.Point(90, 10)
+        Me.rbtnListView.Name = "rbtnListView"
+        Me.rbtnListView.Size = New System.Drawing.Size(67, 17)
+        Me.rbtnListView.TabIndex = 1
+        Me.rbtnListView.TabStop = True
+        Me.rbtnListView.Text = "List View"
+        Me.rbtnListView.UseVisualStyleBackColor = True
         '
         'rbtnViewIcons
         '
@@ -2226,16 +2271,39 @@ Partial Class frmUpwellStructureFitting
         Me.rbtnViewIcons.Text = "Icon View"
         Me.rbtnViewIcons.UseVisualStyleBackColor = True
         '
-        'rbtnListView
+        'FittingListViewDetails
         '
-        Me.rbtnListView.AutoSize = True
-        Me.rbtnListView.Location = New System.Drawing.Point(90, 10)
-        Me.rbtnListView.Name = "rbtnListView"
-        Me.rbtnListView.Size = New System.Drawing.Size(67, 17)
-        Me.rbtnListView.TabIndex = 1
-        Me.rbtnListView.TabStop = True
-        Me.rbtnListView.Text = "List View"
-        Me.rbtnListView.UseVisualStyleBackColor = True
+        Me.FittingListViewDetails.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.ModuleName, Me.ModuleType, Me.GroupTag, Me.ModuleTypeID})
+        Me.FittingListViewDetails.FullRowSelect = True
+        Me.FittingListViewDetails.GridLines = True
+        Me.FittingListViewDetails.HideSelection = False
+        Me.FittingListViewDetails.Location = New System.Drawing.Point(6, 210)
+        Me.FittingListViewDetails.MultiSelect = False
+        Me.FittingListViewDetails.Name = "FittingListViewDetails"
+        Me.FittingListViewDetails.Size = New System.Drawing.Size(342, 363)
+        Me.FittingListViewDetails.TabIndex = 42
+        Me.FittingListViewDetails.TabStop = False
+        Me.FittingListViewDetails.UseCompatibleStateImageBehavior = False
+        Me.FittingListViewDetails.View = System.Windows.Forms.View.Details
+        '
+        'ModuleName
+        '
+        Me.ModuleName.Text = "Module Name"
+        Me.ModuleName.Width = 225
+        '
+        'ModuleType
+        '
+        Me.ModuleType.Text = "Module Type"
+        Me.ModuleType.Width = 96
+        '
+        'GroupTag
+        '
+        Me.GroupTag.Width = 0
+        '
+        'ModuleTypeID
+        '
+        Me.ModuleTypeID.Text = "ModuleTypeID"
+        Me.ModuleTypeID.Width = 0
         '
         'frmUpwellStructureFitting
         '
@@ -2255,6 +2323,7 @@ Partial Class frmUpwellStructureFitting
         Me.Controls.Add(Me.btnStripFitting)
         Me.Controls.Add(Me.cmbUpwellStructureName)
         Me.Controls.Add(Me.lblSelectedUpwellStructure)
+        Me.Controls.Add(Me.FittingListViewDetails)
         Me.Controls.Add(Me.FittingListViewIcons)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -2330,7 +2399,8 @@ Partial Class frmUpwellStructureFitting
         Me.gbOptions.ResumeLayout(False)
         Me.gbOptions.PerformLayout()
         Me.gbIncludeFuelBlocks.ResumeLayout(False)
-        Me.gbIncludeFuelBlocks.PerformLayout()
+        Me.gbSelectedFuelBlock.ResumeLayout(False)
+        Me.gbSelectedFuelBlock.PerformLayout()
         Me.gbTextFilter.ResumeLayout(False)
         Me.gbTextFilter.PerformLayout()
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).EndInit()
@@ -2520,4 +2590,12 @@ Partial Class frmUpwellStructureFitting
     Friend WithEvents gbViewType As GroupBox
     Friend WithEvents rbtnListView As RadioButton
     Friend WithEvents rbtnViewIcons As RadioButton
+    Friend WithEvents lblFuelReductionBonus As Label
+    Friend WithEvents lblServiceModuleBPD As Label
+    Friend WithEvents lblFuelBlocksperDay As Label
+    Friend WithEvents gbSelectedFuelBlock As GroupBox
+    Friend WithEvents ModuleName As ColumnHeader
+    Friend WithEvents ModuleType As ColumnHeader
+    Friend WithEvents GroupTag As ColumnHeader
+    Friend WithEvents ModuleTypeID As ColumnHeader
 End Class

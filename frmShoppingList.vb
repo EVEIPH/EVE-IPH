@@ -1468,7 +1468,7 @@ Public Class frmShoppingList
                         TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, TempBuildFacility,
                                                TempCompFacility, TempCapCompFacility, TempReactionFacility, UserBPTabSettings.SellExcessBuildItems,
-                                               UserBPTabSettings.BuildT2T3Materials)
+                                               UserBPTabSettings.BuildT2T3Materials, True)
 
                         ' See if we invent, use selected BP facilities for invention
                         If readerBP.GetInt32(1) <> 1 And Not ItemList(i).IgnoredInvention Then

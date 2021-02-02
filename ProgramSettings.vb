@@ -889,6 +889,7 @@ Public Class ProgramSettings
     Private DefaultSelectedStructureName As String = "Raitaru"
     Private DefaultReactionsRigsCheck As Boolean = False
     Private DefaultDrillingRigsCheck As Boolean = False
+    Private DefaultIconListView As Boolean = True
 
     ' Bonus Popout Viewer Settings for facilities
     Private DefaultSBPVFormWidth As Integer = 750
@@ -4688,6 +4689,7 @@ Public Class ProgramSettings
                     .SelectedStructureName = CStr(GetSettingValue(SettingsFolder, UpwellStructureViewerSettingsFileName, SettingTypes.TypeString, UpwellStructureViewerSettingsFileName, "SelectedStructureName", DefaultSelectedStructureName))
                     .ReactionsRigsCheck = CBool(GetSettingValue(SettingsFolder, UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "ReactionsRigsCheck", DefaultReactionsRigsCheck))
                     .DrillingRigsCheck = CBool(GetSettingValue(SettingsFolder, UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "DrillingRigsCheck", DefaultDrillingRigsCheck))
+                    .IconListView = CBool(GetSettingValue(SettingsFolder, UpwellStructureViewerSettingsFileName, SettingTypes.TypeBoolean, UpwellStructureViewerSettingsFileName, "IconListView", DefaultIconListView))
                 End With
 
             Else
@@ -4727,6 +4729,7 @@ Public Class ProgramSettings
             .SelectedStructureName = DefaultSelectedStructureName
             .ReactionsRigsCheck = DefaultReactionsRigsCheck
             .DrillingRigsCheck = DefaultDrillingRigsCheck
+            .IconListView = DefaultIconListView
         End With
 
         ' Save locally
@@ -4737,7 +4740,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpwellStructureViewerSettings(SentSettings As UpwellStructureSettings)
-        Dim UpwellStructureViewerSettingsList(14) As Setting
+        Dim UpwellStructureViewerSettingsList(15) As Setting
 
         Try
             UpwellStructureViewerSettingsList(0) = New Setting("HighSlotsCheck", CStr(SentSettings.HighSlotsCheck))
@@ -4755,6 +4758,7 @@ Public Class ProgramSettings
             UpwellStructureViewerSettingsList(12) = New Setting("SelectedStructureName", CStr(SentSettings.SelectedStructureName))
             UpwellStructureViewerSettingsList(13) = New Setting("ReactionsRigsCheck", CStr(SentSettings.ReactionsRigsCheck))
             UpwellStructureViewerSettingsList(14) = New Setting("DrillingRigsCheck", CStr(SentSettings.DrillingRigsCheck))
+            UpwellStructureViewerSettingsList(15) = New Setting("IconListView", CStr(SentSettings.IconListView))
 
             Call WriteSettingsToFile(SettingsFolder, UpwellStructureViewerSettingsFileName, UpwellStructureViewerSettingsList, UpwellStructureViewerSettingsFileName)
 
@@ -5836,6 +5840,8 @@ Public Structure UpwellStructureSettings
     Dim AutoUpdateFuelBlockPricesCheck As Boolean
     Dim SearchFilterText As String
     Dim SelectedStructureName As String
+
+    Dim IconListView As Boolean
 
 End Structure
 
