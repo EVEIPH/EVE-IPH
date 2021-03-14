@@ -1074,7 +1074,7 @@ Public Class ShoppingList
         Dim IncludeREMats As Boolean = False
 
         ' Full output lists
-        FullBuildList = GetFullBuildMaterialList() ' GetFullBuildList uses BuildItem for built in pos, and Volume for the facility ME value
+        FullBuildList = GetFullBuildMaterialList() ' GetFullBuildList uses BuildItem and Volume for the facility ME value
         FullBuyList = CType(TotalBuyList.Clone, Materials)
         FullItemList = GetFullItemList()
 

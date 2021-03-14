@@ -1088,10 +1088,7 @@ Public Class ESI
         RegionList = RegionList.Substring(0, Len(RegionList) - 1)
 
         ' First, get all the structures in that region
-        SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") "
-        SQL &= "AND STATION_TYPE_ID IN "
-        SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
-        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65 AND IT.published <> 0) "
+        SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") AND STATION_ID >70000000"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader

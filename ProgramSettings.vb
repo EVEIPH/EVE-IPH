@@ -17,8 +17,6 @@ Public Module SettingsVariables
     Public UserManufacturingTabSettings As ManufacturingTabSettings
     ' Datacores
     Public UserDCTabSettings As DataCoreTabSettings
-    ' Reactions Tab
-    Public UserReactionTabSettings As ReactionsTabSettings
     ' Update Prices Tab Settings
     Public UserUpdatePricesTabSettings As UpdatePriceTabSettings
     ' Mining Tab Settings
@@ -95,7 +93,6 @@ Public Class ProgramSettings
     Public DefaultInventCorpStanding As Double = 5.0 ' Corp standing of where this blueprint will be invented
     Public DefaultBrokerCorpStanding As Double = 5.0 ' Corp standing of where this blueprint will be sold
     Public DefaultBrokerFactionStanding As Double = 5.0 ' Faction standing of where this blueprint will be sold (for Broker calc)
-    Public DefaultRefineCorpStanding As Double = 6.67 ' Corp standing for use of refining
 
     Public DefaultIncludeCopyTimes As Boolean = False ' If we include copy times in IPH calcs for invention
     Public DefaultIncludeInventionTimes As Boolean = False ' If we include invention times in IPH calcs for invention
@@ -105,9 +102,6 @@ Public Class ProgramSettings
     Public DefaultCopySlotModifier As String = "1.0" ' The default copy slot modifier for T1 BPC copies to use in invention
     Public DefaultInventionSlotModifier As String = "1.0" ' Default invention time
     Public DefaultBuildSlotModifier As String = "1.0" ' Default build time for production
-    Public DefaultRefiningEfficency As Double = 0.5 ' Default refining equipment
-
-    Public DefaultRefineTax As Double = 0.05 ' Default tax rate
 
     Public DefaultCheckBuildBuy As Boolean = False
     Public DefaultIgnoreRareandShipSkinBPs As Boolean = True
@@ -386,6 +380,8 @@ Public Class ProgramSettings
     Public DefaultMiningOreImplant As String = None
     Public DefaultMiningIceImplant As String = None
     Public DefaultMiningGasImplant As String = None
+    Public DefaultBeancounterImplant As String = None
+    Public DefaultMiningRig As String = None
     Public DefaultMiningCheckUseHauler As Boolean = True
     Public DefaultMiningRoundTripMin As Integer = 1
     Public DefaultMiningRoundTripSec As Integer = 0
@@ -405,16 +401,16 @@ Public Class ProgramSettings
     Public DefaultMiningCompressedOre As Boolean = False
     Public DefaultMiningUnrefinedOre As Boolean = False
     Public DefaultMiningIndustrialReconfig As Integer = 0
-    Public DefaultMiningRig As Boolean = False
     Public DefaultMiningNumberofMiners As Integer = 1
-    Public DefaultMiningColumnSort As Integer = 8
+    Public DefaultMiningColumnSort As Integer = 9
     Public DefaultMiningColumnSortType As String = "Decending"
     Public DefaultMiningDrone As String = "None"
     Public DefaultNumMiningDrone As String = "0"
     Public DefaultIceMiningDrone As String = "None"
     Public DefaultNumIceMiningdrone As String = "0"
     Public DefaultDroneSkills As String = "-1"
-    Public DefaultDroneRigs As Integer = 0
+    Public DefaultDroneRigs As String = None
+    Public DefaultBoosterDroneRigs As Integer = 0
     Public DefaultBoosterUseDrones As Boolean = False
 
     ' Industry Jobs column settings
@@ -909,7 +905,6 @@ Public Class ProgramSettings
     Private BPSettings As BPTabSettings
     Private ManufacturingSettings As ManufacturingTabSettings
     Private DatacoreSettings As DataCoreTabSettings
-    Private ReactionSettings As ReactionsTabSettings
     Private MiningSettings As MiningTabSettings
     Private UpdatePricesSettings As UpdatePriceTabSettings
     Private IndustryJobsColumnSettings As IndustryJobsColumnSettings
@@ -978,7 +973,6 @@ Public Class ProgramSettings
         BPSettings = Nothing
         ManufacturingSettings = Nothing
         DatacoreSettings = Nothing
-        ReactionSettings = Nothing
         MiningSettings = Nothing
         UpdatePricesSettings = Nothing
         IndustryJobsColumnSettings = Nothing
@@ -2437,119 +2431,6 @@ Public Class ProgramSettings
 
 #End Region
 
-#Region "Reactions Tab Settings"
-
-    ' Loads the tab settings
-    Public Function LoadReactionSettings() As ReactionsTabSettings
-        Dim TempSettings As ReactionsTabSettings = Nothing
-
-        Try
-            If FileExists(SettingsFolder, ReactionSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .POSFuelCost = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "POSFuelCost", DefaultReactPOSFuelCost))
-                    .CheckTaxes = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckTaxes", DefaultReactCheckTaxes))
-                    .CheckFees = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckFees", DefaultReactCheckFees))
-                    .CheckAdvMoonMats = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckAdvMoonMats", DefaultReactItemChecks))
-                    .CheckProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckProcessedMoonMats", DefaultReactItemChecks))
-                    .CheckHybrid = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckHybrid", DefaultReactItemChecks))
-                    .CheckComplexBio = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckComplexBio", DefaultReactItemChecks))
-                    .CheckSimpleBio = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckSimpleBio", DefaultReactItemChecks))
-                    .CheckBuildBasic = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckBuildBasic", DefaultReactItemChecks))
-                    .CheckIgnoreMarket = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckIgnoreMarket", DefaultReactItemChecks))
-                    .CheckRefine = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckRefine", DefaultReactItemChecks))
-                    .NumberofPOS = CInt(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "NumberofPOS", DefaultReactNumPOS))
-                    .RefineryEfficiency = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryEfficiency", DefaultRefiningEfficency))
-                    .RefineryTax = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryTax", DefaultRefineTax))
-                    .RefineryStanding = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryStanding", DefaultRefineCorpStanding))
-                    .ColumnSort = CInt(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "ColumnSort", DefaultReactColumnSort))
-                    .ColumnSortType = CStr(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeString, ReactionSettingsFileName, "ColumnSortType", DefaultReactColumnSortType))
-                End With
-
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultReactionSettings()
-            End If
-
-        Catch ex As Exception
-            MsgBox("An error occured when loading Reaction Tab Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultReactionSettings()
-        End Try
-
-        ' Save them locally and then export
-        ReactionSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    ' Loads the Defaults for the tab
-    Public Function SetDefaultReactionSettings() As ReactionsTabSettings
-        Dim LocalSettings As ReactionsTabSettings
-
-        LocalSettings.POSFuelCost = DefaultReactPOSFuelCost
-        LocalSettings.CheckTaxes = DefaultReactCheckTaxes
-        LocalSettings.CheckFees = DefaultReactCheckFees
-        LocalSettings.CheckAdvMoonMats = DefaultReactItemChecks
-        LocalSettings.CheckProcessedMoonMats = DefaultReactItemChecks
-        LocalSettings.CheckHybrid = DefaultReactItemChecks
-        LocalSettings.CheckComplexBio = DefaultReactItemChecks
-        LocalSettings.CheckSimpleBio = DefaultReactItemChecks
-        LocalSettings.CheckBuildBasic = DefaultReactItemChecks
-        LocalSettings.CheckIgnoreMarket = DefaultReactItemChecks
-        LocalSettings.CheckRefine = DefaultReactItemChecks
-        LocalSettings.NumberofPOS = DefaultReactNumPOS
-        LocalSettings.RefineryEfficiency = DefaultRefiningEfficency
-        LocalSettings.RefineryTax = DefaultRefineTax
-        LocalSettings.RefineryStanding = DefaultRefineCorpStanding
-        LocalSettings.ColumnSort = DefaultReactColumnSort
-        LocalSettings.ColumnSortType = DefaultReactColumnSortType
-
-        ' Save locally
-        ReactionSettings = LocalSettings
-        Return LocalSettings
-
-    End Function
-
-    ' Saves the tab settings to XML
-    Public Sub SaveReactionSettings(SentSettings As ReactionsTabSettings)
-        Dim ReactionSettingsList(16) As Setting
-
-        Try
-            ReactionSettingsList(0) = New Setting("POSFuelCost", CStr(SentSettings.POSFuelCost))
-            ReactionSettingsList(1) = New Setting("CheckTaxes", CStr(SentSettings.CheckTaxes))
-            ReactionSettingsList(2) = New Setting("CheckFees", CStr(SentSettings.CheckFees))
-            ReactionSettingsList(3) = New Setting("CheckAdvMoonMats", CStr(SentSettings.CheckAdvMoonMats))
-            ReactionSettingsList(4) = New Setting("CheckProcessedMoonMats", CStr(SentSettings.CheckProcessedMoonMats))
-            ReactionSettingsList(5) = New Setting("CheckHybrid", CStr(SentSettings.CheckHybrid))
-            ReactionSettingsList(6) = New Setting("CheckComplexBio", CStr(SentSettings.CheckComplexBio))
-            ReactionSettingsList(7) = New Setting("CheckSimpleBio", CStr(SentSettings.CheckSimpleBio))
-            ReactionSettingsList(8) = New Setting("CheckBuildBasic", CStr(SentSettings.CheckBuildBasic))
-            ReactionSettingsList(9) = New Setting("CheckIgnoreMarket", CStr(SentSettings.CheckIgnoreMarket))
-            ReactionSettingsList(10) = New Setting("CheckRefine", CStr(SentSettings.CheckRefine))
-            ReactionSettingsList(11) = New Setting("NumberofPOS", CStr(SentSettings.NumberofPOS))
-            ReactionSettingsList(12) = New Setting("RefineryEfficiency", CStr(SentSettings.RefineryEfficiency))
-            ReactionSettingsList(13) = New Setting("RefineryTax", CStr(SentSettings.RefineryTax))
-            ReactionSettingsList(14) = New Setting("RefineryStanding", CStr(SentSettings.RefineryStanding))
-            ReactionSettingsList(15) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            ReactionSettingsList(16) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
-
-            Call WriteSettingsToFile(SettingsFolder, ReactionSettingsFileName, ReactionSettingsList, ReactionSettingsFileName)
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving Reaction Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the tab settings
-    Public Function GetReactionSettings() As ReactionsTabSettings
-        Return ReactionSettings
-    End Function
-
-#End Region
-
 #Region "Mining Tab Settings"
 
     ' Loads the tab settings
@@ -2610,8 +2491,6 @@ Public Class ProgramSettings
                     .UnrefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
                     .IndustrialReconfig = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "IndustrialReconfig", DefaultMiningIndustrialReconfig))
-                    .MercoxitMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MercoxitMiningRig", DefaultMiningRig))
-                    .IceMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "IceMiningRig", DefaultMiningRig))
                     .CheckSovWormhole = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovWormhole", DefaultMiningCheckSovWormhole))
                     .CheckSovMoon = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMoon", DefaultMiningCheckSovMoon))
                     .CheckSovC1 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC1", DefaultMiningCheckSovC1))
@@ -2621,9 +2500,6 @@ Public Class ProgramSettings
                     .CheckSovC5 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC5", DefaultMiningCheckSovC5))
                     .CheckSovC6 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC6", DefaultMiningCheckSovC6))
                     .NumberofMiners = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumberofMiners", DefaultMiningNumberofMiners))
-                    .RefiningEfficiency = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
-                    .RefineCorpStanding = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
-                    .RefiningTax = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ColumnSort", DefaultMiningColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ColumnSortType", DefaultMiningColumnSortType))
                     .MiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "MiningDrone", DefaultMiningDrone))
@@ -2647,14 +2523,19 @@ Public Class ProgramSettings
                     .BoosterIceDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneSpecSkill", DefaultDroneSkills))
                     .BoosterIceDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneInterfaceSkill", DefaultDroneSkills))
                     .BoosterUseDrones = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "BoosterUseDrones", DefaultBoosterUseDrones))
-                    .ShipDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipDroneRig1", DefaultDroneSkills))
-                    .ShipDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipDroneRig2", DefaultDroneSkills))
-                    .BoosterDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig1", DefaultDroneSkills))
-                    .BoosterDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig2", DefaultDroneSkills))
-                    .ShipIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipIceDroneRig1", DefaultDroneSkills))
-                    .ShipIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ShipIceDroneRig2", DefaultDroneSkills))
-                    .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultDroneSkills))
-                    .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultDroneSkills))
+                    .ShipDroneRig1 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig1", DefaultDroneRigs))
+                    .ShipDroneRig2 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig2", DefaultDroneRigs))
+                    .ShipDroneRig3 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig3", DefaultDroneRigs))
+                    .ShipIceDroneRig1 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig1", DefaultDroneRigs))
+                    .ShipIceDroneRig2 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig2", DefaultDroneRigs))
+                    .ShipIceDroneRig3 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig3", DefaultDroneRigs))
+                    .BoosterDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig1", DefaultBoosterDroneRigs))
+                    .BoosterDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig2", DefaultBoosterDroneRigs))
+                    .BoosterDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig3", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig3", DefaultBoosterDroneRigs))
+                    .BeanCounterImplant = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BeanCounterImplant", DefaultBeancounterImplant))
                 End With
 
             Else
@@ -2738,12 +2619,7 @@ Public Class ProgramSettings
             .UnrefinedOre = DefaultMiningUnrefinedOre
             .CompressedOre = DefaultMiningCompressedOre
             .IndustrialReconfig = DefaultMiningIndustrialReconfig
-            .MercoxitMiningRig = DefaultMiningRig
-            .IceMiningRig = DefaultMiningRig
             .NumberofMiners = DefaultNumMiners
-            .RefineCorpStanding = DefaultRefineCorpStanding
-            .RefiningEfficiency = DefaultRefiningEfficency
-            .RefiningTax = DefaultRefineTax
             .ColumnSort = DefaultMiningColumnSort
             .ColumnSortType = DefaultMiningColumnSortType
 
@@ -2772,12 +2648,18 @@ Public Class ProgramSettings
             .BoosterUseDrones = DefaultBoosterUseDrones
             .ShipDroneRig1 = DefaultDroneRigs
             .ShipDroneRig2 = DefaultDroneRigs
-            .BoosterDroneRig1 = DefaultDroneRigs
-            .BoosterDroneRig2 = DefaultDroneRigs
+            .ShipDroneRig3 = DefaultDroneRigs
+            .BoosterDroneRig1 = DefaultBoosterDroneRigs
+            .BoosterDroneRig2 = DefaultBoosterDroneRigs
+            .BoosterDroneRig3 = DefaultBoosterDroneRigs
             .ShipIceDroneRig1 = DefaultDroneRigs
             .ShipIceDroneRig2 = DefaultDroneRigs
-            .BoosterIceDroneRig1 = DefaultDroneRigs
-            .BoosterIceDroneRig2 = DefaultDroneRigs
+            .ShipIceDroneRig3 = DefaultDroneRigs
+            .BoosterIceDroneRig1 = DefaultBoosterDroneRigs
+            .BoosterIceDroneRig2 = DefaultBoosterDroneRigs
+            .BoosterIceDroneRig3 = DefaultBoosterDroneRigs
+
+            .BeanCounterImplant = DefaultBeancounterImplant
 
         End With
 
@@ -2831,70 +2713,70 @@ Public Class ProgramSettings
             MiningSettingsList(36) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
             MiningSettingsList(37) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
             MiningSettingsList(38) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
-            MiningSettingsList(39) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
-            MiningSettingsList(40) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
-            MiningSettingsList(41) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
-            MiningSettingsList(42) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
-            MiningSettingsList(43) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
-            MiningSettingsList(44) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
-            MiningSettingsList(45) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
-            MiningSettingsList(46) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
-            MiningSettingsList(47) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
-            MiningSettingsList(48) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
-            MiningSettingsList(49) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
-            MiningSettingsList(50) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
-            MiningSettingsList(51) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
-            MiningSettingsList(52) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
-            MiningSettingsList(53) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
-            MiningSettingsList(54) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
-            MiningSettingsList(55) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            MiningSettingsList(56) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
-            MiningSettingsList(57) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
+            MiningSettingsList(39) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
+            MiningSettingsList(40) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
+            MiningSettingsList(41) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
+            MiningSettingsList(42) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
+            MiningSettingsList(43) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
+            MiningSettingsList(44) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
+            MiningSettingsList(45) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
+            MiningSettingsList(46) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
+            MiningSettingsList(47) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
+            MiningSettingsList(48) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
+            MiningSettingsList(49) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
+            MiningSettingsList(50) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
+            MiningSettingsList(51) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
+            MiningSettingsList(52) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
+            MiningSettingsList(53) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
+            MiningSettingsList(54) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
+            MiningSettingsList(55) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
 
-            MiningSettingsList(58) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            MiningSettingsList(59) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            MiningSettingsList(60) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
+            MiningSettingsList(56) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            MiningSettingsList(57) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
 
-            MiningSettingsList(61) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            MiningSettingsList(62) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            MiningSettingsList(58) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
+            MiningSettingsList(59) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            MiningSettingsList(60) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
 
-            MiningSettingsList(63) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
-            MiningSettingsList(64) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
-            MiningSettingsList(65) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
+            MiningSettingsList(61) = New Setting("MiningDrone", CStr(SentSettings.MiningDrone))
+            MiningSettingsList(62) = New Setting("NumMiningDrones", CStr(SentSettings.NumMiningDrones))
+            MiningSettingsList(63) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
+            MiningSettingsList(64) = New Setting("NumIceMiningDrones", CStr(SentSettings.NumIceMiningDrones))
+            MiningSettingsList(65) = New Setting("DroneOpSkill", CStr(SentSettings.DroneOpSkill))
+            MiningSettingsList(66) = New Setting("DroneSpecSkill", CStr(SentSettings.DroneSpecSkill))
+            MiningSettingsList(67) = New Setting("DroneInterfaceSkill", CStr(SentSettings.DroneInterfaceSkill))
 
-            MiningSettingsList(66) = New Setting("MiningDrone", CStr(SentSettings.MiningDrone))
-            MiningSettingsList(67) = New Setting("NumMiningDrones", CStr(SentSettings.NumMiningDrones))
-            MiningSettingsList(68) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
-            MiningSettingsList(69) = New Setting("NumIceMiningDrones", CStr(SentSettings.NumIceMiningDrones))
-            MiningSettingsList(70) = New Setting("DroneOpSkill", CStr(SentSettings.DroneOpSkill))
-            MiningSettingsList(71) = New Setting("DroneSpecSkill", CStr(SentSettings.DroneSpecSkill))
-            MiningSettingsList(72) = New Setting("DroneInterfaceSkill", CStr(SentSettings.DroneInterfaceSkill))
+            MiningSettingsList(68) = New Setting("BoosterMiningDrone", CStr(SentSettings.BoosterMiningDrone))
+            MiningSettingsList(69) = New Setting("BoosterNumMiningDrones", CStr(SentSettings.BoosterNumMiningDrones))
+            MiningSettingsList(70) = New Setting("BoosterIceMiningDrone", CStr(SentSettings.BoosterIceMiningDrone))
+            MiningSettingsList(71) = New Setting("BoosterNumIceMiningDrones", CStr(SentSettings.BoosterNumIceMiningDrones))
+            MiningSettingsList(72) = New Setting("BoosterDroneOpSkill", CStr(SentSettings.BoosterDroneOpSkill))
+            MiningSettingsList(73) = New Setting("BoosterDroneSpecSkill", CStr(SentSettings.BoosterDroneSpecSkill))
+            MiningSettingsList(74) = New Setting("BoosterDroneInterfaceSkill", CStr(SentSettings.BoosterDroneInterfaceSkill))
 
-            MiningSettingsList(73) = New Setting("BoosterMiningDrone", CStr(SentSettings.BoosterMiningDrone))
-            MiningSettingsList(74) = New Setting("BoosterNumMiningDrones", CStr(SentSettings.BoosterNumMiningDrones))
-            MiningSettingsList(75) = New Setting("BoosterIceMiningDrone", CStr(SentSettings.BoosterIceMiningDrone))
-            MiningSettingsList(76) = New Setting("BoosterNumIceMiningDrones", CStr(SentSettings.BoosterNumIceMiningDrones))
-            MiningSettingsList(77) = New Setting("BoosterDroneOpSkill", CStr(SentSettings.BoosterDroneOpSkill))
-            MiningSettingsList(78) = New Setting("BoosterDroneSpecSkill", CStr(SentSettings.BoosterDroneSpecSkill))
-            MiningSettingsList(79) = New Setting("BoosterDroneInterfaceSkill", CStr(SentSettings.BoosterDroneInterfaceSkill))
+            MiningSettingsList(75) = New Setting("BoosterUseDrones", CStr(SentSettings.BoosterUseDrones))
+            MiningSettingsList(76) = New Setting("ShipDroneRig1", CStr(SentSettings.ShipDroneRig1))
+            MiningSettingsList(77) = New Setting("ShipDroneRig2", CStr(SentSettings.ShipDroneRig2))
+            MiningSettingsList(78) = New Setting("ShipDroneRig3", CStr(SentSettings.ShipDroneRig3))
+            MiningSettingsList(79) = New Setting("BoosterDroneRig1", CStr(SentSettings.BoosterDroneRig1))
+            MiningSettingsList(80) = New Setting("BoosterDroneRig2", CStr(SentSettings.BoosterDroneRig2))
+            MiningSettingsList(81) = New Setting("BoosterDroneRig3", CStr(SentSettings.BoosterDroneRig3))
 
-            MiningSettingsList(80) = New Setting("BoosterUseDrones", CStr(SentSettings.BoosterUseDrones))
-            MiningSettingsList(81) = New Setting("ShipDroneRig1", CStr(SentSettings.ShipDroneRig1))
-            MiningSettingsList(82) = New Setting("ShipDroneRig2", CStr(SentSettings.ShipDroneRig2))
-            MiningSettingsList(83) = New Setting("BoosterDroneRig1", CStr(SentSettings.BoosterDroneRig1))
-            MiningSettingsList(84) = New Setting("BoosterDroneRig2", CStr(SentSettings.BoosterDroneRig2))
+            MiningSettingsList(82) = New Setting("ShipIceDroneRig1", CStr(SentSettings.ShipIceDroneRig1))
+            MiningSettingsList(83) = New Setting("ShipIceDroneRig2", CStr(SentSettings.ShipIceDroneRig2))
+            MiningSettingsList(84) = New Setting("ShipIceDroneRig3", CStr(SentSettings.ShipIceDroneRig3))
+            MiningSettingsList(85) = New Setting("BoosterIceDroneRig1", CStr(SentSettings.BoosterIceDroneRig1))
+            MiningSettingsList(86) = New Setting("BoosterIceDroneRig2", CStr(SentSettings.BoosterIceDroneRig2))
+            MiningSettingsList(87) = New Setting("BoosterIceDroneRig3", CStr(SentSettings.BoosterIceDroneRig3))
 
-            MiningSettingsList(85) = New Setting("ShipIceDroneRig1", CStr(SentSettings.ShipIceDroneRig1))
-            MiningSettingsList(86) = New Setting("ShipIceDroneRig2", CStr(SentSettings.ShipIceDroneRig2))
-            MiningSettingsList(87) = New Setting("BoosterIceDroneRig1", CStr(SentSettings.BoosterIceDroneRig1))
-            MiningSettingsList(88) = New Setting("BoosterIceDroneRig2", CStr(SentSettings.BoosterIceDroneRig2))
+            MiningSettingsList(88) = New Setting("IceDroneOpSkill", CStr(SentSettings.IceDroneOpSkill))
+            MiningSettingsList(89) = New Setting("IceDroneSpecSkill", CStr(SentSettings.IceDroneSpecSkill))
+            MiningSettingsList(90) = New Setting("IceDroneInterfaceSkill", CStr(SentSettings.IceDroneInterfaceSkill))
+            MiningSettingsList(91) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
+            MiningSettingsList(92) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
+            MiningSettingsList(93) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
 
-            MiningSettingsList(89) = New Setting("IceDroneOpSkill", CStr(SentSettings.IceDroneOpSkill))
-            MiningSettingsList(90) = New Setting("IceDroneSpecSkill", CStr(SentSettings.IceDroneSpecSkill))
-            MiningSettingsList(91) = New Setting("IceDroneInterfaceSkill", CStr(SentSettings.IceDroneInterfaceSkill))
-            MiningSettingsList(92) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
-            MiningSettingsList(93) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
-            MiningSettingsList(94) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
+            MiningSettingsList(94) = New Setting("BeanCounterImplant", CStr(SentSettings.BeanCounterImplant))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -3811,11 +3693,6 @@ Public Class ProgramSettings
                     .IncludeTaxes = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
                     .TrueSec = CStr(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeString, IndustryFlipBeltSettingsFileName, "TrueSec", DefaultTruesec))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
-
-                    .RefiningEfficiency = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
-                    .RefiningTax = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningTax", DefaultRefineTax))
-                    .RefineCorpStanding = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
-
                 End With
 
             Else
@@ -3850,9 +3727,6 @@ Public Class ProgramSettings
             .BrokerFeeRate = DefaultBFBrokerFeeRate
             .IncludeTaxes = DefaultIncludeTaxes
             .TrueSec = DefaultTruesec
-            .RefiningEfficiency = DefaultRefiningEfficency
-            .RefineCorpStanding = DefaultRefineCorpStanding
-            .RefiningTax = DefaultRefineTax
         End With
 
         ' Save locally
@@ -3863,7 +3737,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryFlipBeltSettings(SentSettings As IndustryFlipBeltSettings)
-        Dim IndustryFlipBeltSettingsList(11) As Setting
+        Dim IndustryFlipBeltSettingsList(8) As Setting
 
         Try
             IndustryFlipBeltSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
@@ -3874,10 +3748,7 @@ Public Class ProgramSettings
             IndustryFlipBeltSettingsList(5) = New Setting("IncludeBrokerFees", CStr(SentSettings.IncludeBrokerFees))
             IndustryFlipBeltSettingsList(6) = New Setting("IncludeTaxes", CStr(SentSettings.IncludeTaxes))
             IndustryFlipBeltSettingsList(7) = New Setting("TrueSec", CStr(SentSettings.TrueSec))
-            IndustryFlipBeltSettingsList(8) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            IndustryFlipBeltSettingsList(9) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            IndustryFlipBeltSettingsList(10) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
-            IndustryFlipBeltSettingsList(11) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            IndustryFlipBeltSettingsList(8) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, IndustryFlipBeltSettingsFileName, IndustryFlipBeltSettingsList, IndustryFlipBeltSettingsFileName)
 
@@ -5203,33 +5074,6 @@ Public Structure DataCoreTabSettings
 
 End Structure
 
-' For Reaction Tab Settings
-Public Structure ReactionsTabSettings
-    Dim POSFuelCost As Double
-    Dim NumberofPOS As Integer
-
-    Dim CheckTaxes As Boolean
-    Dim CheckFees As Boolean
-
-    Dim CheckAdvMoonMats As Boolean
-    Dim CheckProcessedMoonMats As Boolean
-    Dim CheckHybrid As Boolean
-    Dim CheckComplexBio As Boolean
-    Dim CheckSimpleBio As Boolean
-
-    Dim CheckBuildBasic As Boolean
-    Dim CheckIgnoreMarket As Boolean
-    Dim CheckRefine As Boolean
-
-    Dim RefineryEfficiency As Double
-    Dim RefineryTax As Double
-    Dim RefineryStanding As Double
-
-    Dim ColumnSort As Integer
-    Dim ColumnSortType As String
-
-End Structure
-
 ' For Mining Settings
 Public Structure MiningTabSettings
     Dim OreType As String ' Ore or Ice
@@ -5275,10 +5119,12 @@ Public Structure MiningTabSettings
     Dim OreImplant As String
     Dim IceImplant As String
     Dim GasImplant As String
-    Dim ShipDroneRig1 As Integer
-    Dim ShipDroneRig2 As Integer
-    Dim ShipIceDroneRig1 As Integer
-    Dim ShipIceDroneRig2 As Integer
+    Dim ShipDroneRig1 As String
+    Dim ShipDroneRig2 As String
+    Dim ShipDroneRig3 As String
+    Dim ShipIceDroneRig1 As String
+    Dim ShipIceDroneRig2 As String
+    Dim ShipIceDroneRig3 As String
 
     Dim MiningDrone As String
     Dim NumMiningDrones As String
@@ -5303,6 +5149,7 @@ Public Structure MiningTabSettings
     Dim BoosterIceDroneInterfaceSkill As String
 
     Dim MichiiImplant As Boolean
+    Dim BeanCounterImplant As String
     Dim T2Crystals As Boolean
 
     Dim CheckUseHauler As Boolean
@@ -5321,8 +5168,10 @@ Public Structure MiningTabSettings
     Dim BoosterUseDrones As Boolean
     Dim BoosterDroneRig1 As Integer
     Dim BoosterDroneRig2 As Integer
+    Dim BoosterDroneRig3 As Integer
     Dim BoosterIceDroneRig1 As Integer
     Dim BoosterIceDroneRig2 As Integer
+    Dim BoosterIceDroneRig3 As Integer
 
     Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer
@@ -5332,13 +5181,6 @@ Public Structure MiningTabSettings
     Dim RefinedOre As Boolean
     Dim UnrefinedOre As Boolean
     Dim CompressedOre As Boolean
-
-    Dim MercoxitMiningRig As Boolean
-    Dim IceMiningRig As Boolean
-
-    Dim RefiningEfficiency As Double
-    Dim RefiningTax As Double
-    Dim RefineCorpStanding As Double
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
@@ -5624,11 +5466,6 @@ Public Structure IndustryFlipBeltSettings
     Dim IncludeTaxes As Boolean
     Dim BrokerFeeRate As Double
     Dim TrueSec As String
-
-    Dim RefiningEfficiency As Double
-    Dim RefineCorpStanding As Double
-    Dim RefiningTax As Double
-
 End Structure
 
 ' For the checked ore on each mining tab

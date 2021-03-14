@@ -28,7 +28,7 @@ Partial Class ManufacturingFacility
         Me.chkFacilityIncludeTime = New System.Windows.Forms.CheckBox()
         Me.lblFacilityDefault = New System.Windows.Forms.Label()
         Me.chkFacilityIncludeCost = New System.Windows.Forms.CheckBox()
-        Me.cmbFacilityorArray = New System.Windows.Forms.ComboBox()
+        Me.cmbFacility = New System.Windows.Forms.ComboBox()
         Me.cmbFacilitySystem = New System.Windows.Forms.ComboBox()
         Me.cmbFacilityRegion = New System.Windows.Forms.ComboBox()
         Me.lblFacilityLocation = New System.Windows.Forms.Label()
@@ -108,15 +108,15 @@ Partial Class ManufacturingFacility
         Me.chkFacilityIncludeCost.Text = "Cost"
         Me.chkFacilityIncludeCost.UseVisualStyleBackColor = True
         '
-        'cmbFacilityorArray
+        'cmbFacility
         '
-        Me.cmbFacilityorArray.FormattingEnabled = True
-        Me.cmbFacilityorArray.ItemHeight = 13
-        Me.cmbFacilityorArray.Location = New System.Drawing.Point(4, 63)
-        Me.cmbFacilityorArray.Name = "cmbFacilityorArray"
-        Me.cmbFacilityorArray.Size = New System.Drawing.Size(291, 21)
-        Me.cmbFacilityorArray.TabIndex = 14
-        Me.cmbFacilityorArray.Text = "Select Facility / Array"
+        Me.cmbFacility.FormattingEnabled = True
+        Me.cmbFacility.ItemHeight = 13
+        Me.cmbFacility.Location = New System.Drawing.Point(4, 63)
+        Me.cmbFacility.Name = "cmbFacility"
+        Me.cmbFacility.Size = New System.Drawing.Size(291, 21)
+        Me.cmbFacility.TabIndex = 14
+        Me.cmbFacility.Text = "Select Facility"
         '
         'cmbFacilitySystem
         '
@@ -400,7 +400,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.chkFacilityIncludeTime)
         Me.Controls.Add(Me.lblFacilityDefault)
         Me.Controls.Add(Me.chkFacilityIncludeCost)
-        Me.Controls.Add(Me.cmbFacilityorArray)
+        Me.Controls.Add(Me.cmbFacility)
         Me.Controls.Add(Me.cmbFacilitySystem)
         Me.Controls.Add(Me.cmbFacilityRegion)
         Me.Controls.Add(Me.lblFacilityLocation)
@@ -419,7 +419,7 @@ Partial Class ManufacturingFacility
     Friend WithEvents chkFacilityIncludeTime As CheckBox
     Friend WithEvents lblFacilityDefault As Label
     Friend WithEvents chkFacilityIncludeCost As CheckBox
-    Friend WithEvents cmbFacilityorArray As ComboBox
+    Friend WithEvents cmbFacility As ComboBox
     Friend WithEvents cmbFacilitySystem As ComboBox
     Friend WithEvents cmbFacilityRegion As ComboBox
     Friend WithEvents lblFacilityLocation As Label

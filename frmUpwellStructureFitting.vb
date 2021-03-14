@@ -475,6 +475,40 @@ Public Class frmUpwellStructureFitting
             End If
         End If
 
+        ' Finally, look up if the item group is already used
+        Dim CurrentRigs As List(Of Integer) = GetCurrentRigList()
+        Dim rsLoader As SQLiteDataReader
+        Dim MaxModules As Integer = 0
+        Dim GroupID As Integer = 0
+        If CurrentRigs.Count > 0 Then
+            For Each Rig In CurrentRigs
+                ' Get the group ID of the installed RIG
+                DBCommand = New SQLiteCommand("SELECT groupID FROM INVENTORY_TYPES WHERE typeID = " & CStr(Rig), EVEDB.DBREf)
+                rsLoader = DBCommand.ExecuteReader
+
+                If rsLoader.Read() Then
+                    GroupID = rsLoader.GetInt32(0)
+
+                    ' Look up the rig max modules value, then compare to the group of this rig they want to add
+                    DBCommand = New SQLiteCommand("SELECT value FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT WHERE attributeID = 1544 AND IT.typeID = TA.typeID AND TA.typeID = " & CStr(ModuleTypeID) & " AND groupID =" & CStr(GroupID), EVEDB.DBREf)
+                    rsLoader = DBCommand.ExecuteReader
+
+                    If rsLoader.Read() Then
+                        MaxModules = CInt(rsLoader.GetDouble(0))
+                    End If
+
+                    If MaxModules = 1 Then
+                        ' Don't let them add another
+                        rsLoader.Close()
+                        Return False
+                    End If
+
+                End If
+
+                rsLoader.Close()
+            Next
+        End If
+
         Return True
 
     End Function
@@ -501,6 +535,15 @@ Public Class frmUpwellStructureFitting
 
     ' Sees if the rig is already used or not
     Private Function RigFound(TypeID As Integer) As Boolean
+        If GetCurrentRigList.Contains(TypeID) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    Private Function GetCurrentRigList() As List(Of Integer)
         Dim CurrentRigTypes As New List(Of Integer)
 
         If Not IsNothing(RigSlot1.Image) Then
@@ -513,11 +556,7 @@ Public Class frmUpwellStructureFitting
             CurrentRigTypes.Add(CInt(RigSlot3.Image.Tag))
         End If
 
-        If CurrentRigTypes.Contains(TypeID) Then
-            Return True
-        Else
-            Return False
-        End If
+        Return CurrentRigTypes
 
     End Function
 
@@ -1830,14 +1869,14 @@ Public Class frmUpwellStructureFitting
                 Select Case InstalledModule.moduleType
                     Case "EngineeringRigs"
                         SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
-                        SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
+                        SQL &= "INDUSTRY_ACTIVITIES.activityName AS ACTIVITY, "
                         SQL &= "AT.displayNameID AS BONUS_NAME, "
                         SQL &= "value / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
                         SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON ERB.categoryID = INVENTORY_CATEGORIES.categoryID "
-                        SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
+                        SQL &= "LEFT JOIN INDUSTRY_ACTIVITIES ON ERB.activityID = INDUSTRY_ACTIVITIES.activityID "
                         SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
                         SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%') "
 
@@ -1853,14 +1892,14 @@ Public Class frmUpwellStructureFitting
                         ' The rest is for thukker bonus (if it applies)
                         SQL &= "UNION "
                         SQL &= "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
-                        SQL &= "RAM_ACTIVITIES.activityName AS ACTIVITY, "
+                        SQL &= "INDUSTRY_ACTIVITIES.activityName AS ACTIVITY, "
                         SQL &= "AT.displayNameID AS BONUS_NAME, "
                         SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "LEFT JOIN INVENTORY_GROUPS ON ERB.groupID = INVENTORY_GROUPS.groupID "
                         SQL &= "LEFT JOIN INVENTORY_CATEGORIES ON ERB.categoryID = INVENTORY_CATEGORIES.categoryID "
-                        SQL &= "LEFT JOIN RAM_ACTIVITIES ON ERB.activityID = RAM_ACTIVITIES.activityID "
+                        SQL &= "LEFT JOIN INDUSTRY_ACTIVITIES ON ERB.activityID = INDUSTRY_ACTIVITIES.activityID "
                         SQL &= "WHERE TA.attributeID = AT.attributeID AND ERB.typeID = IT.typeID AND TA.typeID = IT.typeID "
                         SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeThukkerEngRig%' OR attributeName LIKE 'attributeEngRig%') "
                         SQL &= "AND TA.attributeID <> 2594 AND ERB.groupID IN (873,913) "
@@ -3373,4 +3412,5 @@ Public Enum Services
     StandupInventionLab = 35886 ' Invention
     StandupResearchLab = 35891 ' Copying, ME/TE research
     StandupHyasyodaResearchLab = 45550 ' Copying, ME/TE research
+    StandupReprocessingFaclity = 35899
 End Enum

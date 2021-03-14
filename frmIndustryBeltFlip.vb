@@ -70,11 +70,6 @@ Public Class frmIndustryBeltFlip
 
     Private Sub LoadSettings()
 
-        ' Station refinery settings
-        txtMineStationEff.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningEfficiency, 0)
-        txtMineRefineStanding.Text = FormatNumber(UserIndustryFlipBeltSettings.RefineCorpStanding, 2)
-        cmbRefineStationTax.Text = FormatPercent(UserIndustryFlipBeltSettings.RefiningTax, 1)
-
         ' Miner settings
         txtCycleTime.Text = FormatNumber(UserIndustryFlipBeltSettings.CycleTime)
         txtm3perCycle.Text = FormatNumber(UserIndustryFlipBeltSettings.m3perCycle)
@@ -82,13 +77,13 @@ Public Class frmIndustryBeltFlip
         chkCompressOre.Checked = UserIndustryFlipBeltSettings.CompressOre
         chkIPHperMiner.Checked = UserIndustryFlipBeltSettings.IPHperMiner
 
-        If UserIndustryFlipBeltSettings.TrueSec = "" Or UserIndustryFlipBeltSettings.TrueSec = rbtn0percent.Text Then
-            rbtn0percent.Checked = True
-        ElseIf UserIndustryFlipBeltSettings.TrueSec = rbtn5percent.Text Then
-            rbtn5percent.Checked = True
-        ElseIf UserIndustryFlipBeltSettings.TrueSec = rbtn10percent.Text Then
-            rbtn10percent.Checked = True
-        End If
+        'If UserIndustryFlipBeltSettings.TrueSec = "" Or UserIndustryFlipBeltSettings.TrueSec = rbtn0percent.Text Then
+        '    rbtn0percent.Checked = True
+        'ElseIf UserIndustryFlipBeltSettings.TrueSec = rbtn5percent.Text Then
+        '    rbtn5percent.Checked = True
+        'ElseIf UserIndustryFlipBeltSettings.TrueSec = rbtn10percent.Text Then
+        '    rbtn10percent.Checked = True
+        'End If
 
         'm3/hr/miner =  m3 per cycle / cycletime * 3600
         lblm3perhrperminer.Text = FormatNumber(CDbl(txtm3perCycle.Text) / CDbl(txtCycleTime.Text) * 3600, 2)
@@ -106,11 +101,11 @@ Public Class frmIndustryBeltFlip
         chkIncludeTaxes.Checked = UserIndustryFlipBeltSettings.IncludeTaxes
         txtBrokerFeeRate.Text = FormatPercent(UserIndustryFlipBeltSettings.BrokerFeeRate, 1)
 
-        If UserApplicationSettings.ShowToolTips Then
-            ttMain.SetToolTip(rbtn0percent, "No Bonus for Enormous or Colossal Belts")
-            ttMain.SetToolTip(rbtn5percent, "5% Ore Variants in Enormous or Colossal Belts")
-            ttMain.SetToolTip(rbtn10percent, "10% Ore Variants in Enormous or Colossal Belts")
-        End If
+        'If UserApplicationSettings.ShowToolTips Then
+        '    ttMain.SetToolTip(rbtn0percent, "No Bonus for Enormous or Colossal Belts")
+        '    ttMain.SetToolTip(rbtn5percent, "5% Ore Variants in Enormous or Colossal Belts")
+        '    ttMain.SetToolTip(rbtn10percent, "10% Ore Variants in Enormous or Colossal Belts")
+        'End If
 
     End Sub
 
@@ -186,28 +181,6 @@ Public Class frmIndustryBeltFlip
             Return False
         End If
 
-        ' Check the refine values
-        If Trim(txtMineRefineStanding.Text) <> "" Then
-            If CDbl(txtMineRefineStanding.Text) > 10 Then
-                MsgBox("Please set a smaller station standing value", vbExclamation, Application.ProductName)
-                txtMineRefineStanding.Focus()
-                tabIndustryBelts.SelectedTab = tabSummary
-                Return False
-            End If
-        Else
-            MsgBox("Please enter a Refine Standing value", vbExclamation, Application.ProductName)
-            cmbNumMiners.Focus()
-            tabIndustryBelts.SelectedTab = tabSummary
-            Return False
-        End If
-
-        If Trim(cmbRefineStationTax.Text) = "" Then
-            MsgBox("Please enter a Refine Station Tax value", vbExclamation, Application.ProductName)
-            cmbNumMiners.Focus()
-            tabIndustryBelts.SelectedTab = tabSummary
-            Return False
-        End If
-
         Return True
 
     End Function
@@ -215,32 +188,10 @@ Public Class frmIndustryBeltFlip
     Private Sub btnSaveSettings_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveSettings.Click
         Dim TempSettings As IndustryFlipBeltSettings = Nothing
         Dim Settings As New ProgramSettings
-        Dim TempDouble As Double
 
         If Not CheckEnteredData() Then
             Exit Sub
         End If
-
-        ' Refining
-        ' Station numbers
-        TempDouble = FormatManualPercentEntry(txtMineStationEff.Text)
-
-        If TempDouble <= 0 Then
-            TempSettings.RefiningEfficiency = 0
-        Else
-            TempSettings.RefiningEfficiency = TempDouble / 100
-        End If
-
-        TempDouble = FormatManualPercentEntry(cmbRefineStationTax.Text)
-
-        If TempDouble <= 0 Then
-            TempSettings.RefiningTax = 0
-        Else
-            TempSettings.RefiningTax = TempDouble / 100
-        End If
-
-        ' Allow them to update the refine standing here as well
-        TempSettings.RefineCorpStanding = CDbl(txtMineRefineStanding.Text)
 
         TempSettings.CompressOre = chkCompressOre.Checked
         TempSettings.IPHperMiner = chkIPHperMiner.Checked
@@ -252,13 +203,13 @@ Public Class frmIndustryBeltFlip
         TempSettings.IncludeBrokerFees = CType(chkBrokerFees.CheckState, Integer)
         TempSettings.BrokerFeeRate = FormatManualPercentEntry(txtBrokerFeeRate.Text)
 
-        If rbtn0percent.Checked Then
-            TempSettings.TrueSec = rbtn0percent.Text
-        ElseIf rbtn5percent.Checked Then
-            TempSettings.TrueSec = rbtn5percent.Text
-        ElseIf rbtn10percent.Checked Then
-            TempSettings.TrueSec = rbtn10percent.Text
-        End If
+        'If rbtn0percent.Checked Then
+        '    TempSettings.TrueSec = rbtn0percent.Text
+        'ElseIf rbtn5percent.Checked Then
+        '    TempSettings.TrueSec = rbtn5percent.Text
+        'ElseIf rbtn10percent.Checked Then
+        '    TempSettings.TrueSec = rbtn10percent.Text
+        'End If
 
         ' Save it in the Application settings
         Call Settings.SaveApplicationSettings(UserApplicationSettings)
@@ -359,13 +310,13 @@ Public Class frmIndustryBeltFlip
         SQL = SQL & ") "
 
         ' Select ore type based on truesec bonus
-        If rbtn0percent.Checked Or Belt = BeltType.Small Or Belt = BeltType.Medium Then ' Small and Medium belts are always base ores
-            SQL = SQL & "AND TRUESEC_BONUS = 0 "
-        ElseIf rbtn5percent.Checked Then
-            SQL = SQL & "AND TRUESEC_BONUS = 5 "
-        ElseIf rbtn10percent.Checked Then
-            SQL = SQL & "AND TRUESEC_BONUS = 10 "
-        End If
+        'If rbtn0percent.Checked Or Belt = BeltType.Small Or Belt = BeltType.Medium Then ' Small and Medium belts are always base ores
+        '    SQL = SQL & "AND TRUESEC_BONUS = 0 "
+        'ElseIf rbtn5percent.Checked Then
+        '    SQL = SQL & "AND TRUESEC_BONUS = 5 "
+        'ElseIf rbtn10percent.Checked Then
+        '    SQL = SQL & "AND TRUESEC_BONUS = 10 "
+        'End If
 
         SQL = SQL & "ORDER BY ORE"
 
@@ -546,7 +497,7 @@ Public Class frmIndustryBeltFlip
         Dim StationEffiency As Double
         Dim StationTax As Double
 
-        Dim TempDouble = FormatManualPercentEntry(txtMineStationEff.Text)
+        Dim TempDouble = 0 'FormatManualPercentEntry(txtMineStationEff.Text)
 
         If TempDouble <= 0 Then
             StationEffiency = 0
@@ -554,7 +505,7 @@ Public Class frmIndustryBeltFlip
             StationEffiency = TempDouble / 100
         End If
 
-        TempDouble = FormatManualPercentEntry(cmbRefineStationTax.Text)
+        'TempDouble = FormatManualPercentEntry(cmbRefineStationTax.Text)
 
         If TempDouble <= 0 Then
             StationTax = 0
@@ -563,11 +514,7 @@ Public Class frmIndustryBeltFlip
         End If
 
         Dim RefinedMaterials As New Materials
-        Dim RefiningStation As New Reprocessing(SelectedCharacter.Skills.GetSkillLevel(3385),
-                                                        SelectedCharacter.Skills.GetSkillLevel(3389),
-                                                        SelectedCharacter.Skills.GetSkillLevel(12196),
-                                                        UserApplicationSettings.RefiningImplantValue,
-                                                        StationEffiency, StationTax, CDbl(txtMineRefineStanding.Text))
+        Dim RefiningStation As New ReprocessingPlant(Nothing, UserApplicationSettings.RefiningImplantValue)
 
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
@@ -670,8 +617,10 @@ Public Class frmIndustryBeltFlip
 
                 If readerBelts.Read Then
                     ' Refine each ore in the ore list, store refined minerals
-                    RefinedMaterials = RefiningStation.ReprocessORE(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
-                                    CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, Nothing, OutputNumber)
+                    RefinedMaterials = RefiningStation.ReprocessORE(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(3385),
+                                                        SelectedCharacter.Skills.GetSkillLevel(3389),
+                                                       SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
+                                                        CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, Nothing, OutputNumber)
 
                     ' Store the refined materials
                     TotalRefinedMinerals.InsertMaterialList(RefinedMaterials.GetMaterialList)
@@ -698,6 +647,14 @@ Public Class frmIndustryBeltFlip
 
                         readerOre.Close()
 
+                    End If
+
+                    If chkIncludeTaxes.Checked Then
+                        TotalCost -= GetSalesTax(TotalCost)
+                    End If
+
+                    If chkBrokerFees.Checked Then
+                        TotalCost -= GetSalesBrokerFee(TotalCost, GetBrokerFeeData(chkBrokerFees, txtBrokerFeeRate))
                     End If
 
                     ' Reset the value of the refined materials
@@ -759,7 +716,7 @@ Public Class frmIndustryBeltFlip
 
     End Sub
 
-    ' Returns the total volume compressed or regular for the belt sent - DOESN'T WORK ANYMORE - TODO
+    ' Returns the total volume compressed or regular for the belt sent
     Private Function GetTotalVolume(ByVal Belt As BeltType, ByVal Compress As Boolean) As Double
         Dim SQL As String = ""
         Dim readerBelts As SQLiteDataReader
@@ -1045,7 +1002,7 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub txtMineRefineStanding_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineRefineStanding.KeyPress
+    Private Sub txtMineRefineStanding_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -1055,14 +1012,14 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub txtMineRefineStanding_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtMineRefineStanding.KeyDown
+    Private Sub txtMineRefineStanding_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs)
         Call ProcessCutCopyPasteSelect(txtMineRefineStanding, e)
         If e.KeyCode = Keys.Enter Or e.KeyCode = Keys.Tab And Not FirstLoad Then
             Call LoadAllTables()
         End If
     End Sub
 
-    Private Sub cmbMineRefineStationTax_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbRefineStationTax.KeyPress
+    Private Sub cmbMineRefineStationTax_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
@@ -1072,7 +1029,7 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub cmbMineRefineStationTax_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbRefineStationTax.KeyDown
+    Private Sub cmbMineRefineStationTax_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs)
         If e.KeyCode = Keys.Enter Or e.KeyCode = Keys.Tab And Not FirstLoad Then
             Call LoadAllTables()
         End If
@@ -1090,19 +1047,19 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub rbtn0percent_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtn0percent.CheckedChanged
+    Private Sub rbtn0percent_CheckedChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
     End Sub
 
-    Private Sub rbtn5percent_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtn5percent.CheckedChanged
+    Private Sub rbtn5percent_CheckedChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
     End Sub
 
-    Private Sub rbtn10percent_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtn10percent.CheckedChanged
+    Private Sub rbtn10percent_CheckedChanged(sender As System.Object, e As System.EventArgs)
         If Not FirstLoad Then
             Call LoadAllTables()
         End If
@@ -1282,13 +1239,13 @@ Public Class frmIndustryBeltFlip
         txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
     End Sub
 
-    Private Sub txtMineStationEff_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineStationEff.KeyDown
+    Private Sub txtMineStationEff_KeyDown(sender As Object, e As KeyEventArgs)
         If e.KeyCode = Keys.Enter Then
-            txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
+            'txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
         End If
     End Sub
 
-    Private Sub txtMineStationEff_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineStationEff.KeyPress
+    Private Sub txtMineStationEff_KeyPress(sender As Object, e As KeyPressEventArgs)
         ' Only allow numbers, decimal, percent or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
@@ -1298,12 +1255,12 @@ Public Class frmIndustryBeltFlip
         End If
     End Sub
 
-    Private Sub txtMineStationEff_GotFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.GotFocus
-        Call txtMineStationEff.SelectAll()
+    Private Sub txtMineStationEff_GotFocus(sender As Object, e As EventArgs)
+       ' Call txtMineStationEff.SelectAll()
     End Sub
 
-    Private Sub txtMineStationEff_LostFocus(sender As Object, e As EventArgs) Handles txtMineStationEff.LostFocus
-        txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
+    Private Sub txtMineStationEff_LostFocus(sender As Object, e As EventArgs)
+        ' txtMineStationEff.Text = GetFormattedPercentEntry(txtMineStationEff)
     End Sub
 
 #End Region

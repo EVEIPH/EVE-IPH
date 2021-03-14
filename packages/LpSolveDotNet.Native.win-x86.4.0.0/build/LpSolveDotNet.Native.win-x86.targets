@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Based on https://tyrrrz.me/blog/additional-nuget-files-in-new-csproj -->
+  <ItemGroup>
+    <!-- star after NativeBinaries is to have it included in RecursiveDir-->
+    <None Include="$(MSBuildThisFileDirectory)NativeBinaries*\**\*">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+</Project>

@@ -190,7 +190,8 @@ Public Module Public_Variables
 
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
 
-    Public Const POSTaxRate = 0.0 ' was 10% tax on pos usage now it's 0
+    Public Const DefaultStructureTaxRate = 0.0 ' 0% to start for structures
+    Public Const DefaultStationTaxRate = 0.1 ' 10% for all stations
 
     ' Mining Ship Name constants
     Public Const Procurer As String = "Procurer"
@@ -1420,7 +1421,7 @@ InvalidDate:
         Dim rsSystem As SQLiteDataReader
         Dim AID As Integer
 
-        DBCommand = New SQLiteCommand("SELECT activityID FROM RAM_ACTIVITIES WHERE UPPER(activityName) = '" & UCase(ActivityName) & "'", EVEDB.DBREf)
+        DBCommand = New SQLiteCommand("SELECT activityID FROM INDUSTRY_ACTIVITIES WHERE UPPER(activityName) = '" & UCase(ActivityName) & "'", EVEDB.DBREf)
         rsSystem = DBCommand.ExecuteReader
 
         If rsSystem.Read() Then
@@ -1441,7 +1442,7 @@ InvalidDate:
         Dim rsSystem As SQLiteDataReader
         Dim AName As String
 
-        DBCommand = New SQLiteCommand("SELECT activityName FROM RAM_ACTIVITIES WHERE activityID = " & CStr(ActivityID), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand("SELECT activityName FROM INDUSTRY_ACTIVITIES WHERE activityID = " & CStr(ActivityID), EVEDB.DBREf)
         rsSystem = DBCommand.ExecuteReader
 
         If rsSystem.Read() Then
@@ -1852,10 +1853,7 @@ InvalidDate:
 
     ' Deletes all the public structures from the stations table
     Public Sub ResetPublicStructureData()
-        Dim SQL As String = "DELETE FROM STATIONS WHERE STATION_TYPE_ID IN "
-        SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
-        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65) "
-        SQL &= "AND MANUAL_ENTRY = 0"
+        Dim SQL As String = "DELETE FROM STATIONS WHERE STATION_ID > 70000000 AND MANUAL_ENTRY = 0"
         Call EVEDB.ExecuteNonQuerySQL(SQL)
     End Sub
 
