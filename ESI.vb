@@ -108,6 +108,9 @@ Public Class ESI
             AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
             AuthThreadReference.Start()
 
+            ' Reset this to make sure it only comes up if they hit the button
+            CancelESISSOLogin = False
+
             ' Now loop until thread is done, 60 seconds goes by, or cancel clicked
             Do
                 If DateDiff(DateInterval.Second, StartTime, Now) > 60 Then
@@ -1068,7 +1071,7 @@ Public Class ESI
     End Function
 
     ' Updates the db with orders from structures for the items and region sent
-    Public Function UpdateStructureMarketOrders(RegionIDs As List(Of String), ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
+    Public Function UpdateStructureMarketOrders(RegionIDs As List(Of String), PriceSystem As String, ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
         Dim CacheDate As Date = NoDate
@@ -1081,14 +1084,19 @@ Public Class ESI
             Return True
         End If
 
-        For Each ID In RegionIDs
-            RegionList &= ID & ","
-        Next
-        ' Strip last comma
-        RegionList = RegionList.Substring(0, Len(RegionList) - 1)
+        If PriceSystem <> "" Then
+            ' Only look up structures in this system
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & PriceSystem & " AND STATION_ID >70000000"
+        Else
+            For Each ID In RegionIDs
+                RegionList &= ID & ","
+            Next
+            ' Strip last comma
+            RegionList = RegionList.Substring(0, Len(RegionList) - 1)
 
-        ' First, get all the structures in that region
-        SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") AND STATION_ID >70000000"
+            ' Get all the structures in that region
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") AND STATION_ID >70000000"
+        End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader

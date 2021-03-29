@@ -1040,6 +1040,7 @@ Partial Class frmMain
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.MineRefineFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.chkMineAnomMining = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -4102,6 +4103,7 @@ Partial Class frmMain
         '
         'gbMineOreLocSov
         '
+        Me.gbMineOreLocSov.Controls.Add(Me.chkMineAnomMining)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineMoonMining)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineTriglavian)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineWH)
@@ -4120,7 +4122,7 @@ Partial Class frmMain
         'chkMineMoonMining
         '
         Me.chkMineMoonMining.AutoSize = True
-        Me.chkMineMoonMining.Location = New System.Drawing.Point(119, 12)
+        Me.chkMineMoonMining.Location = New System.Drawing.Point(11, 75)
         Me.chkMineMoonMining.Name = "chkMineMoonMining"
         Me.chkMineMoonMining.Size = New System.Drawing.Size(87, 17)
         Me.chkMineMoonMining.TabIndex = 6
@@ -4130,7 +4132,7 @@ Partial Class frmMain
         'chkMineTriglavian
         '
         Me.chkMineTriglavian.AutoSize = True
-        Me.chkMineTriglavian.Location = New System.Drawing.Point(119, 69)
+        Me.chkMineTriglavian.Location = New System.Drawing.Point(119, 56)
         Me.chkMineTriglavian.Name = "chkMineTriglavian"
         Me.chkMineTriglavian.Size = New System.Drawing.Size(106, 17)
         Me.chkMineTriglavian.TabIndex = 6
@@ -4140,7 +4142,7 @@ Partial Class frmMain
         'chkMineWH
         '
         Me.chkMineWH.AutoSize = True
-        Me.chkMineWH.Location = New System.Drawing.Point(11, 69)
+        Me.chkMineWH.Location = New System.Drawing.Point(11, 56)
         Me.chkMineWH.Name = "chkMineWH"
         Me.chkMineWH.Size = New System.Drawing.Size(108, 17)
         Me.chkMineWH.TabIndex = 4
@@ -4224,7 +4226,7 @@ Partial Class frmMain
         'chkMineCaldari
         '
         Me.chkMineCaldari.AutoSize = True
-        Me.chkMineCaldari.Location = New System.Drawing.Point(119, 31)
+        Me.chkMineCaldari.Location = New System.Drawing.Point(119, 18)
         Me.chkMineCaldari.Name = "chkMineCaldari"
         Me.chkMineCaldari.Size = New System.Drawing.Size(92, 17)
         Me.chkMineCaldari.TabIndex = 1
@@ -4234,7 +4236,7 @@ Partial Class frmMain
         'chkMineMinmatar
         '
         Me.chkMineMinmatar.AutoSize = True
-        Me.chkMineMinmatar.Location = New System.Drawing.Point(119, 50)
+        Me.chkMineMinmatar.Location = New System.Drawing.Point(119, 37)
         Me.chkMineMinmatar.Name = "chkMineMinmatar"
         Me.chkMineMinmatar.Size = New System.Drawing.Size(103, 17)
         Me.chkMineMinmatar.TabIndex = 3
@@ -4244,7 +4246,7 @@ Partial Class frmMain
         'chkMineGallente
         '
         Me.chkMineGallente.AutoSize = True
-        Me.chkMineGallente.Location = New System.Drawing.Point(11, 50)
+        Me.chkMineGallente.Location = New System.Drawing.Point(11, 37)
         Me.chkMineGallente.Name = "chkMineGallente"
         Me.chkMineGallente.Size = New System.Drawing.Size(99, 17)
         Me.chkMineGallente.TabIndex = 2
@@ -4254,7 +4256,7 @@ Partial Class frmMain
         'chkMineAmarr
         '
         Me.chkMineAmarr.AutoSize = True
-        Me.chkMineAmarr.Location = New System.Drawing.Point(11, 31)
+        Me.chkMineAmarr.Location = New System.Drawing.Point(11, 18)
         Me.chkMineAmarr.Name = "chkMineAmarr"
         Me.chkMineAmarr.Size = New System.Drawing.Size(87, 17)
         Me.chkMineAmarr.TabIndex = 0
@@ -11364,6 +11366,16 @@ Partial Class frmMain
         Me.MineRefineFacility.Size = New System.Drawing.Size(303, 108)
         Me.MineRefineFacility.TabIndex = 122
         '
+        'chkMineAnomMining
+        '
+        Me.chkMineAnomMining.AutoSize = True
+        Me.chkMineAnomMining.Location = New System.Drawing.Point(119, 75)
+        Me.chkMineAnomMining.Name = "chkMineAnomMining"
+        Me.chkMineAnomMining.Size = New System.Drawing.Size(100, 17)
+        Me.chkMineAnomMining.TabIndex = 7
+        Me.chkMineAnomMining.Text = "Anomaly Mining"
+        Me.chkMineAnomMining.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -12600,4 +12612,5 @@ Partial Class frmMain
     Friend WithEvents cmbMineMiningRig2 As ComboBox
     Friend WithEvents cmbMineMiningRig1 As ComboBox
     Friend WithEvents btnCalcT2T3FacilityToggle As Button
+    Friend WithEvents chkMineAnomMining As CheckBox
 End Class

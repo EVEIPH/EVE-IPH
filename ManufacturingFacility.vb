@@ -2174,7 +2174,7 @@ Public Class ManufacturingFacility
                 rsLoader = DBCommand.ExecuteReader
 
                 If rsLoader.Read() Then
-                    .CostIndex = rsLoader.GetFloat(0)
+                    .CostIndex = rsLoader.GetDouble(0)
                 Else
                     .CostIndex = 0
                 End If

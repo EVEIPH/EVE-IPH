@@ -6440,10 +6440,10 @@ Tabs:
         BPComponentMats = SelectedBlueprint.GetComponentMaterials.GetMaterialList
         BPBuiltItems = SelectedBlueprint.BuiltComponentList.GetBuiltItemList
 
-        If chkBPUseOre.Checked Then
-            Dim MTO As New MineralstoOre()
-            BPRawMats = MTO.GetOresfromMinerals(MineRefineFacility.GetFacility(ProductionType.Refinery), BPRawMats)
-        End If
+        'If chkBPUseOre.Checked Then
+        '    Dim MTO As New MineralstoOre()
+        '    BPRawMats = MTO.GetOresfromMinerals(MineRefineFacility.GetFacility(ProductionType.Refinery), BPRawMats)
+        'End If
 
         If chkBPBuildBuy.Checked Then
             lblBPComponentMats.Text = "Build/Buy Component Material List"
@@ -9742,6 +9742,7 @@ ExitSub:
         Dim ItemTypeIDs = New List(Of String)
         Dim RegionID As String = ""
         Dim PriceRegions As New List(Of String)
+        Dim PriceSystem As String = ""
         Dim PriceType As String = "" ' Default
         Dim Items As New List(Of TypeIDRegion)
 
@@ -9760,6 +9761,7 @@ ExitSub:
                     RegionID = CStr(readerPrices.GetInt64(0))
                     readerPrices.Close()
                     DBCommand = Nothing
+                    PriceSystem = SentItems(i).SystemID
                 Else
                     ' for ESI, only one region per update
                     RegionID = SentItems(i).RegionID
@@ -9806,7 +9808,7 @@ ExitSub:
                 ' First, make sure we have structures in the table to query
                 Call ESIData.UpdatePublicStructureswithMarkets()
 
-                If Not ESIData.UpdateStructureMarketOrders(PriceRegions, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
+                If Not ESIData.UpdateStructureMarketOrders(PriceRegions, PriceSystem, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
                     ' Update Failed, don't reload everything
                     Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
                     pnlStatus.Text = ""
@@ -18874,6 +18876,10 @@ Leave:
     Private Sub chkchkMineMoonMining_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineMoonMining.CheckedChanged
         Call UpdateOrebySpaceChecks()
         Call UpdateProcessingSkills()
+    End Sub
+
+    Private Sub chkMineAnomMining_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineAnomMining.CheckedChanged
+        Call UpdateOrebySpaceChecks()
     End Sub
 
     Private Sub cmbMineNumMiningDrones_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineNumMiningDrones.SelectedIndexChanged
