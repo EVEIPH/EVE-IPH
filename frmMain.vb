@@ -1378,6 +1378,7 @@ Public Class frmMain
             btnAddStructureIDs.Enabled = True
             btnViewSavedStructures.Enabled = True
         End If
+        Debug.Print("x")
     End Sub
 
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
@@ -20346,12 +20347,14 @@ Leave:
                 End Select
 
                 ' Amount of cycles we can do in an hour times the amount per cycle
-                MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
+                If DroneName <> "" Then
+                    MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
+                End If
 
                 ' Set the amount of m3 per hour for all the drones we have
                 YieldLabel.Text = FormatNumber(MiningAmtVariable, 1)
-            Else
-                Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
+                Else
+                    Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
                 IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneOperationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpLevel) / 100)
                 IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneSpecializationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpSpecLevel) / 100)
                 ' Ship role bonus

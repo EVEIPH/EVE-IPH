@@ -27,7 +27,7 @@ Partial Class frmAddCharacter
         Me.btnEVESSOLogin = New System.Windows.Forms.Button()
         Me.lblKeyType = New System.Windows.Forms.Label()
         Me.chkReadStructures = New System.Windows.Forms.CheckBox()
-        Me.chkStructureMarkets = New System.Windows.Forms.CheckBox()
+        Me.chkReadStructureMarkets = New System.Windows.Forms.CheckBox()
         Me.chkReadStandings = New System.Windows.Forms.CheckBox()
         Me.chkReadCharacterJobs = New System.Windows.Forms.CheckBox()
         Me.chkReadAgentsResearch = New System.Windows.Forms.CheckBox()
@@ -81,15 +81,15 @@ Partial Class frmAddCharacter
         Me.chkReadStructures.Text = "esi-universe.read_structures.v1"
         Me.chkReadStructures.UseVisualStyleBackColor = True
         '
-        'chkStructureMarkets
+        'chkReadStructureMarkets
         '
-        Me.chkStructureMarkets.AutoSize = True
-        Me.chkStructureMarkets.Location = New System.Drawing.Point(11, 42)
-        Me.chkStructureMarkets.Name = "chkStructureMarkets"
-        Me.chkStructureMarkets.Size = New System.Drawing.Size(181, 17)
-        Me.chkStructureMarkets.TabIndex = 15
-        Me.chkStructureMarkets.Text = "esi-markets.structure_markets.v1"
-        Me.chkStructureMarkets.UseVisualStyleBackColor = True
+        Me.chkReadStructureMarkets.AutoSize = True
+        Me.chkReadStructureMarkets.Location = New System.Drawing.Point(11, 42)
+        Me.chkReadStructureMarkets.Name = "chkReadStructureMarkets"
+        Me.chkReadStructureMarkets.Size = New System.Drawing.Size(181, 17)
+        Me.chkReadStructureMarkets.TabIndex = 15
+        Me.chkReadStructureMarkets.Text = "esi-markets.structure_markets.v1"
+        Me.chkReadStructureMarkets.UseVisualStyleBackColor = True
         '
         'chkReadStandings
         '
@@ -144,7 +144,7 @@ Partial Class frmAddCharacter
         'chkManagePlanets
         '
         Me.chkManagePlanets.AutoSize = True
-        Me.chkManagePlanets.Location = New System.Drawing.Point(11, 161)
+        Me.chkManagePlanets.Location = New System.Drawing.Point(11, 135)
         Me.chkManagePlanets.Name = "chkManagePlanets"
         Me.chkManagePlanets.Size = New System.Drawing.Size(172, 17)
         Me.chkManagePlanets.TabIndex = 21
@@ -225,7 +225,7 @@ Partial Class frmAddCharacter
         Me.gbStructures.Controls.Add(Me.CheckBox4)
         Me.gbStructures.Controls.Add(Me.chkReadStructures)
         Me.gbStructures.Controls.Add(Me.CheckBox3)
-        Me.gbStructures.Controls.Add(Me.chkStructureMarkets)
+        Me.gbStructures.Controls.Add(Me.chkReadStructureMarkets)
         Me.gbStructures.Controls.Add(Me.CheckBox1)
         Me.gbStructures.Controls.Add(Me.CheckBox2)
         Me.gbStructures.Location = New System.Drawing.Point(258, 163)
@@ -315,7 +315,7 @@ Partial Class frmAddCharacter
     Friend WithEvents btnEVESSOLogin As Button
     Friend WithEvents lblKeyType As Label
     Friend WithEvents chkReadStructures As CheckBox
-    Friend WithEvents chkStructureMarkets As CheckBox
+    Friend WithEvents chkReadStructureMarkets As CheckBox
     Friend WithEvents chkReadStandings As CheckBox
     Friend WithEvents chkReadCharacterJobs As CheckBox
     Friend WithEvents chkReadAgentsResearch As CheckBox

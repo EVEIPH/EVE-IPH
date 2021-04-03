@@ -357,6 +357,7 @@ Partial Class frmMain
         Me.chkMineIncludeHighYieldOre = New System.Windows.Forms.CheckBox()
         Me.cmbMineOreType = New System.Windows.Forms.ComboBox()
         Me.gbMineOreLocSov = New System.Windows.Forms.GroupBox()
+        Me.chkMineAnomMining = New System.Windows.Forms.CheckBox()
         Me.chkMineMoonMining = New System.Windows.Forms.CheckBox()
         Me.chkMineTriglavian = New System.Windows.Forms.CheckBox()
         Me.chkMineWH = New System.Windows.Forms.CheckBox()
@@ -1040,7 +1041,6 @@ Partial Class frmMain
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.MineRefineFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
-        Me.chkMineAnomMining = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1179,7 +1179,7 @@ Partial Class frmMain
         '
         Me.mnuSelectionAddChar.Name = "mnuSelectionAddChar"
         Me.mnuSelectionAddChar.Size = New System.Drawing.Size(170, 22)
-        Me.mnuSelectionAddChar.Text = "Add Characters"
+        Me.mnuSelectionAddChar.Text = "Add Character"
         '
         'mnuSelectionManageCharacters
         '
@@ -4118,6 +4118,16 @@ Partial Class frmMain
         Me.gbMineOreLocSov.TabIndex = 5
         Me.gbMineOreLocSov.TabStop = False
         Me.gbMineOreLocSov.Text = "Ore Location:"
+        '
+        'chkMineAnomMining
+        '
+        Me.chkMineAnomMining.AutoSize = True
+        Me.chkMineAnomMining.Location = New System.Drawing.Point(119, 75)
+        Me.chkMineAnomMining.Name = "chkMineAnomMining"
+        Me.chkMineAnomMining.Size = New System.Drawing.Size(100, 17)
+        Me.chkMineAnomMining.TabIndex = 7
+        Me.chkMineAnomMining.Text = "Anomaly Mining"
+        Me.chkMineAnomMining.UseVisualStyleBackColor = True
         '
         'chkMineMoonMining
         '
@@ -11366,16 +11376,6 @@ Partial Class frmMain
         Me.MineRefineFacility.Size = New System.Drawing.Size(303, 108)
         Me.MineRefineFacility.TabIndex = 122
         '
-        'chkMineAnomMining
-        '
-        Me.chkMineAnomMining.AutoSize = True
-        Me.chkMineAnomMining.Location = New System.Drawing.Point(119, 75)
-        Me.chkMineAnomMining.Name = "chkMineAnomMining"
-        Me.chkMineAnomMining.Size = New System.Drawing.Size(100, 17)
-        Me.chkMineAnomMining.TabIndex = 7
-        Me.chkMineAnomMining.Text = "Anomaly Mining"
-        Me.chkMineAnomMining.UseVisualStyleBackColor = True
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11388,6 +11388,7 @@ Partial Class frmMain
         Me.Controls.Add(Me.tabMain)
         Me.Controls.Add(Me.pnlMain)
         Me.Controls.Add(Me.mnuStripMain)
+        Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MainMenuStrip = Me.mnuStripMain

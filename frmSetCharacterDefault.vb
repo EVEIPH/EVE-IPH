@@ -33,18 +33,7 @@ Public Class frmSetCharacterDefault
         Next
 
         Me.Cursor = Cursors.WaitCursor
-        Application.DoEvents()
-
-        ' If we get here, just clear out the old default and set the new one
-        Call LoadCharacter(SelectedCharacterName, False)
-        ' Refresh all screens
-        If Application.OpenForms().OfType(Of frmMain).Any Then
-            Call frmMain.ResetTabs()
-        End If
-
-        DefaultCharSelected = True
-        MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
-
+        Call SetDefaultCharacter(SelectedCharacterName)
         Me.Cursor = Cursors.Default
         Me.Close()
 

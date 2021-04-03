@@ -1310,6 +1310,20 @@ InvalidDate:
 
     End Function
 
+    ' Sets the default character to the character name sent
+    Public Sub SetDefaultCharacter(ByVal CharacterName As String)
+        ' If we get here, just clear out the old default and set the new one
+        Call LoadCharacter(CharacterName, False)
+        ' Refresh all screens
+        If Application.OpenForms().OfType(Of frmMain).Any Then
+            Call frmMain.ResetTabs()
+        End If
+
+        DefaultCharSelected = True
+        MsgBox(CharacterName & " selected as Default Character", vbInformation, Application.ProductName)
+
+    End Sub
+
     ' Function to get the regionID from the name sent
     Public Function GetRegionName(ByVal RegionID As Integer) As String
         Dim readerRegion As SQLiteDataReader

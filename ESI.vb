@@ -545,7 +545,8 @@ Public Class ESI
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
     Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
                                      Optional ByVal ManualAuthToken As String = "",
-                                     Optional ByVal IgnoreCacheDate As Boolean = False) As Boolean
+                                     Optional ByVal IgnoreCacheDate As Boolean = False,
+                                     Optional ByVal SupressMessages As Boolean = False) As Boolean
         Dim TokenData As ESITokenData
         Dim CharacterData As New ESICharacterData
         Dim CharacterID As Long
@@ -659,7 +660,7 @@ Public Class ESI
                 ' Update after we update/insert the record
                 Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CharacterData.PublicData.corporation_id)
 
-                If CharacterID = 0 Then
+                If CharacterID = 0 And Not SupressMessages Then
                     MsgBox("Character successfully added to IPH", vbInformation, Application.ProductName)
                 End If
 

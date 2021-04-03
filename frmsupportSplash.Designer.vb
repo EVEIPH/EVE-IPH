@@ -28,12 +28,16 @@ Partial Class frmsupportSplash
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
+        Me.pbPaetron = New System.Windows.Forms.PictureBox()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Label6 = New System.Windows.Forms.Label()
         CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.pbPaetron, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(290, 218)
+        Me.btnClose.Location = New System.Drawing.Point(290, 267)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(86, 32)
         Me.btnClose.TabIndex = 0
@@ -44,7 +48,7 @@ Partial Class frmsupportSplash
         '
         Me.pbPaypal.BackColor = System.Drawing.Color.Transparent
         Me.pbPaypal.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.PayPalButton
-        Me.pbPaypal.Location = New System.Drawing.Point(132, 215)
+        Me.pbPaypal.Location = New System.Drawing.Point(132, 264)
         Me.pbPaypal.Name = "pbPaypal"
         Me.pbPaypal.Size = New System.Drawing.Size(124, 35)
         Me.pbPaypal.TabIndex = 6
@@ -65,7 +69,7 @@ Partial Class frmsupportSplash
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label2.Location = New System.Drawing.Point(47, 98)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(294, 36)
+        Me.Label2.Size = New System.Drawing.Size(294, 54)
         Me.Label2.TabIndex = 8
         Me.Label2.Text = "EVE IPH takes a lot of time to update and improve. If you can donate anything, it" &
     " would be much appreciated."
@@ -74,7 +78,7 @@ Partial Class frmsupportSplash
         'Label3
         '
         Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(47, 137)
+        Me.Label3.Location = New System.Drawing.Point(47, 152)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(294, 40)
         Me.Label3.TabIndex = 9
@@ -85,21 +89,56 @@ Partial Class frmsupportSplash
         'Label4
         '
         Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(47, 180)
+        Me.Label4.Location = New System.Drawing.Point(47, 192)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(294, 23)
         Me.Label4.TabIndex = 10
         Me.Label4.Text = "Thank you!"
         Me.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
+        'pbPaetron
+        '
+        Me.pbPaetron.BackColor = System.Drawing.Color.Transparent
+        Me.pbPaetron.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.patreon_sm
+        Me.pbPaetron.Location = New System.Drawing.Point(132, 223)
+        Me.pbPaetron.Name = "pbPaetron"
+        Me.pbPaetron.Size = New System.Drawing.Size(124, 35)
+        Me.pbPaetron.TabIndex = 11
+        Me.pbPaetron.TabStop = False
+        '
+        'Label5
+        '
+        Me.Label5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label5.Location = New System.Drawing.Point(47, 98)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(294, 54)
+        Me.Label5.TabIndex = 8
+        Me.Label5.Text = "EVE IPH takes a lot of time to update and improve. If you can donate anything, it" &
+    " would be much appreciated."
+        Me.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'Label6
+        '
+        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label6.Location = New System.Drawing.Point(47, 152)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(294, 40)
+        Me.Label6.TabIndex = 9
+        Me.Label6.Text = "Either donate to ZifrianEVE@gmail.com directly through Paypal or click the link b" &
+    "elow."
+        Me.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
         'frmsupportSplash
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(388, 262)
+        Me.ClientSize = New System.Drawing.Size(388, 311)
         Me.ControlBox = False
+        Me.Controls.Add(Me.pbPaetron)
         Me.Controls.Add(Me.Label4)
+        Me.Controls.Add(Me.Label6)
         Me.Controls.Add(Me.Label3)
+        Me.Controls.Add(Me.Label5)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.pbPaypal)
@@ -111,6 +150,7 @@ Partial Class frmsupportSplash
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.pbPaetron, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -121,4 +161,7 @@ Partial Class frmsupportSplash
     Friend WithEvents Label2 As Label
     Friend WithEvents Label3 As Label
     Friend WithEvents Label4 As Label
+    Friend WithEvents pbPaetron As PictureBox
+    Friend WithEvents Label5 As Label
+    Friend WithEvents Label6 As Label
 End Class
