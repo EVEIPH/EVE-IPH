@@ -1348,7 +1348,6 @@ Public Class frmMain
         ' Refresh bp in case the facility was different for that bp
         Call RefreshBP()
         mnuCharacter.Text = "Character Loaded: " & ToolStripText
-        Me.Cursor = Cursors.Default
     End Sub
 
     ' Predicate for finding the BPBuildBuyItem in full list
@@ -5986,6 +5985,7 @@ Tabs:
         Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
 
         ' See if it has moon/gas mats
+
         SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
         SQL &= "WHERE (BLUEPRINT_ID = " & CStr(BPID) & " AND MATERIAL_GROUP_ID IN (428,429,974,712) " '428, 429, 974, 712 - Intermediate, Composite, Hybrid Polymers, Biochemical
         SQL &= "OR BLUEPRINT_ID IN (SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN  "
