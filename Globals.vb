@@ -158,6 +158,7 @@ Public Module Public_Variables
 
     ' For update prices
     Public Const DefaultSystemPriceCombo As String = "Select System"
+    Public Const DefaultRegionPriceCombo As String = "Select Region"
 
     Public Const AllSystems As String = "All Systems"
 
@@ -1477,16 +1478,17 @@ InvalidDate:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        Sql = "SELECT regionName FROM REGIONS WHERE regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' GROUP BY regionName "
-        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+        SQL = "SELECT regionName FROM REGIONS WHERE (regionName NOT LIKE '%-R%' OR regionName = 'G-R00031') "
+        SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' GROUP BY regionName "
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
         RegionCombo.BeginUpdate()
         RegionCombo.Items.Clear()
         While rsData.Read
             RegionCombo.Items.Add(rsData.GetString(0))
         End While
-        RegionCombo.Text = DefaultRegionName
         RegionCombo.EndUpdate()
+        RegionCombo.Text = DefaultRegionName
         rsData.Close()
 
     End Sub

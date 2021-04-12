@@ -967,9 +967,21 @@ Public Class Blueprint
                         If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
-                    Case 428, 974 ' Intermediate and Hybrid Polymers
+                    Case 428, 974 ' Intermediate, Hybrid Polymers
                         If T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
+                        End If
+                    Case 712 ' Biochemical
+                        If CurrentMaterial.GetMaterialName.Contains("Strong") Or CurrentMaterial.GetMaterialName.Contains("Improved") Then
+                            ' This has intermediate material types
+                            Application.DoEvents()
+                            If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
+                                UsesReactions = True
+                            End If
+                        Else ' Only builds one level
+                            If T2T3MaterialType = BuildMatType.RawMaterials Then
+                                UsesReactions = True
+                            End If
                         End If
                 End Select
 

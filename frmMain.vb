@@ -11,7 +11,6 @@ Public Class frmMain
 
     ' Update Prices Variables
     Private m_ControlsCollection As ControlsCollection
-    Private RegionCheckBoxes() As CheckBox
     Private SystemCheckBoxes() As CheckBox
     Private TechCheckBoxes() As CheckBox
     ' For saving the price type that was used in the download
@@ -166,8 +165,6 @@ Public Class frmMain
     Private TotalSelectedIPH As Double
 
     ' Loading the solar system combo on the price page
-    Private FirstSolarSystemComboLoad As Boolean
-    Private RefreshSolarSystemCombo As Boolean
     Private FirstPriceShipTypesComboLoad As Boolean
     Private FirstPriceChargeTypesComboLoad As Boolean
 
@@ -257,10 +254,12 @@ Public Class frmMain
     Private TabPressed As Boolean
     Private UpdatingCombo As Boolean
 
-    Private PPRawSystemsLoaded As Boolean
-    Private DefaultPreviousRawRegion As String
-    Private PPItemsSystemsLoaded As Boolean
-    Private DefaultPreviousItemsRegion As String
+    Private PPSystemsLoaded As Boolean
+    Private PPRegionsLoaded As Boolean
+    Private PriceRegionsLoaded As Boolean
+    Private PriceSystemsLoaded As Boolean
+    Private PreviousPPRegion As String
+    Private PreviousPriceRegion As String
 
     Private IgnoreFocus As Boolean
     Private IgnoreMarketFocus As Boolean
@@ -273,10 +272,13 @@ Public Class frmMain
     Private Const PriceListHeaderTXT As String = "Group Name|Item Name|Price|Price Type|Raw Material|Type ID"
     Private Const PriceListHeaderSSV As String = "Group Name;Item Name;Price;Price Type;Raw Material;Type ID"
 
+    Private Const JitaID As String = "30000142"
+    Private Const PerimeterID As String = "30000144"
+
 #Region "Initialization Code"
 
     ' Set default window theme so tabs in invention window display correctly on all systems
-    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr, _
+    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr,
         ByVal pszSubAppName As String, ByVal pszSubIdList As String) As Integer
 
     Public Sub New()
@@ -571,7 +573,6 @@ Public Class frmMain
         ' Create the controls collection class
         m_ControlsCollection = New ControlsCollection(Me)
         ' Get Region check boxes (note index starts at 1)
-        RegionCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkRegion"), CheckBox())
         TechCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkPricesT"), CheckBox())
         SystemCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkSystems"), CheckBox())
 
@@ -586,14 +587,14 @@ Public Class frmMain
 
         ' Columns of update prices raw mats in price profiles - width= 443
         lstRawPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
-        lstRawPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
+        lstRawPriceProfile.Columns.Add("Price Type", 74, HorizontalAlignment.Left)
         lstRawPriceProfile.Columns.Add("Region", 92, HorizontalAlignment.Left) ' 119 is to fit all regions
         lstRawPriceProfile.Columns.Add("Solar System", 73, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstRawPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) 'Hidden
 
         ' Columns of update prices manufactured mats in price profiles
         lstManufacturedPriceProfile.Columns.Add("Group", 136, HorizontalAlignment.Left)
-        lstManufacturedPriceProfile.Columns.Add("Price Type", 80, HorizontalAlignment.Left)
+        lstManufacturedPriceProfile.Columns.Add("Price Type", 74, HorizontalAlignment.Left)
         lstManufacturedPriceProfile.Columns.Add("Region", 92, HorizontalAlignment.Left) ' 119 is to fit all regions
         lstManufacturedPriceProfile.Columns.Add("Solar System", 73, HorizontalAlignment.Left) ' 104 is to fit all systems
         lstManufacturedPriceProfile.Columns.Add("PMod", 41, HorizontalAlignment.Right) ' Hidden
@@ -628,8 +629,6 @@ Public Class frmMain
             ttUpdatePrices.SetToolTip(btnAddStructureIDs, "Use to add structures you have access to using with markets for downloading prices from structures.")
         End If
 
-        FirstSolarSystemComboLoad = True
-        RefreshSolarSystemCombo = False
         FirstPriceChargeTypesComboLoad = True
         FirstPriceShipTypesComboLoad = True
         IgnoreSystemCheckUpdates = False
@@ -645,8 +644,8 @@ Public Class frmMain
         TabPressed = False
         UpdatingCombo = False
 
-        PPRawSystemsLoaded = False
-        PPItemsSystemsLoaded = False
+        PPSystemsLoaded = False
+        PPRegionsLoaded = False
 
         PriceHistoryUpdateCount = 0
         PriceOrdersUpdateCount = 0
@@ -1378,7 +1377,6 @@ Public Class frmMain
             btnAddStructureIDs.Enabled = True
             btnViewSavedStructures.Enabled = True
         End If
-        Debug.Print("x")
     End Sub
 
     ' Set all the tool strips for characters since I can't process them if they aren't set at runtime
@@ -2362,6 +2360,11 @@ Public Class frmMain
 
     Private Sub btnCancelUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancelUpdate.Click
         CancelUpdatePrices = True
+    End Sub
+
+    Private Sub btnOpenMarketBrowser_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOpenMarketBrowser.Click
+        ' Take them to eve marketer page
+        Call Process.Start("https://evemarketer.com/")
     End Sub
 
     Private Sub mnuSelectionExit_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles mnuSelectionExit.Click
@@ -3517,13 +3520,13 @@ Tabs:
     End Sub
 
     ' Detects Scroll event and hides boxes
-    Private Sub lstRawPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstRawPriceProfile.ProcMsg
+    Private Sub lstRawPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
         txtListEdit.Hide()
         cmbEdit.Hide()
     End Sub
 
     ' Detects Scroll event and hides boxes
-    Private Sub lstManufacturedPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstManufacturedPriceProfile.ProcMsg
+    Private Sub lstManufacturedPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
         txtListEdit.Hide()
         cmbEdit.Hide()
     End Sub
@@ -5984,14 +5987,16 @@ Tabs:
 
         ' See if it has moon/gas mats
         SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
-        SQL &= "WHERE BLUEPRINT_ID = " & CStr(BPID) & " "
-        SQL &= "AND MATERIAL_GROUP IN ('Intermediate Materials', 'Composite','Hybrid Polymers')"
+        SQL &= "WHERE (BLUEPRINT_ID = " & CStr(BPID) & " AND MATERIAL_GROUP_ID IN (428,429,974,712) " '428, 429, 974, 712 - Intermediate, Composite, Hybrid Polymers, Biochemical
+        SQL &= "OR BLUEPRINT_ID IN (SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN  "
+        SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = " & CStr(BPID) & ")) "
+        SQL &= "AND MATERIAL_GROUP_ID IN (428,429,974,712))"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMat = DBCommand.ExecuteReader()
         readerMat.Read()
 
-        If readerMat.HasRows Or TempTech <> 1 Then
+        If readerMat.HasRows Then
             ' Also enable the T2/T3 boxes for moon/gas mat types
             lblBPT2MatTypeSelector.Enabled = True
             rbtnBPAdvT2MatType.Enabled = True
@@ -7617,7 +7622,6 @@ ExitForm:
         ' Disable tab
         gbRawMaterials.Enabled = Not Value
         gbManufacturedItems.Enabled = Not Value
-        gbRegions.Enabled = Not Value
         gbTradeHubSystems.Enabled = Not Value
         gbPriceOptions.Enabled = Not Value
         txtPriceItemFilter.Enabled = Not Value
@@ -7627,6 +7631,7 @@ ExitForm:
         chkPriceManufacturedPrices.Enabled = Not Value
         btnToggleAllPriceItems.Enabled = Not Value
         btnDownloadPrices.Enabled = Not Value
+        btnOpenMarketBrowser.Enabled = Not Value
         btnSaveUpdatePrices.Enabled = Not Value
         lstPricesView.Enabled = Not Value
         btnSavePricestoFile.Enabled = Not Value
@@ -7841,11 +7846,6 @@ ExitForm:
 
     End Sub
 
-    ' EVE Central Link
-    Private Sub llblEVEMarketerContribute_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs)
-        System.Diagnostics.Process.Start("http://eve-central.com/home/software.html")
-    End Sub
-
     ' Updates the T1, T2 and T3 check boxes depending on item selections
     Private Sub UpdateTechChecks()
         Dim T1 As Boolean = False
@@ -8004,35 +8004,14 @@ ExitForm:
     End Sub
 
     ' Clears all system's that may be checked including resetting the system combo
-    Private Sub ClearSystemChecks(Optional ResetSystemCombo As Boolean = True)
+    Private Sub ClearTradeHubSystems(Optional ResetSystemCombo As Boolean = True)
         Dim i As Integer
 
         If Not IgnoreSystemCheckUpdates Then
             For i = 1 To SystemCheckBoxes.Length - 1
                 SystemCheckBoxes(i).Checked = False
             Next
-            ' Reset the system combo
-            If ResetSystemCombo Then
-                ' Each time this is reset, allow refresh combo 
-                RefreshSolarSystemCombo = True
-                cmbPriceSystems.Text = DefaultSystemPriceCombo
-            End If
         End If
-    End Sub
-
-    ' Function clears all region check boxes - if an index is sent, it will uncheck them all unless it's not -1 and leave it checked for single region selection
-    Private Sub ClearAllRegionChecks(ByVal Index As Integer)
-        Dim i As Integer
-
-        For i = 1 To RegionCheckBoxes.Length - 1
-            If i <> Index Then
-                RegionCheckBoxes(i).Checked = False
-            End If
-        Next i
-
-        ' Each time this is reset, allow refresh combo 
-        RefreshSolarSystemCombo = True
-
     End Sub
 
     Private Sub cmbPriceShipTypes_DropDown(sender As Object, e As System.EventArgs) Handles cmbPriceShipTypes.DropDown
@@ -8069,20 +8048,38 @@ ExitForm:
     End Function
 
     Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEVEMarketer.CheckedChanged
-        Call UpdateStructurePriceButtons()
+        If rbtnPriceSourceEVEMarketer.Checked Then
+            Call UpdateStructurePriceButtons()
+        End If
     End Sub
 
     Private Sub rbtnPriceSourceCCPData_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceCCPData.CheckedChanged
-        Call UpdateStructurePriceButtons()
+        If rbtnPriceSourceCCPData.Checked Then
+            Call UpdateStructurePriceButtons()
+        End If
     End Sub
 
     Private Sub UpdateStructurePriceButtons()
         If rbtnPriceSourceCCPData.Checked Then
             btnAddStructureIDs.Visible = True
-            btnViewSavedStructures.Visible = True
+            'btnViewSavedStructures.Visible = True
+            '' Make sure the price types have split price option
+            'If Not cmbRawMatsSplitPrices.Items.Contains("Split Price") Then
+            '    cmbRawMatsSplitPrices.Items.Add("Split Price")
+            'End If
+            'If Not cmbItemsSplitPrices.Items.Contains("Split Price") Then
+            '    cmbItemsSplitPrices.Items.Add("Split Price")
+            'End If
         Else
             btnAddStructureIDs.Visible = False
             btnViewSavedStructures.Visible = False
+            '' Remove for eve marketer
+            'If cmbRawMatsSplitPrices.Items.Contains("Split Price") Then
+            '    cmbRawMatsSplitPrices.Items.Remove("Split Price")
+            'End If
+            'If cmbItemsSplitPrices.Items.Contains("Split Price") Then
+            '    cmbItemsSplitPrices.Items.Remove("Split Price")
+            'End If
         End If
     End Sub
 
@@ -8233,10 +8230,6 @@ ExitForm:
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkDataInterfaces_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        Call UpdatePriceList()
-    End Sub
-
     Private Sub chkHybrid_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkHybrid.CheckedChanged
         Call UpdatePriceList()
     End Sub
@@ -8255,12 +8248,6 @@ ExitForm:
 
     Private Sub chkCapT2Components_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkCapT2Components.CheckedChanged
         Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkUpdatePricesUseESI_CheckedChanged(sender As System.Object, e As System.EventArgs)
-        If Not FirstLoad Then
-            Call ClearAllRegionChecks(0)
-        End If
     End Sub
 
     Private Sub chkBoosters_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBoosters.CheckedChanged
@@ -8343,34 +8330,75 @@ ExitForm:
     End Sub
 
     Private Sub chkSystems1_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems1.CheckedChanged
-        Call SyncPriceCheckBoxes(1)
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(1)
+        End If
     End Sub
 
     Private Sub chkSystems2_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems2.CheckedChanged
-        Call SyncPriceCheckBoxes(2)
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(2)
+        End If
     End Sub
 
     Private Sub chkSystems3_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems3.CheckedChanged
-        Call SyncPriceCheckBoxes(3)
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(3)
+        End If
     End Sub
 
     Private Sub chkSystems4_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems4.CheckedChanged
-        Call SyncPriceCheckBoxes(4)
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(4)
+        End If
     End Sub
 
     Private Sub chkSystems5_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems5.CheckedChanged
-        Call SyncPriceCheckBoxes(5)
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(5)
+        End If
     End Sub
 
-    Private Sub cmbPriceSystems_DropDown(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.DropDown
-        ' If you drop down, don't show the text window
-        cmbPriceSystems.AutoCompleteMode = AutoCompleteMode.None
-
-        If FirstSolarSystemComboLoad Or RefreshSolarSystemCombo Then
-            Call LoadPriceSolarSystems()
-            FirstSolarSystemComboLoad = False
-            RefreshSolarSystemCombo = False
+    Private Sub chkSystems6_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems6.CheckedChanged
+        If Not UpdatingCheck Then
+            Call SyncPriceCheckBoxes(6)
         End If
+    End Sub
+
+    Private Sub SyncPriceCheckBoxes(ByVal TriggerIndex As Integer)
+        Dim i As Integer
+
+        If Not FirstLoad Then
+            UpdatingCheck = True
+
+            ' Allow them to toggle both but if either Jita or Perimeter selected, clear all others
+            If TriggerIndex = 1 Or TriggerIndex = 6 Then
+                ' clear the others except 1 or 6
+                SystemCheckBoxes(2).Checked = False
+                SystemCheckBoxes(3).Checked = False
+                SystemCheckBoxes(4).Checked = False
+                SystemCheckBoxes(5).Checked = False
+            Else
+                ' Trigger Index is a box that was checked on or off
+                If SystemCheckBoxes(TriggerIndex).Checked = True Then
+                    ' Uncheck all other systems and regions
+                    ' Clear all the boxes
+                    For i = 1 To SystemCheckBoxes.Length - 1
+                        If i <> TriggerIndex Then
+                            SystemCheckBoxes(i).Checked = False
+                        End If
+                    Next
+                End If
+            End If
+
+            cmbPriceRegions.Text = DefaultRegionPriceCombo
+            cmbPriceSystems.Text = DefaultSystemPriceCombo
+            PreviousPriceRegion = ""
+
+            UpdatingCheck = False
+
+        End If
+
     End Sub
 
     Private Sub cmbPriceSystems_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.DropDownClosed
@@ -8380,20 +8408,6 @@ ExitForm:
 
     Private Sub cmbPriceSystems_GotFocus(sender As Object, e As System.EventArgs) Handles cmbPriceSystems.GotFocus
         cmbPriceSystems.SelectAll()
-    End Sub
-
-    Private Sub cmbPriceSystems_SelectionChangeCommitted(sender As Object, e As EventArgs) Handles cmbPriceSystems.SelectionChangeCommitted
-        ' If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
-        Call ClearSystemChecks(False)
-        'Call ClearAllRegionChecks(0)
-        'End If
-    End Sub
-
-    Private Sub cmbPriceSystems_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPriceSystems.SelectedIndexChanged
-        If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
-            Call ClearSystemChecks(False)
-            ' Call ClearAllRegionChecks(0)
-        End If
     End Sub
 
     Private Sub cmbPriceShipTypes_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPriceShipTypes.SelectedIndexChanged
@@ -8408,27 +8422,6 @@ ExitForm:
         End If
     End Sub
 
-    Private Sub SyncPriceCheckBoxes(ByVal TriggerIndex As Integer)
-        Dim i As Integer
-
-        If Not FirstLoad Then
-            ' Trigger Index is a box that was checked on or off
-            If SystemCheckBoxes(TriggerIndex).Checked = True Then
-                ' Uncheck all other systems and regions
-                For i = 1 To SystemCheckBoxes.Length - 1
-                    If i <> TriggerIndex Then
-                        SystemCheckBoxes(i).Checked = False
-                    End If
-                Next
-                ' Uncheck regions
-                Call ClearAllRegionChecks(0)
-                ' Reset the solar system combo
-                cmbPriceSystems.Text = DefaultSystemPriceCombo
-            End If
-        End If
-
-    End Sub
-
     Private Sub lstPricesView_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstPricesView.ColumnClick
 
         Call ListViewColumnSorter(e.Column, CType(lstPricesView, ListView), UpdatePricesColumnClicked, UpdatePricesColumnSortType)
@@ -8438,8 +8431,8 @@ ExitForm:
     Private Sub rbtnPriceSettingPriceProfile_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnPriceSettingPriceProfile.CheckedChanged
         ' set in init, and use this to toggle
         If rbtnPriceSettingPriceProfile.Checked Then
-            pnlPriceProfiles.Visible = True
-            pnlSinglePriceLocationSelect.Visible = False
+            gbSingleSource.Enabled = False
+            gbPriceProfile.Enabled = True
             ' Disable other buttons and lists
             cmbRawMatsSplitPrices.Enabled = False
             lblRawMatsSplitPrices.Enabled = False
@@ -8450,8 +8443,8 @@ ExitForm:
             txtRawPriceModifier.Enabled = False
             txtItemsPriceModifier.Enabled = False
         Else
-            pnlPriceProfiles.Visible = False
-            pnlSinglePriceLocationSelect.Visible = True
+            gbSingleSource.Enabled = True
+            gbPriceProfile.Enabled = False
             ' Enable other buttons and lists
             cmbRawMatsSplitPrices.Enabled = True
             lblRawMatsSplitPrices.Enabled = True
@@ -8473,87 +8466,117 @@ ExitForm:
     End Sub
 
     Private Sub txtRawPriceModifier_LostFocus(sender As Object, e As System.EventArgs) Handles txtRawPriceModifier.LostFocus
-        If Trim(txtRawPriceModifier.Text) = "" Then
-            txtRawPriceModifier.Text = "0.0%"
-        Else
-            txtRawPriceModifier.Text = FormatPercent(CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100, 1)
-        End If
+        txtRawPriceModifier.Text = FormatPriceModifier(txtRawPriceModifier)
     End Sub
 
     Private Sub txtItemsPriceModifier_LostFocus(sender As Object, e As System.EventArgs) Handles txtItemsPriceModifier.LostFocus
-        If Trim(txtItemsPriceModifier.Text) = "" Then
-            txtItemsPriceModifier.Text = "0.0%"
+        txtItemsPriceModifier.Text = FormatPriceModifier(txtItemsPriceModifier)
+    End Sub
+
+    Private Function FormatPriceModifier(PricetxtBox As TextBox) As String
+        If Trim(PricetxtBox.Text) = "" Then
+            Return "0.0%"
         Else
-            txtItemsPriceModifier.Text = FormatPercent(CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100, 1)
+            Return FormatPercent(CDbl(PricetxtBox.Text.Replace("%", "")) / 100, 1)
+        End If
+    End Function
+
+    Private Sub txtPPDefaultsPriceMod_LostFocus(sender As Object, e As System.EventArgs) Handles txtPPDefaultsPriceMod.LostFocus
+        txtPPDefaultsPriceMod.Text = FormatPriceModifier(txtPPDefaultsPriceMod)
+    End Sub
+
+    Private Sub txtPPDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtPPDefaultsPriceMod.KeyPress
+        e.Handled = CheckPercentCharEntry(e, txtPPDefaultsPriceMod)
+    End Sub
+
+    Private Sub cmbPPDefaultsRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPPDefaultsRegion.SelectedIndexChanged
+        If PreviousPPRegion <> cmbPPDefaultsRegion.Text Then
+            PPSystemsLoaded = False
+            cmbPPDefaultsSystem.Text = AllSystems
+            PreviousPPRegion = cmbPPDefaultsRegion.Text
         End If
     End Sub
 
-    Private Sub txtRawMaterialsDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtRawMaterialsDefaultsPriceMod.KeyPress
-        e.Handled = CheckPercentCharEntry(e, txtRawMaterialsDefaultsPriceMod)
-    End Sub
-
-    Private Sub txtItemsDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtItemsDefaultsPriceMod.KeyPress
-        e.Handled = CheckPercentCharEntry(e, txtItemsDefaultsPriceMod)
-    End Sub
-
-    Private Sub cmbItemsDefaultsRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbItemsDefaultsRegion.SelectedIndexChanged
-        If DefaultPreviousItemsRegion <> cmbItemsDefaultsRegion.Text Then
-            PPItemsSystemsLoaded = False
-            cmbItemsDefaultsSystem.Text = AllSystems
-            DefaultPreviousItemsRegion = cmbItemsDefaultsRegion.Text
+    Private Sub cmbPPDefaultsRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbPPDefaultsRegion.DropDown
+        If Not PPRegionsLoaded Then
+            Call LoadRegionCombo(cmbPPDefaultsRegion, cmbPPDefaultsRegion.Text)
+            PPRegionsLoaded = True
         End If
     End Sub
 
-    Private Sub cmbRawMaterialsDefaultsRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbRawMaterialsDefaultsRegion.SelectedIndexChanged
-        If DefaultPreviousRawRegion <> cmbRawMaterialsDefaultsRegion.Text Then
-            PPRawSystemsLoaded = False
-            cmbRawMaterialsDefaultsSystem.Text = AllSystems
-            DefaultPreviousRawRegion = cmbRawMaterialsDefaultsRegion.Text
+    Private Sub cmbPPDefaultsSystem_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbPPDefaultsSystem.DropDown
+        If Not PPSystemsLoaded Then
+            Call LoadSystemCombo(cmbPPDefaultsSystem, cmbPPDefaultsRegion.Text, AllSystems)
+            PPSystemsLoaded = True
         End If
     End Sub
 
-    Private Sub cmbRawMaterialsDefaultsSystem_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbRawMaterialsDefaultsSystem.DropDown
-        If Not PPRawSystemsLoaded Then
-            Call LoadPPDefaultsSystemCombo(cmbRawMaterialsDefaultsSystem, cmbRawMaterialsDefaultsRegion.Text, AllSystems)
+    Private Sub cmbPriceRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbPriceRegions.DropDown
+        If Not PriceRegionsLoaded Then
+            Call LoadRegionCombo(cmbPriceRegions, cmbPriceSystems.Text)
+            PriceRegionsLoaded = True
         End If
     End Sub
 
-    Private Sub cmbItemsDefaultsSystem_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbItemsDefaultsSystem.DropDown
-        If Not PPItemsSystemsLoaded Then
-            Call LoadPPDefaultsSystemCombo(cmbItemsDefaultsSystem, cmbItemsDefaultsRegion.Text, AllSystems)
+    Private Sub cmbPriceRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPriceRegions.SelectedIndexChanged
+        If PreviousPriceRegion <> cmbPriceRegions.Text Then
+            PriceSystemsLoaded = False
+            PreviousPriceRegion = cmbPriceRegions.Text
+            UpdatingCheck = True
+            Call ClearTradeHubSystems() ' clear the checks for trade hubs
+            UpdatingCheck = False
+            ' Set up systems combo
+            Call LoadSystemCombo(cmbPriceSystems, cmbPriceRegions.Text, AllSystems)
+            PriceSystemsLoaded = True
         End If
     End Sub
 
-    Private Sub btnRawMaterialsDefaults_Click(sender As System.Object, e As System.EventArgs) Handles btnRawMaterialsDefaults.Click
+    Private Sub cmbPriceSystems_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbPriceSystems.DropDown
+        If Not PriceSystemsLoaded Then
+            Call LoadSystemCombo(cmbPriceSystems, cmbPriceRegions.Text, AllSystems)
+            PriceSystemsLoaded = True
+        End If
+    End Sub
+
+    Private Sub cmbPriceSystems_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbPriceSystems.SelectedIndexChanged
+        If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
+            Call ClearTradeHubSystems(False)
+        End If
+    End Sub
+
+    Private Sub btnPPUpdateDefaults_Click(sender As System.Object, e As System.EventArgs) Handles btnPPUpdateDefaults.Click
 
         ' Do some error checking first
-        If Trim(cmbRawMaterialsDefaultsRegion.Text) = "" Or Not cmbRawMaterialsDefaultsRegion.Items.Contains(cmbRawMaterialsDefaultsRegion.Text) Then
+        If Trim(cmbPPDefaultsRegion.Text) = "" Or Not cmbPPDefaultsRegion.Items.Contains(cmbPPDefaultsRegion.Text) Then
             MsgBox("Invalid Default Region", vbExclamation, Application.ProductName)
-            cmbRawMaterialsDefaultsRegion.Focus()
+            cmbPPDefaultsRegion.Focus()
             Exit Sub
         End If
 
-        If Trim(cmbRawMaterialsDefaultsSystem.Text) = "" Or Not cmbRawMaterialsDefaultsSystem.Items.Contains(cmbRawMaterialsDefaultsSystem.Text) Then
+        If Trim(cmbPPDefaultsSystem.Text) = "" Or Not cmbPPDefaultsSystem.Items.Contains(cmbPPDefaultsSystem.Text) Then
             MsgBox("Invalid Default System", vbExclamation, Application.ProductName)
-            cmbRawMaterialsDefaultsSystem.Focus()
+            cmbPPDefaultsSystem.Focus()
             Exit Sub
         End If
 
-        If Trim(txtRawMaterialsDefaultsPriceMod.Text) = "" Then
+        If Trim(txtPPDefaultsPriceMod.Text) = "" Then
             MsgBox("Invalid Default Price Modifier", vbExclamation, Application.ProductName)
-            txtRawMaterialsDefaultsPriceMod.Focus()
+            txtPPDefaultsPriceMod.Focus()
             Exit Sub
         End If
 
-        Call SetPriceProfileDefaults(cmbRawMaterialsDefaultsPriceType.Text, cmbRawMaterialsDefaultsRegion.Text, cmbRawMaterialsDefaultsSystem.Text, txtRawMaterialsDefaultsPriceMod.Text, True)
+        Dim SQL As String = ""
 
-        ' Save these defaults to settings
-        UserUpdatePricesTabSettings.PPRawPriceType = cmbRawMaterialsDefaultsPriceType.Text
-        UserUpdatePricesTabSettings.PPRawRegion = cmbRawMaterialsDefaultsRegion.Text
-        UserUpdatePricesTabSettings.PPRawSystem = cmbRawMaterialsDefaultsSystem.Text
-        UserUpdatePricesTabSettings.PPRawPriceMod = CDbl(txtRawMaterialsDefaultsPriceMod.Text.Replace("%", "")) / 100
+        SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(cmbPPDefaultsPriceType.Text) & "', REGION_NAME = '" & FormatDBString(cmbPPDefaultsRegion.Text) & "', "
+        SQL = SQL & "SOLAR_SYSTEM_NAME = '" & FormatDBString(cmbPPDefaultsSystem.Text) & "', PRICE_MODIFIER = " & CStr(CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100) & " "
+        SQL = SQL & "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
+        If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+            SQL = SQL & "1"
+        Else
+            SQL = SQL & "0"
+        End If
 
-        AllSettings.SaveUpdatePricesSettings(UserUpdatePricesTabSettings)
+        EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Refresh the grids
         Call LoadPriceProfileGrids()
@@ -8561,463 +8584,18 @@ ExitForm:
         MsgBox("Defaults set", vbInformation, Application.ProductName)
 
     End Sub
-
-    Private Sub btnItemsDefaults_Click(sender As System.Object, e As System.EventArgs) Handles btnItemsDefaults.Click
-
-        ' Do some error checking first
-        If Trim(cmbItemsDefaultsRegion.Text) = "" Or Not cmbItemsDefaultsRegion.Items.Contains(cmbItemsDefaultsRegion.Text) Then
-            MsgBox("Invalid Default Region", vbExclamation, Application.ProductName)
-            cmbItemsDefaultsRegion.Focus()
-            Exit Sub
-        End If
-
-        If Trim(cmbItemsDefaultsSystem.Text) = "" Or Not cmbItemsDefaultsSystem.Items.Contains(cmbItemsDefaultsSystem.Text) Then
-            MsgBox("Invalid Default System", vbExclamation, Application.ProductName)
-            cmbItemsDefaultsSystem.Focus()
-            Exit Sub
-        End If
-
-        If Trim(txtItemsDefaultsPriceMod.Text) = "" Then
-            MsgBox("Invalid Default Price Modifier", vbExclamation, Application.ProductName)
-            txtItemsPriceModifier.Focus()
-            Exit Sub
-        End If
-
-        Call SetPriceProfileDefaults(cmbItemsDefaultsPriceType.Text, cmbItemsDefaultsRegion.Text, cmbItemsDefaultsSystem.Text, txtItemsDefaultsPriceMod.Text, False)
-
-        ' Save these defaults to settings
-        UserUpdatePricesTabSettings.PPItemsPriceType = cmbItemsDefaultsPriceType.Text
-        UserUpdatePricesTabSettings.PPItemsRegion = cmbItemsDefaultsRegion.Text
-        UserUpdatePricesTabSettings.PPItemsSystem = cmbItemsDefaultsSystem.Text
-        UserUpdatePricesTabSettings.PPItemsPriceMod = CDbl(txtItemsDefaultsPriceMod.Text.Replace("%", "")) / 100
-
-        AllSettings.SaveUpdatePricesSettings(UserUpdatePricesTabSettings)
-
-        ' Refresh the grids
-        Call LoadPriceProfileGrids()
-
-        MsgBox("Defaults set", vbInformation, Application.ProductName)
-
-    End Sub
-
-#Region "Update Price Region Checks"
-    Private Sub chkRegion1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion1.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(1)
-        End If
-    End Sub
-    Private Sub chkRegion2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion2.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(2)
-        End If
-    End Sub
-    Private Sub chkRegion3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion3.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(3)
-        End If
-    End Sub
-    Private Sub chkRegion4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion4.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(4)
-        End If
-    End Sub
-    Private Sub chkRegion5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion5.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(5)
-        End If
-    End Sub
-    Private Sub chkRegion6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion6.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(6)
-        End If
-    End Sub
-    Private Sub chkRegion7_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion7.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(7)
-        End If
-    End Sub
-    Private Sub chkRegion8_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion8.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(8)
-        End If
-    End Sub
-    Private Sub chkRegion9_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion9.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(9)
-        End If
-    End Sub
-    Private Sub chkRegion10_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion10.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(10)
-        End If
-    End Sub
-    Private Sub chkRegion11_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion11.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(11)
-        End If
-    End Sub
-    Private Sub chkRegion22_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion22.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(22)
-        End If
-    End Sub
-    Private Sub chkRegion21_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion21.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(21)
-        End If
-    End Sub
-    Private Sub chkRegion20_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion20.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(20)
-        End If
-    End Sub
-    Private Sub chkRegion19_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion19.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(19)
-        End If
-    End Sub
-    Private Sub chkRegion18_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion18.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(18)
-        End If
-    End Sub
-    Private Sub chkRegion17_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion17.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(17)
-        End If
-    End Sub
-    Private Sub chkRegion16_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion16.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(16)
-        End If
-    End Sub
-    Private Sub chkRegion15_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion15.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(15)
-        End If
-    End Sub
-    Private Sub chkRegion14_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion14.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(14)
-        End If
-    End Sub
-    Private Sub chkRegion13_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion13.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(13)
-        End If
-    End Sub
-    Private Sub chkRegion12_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion12.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(12)
-        End If
-    End Sub
-    Private Sub chkRegion44_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion44.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(44)
-        End If
-    End Sub
-    Private Sub chkRegion43_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion43.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(43)
-        End If
-    End Sub
-    Private Sub chkRegion42_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion42.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(42)
-        End If
-    End Sub
-    Private Sub chkRegion41_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion41.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(41)
-        End If
-    End Sub
-    Private Sub chkRegion40_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion40.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(40)
-        End If
-    End Sub
-    Private Sub chkRegion39_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion39.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(39)
-        End If
-    End Sub
-    Private Sub chkRegion38_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion38.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(38)
-        End If
-    End Sub
-    Private Sub chkRegion37_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion37.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(37)
-        End If
-    End Sub
-    Private Sub chkRegion36_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion36.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(36)
-        End If
-    End Sub
-    Private Sub chkRegion35_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion35.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(35)
-        End If
-    End Sub
-    Private Sub chkRegion34_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion34.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(34)
-        End If
-    End Sub
-    Private Sub chkRegion33_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion33.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(33)
-        End If
-    End Sub
-    Private Sub chkRegion32_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion32.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(32)
-        End If
-    End Sub
-    Private Sub chkRegion31_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion31.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(31)
-        End If
-    End Sub
-    Private Sub chkRegion30_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion30.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(30)
-        End If
-    End Sub
-    Private Sub chkRegion29_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion29.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(29)
-        End If
-    End Sub
-    Private Sub chkRegion28_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion28.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(28)
-        End If
-    End Sub
-    Private Sub chkRegion27_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion27.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(27)
-        End If
-    End Sub
-    Private Sub chkRegion26_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion26.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(26)
-        End If
-    End Sub
-    Private Sub chkRegion25_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion25.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(25)
-        End If
-    End Sub
-    Private Sub chkRegion24_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion24.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(24)
-        End If
-    End Sub
-    Private Sub chkRegion23_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion23.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(23)
-        End If
-    End Sub
-    Private Sub chkRegion67_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion67.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(67)
-        End If
-    End Sub
-    Private Sub chkRegion66_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion66.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(66)
-        End If
-    End Sub
-    Private Sub chkRegion65_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion65.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(65)
-        End If
-    End Sub
-    Private Sub chkRegion64_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion64.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(64)
-        End If
-    End Sub
-    Private Sub chkRegion63_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion63.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(63)
-        End If
-    End Sub
-    Private Sub chkRegion62_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion62.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(62)
-        End If
-    End Sub
-    Private Sub chkRegion61_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion61.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(61)
-        End If
-    End Sub
-    Private Sub chkRegion60_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion60.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(60)
-        End If
-    End Sub
-    Private Sub chkRegion59_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion59.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(59)
-        End If
-    End Sub
-    Private Sub chkRegion58_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion58.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(58)
-        End If
-    End Sub
-    Private Sub chkRegion57_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion57.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(57)
-        End If
-    End Sub
-    Private Sub chkRegion56_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion56.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(56)
-        End If
-    End Sub
-    Private Sub chkRegion55_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion55.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(55)
-        End If
-    End Sub
-    Private Sub chkRegion54_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion54.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(54)
-        End If
-    End Sub
-    Private Sub chkRegion53_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion53.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(53)
-        End If
-    End Sub
-    Private Sub chkRegion52_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion52.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(52)
-        End If
-    End Sub
-    Private Sub chkRegion51_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion51.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(51)
-        End If
-    End Sub
-    Private Sub chkRegion50_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion50.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(50)
-        End If
-    End Sub
-    Private Sub chkRegion49_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion49.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(49)
-        End If
-    End Sub
-    Private Sub chkRegion48_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion48.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(48)
-        End If
-    End Sub
-    Private Sub chkRegion47_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion47.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(47)
-        End If
-    End Sub
-    Private Sub chkRegion46_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion46.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(46)
-        End If
-    End Sub
-    Private Sub chkRegion45_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRegion45.CheckedChanged
-        If InStr(sender.ToString, "CheckState: 1") <> 0 Then
-            Call ClearSystemChecks()
-            Call ClearAllRegionChecks(45)
-        End If
-    End Sub
-#End Region
 
 #End Region
 
     ' Initalizes all the prices tab boxes, etc
     Private Sub InitUpdatePricesTab()
-        Dim i As Integer
         Dim TempRegion As String = ""
 
         FirstPriceChargeTypesComboLoad = True
         FirstPriceShipTypesComboLoad = True
         RefreshList = False
 
-        Call ClearSystemChecks()
-        Call ClearAllRegionChecks(0)
+        Call ClearTradeHubSystems()
 
         txtPriceItemFilter.Text = ""
 
@@ -9083,8 +8661,8 @@ ExitForm:
             End If
             If .UsePriceProfile Then
                 rbtnPriceSettingPriceProfile.Checked = True
-                pnlPriceProfiles.Visible = True
-                pnlSinglePriceLocationSelect.Visible = False
+                gbSingleSource.Enabled = False
+                gbPriceProfile.Enabled = True
                 ' Disable other buttons and lists
                 cmbRawMatsSplitPrices.Enabled = False
                 lblRawMatsSplitPrices.Enabled = False
@@ -9096,9 +8674,8 @@ ExitForm:
                 txtItemsPriceModifier.Enabled = False
             Else
                 rbtnPriceSettingSingleSelect.Checked = True
-
-                pnlPriceProfiles.Visible = False
-                pnlSinglePriceLocationSelect.Visible = True
+                gbSingleSource.Enabled = True
+                gbPriceProfile.Enabled = False
                 ' Enable other buttons and lists
                 cmbRawMatsSplitPrices.Enabled = True
                 lblRawMatsSplitPrices.Enabled = True
@@ -9110,25 +8687,17 @@ ExitForm:
                 txtItemsPriceModifier.Enabled = True
             End If
 
-            ' Set the defaults for the default price profiles
-            cmbRawMaterialsDefaultsPriceType.Text = .PPRawPriceType
-            ' First load the regions combo, then set the default region
-            DefaultPreviousRawRegion = .PPRawRegion
-            Call LoadRegionCombo(cmbRawMaterialsDefaultsRegion, .PPRawRegion)
-            ' Now that we have the default region, load up the systems based on that
-            Call LoadPPDefaultsSystemCombo(cmbRawMaterialsDefaultsSystem, .PPRawRegion, .PPRawSystem)
-            txtRawMaterialsDefaultsPriceMod.Text = FormatPercent(.PPRawPriceMod, 1)
-            PPRawSystemsLoaded = True
+            tabPriceProfile.SelectedTab = tabPriceProfile.TabPages(0)
 
             ' Set the defaults for the default price profiles
-            cmbItemsDefaultsPriceType.Text = .PPItemsPriceType
+            cmbPPDefaultsPriceType.Text = .PPRawPriceType
             ' First load the regions combo, then set the default region
-            DefaultPreviousItemsRegion = .PPItemsRegion
-            Call LoadRegionCombo(cmbItemsDefaultsRegion, .PPRawRegion)
+            PreviousPPRegion = .PPRawRegion
+            Call LoadRegionCombo(cmbPPDefaultsRegion, .PPRawRegion)
             ' Now that we have the default region, load up the systems based on that
-            Call LoadPPDefaultsSystemCombo(cmbItemsDefaultsSystem, .PPItemsRegion, .PPItemsSystem)
-            txtItemsDefaultsPriceMod.Text = FormatPercent(.PPItemsPriceMod, 1)
-            PPItemsSystemsLoaded = True
+            Call LoadSystemCombo(cmbPPDefaultsSystem, .PPRawRegion, .PPRawSystem)
+            txtPPDefaultsPriceMod.Text = FormatPercent(.PPRawPriceMod, 1)
+            PPSystemsLoaded = True
 
         End With
 
@@ -9138,15 +8707,14 @@ ExitForm:
         ' Disable cancel
         btnCancelUpdate.Enabled = False
 
-        ' Preload the systems combo
-        Call LoadPriceSolarSystems()
-
         ' Set system/region 
-        If UserUpdatePricesTabSettings.SelectedSystem <> "0" Then
-            ' Check the preset systems fist
+        If UserUpdatePricesTabSettings.SelectedRegion = "0" Then
+            ' They set only the trade hubs
             Select Case UserUpdatePricesTabSettings.SelectedSystem
                 Case "Jita"
                     chkSystems1.Checked = True
+                Case "Perimeter"
+                    chkSystems6.Checked = True
                 Case "Amarr"
                     chkSystems2.Checked = True
                 Case "Dodixie"
@@ -9155,19 +8723,20 @@ ExitForm:
                     chkSystems4.Checked = True
                 Case "Hek"
                     chkSystems5.Checked = True
-                Case Else
-                    cmbPriceSystems.Text = UserUpdatePricesTabSettings.SelectedSystem
+                Case "JitaPerimeter", "PerimeterJita"
+                    chkSystems1.Checked = True
+                    chkSystems6.Checked = True
             End Select
-
-        Else ' They set a region
-            ' Loop through the checks and check the ones they set
-            IgnoreSystemCheckUpdates = True
-            For i = 1 To RegionCheckBoxes.Count - 1
-                If UserUpdatePricesTabSettings.SelectedRegions.Contains(RegionCheckBoxes(i).Text) Then
-                    RegionCheckBoxes(i).Checked = True
-                End If
-            Next
-            IgnoreSystemCheckUpdates = False
+        Else ' They set a region and/or system
+            cmbPriceRegions.Text = UserUpdatePricesTabSettings.SelectedRegion
+            ' Preload the systems combo
+            Dim SelectedSystem As String
+            If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+                SelectedSystem = UserUpdatePricesTabSettings.SelectedSystem
+            Else
+                SelectedSystem = DefaultSystemPriceCombo
+            End If
+            Call LoadSystemCombo(cmbPriceSystems, cmbPriceRegions.Text, SelectedSystem)
         End If
 
         UpdatePricesColumnClicked = UserUpdatePricesTabSettings.ColumnSort
@@ -9185,6 +8754,207 @@ ExitForm:
 
     End Sub
 
+    ' Save the settings
+    Private Sub btnSaveUpdatePrices_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveUpdatePrices.Click
+        Dim i As Integer
+        Dim TempSettings As UpdatePriceTabSettings = Nothing
+        Dim TempRegions As New List(Of String)
+
+        Dim RegionChecked As Boolean = False
+        Dim SystemChecked As Boolean = False
+        Dim SearchSystem As String = ""
+
+        ' Make sure they have at least one region checked first
+        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+            RegionChecked = True
+        End If
+
+        ' Check systems too
+        For i = 1 To SystemCheckBoxes.Length - 1
+            If SystemCheckBoxes(i).Checked = True Then
+                ' Save the checked system (can only be one)
+                SearchSystem = SystemCheckBoxes(i).Text
+                SystemChecked = True
+                Exit For
+            End If
+        Next
+
+        If Not RegionChecked And Not SystemChecked Then
+            MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
+            Exit Sub
+        End If
+
+        If Not ItemsSelected() Then
+            MsgBox("Must Choose at least one Item type", MsgBoxStyle.Exclamation, Me.Name)
+            Exit Sub
+        End If
+
+        TempSettings.ItemsCombo = cmbItemsSplitPrices.Text
+        TempSettings.RawMatsCombo = cmbRawMatsSplitPrices.Text
+
+        TempSettings.RawPriceModifier = CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100
+        TempSettings.ItemsPriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
+
+        ' Search for a set system first
+        TempSettings.SelectedSystem = ""
+        If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
+            TempSettings.SelectedSystem = cmbPriceSystems.Text
+        Else
+            For i = 1 To SystemCheckBoxes.Count - 1
+                If SystemCheckBoxes(i).Checked Then
+                    ' Save it
+                    TempSettings.SelectedSystem &= SystemCheckBoxes(i).Text
+                End If
+            Next
+        End If
+
+        ' If no system found, then region
+        TempSettings.SelectedRegion = "0" ' Save something we can check so the default not loaded
+        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+            TempSettings.SelectedRegion = cmbPriceRegions.Text
+        End If
+
+        ' Raw items
+        ' Manufactured Items
+        With TempSettings
+            .AllRawMats = chkPriceRawMaterialPrices.Checked
+            .Minerals = chkMinerals.Checked
+            .IceProducts = chkIceProducts.Checked
+            .Gas = chkGas.Checked
+            .AbyssalMaterials = chkAbyssalMaterials.Checked
+            .BPCs = chkBPCs.Checked
+            .Misc = chkMisc.Checked
+            .AncientRelics = chkAncientRelics.Checked
+            .AncientSalvage = chkAncientSalvage.Checked
+            .Salvage = chkSalvage.Checked
+            .StationComponents = chkStructureRigs.Checked
+            .StructureModules = chkStructureModules.Checked
+            .Planetary = chkPlanetary.Checked
+            .Datacores = chkDatacores.Checked
+            .Decryptors = chkDecryptors.Checked
+            .RawMats = chkRawMats.Checked
+            .ProcessedMats = chkProcessedMats.Checked
+            .AdvancedMats = chkAdvancedMats.Checked
+            .MatsandCompounds = chkMatsandCompounds.Checked
+            .DroneComponents = chkDroneComponents.Checked
+            .BoosterMats = chkBoosterMats.Checked
+            .Polymers = chkPolymers.Checked
+            .Asteroids = chkAsteroids.Checked
+            .AllManufacturedItems = chkPriceManufacturedPrices.Checked
+            .Ships = chkShips.Checked
+            .Modules = chkModules.Checked
+            .Drones = chkDrones.Checked
+            .Boosters = chkBoosters.Checked
+            .Rigs = chkRigs.Checked
+            .Charges = chkCharges.Checked
+            .Subsystems = chkSubsystems.Checked
+            .Structures = chkStructures.Checked
+            .Tools = chkTools.Checked
+            .CapT2Components = chkCapT2Components.Checked
+            .CapitalComponents = chkCapitalComponents.Checked
+            .Components = chkComponents.Checked
+            .StructureComponents = chkStructureComponents.Checked
+            .Hybrid = chkHybrid.Checked
+            .FuelBlocks = chkFuelBlocks.Checked
+            .T1 = chkPricesT1.Checked
+            .T2 = chkPricesT2.Checked
+            .T3 = chkPricesT3.Checked
+            .Storyline = chkPricesT4.Checked
+            .Faction = chkPricesT5.Checked
+            .Pirate = chkPricesT6.Checked
+            .Implants = chkImplants.Checked
+            .Deployables = chkDeployables.Checked
+            .Celestials = chkCelestials.Checked
+            If rbtnPriceSourceCCPData.Checked Then
+                .UseESIData = True
+            Else
+                .UseESIData = False
+            End If
+            If rbtnPriceSettingPriceProfile.Checked Then
+                .UsePriceProfile = True
+            Else
+                .UsePriceProfile = False
+            End If
+
+            ' Price profile defaults
+            If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+                .PPRawPriceType = cmbPPDefaultsPriceType.Text
+                .PPRawRegion = cmbPPDefaultsRegion.Text
+                .PPRawSystem = cmbPPDefaultsSystem.Text
+                .PPRawPriceMod = CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100
+                ' Save the current item settings too
+                .PPItemsPriceType = UserUpdatePricesTabSettings.PPItemsPriceType
+                .PPItemsRegion = UserUpdatePricesTabSettings.PPItemsRegion
+                .PPItemsSystem = UserUpdatePricesTabSettings.PPItemsSystem
+                .PPItemsPriceMod = UserUpdatePricesTabSettings.PPItemsPriceMod
+            Else
+                .PPItemsPriceType = cmbPPDefaultsPriceType.Text
+                .PPItemsRegion = cmbPPDefaultsRegion.Text
+                .PPItemsSystem = cmbPPDefaultsSystem.Text
+                .PPItemsPriceMod = CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100
+                ' Save the current raw settings too
+                .PPRawPriceType = UserUpdatePricesTabSettings.PPRawPriceType
+                .PPRawRegion = UserUpdatePricesTabSettings.PPRawRegion
+                .PPRawSystem = UserUpdatePricesTabSettings.PPRawSystem
+                .PPRawPriceMod = UserUpdatePricesTabSettings.PPRawPriceMod
+            End If
+        End With
+
+        TempSettings.ColumnSort = UpdatePricesColumnClicked
+
+        If UpdatePricesColumnSortType = SortOrder.Ascending Then
+            TempSettings.ColumnSortType = "Ascending"
+        Else
+            TempSettings.ColumnSortType = "Descending"
+        End If
+
+        ' Save the data in the XML file
+        Call AllSettings.SaveUpdatePricesSettings(TempSettings)
+
+        ' Save the data to the local variable
+        UserUpdatePricesTabSettings = TempSettings
+
+        MsgBox("Update Prices Settings Saved", vbInformation, Application.ProductName)
+        btnDownloadPrices.Focus()
+        Application.UseWaitCursor = False
+
+    End Sub
+
+    ' If we change tabs, save the previous tab info in the settings and load the selected tab
+    Private Sub tabPriceProfile_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tabPriceProfile.SelectedIndexChanged
+        If Not FirstLoad Then
+            With UserUpdatePricesTabSettings
+                If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+                    ' First save the items settings
+                    .PPItemsPriceType = cmbPPDefaultsPriceType.Text
+                    .PPItemsRegion = cmbPPDefaultsRegion.Text
+                    .PPItemsSystem = cmbPPDefaultsSystem.Text
+                    .PPItemsPriceMod = CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100
+
+                    cmbPPDefaultsPriceType.Text = .PPRawPriceType
+                    PreviousPPRegion = .PPRawRegion
+                    Call LoadRegionCombo(cmbPPDefaultsRegion, .PPRawRegion)
+                    Call LoadSystemCombo(cmbPPDefaultsSystem, .PPRawRegion, .PPRawSystem)
+                    txtPPDefaultsPriceMod.Text = FormatPercent(.PPRawPriceMod, 1)
+                Else
+                    ' First save the raw settings
+                    .PPRawPriceType = cmbPPDefaultsPriceType.Text
+                    .PPRawRegion = cmbPPDefaultsRegion.Text
+                    .PPRawSystem = cmbPPDefaultsSystem.Text
+                    .PPRawPriceMod = CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100
+
+                    cmbPPDefaultsPriceType.Text = .PPItemsPriceType
+                    PreviousPPRegion = .PPItemsRegion
+                    Call LoadRegionCombo(cmbPPDefaultsRegion, .PPItemsRegion)
+                    Call LoadSystemCombo(cmbPPDefaultsSystem, .PPItemsRegion, .PPItemsSystem)
+                    txtPPDefaultsPriceMod.Text = FormatPercent(.PPItemsPriceMod, 1)
+                End If
+                PPSystemsLoaded = True
+            End With
+        End If
+
+    End Sub
+
     ' Structure for loading price profiles in the appropriate grids
     Private Structure PriceProfile
         Dim GroupName As String
@@ -9196,7 +8966,7 @@ ExitForm:
     End Structure
 
     ' Loads the price profiles system combo
-    Private Sub LoadPPDefaultsSystemCombo(ByRef SystemCombo As ComboBox, ByVal Region As String, ByVal System As String)
+    Private Sub LoadSystemCombo(ByRef SystemCombo As ComboBox, ByVal Region As String, ByVal System As String)
 
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
@@ -9214,7 +8984,6 @@ ExitForm:
         While rsData.Read
             SystemCombo.Items.Add(rsData.GetString(0))
         End While
-        SystemCombo.Text = Region
         SystemCombo.EndUpdate()
         rsData.Close()
         SystemCombo.Text = System
@@ -9301,176 +9070,6 @@ ExitForm:
         lstManufacturedPriceProfile.EndUpdate()
     End Sub
 
-    ' Save the settings
-    Private Sub btnSaveUpdatePrices_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveUpdatePrices.Click
-        Dim i As Integer
-        Dim TempSettings As UpdatePriceTabSettings = Nothing
-        Dim TempRegions As New List(Of String)
-
-        Dim RegionChecked As Boolean = False
-        Dim SystemChecked As Boolean = False
-        Dim SearchSystem As String = ""
-
-        ' Make sure they have at least one region checked first
-        For i = 1 To RegionCheckBoxes.Length - 1
-            If RegionCheckBoxes(i).Checked = True Then
-                RegionChecked = True
-                Exit For
-            End If
-        Next i
-
-        ' Check systems too
-        For i = 1 To SystemCheckBoxes.Length - 1
-            If SystemCheckBoxes(i).Checked = True Then
-                ' Save the checked system (can only be one)
-                SearchSystem = SystemCheckBoxes(i).Text
-                SystemChecked = True
-                Exit For
-            End If
-        Next
-
-        ' Finally check system combo
-        If Not SystemChecked And cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
-            SystemChecked = True
-            SearchSystem = cmbPriceSystems.Text
-        End If
-
-        If Not RegionChecked And Not SystemChecked Then
-            MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
-            Exit Sub
-        End If
-
-        If Not ItemsSelected() Then
-            MsgBox("Must Choose at least one Item type", MsgBoxStyle.Exclamation, Me.Name)
-            Exit Sub
-        End If
-
-        TempSettings.ItemsCombo = cmbItemsSplitPrices.Text
-        TempSettings.RawMatsCombo = cmbRawMatsSplitPrices.Text
-
-        TempSettings.RawPriceModifier = CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100
-        TempSettings.ItemsPriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
-
-        ' Search for a set system first
-        TempSettings.SelectedSystem = "0"
-        If cmbPriceSystems.Text <> "Select System" Then
-            TempSettings.SelectedSystem = cmbPriceSystems.Text
-        Else
-            For i = 1 To SystemCheckBoxes.Count - 1
-                If SystemCheckBoxes(i).Checked Then
-                    ' Save it
-                    TempSettings.SelectedSystem = SystemCheckBoxes(i).Text
-                    Exit For
-                End If
-            Next
-        End If
-
-        ' If no system found, then region
-        If TempSettings.SelectedSystem = "0" Then
-            ' Loop through the region checks and find checked regions
-            For i = 1 To RegionCheckBoxes.Count - 1
-                If RegionCheckBoxes(i).Checked = True Then
-                    TempRegions.Add(RegionCheckBoxes(i).Text)
-                End If
-            Next
-            TempSettings.SelectedRegions = TempRegions
-        End If
-
-        ' Raw items
-        ' Manufactured Items
-        With TempSettings
-            .AllRawMats = chkPriceRawMaterialPrices.Checked
-            .Minerals = chkMinerals.Checked
-            .IceProducts = chkIceProducts.Checked
-            .Gas = chkGas.Checked
-            .AbyssalMaterials = chkAbyssalMaterials.Checked
-            .BPCs = chkBPCs.Checked
-            .Misc = chkMisc.Checked
-            .AncientRelics = chkAncientRelics.Checked
-            .AncientSalvage = chkAncientSalvage.Checked
-            .Salvage = chkSalvage.Checked
-            .StationComponents = chkStructureRigs.Checked
-            .StructureModules = chkStructureModules.Checked
-            .Planetary = chkPlanetary.Checked
-            .Datacores = chkDatacores.Checked
-            .Decryptors = chkDecryptors.Checked
-            .RawMats = chkRawMats.Checked
-            .ProcessedMats = chkProcessedMats.Checked
-            .AdvancedMats = chkAdvancedMats.Checked
-            .MatsandCompounds = chkMatsandCompounds.Checked
-            .DroneComponents = chkDroneComponents.Checked
-            .BoosterMats = chkBoosterMats.Checked
-            .Polymers = chkPolymers.Checked
-            .Asteroids = chkAsteroids.Checked
-            .AllManufacturedItems = chkPriceManufacturedPrices.Checked
-            .Ships = chkShips.Checked
-            .Modules = chkModules.Checked
-            .Drones = chkDrones.Checked
-            .Boosters = chkBoosters.Checked
-            .Rigs = chkRigs.Checked
-            .Charges = chkCharges.Checked
-            .Subsystems = chkSubsystems.Checked
-            .Structures = chkStructures.Checked
-            .Tools = chkTools.Checked
-            .CapT2Components = chkCapT2Components.Checked
-            .CapitalComponents = chkCapitalComponents.Checked
-            .Components = chkComponents.Checked
-            .StructureComponents = chkStructureComponents.Checked
-            .Hybrid = chkHybrid.Checked
-            .FuelBlocks = chkFuelBlocks.Checked
-            .T1 = chkPricesT1.Checked
-            .T2 = chkPricesT2.Checked
-            .T3 = chkPricesT3.Checked
-            .Storyline = chkPricesT4.Checked
-            .Faction = chkPricesT5.Checked
-            .Pirate = chkPricesT6.Checked
-            .Implants = chkImplants.Checked
-            .Deployables = chkDeployables.Checked
-            .Celestials = chkCelestials.Checked
-            If rbtnPriceSourceCCPData.Checked Then
-                .UseESIData = True
-            Else
-                .UseESIData = False
-            End If
-            If rbtnPriceSettingPriceProfile.Checked Then
-                .UsePriceProfile = True
-            Else
-                .UsePriceProfile = False
-            End If
-
-            ' Price profile defaults
-            .PPRawPriceType = cmbRawMaterialsDefaultsPriceType.Text
-            .PPRawRegion = cmbRawMaterialsDefaultsRegion.Text
-            .PPRawSystem = cmbRawMaterialsDefaultsSystem.Text
-            .PPRawPriceMod = CDbl(txtRawMaterialsDefaultsPriceMod.Text.Replace("%", "")) / 100
-
-            .PPItemsPriceType = cmbItemsDefaultsPriceType.Text
-            .PPItemsRegion = cmbItemsDefaultsRegion.Text
-            .PPItemsSystem = cmbItemsDefaultsSystem.Text
-            .PPItemsPriceMod = CDbl(txtItemsDefaultsPriceMod.Text.Replace("%", "")) / 100
-
-        End With
-
-        TempSettings.ColumnSort = UpdatePricesColumnClicked
-
-        If UpdatePricesColumnSortType = SortOrder.Ascending Then
-            TempSettings.ColumnSortType = "Ascending"
-        Else
-            TempSettings.ColumnSortType = "Descending"
-        End If
-
-        ' Save the data in the XML file
-        Call AllSettings.SaveUpdatePricesSettings(TempSettings)
-
-        ' Save the data to the local variable
-        UserUpdatePricesTabSettings = TempSettings
-
-        MsgBox("Update Prices Settings Saved", vbInformation, Application.ProductName)
-        btnDownloadPrices.Focus()
-        Application.UseWaitCursor = False
-
-    End Sub
-
     Private Sub lstPricesView_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstPricesView.MouseClick
         Call ListClicked(lstPricesView, sender, e)
     End Sub
@@ -9490,29 +9089,8 @@ ExitForm:
 
     End Sub
 
-    ' Sets the price profile defaults for anything that has a price profile set
-    Private Sub SetPriceProfileDefaults(PriceType As String, PriceRegion As String, PriceSystem As String, PriceMod As String, RawMat As Boolean)
-        Dim SQL As String = ""
-        Dim PriceModStr As String = PriceMod.Replace("%", "")
-
-        SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(PriceType) & "', REGION_NAME = '" & FormatDBString(PriceRegion) & "', "
-        SQL = SQL & "SOLAR_SYSTEM_NAME = '" & FormatDBString(PriceSystem) & "', PRICE_MODIFIER = " & CStr(CDbl(PriceMod.Replace("%", "")) / 100) & " "
-        SQL = SQL & "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
-        If RawMat Then
-            SQL = SQL & "1"
-        Else
-            SQL = SQL & "0"
-        End If
-
-        EVEDB.ExecuteNonQuerySQL(SQL)
-
-    End Sub
-
     ' Checks the user entry and then sends the type ids and regions to the cache update
     Private Sub btnImportPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDownloadPrices.Click
-        Dim i As Integer
-        Dim j As Integer
-
         Dim RegionChecked As Boolean
         Dim SystemChecked As Boolean
         Dim readerSystems As SQLiteDataReader
@@ -9533,14 +9111,12 @@ ExitForm:
         pnlProgressBar.Value = 0
 
         Dim RegionSelectedCount As Integer = 0
+        Dim JitaPerimeterChecked As Boolean = False
 
-        ' Make sure they have at least one region checked first
-        For i = 1 To RegionCheckBoxes.Length - 1
-            If RegionCheckBoxes(i).Checked = True Then
-                RegionChecked = True
-                RegionSelectedCount += 1
-            End If
-        Next i
+        ' Check region
+        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+            RegionChecked = True
+        End If
 
         ' Check systems too
         For i = 1 To SystemCheckBoxes.Length - 1
@@ -9552,18 +9128,23 @@ ExitForm:
             End If
         Next
 
+        If chkSystems1.Checked And chkSystems6.Checked Then
+            ' Need to run for both
+            JitaPerimeterChecked = True
+        End If
+
         ' Finally check system combo
-        If Not SystemChecked And cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
+        If Not SystemChecked And cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
             SystemChecked = True
             SearchSystem = cmbPriceSystems.Text
         End If
 
-        If Not RegionChecked And Not SystemChecked Then
+        If Not RegionChecked And Not SystemChecked And Not rbtnPriceSettingPriceProfile.Checked Then
             MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
             GoTo ExitSub
         End If
 
-        If Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> "Select System") Then
+        If Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo) Then
             MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
             GoTo ExitSub
         End If
@@ -9581,6 +9162,12 @@ ExitForm:
         ' Working
         Call DisableUpdatePricesTab(True)
 
+        Dim SavedgbPPValue As Boolean = gbPriceProfile.Enabled
+        Dim SavedgbSSValue As Boolean = gbSingleSource.Enabled
+
+        gbPriceProfile.Enabled = False
+        gbSingleSource.Enabled = False
+
         ' Enable cancel
         btnCancelUpdate.Enabled = True
 
@@ -9592,29 +9179,9 @@ ExitForm:
         ' Find the checked region - single select
         If rbtnPriceSettingSingleSelect.Checked Then
             If RegionChecked And Not SystemChecked Then ' If they selected a combosystem and checked a region, look up combo
-                For i = 1 To (RegionCheckBoxes.Length - 1)
-                    If RegionCheckBoxes(i).Checked Then
-                        Select Case i
-                            Case 15, 26, 36, 50, 59 'These have () in description
-
-                                ' Find the location of the ( and trim back from that
-                                RegionName = RegionCheckBoxes(i).Text
-                                j = InStr(1, RegionName, "(")
-
-                                RegionName = RegionName.Substring(0, j - 2)
-
-                            Case Else
-                                RegionName = RegionCheckBoxes(i).Text
-                        End Select
-
-                        SearchRegion = RegionName
-                        Exit For
-                    End If
-                Next
-
                 ' Get the search list string
                 SQL = "SELECT regionID FROM REGIONS "
-                SQL = SQL & "WHERE regionName = '" & SearchRegion & "'"
+                SQL = SQL & "WHERE regionName = '" & cmbPriceRegions.Text & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSystems = DBCommand.ExecuteReader
@@ -9701,13 +9268,18 @@ ExitForm:
                     ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
                     If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
                         Items.Add(TempItem)
+                        If JitaPerimeterChecked Then
+                            ' Perimeter will always be after Jita but add both temp items to get prices for both
+                            TempItem.SystemID = PerimeterID
+                            Items.Add(TempItem)
+                        End If
                     End If
                 End If
             End If
         Next
 
         ' Load the prices
-        Call LoadPrices(Items)
+        Call LoadPrices(Items, JitaPerimeterChecked)
 
 UpdateProgramPrices:
 
@@ -9721,6 +9293,9 @@ ExitSub:
         ' Enable tab
         Call DisableUpdatePricesTab(False)
 
+        gbSingleSource.Enabled = SavedgbSSValue
+        gbPriceProfile.Enabled = SavedgbPPValue
+
         ' Disable cancel
         btnCancelUpdate.Enabled = False
 
@@ -9732,11 +9307,11 @@ ExitSub:
     End Sub
 
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem))
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), JitaPerimeterFlag As Boolean)
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
-        Dim RegionList As String
+        Dim RegionorSystemList As String
         Dim SelectedPrice As Double
         Dim MP As New MarketPriceInterface(pnlProgressBar)
         Dim ESIData As New ESI
@@ -9836,7 +9411,7 @@ ExitSub:
 
         ' Working
         pnlStatus.Text = "Updating Item Prices..."
-        RegionList = ""
+        RegionorSystemList = ""
         pnlProgressBar.Value = 0
         pnlProgressBar.Minimum = 0
         pnlProgressBar.Maximum = SentItems.Count + 1
@@ -9880,23 +9455,51 @@ ExitSub:
             End Select
 
             ' Build the region list for each item
-            RegionList = ""
-            If SentItems(i).SystemID = "" Then
-                RegionList = SentItems(i).RegionID
+            RegionorSystemList = ""
+            If JitaPerimeterFlag Then
+                RegionorSystemList = JitaID & "," & PerimeterID
+                ' TODO Add flag if this is run once, we can skip again - need to add item to array and if already in there, don't run it again - put in a goto and remove item from list?
+            ElseIf SentItems(i).SystemID = "" Then
+                RegionorSystemList = SentItems(i).RegionID
             Else
-                RegionList = SentItems(i).SystemID
+                ' Regions are only one
+                RegionorSystemList = SentItems(i).SystemID
             End If
 
             If rbtnPriceSourceEVEMarketer.Checked Then
-                ' Load the data based on the option selected - regionlist contains a list of regions or the system we wanted to update
                 Dim SQLPricetype As String = ""
                 If PriceType <> "splitPrice" Then
-                    SQLPricetype = PriceType
+                    ' If it's Jita Perimeter, we need to do functions on the values - just take averages of non-min/max values
+                    If JitaPerimeterFlag Then
+                        Select Case PriceType
+                            Case "buyAvg"
+                                SQLPricetype = "AVG(buyAvg)"
+                            Case "buyMax"
+                                SQLPricetype = "MAX(buyMax)"
+                            Case "buyMedian"
+                                SQLPricetype = "AVG(buyMedian)"
+                            Case "buyMin"
+                                SQLPricetype = "MIN(buyMin)"
+                            Case "buyPercentile"
+                                SQLPricetype = "AVG(buyPercentile)"
+                            Case "sellAvg"
+                                SQLPricetype = "AVG(sellAvg)"
+                            Case "sellMax"
+                                SQLPricetype = "MAX(sellMax)"
+                            Case "sellMedian"
+                                SQLPricetype = "AVG(sellMedian)"
+                            Case "sellMin"
+                                SQLPricetype = "MIN(sellMin)"
+                            Case "sellPercentile"
+                                SQLPricetype = "AVG(sellPercentile)"
+                        End Select
+                    Else
+                        SQLPricetype = PriceType
+                    End If
                 Else
                     SQLPricetype = "((buyMax + sellMin) / 2)"
                 End If
-                SQL = "SELECT " & SQLPricetype & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND RegionOrSystem = '" & RegionList & "' ORDER BY DateTime(UPDATEDATE) DESC"
-
+                SQL = "SELECT " & SQLPricetype & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND RegionOrSystem IN (" & RegionorSystemList & ") ORDER BY DateTime(UPDATEDATE) DESC"
             Else
                 Dim LimittoBuy As Boolean = False
                 Dim LimittoSell As Boolean = False
@@ -9905,9 +9508,9 @@ ExitSub:
                 RegionID = ""
 
                 If SentItems(i).SystemID <> "" Then
-                    SystemID = RegionList
+                    SystemID = RegionorSystemList
                 Else
-                    RegionID = RegionList
+                    RegionID = RegionorSystemList
                 End If
 
                 ' Get the data from ESI so we need to do some calcuations depending on the type they want
@@ -9947,10 +9550,10 @@ ExitSub:
                 SQL = SQL & " FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
                 ' If they want a system, then limit all the data to that system id
                 If SentItems(i).SystemID <> "" Then
-                    SQL = SQL & "AND SOLAR_SYSTEM_ID = " & RegionList & " "
+                    SQL = SQL & "AND SOLAR_SYSTEM_ID IN (" & RegionorSystemList & ") "
                 Else
                     ' Use the region
-                    SQL = SQL & "AND REGION_ID = " & RegionList & " "
+                    SQL = SQL & "AND REGION_ID = " & RegionorSystemList & " "
                 End If
 
                 ' See if we limit to buy/sell only
@@ -10799,44 +10402,6 @@ ExitSub:
 
     End Function
 
-    ' Loads the solar systems into the combo for system prices
-    Private Sub LoadPriceSolarSystems()
-        Dim SQL As String
-        Dim readerSS As SQLiteDataReader
-        Dim RegionList As String = ""
-
-        ' Load the select systems combobox with systems - no WH systems
-        SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS AS R WHERE SOLAR_SYSTEMS.regionID = R.regionID "
-        SQL = SQL & "AND (R.regionName NOT LIKE '%-R%' OR solarSystemName = 'Thera') "
-        ' If they selected a region, then use that to filter the systems
-        For i = 1 To RegionCheckBoxes.Length - 1
-            If RegionCheckBoxes(i).Checked = True Then
-                If RegionCheckBoxes(i).Text.Contains("(") Then
-                    SQL &= "AND R.regionName = '" & RegionCheckBoxes(i).Text.Substring(0, InStr(RegionCheckBoxes(i).Text, "(") - 2) & "' "
-                Else
-                    SQL &= "AND R.regionName = '" & RegionCheckBoxes(i).Text & "' "
-                End If
-
-            End If
-        Next i
-        SQL = SQL & "ORDER BY solarSystemName"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerSS = DBCommand.ExecuteReader
-        cmbPriceSystems.Items.Clear()
-        cmbPriceSystems.BeginUpdate()
-        While readerSS.Read
-            cmbPriceSystems.Items.Add(readerSS.GetString(0))
-        End While
-        cmbPriceSystems.EndUpdate()
-        readerSS.Close()
-        readerSS = Nothing
-        DBCommand = Nothing
-
-        cmbPriceSystems.Text = "Select System"
-
-    End Sub
-
     Private Sub LoadPriceShipTypes()
         Dim SQL As String
         Dim readerShipType As SQLiteDataReader
@@ -11026,6 +10591,9 @@ ExitSub:
             openFileDialog1.RestoreDirectory = True
         End If
 
+        Dim SavedgbPPValue As Boolean = gbPriceProfile.Enabled
+        Dim SavedgbSSValue As Boolean = gbSingleSource.Enabled
+
         If openFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
             Try
                 BPStream = New StreamReader(openFileDialog1.FileName)
@@ -11041,6 +10609,8 @@ ExitSub:
                     Else
                         ' disable the tab
                         Call DisableUpdatePricesTab(True)
+                        gbPriceProfile.Enabled = False
+                        gbSingleSource.Enabled = False
                     End If
 
                     Call EVEDB.BeginSQLiteTransaction()
@@ -11112,6 +10682,8 @@ ExitPRocessing:
         Application.UseWaitCursor = False
         ' Enable the tab
         Call DisableUpdatePricesTab(False)
+        gbSingleSource.Enabled = SavedgbSSValue
+        gbPriceProfile.Enabled = SavedgbPPValue
         Call UpdatePriceList()
         Application.DoEvents()
 
@@ -18711,7 +18283,7 @@ Leave:
     End Sub
 
     Private Sub cmbMineMiningRig1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineMiningRig1.SelectedIndexChanged
-        Call UpdateShipMiningDroneStats
+        Call UpdateShipMiningDroneStats()
     End Sub
 
     Private Sub cmbMineMiningRig2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineMiningRig2.SelectedIndexChanged
@@ -18879,7 +18451,7 @@ Leave:
         Call UpdateProcessingSkills()
     End Sub
 
-    Private Sub chkMineAnomMining_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineAnomMining.CheckedChanged
+    Private Sub chkMineAnomMining_CheckedChanged(sender As System.Object, e As System.EventArgs)
         Call UpdateOrebySpaceChecks()
     End Sub
 
@@ -20353,8 +19925,8 @@ Leave:
 
                 ' Set the amount of m3 per hour for all the drones we have
                 YieldLabel.Text = FormatNumber(MiningAmtVariable, 1)
-                Else
-                    Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
+            Else
+                Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
                 IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneOperationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpLevel) / 100)
                 IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneSpecializationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpSpecLevel) / 100)
                 ' Ship role bonus
@@ -21373,8 +20945,19 @@ Leave:
         Dim AttribLookup As New EVEAttributes
         Dim CrystalTech As String = ""
 
-        If OreName <> "Talassonite" And OreName <> "Bezdnacine" And OreName <> "Rakovene" Then
-            SQL = "SELECT BELT_TYPE FROM ORES WHERE ORE_NAME = '" & OreName & "' "
+        Dim TempOreName As String = ""
+
+        ' Reset the ore name if it's high yield
+        If OreName.Contains(" ") And Not OreName.Contains("Ochre") Then
+            TempOreName = OreName.Substring(InStr(OreName, " "))
+        ElseIf OreName.Contains("Ochre") Then
+            TempOreName = "Dark Ochre"
+        Else
+            TempOreName = OreName
+        End If
+
+        If TempOreName <> "Talassonite" And TempOreName <> "Bezdnacine" And TempOreName <> "Rakovene" Then
+            SQL = "SELECT BELT_TYPE FROM ORES WHERE ORE_NAME = '" & TempOreName & "' "
             SQL &= "AND BELT_TYPE LIKE '%Moon Asteroids' AND BELT_TYPE <> 'Moon Asteroids'"
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsOreType = DBCommand.ExecuteReader
@@ -21383,7 +20966,7 @@ Leave:
                 ' These are moon mining ore skills - in the table I labeled them asteroids and on the labels for the skills 'Ore'
                 OreLookup = rsOreType.GetString(0).Replace("Asteroids", "Ore")
             Else
-                OreLookup = OreName
+                OreLookup = TempOreName
             End If
 
             OreProcessingSkill = GetOreProcessingSkill(OreLookup)
@@ -21401,7 +20984,13 @@ Leave:
             If TempCrystalType <> "" Then
                 CrystalType = TempCrystalType
                 ' Look up crystal bonus value
-                BonusValue = AttribLookup.GetAttribute(OreName & " Mining Crystal " & CrystalTech, ItemAttributes.specialisationAsteroidYieldMultiplier)
+                Dim TempCyrstalOreName As String
+                If OreLookup.Contains("Moon") Then
+                    TempCyrstalOreName = OreLookup
+                Else
+                    TempCyrstalOreName = TempOreName
+                End If
+                BonusValue = AttribLookup.GetAttribute(TempCyrstalOreName & " Mining Crystal " & CrystalTech, ItemAttributes.specialisationAsteroidYieldMultiplier)
             Else
                 CrystalType = None
             End If

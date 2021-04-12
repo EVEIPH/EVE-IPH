@@ -195,7 +195,7 @@ Public Class ProgramSettings
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = False
     Public DefaultPriceSystem As String = "Jita"
-    Public DefaultPriceRegion As String = ""
+    Public DefaultPriceRegion As String = "The Forge"
     Public DefaultPriceRawMatsCombo As String = "Min Sell"
     Public DefaultPriceItemsCombo As String = "Min Sell"
     Public DefaultUPColumnSort As Integer = 1
@@ -1661,29 +1661,7 @@ Public Class ProgramSettings
                     .Storyline = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
                     .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
                     .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AbyssalMaterials", DefaultPriceChecks))
-
-                    Dim TempRegions As String = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegions", DefaultPriceRegion))
-                    Dim RegionList As New List(Of String)
-                    Dim RegionCount As Integer
-
-                    If TempRegions <> "0" Then
-                        RegionCount = Regex.Matches(TempRegions, Regex.Escape(",")).Count + 1 ' Add one for last item + 1 ' Add one for last item
-                    End If
-
-                    Dim ReaderStartPosition As Integer = 0
-                    Dim CommaLoc As Integer
-
-                    For i = 0 To RegionCount - 1
-                        CommaLoc = InStr(TempRegions.Substring(ReaderStartPosition), ",")
-                        If CommaLoc <> 0 Then
-                            RegionList.Add(TempRegions.Substring(ReaderStartPosition, CommaLoc - 1))
-                        Else ' At the end
-                            RegionList.Add(TempRegions.Substring(ReaderStartPosition))
-                        End If
-                        ReaderStartPosition = ReaderStartPosition + CommaLoc
-                    Next
-
-                    .SelectedRegions = RegionList
+                    .SelectedRegion = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegion", DefaultPriceRegion))
                     .SelectedSystem = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedSystem", DefaultPriceSystem))
                     .ItemsCombo = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ItemsCombo", DefaultPriceItemsCombo))
                     .RawMatsCombo = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "RawMatsCombo", DefaultPriceRawMatsCombo))
@@ -1771,19 +1749,7 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(36) = New Setting("Faction", CStr(PriceSettings.Faction))
             UpdatePricesSettingsList(37) = New Setting("Pirate", CStr(PriceSettings.Pirate))
             UpdatePricesSettingsList(38) = New Setting("Storyline", CStr(PriceSettings.Storyline))
-            Dim RegionList As String = ""
-            If Not IsNothing(PriceSettings.SelectedRegions) Then
-                For i = 0 To PriceSettings.SelectedRegions.Count - 1
-                    RegionList = RegionList & PriceSettings.SelectedRegions(i) & ","
-                Next
-                If RegionList <> "" Then
-                    ' Strip last comma
-                    RegionList = RegionList.Substring(0, Len(RegionList) - 1)
-                End If
-            Else
-                RegionList = "0"
-            End If
-            UpdatePricesSettingsList(39) = New Setting("SelectedRegions", RegionList)
+            UpdatePricesSettingsList(39) = New Setting("SelectedRegion", PriceSettings.SelectedRegion)
             UpdatePricesSettingsList(40) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
             UpdatePricesSettingsList(41) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
             UpdatePricesSettingsList(42) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
@@ -1879,7 +1845,7 @@ Public Class ProgramSettings
             .Faction = DefaultPriceChecks
             .Pirate = DefaultPriceChecks
             .Storyline = DefaultPriceChecks
-            .SelectedRegions = Nothing
+            .SelectedRegion = DefaultPriceRegion
             .SelectedSystem = DefaultPriceSystem
             .ItemsCombo = DefaultPriceItemsCombo
             .RawMatsCombo = DefaultPriceRawMatsCombo
@@ -4894,7 +4860,7 @@ Public Structure UpdatePriceTabSettings
     Dim Pirate As Boolean
     Dim Storyline As Boolean
 
-    Dim SelectedRegions As List(Of String) ' Could have several
+    Dim SelectedRegion As String
     Dim SelectedSystem As String
 
     ' The default price profile settings
