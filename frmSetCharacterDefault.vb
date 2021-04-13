@@ -125,4 +125,8 @@ Public Class frmSetCharacterDefault
 
     End Sub
 
+    Protected Overrides Sub Finalize()
+        CancelESISSOLogin = False ' Reset on close
+        MyBase.Finalize()
+    End Sub
 End Class

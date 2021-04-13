@@ -5940,8 +5940,10 @@ Tabs:
 
         ' See if it has moon/gas mats
         SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
-        SQL &= "WHERE BLUEPRINT_ID = " & CStr(BPID) & " "
-        SQL &= "AND MATERIAL_GROUP IN ('Intermediate Materials', 'Composite','Hybrid Polymers')"
+        SQL &= "WHERE (BLUEPRINT_ID = " & CStr(BPID) & " AND MATERIAL_GROUP_ID IN (428,429,974,712) " '428, 429, 974, 712 - Intermediate, Composite, Hybrid Polymers, Biochemical
+        SQL &= "OR BLUEPRINT_ID IN (SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN  "
+        SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = " & CStr(BPID) & ")) "
+        SQL &= "AND MATERIAL_GROUP_ID IN (428,429,974,712))"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMat = DBCommand.ExecuteReader()
