@@ -1209,6 +1209,7 @@ Public Class ManufacturingFacility
                 SQL = "SELECT DISTINCT regionName AS REGION_NAME FROM STATIONS, STATION_SERVICES, REGIONS "
                 SQL &= "WHERE STATIONS.STATION_ID = STATION_SERVICES.STATION_ID "
                 SQL &= "AND STATIONS.REGION_ID = REGIONS.regionID "
+                SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
@@ -1225,6 +1226,7 @@ Public Class ManufacturingFacility
                 SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                 SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
+                SQL = SQL & "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
 
                 ' Make sure the region listed has at least one system not in the disallowed anchoring lists
                 ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)

@@ -208,6 +208,7 @@ Public Module Public_Variables
     Public Const Porpoise As String = "Porpoise"
     Public Const Orca As String = "Orca"
     Public Const Drake As String = "Drake"
+    Public Const Gnosis As String = "Gnosis"
     Public Const Rokh As String = "Rokh"
 
     ' For exporting Data
@@ -452,8 +453,6 @@ Public Module Public_Variables
 
         ' Load only if a new character
         If SelectedCharacter.Name <> CharacterName Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
             ' Update them all to 0 first
             Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0")
             Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "'")
@@ -463,8 +462,6 @@ Public Module Public_Variables
             If PlaySound Then
                 Call PlayNotifySound()
             End If
-
-            Application.UseWaitCursor = False
         End If
 
     End Sub

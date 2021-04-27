@@ -63,8 +63,6 @@ Public Class frmAddCharacter
         If ESIConnection.SetCharacterData(Nothing, "", False, True) Then
 
             ' Refresh the token data to get new scopes list if they added/removed
-
-
             If SelectedCharacter.ID <> DummyCharacterID And SelectedCharacter.ID > 0 Then
                 Call SelectedCharacter.RefreshTokenData()
             End If
@@ -83,7 +81,11 @@ Public Class frmAddCharacter
                     DBCommand = New SQLiteCommand("SELECT CHARACTER_NAME FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & DummyCharacterID, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
                     rsCheck.Read()
+                    Me.Cursor = Cursors.WaitCursor
+                    Application.DoEvents()
                     Call SetDefaultCharacter(rsCheck.GetString(0))
+                    Me.Cursor = Cursors.Default
+                    Application.DoEvents()
                 End If
             Else
                 MsgBox("Character successfully added to IPH", vbInformation, Application.ProductName)

@@ -1173,6 +1173,7 @@ Public Class ESI
                         Call Threads.StopAllThreads()
                         ' Reset the error handler
                         ESIErrorHandler = New ESIErrorProcessor
+                        Call EVEDB.RollbackSQLiteTransaction()
                         If CancelUpdatePrices Then
                             Return True ' They wanted this so don't error
                         Else
@@ -1887,6 +1888,7 @@ Public Class ESI
 
         Catch ex As Exception
             MsgBox("Failed to update public structure data: " & ex.Message, vbInformation, Application.ProductName)
+            Call EVEDB.CommitSQLiteTransaction()
 
             Return False
 

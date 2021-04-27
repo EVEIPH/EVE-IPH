@@ -166,7 +166,7 @@ Public Class MineralstoOre
                 OldIndex += 1
 
                 ' add the MineralRows to lpsolve
-                If .add_constraintex(OldIndex, MineralRows, OldOreColums, lpsolve_constr_types.GE, 10608667) = False Then
+                If .add_constraintex(OldIndex, MineralRows, OldOreColums, lpsolve_constr_types.GE, 23005901) = False Then
                     Application.DoEvents()
                 End If
 

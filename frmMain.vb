@@ -2822,7 +2822,7 @@ Public Class frmMain
                 ' For the update grids in the Blueprint Tab, only show the box if
                 ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
                 ' 2 - If the Price is clicked and the ME box has '-' in it
-                If (CurrentRow.SubItems(2).Text <> "-" And MEUpdate) Or (CurrentRow.SubItems(2).Text = "-" And PriceUpdate) Then
+                If (CurrentRow.SubItems(2).Text <> "-" And MEUpdate) Or PriceUpdate Then
                     Call ShowEditBox(ListRef)
                 End If
 
@@ -2951,7 +2951,7 @@ Public Class frmMain
 
                 Else ' Price per unit update
 
-                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(CurrentRow.SubItems(0).Text)
+                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(RemoveItemNameRuns(CurrentRow.SubItems(0).Text))
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Mark the line text with black incase it is red for no price
@@ -6429,7 +6429,7 @@ Tabs:
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
                                           ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref)
+                                          UserBPTabSettings.BuildT2T3Materials, True, BPBBItems)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6447,8 +6447,8 @@ Tabs:
         BPBuiltItems = SelectedBlueprint.BuiltComponentList.GetBuiltItemList
 
         'If chkBPUseOre.Checked Then
-        '    Dim MTO As New MineralstoOre()
-        '    BPRawMats = MTO.GetOresfromMinerals(MineRefineFacility.GetFacility(ProductionType.Refinery), BPRawMats)
+        Dim MTO As New MineralstoOre()
+        ' BPRawMats = MTO.GetOresfromMinerals(MineRefineFacility.GetFacility(ProductionType.Refinery), BPRawMats)
         'End If
 
         If chkBPBuildBuy.Checked Then
@@ -14224,7 +14224,7 @@ CheckTechs:
                             Else
                                 InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                             End If
-                            InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
+                            InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
@@ -14309,7 +14309,7 @@ CheckTechs:
                                 Else
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
-                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
+                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
@@ -14393,7 +14393,7 @@ CheckTechs:
                                 Else
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
-                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
+                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
                             ElseIf rbtnCalcCompareBuildBuy.Checked Then
                                 ' Use the Build/Buy best rate values (the blueprint was set to get these values above)
                                 InsertItem.ProfitPercent = ManufacturingBlueprint.GetTotalRawProfitPercent
@@ -14406,7 +14406,7 @@ CheckTechs:
                                 Else
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
-                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalRawCost
+                                InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
                             End If
 
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
@@ -18352,6 +18352,8 @@ Leave:
                 ImageFile = MiningShipTypeID.Porpoise
             Case Drake
                 ImageFile = MiningShipTypeID.Drake
+            Case Gnosis
+                ImageFile = MiningShipTypeID.gnosis
             Case Rokh
                 ImageFile = MiningShipTypeID.Rokh
             Case Prospect
@@ -18551,6 +18553,7 @@ Leave:
         Porpoise = 42244
         Procurer = 17480
         Drake = 24698
+        Gnosis = 3756
         Rokh = 24688
         Prospect = 33697
         Endurance = 37135
@@ -18852,6 +18855,8 @@ Leave:
 
         Dim HeavyWaterCost As Double = 0 ' Total it costs to run the Rorq in deployed mode
 
+        Dim MoonType As String = ""
+
         ' Error checks
         If Not CheckMiningEntryData() Then
             Exit Sub
@@ -18870,7 +18875,7 @@ Leave:
         End If
 
         ' First determine what type of stuff we are mining
-        SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
+        SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE "
         SQL &= "FROM ORES, ORE_LOCATIONS "
         SQL &= "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID AND COMPRESSED = 0 "
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
@@ -19002,6 +19007,7 @@ Leave:
             TempOre.OreName = readerMine.GetString(1)
             TempOre.OreVolume = readerMine.GetDouble(2)
             TempOre.UnitsToRefine = readerMine.GetInt32(3)
+            TempOre.Space = readerMine.GetString(4)
 
             ' If not using a hauler, adjust the cycle time based on round trip time
             If chkMineUseHauler.Checked = False Then
@@ -19228,7 +19234,23 @@ Leave:
             If Not OreList(i).OreName.Contains("Mercoxit") Or (OreList(i).OreName.Contains("Mercoxit") And cmbMineMiningLaser.Text.Contains("Deep Core")) Then
                 lstOreRow = New ListViewItem(CStr(OreList(i).OreID))
                 'The remaining columns are subitems  
-                lstOreRow.SubItems.Add(OreList(i).OreName)
+                MoonType = ""
+                If OreList(i).Space = "Moon" Then
+                    ' Add the type of moon this comes from
+                    Select Case OreList(i).OreName
+                        Case "Bitumens", "Coesite", "Sylvite", "Zeolites"
+                            MoonType = " (R4)"
+                        Case "Cobaltite", "Euxenite", "Scheelite", "Titanite"
+                            MoonType = " (R8)"
+                        Case "Chromite", "Otavite", "Sperrylite", "Vanadinite"
+                            MoonType = " (R16)"
+                        Case "Carnotite", "Cinnabar", "Pollucite", "Zircon"
+                            MoonType = " (R32)"
+                        Case "Loparite", "Monazite", "Xenotime", "Ytterbite"
+                            MoonType = " (R64)"
+                    End Select
+                End If
+                lstOreRow.SubItems.Add(OreList(i).OreName & MoonType)
                 lstOreRow.SubItems.Add(OreList(i).RefineType)
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitPrice, 2))
                 If OreList(i).RefineYield = 0 Then
@@ -19631,7 +19653,7 @@ Leave:
             If cmbMineBoosterShipName.Text = "Other" Then
                 ShipName = Rokh
             ElseIf cmbMineBoosterShipName.Text = "Battlecruiser" Then
-                ShipName = Drake
+                ShipName = Gnosis
             Else
                 ShipName = cmbMineBoosterShipName.Text
             End If
@@ -19659,7 +19681,7 @@ Leave:
         If cmbMineShipName.Text = "Other" Then
             ShipName = Rokh
         ElseIf cmbMineShipName.Text = "Battlecruiser" Then
-            ShipName = Drake
+            ShipName = Gnosis
         Else
             ShipName = cmbMineShipName.Text
         End If
@@ -21543,6 +21565,7 @@ Leave:
         Dim DroneYield As Double
         Dim UnitsToRefine As Integer
         Dim RefineType As String
+        Dim Space As String ' Location
     End Structure
 
     ' For sorting a list of Mining Ore

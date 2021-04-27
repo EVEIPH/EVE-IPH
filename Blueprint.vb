@@ -761,7 +761,7 @@ Public Class Blueprint
                     End If
 
                     ' Figure out if we build or buy
-                    Dim BuildFlag As Boolean = GetBuildBuyFlag(OneItemMarketPrice, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalRawCost,
+                    Dim BuildFlag As Boolean = GetBuildBuyFlag(OneItemMarketPrice, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalBuildCost,
                                                                ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
 
                     If (BuildBuy And BuildFlag) Then
@@ -1083,7 +1083,7 @@ Public Class Blueprint
                     End If
 
                     ' Figure out if we build or if cheaper to buy
-                    Dim BuildItem As Boolean = GetBuildBuyFlag(CurrentMaterial.GetCostPerItem, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalRawCost,
+                    Dim BuildItem As Boolean = GetBuildBuyFlag(CurrentMaterial.GetCostPerItem, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalBuildCost,
                                                                 ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
 
                     If (BuildItem And BuildBuy) Or Not BuildBuy Then
@@ -1142,10 +1142,12 @@ Public Class Blueprint
                             Next
                         End If
 
+                        Dim OverrideRunsModifier As Integer = -1
+
                         ' *** BUILD OR BUY ***
                         If BuildBuy Then
 
-                            SingleRunBuildCost = ComponentBlueprint.GetRawMaterials.GetTotalMaterialsCost / BuildQuantity
+                            SingleRunBuildCost = ComponentBlueprint.GetTotalBuildCost / BuildQuantity
                             CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
 
                             ' Save the item built, it's ME and the materials it used
@@ -1172,7 +1174,7 @@ Public Class Blueprint
                                 ' Override the total build cost (which for this is the number of runs we need and the cost of each) mostly for items with portion sizes
                                 ComponentMaterials.InsertMaterial(CurrentMaterial, SingleRunBuildCost * BuildQuantity)
                             Else
-                                ComponentMaterials.InsertMaterial(CurrentMaterial)
+                                ComponentMaterials.InsertMaterial(CurrentMaterial, ComponentBlueprint.GetTotalBuildCost)
                             End If
 
                         Else '*** BUILD ALL COMPONENTS ***
@@ -1181,7 +1183,7 @@ Public Class Blueprint
                                         ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
 
                             ' Insert the existing component that we are using into the component list as set in the original BP
-                            ComponentMaterials.InsertMaterial(CurrentMaterial)
+                            ComponentMaterials.InsertMaterial(CurrentMaterial, ComponentBlueprint.GetTotalBuildCost)
 
                         End If
 
@@ -2733,6 +2735,16 @@ SkipProcessing:
         Return TotalRawCost
     End Function
 
+    ' Returns the total build cost, which is everything except taxes and fees
+    Public Function GetTotalBuildCost() As Double
+        Dim BuildCost As Double = TotalRawCost
+
+        If DisplayTaxes <> 0 Then
+            BuildCost -= Taxes
+        End If
+        Return BuildCost - BrokerFees
+    End Function
+
     ' Returns the total cost of the blueprint using components
     Public Function GetTotalComponentCost() As Double
         Return TotalComponentCost
@@ -2874,7 +2886,7 @@ SkipProcessing:
 
     ' Gets the raw build cost for one unit
     Public Function GetRawItemUnitPrice() As Double
-        Return GetTotalRawCost() / PortionSize
+        Return GetTotalBuildCost() / PortionSize
     End Function
 
     ' Gets the component build cost for one unit
@@ -2910,8 +2922,6 @@ SkipProcessing:
     Public Function GetAdditionalCosts() As Double
         Return AdditionalCosts
     End Function
-
-
 
 #End Region
 
