@@ -1977,6 +1977,7 @@ Public Class ESI
     End Function
 
     Private Function GetURLSafeCode(SentCode As Byte()) As String
+        ' Note, says on jwt that we can't pad with "=" https://tools.ietf.org/html/rfc7515#section-2
         Return Convert.ToBase64String(SentCode).Replace("+", "-").Replace("/", "_").TrimEnd(CChar("="))
     End Function
 
