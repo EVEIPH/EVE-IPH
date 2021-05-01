@@ -4,7 +4,6 @@ Imports System.Globalization
 Imports System.Threading
 Imports System.IO
 Imports System.Net
-Imports MoreLinq.MoreEnumerable
 Imports GoogleAnalyticsClientDotNet
 
 Public Class frmMain
@@ -7630,6 +7629,7 @@ ExitForm:
             chkIceProducts.Checked = True
             chkGas.Checked = True
             chkAbyssalMaterials.Checked = True
+            chkMolecularForgedMaterials.Checked = True
             chkBPCs.Checked = True
             chkMisc.Checked = True
             chkAncientRelics.Checked = True
@@ -7651,6 +7651,7 @@ ExitForm:
             chkIceProducts.Checked = False
             chkGas.Checked = False
             chkAbyssalMaterials.Checked = False
+            chkMolecularForgedMaterials.Checked = False
             chkBPCs.Checked = False
             chkMisc.Checked = False
             chkAncientRelics.Checked = False
@@ -8091,6 +8092,10 @@ ExitForm:
     End Sub
 
     Private Sub chkAbyssalMaterials_CheckedChanged(sender As Object, e As EventArgs) Handles chkAbyssalMaterials.CheckedChanged
+        Call UpdatePriceList()
+    End Sub
+
+    Private Sub chkMolecularForgedMaterials_CheckedChanged(sender As Object, e As EventArgs) Handles chkMolecularForgedMaterials.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -8975,6 +8980,7 @@ ExitForm:
             chkIceProducts.Checked = .IceProducts
             chkGas.Checked = .Gas
             chkAbyssalMaterials.Checked = .AbyssalMaterials
+            chkMolecularForgedMaterials.Checked = .MolecularForgedMaterials
             chkBPCs.Checked = .BPCs
             chkMisc.Checked = .Misc
             chkAncientRelics.Checked = .AncientRelics
@@ -9331,6 +9337,7 @@ ExitForm:
             .IceProducts = chkIceProducts.Checked
             .Gas = chkGas.Checked
             .AbyssalMaterials = chkAbyssalMaterials.Checked
+            .MolecularForgedMaterials = chkMolecularForgedMaterials.Checked
             .BPCs = chkBPCs.Checked
             .Misc = chkMisc.Checked
             .AncientRelics = chkAncientRelics.Checked
@@ -10420,6 +10427,10 @@ ExitSub:
         '    SQL = SQL & "ITEM_GROUP LIKE 'Abyssal%' OR "
         '    ItemChecked = True
         'End If
+        If chkMolecularForgedMaterials.Checked Then
+            SQL = SQL & "ITEM_GROUP = 'Molecular-Forged Materials' OR "
+            ItemChecked = True
+        End If
         If chkBPCs.Checked Then
             SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
             ItemChecked = True

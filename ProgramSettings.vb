@@ -1664,6 +1664,7 @@ Public Class ProgramSettings
                     .Storyline = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
                     .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
                     .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AbyssalMaterials", DefaultPriceChecks))
+                    .MolecularForgedMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgedMaterials", DefaultPriceChecks))
 
                     Dim TempRegions As String = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegions", DefaultPriceRegion))
                     Dim RegionList As New List(Of String)
@@ -1732,7 +1733,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(65) As Setting
+        Dim UpdatePricesSettingsList(66) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1823,6 +1824,8 @@ Public Class ProgramSettings
 
             UpdatePricesSettingsList(65) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
 
+            UpdatePricesSettingsList(66) = New Setting("MolecularForgedMaterials", CStr(PriceSettings.MolecularForgedMaterials))
+
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
         Catch ex As Exception
@@ -1840,6 +1843,7 @@ Public Class ProgramSettings
             .IceProducts = DefaultPriceChecks
             .Gas = DefaultPriceChecks
             .AbyssalMaterials = DefaultPriceChecks
+            .MolecularForgedMaterials = DefaultPriceChecks
             .BPCs = DefaultPriceChecks
             .Misc = DefaultPriceChecks
             .AncientRelics = DefaultPriceChecks
@@ -5014,6 +5018,7 @@ Public Structure UpdatePriceTabSettings
     Dim IceProducts As Boolean
     Dim Gas As Boolean
     Dim AbyssalMaterials As Boolean
+    Dim MolecularForgedMaterials As Boolean
     Dim BPCs As Boolean
     Dim Misc As Boolean
     Dim AncientRelics As Boolean

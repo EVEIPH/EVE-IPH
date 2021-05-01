@@ -1,5 +1,4 @@
 ﻿Imports System.Net
-Imports System.Web
 Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
@@ -278,8 +277,12 @@ Public Class ESI
             ' Convert byte data to string
             Data = Encoding.UTF8.GetString(Response)
 
+            ' TODO Need to do some verification here
+
             ' Parse the data to the class
             AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            Dim x As String = AccessTokenOutput.access_token
+
             Success = True
 
         Catch ex As WebException
@@ -2048,6 +2051,12 @@ Public Class ESIErrorProcessor
 
         ' Ignore these for now
         If ErrorCode = 304 Or ErrorCode = -1 Or ErrorCode > 500 Then
+            Exit Sub
+        End If
+
+        If ErrorCode = 403 And ErrorResponse = "The given character doesn't have the required role(s)" And URL.Contains("/corporations/") Then
+            'This is a call to corporation roles that now errors if you don't have any roles. The response will return all roles for the characters in the corp and you 
+            ' need personel manager or director to really do it so don't error if it's just a character with those roles only
             Exit Sub
         End If
 
