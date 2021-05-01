@@ -281,8 +281,6 @@ Public Class ESI
 
             ' Parse the data to the class
             AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
-            Dim x As String = AccessTokenOutput.access_token
-
             Success = True
 
         Catch ex As WebException
