@@ -1613,54 +1613,63 @@ Public Class ProgramSettings
                 'Get the settings
                 With TempSettings
                     .AllRawMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AllRawMats", DefaultPriceChecks))
-                    .Minerals = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Minerals", DefaultPriceChecks))
-                    .IceProducts = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "IceProducts", DefaultPriceChecks))
+                    .AdvancedProtectiveTechnology = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedProtectiveTechnology", DefaultPriceChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Gas", DefaultPriceChecks))
-                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
-                    .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
-                    .AncientRelics = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientRelics", DefaultPriceChecks))
-                    .AncientSalvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientSalvage", DefaultPriceChecks))
-                    .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
-                    .StationComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StationComponents", DefaultPriceChecks))
+                    .IceProducts = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "IceProducts", DefaultPriceChecks))
+                    .MolecularForgingTools = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgingTools", DefaultPriceChecks))
+                    .FactionMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FactionMaterials", DefaultPriceChecks))
+                    .NamedComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "NamedComponents", DefaultPriceChecks))
+                    .Minerals = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Minerals", DefaultPriceChecks))
                     .Planetary = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Planetary", DefaultPriceChecks))
+                    .RawMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMaterials", DefaultPriceChecks))
+                    .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
+                    .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
+                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
+
+                    .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMoonMats", DefaultPriceChecks))
+                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
+                    .MolecularForgedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgedMats", DefaultPriceChecks))
+                    .Polymers = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Polymers", DefaultPriceChecks))
+                    .ProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProcessedMoonMats", DefaultPriceChecks))
+                    .RawMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMoonMats", DefaultPriceChecks))
+
+                    .AncientRelics = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientRelics", DefaultPriceChecks))
                     .Datacores = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Datacores", DefaultPriceChecks))
                     .Decryptors = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Decryptors", DefaultPriceChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
-                    .Celestials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Celestials", DefaultPriceChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
-                    .Implants = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Implants", DefaultPriceChecks))
-                    .RawMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMats", DefaultPriceChecks))
-                    .ProcessedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProcessedMats", DefaultPriceChecks))
-                    .AdvancedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMats", DefaultPriceChecks))
-                    .MatsandCompounds = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MatsandCompounds", DefaultPriceChecks))
-                    .DroneComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "DroneComponents", DefaultPriceChecks))
-                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
-                    .Polymers = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Polymers", DefaultPriceChecks))
-                    .Asteroids = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Asteroids", DefaultPriceChecks))
+                    .RDB = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RDB", DefaultPriceChecks))
+
                     .AllManufacturedItems = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AllManufacturedItems", DefaultPriceChecks))
+
                     .Ships = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Ships", DefaultPriceChecks))
+                    .Charges = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Charges", DefaultPriceChecks))
                     .Modules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Modules", DefaultPriceChecks))
                     .Drones = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Drones", DefaultPriceChecks))
-                    .Boosters = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Boosters", DefaultPriceChecks))
                     .Rigs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Rigs", DefaultPriceChecks))
-                    .Charges = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Charges", DefaultPriceChecks))
                     .Subsystems = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Subsystems", DefaultPriceChecks))
+                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
+                    .Boosters = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Boosters", DefaultPriceChecks))
                     .Structures = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Structures", DefaultPriceChecks))
-                    .Tools = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Tools", DefaultPriceChecks))
-                    .CapT2Components = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapT2Components", DefaultPriceChecks))
-                    .CapitalComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalComponents", DefaultPriceChecks))
-                    .Components = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Components", DefaultPriceChecks))
-                    .Hybrid = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Hybrid", DefaultPriceChecks))
-                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
+                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureRigs", DefaultPriceChecks))
+                    .Celestials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Celestials", DefaultPriceChecks))
+                    .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
+                    .Implants = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Implants", DefaultPriceChecks))
+
+                    .AdvancedCapComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedCapComponents", DefaultPriceChecks))
+                    .AdvancedComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedComponents", DefaultPriceChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FuelBlocks", DefaultPriceChecks))
+                    .ProtectiveComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProtectiveComponents", DefaultPriceChecks))
+                    .RAM = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RAM", DefaultPriceChecks))
+                    .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalShipComponents", DefaultPriceChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
+                    .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "SubsystemComponents", DefaultPriceChecks))
+
                     .T1 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T1", DefaultPriceChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T2", DefaultPriceChecks))
                     .T3 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T3", DefaultPriceChecks))
                     .Faction = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Faction", DefaultPriceChecks))
                     .Pirate = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Pirate", DefaultPriceChecks))
                     .Storyline = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
-                    .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
-                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AbyssalMaterials", DefaultPriceChecks))
+
                     .SelectedRegion = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegion", DefaultPriceRegion))
                     .SelectedSystem = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedSystem", DefaultPriceSystem))
                     .ItemsCombo = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ItemsCombo", DefaultPriceItemsCombo))
@@ -1707,84 +1716,89 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(65) As Setting
+        Dim UpdatePricesSettingsList(68) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
-            UpdatePricesSettingsList(1) = New Setting("Minerals", CStr(PriceSettings.Minerals))
-            UpdatePricesSettingsList(2) = New Setting("IceProducts", CStr(PriceSettings.IceProducts))
-            UpdatePricesSettingsList(3) = New Setting("Gas", CStr(PriceSettings.Gas))
-            UpdatePricesSettingsList(4) = New Setting("AncientRelics", CStr(PriceSettings.AncientRelics))
-            UpdatePricesSettingsList(5) = New Setting("AncientSalvage", CStr(PriceSettings.AncientSalvage))
-            UpdatePricesSettingsList(6) = New Setting("Salvage", CStr(PriceSettings.Salvage))
-            UpdatePricesSettingsList(7) = New Setting("StationComponents", CStr(PriceSettings.StationComponents))
+
+            UpdatePricesSettingsList(1) = New Setting("AdvancedProtectiveTechnology", CStr(PriceSettings.AdvancedProtectiveTechnology))
+            UpdatePricesSettingsList(2) = New Setting("Gas", CStr(PriceSettings.Gas))
+            UpdatePricesSettingsList(3) = New Setting("IceProducts", CStr(PriceSettings.IceProducts))
+            UpdatePricesSettingsList(4) = New Setting("MolecularForgingTools", CStr(PriceSettings.MolecularForgingTools))
+            UpdatePricesSettingsList(5) = New Setting("FactionMaterials", CStr(PriceSettings.FactionMaterials))
+            UpdatePricesSettingsList(6) = New Setting("NamedComponents", CStr(PriceSettings.NamedComponents))
+            UpdatePricesSettingsList(7) = New Setting("Minerals", CStr(PriceSettings.Minerals))
             UpdatePricesSettingsList(8) = New Setting("Planetary", CStr(PriceSettings.Planetary))
-            UpdatePricesSettingsList(9) = New Setting("Datacores", CStr(PriceSettings.Datacores))
-            UpdatePricesSettingsList(10) = New Setting("Decryptors", CStr(PriceSettings.Decryptors))
-            UpdatePricesSettingsList(11) = New Setting("RawMats", CStr(PriceSettings.RawMats))
-            UpdatePricesSettingsList(12) = New Setting("ProcessedMats", CStr(PriceSettings.ProcessedMats))
-            UpdatePricesSettingsList(13) = New Setting("AdvancedMats", CStr(PriceSettings.AdvancedMats))
-            UpdatePricesSettingsList(14) = New Setting("MatsandCompounds", CStr(PriceSettings.MatsandCompounds))
-            UpdatePricesSettingsList(15) = New Setting("DroneComponents", CStr(PriceSettings.DroneComponents))
-            UpdatePricesSettingsList(16) = New Setting("BoosterMats", CStr(PriceSettings.BoosterMats))
-            UpdatePricesSettingsList(17) = New Setting("Polymers", CStr(PriceSettings.Polymers))
-            UpdatePricesSettingsList(18) = New Setting("AllManufacturedItems", CStr(PriceSettings.AllManufacturedItems))
-            UpdatePricesSettingsList(19) = New Setting("Ships", CStr(PriceSettings.Ships))
-            UpdatePricesSettingsList(20) = New Setting("Modules", CStr(PriceSettings.Modules))
-            UpdatePricesSettingsList(21) = New Setting("Drones", CStr(PriceSettings.Drones))
-            UpdatePricesSettingsList(22) = New Setting("Boosters", CStr(PriceSettings.Boosters))
-            UpdatePricesSettingsList(23) = New Setting("Rigs", CStr(PriceSettings.Rigs))
-            UpdatePricesSettingsList(24) = New Setting("Charges", CStr(PriceSettings.Charges))
-            UpdatePricesSettingsList(25) = New Setting("Subsystems", CStr(PriceSettings.Subsystems))
-            UpdatePricesSettingsList(26) = New Setting("Structures", CStr(PriceSettings.Structures))
-            UpdatePricesSettingsList(27) = New Setting("Tools", CStr(PriceSettings.Tools))
-            UpdatePricesSettingsList(28) = New Setting("CapT2Components", CStr(PriceSettings.CapT2Components))
-            UpdatePricesSettingsList(29) = New Setting("CapitalComponents", CStr(PriceSettings.CapitalComponents))
-            UpdatePricesSettingsList(30) = New Setting("Components", CStr(PriceSettings.Components))
-            UpdatePricesSettingsList(31) = New Setting("Hybrid", CStr(PriceSettings.Hybrid))
-            UpdatePricesSettingsList(32) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
-            UpdatePricesSettingsList(33) = New Setting("T1", CStr(PriceSettings.T1))
-            UpdatePricesSettingsList(34) = New Setting("T2", CStr(PriceSettings.T2))
-            UpdatePricesSettingsList(35) = New Setting("T3", CStr(PriceSettings.T3))
-            UpdatePricesSettingsList(36) = New Setting("Faction", CStr(PriceSettings.Faction))
-            UpdatePricesSettingsList(37) = New Setting("Pirate", CStr(PriceSettings.Pirate))
-            UpdatePricesSettingsList(38) = New Setting("Storyline", CStr(PriceSettings.Storyline))
-            UpdatePricesSettingsList(39) = New Setting("SelectedRegion", PriceSettings.SelectedRegion)
-            UpdatePricesSettingsList(40) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
-            UpdatePricesSettingsList(41) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
-            UpdatePricesSettingsList(42) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
+            UpdatePricesSettingsList(9) = New Setting("RawMaterials", CStr(PriceSettings.RawMaterials))
+            UpdatePricesSettingsList(10) = New Setting("Salvage", CStr(PriceSettings.Salvage))
+            UpdatePricesSettingsList(11) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(12) = New Setting("BPCs", CStr(PriceSettings.BPCs))
 
-            UpdatePricesSettingsList(43) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
-            UpdatePricesSettingsList(44) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(13) = New Setting("AdvancedMoonMats", CStr(PriceSettings.AdvancedMoonMats))
+            UpdatePricesSettingsList(14) = New Setting("BoosterMats", CStr(PriceSettings.BoosterMats))
+            UpdatePricesSettingsList(15) = New Setting("MolecularForgedMats", CStr(PriceSettings.MolecularForgedMats))
+            UpdatePricesSettingsList(16) = New Setting("Polymers", CStr(PriceSettings.Polymers))
+            UpdatePricesSettingsList(17) = New Setting("ProcessedMoonMats", CStr(PriceSettings.ProcessedMoonMats))
+            UpdatePricesSettingsList(18) = New Setting("RawMoonMats", CStr(PriceSettings.RawMoonMats))
 
-            UpdatePricesSettingsList(45) = New Setting("Deployables", CStr(PriceSettings.Deployables))
-            UpdatePricesSettingsList(46) = New Setting("Celestials", CStr(PriceSettings.Celestials))
-            UpdatePricesSettingsList(47) = New Setting("Implants", CStr(PriceSettings.Implants))
+            UpdatePricesSettingsList(19) = New Setting("AncientRelics", CStr(PriceSettings.AncientRelics))
+            UpdatePricesSettingsList(20) = New Setting("Datacores", CStr(PriceSettings.Datacores))
+            UpdatePricesSettingsList(21) = New Setting("Decryptors", CStr(PriceSettings.Decryptors))
+            UpdatePricesSettingsList(22) = New Setting("RDB", CStr(PriceSettings.RDB))
 
-            UpdatePricesSettingsList(48) = New Setting("BPCs", CStr(PriceSettings.BPCs))
+            UpdatePricesSettingsList(23) = New Setting("AllManufacturedItems", CStr(PriceSettings.AllManufacturedItems))
 
-            UpdatePricesSettingsList(49) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
-            UpdatePricesSettingsList(50) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
+            UpdatePricesSettingsList(24) = New Setting("Ships", CStr(PriceSettings.Ships))
+            UpdatePricesSettingsList(25) = New Setting("Charges", CStr(PriceSettings.Charges))
+            UpdatePricesSettingsList(26) = New Setting("Modules", CStr(PriceSettings.Modules))
+            UpdatePricesSettingsList(27) = New Setting("Drones", CStr(PriceSettings.Drones))
+            UpdatePricesSettingsList(28) = New Setting("Rigs", CStr(PriceSettings.Rigs))
+            UpdatePricesSettingsList(29) = New Setting("Subsystems", CStr(PriceSettings.Subsystems))
+            UpdatePricesSettingsList(30) = New Setting("Deployables", CStr(PriceSettings.Deployables))
+            UpdatePricesSettingsList(31) = New Setting("Boosters", CStr(PriceSettings.Boosters))
+            UpdatePricesSettingsList(32) = New Setting("Structures", CStr(PriceSettings.Structures))
+            UpdatePricesSettingsList(33) = New Setting("StructureRigs", CStr(PriceSettings.StructureRigs))
+            UpdatePricesSettingsList(34) = New Setting("Celestials", CStr(PriceSettings.Celestials))
+            UpdatePricesSettingsList(35) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
+            UpdatePricesSettingsList(36) = New Setting("Implants", CStr(PriceSettings.Implants))
 
-            UpdatePricesSettingsList(51) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
-            UpdatePricesSettingsList(52) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
-            UpdatePricesSettingsList(53) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
-            UpdatePricesSettingsList(54) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
+            UpdatePricesSettingsList(37) = New Setting("AdvancedCapComponents", CStr(PriceSettings.AdvancedCapComponents))
+            UpdatePricesSettingsList(38) = New Setting("AdvancedComponents", CStr(PriceSettings.AdvancedComponents))
+            UpdatePricesSettingsList(39) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
+            UpdatePricesSettingsList(40) = New Setting("ProtectiveComponents", CStr(PriceSettings.ProtectiveComponents))
+            UpdatePricesSettingsList(41) = New Setting("RAM", CStr(PriceSettings.RAM))
+            UpdatePricesSettingsList(42) = New Setting("CapitalShipComponents", CStr(PriceSettings.CapitalShipComponents))
+            UpdatePricesSettingsList(43) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
+            UpdatePricesSettingsList(44) = New Setting("SubsystemComponents", CStr(PriceSettings.SubsystemComponents))
 
-            UpdatePricesSettingsList(55) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
-            UpdatePricesSettingsList(56) = New Setting("PPRawRegion", CStr(PriceSettings.PPRawRegion))
-            UpdatePricesSettingsList(57) = New Setting("PPRawSystem", CStr(PriceSettings.PPRawSystem))
-            UpdatePricesSettingsList(58) = New Setting("PPRawPriceMod", CStr(PriceSettings.PPRawPriceMod))
+            UpdatePricesSettingsList(45) = New Setting("T1", CStr(PriceSettings.T1))
+            UpdatePricesSettingsList(46) = New Setting("T2", CStr(PriceSettings.T2))
+            UpdatePricesSettingsList(47) = New Setting("T3", CStr(PriceSettings.T3))
+            UpdatePricesSettingsList(48) = New Setting("Faction", CStr(PriceSettings.Faction))
+            UpdatePricesSettingsList(49) = New Setting("Pirate", CStr(PriceSettings.Pirate))
+            UpdatePricesSettingsList(50) = New Setting("Storyline", CStr(PriceSettings.Storyline))
+            UpdatePricesSettingsList(51) = New Setting("SelectedRegion", PriceSettings.SelectedRegion)
+            UpdatePricesSettingsList(52) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
+            UpdatePricesSettingsList(53) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
+            UpdatePricesSettingsList(54) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
 
-            UpdatePricesSettingsList(59) = New Setting("PPItemsPriceType", CStr(PriceSettings.PPItemsPriceType))
-            UpdatePricesSettingsList(60) = New Setting("PPItemsRegion", CStr(PriceSettings.PPItemsRegion))
-            UpdatePricesSettingsList(61) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
-            UpdatePricesSettingsList(62) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
+            UpdatePricesSettingsList(55) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
+            UpdatePricesSettingsList(56) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
 
-            UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
-            UpdatePricesSettingsList(64) = New Setting("AbyssalMaterials", CStr(PriceSettings.AbyssalMaterials))
+            UpdatePricesSettingsList(57) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
+            UpdatePricesSettingsList(58) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
+            UpdatePricesSettingsList(59) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
+            UpdatePricesSettingsList(60) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
 
-            UpdatePricesSettingsList(65) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
+            UpdatePricesSettingsList(61) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
+            UpdatePricesSettingsList(62) = New Setting("PPRawRegion", CStr(PriceSettings.PPRawRegion))
+            UpdatePricesSettingsList(63) = New Setting("PPRawSystem", CStr(PriceSettings.PPRawSystem))
+            UpdatePricesSettingsList(64) = New Setting("PPRawPriceMod", CStr(PriceSettings.PPRawPriceMod))
+
+            UpdatePricesSettingsList(65) = New Setting("PPItemsPriceType", CStr(PriceSettings.PPItemsPriceType))
+            UpdatePricesSettingsList(66) = New Setting("PPItemsRegion", CStr(PriceSettings.PPItemsRegion))
+            UpdatePricesSettingsList(67) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
+            UpdatePricesSettingsList(68) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1799,46 +1813,56 @@ Public Class ProgramSettings
 
         With LocalSettings
             .AllRawMats = DefaultPriceChecks
-            .Minerals = DefaultPriceChecks
-            .IceProducts = DefaultPriceChecks
+            .AdvancedProtectiveTechnology = DefaultPriceChecks
             .Gas = DefaultPriceChecks
-            .AbyssalMaterials = DefaultPriceChecks
-            .BPCs = DefaultPriceChecks
-            .Misc = DefaultPriceChecks
-            .AncientRelics = DefaultPriceChecks
-            .AncientSalvage = DefaultPriceChecks
-            .Salvage = DefaultPriceChecks
-            .StationComponents = DefaultPriceChecks
+            .IceProducts = DefaultPriceChecks
+            .MolecularForgingTools = DefaultPriceChecks
+            .FactionMaterials = DefaultPriceChecks
+            .NamedComponents = DefaultPriceChecks
+            .Minerals = DefaultPriceChecks
             .Planetary = DefaultPriceChecks
+            .RawMaterials = DefaultPriceChecks
+            .Salvage = DefaultPriceChecks
+            .Misc = DefaultPriceChecks
+            .BPCs = DefaultPriceChecks
+
+            .AdvancedMoonMats = DefaultPriceChecks
+            .BoosterMats = DefaultPriceChecks
+            .MolecularForgedMats = DefaultPriceChecks
+            .Polymers = DefaultPriceChecks
+            .ProcessedMoonMats = DefaultPriceChecks
+            .RawMoonMats = DefaultPriceChecks
+
+            .AncientRelics = DefaultPriceChecks
             .Datacores = DefaultPriceChecks
             .Decryptors = DefaultPriceChecks
-            .RawMats = DefaultPriceChecks
-            .ProcessedMats = DefaultPriceChecks
-            .AdvancedMats = DefaultPriceChecks
-            .MatsandCompounds = DefaultPriceChecks
-            .DroneComponents = DefaultPriceChecks
-            .BoosterMats = DefaultPriceChecks
-            .Polymers = DefaultPriceChecks
-            .Asteroids = DefaultPriceChecks
+            .RDB = DefaultPriceChecks
+
             .AllManufacturedItems = DefaultPriceChecks
+
             .Ships = DefaultPriceChecks
+            .Charges = DefaultPriceChecks
             .Modules = DefaultPriceChecks
             .Drones = DefaultPriceChecks
-            .Boosters = DefaultPriceChecks
             .Rigs = DefaultPriceChecks
-            .Charges = DefaultPriceChecks
             .Subsystems = DefaultPriceChecks
-            .Structures = DefaultPriceChecks
-            .Tools = DefaultPriceChecks
-            .CapT2Components = DefaultPriceChecks
-            .CapitalComponents = DefaultPriceChecks
-            .Components = DefaultPriceChecks
-            .Hybrid = DefaultPriceChecks
-            .StructureComponents = DefaultPriceChecks
-            .FuelBlocks = DefaultPriceChecks
-            .Implants = DefaultPriceChecks
-            .Celestials = DefaultPriceChecks
             .Deployables = DefaultPriceChecks
+            .Boosters = DefaultPriceChecks
+            .Structures = DefaultPriceChecks
+            .StructureRigs = DefaultPriceChecks
+            .Celestials = DefaultPriceChecks
+            .StructureModules = DefaultPriceChecks
+            .Implants = DefaultPriceChecks
+
+            .AdvancedCapComponents = DefaultPriceChecks
+            .AdvancedComponents = DefaultPriceChecks
+            .FuelBlocks = DefaultPriceChecks
+            .ProtectiveComponents = DefaultPriceChecks
+            .RAM = DefaultPriceChecks
+            .CapitalShipComponents = DefaultPriceChecks
+            .StructureComponents = DefaultPriceChecks
+            .SubsystemComponents = DefaultPriceChecks
+
             .T1 = DefaultPriceChecks
             .T2 = DefaultPriceChecks
             .T3 = DefaultPriceChecks
@@ -4810,48 +4834,56 @@ End Structure
 ' For Update Price Settings
 Public Structure UpdatePriceTabSettings
     Dim AllRawMats As Boolean
-    Dim Minerals As Boolean
-    Dim IceProducts As Boolean
+
+    Dim AdvancedProtectiveTechnology As Boolean
     Dim Gas As Boolean
-    Dim AbyssalMaterials As Boolean
-    Dim BPCs As Boolean
-    Dim Misc As Boolean
-    Dim AncientRelics As Boolean
-    Dim AncientSalvage As Boolean
-    Dim Salvage As Boolean
+    Dim IceProducts As Boolean
+    Dim MolecularForgingTools As Boolean
+    Dim FactionMaterials As Boolean
+    Dim NamedComponents As Boolean
+    Dim Minerals As Boolean
     Dim Planetary As Boolean
+    Dim RawMaterials As Boolean
+    Dim Salvage As Boolean
+    Dim Misc As Boolean
+    Dim BPCs As Boolean
+
+    Dim AdvancedMoonMats As Boolean
+    Dim BoosterMats As Boolean
+    Dim MolecularForgedMats As Boolean
+    Dim Polymers As Boolean
+    Dim ProcessedMoonMats As Boolean
+    Dim RawMoonMats As Boolean
+
+    Dim AncientRelics As Boolean
     Dim Datacores As Boolean
     Dim Decryptors As Boolean
-    Dim RawMats As Boolean
-    Dim ProcessedMats As Boolean
-    Dim AdvancedMats As Boolean
-    Dim MatsandCompounds As Boolean
-    Dim DroneComponents As Boolean
-    Dim BoosterMats As Boolean
-    Dim Polymers As Boolean
-    Dim Asteroids As Boolean
+    Dim RDB As Boolean
 
     Dim AllManufacturedItems As Boolean
+
     Dim Ships As Boolean
     Dim Charges As Boolean
     Dim Modules As Boolean
     Dim Drones As Boolean
     Dim Rigs As Boolean
-    Dim Deployables As Boolean
     Dim Subsystems As Boolean
+    Dim Deployables As Boolean
     Dim Boosters As Boolean
     Dim Structures As Boolean
+    Dim StructureRigs As Boolean
     Dim Celestials As Boolean
-    Dim StationComponents As Boolean
     Dim StructureModules As Boolean
-    Dim Tools As Boolean
-    Dim FuelBlocks As Boolean
     Dim Implants As Boolean
-    Dim CapT2Components As Boolean
-    Dim CapitalComponents As Boolean
-    Dim Components As Boolean
-    Dim Hybrid As Boolean
+
+    Dim AdvancedCapComponents As Boolean
+    Dim AdvancedComponents As Boolean
+    Dim FuelBlocks As Boolean
+    Dim ProtectiveComponents As Boolean
+    Dim RAM As Boolean
+    Dim CapitalShipComponents As Boolean
     Dim StructureComponents As Boolean
+    Dim SubsystemComponents As Boolean
 
     Dim T1 As Boolean
     Dim T2 As Boolean

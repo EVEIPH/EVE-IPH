@@ -3334,7 +3334,12 @@ Tabs:
                         .Items.Add(AllSystems)
                         While rsData.Read
                             .Items.Add(rsData.GetString(0))
+                            ' Special processing for The Forge
+                            If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
+                                .Items.Add("Jita/Perim")
+                            End If
                         End While
+
                     ElseIf PriceTypeUpdate Then
                         ' Manually enter these
                         .Items.Add("Min Sell")
@@ -7421,196 +7426,6 @@ ExitForm:
         txtBPMarketPriceEdit.Focus()
     End Sub
 
-    ' Private Sub CalculateCompressedOres(ByVal bpMaterialList As List(Of Material))
-    'Dim newList As New List(Of OreMineral)
-    '    Dim oreQuantityList As ListViewItem
-    '    Dim materialQuantityList As ListViewItem
-    '    Dim materialList As New List(Of Material)
-    '    Dim oreID As Integer
-    '    Dim oreSkillReproSkillID As Integer
-    '    Dim reproSkill As Integer
-    '    Dim reproEffSkill As Integer
-    '    Dim reproSpecOreSkill As Integer
-    '    Dim refinePercent As Double ' Start with 50% refining
-    '    Dim stationTax As Double
-    '    Dim lockedList As New List(Of Integer)
-    '    Dim mineralTotal As Double
-    '    Dim oreCost As Double
-
-    '    Dim skillDict As New Dictionary(Of String, Integer) From {
-    '            {"Arkonor", 12180},
-    '            {"Bistot", 12181},
-    '            {"Crokite", 12182},
-    '            {"Dark Ochre", 12183},
-    '            {"Gneiss", 12184},
-    '            {"Hedbergite", 12185},
-    '            {"Hemorphite", 12186},
-    '            {"Jaspet", 12187},
-    '            {"Kernite", 12188},
-    '            {"Mercoxit", 12189},
-    '            {"Omber", 12190},
-    '            {"Plagioclase", 12191},
-    '            {"Pyroxeres", 12192},
-    '            {"Scordite", 12193},
-    '            {"Spodumain", 12194},
-    '            {"Veldspar", 12195}}
-
-
-    '    Dim oreSQL = "SELECT o.OreID, o.MineralID, o.MineralQuantity, i.typeName, g.groupName FROM ORE_REFINE o " +
-    '                 "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
-    '                 "JOIN INVENTORY_GROUPS g ON i.groupID = g.groupID " +
-    '                 "WHERE o.OreID = {0} " +
-    '                 "ORDER BY o.MineralQuantity DESC"
-
-    '    Dim mineralSQL = "SELECT o.OreID FROM ORE_REFINE o " +
-    '                     "JOIN INVENTORY_TYPES i ON o.OreID = i.typeID " +
-    '                     "WHERE i.typeName LIKE 'Compressed%' " +
-    '                     "AND o.MineralID = {0} " +
-    '                     "ORDER BY o.MineralQuantity DESC LIMIT 1"
-
-    '    reproSkill = SelectedCharacter.Skills.GetSkillLevel(3385)
-    '    reproEffSkill = SelectedCharacter.Skills.GetSkillLevel(3389)
-
-    '    If BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StationFacility Then
-    '        Using DBCommand = New SQLiteCommand(String.Format("SELECT REPROCESSING_EFFICIENCY FROM STATIONS WHERE STATION_NAME = '{0}'", BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).FacilityName), EVEDB.DBREf)
-    '            refinePercent = CType(DBCommand.ExecuteScalar, Double)
-    '        End Using
-    '    ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.StructureFacility Then
-    '        stationTax = 0.0
-    '        refinePercent = 0.5
-    '    ElseIf BPTabFacility.GetFacility(BPTabFacility.GetCurrentFacilityProductionType).GetFacilityTypeDescription = ManufacturingFacility.POSFacility Then
-    '        stationTax = 0.0
-    '        refinePercent = 0.52
-    '    End If
-
-    '    If refinePercent = 0 Then
-    '        refinePercent = 0.5 ' Setting the refine percent to 50 if it comes back as 0 for corrupt station data.
-    '    End If
-
-    '    For i = 0 To bpMaterialList.Count - 1 Step 1
-    '        Dim loopCounter = i
-    '        Dim currentMineralID = CType(bpMaterialList(loopCounter).GetMaterialTypeID(), Integer)
-
-    '        If (currentMineralID > 40) Then
-    '            materialList.Add(bpMaterialList(i))
-    '            Continue For
-    '        End If
-
-    '        Using DBCommand = New SQLiteCommand(String.Format(mineralSQL, currentMineralID), EVEDB.DBREf)
-    '            oreID = CType(DBCommand.ExecuteScalar(), Integer)
-    '        End Using
-
-    '        If oreID = 28367 And currentMineralID = 36 Then
-    '            oreID = 28397
-    '        End If
-
-    '        ' Reprocessing = 3385 -> 0.03 => 0.15
-    '        ' Repro Efficiency = 3389 -> 0.02 => 0.10
-    '        ' Ore Special = 12180-12195 -> 0.02 => 0.10
-    '        ' Station Equipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
-    '        ' Beancounter 27169, 27174, 27175 (2, 4, 1) 
-
-    '        Using DBCommand = New SQLiteCommand(String.Format(oreSQL, oreID), EVEDB.DBREf)
-    '            Dim result = DBCommand.ExecuteReader()
-    '            While result.Read()
-    '                skillDict.TryGetValue(result.GetString(4), oreSkillReproSkillID)
-    '                reproSpecOreSkill = SelectedCharacter.Skills.GetSkillLevel(oreSkillReproSkillID)
-
-    '                Dim mineralRefinePercent As Double = refinePercent * (1 + reproSkill * 0.03) * (1 + reproEffSkill * 0.02) * (1 + reproSpecOreSkill * 0.02) * (1 + UserApplicationSettings.RefiningImplantValue)
-
-    '                Dim mineralQuantity = result.GetInt32(2) * mineralRefinePercent
-
-    '                'Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
-
-
-
-    '                ' TODO : FIX THE MULTIPLIER
-    '                mineralTotal = newList.Where(Function(b) b.MineralID = currentMineralID).Sum(Function(a) a.MineralQuantity * a.OreMultiplier)
-
-    '                If mineralTotal < bpMaterialList(loopCounter).GetQuantity() Or currentMineralID <> result.GetInt32(1) Then
-    '                    newList.Add(New OreMineral With {
-    '                                .OreID = result.GetInt32(0),
-    '                                .MineralID = result.GetInt32(1),
-    '                                .MineralQuantity = mineralQuantity,
-    '                                .OreMultiplier = 0,
-    '                                .OreName = result.GetString(3),
-    '                                .OreSelectedFor = currentMineralID})
-    '                End If
-    '            End While
-
-    '            ' Make sure we're not grabbing the same Ore numerous times.
-    '            Dim currentMineral = newList.FirstOrDefault(Function(x) x.OreID = oreID And x.MineralID = currentMineralID And x.Locked = False)
-
-    '            If currentMineral Is Nothing Then
-    '                Continue For
-    '            End If
-
-    '            If currentMineralID = 35 And oreID = 28420 Then
-    '                mineralTotal = 0
-    '            End If
-    '            Dim multiplier = (bpMaterialList(loopCounter).GetQuantity() - mineralTotal) / currentMineral.MineralQuantity
-
-    '            If (multiplier > 0) Then
-    '                Dim updateMultipliers = newList.Where(Function(y) y.OreID = currentMineral.OreID And y.OreSelectedFor = currentMineralID)
-    '                lockedList.Add(oreID)
-    '                For Each item As OreMineral In updateMultipliers
-    '                    item.OreMultiplier = CType(Math.Ceiling(multiplier), Int64)
-    '                    ' If an ore has been 'multiplied' then lock it so we can no longer modify it.
-    '                    item.Locked = True
-    '                Next
-    '            End If
-
-    '            ' Moved this down here because the Tritanium/Pyerite problem wasn't getting resolved if the item only required the two minerals.
-    '            ' This will fix the issue by forcing it to reset Spodumain properly.
-    '            Dim mineralList = newList.Where(Function(b) b.MineralID = currentMineralID)
-
-    '            Dim tempList = mineralList.OrderByDescending(Function(c) c.OreMultiplier).Where(Function(o) o.OreID = 28420)
-
-    '            If tempList.Count > 1 Then
-    '                Dim tmpRange = newList.Where(Function(y) y.OreID = 28420 And y.OreSelectedFor = tempList(1).OreSelectedFor And y.OreMultiplier > 0)
-    '                For Each item As OreMineral In tmpRange
-    '                    item.OreMultiplier = 0
-    '                Next
-    '            End If
-
-    '        End Using
-
-    '    Next
-
-    '    'Populate the final list with distinct ore names (no point showing Compressed Arkonor 3 times for each mineral type)
-    '    Dim oreList = newList.Where(Function(x) x.OreMultiplier > 0).DistinctBy(Function(c) c.OreSelectedFor)
-
-    '    For Each item As OreMineral In oreList
-    '        oreQuantityList = New ListViewItem(item.OreName)
-    '        oreQuantityList.SubItems.Add(CType(item.OreMultiplier, String))
-    '        oreQuantityList.SubItems.Add("-")
-    '        Using DBCommand = New SQLiteCommand(String.Format("SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0}", item.OreID), EVEDB.DBREf)
-    '            Dim avgPrice = CType(DBCommand.ExecuteScalar(), Double)
-    '            oreQuantityList.SubItems.Add(FormatNumber(avgPrice, 2))
-    '            oreQuantityList.SubItems.Add(FormatNumber(avgPrice * item.OreMultiplier, 2))
-
-    '            oreCost += avgPrice * item.OreMultiplier
-    '        End Using
-    '        Call lstBPRawMats.Items.Add(oreQuantityList)
-
-    '    Next
-
-    '    For Each item As Material In materialList
-    '        materialQuantityList = New ListViewItem(item.GetMaterialName())
-    '        materialQuantityList.SubItems.Add(CType(item.GetQuantity(), String))
-    '        materialQuantityList.SubItems.Add("-")
-    '        materialQuantityList.SubItems.Add(FormatNumber(item.GetCostPerItem(), 2))
-    '        materialQuantityList.SubItems.Add(FormatNumber(item.GetTotalCost(), 2))
-    '        oreCost += item.GetTotalCost()
-
-    '        Call lstBPRawMats.Items.Add(materialQuantityList)
-    '    Next
-
-    '    lblBPRawMatCost.Text = FormatNumber(oreCost, 2)
-
-
-    'End Sub
-
 #End Region
 
 #Region "Update Prices Tab"
@@ -7627,7 +7442,7 @@ ExitForm:
         txtPriceItemFilter.Enabled = Not Value
         lblItemFilter.Enabled = Not Value
         btnClearItemFilter.Enabled = Not Value
-        chkPriceRawMaterialPrices.Enabled = Not Value
+        chkPriceMaterialResearchEqPrices.Enabled = Not Value
         chkPriceManufacturedPrices.Enabled = Not Value
         btnToggleAllPriceItems.Enabled = Not Value
         btnDownloadPrices.Enabled = Not Value
@@ -7657,11 +7472,11 @@ ExitForm:
 
             Application.DoEvents()
 
-            If chkPriceManufacturedPrices.Checked = False And chkPriceRawMaterialPrices.Checked = False Then
+            If chkPriceManufacturedPrices.Checked = False And chkPriceMaterialResearchEqPrices.Checked = False Then
                 lstPricesView.Items.Clear()
                 btnToggleAllPriceItems.Text = "Select All Items"
             Else
-                If chkPriceManufacturedPrices.Checked = True And chkPriceRawMaterialPrices.Checked = True Then
+                If chkPriceManufacturedPrices.Checked = True And chkPriceMaterialResearchEqPrices.Checked = True Then
                     btnToggleAllPriceItems.Text = "Uncheck All Items"
                 Else
                     btnToggleAllPriceItems.Text = "Select All Items"
@@ -7673,53 +7488,38 @@ ExitForm:
 
     ' Checks or unchecks just the prices for raw material items
     Private Sub CheckAllRawPrices()
-
+        Dim BoolToggle As Boolean = False
         RunUpdatePriceList = False
 
         ' Check all item boxes and do not run updates
-        If chkPriceRawMaterialPrices.Checked = True Then
-            chkMinerals.Checked = True
-            chkIceProducts.Checked = True
-            chkGas.Checked = True
-            chkAbyssalMaterials.Checked = True
-            chkBPCs.Checked = True
-            chkMisc.Checked = True
-            chkAncientRelics.Checked = True
-            chkAncientSalvage.Checked = True
-            chkSalvage.Checked = True
-            chkPlanetary.Checked = True
-            chkDatacores.Checked = True
-            chkDecryptors.Checked = True
-            chkRawMats.Checked = True
-            chkProcessedMats.Checked = True
-            chkAdvancedMats.Checked = True
-            chkMatsandCompounds.Checked = True
-            chkDroneComponents.Checked = True
-            chkBoosterMats.Checked = True
-            chkPolymers.Checked = True
-            chkAsteroids.Checked = True
-        Else ' Turn off all item checks
-            chkMinerals.Checked = False
-            chkIceProducts.Checked = False
-            chkGas.Checked = False
-            chkAbyssalMaterials.Checked = False
-            chkBPCs.Checked = False
-            chkMisc.Checked = False
-            chkAncientRelics.Checked = False
-            chkAncientSalvage.Checked = False
-            chkSalvage.Checked = False
-            chkPlanetary.Checked = False
-            chkDatacores.Checked = False
-            chkDecryptors.Checked = False
-            chkRawMats.Checked = False
-            chkProcessedMats.Checked = False
-            chkAdvancedMats.Checked = False
-            chkMatsandCompounds.Checked = False
-            chkDroneComponents.Checked = False
-            chkBoosterMats.Checked = False
-            chkPolymers.Checked = False
-            chkAsteroids.Checked = False
+        If chkPriceMaterialResearchEqPrices.Checked = True Then
+            BoolToggle = True
         End If
+
+        chkAdvancedProtectiveTechnology.Checked = BoolToggle
+        chkGas.Checked = BoolToggle
+        chkIceProducts.Checked = BoolToggle
+        chkMolecularForgingTools.Checked = BoolToggle
+        chkFactionMaterials.Checked = BoolToggle
+        chkNamedComponents.Checked = BoolToggle
+        chkMinerals.Checked = BoolToggle
+        chkPlanetary.Checked = BoolToggle
+        chkRawMaterials.Checked = BoolToggle
+        chkSalvage.Checked = BoolToggle
+        chkBPCs.Checked = BoolToggle
+        chkMisc.Checked = BoolToggle
+
+        chkAncientRelics.Checked = BoolToggle
+        chkDatacores.Checked = BoolToggle
+        chkDecryptors.Checked = BoolToggle
+        chkRDb.Checked = BoolToggle
+
+        chkAdvancedMats.Checked = BoolToggle
+        chkBoosterMats.Checked = BoolToggle
+        chkMolecularForgedMaterials.Checked = BoolToggle
+        chkPolymers.Checked = BoolToggle
+        chkProcessedMats.Checked = BoolToggle
+        chkRawMoonMats.Checked = BoolToggle
 
         RunUpdatePriceList = True
 
@@ -7730,50 +7530,36 @@ ExitForm:
 
         RunUpdatePriceList = False
 
+        Dim BoolToggle As Boolean = False
+        RunUpdatePriceList = False
+
         ' Check all item boxes and do not run updates
         If chkPriceManufacturedPrices.Checked = True Then
-            chkShips.Checked = True
-            chkModules.Checked = True
-            chkDrones.Checked = True
-            chkBoosters.Checked = True
-            chkRigs.Checked = True
-            chkCharges.Checked = True
-            chkSubsystems.Checked = True
-            chkStructures.Checked = True
-            chkTools.Checked = True
-            chkCapT2Components.Checked = True
-            chkCapitalComponents.Checked = True
-            chkComponents.Checked = True
-            chkHybrid.Checked = True
-            chkStructureComponents.Checked = True
-            chkFuelBlocks.Checked = True
-            chkStructureRigs.Checked = True
-            chkCelestials.Checked = True
-            chkDeployables.Checked = True
-            chkImplants.Checked = True
-            chkStructureModules.Checked = True
-        Else ' Turn off all item checks
-            chkShips.Checked = False
-            chkModules.Checked = False
-            chkDrones.Checked = False
-            chkBoosters.Checked = False
-            chkRigs.Checked = False
-            chkCharges.Checked = False
-            chkSubsystems.Checked = False
-            chkStructures.Checked = False
-            chkTools.Checked = False
-            chkCapT2Components.Checked = False
-            chkCapitalComponents.Checked = False
-            chkComponents.Checked = False
-            chkStructureComponents.Checked = False
-            chkHybrid.Checked = False
-            chkFuelBlocks.Checked = False
-            chkStructureRigs.Checked = False
-            chkCelestials.Checked = False
-            chkDeployables.Checked = False
-            chkImplants.Checked = False
-            chkStructureModules.Checked = False
+            BoolToggle = True
         End If
+
+        chkShips.Checked = BoolToggle
+        chkCharges.Checked = BoolToggle
+        chkModules.Checked = BoolToggle
+        chkDrones.Checked = BoolToggle
+        chkRigs.Checked = BoolToggle
+        chkSubsystems.Checked = BoolToggle
+        chkDeployables.Checked = BoolToggle
+        chkBoosters.Checked = BoolToggle
+        chkStructures.Checked = BoolToggle
+        chkStructureRigs.Checked = BoolToggle
+        chkCelestials.Checked = BoolToggle
+        chkStructureModules.Checked = BoolToggle
+        chkImplants.Checked = BoolToggle
+
+        chkCapT2Components.Checked = BoolToggle
+        chkComponents.Checked = BoolToggle
+        chkFuelBlocks.Checked = BoolToggle
+        chkProtectiveComponents.Checked = BoolToggle
+        chkRAM.Checked = BoolToggle
+        chkCapitalShipComponents.Checked = BoolToggle
+        chkStructureComponents.Checked = BoolToggle
+        chkSubsystemComponents.Checked = BoolToggle
 
         RunUpdatePriceList = True
 
@@ -7783,11 +7569,11 @@ ExitForm:
 
         Call CheckAllManufacturedPrices()
 
-        If chkPriceManufacturedPrices.Checked = False And chkPriceRawMaterialPrices.Checked = False Then
+        If chkPriceManufacturedPrices.Checked = False And chkPriceMaterialResearchEqPrices.Checked = False Then
             lstPricesView.Items.Clear()
             btnToggleAllPriceItems.Text = "Select All Items"
         Else
-            If chkPriceManufacturedPrices.Checked = True And chkPriceRawMaterialPrices.Checked = True Then
+            If chkPriceManufacturedPrices.Checked = True And chkPriceMaterialResearchEqPrices.Checked = True Then
                 btnToggleAllPriceItems.Text = "Uncheck All Items"
             Else
                 btnToggleAllPriceItems.Text = "Select All Items"
@@ -7800,15 +7586,15 @@ ExitForm:
 
     End Sub
 
-    Private Sub chkPriceRawMaterialPrices_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkPriceRawMaterialPrices.CheckedChanged
+    Private Sub chkPriceRawMaterialPrices_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkPriceMaterialResearchEqPrices.CheckedChanged
 
         Call CheckAllRawPrices()
 
-        If chkPriceManufacturedPrices.Checked = False And chkPriceRawMaterialPrices.Checked = False Then
+        If chkPriceManufacturedPrices.Checked = False And chkPriceMaterialResearchEqPrices.Checked = False Then
             lstPricesView.Items.Clear()
             btnToggleAllPriceItems.Text = "Select All Items"
         Else
-            If chkPriceManufacturedPrices.Checked = True And chkPriceRawMaterialPrices.Checked = True Then
+            If chkPriceManufacturedPrices.Checked = True And chkPriceMaterialResearchEqPrices.Checked = True Then
                 btnToggleAllPriceItems.Text = "Uncheck All Items"
             Else
                 btnToggleAllPriceItems.Text = "Select All Items"
@@ -7827,15 +7613,15 @@ ExitForm:
         RunUpdatePriceList = False
         PriceToggleButtonHit = True
 
-        If btnToggleAllPriceItems.Text = "Select All Items" And (chkPriceManufacturedPrices.Checked = False Or chkPriceRawMaterialPrices.Checked = False) Then
+        If btnToggleAllPriceItems.Text = "Select All Items" And (chkPriceManufacturedPrices.Checked = False Or chkPriceMaterialResearchEqPrices.Checked = False) Then
             ' Set the name, then uncheck all
             btnToggleAllPriceItems.Text = "Uncheck All Items"
-            chkPriceRawMaterialPrices.Checked = True
+            chkPriceMaterialResearchEqPrices.Checked = True
             chkPriceManufacturedPrices.Checked = True
-        ElseIf btnToggleAllPriceItems.Text = "Uncheck All Items" And chkPriceManufacturedPrices.Checked = True And chkPriceRawMaterialPrices.Checked = True Then
+        ElseIf btnToggleAllPriceItems.Text = "Uncheck All Items" And chkPriceManufacturedPrices.Checked = True And chkPriceMaterialResearchEqPrices.Checked = True Then
             ' Turn off all item checks
             btnToggleAllPriceItems.Text = "Select All Items"
-            chkPriceRawMaterialPrices.Checked = False
+            chkPriceMaterialResearchEqPrices.Checked = False
             chkPriceManufacturedPrices.Checked = False
         End If
 
@@ -7906,8 +7692,9 @@ ExitForm:
             ItemsSelected = True
         End If
 
-        If chkBoosters.Checked Then
+        If chkStructureRigs.Checked Then
             T1 = True
+            T2 = True
             ItemsSelected = True
         End If
 
@@ -8047,217 +7834,34 @@ ExitForm:
 
     End Function
 
-    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEVEMarketer.CheckedChanged
-        If rbtnPriceSourceEVEMarketer.Checked Then
-            Call UpdateStructurePriceButtons()
-        End If
-    End Sub
-
-    Private Sub rbtnPriceSourceCCPData_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceCCPData.CheckedChanged
-        If rbtnPriceSourceCCPData.Checked Then
-            Call UpdateStructurePriceButtons()
-        End If
-    End Sub
-
-    Private Sub UpdateStructurePriceButtons()
+    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEVEMarketer.CheckedChanged, rbtnPriceSourceCCPData.CheckedChanged
         If rbtnPriceSourceCCPData.Checked Then
             btnAddStructureIDs.Visible = True
-            'btnViewSavedStructures.Visible = True
-            '' Make sure the price types have split price option
-            'If Not cmbRawMatsSplitPrices.Items.Contains("Split Price") Then
-            '    cmbRawMatsSplitPrices.Items.Add("Split Price")
-            'End If
-            'If Not cmbItemsSplitPrices.Items.Contains("Split Price") Then
-            '    cmbItemsSplitPrices.Items.Add("Split Price")
-            'End If
         Else
             btnAddStructureIDs.Visible = False
             btnViewSavedStructures.Visible = False
-            '' Remove for eve marketer
-            'If cmbRawMatsSplitPrices.Items.Contains("Split Price") Then
-            '    cmbRawMatsSplitPrices.Items.Remove("Split Price")
-            'End If
-            'If cmbItemsSplitPrices.Items.Contains("Split Price") Then
-            '    cmbItemsSplitPrices.Items.Remove("Split Price")
-            'End If
         End If
     End Sub
 
-    Private Sub chkPricesT1_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT1.Click
+    Private Sub chkPricesTech_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT1.Click, chkPricesT2.Click, chkPricesT3.Click, chkPricesT4.Click, chkPricesT5.Click, chkPricesT6.Click
         If RefreshList Then
             Call UpdatePriceList()
         End If
     End Sub
 
-    Private Sub chkPricesT2_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT2.Click
-        If RefreshList Then
-            Call UpdatePriceList()
-        End If
-    End Sub
-
-    Private Sub chkPricesT3_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT3.Click
-        If RefreshList Then
-            Call UpdatePriceList()
-        End If
-    End Sub
-
-    Private Sub chkPricesT4_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT4.Click
-        If RefreshList Then
-            Call UpdatePriceList()
-        End If
-    End Sub
-
-    Private Sub chkPricesT5_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT5.Click
-        If RefreshList Then
-            Call UpdatePriceList()
-        End If
-    End Sub
-
-    Private Sub chkPricesT6_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles chkPricesT6.Click
-        If RefreshList Then
-            Call UpdatePriceList()
-        End If
-    End Sub
-
-    Private Sub chkMinerals_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMinerals.CheckedChanged
+    Private Sub ProcessnonTechItemChecks_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAdvancedProtectiveTechnology.CheckedChanged,
+        chkGas.CheckedChanged, chkIceProducts.CheckedChanged, chkMolecularForgingTools.CheckedChanged, chkFactionMaterials.CheckedChanged, chkNamedComponents.CheckedChanged,
+        chkMinerals.CheckedChanged, chkPlanetary.CheckedChanged, chkRawMaterials.CheckedChanged, chkSalvage.CheckedChanged, chkMisc.CheckedChanged, chkBPCs.CheckedChanged,
+        chkDatacores.CheckedChanged, chkDecryptors.CheckedChanged, chkAncientRelics.CheckedChanged, chkRDb.CheckedChanged, chkAdvancedMats.CheckedChanged, chkBoosterMats.CheckedChanged,
+        chkMolecularForgedMaterials.CheckedChanged, chkPolymers.CheckedChanged, chkProcessedMats.CheckedChanged, chkRawMoonMats.CheckedChanged, chkBoosters.CheckedChanged,
+        chkCapT2Components.CheckedChanged, chkComponents.CheckedChanged, chkFuelBlocks.CheckedChanged, chkProtectiveComponents.CheckedChanged, chkRAM.CheckedChanged,
+        chkCapitalShipComponents.CheckedChanged, chkStructureComponents.CheckedChanged, chkSubsystemComponents.CheckedChanged, chkDeployables.CheckedChanged,
+        chkStructureModules.CheckedChanged, chkImplants.CheckedChanged, chkCelestials.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
-    Private Sub chkIceProducts_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkIceProducts.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkDataCores_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDatacores.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkDecryptors_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDecryptors.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkGas_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkGas.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkAbyssalMaterials_CheckedChanged(sender As Object, e As EventArgs) Handles chkAbyssalMaterials.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPCs.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkMisc_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMisc.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkSalvage_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkSalvage.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkAncientSalvage_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAncientSalvage.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkAncientRelics_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAncientRelics.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkPolymers_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkPolymers.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkRawMats_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRawMats.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkPlanetary_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkPlanetary.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkAsteroids_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkAsteroids.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkProcessedMats_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkProcessedMats.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkAdvancedMats_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAdvancedMats.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkMatsandCompounds_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMatsandCompounds.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkDroneComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDroneComponents.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkStructureRigs_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStructureRigs.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkDeployables_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkDeployables.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkStructureModules_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStructureModules.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkCelestial_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkCelestials.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkImplants_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkImplants.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkBoosterMats_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBoosterMats.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkTools_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkTools.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkFuelBlocks_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkFuelBlocks.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkHybrid_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkHybrid.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkStructureComponents_CheckedChanged(sender As Object, e As EventArgs) Handles chkStructureComponents.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkComponents.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkCapitalComponents_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkCapitalComponents.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkCapT2Components_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkCapT2Components.CheckedChanged
-        Call UpdatePriceList()
-    End Sub
-
-    Private Sub chkBoosters_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBoosters.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkRigs_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkRigs.CheckedChanged
+    Private Sub chkTechManufacturedItems_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkModules.CheckedChanged, chkDrones.CheckedChanged, chkRigs.CheckedChanged,
+            chkSubsystems.CheckedChanged, chkStructures.CheckedChanged, chkUpdatePricesNoPrice.CheckedChanged, chkStructureRigs.CheckedChanged
         RefreshList = False
         Call UpdateTechChecks()
         Call UpdatePriceList()
@@ -8279,20 +7883,6 @@ ExitForm:
 
     End Sub
 
-    Private Sub chkModules_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkModules.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkDrones_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkDrones.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
     Private Sub chkCharges_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkCharges.CheckedChanged
 
         If chkCharges.Checked = True Then
@@ -8308,60 +7898,10 @@ ExitForm:
 
     End Sub
 
-    Private Sub chkSubsystems_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkSubsystems.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkStructures_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkStructures.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkUpdatPricesNoPrice_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkUpdatePricesNoPrice.CheckedChanged
-        RefreshList = False
-        Call UpdateTechChecks()
-        Call UpdatePriceList()
-        RefreshList = True
-    End Sub
-
-    Private Sub chkSystems1_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems1.CheckedChanged
+    Private Sub chkSystems1_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems1.CheckedChanged, chkSystems2.CheckedChanged, chkSystems3.CheckedChanged,
+            chkSystems4.CheckedChanged, chkSystems5.CheckedChanged, chkSystems6.CheckedChanged
         If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(1)
-        End If
-    End Sub
-
-    Private Sub chkSystems2_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems2.CheckedChanged
-        If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(2)
-        End If
-    End Sub
-
-    Private Sub chkSystems3_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems3.CheckedChanged
-        If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(3)
-        End If
-    End Sub
-
-    Private Sub chkSystems4_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems4.CheckedChanged
-        If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(4)
-        End If
-    End Sub
-
-    Private Sub chkSystems5_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems5.CheckedChanged
-        If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(5)
-        End If
-    End Sub
-
-    Private Sub chkSystems6_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkSystems6.CheckedChanged
-        If Not UpdatingCheck Then
-            Call SyncPriceCheckBoxes(6)
+            Call SyncPriceCheckBoxes(CInt(CType(sender, CheckBox).Name.ToString.Substring(Len(CType(sender, CheckBox).Name.ToString) - 1)))
         End If
     End Sub
 
@@ -8423,9 +7963,7 @@ ExitForm:
     End Sub
 
     Private Sub lstPricesView_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstPricesView.ColumnClick
-
         Call ListViewColumnSorter(e.Column, CType(lstPricesView, ListView), UpdatePricesColumnClicked, UpdatePricesColumnSortType)
-
     End Sub
 
     Private Sub rbtnPriceSettingPriceProfile_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnPriceSettingPriceProfile.CheckedChanged
@@ -8600,60 +8138,70 @@ ExitForm:
         txtPriceItemFilter.Text = ""
 
         With UserUpdatePricesTabSettings
-            chkPriceRawMaterialPrices.Checked = .AllRawMats
+            chkPriceMaterialResearchEqPrices.Checked = .AllRawMats
             RunUpdatePriceList = False ' If the settings trigger an update, we don't want to update the prices
-            chkMinerals.Checked = .Minerals
-            chkIceProducts.Checked = .IceProducts
+            chkAdvancedProtectiveTechnology.Checked = .AdvancedProtectiveTechnology
             chkGas.Checked = .Gas
-            chkAbyssalMaterials.Checked = .AbyssalMaterials
-            chkBPCs.Checked = .BPCs
-            chkMisc.Checked = .Misc
-            chkAncientRelics.Checked = .AncientRelics
-            chkAncientSalvage.Checked = .AncientSalvage
-            chkSalvage.Checked = .Salvage
-            chkStructureRigs.Checked = .StationComponents
-            chkStructureModules.Checked = .StructureModules
+            chkIceProducts.Checked = .IceProducts
+            chkMolecularForgingTools.Checked = .MolecularForgingTools
+            chkFactionMaterials.Checked = .FactionMaterials
+            chkNamedComponents.Checked = .NamedComponents
+            chkMinerals.Checked = .Minerals
             chkPlanetary.Checked = .Planetary
+            chkRawMaterials.Checked = .RawMaterials
+            chkSalvage.Checked = .Salvage
+            chkMisc.Checked = .Misc
+            chkBPCs.Checked = .BPCs
+
+            chkAncientRelics.Checked = .AncientRelics
             chkDatacores.Checked = .Datacores
             chkDecryptors.Checked = .Decryptors
-            chkRawMats.Checked = .RawMats
-            chkProcessedMats.Checked = .ProcessedMats
-            chkAdvancedMats.Checked = .AdvancedMats
-            chkMatsandCompounds.Checked = .MatsandCompounds
-            chkDroneComponents.Checked = .DroneComponents
+            chkRDb.Checked = .RDB
+
+            chkAdvancedMats.Checked = .AdvancedMoonMats
             chkBoosterMats.Checked = .BoosterMats
+            chkMolecularForgedMaterials.Checked = .MolecularForgedMats
             chkPolymers.Checked = .Polymers
-            chkAsteroids.Checked = .Asteroids
+            chkProcessedMats.Checked = .ProcessedMoonMats
+            chkRawMoonMats.Checked = .RawMoonMats
+
             chkPriceManufacturedPrices.Checked = .AllManufacturedItems
             RunUpdatePriceList = False ' If the settings trigger an update, we don't want to update the prices
             chkShips.Checked = .Ships
+            chkCharges.Checked = .Charges
             chkModules.Checked = .Modules
             chkDrones.Checked = .Drones
-            chkBoosters.Checked = .Boosters
             chkRigs.Checked = .Rigs
-            chkCharges.Checked = .Charges
             chkSubsystems.Checked = .Subsystems
+            chkDeployables.Checked = .Deployables
+            chkBoosters.Checked = .Boosters
             chkStructures.Checked = .Structures
-            chkTools.Checked = .Tools
-            chkCapT2Components.Checked = .CapT2Components
-            chkCapitalComponents.Checked = .CapitalComponents
-            chkComponents.Checked = .Components
-            chkHybrid.Checked = .Hybrid
-            chkStructureComponents.Checked = .StructureComponents
+            chkStructureRigs.Checked = .StructureRigs
+            chkCelestials.Checked = .Celestials
+            chkStructureModules.Checked = .StructureModules
+            chkImplants.Checked = .Implants
+
+            chkCapT2Components.Checked = .AdvancedCapComponents
+            chkComponents.Checked = .AdvancedComponents
             chkFuelBlocks.Checked = .FuelBlocks
+            chkProtectiveComponents.Checked = .ProtectiveComponents
+            chkRAM.Checked = .RAM
+            chkCapitalShipComponents.Checked = .CapitalShipComponents
+            chkStructureComponents.Checked = .StructureComponents
+            chkSubsystemComponents.Checked = .SubsystemComponents
+
             chkPricesT1.Checked = .T1
             chkPricesT2.Checked = .T2
             chkPricesT3.Checked = .T3
             chkPricesT4.Checked = .Storyline
             chkPricesT5.Checked = .Faction
             chkPricesT6.Checked = .Pirate
-            chkImplants.Checked = .Implants
-            chkCelestials.Checked = .Celestials
-            chkDeployables.Checked = .Deployables
+
             cmbItemsSplitPrices.Text = .ItemsCombo
             cmbRawMatsSplitPrices.Text = .RawMatsCombo
             txtRawPriceModifier.Text = FormatPercent(.RawPriceModifier, 1)
             txtItemsPriceModifier.Text = FormatPercent(.ItemsPriceModifier, 1)
+
             If .UseESIData Then
                 rbtnPriceSourceCCPData.Checked = True
             Else
@@ -8817,54 +8365,65 @@ ExitForm:
         ' Raw items
         ' Manufactured Items
         With TempSettings
-            .AllRawMats = chkPriceRawMaterialPrices.Checked
-            .Minerals = chkMinerals.Checked
-            .IceProducts = chkIceProducts.Checked
+            .AllRawMats = chkPriceMaterialResearchEqPrices.Checked
+
+            .AdvancedProtectiveTechnology = chkAdvancedProtectiveTechnology.Checked
             .Gas = chkGas.Checked
-            .AbyssalMaterials = chkAbyssalMaterials.Checked
-            .BPCs = chkBPCs.Checked
-            .Misc = chkMisc.Checked
-            .AncientRelics = chkAncientRelics.Checked
-            .AncientSalvage = chkAncientSalvage.Checked
-            .Salvage = chkSalvage.Checked
-            .StationComponents = chkStructureRigs.Checked
-            .StructureModules = chkStructureModules.Checked
+            .IceProducts = chkIceProducts.Checked
+            .MolecularForgingTools = chkMolecularForgingTools.Checked
+            .FactionMaterials = chkFactionMaterials.Checked
+            .NamedComponents = chkNamedComponents.Checked
+            .Minerals = chkMinerals.Checked
             .Planetary = chkPlanetary.Checked
+            .RawMaterials = chkRawMaterials.Checked
+            .Salvage = chkSalvage.Checked
+            .Misc = chkMisc.Checked
+            .BPCs = chkBPCs.Checked
+
+            .AncientRelics = chkAncientRelics.Checked
             .Datacores = chkDatacores.Checked
             .Decryptors = chkDecryptors.Checked
-            .RawMats = chkRawMats.Checked
-            .ProcessedMats = chkProcessedMats.Checked
-            .AdvancedMats = chkAdvancedMats.Checked
-            .MatsandCompounds = chkMatsandCompounds.Checked
-            .DroneComponents = chkDroneComponents.Checked
+            .RDB = chkRDb.Checked
+
+            .AdvancedMoonMats = chkAdvancedMats.Checked
             .BoosterMats = chkBoosterMats.Checked
+            .MolecularForgedMats = chkMolecularForgedMaterials.Checked
             .Polymers = chkPolymers.Checked
-            .Asteroids = chkAsteroids.Checked
+            .ProcessedMoonMats = chkProcessedMats.Checked
+            .RawMoonMats = chkRawMoonMats.Checked
+
             .AllManufacturedItems = chkPriceManufacturedPrices.Checked
+
             .Ships = chkShips.Checked
+            .Charges = chkCharges.Checked
             .Modules = chkModules.Checked
             .Drones = chkDrones.Checked
-            .Boosters = chkBoosters.Checked
             .Rigs = chkRigs.Checked
-            .Charges = chkCharges.Checked
             .Subsystems = chkSubsystems.Checked
+            .Deployables = chkDeployables.Checked
+            .Boosters = chkBoosters.Checked
             .Structures = chkStructures.Checked
-            .Tools = chkTools.Checked
-            .CapT2Components = chkCapT2Components.Checked
-            .CapitalComponents = chkCapitalComponents.Checked
-            .Components = chkComponents.Checked
-            .StructureComponents = chkStructureComponents.Checked
-            .Hybrid = chkHybrid.Checked
+            .StructureRigs = chkStructureRigs.Checked
+            .Celestials = chkCelestials.Checked
+            .StructureModules = chkStructureModules.Checked
+            .Implants = chkImplants.Checked
+
+            .AdvancedCapComponents = chkCapT2Components.Checked
+            .AdvancedComponents = chkComponents.Checked
             .FuelBlocks = chkFuelBlocks.Checked
+            .ProtectiveComponents = chkProtectiveComponents.Checked
+            .RAM = chkRAM.Checked
+            .CapitalShipComponents = chkCapitalShipComponents.Checked
+            .StructureComponents = chkStructureComponents.Checked
+            .SubsystemComponents = chkSubsystemComponents.Checked
+
             .T1 = chkPricesT1.Checked
             .T2 = chkPricesT2.Checked
             .T3 = chkPricesT3.Checked
             .Storyline = chkPricesT4.Checked
             .Faction = chkPricesT5.Checked
             .Pirate = chkPricesT6.Checked
-            .Implants = chkImplants.Checked
-            .Deployables = chkDeployables.Checked
-            .Celestials = chkCelestials.Checked
+
             If rbtnPriceSourceCCPData.Checked Then
                 .UseESIData = True
             Else
@@ -9112,6 +8671,7 @@ ExitForm:
 
         Dim RegionSelectedCount As Integer = 0
         Dim JitaPerimeterChecked As Boolean = False
+        Dim JitaPerimeterPriceProfileItem As Boolean = False
 
         ' Check region
         If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
@@ -9128,7 +8688,7 @@ ExitForm:
             End If
         Next
 
-        If chkSystems1.Checked And chkSystems6.Checked Then
+        If chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked Then
             ' Need to run for both
             JitaPerimeterChecked = True
         End If
@@ -9181,7 +8741,7 @@ ExitForm:
             If RegionChecked And Not SystemChecked Then ' If they selected a combosystem and checked a region, look up combo
                 ' Get the search list string
                 SQL = "SELECT regionID FROM REGIONS "
-                SQL = SQL & "WHERE regionName = '" & cmbPriceRegions.Text & "'"
+                SQL &= "WHERE regionName = '" & cmbPriceRegions.Text & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSystems = DBCommand.ExecuteReader
@@ -9199,7 +8759,7 @@ ExitForm:
             ElseIf SystemChecked Then
                 ' Get the system list string
                 SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
-                SQL = SQL & "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
+                SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSystems = DBCommand.ExecuteReader
@@ -9245,8 +8805,13 @@ ExitForm:
                         ' Using price profiles, so look up all the data per group name
                         Dim rsPP As SQLiteDataReader
                         SQL = "SELECT PRICE_TYPE, regionID, SOLAR_SYSTEM_NAME, PRICE_MODIFIER FROM PRICE_PROFILES, REGIONS "
-                        SQL = SQL & "WHERE REGIONS.regionName = PRICE_PROFILES.REGION_NAME "
-                        SQL = SQL & "AND (ID = " & CStr(SelectedCharacter.ID) & " OR ID = 0) AND GROUP_NAME = '" & TempItem.GroupName & "' ORDER BY ID DESC"
+                        SQL &= "WHERE REGIONS.regionName = PRICE_PROFILES.REGION_NAME "
+                        SQL &= "AND (ID = " & CStr(SelectedCharacter.ID) & " OR ID = 0) AND GROUP_NAME = '" & TempItem.GroupName & "' "
+                        If SelectedCharacter.ID <> DummyCharacterID Then
+                            SQL &= "ORDER BY ID DESC"
+                        Else
+                            SQL &= "ORDER BY ID"
+                        End If
 
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsPP = DBCommand.ExecuteReader
@@ -9259,7 +8824,14 @@ ExitForm:
                                 TempItem.SystemID = ""
                             Else
                                 ' Look up the system name
-                                TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
+                                If rsPP.GetString(2) = "Jita/Perim" Then
+                                    JitaPerimeterPriceProfileItem = True
+                                    ' Add Jita first
+                                    TempItem.SystemID = CStr(GetSolarSystemID("Jita"))
+                                Else
+                                    JitaPerimeterPriceProfileItem = False
+                                    TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
+                                End If
                             End If
                             TempItem.PriceModifier = rsPP.GetDouble(3)
                         End If
@@ -9267,10 +8839,16 @@ ExitForm:
 
                     ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
                     If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
-                        Items.Add(TempItem)
-                        If JitaPerimeterChecked Then
+                        If JitaPerimeterChecked Or JitaPerimeterPriceProfileItem Then
+                            ' Add Jita first with flag
+                            TempItem.JitaPerimeterPrice = True
+                            Items.Add(TempItem)
                             ' Perimeter will always be after Jita but add both temp items to get prices for both
                             TempItem.SystemID = PerimeterID
+                            Items.Add(TempItem)
+                        Else
+                            ' Just basic add
+                            TempItem.JitaPerimeterPrice = False
                             Items.Add(TempItem)
                         End If
                     End If
@@ -9279,7 +8857,7 @@ ExitForm:
         Next
 
         ' Load the prices
-        Call LoadPrices(Items, JitaPerimeterChecked)
+        Call LoadPrices(Items)
 
 UpdateProgramPrices:
 
@@ -9307,7 +8885,7 @@ ExitSub:
     End Sub
 
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), JitaPerimeterFlag As Boolean)
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem))
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
@@ -9456,7 +9034,7 @@ ExitSub:
 
             ' Build the region list for each item
             RegionorSystemList = ""
-            If JitaPerimeterFlag Then
+            If SentItems(i).JitaPerimeterPrice Then
                 RegionorSystemList = JitaID & "," & PerimeterID
                 ' TODO Add flag if this is run once, we can skip again - need to add item to array and if already in there, don't run it again - put in a goto and remove item from list?
             ElseIf SentItems(i).SystemID = "" Then
@@ -9470,7 +9048,7 @@ ExitSub:
                 Dim SQLPricetype As String = ""
                 If PriceType <> "splitPrice" Then
                     ' If it's Jita Perimeter, we need to do functions on the values - just take averages of non-min/max values
-                    If JitaPerimeterFlag Then
+                    If SentItems(i).JitaPerimeterPrice Then
                         Select Case PriceType
                             Case "buyAvg"
                                 SQLPricetype = "AVG(buyAvg)"
@@ -9747,20 +9325,21 @@ ExitSub:
             ITN = rsGroup.GetString(2)
 
             Select Case GN
-                Case "Mineral"
-                    RGN = "Minerals"
+                Case "Advanced Protective Technology"
+                    RGN = "Advanced Protective Technology"
+                Case "Materials and Compounds", "Artifacts and Prototypes", "Rogue Drone Components"
+                    RGN = "Faction Materials"
+                Case "Harvestable Cloud"
+                    RGN = "Harvestable Cloud"
                 Case "Ice Product"
                     RGN = "Ice Products"
-                Case "Datacores"
-                    RGN = "Datacores"
-                Case "Harvestable Cloud"
-                    RGN = "Gas"
-                Case "Abyssal Materials"
-                    RGN = "Abyssal Materials"
-                Case "Salvaged Materials"
+                Case "Mineral"
+                    RGN = "Minerals"
+                Case "Molecular-Forging Tools"
+                    RGN = "Molecular-Forging Tools"
+                Case "Salvaged Materials", "Ancient Salvage"
                     RGN = "Salvage"
-                Case "Ancient Salvage"
-                    RGN = "Ancient Salvage"
+
                 Case "Hybrid Polymers"
                     RGN = "Hybrid Polymers"
                 Case "Moon Materials"
@@ -9769,50 +9348,58 @@ ExitSub:
                     RGN = "Processed Moon Materials"
                 Case "Composite"
                     RGN = "Advanced Moon Materials"
-                Case "Materials and Compounds", "Artifacts and Prototypes", "Named Components"
+                Case "Molecular-Forged Materials"
+                    RGN = "Molecular-Forged Materials"
+                Case "Materials and Compounds", "Artifacts and Prototypes", "Named Components", "'Rogue Drone Components"
                     RGN = "Materials & Compounds"
                 Case "Biochemical Material"
                     RGN = "Booster Materials"
+
                 Case "Advanced Capital Construction Components"
-                    RGN = "Adv. Capital Construction Components"
-                Case "Capital Construction Components"
-                    RGN = "Capital Construction Components"
+                    RGN = "Adv. Capital Components"
                 Case "Construction Components"
-                    RGN = "Construction Components"
-                Case "Hybrid Tech Components"
-                    RGN = "Hybrid Tech Components"
-                Case "Tool"
-                    RGN = "Tools"
+                    RGN = "Advanced Components"
                 Case "Fuel Block"
                     RGN = "Fuel Blocks"
-                Case "Station Components"
-                    RGN = "Station Parts"
-                Case "Booster"
-                    RGN = "Boosters"
+                Case "Protective Components"
+                    RGN = "Protective Components"
+                Case "Capital Construction Components"
+                    RGN = "Std. Capital Ship Components"
                 Case "Structure Components"
                     RGN = "Structure Components"
+                Case "Hybrid Tech Components"
+                    RGN = "Subsystem Components"
+
+                Case "Booster"
+                    RGN = "Boosters"
+                Case "Datacores"
+                    RGN = "Datacores"
+
                 Case Else
                     ' Do if checks or select on category
                     If GN.Contains("Decryptor") Then
                         RGN = "Decryptors"
+                    ElseIf ITN.Contains("R.Db") Then
+                        RGN = "R.Db."
+                    ElseIf ITN.Contains("R.A.M.") Then
+                        RGN = "R.A.M.s"
                     ElseIf (GN = "General" Or GN = "Livestock" Or GN = "Radioactive" Or GN = "Biohazard" Or GN = "Commodities" _
-                        Or GN = "Empire Insignia Drops" Or GN = "Criminal Tags" Or GN = "Miscellaneous" Or GN = "Unknown Components" Or GN = "Lease") _
-                        And (ITN <> "Oxygen" And ITN <> "Water" And ITN <> "Elite Drone AI") Then
+                        Or GN = "Empire Insignia Drops" Or GN = "Criminal Tags" Or GN = "Miscellaneous" Or GN = "Unknown Components" Or GN = "Lease") Then
                         RGN = "Misc."
                     ElseIf GN = "Rogue Drone Components" Or ITN = "Elite Drone AI" Then
                         RGN = "Rogue Drone Components"
                     ElseIf GN = "Cyberimplant" Or (CN = "Implant" And GN <> "Booster") Then
                         RGN = "Implants"
                     ElseIf CN.Contains("Planetary") Or ITN = "Oxygen" Or ITN = "Water" Then
-                        RGN = "Planetary"
+                        RGN = "Planetary Materials"
                     ElseIf CN = "Blueprint" Then
                         RGN = "Blueprints"
                     ElseIf CN = "Ancient Relics" Then
                         RGN = "Ancient Relics"
                     ElseIf CN = "Deployable" Then
                         RGN = "Deployables"
-                    ElseIf CN = "Asteroid" Then
-                        RGN = "Asteroids"
+                    ElseIf CN = "Asteroid" Or gn = "Abyssal Materials" Then
+                        RGN = "Raw Materials"
                     ElseIf CN = "Ship" Then
                         RGN = "Ships"
                     ElseIf CN = "Subsystem" Then
@@ -10046,143 +9633,167 @@ ExitSub:
         Application.DoEvents()
 
         ' Add the marketGroupID to the list for checks later
-        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE FROM ITEM_PRICES, INVENTORY_TYPES"
-        SQL = SQL & " WHERE ITEM_PRICES.ITEM_ID = INVENTORY_TYPES.typeID AND ("
+        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE FROM ITEM_PRICES, INVENTORY_TYPES "
+        SQL &= "WHERE ITEM_PRICES.ITEM_ID = INVENTORY_TYPES.typeID AND ("
 
-        ' Raw materials - non-manufacturable
-        If chkMinerals.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Mineral' OR "
+        ' Materials & Research Equipment Grid
+        ' Materials First
+        If chkAdvancedProtectiveTechnology.Checked Then
+            SQL &= "ITEM_GROUP = 'Advanced Protective Technology' OR "
             ItemChecked = True
         End If
-        If chkIceProducts.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Ice Product' OR "
-            ItemChecked = True
-        End If
-        If chkPlanetary.Checked Then
-            SQL = SQL & "(ITEM_CATEGORY LIKE 'Planetary%' OR ITEM_NAME IN ('Oxygen','Water')) OR "
-            ItemChecked = True
-        End If
-        If chkDatacores.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Datacores' OR "
-            ItemChecked = True
-        End If
-        If chkDecryptors.Checked Then
-            SQL = SQL & "ITEM_GROUP LIKE '%Decryptor%' OR " ' Storyline decryptors are category 'Commodity'
+        If chkFactionMaterials.Checked Then
+            SQL &= "(ITEM_GROUP IN ('Materials and Compounds','Artifacts and Prototypes','Rogue Drone Components') OR ITEM_GROUP LIKE 'Decryptors -%') OR "
             ItemChecked = True
         End If
         If chkGas.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Harvestable Cloud' OR "
+            SQL &= "ITEM_GROUP = 'Harvestable Cloud' OR "
             ItemChecked = True
         End If
-        'If chkAbyssalMaterials.Checked Then
-        '    SQL = SQL & "ITEM_GROUP LIKE 'Abyssal%' OR "
-        '    ItemChecked = True
-        'End If
-        If chkBPCs.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Blueprint' OR "
+        If chkIceProducts.Checked Then
+            SQL &= "ITEM_GROUP = 'Ice Product' OR "
             ItemChecked = True
         End If
-        If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
-            SQL = SQL & "(ITEM_GROUP IN ('General','Livestock','Abyssal Materials','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') AND ITEM_NAME NOT IN ('Oxygen','Water', 'Elite Drone AI')) OR "
+        If chkMinerals.Checked Then
+            SQL &= "ITEM_GROUP = 'Mineral' OR "
             ItemChecked = True
         End If
-        If chkSalvage.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Salvaged Materials' OR "
+        If chkMolecularForgingTools.Checked Then
+            SQL &= "ITEM_GROUP = 'Molecular-Forging Tools' OR "
             ItemChecked = True
         End If
-        If chkAncientSalvage.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Ancient Salvage' OR "
+        If chkNamedComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Named Components' OR "
             ItemChecked = True
         End If
-        If chkAncientRelics.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Ancient Relics' OR "
+        If chkPlanetary.Checked Then
+            SQL &= "ITEM_CATEGORY LIKE 'Planetary%' OR "
             ItemChecked = True
         End If
-        If chkPolymers.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Hybrid Polymers' OR "
+
+        ' Raw Materials (Ores)
+        If chkRawMaterials.Checked Then
+            SQL &= "(ITEM_CATEGORY = 'Asteroid' OR ITEM_GROUP = 'Abyssal Materials') OR "
             ItemChecked = True
         End If
-        If chkRawMats.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Moon Materials' OR "
-            ItemChecked = True
-        End If
-        If chkProcessedMats.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Intermediate Materials' OR "
-            ItemChecked = True
-        End If
+
+        ' Reaction Materials
         If chkAdvancedMats.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Composite' OR "
-            ItemChecked = True
-        End If
-        If chkMatsandCompounds.Checked Then
-            SQL = SQL & "ITEM_GROUP IN ('Materials and Compounds', 'Artifacts and Prototypes', 'Named Components') OR "
-            ItemChecked = True
-        End If
-        If chkDroneComponents.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Rogue Drone Components' OR ITEM_NAME = 'Elite Drone AI' OR "
+            SQL &= "ITEM_GROUP = 'Composite' OR "
             ItemChecked = True
         End If
         If chkBoosterMats.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Biochemical Material' OR "
+            SQL &= "ITEM_GROUP = 'Biochemical Material' OR "
             ItemChecked = True
         End If
-        If chkAsteroids.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Asteroid' OR "
+        If chkMolecularForgedMaterials.Checked Then
+            SQL &= "ITEM_GROUP = 'Molecular-Forged Materials' OR "
+            ItemChecked = True
+        End If
+        If chkPolymers.Checked Then
+            SQL &= "ITEM_GROUP = 'Hybrid Polymers' OR "
+            ItemChecked = True
+        End If
+        If chkProcessedMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Intermediate Materials' OR "
+            ItemChecked = True
+        End If
+        If chkRawMoonMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Moon Materials' OR "
+            ItemChecked = True
+        End If
+
+        If chkSalvage.Checked Then
+            SQL &= "ITEM_GROUP IN ('Salvaged Materials','Ancient Salvage') OR "
+            ItemChecked = True
+        End If
+
+        ' Research Equipment
+        If chkAncientRelics.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Ancient Relics' OR "
+            ItemChecked = True
+        End If
+        If chkDatacores.Checked Then
+            SQL &= "ITEM_GROUP = 'Datacores' OR "
+            ItemChecked = True
+        End If
+        If chkDecryptors.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Decryptors' OR "
+            ItemChecked = True
+        End If
+        If chkRDb.Checked Then
+            SQL &= "ITEM_NAME LIKE 'R.Db%' OR "
+            ItemChecked = True
+        End If
+
+        ' Misc and Blueprints
+        If chkBPCs.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Blueprint' OR "
+            ItemChecked = True
+        End If
+        If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
+            SQL &= "ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') OR "
             ItemChecked = True
         End If
 
         ' Other Manufacturables
         If chkCapT2Components.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Advanced Capital Construction Components' OR "
-            ItemChecked = True
-        End If
-        If chkCapitalComponents.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Capital Construction Components' OR "
+            SQL &= "ITEM_GROUP = 'Advanced Capital Construction Components' OR "
             ItemChecked = True
         End If
         If chkComponents.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Construction Components' OR "
-            ItemChecked = True
-        End If
-        If chkHybrid.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Hybrid Tech Components' OR "
-            ItemChecked = True
-        End If
-        If chkStructureComponents.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Structure Components' OR "
-            ItemChecked = True
-        End If
-        If chkTools.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Tool' OR "
+            SQL &= "ITEM_GROUP = 'Construction Components' OR "
             ItemChecked = True
         End If
         If chkFuelBlocks.Checked Then
-            SQL = SQL & "ITEM_GROUP = 'Fuel Block' OR "
+            SQL &= "ITEM_GROUP = 'Fuel Block' OR "
             ItemChecked = True
         End If
-        If chkStructureRigs.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Structure Rigs' OR "
+        If chkProtectiveComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Protective Components' OR "
             ItemChecked = True
         End If
+        If chkRAM.Checked Then
+            SQL &= "ITEM_NAME LIKE 'R.A.M.%' OR "
+            ItemChecked = True
+        End If
+        If chkCapitalShipComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Capital Construction Components' OR "
+            ItemChecked = True
+        End If
+        If chkStructureComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Structure Components' OR "
+            ItemChecked = True
+        End If
+        If chkSubsystemComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Hybrid Tech Components' OR "
+            ItemChecked = True
+        End If
+        If chkBoosters.Checked Then
+            SQL &= "ITEM_GROUP = 'Booster' OR "
+            ItemChecked = True
+        End If
+
+        ' All other manufactured items
         If chkImplants.Checked Then
-            SQL = SQL & "(ITEM_GROUP = 'Cyberimplant' OR (ITEM_CATEGORY = 'Implant' AND ITEM_GROUP <> 'Booster')) OR "
+            SQL &= "(ITEM_GROUP = 'Cyberimplant' OR (ITEM_CATEGORY = 'Implant' AND ITEM_GROUP <> 'Booster')) OR "
             ItemChecked = True
         End If
         If chkDeployables.Checked Then
-            SQL = SQL & "ITEM_CATEGORY = 'Deployable' OR "
+            SQL &= "ITEM_CATEGORY = 'Deployable' OR "
             ItemChecked = True
         End If
         If chkStructureModules.Checked Then
-            SQL = SQL & "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') OR "
+            SQL &= "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') OR "
             ItemChecked = True
         End If
         If chkCelestials.Checked Then
-            SQL = SQL & "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
+            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
             ItemChecked = True
         End If
 
         ' Manufactured Items
-        If chkShips.Checked Or chkModules.Checked Or chkDrones.Checked Or chkBoosters.Checked Or chkRigs.Checked Or chkSubsystems.Checked Or chkStructures.Checked Or chkCharges.Checked Or chkStructureRigs.Checked Then
+        If chkShips.Checked Or chkModules.Checked Or chkDrones.Checked Or chkRigs.Checked Or chkSubsystems.Checked Or chkStructures.Checked Or chkCharges.Checked Or chkStructureRigs.Checked Then
 
             ' Make sure we have at least one tech checked that is enabled
             TechChecked = CheckTechChecks()
@@ -10249,36 +9860,36 @@ ExitSub:
 
                 ' Build Tech 1,2,3 Manufactured Items
                 If chkCharges.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
+                    SQL &= "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
                     If cmbPriceChargeTypes.Text <> "All Charge Types" Then
-                        SQL = SQL & " AND ITEM_GROUP = '" & cmbPriceChargeTypes.Text & "'"
+                        SQL &= " AND ITEM_GROUP = '" & cmbPriceChargeTypes.Text & "'"
                     End If
-                    SQL = SQL & ") OR "
+                    SQL &= ") OR "
                 End If
                 If chkDrones.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
+                    SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
                 End If
                 If chkModules.Checked Then ' Not rigs but Modules
-                    SQL = SQL & "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
+                    SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
                 End If
                 If chkShips.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
+                    SQL &= "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
                     If cmbPriceShipTypes.Text <> "All Ship Types" Then
-                        SQL = SQL & " AND ITEM_GROUP = '" & cmbPriceShipTypes.Text & "'"
+                        SQL &= " AND ITEM_GROUP = '" & cmbPriceShipTypes.Text & "'"
                     End If
-                    SQL = SQL & ") OR "
+                    SQL &= ") OR "
                 End If
                 If chkSubsystems.Checked Then
-                    SQL = SQL & "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
+                    SQL &= "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
                 End If
-                If chkBoosters.Checked Then
-                    SQL = SQL & "(ITEM_GROUP = 'Booster' AND " & TechSQL & ") OR "
+                If chkStructureRigs.Checked Then
+                    SQL &= "(ITEM_CATEGORY = 'Structure Rigs' AND " & TechSQL & ") OR "
                 End If
                 If chkRigs.Checked Then ' Rigs
-                    SQL = SQL & "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
+                    SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
                 End If
                 If chkStructures.Checked Then
-                    SQL = SQL & "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
+                    SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
                 End If
             Else
                 ' No tech level chosen, so just continue with other options and skip these that require a tech selection
@@ -10291,19 +9902,19 @@ ExitSub:
         Else
             ' Take off last OR and add the final )
             SQL = SQL.Substring(0, SQL.Length - 4)
-            SQL = SQL & ")"
+            SQL &= ") "
 
             ' Search based on text
             If txtPriceItemFilter.Text <> "" Then
-                SQL = SQL & "AND " & GetSearchText(txtPriceItemFilter.Text, "ITEM_NAME", "ITEM_GROUP")
+                SQL &= "AND " & GetSearchText(txtPriceItemFilter.Text, "ITEM_NAME", "ITEM_GROUP") & " "
             End If
 
             ' See if we want prices that are 0 only
             If chkUpdatePricesNoPrice.Checked Then
-                SQL = SQL & " AND PRICE = 0 "
+                SQL &= "AND PRICE = 0 "
             End If
 
-            SQL = SQL & " ORDER BY ITEM_GROUP, ITEM_CATEGORY, ITEM_NAME"
+            SQL &= "ORDER BY ITEM_GROUP, ITEM_CATEGORY, ITEM_NAME"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerMats = DBCommand.ExecuteReader

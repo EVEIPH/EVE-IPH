@@ -190,6 +190,7 @@ Public Class PriceItem
     Public GroupName As String
     Public PriceModifier As Double
     Public PriceType As String
+    Public JitaPerimeterPrice As Boolean
 End Class
 
 Public Class EMforQuery
