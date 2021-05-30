@@ -682,7 +682,7 @@ Public Class frmShoppingList
 
         readerAssets.Close()
 
-        If AssetLocationFlagList.Count <> 0 Then
+        If AssetLocationFlagList.Count <> 0 Or CutPasteUpdate Then
 
             ' Loop through the lists, starting with the build list first and find quantities in hanger to build
             For i = 0 To 3 ' 4 lists
@@ -2654,8 +2654,10 @@ Tabs:
     Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
         If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
             txtBrokerFeeRate.Visible = True
+            lblFeeRate.Visible = True
         Else
             txtBrokerFeeRate.Visible = False
+            lblFeeRate.Visible = False
         End If
     End Sub
 

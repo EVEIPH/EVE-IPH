@@ -928,7 +928,7 @@ InvalidDate:
         Dim ItemLines As String() = Nothing
         Dim ItemColumns As String() = Nothing
 
-        ' Format of imported text for items will always be: Name, Quantity, Group, Category, Size, Slot, Volume, Tech Level
+        ' Format of imported text for items will always be: Name, Quantity, Group, Category, Size, Slot, Volume, Meta Level, Tech Level, Est. Price
         ' Users can remove columns but the general rule is Name and quantity first, they can separate lines by three ways
         If SentText.Contains(vbCrLf) Then
             ItemLines = SentText.Split(New [Char]() {CChar(vbCrLf)}, StringSplitOptions.RemoveEmptyEntries) ' Get all the item lines
@@ -958,12 +958,19 @@ InvalidDate:
                     ' For example, Capital Armor Plates 33 would be a 4 index array but we want to combine the first 3
                     Dim TempString As String = ""
                     Dim TempNumber As String = ""
+                    Dim FoundQuantity As Boolean = False
 
                     For j = 0 To ItemColumns.Count - 1
                         If Not IsNumeric(ItemColumns(j)) Then
-                            TempString = TempString & ItemColumns(j) & " "
+                            If Not FoundQuantity Then
+                                TempString = TempString & ItemColumns(j) & " "
+                            Else
+                                ' We found the full quanitity and name, so exit
+                                Exit For
+                            End If
                         Else
-                            TempNumber = ItemColumns(j)
+                            FoundQuantity = True
+                            TempNumber = TempNumber & ItemColumns(j)
                         End If
                     Next
 
@@ -984,10 +991,6 @@ InvalidDate:
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerItem = DBCommand.ExecuteReader
                 readerItem.Read()
-
-                If ItemColumns(0).Contains("Tripped") Then
-                    Application.DoEvents()
-                End If
 
                 If readerItem.HasRows Then
                     ' Format number first if needed

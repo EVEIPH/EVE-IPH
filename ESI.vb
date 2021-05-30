@@ -2060,6 +2060,12 @@ Public Class ESIErrorProcessor
             Exit Sub
         End If
 
+        If ErrorCode = 403 And ErrorResponse = "The given character doesn't have the required role(s)" And URL.Contains("/corporations/") Then
+            'This is a call to corporation roles that now errors if you don't have any roles. The response will return all roles for the characters in the corp and you 
+            ' need personel manager or director to really do it so don't error if it's just a character with those roles only
+            Exit Sub
+        End If
+
         ' Build Messagebox text
         MsgBoxText = vbCrLf & vbCrLf & "Error Code: " & ErrorCode & vbCrLf & "Message: " & ExceptionData.Message & vbCrLf & "Description: " & ErrorResponse
 

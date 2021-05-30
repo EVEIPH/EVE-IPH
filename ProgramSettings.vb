@@ -2525,7 +2525,6 @@ Public Class ProgramSettings
                     .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultBoosterDroneRigs))
                     .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultBoosterDroneRigs))
                     .BoosterIceDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig3", DefaultBoosterDroneRigs))
-                    .BeanCounterImplant = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BeanCounterImplant", DefaultBeancounterImplant))
                 End With
 
             Else
@@ -2649,8 +2648,6 @@ Public Class ProgramSettings
             .BoosterIceDroneRig2 = DefaultBoosterDroneRigs
             .BoosterIceDroneRig3 = DefaultBoosterDroneRigs
 
-            .BeanCounterImplant = DefaultBeancounterImplant
-
         End With
 
         ' Save locally
@@ -2661,7 +2658,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(94) As Setting
+        Dim MiningSettingsList(93) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2765,8 +2762,6 @@ Public Class ProgramSettings
             MiningSettingsList(91) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
             MiningSettingsList(92) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
             MiningSettingsList(93) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
-
-            MiningSettingsList(94) = New Setting("BeanCounterImplant", CStr(SentSettings.BeanCounterImplant))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5147,7 +5142,6 @@ Public Structure MiningTabSettings
     Dim BoosterIceDroneInterfaceSkill As String
 
     Dim MichiiImplant As Boolean
-    Dim BeanCounterImplant As String
     Dim T2Crystals As Boolean
 
     Dim CheckUseHauler As Boolean

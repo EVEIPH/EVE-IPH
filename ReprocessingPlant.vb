@@ -16,6 +16,10 @@ Class ReprocessingPlant
 
     End Sub
 
+    Public Function GetFacilility() As IndustryFacility
+        Return ReprocessingFacility
+    End Function
+
     Public Function ReprocessORE(ByVal OreID As Long, ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, ByVal OreProcessingSkill As Integer,
                                  ByVal TotalOre As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double) As Materials
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
@@ -35,7 +39,6 @@ Class ReprocessingPlant
         ' Upwells - ReprocessingYield = (50+ RigModifier × (1 + SecurityModifier)) × (1 + StructureModifier)×(1+(0.03×R))×(1+(0.02×Re))×(1+(0.02×Op))×(1+Im)
         ' Station - ReprocessingYield = StationEquipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
-        ' The reprocessing facility has the base yield for stations or upwells so just apply the skills
         TotalYield = ReprocessingFacility.MaterialMultiplier * (1 + (0.03 * ReprocessingSkill)) * (1 + (0.02 * ReprocessingEfficiencySkill)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
 
         ' Can't get better than 100%

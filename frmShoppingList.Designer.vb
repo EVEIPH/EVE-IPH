@@ -503,7 +503,7 @@ Partial Class frmShoppingList
         'chkRebuildItemsfromList
         '
         Me.chkRebuildItemsfromList.AutoSize = True
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(562, 642)
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(546, 641)
         Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
         Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(179, 17)
         Me.chkRebuildItemsfromList.TabIndex = 79
@@ -675,6 +675,7 @@ Partial Class frmShoppingList
         Me.Button1.TabIndex = 78
         Me.Button1.Text = "EVEpraisal Test"
         Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.Visible = False
         '
         'frmShoppingList
         '
