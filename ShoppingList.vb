@@ -1111,7 +1111,18 @@ Public Class ShoppingList
                         ItemName = ItemColumns(0)
                     End If
 
-                    If ItemName = .GetMaterialName And CLng(ItemColumns(1)) = .GetQuantity And ItemColumns(2) = .GetItemME _
+                    'Get the portion size
+                    Dim PortionSize As Integer = 1
+                    Dim readerBP As SQLiteDataReader
+                    Dim SQL As String = ""
+                    SQL = "SELECT PORTION_SIZE FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & ItemName & "'"
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerBP = DBCommand.ExecuteReader
+                    If readerBP.Read() Then
+                        PortionSize = readerBP.GetInt32(0)
+                    End If
+
+                    If ItemName = .GetMaterialName And CLng(ItemColumns(1)) * PortionSize = .GetQuantity And ItemColumns(2) = .GetItemME _
                      And ItemColumns(4) = GroupNameItems(0) And ItemColumns(5) = GroupNameItems(1) _
                      And ItemColumns(3) = GroupNameItems(2) And RelicName = GroupNameItems(3) And ItemColumns(6) = GroupNameItems(4) Then
                         ' Found it, so insert into temp list
@@ -1335,7 +1346,7 @@ Public Class ShoppingList
             With TotalItemList(i)
                 ' Item sort order is Build Type, Decryptor, NumBps, and Relic for the group name
                 TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" _
-                                       & .ManufacturingFacility.FacilityName, .Runs, .BuildVolume / .Runs, 0, CStr(.ItemME), CStr(.ItemTE))
+                                       & .ManufacturingFacility.FacilityName, .Runs * .PortionSize, .BuildVolume / .Runs, 0, CStr(.ItemME), CStr(.ItemTE))
             End With
             ReturnMaterials.InsertMaterial(TempMat)
         Next
