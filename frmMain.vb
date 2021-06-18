@@ -413,6 +413,7 @@ Public Class frmMain
 
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
+        UserAssetWindowRefinerySettings = AllSettings.LoadAssetWindowSettings(AssetWindow.Refinery)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
         ' Display to the user any issues with ESI endpoints
@@ -909,7 +910,7 @@ Public Class frmMain
                 ' Get the current facility that's viewed
                 SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
                 ' Just reload all the facilities
-                Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
+                Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
                 ' Now reload the one that was shown
                 Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, SavedPT, Me)
             Else
@@ -1056,7 +1057,9 @@ Public Class frmMain
         End If
     End Sub
 
+#Disable Warning IDE1006 ' Naming Styles
     Private Sub lblDCOrangeText_MouseEnter(sender As System.Object, e As System.EventArgs) Handles lblDCOrangeText.MouseEnter
+#Enable Warning IDE1006 ' Naming Styles
         If UserApplicationSettings.ShowToolTips Then
             ttBP.SetToolTip(lblDCOrangeText, "Orange Text: Research Agent is in Low Sec")
         End If
@@ -1068,7 +1071,7 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub rbtnDCSystemPrices_MouseEnter(sender As System.Object, e As System.EventArgs) Handles rbtnDCSystemPrices.MouseEnter
+    Private Sub rbtnDCSystemPrices_MouseEnter(sender As System.Object, e As System.EventArgs) Handles rbtnDCSystemPrices.mouseenter
         If UserApplicationSettings.ShowToolTips Then
             ttBP.SetToolTip(rbtnDCSystemPrices, "Max Buy Order from System used for Datacore Price")
         End If
@@ -1716,7 +1719,7 @@ Public Class frmMain
             f1.CostSplits.Add(RawCostSplit)
 
             ' Add reaction usage if it's a reaction for main bp
-            If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+            If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                 RawCostSplit.SplitName = "Reaction Facility Usage"
                 RawCostSplit.SplitValue = SelectedBlueprint.GetReactionFacilityUsage
             Else
@@ -1728,7 +1731,7 @@ Public Class frmMain
             f1.CostSplits.Add(RawCostSplit)
 
             If (SelectedBlueprint.HasComponents And chkBPBuildBuy.Checked = True) Or MaterialType = "Raw" Then
-                If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+                If ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                     ' Reactions Facility Usage
                     If SelectedBlueprint.GetTotalReactionFacilityUsage - SelectedBlueprint.GetReactionFacilityUsage > 0 Then
                         RawCostSplit.SplitName = "Component Reaction Facilities Usage"
@@ -1742,7 +1745,7 @@ Public Class frmMain
                 End If
 
                 ' The reaction blueprint won't have components or cap components
-                If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+                If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                     ' Component Facility Usage
                     RawCostSplit.SplitName = "Component Facilities Usage"
                     RawCostSplit.SplitValue = SelectedBlueprint.GetComponentFacilityUsage
@@ -2435,7 +2438,7 @@ Public Class frmMain
             End If
 
             ' Finally, refresh the bptab facility
-            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
+            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
 
         End If
 
@@ -2653,7 +2656,7 @@ Public Class frmMain
         ' Always do indicies first since facilities has a field it uses
         If ESIData.UpdateIndustrySystemsCostIndex(f1.lblStatus, f1.pgStatus) Then
             ' Reload the industry facilities now
-            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls)
+            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
 
             ' Refresh the BP Tab if there is a blueprint selected
             If Not IsNothing(SelectedBlueprint) Then
@@ -5905,12 +5908,12 @@ Tabs:
         If PreviousBPfromHistory And SentFrom <> SentFromLocation.History And Not FromEvent Then
             PreviousBPfromHistory = False
             If Reaction Then
-                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityReactions), FacilityView.FullControls, False)
+                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityReactions), ProgramLocation.BlueprintTab, False)
             Else
-                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), FacilityView.FullControls, False)
+                Call BPTabFacility.SetSelectedFacility(BPTabFacility.GetProductionType(ItemGroupID, ItemCategoryID, ManufacturingFacility.ActivityManufacturing), ProgramLocation.BlueprintTab, False)
             End If
-            Call BPTabFacility.SetSelectedFacility(ProductionType.ComponentManufacturing, FacilityView.FullControls, False)
-            Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, FacilityView.FullControls, False)
+            Call BPTabFacility.SetSelectedFacility(ProductionType.ComponentManufacturing, ProgramLocation.BlueprintTab, False)
+            Call BPTabFacility.SetSelectedFacility(ProductionType.CapitalComponentManufacturing, ProgramLocation.BlueprintTab, False)
         End If
 
         ' Set the invention info
@@ -6414,7 +6417,7 @@ Tabs:
                 TempME = BPComponentMats(i).GetItemME
 
                 Dim Reaction As Boolean
-                Select Case BPComponentMats(i).GetMaterialGroup
+                Select Case BPComponentMats(i).GroupName
                     Case "Composite", "Biochemical Material", "Hybrid Polymers", "Intermediate Materials"
                         Reaction = True
                     Case Else
@@ -13089,43 +13092,43 @@ CheckTechs:
 
         ' Make sure they have a facility loaded - if not, load the default for the type
         If Not CalcBaseFacility.GetFacility(ProductionType.Manufacturing).FullyLoaded Then
-            CalcBaseFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.Manufacturing)
+            CalcBaseFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
         End If
         If Not CalcComponentsFacility.GetFacility(ProductionType.ComponentManufacturing).FullyLoaded Then
-            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.ComponentManufacturing)
+            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
         End If
         If Not CalcComponentsFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FullyLoaded Then
-            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.CapitalComponentManufacturing)
+            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
         End If
         If Not CalcInventionFacility.GetFacility(ProductionType.Invention).FullyLoaded Then
-            CalcInventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.Invention)
+            CalcInventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Invention)
         End If
         If Not CalcCopyFacility.GetFacility(ProductionType.Copying).FullyLoaded Then
-            CalcCopyFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.Copying)
+            CalcCopyFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Copying)
         End If
         If Not CalcT3InventionFacility.GetFacility(ProductionType.T3Invention).FullyLoaded Then
-            CalcT3InventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.T3Invention)
+            CalcT3InventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
         End If
         If Not CalcSupersFacility.GetFacility(ProductionType.SuperManufacturing).FullyLoaded Then
-            CalcSupersFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.SuperManufacturing)
+            CalcSupersFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
         End If
         If Not CalcCapitalsFacility.GetFacility(ProductionType.CapitalManufacturing).FullyLoaded Then
-            CalcCapitalsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.CapitalManufacturing)
+            CalcCapitalsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
         End If
         If Not CalcT3ShipsFacility.GetFacility(ProductionType.T3CruiserManufacturing).FullyLoaded Then
-            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.T3CruiserManufacturing)
+            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
         End If
         If Not CalcT3ShipsFacility.GetFacility(ProductionType.T3DestroyerManufacturing).FullyLoaded Then
-            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.T3DestroyerManufacturing)
+            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
         End If
         If Not CalcSubsystemsFacility.GetFacility(ProductionType.SubsystemManufacturing).FullyLoaded Then
-            CalcSubsystemsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.SubsystemManufacturing)
+            CalcSubsystemsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
         End If
         If Not CalcBoostersFacility.GetFacility(ProductionType.BoosterManufacturing).FullyLoaded Then
-            CalcBoostersFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.BoosterManufacturing)
+            CalcBoostersFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
         End If
         If Not CalcReactionsFacility.GetFacility(ProductionType.Reactions).FullyLoaded Then
-            CalcReactionsFacility.InitializeFacilities(FacilityView.LimitedControls, ProductionType.Reactions)
+            CalcReactionsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
         End If
 
         If Not SavedRefreshValue Then
@@ -17291,104 +17294,17 @@ Leave:
         Call ListClicked(lstMineGrid, sender, e)
     End Sub
 
-    Private Sub chkOreProcessing1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged
-        Call UpdateProcessingSkillBoxes(1, chkOreProcessing1.Checked)
-    End Sub
+    Private Sub OreCheckProcessing_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged, chkOreProcessing2.CheckedChanged, chkOreProcessing3.CheckedChanged,
+                                                                                                                    chkOreProcessing4.CheckedChanged, chkOreProcessing5.CheckedChanged, chkOreProcessing6.CheckedChanged,
+                                                                                                                    chkOreProcessing7.CheckedChanged, chkOreProcessing8.CheckedChanged, chkOreProcessing9.CheckedChanged,
+                                                                                                                    chkOreProcessing10.CheckedChanged, chkOreProcessing11.CheckedChanged, chkOreProcessing12.CheckedChanged,
+                                                                                                                    chkOreProcessing13.CheckedChanged, chkOreProcessing14.CheckedChanged, chkOreProcessing15.CheckedChanged,
+                                                                                                                    chkOreProcessing16.CheckedChanged, chkOreProcessing17.CheckedChanged, chkOreProcessing18.CheckedChanged,
+                                                                                                                    chkOreProcessing19.CheckedChanged, chkOreProcessing20.CheckedChanged, chkOreProcessing21.CheckedChanged,
+                                                                                                                    chkOreProcessing22.CheckedChanged, chkOreProcessing23.CheckedChanged, chkOreProcessing24.CheckedChanged,
+                                                                                                                    chkOreProcessing25.CheckedChanged
 
-    Private Sub chkOreProcessing2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing2.CheckedChanged
-        Call UpdateProcessingSkillBoxes(2, chkOreProcessing2.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing3.CheckedChanged
-        Call UpdateProcessingSkillBoxes(3, chkOreProcessing3.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing4.CheckedChanged
-        Call UpdateProcessingSkillBoxes(4, chkOreProcessing4.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing5.CheckedChanged
-        Call UpdateProcessingSkillBoxes(5, chkOreProcessing5.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing6.CheckedChanged
-        Call UpdateProcessingSkillBoxes(6, chkOreProcessing6.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing7_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing7.CheckedChanged
-        Call UpdateProcessingSkillBoxes(7, chkOreProcessing7.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing8_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing8.CheckedChanged
-        Call UpdateProcessingSkillBoxes(8, chkOreProcessing8.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing9_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing9.CheckedChanged
-        Call UpdateProcessingSkillBoxes(9, chkOreProcessing9.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing10_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing10.CheckedChanged
-        Call UpdateProcessingSkillBoxes(10, chkOreProcessing10.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing11_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing11.CheckedChanged
-        Call UpdateProcessingSkillBoxes(11, chkOreProcessing11.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing12_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing12.CheckedChanged
-        Call UpdateProcessingSkillBoxes(12, chkOreProcessing12.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing13_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing13.CheckedChanged
-        Call UpdateProcessingSkillBoxes(13, chkOreProcessing13.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing14_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing14.CheckedChanged
-        Call UpdateProcessingSkillBoxes(14, chkOreProcessing14.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing15_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing15.CheckedChanged
-        Call UpdateProcessingSkillBoxes(15, chkOreProcessing15.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing16_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing16.CheckedChanged
-        Call UpdateProcessingSkillBoxes(16, chkOreProcessing16.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing17_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing17.CheckedChanged
-        Call UpdateProcessingSkillBoxes(17, chkOreProcessing17.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing18_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing18.CheckedChanged
-        Call UpdateProcessingSkillBoxes(18, chkOreProcessing18.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing19_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing19.CheckedChanged
-        Call UpdateProcessingSkillBoxes(19, chkOreProcessing19.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing20_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing20.CheckedChanged
-        Call UpdateProcessingSkillBoxes(20, chkOreProcessing20.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing21_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing21.CheckedChanged
-        Call UpdateProcessingSkillBoxes(21, chkOreProcessing21.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing22_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing22.CheckedChanged
-        Call UpdateProcessingSkillBoxes(22, chkOreProcessing22.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing23_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing23.CheckedChanged
-        Call UpdateProcessingSkillBoxes(23, chkOreProcessing23.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing24_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing24.CheckedChanged
-        Call UpdateProcessingSkillBoxes(24, chkOreProcessing24.Checked)
-    End Sub
-
-    Private Sub chkOreProcessing25_CheckedChanged(sender As Object, e As EventArgs) Handles chkOreProcessing25.CheckedChanged
-        Call UpdateProcessingSkillBoxes(25, chkOreProcessing25.Checked)
+        Call UpdateProcessingSkillBoxes(CInt(CType(sender, CheckBox).Name.Substring(16)), CType(sender, CheckBox).Checked)
     End Sub
 
     Private Sub UpdateProcessingSkillBoxes(ByVal Index As Integer, ByVal Checked As Boolean)
@@ -18654,7 +18570,7 @@ Leave:
                 End If
 
                 ' Refine total Ore we mined for an hour and save the total isk/hour
-                ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
+                ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
                                                                         TempOre.UnitsPerHour, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
 
                 TempOre.RefineYield = ReprocessingYield
@@ -18669,7 +18585,7 @@ Leave:
                 TempOre.DroneYield = GetDroneYield(IceMining, GasMining, MinerMultiplier)
 
                 ' Calculate the unit price by refining one batch
-                ReprocessedMaterials = ReprocessingStation.ReprocessORE(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
+                ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
                                                                         TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
                 TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                 TempOre.RefineType = "Refined"

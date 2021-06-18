@@ -75,7 +75,7 @@ Public Class MineralstoOre
             TempOre.OreVolume = rsOre.GetDouble(3)
             TempOre.OrePrice = rsOre.GetDouble(4)
             ' Later, if the user selects refined ore value, refine it here before we get started - TODO needs to be rounded value - double for material quantities
-            TempOre.RefinedOreList = Refinery.ReprocessORE(TempOre.OreID, SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
+            TempOre.RefinedOreList = Refinery.Reprocess(TempOre.OreID, SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
                                                            SelectedCharacter.Skills.GetSkillLevel(TempOre.OreName & " Processing"), TempOre.RefineUnits, False, New BrokerFeeInfo, Nothing)
             Call OreList.Add(TempOre)
             Index += 1

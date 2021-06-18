@@ -624,66 +624,66 @@ Public Class ManufacturingFacility
         End Select
 
         ' Load the defaults
-        Call InitializeFacilities(ViewType, InitialProductionType)
+        Call InitializeFacilities(ViewType, FormLocation, InitialProductionType)
 
     End Sub
 
     ' Loads all the facilities for the view type sent to include defaults
-    Public Sub InitializeFacilities(ViewType As FacilityView, Optional InitialProductionType As ProductionType = ProductionType.Manufacturing,
+    Public Sub InitializeFacilities(ViewType As FacilityView, FacilityLocation As ProgramLocation, Optional InitialProductionType As ProductionType = ProductionType.Manufacturing,
                                     Optional RefreshSelectedOnly As Boolean = False)
 
         If ViewType = FacilityView.FullControls And Not RefreshSelectedOnly Then
             ' Load all the facilities for  tab - always start with manufacturing
-            Call SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, FacilityLocation, SelectedControlForm)
             SelectedManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation, SelectedControlForm)
             SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation, SelectedControlForm)
             SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalManufacturing, FacilityLocation, SelectedControlForm)
             SelectedCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.SuperManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.SuperManufacturing, FacilityLocation, SelectedControlForm)
             SelectedSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation, SelectedControlForm)
             SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.SubsystemManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.SubsystemManufacturing, FacilityLocation, SelectedControlForm)
             SelectedSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.BoosterManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.BoosterManufacturing, FacilityLocation, SelectedControlForm)
             SelectedBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Copying, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Copying, FacilityLocation, SelectedControlForm)
             SelectedCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Invention, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Invention, FacilityLocation, SelectedControlForm)
             SelectedInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Reactions, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reactions, FacilityLocation, SelectedControlForm)
             SelectedReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3Invention, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3Invention, FacilityLocation, SelectedControlForm)
             SelectedT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation, SelectedControlForm)
             SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
 
         ElseIf ViewType = FacilityView.LimitedControls Or RefreshSelectedOnly Then
 
             ' Select what facility to load based on the industry type
-            Call SelectedFacility.InitalizeFacility(InitialProductionType, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(InitialProductionType, FacilityLocation, SelectedControlForm)
 
-            Call SetSelectedFacility(InitialProductionType, ViewType)
+            Call SetSelectedFacility(InitialProductionType, FacilityLocation)
 
         ElseIf ViewType = FacilityView.LimitedRefinery Then
 
-            Call SelectedFacility.InitalizeFacility(ProductionType.Refinery, ViewType, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Refinery, FacilityLocation, SelectedControlForm)
             SelectedRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
         Else
@@ -717,7 +717,7 @@ Public Class ManufacturingFacility
 
     End Sub
 
-    Public Sub SetSelectedFacility(BuildType As ProductionType, ViewType As FacilityView, Optional LoadDualFacilities As Boolean = True)
+    Public Sub SetSelectedFacility(BuildType As ProductionType, FacilityLocation As ProgramLocation, Optional LoadDualFacilities As Boolean = True)
 
         'Now save the default and selected facility to the appropriate variable
         Select Case BuildType
@@ -729,7 +729,7 @@ Public Class ManufacturingFacility
                 DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load component too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, ViewType, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation, SelectedControlForm)
                     SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -738,7 +738,7 @@ Public Class ManufacturingFacility
                 DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load cap component too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, ViewType, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation, SelectedControlForm)
                     SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -753,7 +753,7 @@ Public Class ManufacturingFacility
                 DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load T3 destroyers too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, ViewType, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation, SelectedControlForm)
                     SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -780,7 +780,7 @@ Public Class ManufacturingFacility
                 DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load T3 cruisers too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, ViewType, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation, SelectedControlForm)
                     SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -880,7 +880,7 @@ Public Class ManufacturingFacility
 
         ' Facility is loaded, so save it to default and dynamic variable
         If LoadDefault Then
-            Call SetSelectedFacility(SelectedProductionType, SelectedView, False)
+            Call SetSelectedFacility(SelectedProductionType, SelectedLocation, False)
         End If
         Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
 
@@ -2191,12 +2191,18 @@ Public Class ManufacturingFacility
         ' Facility is loaded, so save it to default and dynamic variable
         Call SetFacility(SelectedFacility, BuildType, False, False)
 
-        ' Finally, update the refining rates for the mining tab refinery if this is the refinery
-        If SelectedLocation = ProgramLocation.MiningTab Then
+        ' Finally, update the refining rates for the mining tab refinery or refinery if this is the refinery
+        If SelectedLocation = ProgramLocation.MiningTab Or SelectedLocation = ProgramLocation.Refinery Then
             ' Set the refine rates first, then refresh
             Call SetRefiningRates()
             If Not FirstLoad Then
-                Call frmMain.RefreshMiningTabRefiningRates()
+                Select Case SelectedLocation
+                    Case ProgramLocation.MiningTab
+                        Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
+                    Case ProgramLocation.Refinery
+                        Call CType(SelectedControlForm, frmRefinery).RefreshRefiningRates()
+                End Select
+
             End If
         End If
 
@@ -2540,7 +2546,7 @@ Public Class ManufacturingFacility
         ' Reload the facility each time we return - use initialize and just load the one we changed
         If SelectedFacility.IsDefault Then
             ' If they saved fittings for the default, reset the default values
-            Call InitializeFacilities(SelectedView, SelectedProductionType, True)
+            Call InitializeFacilities(SelectedView, SelectedLocation, SelectedProductionType, True)
         Else
             ' If it's not the default, just load the facility so we get the changes from the fitting
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
@@ -3047,7 +3053,7 @@ Public Class ManufacturingFacility
 
             ' Manufacturing Facility usage
             RawCostSplit.UsageName = "Manufacturing Facility Usage"
-            If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+            If Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                 RawCostSplit.UsageValue = GetSelectedManufacturingFacility(SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID).FacilityUsage
             Else
                 ' Add fuel block usage
@@ -3056,7 +3062,7 @@ Public Class ManufacturingFacility
             f1.UsageSplits.Add(RawCostSplit)
 
             If SelectedBlueprint.HasComponents And SelectedBlueprint.GetItemCategoryID <> ItemIDs.ComponentCategoryID And SelectedBlueprint.GetItemGroupID <> ItemIDs.AdvCapitalComponentGroupID And
-            Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+            Not ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                 ' Component Facility Usage
                 RawCostSplit.UsageName = "Component Facility Usage"
                 RawCostSplit.UsageValue = SelectedComponentManufacturingFacility.FacilityUsage
@@ -3072,7 +3078,7 @@ Public Class ManufacturingFacility
                         f1.UsageSplits.Add(RawCostSplit)
                 End Select
             ElseIf (SelectedBlueprint.GetItemCategoryID = ItemIDs.ComponentCategoryID Or SelectedBlueprint.GetItemGroupID = ItemIDs.AdvCapitalComponentGroupID) Or
-            ReactionTypes.Contains(SelectedBlueprint.GetItemData.GetMaterialGroup) Then
+            ReactionTypes.Contains(SelectedBlueprint.GetItemData.GroupName) Then
                 ' Load reactions usage
                 RawCostSplit.UsageName = "Reaction Facility Usage"
                 RawCostSplit.UsageValue = SelectedReactionsFacility.FacilityUsage
@@ -3498,11 +3504,12 @@ Public Class ManufacturingFacility
     ' Sets all the refine rates for the three different types of refinables for the selected facility
     Private Sub SetRefiningRates()
         With SelectedFacility
-            If SelectedProductionType = ProductionType.Refinery And .FacilityType = FacilityTypes.UpwellStructure Then
+            If SelectedProductionType = ProductionType.Refinery Then
                 Dim DefaultRefineRate As Double = .MaterialMultiplier
                 .OreFacilityRefineRate = GetRefineRate(RefineMaterialType.Ore, DefaultRefineRate)
                 .MoonOreFacilityRefineRate = GetRefineRate(RefineMaterialType.MoonOre, DefaultRefineRate)
                 .IceFacilityRefineRate = GetRefineRate(RefineMaterialType.Ice, DefaultRefineRate)
+                .ScrapmetalRefineRate = GetRefineRate(RefineMaterialType.Scrapmetal, DefaultRefineRate)
             End If
         End With
     End Sub
@@ -3511,34 +3518,40 @@ Public Class ManufacturingFacility
     Private Function GetRefineRate(RefineType As RefineMaterialType, DefaultValue As Double) As Double
         Dim RefineValue As Double = DefaultValue
 
+        ' Process all but scrapmetal to account for rigs/etc.
         If SelectedProductionType = ProductionType.Refinery And SelectedFacility.FacilityType = FacilityTypes.UpwellStructure Then
-            Dim InstalledModules As List(Of Integer)
-            Dim ItemGroupID As Integer
-            Dim ItemCategoryID As Integer = 0
-            Dim TempBonus As Double
-            Dim ReturnedAttribute As Integer
+            If RefineType <> RefineMaterialType.Scrapmetal Then
+                Dim InstalledModules As List(Of Integer)
+                Dim ItemGroupID As Integer
+                Dim ItemCategoryID As Integer = 0
+                Dim TempBonus As Double
+                Dim ReturnedAttribute As Integer
 
-            Select Case RefineType
-                Case RefineMaterialType.Ore
-                    ItemGroupID = ItemIDs.Arkonor
-                Case RefineMaterialType.Ice
-                    ItemGroupID = ItemIDs.IceGroupID
-                Case RefineMaterialType.MoonOre
-                    ItemGroupID = ItemIDs.CommonMoonAsteroids
-            End Select
+                Select Case RefineType
+                    Case RefineMaterialType.Ore
+                        ItemGroupID = ItemIDs.Arkonor
+                    Case RefineMaterialType.Ice
+                        ItemGroupID = ItemIDs.IceGroupID
+                    Case RefineMaterialType.MoonOre
+                        ItemGroupID = ItemIDs.CommonMoonAsteroids
+                End Select
 
-            With SelectedFacility
-                InstalledModules = GetInstalledModules(.Activity, .FacilityID, ItemGroupID, ItemCategoryID, .SolarSystemID)
-            End With
+                With SelectedFacility
+                    InstalledModules = GetInstalledModules(.Activity, .FacilityID, ItemGroupID, ItemCategoryID, .SolarSystemID)
+                End With
 
-            For Each StructureModule In InstalledModules
-                Call GetRigBonus(StructureModule, GetSystemSecurityAttribute(SelectedFacility.SolarSystemName), ReturnedAttribute, TempBonus)
-                ' Look for ItemAttributes.refiningYieldMultiplier to get the correct value
-                If ReturnedAttribute = ItemAttributes.refiningYieldMultiplier Then
-                    RefineValue = (TempBonus * 100) * (SelectedFacility.MaterialMultiplier / 0.5) ' Calculate new base refine amount (the structure modifier is mulitplied to 50% base)
-                    Exit For
-                End If
-            Next
+                For Each StructureModule In InstalledModules
+                    Call GetRigBonus(StructureModule, GetSystemSecurityAttribute(SelectedFacility.SolarSystemName), ReturnedAttribute, TempBonus)
+                    ' Look for ItemAttributes.refiningYieldMultiplier to get the correct value
+                    If ReturnedAttribute = ItemAttributes.refiningYieldMultiplier Then
+                        RefineValue = (TempBonus * 100) * (SelectedFacility.MaterialMultiplier / 0.5) ' Calculate new base refine amount (the structure modifier is mulitplied to 50% base)
+                        Exit For
+                    End If
+                Next
+            Else
+                ' Scrapmetal is pretty basic - just return the base ME as 50% for all structures and we will adjust outside of object for scrapmetal
+                RefineValue = 0.5
+            End If
         End If
 
         Return RefineValue
@@ -3794,6 +3807,7 @@ Public Enum ProgramLocation
     BlueprintTab = 0
     ManufacturingTab = 1
     MiningTab = 2
+    Refinery = 3
 End Enum
 
 ' Types of actual activities that you can conduct in a facility
@@ -3837,6 +3851,7 @@ Public Enum RefineMaterialType
     Ore = 1
     Ice = 2
     MoonOre = 3
+    Scrapmetal = 4
 End Enum
 
 Public Enum ItemIDs
@@ -3909,7 +3924,8 @@ Public Enum ItemIDs
     Pyroxeres = 459
     Scordite = 460
     Spodumain = 461
-    Veldspar = 462
+    Veldspar = 462
+
 End Enum
 
 Public Enum FacilityTypes
@@ -3970,6 +3986,7 @@ Public Class IndustryFacility
     Public OreFacilityRefineRate As Double
     Public MoonOreFacilityRefineRate As Double
     Public IceFacilityRefineRate As Double
+    Public ScrapmetalRefineRate As Double
 
     Public Sub New()
 
@@ -4003,6 +4020,7 @@ Public Class IndustryFacility
         OreFacilityRefineRate = 0
         MoonOreFacilityRefineRate = 0
         IceFacilityRefineRate = 0
+        ScrapmetalRefineRate = 0
 
         ControlForm = Nothing
 
@@ -4044,6 +4062,7 @@ Public Class IndustryFacility
         CopyOfMe.OreFacilityRefineRate = OreFacilityRefineRate
         CopyOfMe.MoonOreFacilityRefineRate = MoonOreFacilityRefineRate
         CopyOfMe.IceFacilityRefineRate = IceFacilityRefineRate
+        CopyOfMe.ScrapmetalRefineRate = ScrapmetalRefineRate
         CopyOfMe.FullyLoaded = FullyLoaded
         CopyOfMe.ControlForm = ControlForm
 
@@ -4052,7 +4071,7 @@ Public Class IndustryFacility
     End Function
 
     ' Load up the facility data from the table as default
-    Public Sub InitalizeFacility(InitialProductionType As ProductionType, FacilityTab As FacilityView, ByRef FacilityForm As Form)
+    Public Sub InitalizeFacility(InitialProductionType As ProductionType, FacilityView As ProgramLocation, ByRef FacilityForm As Form)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
@@ -4077,7 +4096,7 @@ Public Class IndustryFacility
         SQL &= "AND SF.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
         SQL &= "AND SF.FACILITY_TYPE = FACILITY_TYPES.FACILITY_TYPE_ID "
         SQL &= "AND FACILITY_PRODUCTION_TYPES.ACTIVITY_ID = INDUSTRY_ACTIVITIES.activityID "
-        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityTab))
+        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityView))
 
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
         Dim CharID As String = ""

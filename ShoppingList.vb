@@ -290,7 +290,7 @@ Public Class ShoppingList
                             If UpdatedQuantity > 0 Then
                                 With .GetMaterialList(i)
                                     ' Need to save the new value we want for this item, not the new quantity, to update the other lists with 
-                                    InsertMat = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, RefMatQuantity, .GetTotalVolume, 0, "", "")
+                                    InsertMat = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, RefMatQuantity, .GetTotalVolume, 0, "", "")
                                 End With
 
                                 UpdateItemMatList.InsertMaterial(InsertMat)
@@ -654,7 +654,7 @@ Public Class ShoppingList
                 Dim TempBuildItem As New BuiltItem
                 TempBuildItem.ItemTypeID = UpdateMaterial.GetMaterialTypeID
                 TempBuildItem.BuildME = CInt(UpdateMaterial.GetItemME)
-                TempBuildItem.ManufacturingFacility.FacilityName = UpdateMaterial.GetMaterialGroup
+                TempBuildItem.ManufacturingFacility.FacilityName = UpdateMaterial.GroupName
 
                 Call TotalBuildList.SetItemToFind(TempBuildItem)
 
@@ -966,7 +966,7 @@ Public Class ShoppingList
         For i = 0 To TotalItemList.Count - 1
             For j = 0 To TotalItemList(i).BPMaterialList.GetMaterialList.Count - 1
                 With TotalItemList(i).BPMaterialList.GetMaterialList(j)
-                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
+                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
                 End With
 
                 ' Add to the temp list
@@ -981,7 +981,7 @@ Public Class ShoppingList
         If Not IsNothing(TotalBuyList.GetMaterialList) Then
             For i = 0 To TotalBuyList.GetMaterialList.Count - 1
                 With TotalBuyList.GetMaterialList(i)
-                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
+                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
                 End With
 
                 ' Add the material with new price to list
@@ -997,7 +997,7 @@ Public Class ShoppingList
         If Not IsNothing(TotalInventionMats.GetMaterialList) Then
             For i = 0 To TotalInventionMats.GetMaterialList.Count - 1
                 With TotalInventionMats.GetMaterialList(i)
-                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
+                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
                 End With
 
                 ' Add the material with new price to list
@@ -1013,7 +1013,7 @@ Public Class ShoppingList
         If Not IsNothing(TotalCopyMats.GetMaterialList) Then
             For i = 0 To TotalCopyMats.GetMaterialList.Count - 1
                 With TotalCopyMats.GetMaterialList(i)
-                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
+                    TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
                 End With
 
                 ' Add the material with new price to list
@@ -1037,7 +1037,7 @@ Public Class ShoppingList
                 If Not IsNothing(TotalBuildList.GetBuiltItemList(i).BuildMaterials.GetMaterialList) Then
                     For j = 0 To TotalBuildList.GetBuiltItemList(i).BuildMaterials.GetMaterialList.Count - 1
                         With TotalBuildList.GetBuiltItemList(i).BuildMaterials.GetMaterialList(j)
-                            TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GetMaterialGroup, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
+                            TransferMaterial = New Material(.GetMaterialTypeID, .GetMaterialName, .GroupName, .GetQuantity, .GetVolume, 0, .GetItemME, .GetItemTE, .GetBuildItem, .GetItemType)
                         End With
                         ' Insert the mat to the item list
                         Call TransferBuiltItem.BuildMaterials.InsertMaterial(TransferMaterial)
@@ -1100,7 +1100,7 @@ Public Class ShoppingList
             For j = 0 To FullItemList.GetMaterialList.Count - 1
                 With FullItemList.GetMaterialList(j) ' GroupName stores the build type Decryptor/Relic in item type
                     ' Split out the Build Type, Decryptor, NumBps, and Relic
-                    Dim GroupNameItems As String() = .GetMaterialGroup.Split(New [Char]() {"|"c})
+                    Dim GroupNameItems As String() = .GroupName.Split(New [Char]() {"|"c})
                     Dim ItemName As String = ""
                     Dim RelicName As String = ""
 

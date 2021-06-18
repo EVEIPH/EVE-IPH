@@ -781,7 +781,7 @@ Public Class Blueprint
                     End If
 
                     ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
-                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GetMaterialGroup, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
+                    Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GroupName, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
                     ComponentMaterials.InsertMaterial(TempMat)
 
                     ' Building, so add the raw materials to the raw mats list

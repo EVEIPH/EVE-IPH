@@ -104,9 +104,12 @@ Public Module Public_Variables
 
     ' For a new shopping list, so we can upate it when it's open
     Public frmShop As frmShoppingList = New frmShoppingList
+    Public CopyPasteRefineryMaterialText As String
+
     ' Same with assets
     Public frmDefaultAssets As frmAssetsViewer
     Public frmShoppingAssets As frmAssetsViewer
+    Public frmRefineryAssets As frmAssetsViewer
     Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
 
     ' The only allowed characters for text entry
@@ -238,15 +241,6 @@ Public Module Public_Variables
         InventedBPC = -3
     End Enum
 
-    ' Types of Asset windows
-    Public Enum AssetWindow
-        DefaultView = 0
-        ManufacturingTab = 1
-        ShoppingList = 2
-        RefiningOre = 3
-        RefiningItems = 4
-    End Enum
-
     ' For scanning assets
     Public Enum SkillType
         BPReqSkills = 1
@@ -292,6 +286,11 @@ Public Module Public_Variables
     Public Enum CopyPasteWindowType
         Materials = 1
         Blueprints = 2
+    End Enum
+
+    Public Enum CopyPasteWindowLocation
+        Assets = 1
+        RefineMaterials = 2
     End Enum
 
     ' To play ding sound without box
@@ -1344,6 +1343,295 @@ InvalidDate:
         DBCommand = Nothing
 
         Return ReturnName
+
+    End Function
+
+    ' Returns the SQL for getting item price typeids = and empty string if nothing selected
+    Public Function GetItemPriceGroupListSQL(AdvancedComponents As CheckBox, AdvancedMats As CheckBox, AdvancedProtectiveTechnology As CheckBox, AncientRelics As CheckBox,
+                                             BoosterMats As CheckBox, Boosters As CheckBox, BPCs As CheckBox, CapitalShipComponents As CheckBox,
+                                             CapT2ShipComponents As CheckBox, Celestials As CheckBox, Charges As CheckBox,
+                                             Datacores As CheckBox, Decryptors As CheckBox, Deployables As CheckBox, Drones As CheckBox,
+                                             FactionMaterials As CheckBox, FuelBlocks As CheckBox, Gas As CheckBox, IceProducts As CheckBox,
+                                             Implants As CheckBox, Minerals As CheckBox, Misc As CheckBox, Modules As CheckBox, MolecularForgedMaterials As CheckBox,
+                                             MolecularForgingTools As CheckBox, NamedComponents As CheckBox, Planetary As CheckBox,
+                                             Polymers As CheckBox, ProcessedMats As CheckBox, ProtectiveComponents As CheckBox, RAM As CheckBox,
+                                             RawMaterials As CheckBox, RawMoonMats As CheckBox, RDb As CheckBox, Rigs As CheckBox, Salvage As CheckBox,
+                                             Ships As CheckBox, StructureComponents As CheckBox, StructureModules As CheckBox, StructureRigs As CheckBox,
+                                             Structures As CheckBox, SubsystemComponents As CheckBox, Subsystems As CheckBox,
+                                             ChargeTypes As ComboBox, ShipTypes As ComboBox,
+                                             PricesT1 As CheckBox, PriceCheckT1Enabled As Boolean,
+                                             PricesT2 As CheckBox, PriceCheckT2Enabled As Boolean,
+                                             PricesT3 As CheckBox, PriceCheckT3Enabled As Boolean,
+                                             PricesT4 As CheckBox, PriceCheckT4Enabled As Boolean,
+                                             PricesT5 As CheckBox, PriceCheckT5Enabled As Boolean,
+                                             PricesT6 As CheckBox, PriceCheckT6Enabled As Boolean) As String
+
+        Dim SQL As String = ""
+        Dim TechSQL As String = ""
+        Dim ItemChecked As Boolean = False
+        Dim TechChecked As Boolean = False
+
+        ' Materials & Research Equipment Grid
+        ' Materials First
+        If AdvancedProtectiveTechnology.Checked Then
+            SQL &= "ITEM_GROUP = 'Advanced Protective Technology' OR "
+            ItemChecked = True
+        End If
+        If FactionMaterials.Checked Then
+            SQL &= "(ITEM_GROUP IN ('Materials and Compounds','Artifacts and Prototypes','Rogue Drone Components') OR ITEM_GROUP LIKE 'Decryptors -%') OR "
+            ItemChecked = True
+        End If
+        If Gas.Checked Then
+            SQL &= "ITEM_GROUP = 'Harvestable Cloud' OR "
+            ItemChecked = True
+        End If
+        If IceProducts.Checked Then
+            SQL &= "ITEM_GROUP = 'Ice Product' OR "
+            ItemChecked = True
+        End If
+        If Minerals.Checked Then
+            SQL &= "ITEM_GROUP = 'Mineral' OR "
+            ItemChecked = True
+        End If
+        If MolecularForgingTools.Checked Then
+            SQL &= "ITEM_GROUP = 'Molecular-Forging Tools' OR "
+            ItemChecked = True
+        End If
+        If NamedComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Named Components' OR "
+            ItemChecked = True
+        End If
+        If Planetary.Checked Then
+            SQL &= "ITEM_CATEGORY LIKE 'Planetary%' OR "
+            ItemChecked = True
+        End If
+
+        ' Raw Materials (Ores)
+        If RawMaterials.Checked Then
+            SQL &= "(ITEM_CATEGORY = 'Asteroid' OR ITEM_GROUP = 'Abyssal Materials') OR "
+            ItemChecked = True
+        End If
+
+        ' Reaction Materials
+        If AdvancedMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Composite' OR "
+            ItemChecked = True
+        End If
+        If BoosterMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Biochemical Material' OR "
+            ItemChecked = True
+        End If
+        If MolecularForgedMaterials.Checked Then
+            SQL &= "ITEM_GROUP = 'Molecular-Forged Materials' OR "
+            ItemChecked = True
+        End If
+        If Polymers.Checked Then
+            SQL &= "ITEM_GROUP = 'Hybrid Polymers' OR "
+            ItemChecked = True
+        End If
+        If ProcessedMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Intermediate Materials' OR "
+            ItemChecked = True
+        End If
+        If RawMoonMats.Checked Then
+            SQL &= "ITEM_GROUP = 'Moon Materials' OR "
+            ItemChecked = True
+        End If
+
+        If Salvage.Checked Then
+            SQL &= "ITEM_GROUP IN ('Salvaged Materials','Ancient Salvage') OR "
+            ItemChecked = True
+        End If
+
+        ' Research Equipment
+        If AncientRelics.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Ancient Relics' OR "
+            ItemChecked = True
+        End If
+        If Datacores.Checked Then
+            SQL &= "ITEM_GROUP = 'Datacores' OR "
+            ItemChecked = True
+        End If
+        If Decryptors.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Decryptors' OR "
+            ItemChecked = True
+        End If
+        If RDb.Checked Then
+            SQL &= "ITEM_NAME LIKE 'R.Db%' OR "
+            ItemChecked = True
+        End If
+
+        ' Misc and Blueprints
+        If BPCs.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Blueprint' OR "
+            ItemChecked = True
+        End If
+        If Misc.Checked Then ' Commodities = Shattered Villard Wheel
+            SQL &= "ITEM_GROUP IN ('General','Livestock','Radioactive','Biohazard','Commodities','Empire Insignia Drops','Criminal Tags','Miscellaneous','Unknown Components','Lease') OR "
+            ItemChecked = True
+        End If
+
+        ' Other Manufacturables
+        If CapT2ShipComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Advanced Capital Construction Components' OR "
+            ItemChecked = True
+        End If
+        If AdvancedComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Construction Components' OR "
+            ItemChecked = True
+        End If
+        If FuelBlocks.Checked Then
+            SQL &= "ITEM_GROUP = 'Fuel Block' OR "
+            ItemChecked = True
+        End If
+        If ProtectiveComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Protective Components' OR "
+            ItemChecked = True
+        End If
+        If RAM.Checked Then
+            SQL &= "ITEM_NAME LIKE 'R.A.M.%' OR "
+            ItemChecked = True
+        End If
+        If CapitalShipComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Capital Construction Components' OR "
+            ItemChecked = True
+        End If
+        If StructureComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Structure Components' OR "
+            ItemChecked = True
+        End If
+        If SubsystemComponents.Checked Then
+            SQL &= "ITEM_GROUP = 'Hybrid Tech Components' OR "
+            ItemChecked = True
+        End If
+        If Boosters.Checked Then
+            SQL &= "ITEM_GROUP = 'Booster' OR "
+            ItemChecked = True
+        End If
+
+        ' All other manufactured items
+        If Implants.Checked Then
+            SQL &= "(ITEM_GROUP = 'Cyberimplant' OR (ITEM_CATEGORY = 'Implant' AND ITEM_GROUP <> 'Booster')) OR "
+            ItemChecked = True
+        End If
+        If Deployables.Checked Then
+            SQL &= "ITEM_CATEGORY = 'Deployable' OR "
+            ItemChecked = True
+        End If
+        If StructureModules.Checked Then
+            SQL &= "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') OR "
+            ItemChecked = True
+        End If
+        If Celestials.Checked Then
+            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
+            ItemChecked = True
+        End If
+
+        ' Manufactured Items
+        If Ships.Checked Or Modules.Checked Or Drones.Checked Or Rigs.Checked Or Subsystems.Checked Or Structures.Checked Or Charges.Checked Or StructureRigs.Checked Then
+
+            ' If they choose a tech level, then build this part of the SQL query
+            If PriceCheckT1Enabled Then
+                If PricesT1.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 1 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            If PriceCheckT2Enabled Then
+                If PricesT2.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 2 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            If PriceCheckT3Enabled Then
+                If PricesT3.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 14 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            ' Add the Pirate, Storyline, Navy search string
+            ' Storyline
+            If PriceCheckT4Enabled Then
+                If PricesT4.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 3 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            ' Navy
+            If PriceCheckT5Enabled Then
+                If PricesT5.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 16 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            ' Pirate
+            If PriceCheckT6Enabled Then
+                If PricesT6.Checked Then
+                    ' Add to SQL query for tech level
+                    TechSQL = TechSQL & "ITEM_TYPE = 15 OR "
+                    TechChecked = True
+                End If
+            End If
+
+            If Not TechChecked And Not ItemChecked Then
+                ' There isn't an item checked before this and these items all require tech, so exit
+                Return ""
+            End If
+
+            ' Format TechSQL - Add on Meta codes - 21,22,23,24 are T3
+            If TechSQL <> "" Then
+                TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
+            End If
+
+            ' Build Tech 1,2,3 Manufactured Items
+            If Charges.Checked Then
+                SQL &= "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
+                If ChargeTypes.Text <> "All Charge Types" Then
+                    SQL &= " AND ITEM_GROUP = '" & ChargeTypes.Text & "'"
+                End If
+                SQL &= ") OR "
+            End If
+            If Drones.Checked Then
+                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
+            End If
+            If Modules.Checked Then ' Not rigs but Modules
+                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
+            End If
+            If Ships.Checked Then
+                SQL &= "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
+                If ShipTypes.Text <> "All Ship Types" Then
+                    SQL &= " AND ITEM_GROUP = '" & ShipTypes.Text & "'"
+                End If
+                SQL &= ") OR "
+            End If
+            If Subsystems.Checked Then
+                SQL &= "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
+            End If
+            If StructureRigs.Checked Then
+                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' AND " & TechSQL & ") OR "
+            End If
+            If Rigs.Checked Then ' Rigs
+                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
+            End If
+            If Structures.Checked Then
+                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
+            End If
+        End If
+
+        ' Take off last OR and add the final )
+        SQL = SQL.Substring(0, SQL.Length - 4)
+
+        Return SQL
 
     End Function
 

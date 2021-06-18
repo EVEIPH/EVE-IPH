@@ -5774,9 +5774,9 @@ Partial Class frmMain
         '
         Me.btnCalcT2T3FacilityToggle.Location = New System.Drawing.Point(716, 138)
         Me.btnCalcT2T3FacilityToggle.Name = "btnCalcT2T3FacilityToggle"
-        Me.btnCalcT2T3FacilityToggle.Size = New System.Drawing.Size(43, 22)
+        Me.btnCalcT2T3FacilityToggle.Size = New System.Drawing.Size(57, 22)
         Me.btnCalcT2T3FacilityToggle.TabIndex = 24
-        Me.btnCalcT2T3FacilityToggle.Text = "T3"
+        Me.btnCalcT2T3FacilityToggle.Text = "T3 Inv"
         Me.btnCalcT2T3FacilityToggle.UseVisualStyleBackColor = True
         '
         'gbCalcIgnoreinCalcs

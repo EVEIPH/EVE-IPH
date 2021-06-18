@@ -39,6 +39,7 @@ Public Module SettingsVariables
     Public UserAssetWindowDefaultSettings As AssetWindowSettings
     Public UserAssetWindowManufacturingTabSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
+    Public UserAssetWindowRefinerySettings As AssetWindowSettings
     ' For the Blueprint List Viewer
     Public UserBPViewerSettings As BPViewerSettings
     ' For Upwell Structure viewer
@@ -106,6 +107,7 @@ Public Class ProgramSettings
     Public DefaultCheckBuildBuy As Boolean = False
     Public DefaultIgnoreRareandShipSkinBPs As Boolean = True
     Public DefaultSaveBPRelicsDecryptors As Boolean = False
+    Public DefaultRefineDrillDown As Boolean = False
 
     Public DefaultSettingME As Integer = 0
     Public DefaultSettingTE As Integer = 0
@@ -918,6 +920,7 @@ Public Class ProgramSettings
     ' Multiple versions of Asset windows
     Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
     Private AssetWindowSettingsShoppingList As AssetWindowSettings
+    Private AssetWindowsettingsRefinery As AssetWindowSettings
 
     ' 5 belt types
     Private IndustryBeltOreChecksSettings1 As IndustryBeltOreChecks
@@ -964,6 +967,7 @@ Public Class ProgramSettings
     Private Const AssetWindowFileNameDefault As String = "AssetWindowSettingsDefault"
     Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
+    Private Const AssetWindowFileNameRefinery As String = "AssetWindowFileNameRefinery"
 
     Private Const XMLfileType As String = ".xml"
 
@@ -1162,6 +1166,7 @@ Public Class ProgramSettings
                     .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultUseActiveSkills))
                     .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
                     .ShareSavedFacilities = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShareSavedFacilities", DefaultDisableGATracking))
+                    .RefineDrillDown = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "RefineDrillDown", DefaultRefineDrillDown))
                 End With
 
             Else
@@ -1236,6 +1241,8 @@ Public Class ProgramSettings
 
             .LoadBPsbyChar = DefaultLoadBPsbyChar
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
+
+            .RefineDrillDown = DefaultRefineDrillDown
         End With
 
         ' Save locally
@@ -1246,7 +1253,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(37) As Setting
+        Dim ApplicationSettingsList(38) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1287,6 +1294,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(35) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
             ApplicationSettingsList(36) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
             ApplicationSettingsList(37) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
+            ApplicationSettingsList(38) = New Setting("RefineDrillDown", CStr(SentSettings.RefineDrillDown))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -4033,6 +4041,8 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
+            Case AssetWindow.Refinery
+                AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
         Try
@@ -4048,57 +4058,63 @@ Public Class ProgramSettings
                     .ItemFilterText = CStr(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "ItemFilterText", DefaultAssetItemTextFilter))
                     .AllItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllItems", DefaultAllItems))
                     .AllRawMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllRawMats", DefaultAssetItemChecks))
-                    .Minerals = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Minerals", DefaultAssetItemChecks))
-                    .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
+
+                    .AdvancedProtectiveTechnology = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedProtectiveTechnology", DefaultAssetItemChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Gas", DefaultAssetItemChecks))
+                    .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
+                    .MolecularForgingTools = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MolecularForgingTools", DefaultAssetItemChecks))
+                    .FactionMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FactionMaterials", DefaultAssetItemChecks))
+                    .NamedComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "NamedComponents", DefaultAssetItemChecks))
+                    .Minerals = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Minerals", DefaultAssetItemChecks))
+                    .Planetary = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
+                    .RawMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMaterials", DefaultAssetItemChecks))
+                    .Salvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
                     .Misc = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Misc", DefaultAssetItemChecks))
                     .BPCs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BPCs", False))
+
+                    .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedMoonMats", DefaultAssetItemChecks))
+                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BoosterMats", DefaultAssetItemChecks))
+                    .MolecularForgedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MolecularForgedMats", DefaultAssetItemChecks))
+                    .Polymers = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Polymers", DefaultAssetItemChecks))
+                    .ProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProcessedMoonMats", DefaultAssetItemChecks))
+                    .RawMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMoonMats", DefaultAssetItemChecks))
+
                     .AncientRelics = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientRelics", DefaultAssetItemChecks))
-                    .AncientSalvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientSalvage", DefaultAssetItemChecks))
-                    .Salvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
-                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureRigs", DefaultAssetItemChecks))
-                    .StructureModules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureModules", DefaultAssetItemChecks))
-                    .Planetary = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
                     .Datacores = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Datacores", DefaultAssetItemChecks))
                     .Decryptors = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Decryptors", DefaultAssetItemChecks))
-                    .RawMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMats", DefaultAssetItemChecks))
-                    .ProcessedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProcessedMats", DefaultAssetItemChecks))
-                    .AdvancedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedMats", DefaultAssetItemChecks))
-                    .MatsandCompounds = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MatsandCompounds", DefaultAssetItemChecks))
-                    .DroneComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DroneComponents", DefaultAssetItemChecks))
-                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BoosterMats", DefaultAssetItemChecks))
-                    .Polymers = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Polymers", DefaultAssetItemChecks))
-                    .Asteroids = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Asteroids", DefaultAssetItemChecks))
+                    .RDB = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RDB", DefaultAssetItemChecks))
+
                     .AllManufacturedItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllManufacturedItems", DefaultAssetItemChecks))
+
                     .Ships = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Ships", DefaultAssetItemChecks))
+                    .Charges = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Charges", DefaultAssetItemChecks))
                     .Modules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Modules", DefaultAssetItemChecks))
                     .Drones = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Drones", DefaultAssetItemChecks))
-                    .Boosters = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Boosters", DefaultAssetItemChecks))
                     .Rigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Rigs", DefaultAssetItemChecks))
-                    .Charges = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Charges", DefaultAssetItemChecks))
                     .Subsystems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Subsystems", DefaultAssetItemChecks))
+                    .Deployables = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
+                    .Boosters = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Boosters", DefaultAssetItemChecks))
                     .Structures = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structures", DefaultAssetItemChecks))
-                    .Tools = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Tools", DefaultAssetItemChecks))
-                    .DataInterfaces = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DataInterfaces", DefaultAssetItemChecks))
-                    .CapT2Components = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapT2Components", DefaultAssetItemChecks))
-                    .CapitalComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalComponents", DefaultAssetItemChecks))
-                    .Components = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Components", DefaultAssetItemChecks))
-                    .Hybrid = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Hybrid", DefaultAssetItemChecks))
-                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
+                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureRigs", DefaultAssetItemChecks))
+                    .Celestials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Celestials", DefaultAssetItemChecks))
+                    .StructureModules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureModules", DefaultAssetItemChecks))
+                    .Implants = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
+
+                    .AdvancedCapComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedCapComponents", DefaultAssetItemChecks))
+                    .AdvancedComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedComponents", DefaultAssetItemChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FuelBlocks", DefaultAssetItemChecks))
+                    .ProtectiveComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProtectiveComponents", DefaultAssetItemChecks))
+                    .RAM = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RAM", DefaultAssetItemChecks))
+                    .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalShipComponents", DefaultAssetItemChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
+                    .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SubsystemComponents", DefaultAssetItemChecks))
+
                     .T1 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T1", DefaultAssetItemChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T2", DefaultAssetItemChecks))
                     .T3 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T3", DefaultAssetItemChecks))
                     .Faction = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Faction", DefaultAssetItemChecks))
                     .Pirate = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Pirate", DefaultAssetItemChecks))
                     .Storyline = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Storyline", DefaultAssetItemChecks))
-
-                    .Celestials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Celestials", DefaultAssetItemChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
-                    .Implants = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
-
-                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AbyssalMaterials", DefaultAssetItemChecks))
-
                 End With
 
             Else
@@ -4119,6 +4135,8 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = TempSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = TempSettings
+            Case AssetWindow.Refinery
+                AssetWindowsettingsRefinery = TempSettings
         End Select
 
         Return TempSettings
@@ -4127,7 +4145,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(52) As Setting
+        Dim AssetWindowSettingsList(54) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4137,66 +4155,68 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
+            Case AssetWindow.Refinery
+                AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
         Try
-            AssetWindowSettingsList(0) = New Setting("AllRawMats", CStr(ItemsSelected.AllRawMats))
-            AssetWindowSettingsList(1) = New Setting("Minerals", CStr(ItemsSelected.Minerals))
-            AssetWindowSettingsList(2) = New Setting("IceProducts", CStr(ItemsSelected.IceProducts))
-            AssetWindowSettingsList(3) = New Setting("Gas", CStr(ItemsSelected.Gas))
-            AssetWindowSettingsList(4) = New Setting("AncientRelics", CStr(ItemsSelected.AncientRelics))
-            AssetWindowSettingsList(5) = New Setting("AncientSalvage", CStr(ItemsSelected.AncientSalvage))
-            AssetWindowSettingsList(6) = New Setting("Salvage", CStr(ItemsSelected.Salvage))
-            AssetWindowSettingsList(7) = New Setting("StructureRigs", CStr(ItemsSelected.StructureRigs))
-            AssetWindowSettingsList(8) = New Setting("Planetary", CStr(ItemsSelected.Planetary))
-            AssetWindowSettingsList(9) = New Setting("Datacores", CStr(ItemsSelected.Datacores))
-            AssetWindowSettingsList(10) = New Setting("Decryptors", CStr(ItemsSelected.Decryptors))
-            AssetWindowSettingsList(11) = New Setting("RawMats", CStr(ItemsSelected.RawMats))
-            AssetWindowSettingsList(12) = New Setting("ProcessedMats", CStr(ItemsSelected.ProcessedMats))
-            AssetWindowSettingsList(13) = New Setting("AdvancedMats", CStr(ItemsSelected.AdvancedMats))
-            AssetWindowSettingsList(14) = New Setting("MatsandCompounds", CStr(ItemsSelected.MatsandCompounds))
-            AssetWindowSettingsList(15) = New Setting("DroneComponents", CStr(ItemsSelected.DroneComponents))
-            AssetWindowSettingsList(16) = New Setting("BoosterMats", CStr(ItemsSelected.BoosterMats))
-            AssetWindowSettingsList(17) = New Setting("Polymers", CStr(ItemsSelected.Polymers))
-            AssetWindowSettingsList(18) = New Setting("AllManufacturedItems", CStr(ItemsSelected.AllManufacturedItems))
-            AssetWindowSettingsList(19) = New Setting("Ships", CStr(ItemsSelected.Ships))
-            AssetWindowSettingsList(20) = New Setting("Modules", CStr(ItemsSelected.Modules))
-            AssetWindowSettingsList(21) = New Setting("Drones", CStr(ItemsSelected.Drones))
-            AssetWindowSettingsList(22) = New Setting("Boosters", CStr(ItemsSelected.Boosters))
-            AssetWindowSettingsList(23) = New Setting("Rigs", CStr(ItemsSelected.Rigs))
-            AssetWindowSettingsList(24) = New Setting("Charges", CStr(ItemsSelected.Charges))
-            AssetWindowSettingsList(25) = New Setting("Subsystems", CStr(ItemsSelected.Subsystems))
-            AssetWindowSettingsList(26) = New Setting("Structures", CStr(ItemsSelected.Structures))
-            AssetWindowSettingsList(27) = New Setting("Tools", CStr(ItemsSelected.Tools))
-            AssetWindowSettingsList(28) = New Setting("DataInterfaces", CStr(ItemsSelected.DataInterfaces))
-            AssetWindowSettingsList(29) = New Setting("CapT2Components", CStr(ItemsSelected.CapT2Components))
-            AssetWindowSettingsList(30) = New Setting("CapitalComponents", CStr(ItemsSelected.CapitalComponents))
-            AssetWindowSettingsList(31) = New Setting("Components", CStr(ItemsSelected.Components))
-            AssetWindowSettingsList(32) = New Setting("Hybrid", CStr(ItemsSelected.Hybrid))
-            AssetWindowSettingsList(33) = New Setting("FuelBlocks", CStr(ItemsSelected.FuelBlocks))
-            AssetWindowSettingsList(34) = New Setting("T1", CStr(ItemsSelected.T1))
-            AssetWindowSettingsList(35) = New Setting("T2", CStr(ItemsSelected.T2))
-            AssetWindowSettingsList(36) = New Setting("T3", CStr(ItemsSelected.T3))
-            AssetWindowSettingsList(37) = New Setting("Faction", CStr(ItemsSelected.Faction))
-            AssetWindowSettingsList(38) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
-            AssetWindowSettingsList(39) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
-            AssetWindowSettingsList(40) = New Setting("Asteroids", CStr(ItemsSelected.Asteroids))
-            AssetWindowSettingsList(41) = New Setting("Misc", CStr(ItemsSelected.Misc))
-            AssetWindowSettingsList(42) = New Setting("ItemFilterText", CStr(ItemsSelected.ItemFilterText))
-            AssetWindowSettingsList(43) = New Setting("AllItems", CStr(ItemsSelected.AllItems))
-
             ' Main window
-            AssetWindowSettingsList(44) = New Setting("AssetType", CStr(ItemsSelected.AssetType))
-            AssetWindowSettingsList(45) = New Setting("SortbyName", CStr(ItemsSelected.SortbyName))
+            AssetWindowSettingsList(0) = New Setting("AssetType", CStr(ItemsSelected.AssetType))
+            AssetWindowSettingsList(1) = New Setting("SortbyName", CStr(ItemsSelected.SortbyName))
+            AssetWindowSettingsList(2) = New Setting("ItemFilterText", CStr(ItemsSelected.ItemFilterText))
+            AssetWindowSettingsList(3) = New Setting("AllItems", CStr(ItemsSelected.AllItems))
 
-            AssetWindowSettingsList(46) = New Setting("Celestials", CStr(ItemsSelected.Celestials))
-            AssetWindowSettingsList(47) = New Setting("Deployables", CStr(ItemsSelected.Deployables))
-            AssetWindowSettingsList(48) = New Setting("Implants", CStr(ItemsSelected.Implants))
-            AssetWindowSettingsList(49) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
-            AssetWindowSettingsList(50) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
-            AssetWindowSettingsList(51) = New Setting("AbyssalMaterials", CStr(ItemsSelected.AbyssalMaterials))
-
-            AssetWindowSettingsList(52) = New Setting("StructureComponents", CStr(ItemsSelected.StructureComponents))
+            AssetWindowSettingsList(4) = New Setting("AllRawMats", CStr(ItemsSelected.AllRawMats))
+            AssetWindowSettingsList(5) = New Setting("AdvancedProtectiveTechnology", CStr(ItemsSelected.AdvancedProtectiveTechnology))
+            AssetWindowSettingsList(6) = New Setting("Gas", CStr(ItemsSelected.Gas))
+            AssetWindowSettingsList(7) = New Setting("IceProducts", CStr(ItemsSelected.IceProducts))
+            AssetWindowSettingsList(8) = New Setting("MolecularForgingTools", CStr(ItemsSelected.MolecularForgingTools))
+            AssetWindowSettingsList(9) = New Setting("FactionMaterials", CStr(ItemsSelected.FactionMaterials))
+            AssetWindowSettingsList(10) = New Setting("NamedComponents", CStr(ItemsSelected.NamedComponents))
+            AssetWindowSettingsList(11) = New Setting("Minerals", CStr(ItemsSelected.Minerals))
+            AssetWindowSettingsList(12) = New Setting("Planetary", CStr(ItemsSelected.Planetary))
+            AssetWindowSettingsList(13) = New Setting("RawMaterials", CStr(ItemsSelected.RawMaterials))
+            AssetWindowSettingsList(14) = New Setting("Salvage", CStr(ItemsSelected.Salvage))
+            AssetWindowSettingsList(15) = New Setting("Misc", CStr(ItemsSelected.Misc))
+            AssetWindowSettingsList(16) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
+            AssetWindowSettingsList(17) = New Setting("AdvancedMoonMats", CStr(ItemsSelected.AdvancedMoonMats))
+            AssetWindowSettingsList(18) = New Setting("BoosterMats", CStr(ItemsSelected.BoosterMats))
+            AssetWindowSettingsList(19) = New Setting("MolecularForgedMats", CStr(ItemsSelected.MolecularForgedMats))
+            AssetWindowSettingsList(20) = New Setting("Polymers", CStr(ItemsSelected.Polymers))
+            AssetWindowSettingsList(21) = New Setting("ProcessedMoonMats", CStr(ItemsSelected.ProcessedMoonMats))
+            AssetWindowSettingsList(22) = New Setting("RawMoonMats", CStr(ItemsSelected.RawMoonMats))
+            AssetWindowSettingsList(23) = New Setting("AncientRelics", CStr(ItemsSelected.AncientRelics))
+            AssetWindowSettingsList(24) = New Setting("Datacores", CStr(ItemsSelected.Datacores))
+            AssetWindowSettingsList(25) = New Setting("Decryptors", CStr(ItemsSelected.Decryptors))
+            AssetWindowSettingsList(26) = New Setting("RDB", CStr(ItemsSelected.RDB))
+            AssetWindowSettingsList(27) = New Setting("AllManufacturedItems", CStr(ItemsSelected.AllManufacturedItems))
+            AssetWindowSettingsList(28) = New Setting("Ships", CStr(ItemsSelected.Ships))
+            AssetWindowSettingsList(29) = New Setting("Charges", CStr(ItemsSelected.Charges))
+            AssetWindowSettingsList(30) = New Setting("Modules", CStr(ItemsSelected.Modules))
+            AssetWindowSettingsList(31) = New Setting("Drones", CStr(ItemsSelected.Drones))
+            AssetWindowSettingsList(32) = New Setting("Rigs", CStr(ItemsSelected.Rigs))
+            AssetWindowSettingsList(33) = New Setting("Subsystems", CStr(ItemsSelected.Subsystems))
+            AssetWindowSettingsList(34) = New Setting("Deployables", CStr(ItemsSelected.Deployables))
+            AssetWindowSettingsList(35) = New Setting("Boosters", CStr(ItemsSelected.Boosters))
+            AssetWindowSettingsList(36) = New Setting("Structures", CStr(ItemsSelected.Structures))
+            AssetWindowSettingsList(37) = New Setting("StructureRigs", CStr(ItemsSelected.StructureRigs))
+            AssetWindowSettingsList(38) = New Setting("Celestials", CStr(ItemsSelected.Celestials))
+            AssetWindowSettingsList(39) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
+            AssetWindowSettingsList(40) = New Setting("Implants", CStr(ItemsSelected.Implants))
+            AssetWindowSettingsList(41) = New Setting("AdvancedCapComponents", CStr(ItemsSelected.AdvancedCapComponents))
+            AssetWindowSettingsList(42) = New Setting("AdvancedComponents", CStr(ItemsSelected.AdvancedComponents))
+            AssetWindowSettingsList(43) = New Setting("FuelBlocks", CStr(ItemsSelected.FuelBlocks))
+            AssetWindowSettingsList(44) = New Setting("ProtectiveComponents", CStr(ItemsSelected.ProtectiveComponents))
+            AssetWindowSettingsList(45) = New Setting("RAM", CStr(ItemsSelected.RAM))
+            AssetWindowSettingsList(46) = New Setting("CapitalShipComponents", CStr(ItemsSelected.CapitalShipComponents))
+            AssetWindowSettingsList(47) = New Setting("StructureComponents", CStr(ItemsSelected.StructureComponents))
+            AssetWindowSettingsList(48) = New Setting("SubsystemComponents", CStr(ItemsSelected.SubsystemComponents))
+            AssetWindowSettingsList(49) = New Setting("T1", CStr(ItemsSelected.T1))
+            AssetWindowSettingsList(50) = New Setting("T2", CStr(ItemsSelected.T2))
+            AssetWindowSettingsList(51) = New Setting("T3", CStr(ItemsSelected.T3))
+            AssetWindowSettingsList(52) = New Setting("Faction", CStr(ItemsSelected.Faction))
+            AssetWindowSettingsList(53) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
+            AssetWindowSettingsList(54) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4214,6 +4234,8 @@ Public Class ProgramSettings
                 Return AssetWindowSettingsManufacturingTab
             Case AssetWindow.ShoppingList
                 Return AssetWindowSettingsShoppingList
+            Case AssetWindow.Refinery
+                Return AssetWindowsettingsRefinery
             Case Else
                 Return Nothing
         End Select
@@ -4226,58 +4248,60 @@ Public Class ProgramSettings
         With LocalSettings
             .AssetType = DefaultAssetType
             .SortbyName = DefaultAssetSortbyName
-
             .ItemFilterText = DefaultAssetItemTextFilter
             .AllItems = DefaultAllItems
             .AllRawMats = DefaultAssetItemChecks
-            .Minerals = DefaultAssetItemChecks
-            .IceProducts = DefaultAssetItemChecks
+            .AdvancedProtectiveTechnology = DefaultAssetItemChecks
             .Gas = DefaultAssetItemChecks
-            .AbyssalMaterials = DefaultAssetItemChecks
+            .IceProducts = DefaultAssetItemChecks
+            .MolecularForgingTools = DefaultAssetItemChecks
+            .FactionMaterials = DefaultAssetItemChecks
+            .NamedComponents = DefaultAssetItemChecks
+            .Minerals = DefaultAssetItemChecks
+            .Planetary = DefaultAssetItemChecks
+            .RawMaterials = DefaultAssetItemChecks
+            .Salvage = DefaultAssetItemChecks
             .Misc = DefaultAssetItemChecks
             .BPCs = DefaultAssetItemChecks
+            .AdvancedMoonMats = DefaultAssetItemChecks
+            .BoosterMats = DefaultAssetItemChecks
+            .MolecularForgedMats = DefaultAssetItemChecks
+            .Polymers = DefaultAssetItemChecks
+            .ProcessedMoonMats = DefaultAssetItemChecks
+            .RawMoonMats = DefaultAssetItemChecks
             .AncientRelics = DefaultAssetItemChecks
-            .AncientSalvage = DefaultAssetItemChecks
-            .Salvage = DefaultAssetItemChecks
-            .StructureRigs = DefaultAssetItemChecks
-            .StructureModules = DefaultAssetItemChecks
-            .Planetary = DefaultAssetItemChecks
             .Datacores = DefaultAssetItemChecks
             .Decryptors = DefaultAssetItemChecks
-            .RawMats = DefaultAssetItemChecks
-            .ProcessedMats = DefaultAssetItemChecks
-            .AdvancedMats = DefaultAssetItemChecks
-            .MatsandCompounds = DefaultAssetItemChecks
-            .DroneComponents = DefaultAssetItemChecks
-            .BoosterMats = DefaultAssetItemChecks
-            .Polymers = DefaultAssetItemChecks
-            .Asteroids = DefaultAssetItemChecks
+            .RDB = DefaultAssetItemChecks
             .AllManufacturedItems = DefaultAssetItemChecks
             .Ships = DefaultAssetItemChecks
+            .Charges = DefaultAssetItemChecks
             .Modules = DefaultAssetItemChecks
             .Drones = DefaultAssetItemChecks
-            .Boosters = DefaultAssetItemChecks
             .Rigs = DefaultAssetItemChecks
-            .Charges = DefaultAssetItemChecks
             .Subsystems = DefaultAssetItemChecks
+            .Deployables = DefaultAssetItemChecks
+            .Boosters = DefaultAssetItemChecks
             .Structures = DefaultAssetItemChecks
-            .Tools = DefaultAssetItemChecks
-            .DataInterfaces = DefaultAssetItemChecks
-            .CapT2Components = DefaultAssetItemChecks
-            .CapitalComponents = DefaultAssetItemChecks
-            .Components = DefaultAssetItemChecks
-            .Hybrid = DefaultAssetItemChecks
-            .StructureComponents = DefaultAssetItemChecks
+            .StructureRigs = DefaultAssetItemChecks
+            .Celestials = DefaultAssetItemChecks
+            .StructureModules = DefaultAssetItemChecks
+            .Implants = DefaultAssetItemChecks
+            .AdvancedCapComponents = DefaultAssetItemChecks
+            .AdvancedComponents = DefaultAssetItemChecks
             .FuelBlocks = DefaultAssetItemChecks
+            .ProtectiveComponents = DefaultAssetItemChecks
+            .RAM = DefaultAssetItemChecks
+            .CapitalShipComponents = DefaultAssetItemChecks
+            .StructureComponents = DefaultAssetItemChecks
+            .SubsystemComponents = DefaultAssetItemChecks
             .T1 = DefaultAssetItemChecks
             .T2 = DefaultAssetItemChecks
             .T3 = DefaultAssetItemChecks
             .Faction = DefaultAssetItemChecks
             .Pirate = DefaultAssetItemChecks
             .Storyline = DefaultAssetItemChecks
-            .Celestials = DefaultAssetItemChecks
-            .Deployables = DefaultAssetItemChecks
-            .Implants = DefaultAssetItemChecks
+
         End With
 
         ' Save locally - Will have more than one
@@ -4286,6 +4310,8 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = LocalSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = LocalSettings
+            Case AssetWindow.Refinery
+                AssetWindowsettingsRefinery = LocalSettings
         End Select
 
         Return LocalSettings
@@ -4718,6 +4744,8 @@ Public Structure ApplicationSettings
     Dim DisableGATracking As Boolean ' for disabling tracking app usage through Google Analytics
 
     Dim ShareSavedFacilities As Boolean ' to use the same facility everywhere
+
+    Dim RefineDrillDown As Boolean ' This is only on the refinery but since it's the only setting there, I'll just save it with application settings
 
     ' Character options
     Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
@@ -5524,49 +5552,56 @@ Public Structure AssetWindowSettings
     Dim AllItems As Boolean
 
     Dim AllRawMats As Boolean
-    Dim Minerals As Boolean
-    Dim IceProducts As Boolean
+
+    Dim AdvancedProtectiveTechnology As Boolean
     Dim Gas As Boolean
-    Dim AbyssalMaterials As Boolean
+    Dim IceProducts As Boolean
+    Dim MolecularForgingTools As Boolean
+    Dim FactionMaterials As Boolean
+    Dim NamedComponents As Boolean
+    Dim Minerals As Boolean
+    Dim Planetary As Boolean
+    Dim RawMaterials As Boolean
+    Dim Salvage As Boolean
     Dim Misc As Boolean
     Dim BPCs As Boolean
+
+    Dim AdvancedMoonMats As Boolean
+    Dim BoosterMats As Boolean
+    Dim MolecularForgedMats As Boolean
+    Dim Polymers As Boolean
+    Dim ProcessedMoonMats As Boolean
+    Dim RawMoonMats As Boolean
+
     Dim AncientRelics As Boolean
-    Dim AncientSalvage As Boolean
-    Dim Salvage As Boolean
-    Dim Planetary As Boolean
     Dim Datacores As Boolean
     Dim Decryptors As Boolean
-    Dim RawMats As Boolean
-    Dim ProcessedMats As Boolean
-    Dim AdvancedMats As Boolean
-    Dim MatsandCompounds As Boolean
-    Dim DroneComponents As Boolean
-    Dim BoosterMats As Boolean
-    Dim Polymers As Boolean
-    Dim Asteroids As Boolean
+    Dim RDB As Boolean
 
     Dim AllManufacturedItems As Boolean
+
     Dim Ships As Boolean
+    Dim Charges As Boolean
     Dim Modules As Boolean
     Dim Drones As Boolean
-    Dim Boosters As Boolean
     Dim Rigs As Boolean
-    Dim Charges As Boolean
     Dim Subsystems As Boolean
-    Dim Structures As Boolean
-    Dim Tools As Boolean
-    Dim DataInterfaces As Boolean
-    Dim CapT2Components As Boolean
-    Dim CapitalComponents As Boolean
-    Dim Components As Boolean
-    Dim Hybrid As Boolean
-    Dim StructureComponents As Boolean
-    Dim FuelBlocks As Boolean
-    Dim StructureRigs As Boolean
-    Dim StructureModules As Boolean
-    Dim Celestials As Boolean
     Dim Deployables As Boolean
+    Dim Boosters As Boolean
+    Dim Structures As Boolean
+    Dim StructureRigs As Boolean
+    Dim Celestials As Boolean
+    Dim StructureModules As Boolean
     Dim Implants As Boolean
+
+    Dim AdvancedCapComponents As Boolean
+    Dim AdvancedComponents As Boolean
+    Dim FuelBlocks As Boolean
+    Dim ProtectiveComponents As Boolean
+    Dim RAM As Boolean
+    Dim CapitalShipComponents As Boolean
+    Dim StructureComponents As Boolean
+    Dim SubsystemComponents As Boolean
 
     Dim T1 As Boolean
     Dim T2 As Boolean

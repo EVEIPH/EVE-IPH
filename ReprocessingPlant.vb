@@ -20,8 +20,8 @@ Class ReprocessingPlant
         Return ReprocessingFacility
     End Function
 
-    Public Function ReprocessORE(ByVal OreID As Long, ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, ByVal OreProcessingSkill As Integer,
-                                 ByVal TotalOre As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double) As Materials
+    Public Function Reprocess(ByVal ItemID As Long, ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, ByVal ProcessingSkill As Integer,
+                                 ByVal TotalQuantity As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double) As Materials
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
         Dim SQL As String
@@ -34,37 +34,51 @@ Class ReprocessingPlant
         Dim TempCost As Double = 0
         Dim AdjustedCost As Double = 0
         Dim ModStationTaxRate As Double = 0
+        Dim ScrapReprocessing As Boolean
+
+        ' Find the units to refine for ore
+        SQL = "SELECT UNITS_TO_REFINE FROM ORES WHERE ORE_ID =" & ItemID
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerRefine = DBCommand.ExecuteReader
+
+        If readerRefine.Read Then
+            ' Ore, so process into batches
+            RefineBatches = CLng(Math.Floor(TotalQuantity / CLng(readerRefine.GetValue(0))))
+            If RefineBatches = 0 Then
+                ' Can't reprocess if there arne't enough units to refine
+                Return RefinedMats
+            End If
+            ScrapReprocessing = False
+        Else
+            ' Not an ore or ice, so must be scrapmetal processing
+            RefineBatches = CLng(TotalQuantity)
+            ScrapReprocessing = True
+        End If
+
+        readerRefine.Close()
 
         ' Reprocessing Rate for Ore & Ice (including Compressed)
         ' Upwells - ReprocessingYield = (50+ RigModifier × (1 + SecurityModifier)) × (1 + StructureModifier)×(1+(0.03×R))×(1+(0.02×Re))×(1+(0.02×Op))×(1+Im)
         ' Station - ReprocessingYield = StationEquipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
-        TotalYield = ReprocessingFacility.MaterialMultiplier * (1 + (0.03 * ReprocessingSkill)) * (1 + (0.02 * ReprocessingEfficiencySkill)) * (1 + (0.02 * OreProcessingSkill)) * (1 + ImplantBonus)
+        If ScrapReprocessing Then
+            ' Base Station Equipment x (1 + Scrapmetal Processing x 0.02) - scrapmetal processing is only modifier that applies
+            TotalYield = ReprocessingFacility.BaseME * (1 + (0.02 * ProcessingSkill))
+        Else
+            TotalYield = ReprocessingFacility.MaterialMultiplier * (1 + (0.03 * ReprocessingSkill)) * (1 + (0.02 * ReprocessingEfficiencySkill)) * (1 + (0.02 * ProcessingSkill)) * (1 + ImplantBonus)
+        End If
 
         ' Can't get better than 100%
         If TotalYield > 1 Then
             TotalYield = 1
         End If
 
-        ' Find the units to refine
-        SQL = "SELECT UNITS_TO_REFINE FROM ORES WHERE ORE_ID =" & OreID
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerRefine = DBCommand.ExecuteReader
-
-        If readerRefine.Read Then
-            RefineBatches = CLng(Math.Floor(TotalOre / CLng(readerRefine.GetValue(0))))
-        Else
-            Return Nothing
-        End If
-
-        readerRefine.Close()
-
         ' Get the Mats that will come from refining 1 batch
         SQL = "SELECT REPROCESSING.REFINED_MATERIAL_ID, REPROCESSING.REFINED_MATERIAL, REPROCESSING.REFINED_MATERIAL_GROUP, "
         SQL = SQL & "REPROCESSING.REFINED_MATERIAL_VOLUME, REPROCESSING.REFINED_MATERIAL_QUANTITY, ITEM_PRICES.PRICE "
         SQL = SQL & "FROM REPROCESSING, ITEM_PRICES "
-        SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & OreID & " "
+        SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & ItemID & " "
         SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -72,7 +86,12 @@ Class ReprocessingPlant
 
         While readerRefine.Read
             ' Calculate the refine amount based on yield
-            NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
+            If ScrapReprocessing Then
+                NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
+            Else
+                NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
+            End If
+
             ' Add the base material
             RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
                                       NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")

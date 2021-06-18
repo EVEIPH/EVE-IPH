@@ -617,7 +617,7 @@ Public Class frmIndustryBeltFlip
 
                 If readerBelts.Read Then
                     ' Refine each ore in the ore list, store refined minerals
-                    RefinedMaterials = RefiningStation.ReprocessORE(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(3385),
+                    RefinedMaterials = RefiningStation.Reprocess(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(3385),
                                                         SelectedCharacter.Skills.GetSkillLevel(3389),
                                                        SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
                                                         CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, Nothing, OutputNumber)

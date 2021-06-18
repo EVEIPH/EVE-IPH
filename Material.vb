@@ -5,7 +5,7 @@ Public Class Material
 
     Private TypeID As Long
     Private TypeName As String
-    Private GroupName As String
+    Private _GroupName As String
     Private Quantity As Long
     Private Volume As Double
 
@@ -30,7 +30,7 @@ Public Class Material
         TypeName = SentTypeName
         Quantity = SentQuantity
         Volume = SentVolume
-        GroupName = SentGroupName
+        _GroupName = SentGroupName
         BuildItem = isBuiltItem
         ItemType = SentItemType
 
@@ -130,9 +130,18 @@ Public Class Material
         Return Quantity
     End Function
 
-    Public Function GetMaterialGroup() As String
-        Return GroupName
-    End Function
+    'Public Function GetMaterialGroup() As String
+    '    Return GroupName
+    'End Function
+
+    Public Property GroupName() As String
+        Get
+            Return _GroupName
+        End Get
+        Set(value As String)
+            _GroupName = value
+        End Set
+    End Property
 
     Public Function GetVolume() As Double
         Return Volume

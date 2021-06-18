@@ -839,34 +839,34 @@ Public Class frmShoppingList
             Call RefreshLists()
 
             ' Refresh the asset list with updated assets
-            If chkUpdateAssetsWhenUsed.Checked Then
-                ' First, need to refresh assets for character and corp if used
-                If Not IsNothing(frmShoppingAssets) Then
-                    If Not frmShoppingAssets.IsDisposed Then
-                        If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-                        Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
-                                                                   UserApplicationSettings.LoadAssetsonStartup)
-                        End If
-                        frmShoppingAssets.RefreshTree()
-                    End If
-                End If
+            'If chkUpdateAssetsWhenUsed.Checked Then
+            '    ' First, need to refresh assets for character and corp if used
+            '    If Not IsNothing(frmShoppingAssets) Then
+            '        If Not frmShoppingAssets.IsDisposed Then
+            '            If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+            '                                                       SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            '            Else ' Just personal
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+            '                                                       UserApplicationSettings.LoadAssetsonStartup)
+            '            End If
+            '            'frmShoppingAssets.RefreshTree()
+            '        End If
+            '    End If
 
-                If Not IsNothing(frmDefaultAssets) Then
-                    If Not frmDefaultAssets.IsDisposed Then
-                        If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-                        Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
-                                                                   UserApplicationSettings.LoadAssetsonStartup)
-                        End If
-                        frmDefaultAssets.RefreshTree()
-                    End If
-                End If
-            End If
+            '    If Not IsNothing(frmDefaultAssets) Then
+            '        If Not frmDefaultAssets.IsDisposed Then
+            '            If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+            '                                                       SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            '            Else ' Just personal
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+            '                                                       UserApplicationSettings.LoadAssetsonStartup)
+            '            End If
+            '            'frmDefaultAssets.RefreshTree()
+            '        End If
+            '    End If
+            'End If
             Application.DoEvents()
         Else
             MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
@@ -1759,7 +1759,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub btnCopyPasteAssets_Click(sender As System.Object, e As System.EventArgs) Handles btnCopyPasteAssets.Click
-        Dim f1 As New frmCopyandPaste(CopyPasteWindowType.Materials)
+        Dim f1 As New frmCopyandPaste(CopyPasteWindowType.Materials, CopyPasteWindowLocation.Assets)
 
         f1.ShowDialog()
 
