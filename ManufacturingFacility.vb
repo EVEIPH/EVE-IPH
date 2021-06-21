@@ -3,7 +3,6 @@
 Public Class ManufacturingFacility
 
     Private SelectedFacility As IndustryFacility ' This is the active facility for the control, if not loaded will use the default
-    Private SelectedView As FacilityView
     Private SelectedLocation As ProgramLocation
     Private SelectedCharacterID As Long
     Private SelectedProductionType As ProductionType
@@ -173,7 +172,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Before any controls are shown, the control needs to be initilaized by sending the view type.
-    Public Sub InitializeControl(ByVal ViewType As FacilityView, ByVal SentSelectedCharacterID As Long, FormLocation As ProgramLocation,
+    Public Sub InitializeControl(ByVal SentSelectedCharacterID As Long, FormLocation As ProgramLocation,
                                  ByVal InitialProductionType As ProductionType, ByRef ControlForm As Form)
         Const SolarSystemWidthBP As Integer = 142
         Const SolarSystemWidthCalc As Integer = 157
@@ -191,16 +190,14 @@ Public Class ManufacturingFacility
         Const DefaultLabelHeightBP As Integer = 34
 
         ' Save for later
-        SelectedView = ViewType
         SelectedLocation = FormLocation
         SelectedProductionType = InitialProductionType
         SelectedCharacterID = SentSelectedCharacterID
         SelectedControlForm = ControlForm
 
         ' Move and show the selected controls depending on the view sent
-        Select Case ViewType
-            Case FacilityView.FullControls
-
+        Select Case FormLocation
+            Case ProgramLocation.BlueprintTab
                 lblFacilityActivity.Top = 2
                 lblFacilityActivity.Left = LeftLabelLocation
                 lblFacilityActivity.Visible = True
@@ -338,7 +335,7 @@ Public Class ManufacturingFacility
                     rsBP.Close()
                 End If
 
-            Case FacilityView.LimitedControls
+            Case ProgramLocation.ManufacturingTab
 
                 cmbFacilityActivities.Visible = False
 
@@ -512,7 +509,7 @@ Public Class ManufacturingFacility
                 ' also set the activity combo text to show what type of activity this facility is, even if not visible
                 Call GetFacilityBPItemData(InitialProductionType, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, cmbFacilityActivities.Text)
 
-            Case FacilityView.LimitedRefinery
+            Case ProgramLocation.MiningTab, ProgramLocation.Refinery, ProgramLocation.SovBelts, ProgramLocation.IceBelts
                 cmbFacilityActivities.Visible = False
 
                 lblFacilityType.Top = 5
@@ -624,15 +621,15 @@ Public Class ManufacturingFacility
         End Select
 
         ' Load the defaults
-        Call InitializeFacilities(ViewType, FormLocation, InitialProductionType)
+        Call InitializeFacilities(FormLocation, InitialProductionType)
 
     End Sub
 
     ' Loads all the facilities for the view type sent to include defaults
-    Public Sub InitializeFacilities(ViewType As FacilityView, FacilityLocation As ProgramLocation, Optional InitialProductionType As ProductionType = ProductionType.Manufacturing,
+    Public Sub InitializeFacilities(FacilityLocation As ProgramLocation, Optional InitialProductionType As ProductionType = ProductionType.Manufacturing,
                                     Optional RefreshSelectedOnly As Boolean = False)
 
-        If ViewType = FacilityView.FullControls And Not RefreshSelectedOnly Then
+        If FacilityLocation = ProgramLocation.BlueprintTab And Not RefreshSelectedOnly Then
             ' Load all the facilities for  tab - always start with manufacturing
             Call SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, FacilityLocation, SelectedControlForm)
             SelectedManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -674,14 +671,14 @@ Public Class ManufacturingFacility
             SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
 
-        ElseIf ViewType = FacilityView.LimitedControls Or RefreshSelectedOnly Then
+        ElseIf FacilityLocation = ProgramLocation.ManufacturingTab Or RefreshSelectedOnly Then
 
             ' Select what facility to load based on the industry type
             Call SelectedFacility.InitalizeFacility(InitialProductionType, FacilityLocation, SelectedControlForm)
 
             Call SetSelectedFacility(InitialProductionType, FacilityLocation)
 
-        ElseIf ViewType = FacilityView.LimitedRefinery Then
+        ElseIf FacilityLocation = ProgramLocation.MiningTab Or FacilityLocation = ProgramLocation.Refinery Or FacilityLocation = ProgramLocation.SovBelts Or FacilityLocation = ProgramLocation.IceBelts Then
 
             Call SelectedFacility.InitalizeFacility(ProductionType.Refinery, FacilityLocation, SelectedControlForm)
             SelectedRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -803,7 +800,7 @@ Public Class ManufacturingFacility
         SelectedBPTech = BlueprintTech
 
         ' Process the activities combo if showing full controls
-        If SelectedView = FacilityView.FullControls Then
+        If SelectedLocation = ProgramLocation.BlueprintTab Then
             If Not ActivityComboSelect Then ' only load if from the activities combo
                 Call LoadFacilityActivities(ItemGroupID, ItemCategoryID, BlueprintTech, SelectedBPID, BuildT2T3Type)
             End If
@@ -892,7 +889,8 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, BPID As Integer, BuildMatTypeSelection As BuildMatType)
+    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, BPID As Integer,
+                                      BuildMatTypeSelection As BuildMatType)
 
         LoadingActivities = True
         Dim HasComponents As Boolean = False
@@ -994,6 +992,18 @@ Public Class ManufacturingFacility
 
                 readerBP.Close()
             End If
+        End If
+
+        ' If we are on the blueprint tab and the blueprint sent has products from refined ore or ice, then add reprocessing
+        If SelectedLocation = ProgramLocation.BlueprintTab Then
+            ' 18 is Minerals and 423 is Ice Products
+            DBCommand = New SQLiteCommand(String.Format("SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0} AND MATERIAL_GROUP_ID IN (18, 423)", BPID), EVEDB.DBREf)
+            readerBP = DBCommand.ExecuteReader
+            If readerBP.Read Then
+                cmbFacilityActivities.Items.Add(ActivityReprocessing)
+            End If
+
+            readerBP.Close()
         End If
 
         cmbFacilityActivities.EndUpdate()
@@ -1839,19 +1849,19 @@ Public Class ManufacturingFacility
             ' First, see if this facility is a saved facility, and use the values saved in the table
             SQL = "SELECT FACILITY_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
             SQL &= "FROM SAVED_FACILITIES "
-            SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_VIEW = {2} "
+            SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_TYPE = {2} AND PROGRAM_LOCATION = {3} "
             SQL &= "AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text)) & " "
             SQL &= "AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName)) & " "
 
             ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
-            DBCommand = New SQLiteCommand(String.Format(SQL, CStr(SelectedCharacter.ID), CStr(BuildType), CStr(FacilityType)), EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(String.Format(SQL, CStr(SelectedCharacter.ID), CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation)), EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
 
             If Not rsLoader.HasRows Then
                 ' Need to look up the default - CharID = 0
                 rsLoader.Close()
-                DBCommand = New SQLiteCommand(String.Format(SQL, "0", CStr(BuildType), CStr(FacilityType)), EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(String.Format(SQL, "0", CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation)), EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
                 rsLoader.Read()
             End If
@@ -2191,18 +2201,22 @@ Public Class ManufacturingFacility
         ' Facility is loaded, so save it to default and dynamic variable
         Call SetFacility(SelectedFacility, BuildType, False, False)
 
-        ' Finally, update the refining rates for the mining tab refinery or refinery if this is the refinery
-        If SelectedLocation = ProgramLocation.MiningTab Or SelectedLocation = ProgramLocation.Refinery Then
+        ' Finally, update the refining rates for refinery facilities
+        If SelectedProductionType = ProductionType.Refinery Then
             ' Set the refine rates first, then refresh
             Call SetRefiningRates()
+            Call SetSelectedFacility(SelectedProductionType, SelectedLocation)
             If Not FirstLoad Then
                 Select Case SelectedLocation
                     Case ProgramLocation.MiningTab
                         Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
                     Case ProgramLocation.Refinery
                         Call CType(SelectedControlForm, frmRefinery).RefreshRefiningRates()
+                    Case ProgramLocation.SovBelts
+                        Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
+                    Case ProgramLocation.IceBelts
+                        Call CType(SelectedControlForm, frmIceBeltFlip).RefreshGrids()
                 End Select
-
             End If
         End If
 
@@ -2214,10 +2228,10 @@ Public Class ManufacturingFacility
         ' Get the system security first
         Dim security As Double = GetSolarSystemSecurityLevel(SystemName)
 
-        If Not IsNothing(Security) Then
-            If Security <= 0.0 Then
+        If Not IsNothing(security) Then
+            If security <= 0.0 Then
                 Return ItemAttributes.nullSecModifier
-            ElseIf Security < 0.45 Then
+            ElseIf security < 0.45 Then
                 Return ItemAttributes.lowSecModifier
             Else
                 Return ItemAttributes.hiSecModifier
@@ -2229,7 +2243,8 @@ Public Class ManufacturingFacility
     End Function
 
     ' Returns an array of rigs installed on the facility for info sent
-    Private Function GetInstalledModules(ByVal Activity As String, ByVal FacilityID As Long, ByVal ItemGroupID As Integer, ByVal ItemCategoryID As Integer, ByVal SystemID As Long) As List(Of Integer)
+    Private Function GetInstalledModules(ByVal Activity As String, ByVal FacilityID As Long, ByVal ItemGroupID As Integer,
+                                         ByVal ItemCategoryID As Integer, ByVal SystemID As Long) As List(Of Integer)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
         Dim InstalledModules As New List(Of Integer)
@@ -2267,10 +2282,10 @@ Public Class ManufacturingFacility
         End If
 
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
-        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
+        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4} "
         SQL &= "AND UPWELL_STRUCTURES_INSTALLED_MODULES.INSTALLED_MODULE_ID = ENGINEERING_RIG_BONUSES.typeID AND activityId = {7} "
         SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
-        DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, CStr(SelectedProductionType), CStr(SystemID), CStr(SelectedView),
+        DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, CStr(SelectedProductionType), CStr(SystemID), CStr(SelectedLocation),
                                       CStr(FacilityID), CStr(TempBPCategoryID), CStr(TempBPGroupID), CStr(GetActivityID(Activity))), EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
@@ -2535,7 +2550,7 @@ Public Class ManufacturingFacility
 
     Private Sub btnFacilityFitting_Click(sender As Object, e As EventArgs) Handles btnFacilityFitting.Click
         Dim StructureViewer As New frmUpwellStructureFitting(cmbFacility.Text, SelectedCharacterID,
-                                                   SelectedProductionType, SelectedView, SelectedFacility.SolarSystemName)
+                                                   SelectedProductionType, SelectedLocation, SelectedFacility.SolarSystemName)
         Call StructureViewer.ShowDialog()
 
         ' After showing, select the name of the citadel chosen and then dispose
@@ -2546,7 +2561,7 @@ Public Class ManufacturingFacility
         ' Reload the facility each time we return - use initialize and just load the one we changed
         If SelectedFacility.IsDefault Then
             ' If they saved fittings for the default, reset the default values
-            Call InitializeFacilities(SelectedView, SelectedLocation, SelectedProductionType, True)
+            Call InitializeFacilities(SelectedLocation, SelectedProductionType, True)
         Else
             ' If it's not the default, just load the facility so we get the changes from the fitting
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
@@ -2569,7 +2584,7 @@ Public Class ManufacturingFacility
     Private Sub btnFacilitySave_Click(sender As Object, e As EventArgs) Handles btnFacilitySave.Click
         If SelectedFacility.FullyLoaded Then
 
-            If SelectedFacility.SaveFacility(SelectedView, SelectedCharacterID, SelectedLocation) Then
+            If SelectedFacility.SaveFacility(SelectedCharacterID, SelectedLocation) Then
                 ' Just saved, so must be the default
                 Call SetDefaultVisuals(True)
             Else
@@ -3250,12 +3265,12 @@ Public Class ManufacturingFacility
 
     Private Sub cmbFWUpgrade_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilityFWUpgrade.SelectedIndexChanged
         If Not FirstLoad Then
-            btnFacilitySave.Enabled = True
             ' Set the selected level
             SelectedFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbFacilitySystem.Text)
             ' Facility is loaded, so save it to default and dynamic variable
             Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
-
+            ' Let them save the change
+            Call SetDefaultVisuals(False)
             ' If this changed, we need to update the usage
             If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
                 Call frmMain.RefreshBP()
@@ -3480,6 +3495,12 @@ Public Class ManufacturingFacility
         Return SelectedFacility
     End Function
 
+    Public Sub UpdateRefineYieldLabel(NewValue As Double)
+        If SelectedProductionType = ProductionType.Refinery Then
+            txtFacilityManualME.Text = FormatPercent(NewValue, 2)
+        End If
+    End Sub
+
     ' Returns if the facility is fully loaded or not
     Public Function FullyLoaded() As Boolean
         Return SelectedFacility.FullyLoaded
@@ -3498,7 +3519,9 @@ Public Class ManufacturingFacility
 
     ' Used to update the material multipler value for refining
     Public Sub UpdateRefiningMaterialMultiplier(ByVal NewMM As Double)
-        SelectedRefiningFacility.MaterialMultiplier = NewMM
+        If SelectedProductionType = ProductionType.Refinery Then
+            SelectedRefiningFacility.MaterialMultiplier = NewMM
+        End If
     End Sub
 
     ' Sets all the refine rates for the three different types of refinables for the selected facility
@@ -3794,20 +3817,14 @@ Public Class ManufacturingFacility
 
 End Class
 
-' What type of view are we looking at
-Public Enum FacilityView
-    FullControls = 0 ' for BP tab right now
-    LimitedControls = 1 ' for use on manufacturing tab now
-    LimitedRefinery = 2
-    NoView = 3 ' For not connecting this to a tab or facilty view
-    FullRefinery = 4
-End Enum
-
 Public Enum ProgramLocation
+    None = -1
     BlueprintTab = 0
     ManufacturingTab = 1
     MiningTab = 2
     Refinery = 3
+    SovBelts = 4
+    IceBelts = 5
 End Enum
 
 ' Types of actual activities that you can conduct in a facility
@@ -4071,7 +4088,7 @@ Public Class IndustryFacility
     End Function
 
     ' Load up the facility data from the table as default
-    Public Sub InitalizeFacility(InitialProductionType As ProductionType, FacilityView As ProgramLocation, ByRef FacilityForm As Form)
+    Public Sub InitalizeFacility(InitialProductionType As ProductionType, FacilityLocation As ProgramLocation, ByRef FacilityForm As Form)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
@@ -4096,7 +4113,7 @@ Public Class IndustryFacility
         SQL &= "AND SF.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
         SQL &= "AND SF.FACILITY_TYPE = FACILITY_TYPES.FACILITY_TYPE_ID "
         SQL &= "AND FACILITY_PRODUCTION_TYPES.ACTIVITY_ID = INDUSTRY_ACTIVITIES.activityID "
-        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityView))
+        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.PROGRAM_LOCATION = {1} ", CStr(InitialProductionType), CStr(FacilityLocation))
 
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
         Dim CharID As String = ""
@@ -4256,32 +4273,30 @@ ExitBlock:
 
     End Sub
 
-    Public Function SaveFacility(ViewType As FacilityView, CharacterID As Long, Location As ProgramLocation) As Boolean
+    Public Function SaveFacility(CharacterID As Long, Location As ProgramLocation) As Boolean
         Dim SQL As String
         Dim TempSQL As String
         Dim rsCheck As SQLiteDataReader
         Dim ManualEntries As Boolean = False
-        Dim ViewList As New List(Of Integer)
-        Dim VT As Integer
+        Dim LocationList As New List(Of Integer)
+        Dim LID As Integer
 
         Try
 
             If UserApplicationSettings.ShareSavedFacilities Then
-                ' Need to get each view for saving
-                For Each VT In System.Enum.GetValues(GetType(FacilityView))
-                    If VT <> FacilityView.NoView Then
-                        Call ViewList.Add(VT)
-                    End If
+                ' Need to get each location for saving
+                For Each LID In System.Enum.GetValues(GetType(ProgramLocation))
+                    Call LocationList.Add(LID)
                 Next
             Else
                 ' Just use the one sent
-                Call ViewList.Add(ViewType)
+                Call LocationList.Add(Location)
             End If
 
-            For Each VID In ViewList
+            For Each LID In LocationList
                 ' See if the record exists - only save one set of facilities for now
-                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
-                        CInt(FacilityProductionType), VID, CharacterID)
+                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND PROGRAM_LOCATION = {1} AND CHARACTER_ID = {2}",
+                        CInt(FacilityProductionType), LID, CharacterID)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsCheck = DBCommand.ExecuteReader
 
@@ -4327,7 +4342,7 @@ ExitBlock:
                     End If
 
                     TempSQL &= "WHERE PRODUCTION_TYPE = {9} AND CHARACTER_ID = {10} "
-                    TempSQL &= "AND FACILITY_VIEW = " & CStr(VID)
+                    TempSQL &= "AND PROGRAM_LOCATION = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                     CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, CInt(FacilityProductionType), CharacterID)
@@ -4357,7 +4372,7 @@ ExitBlock:
 
                     ' Insert
                     SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14});",
-                                        CharacterID, CInt(FacilityProductionType), VID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
+                                        CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                                         CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, MEValue, TEValue, CostValue)
                 End If
 
@@ -4366,8 +4381,8 @@ ExitBlock:
 
                 ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
                 If ManualEntries Then
-                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, VID, FacilityID))
+                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4}"
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
                 End If
 
                 ' Update FW upgrade

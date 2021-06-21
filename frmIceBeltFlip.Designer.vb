@@ -24,221 +24,108 @@ Partial Class frmIceBeltFlip
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmIceBeltFlip))
         Me.gbSummarySettings = New System.Windows.Forms.GroupBox()
-        Me.gbTrueSec = New System.Windows.Forms.GroupBox()
-        Me.RadioButton1 = New System.Windows.Forms.RadioButton()
-        Me.rbtn10percent = New System.Windows.Forms.RadioButton()
-        Me.rbtn5percent = New System.Windows.Forms.RadioButton()
-        Me.rbtnHighsec = New System.Windows.Forms.RadioButton()
-        Me.gbSpace = New System.Windows.Forms.GroupBox()
-        Me.rbtnMinmatar = New System.Windows.Forms.RadioButton()
-        Me.rbtnGallente = New System.Windows.Forms.RadioButton()
-        Me.rbtnCaldari = New System.Windows.Forms.RadioButton()
-        Me.rbtnAmarr = New System.Windows.Forms.RadioButton()
-        Me.btnRefresh = New System.Windows.Forms.Button()
         Me.gbMineTaxBroker = New System.Windows.Forms.GroupBox()
         Me.txtBrokerFeeRate = New System.Windows.Forms.TextBox()
         Me.chkIPHperMiner = New System.Windows.Forms.CheckBox()
-        Me.chkCompressOre = New System.Windows.Forms.CheckBox()
+        Me.chkCompressIce = New System.Windows.Forms.CheckBox()
         Me.chkIncludeTaxes = New System.Windows.Forms.CheckBox()
         Me.chkBrokerFees = New System.Windows.Forms.CheckBox()
+        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.gbTrueSec = New System.Windows.Forms.GroupBox()
+        Me.rbtnNullWeak = New System.Windows.Forms.RadioButton()
+        Me.rbtnLowsec = New System.Windows.Forms.RadioButton()
+        Me.rbtnHighsec = New System.Windows.Forms.RadioButton()
+        Me.rbtnNullStrong = New System.Windows.Forms.RadioButton()
+        Me.gbSpace = New System.Windows.Forms.GroupBox()
+        Me.rbtnCaldari = New System.Windows.Forms.RadioButton()
+        Me.rbtnMinmatar = New System.Windows.Forms.RadioButton()
+        Me.rbtnGallente = New System.Windows.Forms.RadioButton()
+        Me.rbtnAmarr = New System.Windows.Forms.RadioButton()
+        Me.btnRefine = New System.Windows.Forms.Button()
         Me.lblCycleTime = New System.Windows.Forms.Label()
         Me.txtCycleTime = New System.Windows.Forms.TextBox()
         Me.txtm3perCycle = New System.Windows.Forms.TextBox()
-        Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.lblm3perCycle = New System.Windows.Forms.Label()
         Me.cmbNumMiners = New System.Windows.Forms.ComboBox()
+        Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.lblNumMiners = New System.Windows.Forms.Label()
         Me.lblm3perhrperminer = New System.Windows.Forms.Label()
         Me.lblm3perhrperminer1 = New System.Windows.Forms.Label()
         Me.btnCloseSmall = New System.Windows.Forms.Button()
-        Me.btnSaveSettingsSmall = New System.Windows.Forms.Button()
+        Me.btnSaveChecks = New System.Windows.Forms.Button()
         Me.gbSum1 = New System.Windows.Forms.GroupBox()
+        Me.lblBeltIPH1 = New System.Windows.Forms.Label()
+        Me.lblBeltIPH = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.lblTotalRefineVolume = New System.Windows.Forms.Label()
+        Me.lblTotalBeltValue = New System.Windows.Forms.Label()
         Me.lblTotalIPH1 = New System.Windows.Forms.Label()
-        Me.lblTotalBeltVolume1 = New System.Windows.Forms.Label()
-        Me.lblBeltTotalIsk1 = New System.Windows.Forms.Label()
-        Me.lblTotalHourstoFlip1 = New System.Windows.Forms.Label()
-        Me.lblTotalIskLevel1 = New System.Windows.Forms.Label()
-        Me.lblIPH1 = New System.Windows.Forms.Label()
+        Me.lblTotalBeltVolume = New System.Windows.Forms.Label()
+        Me.lblTotalBeltValue1 = New System.Windows.Forms.Label()
+        Me.lblTotalRefineValue1 = New System.Windows.Forms.Label()
+        Me.lblTotalHourstoFlip = New System.Windows.Forms.Label()
+        Me.lblTotalRefineValue = New System.Windows.Forms.Label()
+        Me.lblRefineIPH = New System.Windows.Forms.Label()
         Me.lblTotalBeltVol1 = New System.Windows.Forms.Label()
         Me.lblHourstoFlip1 = New System.Windows.Forms.Label()
-        Me.lblSmallBeltMineralComp = New System.Windows.Forms.Label()
-        Me.lstOresLevel1 = New System.Windows.Forms.ListView()
-        Me.checkboxSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.orenameSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.numberroidsSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.unitsSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.lstMineralsLevel1 = New System.Windows.Forms.ListView()
-        Me.mineralsSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.minsunitsSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.totaliskSmall = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.lblSmallBeltOreComp = New System.Windows.Forms.Label()
-        Me.RefineStation = New EVE_Isk_per_Hour.ManufacturingFacility()
+        Me.lblIceProductComposition = New System.Windows.Forms.Label()
+        Me.lstIce = New System.Windows.Forms.ListView()
+        Me.checkboxIce = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.IceName = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.IceUnits = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.IcePPU = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.lstIceProducts = New System.Windows.Forms.ListView()
+        Me.iceProducts = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.units = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.totalISK = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.lblBeltComp = New System.Windows.Forms.Label()
         Me.gbSummarySettings.SuspendLayout()
+        Me.gbMineTaxBroker.SuspendLayout()
         Me.gbTrueSec.SuspendLayout()
         Me.gbSpace.SuspendLayout()
-        Me.gbMineTaxBroker.SuspendLayout()
         Me.gbSum1.SuspendLayout()
         Me.SuspendLayout()
         '
         'gbSummarySettings
         '
-        Me.gbSummarySettings.Controls.Add(Me.RefineStation)
+        Me.gbSummarySettings.Controls.Add(Me.gbMineTaxBroker)
+        Me.gbSummarySettings.Controls.Add(Me.ReprocessingFacility)
         Me.gbSummarySettings.Controls.Add(Me.gbTrueSec)
         Me.gbSummarySettings.Controls.Add(Me.gbSpace)
-        Me.gbSummarySettings.Controls.Add(Me.btnRefresh)
-        Me.gbSummarySettings.Controls.Add(Me.gbMineTaxBroker)
+        Me.gbSummarySettings.Controls.Add(Me.btnRefine)
         Me.gbSummarySettings.Controls.Add(Me.lblCycleTime)
         Me.gbSummarySettings.Controls.Add(Me.txtCycleTime)
         Me.gbSummarySettings.Controls.Add(Me.txtm3perCycle)
-        Me.gbSummarySettings.Controls.Add(Me.btnSaveSettings)
         Me.gbSummarySettings.Controls.Add(Me.lblm3perCycle)
         Me.gbSummarySettings.Controls.Add(Me.cmbNumMiners)
+        Me.gbSummarySettings.Controls.Add(Me.btnSaveSettings)
         Me.gbSummarySettings.Controls.Add(Me.lblNumMiners)
         Me.gbSummarySettings.Controls.Add(Me.lblm3perhrperminer)
         Me.gbSummarySettings.Controls.Add(Me.lblm3perhrperminer1)
-        Me.gbSummarySettings.Location = New System.Drawing.Point(12, 12)
+        Me.gbSummarySettings.Location = New System.Drawing.Point(9, 3)
         Me.gbSummarySettings.Name = "gbSummarySettings"
-        Me.gbSummarySettings.Size = New System.Drawing.Size(618, 240)
+        Me.gbSummarySettings.Size = New System.Drawing.Size(601, 177)
         Me.gbSummarySettings.TabIndex = 140
         Me.gbSummarySettings.TabStop = False
         Me.gbSummarySettings.Text = "Settings"
-        '
-        'gbTrueSec
-        '
-        Me.gbTrueSec.Controls.Add(Me.RadioButton1)
-        Me.gbTrueSec.Controls.Add(Me.rbtn10percent)
-        Me.gbTrueSec.Controls.Add(Me.rbtn5percent)
-        Me.gbTrueSec.Controls.Add(Me.rbtnHighsec)
-        Me.gbTrueSec.Location = New System.Drawing.Point(6, 108)
-        Me.gbTrueSec.Name = "gbTrueSec"
-        Me.gbTrueSec.Size = New System.Drawing.Size(108, 83)
-        Me.gbTrueSec.TabIndex = 123
-        Me.gbTrueSec.TabStop = False
-        Me.gbTrueSec.Text = "System Security:"
-        '
-        'RadioButton1
-        '
-        Me.RadioButton1.AutoSize = True
-        Me.RadioButton1.Location = New System.Drawing.Point(6, 61)
-        Me.RadioButton1.Name = "RadioButton1"
-        Me.RadioButton1.Size = New System.Drawing.Size(94, 17)
-        Me.RadioButton1.TabIndex = 6
-        Me.RadioButton1.Text = "Nullsec Strong"
-        Me.RadioButton1.UseVisualStyleBackColor = True
-        '
-        'rbtn10percent
-        '
-        Me.rbtn10percent.AutoSize = True
-        Me.rbtn10percent.Location = New System.Drawing.Point(6, 45)
-        Me.rbtn10percent.Name = "rbtn10percent"
-        Me.rbtn10percent.Size = New System.Drawing.Size(92, 17)
-        Me.rbtn10percent.TabIndex = 5
-        Me.rbtn10percent.Text = "Nullsec Weak"
-        Me.rbtn10percent.UseVisualStyleBackColor = True
-        '
-        'rbtn5percent
-        '
-        Me.rbtn5percent.AutoSize = True
-        Me.rbtn5percent.Location = New System.Drawing.Point(6, 30)
-        Me.rbtn5percent.Name = "rbtn5percent"
-        Me.rbtn5percent.Size = New System.Drawing.Size(62, 17)
-        Me.rbtn5percent.TabIndex = 4
-        Me.rbtn5percent.Text = "Lowsec"
-        Me.rbtn5percent.UseVisualStyleBackColor = True
-        '
-        'rbtnHighsec
-        '
-        Me.rbtnHighsec.AutoSize = True
-        Me.rbtnHighsec.Checked = True
-        Me.rbtnHighsec.Location = New System.Drawing.Point(6, 15)
-        Me.rbtnHighsec.Name = "rbtnHighsec"
-        Me.rbtnHighsec.Size = New System.Drawing.Size(64, 17)
-        Me.rbtnHighsec.TabIndex = 3
-        Me.rbtnHighsec.TabStop = True
-        Me.rbtnHighsec.Text = "Highsec"
-        Me.rbtnHighsec.UseVisualStyleBackColor = True
-        '
-        'gbSpace
-        '
-        Me.gbSpace.Controls.Add(Me.rbtnMinmatar)
-        Me.gbSpace.Controls.Add(Me.rbtnGallente)
-        Me.gbSpace.Controls.Add(Me.rbtnCaldari)
-        Me.gbSpace.Controls.Add(Me.rbtnAmarr)
-        Me.gbSpace.Location = New System.Drawing.Point(6, 19)
-        Me.gbSpace.Name = "gbSpace"
-        Me.gbSpace.Size = New System.Drawing.Size(108, 83)
-        Me.gbSpace.TabIndex = 124
-        Me.gbSpace.TabStop = False
-        Me.gbSpace.Text = "Space:"
-        '
-        'rbtnMinmatar
-        '
-        Me.rbtnMinmatar.AutoSize = True
-        Me.rbtnMinmatar.Location = New System.Drawing.Point(6, 61)
-        Me.rbtnMinmatar.Name = "rbtnMinmatar"
-        Me.rbtnMinmatar.Size = New System.Drawing.Size(68, 17)
-        Me.rbtnMinmatar.TabIndex = 6
-        Me.rbtnMinmatar.Text = "Minmatar"
-        Me.rbtnMinmatar.UseVisualStyleBackColor = True
-        '
-        'rbtnGallente
-        '
-        Me.rbtnGallente.AutoSize = True
-        Me.rbtnGallente.Location = New System.Drawing.Point(6, 45)
-        Me.rbtnGallente.Name = "rbtnGallente"
-        Me.rbtnGallente.Size = New System.Drawing.Size(64, 17)
-        Me.rbtnGallente.TabIndex = 5
-        Me.rbtnGallente.Text = "Gallente"
-        Me.rbtnGallente.UseVisualStyleBackColor = True
-        '
-        'rbtnCaldari
-        '
-        Me.rbtnCaldari.AutoSize = True
-        Me.rbtnCaldari.Location = New System.Drawing.Point(6, 30)
-        Me.rbtnCaldari.Name = "rbtnCaldari"
-        Me.rbtnCaldari.Size = New System.Drawing.Size(57, 17)
-        Me.rbtnCaldari.TabIndex = 4
-        Me.rbtnCaldari.Text = "Caldari"
-        Me.rbtnCaldari.UseVisualStyleBackColor = True
-        '
-        'rbtnAmarr
-        '
-        Me.rbtnAmarr.AutoSize = True
-        Me.rbtnAmarr.Checked = True
-        Me.rbtnAmarr.Location = New System.Drawing.Point(6, 15)
-        Me.rbtnAmarr.Name = "rbtnAmarr"
-        Me.rbtnAmarr.Size = New System.Drawing.Size(52, 17)
-        Me.rbtnAmarr.TabIndex = 3
-        Me.rbtnAmarr.TabStop = True
-        Me.rbtnAmarr.Text = "Amarr"
-        Me.rbtnAmarr.UseVisualStyleBackColor = True
-        '
-        'btnRefresh
-        '
-        Me.btnRefresh.Location = New System.Drawing.Point(144, 50)
-        Me.btnRefresh.Name = "btnRefresh"
-        Me.btnRefresh.Size = New System.Drawing.Size(81, 28)
-        Me.btnRefresh.TabIndex = 3
-        Me.btnRefresh.Text = "Refresh"
-        Me.btnRefresh.UseVisualStyleBackColor = True
         '
         'gbMineTaxBroker
         '
         Me.gbMineTaxBroker.Controls.Add(Me.txtBrokerFeeRate)
         Me.gbMineTaxBroker.Controls.Add(Me.chkIPHperMiner)
-        Me.gbMineTaxBroker.Controls.Add(Me.chkCompressOre)
+        Me.gbMineTaxBroker.Controls.Add(Me.chkCompressIce)
         Me.gbMineTaxBroker.Controls.Add(Me.chkIncludeTaxes)
         Me.gbMineTaxBroker.Controls.Add(Me.chkBrokerFees)
-        Me.gbMineTaxBroker.Location = New System.Drawing.Point(144, 123)
+        Me.gbMineTaxBroker.Location = New System.Drawing.Point(313, 26)
         Me.gbMineTaxBroker.Name = "gbMineTaxBroker"
-        Me.gbMineTaxBroker.Size = New System.Drawing.Size(127, 98)
-        Me.gbMineTaxBroker.TabIndex = 16
+        Me.gbMineTaxBroker.Size = New System.Drawing.Size(114, 88)
+        Me.gbMineTaxBroker.TabIndex = 126
         Me.gbMineTaxBroker.TabStop = False
         Me.gbMineTaxBroker.Text = "Options:"
         '
         'txtBrokerFeeRate
         '
-        Me.txtBrokerFeeRate.Location = New System.Drawing.Point(64, 55)
+        Me.txtBrokerFeeRate.Location = New System.Drawing.Point(57, 63)
         Me.txtBrokerFeeRate.Name = "txtBrokerFeeRate"
         Me.txtBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
         Me.txtBrokerFeeRate.TabIndex = 41
@@ -250,31 +137,31 @@ Partial Class frmIceBeltFlip
         Me.chkIPHperMiner.AutoSize = True
         Me.chkIPHperMiner.Checked = True
         Me.chkIPHperMiner.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkIPHperMiner.Location = New System.Drawing.Point(9, 38)
+        Me.chkIPHperMiner.Location = New System.Drawing.Point(9, 33)
         Me.chkIPHperMiner.Name = "chkIPHperMiner"
         Me.chkIPHperMiner.Size = New System.Drawing.Size(91, 17)
         Me.chkIPHperMiner.TabIndex = 9
         Me.chkIPHperMiner.Text = "IPH per Miner"
         Me.chkIPHperMiner.UseVisualStyleBackColor = True
         '
-        'chkCompressOre
+        'chkCompressIce
         '
-        Me.chkCompressOre.AutoSize = True
-        Me.chkCompressOre.Checked = True
-        Me.chkCompressOre.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkCompressOre.Location = New System.Drawing.Point(9, 19)
-        Me.chkCompressOre.Name = "chkCompressOre"
-        Me.chkCompressOre.Size = New System.Drawing.Size(90, 17)
-        Me.chkCompressOre.TabIndex = 8
-        Me.chkCompressOre.Text = "Compress Ice"
-        Me.chkCompressOre.UseVisualStyleBackColor = True
+        Me.chkCompressIce.AutoSize = True
+        Me.chkCompressIce.Checked = True
+        Me.chkCompressIce.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkCompressIce.Location = New System.Drawing.Point(9, 17)
+        Me.chkCompressIce.Name = "chkCompressIce"
+        Me.chkCompressIce.Size = New System.Drawing.Size(90, 17)
+        Me.chkCompressIce.TabIndex = 8
+        Me.chkCompressIce.Text = "Compress Ice"
+        Me.chkCompressIce.UseVisualStyleBackColor = True
         '
         'chkIncludeTaxes
         '
         Me.chkIncludeTaxes.AutoSize = True
         Me.chkIncludeTaxes.Checked = True
         Me.chkIncludeTaxes.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkIncludeTaxes.Location = New System.Drawing.Point(9, 76)
+        Me.chkIncludeTaxes.Location = New System.Drawing.Point(9, 49)
         Me.chkIncludeTaxes.Name = "chkIncludeTaxes"
         Me.chkIncludeTaxes.Size = New System.Drawing.Size(55, 17)
         Me.chkIncludeTaxes.TabIndex = 11
@@ -286,7 +173,7 @@ Partial Class frmIceBeltFlip
         Me.chkBrokerFees.AutoSize = True
         Me.chkBrokerFees.Checked = True
         Me.chkBrokerFees.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBrokerFees.Location = New System.Drawing.Point(9, 57)
+        Me.chkBrokerFees.Location = New System.Drawing.Point(9, 65)
         Me.chkBrokerFees.Name = "chkBrokerFees"
         Me.chkBrokerFees.Size = New System.Drawing.Size(49, 17)
         Me.chkBrokerFees.TabIndex = 10
@@ -294,10 +181,137 @@ Partial Class frmIceBeltFlip
         Me.chkBrokerFees.ThreeState = True
         Me.chkBrokerFees.UseVisualStyleBackColor = True
         '
+        'ReprocessingFacility
+        '
+        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
+        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 60)
+        Me.ReprocessingFacility.Name = "ReprocessingFacility"
+        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 108)
+        Me.ReprocessingFacility.TabIndex = 125
+        '
+        'gbTrueSec
+        '
+        Me.gbTrueSec.Controls.Add(Me.rbtnNullWeak)
+        Me.gbTrueSec.Controls.Add(Me.rbtnLowsec)
+        Me.gbTrueSec.Controls.Add(Me.rbtnHighsec)
+        Me.gbTrueSec.Controls.Add(Me.rbtnNullStrong)
+        Me.gbTrueSec.Location = New System.Drawing.Point(433, 26)
+        Me.gbTrueSec.Name = "gbTrueSec"
+        Me.gbTrueSec.Size = New System.Drawing.Size(161, 88)
+        Me.gbTrueSec.TabIndex = 123
+        Me.gbTrueSec.TabStop = False
+        Me.gbTrueSec.Text = "System Security:"
+        '
+        'rbtnNullWeak
+        '
+        Me.rbtnNullWeak.AutoSize = True
+        Me.rbtnNullWeak.Location = New System.Drawing.Point(6, 39)
+        Me.rbtnNullWeak.Name = "rbtnNullWeak"
+        Me.rbtnNullWeak.Size = New System.Drawing.Size(149, 17)
+        Me.rbtnNullWeak.TabIndex = 5
+        Me.rbtnNullWeak.Text = "Nullsec Weak (0.0 to -0.5)"
+        Me.rbtnNullWeak.UseVisualStyleBackColor = True
+        '
+        'rbtnLowsec
+        '
+        Me.rbtnLowsec.AutoSize = True
+        Me.rbtnLowsec.Location = New System.Drawing.Point(92, 19)
+        Me.rbtnLowsec.Name = "rbtnLowsec"
+        Me.rbtnLowsec.Size = New System.Drawing.Size(62, 17)
+        Me.rbtnLowsec.TabIndex = 4
+        Me.rbtnLowsec.Text = "Lowsec"
+        Me.rbtnLowsec.UseVisualStyleBackColor = True
+        '
+        'rbtnHighsec
+        '
+        Me.rbtnHighsec.AutoSize = True
+        Me.rbtnHighsec.Checked = True
+        Me.rbtnHighsec.Location = New System.Drawing.Point(6, 19)
+        Me.rbtnHighsec.Name = "rbtnHighsec"
+        Me.rbtnHighsec.Size = New System.Drawing.Size(64, 17)
+        Me.rbtnHighsec.TabIndex = 3
+        Me.rbtnHighsec.TabStop = True
+        Me.rbtnHighsec.Text = "Highsec"
+        Me.rbtnHighsec.UseVisualStyleBackColor = True
+        '
+        'rbtnNullStrong
+        '
+        Me.rbtnNullStrong.AutoSize = True
+        Me.rbtnNullStrong.Location = New System.Drawing.Point(6, 59)
+        Me.rbtnNullStrong.Name = "rbtnNullStrong"
+        Me.rbtnNullStrong.Size = New System.Drawing.Size(154, 17)
+        Me.rbtnNullStrong.TabIndex = 6
+        Me.rbtnNullStrong.Text = "Nullsec Strong (-0.5 to -1.0)"
+        Me.rbtnNullStrong.UseVisualStyleBackColor = True
+        '
+        'gbSpace
+        '
+        Me.gbSpace.Controls.Add(Me.rbtnCaldari)
+        Me.gbSpace.Controls.Add(Me.rbtnMinmatar)
+        Me.gbSpace.Controls.Add(Me.rbtnGallente)
+        Me.gbSpace.Controls.Add(Me.rbtnAmarr)
+        Me.gbSpace.Location = New System.Drawing.Point(433, 114)
+        Me.gbSpace.Name = "gbSpace"
+        Me.gbSpace.Size = New System.Drawing.Size(161, 55)
+        Me.gbSpace.TabIndex = 124
+        Me.gbSpace.TabStop = False
+        Me.gbSpace.Text = "Space:"
+        '
+        'rbtnCaldari
+        '
+        Me.rbtnCaldari.AutoSize = True
+        Me.rbtnCaldari.Location = New System.Drawing.Point(83, 14)
+        Me.rbtnCaldari.Name = "rbtnCaldari"
+        Me.rbtnCaldari.Size = New System.Drawing.Size(57, 17)
+        Me.rbtnCaldari.TabIndex = 4
+        Me.rbtnCaldari.Text = "Caldari"
+        Me.rbtnCaldari.UseVisualStyleBackColor = True
+        '
+        'rbtnMinmatar
+        '
+        Me.rbtnMinmatar.AutoSize = True
+        Me.rbtnMinmatar.Location = New System.Drawing.Point(83, 32)
+        Me.rbtnMinmatar.Name = "rbtnMinmatar"
+        Me.rbtnMinmatar.Size = New System.Drawing.Size(68, 17)
+        Me.rbtnMinmatar.TabIndex = 6
+        Me.rbtnMinmatar.Text = "Minmatar"
+        Me.rbtnMinmatar.UseVisualStyleBackColor = True
+        '
+        'rbtnGallente
+        '
+        Me.rbtnGallente.AutoSize = True
+        Me.rbtnGallente.Location = New System.Drawing.Point(9, 32)
+        Me.rbtnGallente.Name = "rbtnGallente"
+        Me.rbtnGallente.Size = New System.Drawing.Size(64, 17)
+        Me.rbtnGallente.TabIndex = 5
+        Me.rbtnGallente.Text = "Gallente"
+        Me.rbtnGallente.UseVisualStyleBackColor = True
+        '
+        'rbtnAmarr
+        '
+        Me.rbtnAmarr.AutoSize = True
+        Me.rbtnAmarr.Checked = True
+        Me.rbtnAmarr.Location = New System.Drawing.Point(9, 14)
+        Me.rbtnAmarr.Name = "rbtnAmarr"
+        Me.rbtnAmarr.Size = New System.Drawing.Size(52, 17)
+        Me.rbtnAmarr.TabIndex = 3
+        Me.rbtnAmarr.TabStop = True
+        Me.rbtnAmarr.Text = "Amarr"
+        Me.rbtnAmarr.UseVisualStyleBackColor = True
+        '
+        'btnRefine
+        '
+        Me.btnRefine.Location = New System.Drawing.Point(313, 117)
+        Me.btnRefine.Name = "btnRefine"
+        Me.btnRefine.Size = New System.Drawing.Size(114, 26)
+        Me.btnRefine.TabIndex = 3
+        Me.btnRefine.Text = "Refine"
+        Me.btnRefine.UseVisualStyleBackColor = True
+        '
         'lblCycleTime
         '
         Me.lblCycleTime.AutoSize = True
-        Me.lblCycleTime.Location = New System.Drawing.Point(228, 9)
+        Me.lblCycleTime.Location = New System.Drawing.Point(75, 17)
         Me.lblCycleTime.Name = "lblCycleTime"
         Me.lblCycleTime.Size = New System.Drawing.Size(62, 13)
         Me.lblCycleTime.TabIndex = 111
@@ -305,35 +319,26 @@ Partial Class frmIceBeltFlip
         '
         'txtCycleTime
         '
-        Me.txtCycleTime.Location = New System.Drawing.Point(231, 24)
+        Me.txtCycleTime.Location = New System.Drawing.Point(75, 32)
         Me.txtCycleTime.Name = "txtCycleTime"
-        Me.txtCycleTime.Size = New System.Drawing.Size(74, 20)
+        Me.txtCycleTime.Size = New System.Drawing.Size(66, 20)
         Me.txtCycleTime.TabIndex = 1
         Me.txtCycleTime.Text = "104.67"
         Me.txtCycleTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'txtm3perCycle
         '
-        Me.txtm3perCycle.Location = New System.Drawing.Point(310, 24)
+        Me.txtm3perCycle.Location = New System.Drawing.Point(144, 32)
         Me.txtm3perCycle.Name = "txtm3perCycle"
-        Me.txtm3perCycle.Size = New System.Drawing.Size(76, 20)
+        Me.txtm3perCycle.Size = New System.Drawing.Size(66, 20)
         Me.txtm3perCycle.TabIndex = 2
         Me.txtm3perCycle.Text = "5833.11"
         Me.txtm3perCycle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
-        'btnSaveSettings
-        '
-        Me.btnSaveSettings.Location = New System.Drawing.Point(144, 78)
-        Me.btnSaveSettings.Name = "btnSaveSettings"
-        Me.btnSaveSettings.Size = New System.Drawing.Size(81, 28)
-        Me.btnSaveSettings.TabIndex = 4
-        Me.btnSaveSettings.Text = "Save Settings"
-        Me.btnSaveSettings.UseVisualStyleBackColor = True
-        '
         'lblm3perCycle
         '
         Me.lblm3perCycle.AutoSize = True
-        Me.lblm3perCycle.Location = New System.Drawing.Point(308, 9)
+        Me.lblm3perCycle.Location = New System.Drawing.Point(141, 16)
         Me.lblm3perCycle.Name = "lblm3perCycle"
         Me.lblm3perCycle.Size = New System.Drawing.Size(71, 13)
         Me.lblm3perCycle.TabIndex = 113
@@ -343,16 +348,25 @@ Partial Class frmIceBeltFlip
         '
         Me.cmbNumMiners.FormattingEnabled = True
         Me.cmbNumMiners.Items.AddRange(New Object() {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})
-        Me.cmbNumMiners.Location = New System.Drawing.Point(144, 24)
+        Me.cmbNumMiners.Location = New System.Drawing.Point(6, 32)
         Me.cmbNumMiners.Name = "cmbNumMiners"
-        Me.cmbNumMiners.Size = New System.Drawing.Size(81, 21)
+        Me.cmbNumMiners.Size = New System.Drawing.Size(66, 21)
         Me.cmbNumMiners.TabIndex = 0
         Me.cmbNumMiners.Text = "10"
+        '
+        'btnSaveSettings
+        '
+        Me.btnSaveSettings.Location = New System.Drawing.Point(313, 143)
+        Me.btnSaveSettings.Name = "btnSaveSettings"
+        Me.btnSaveSettings.Size = New System.Drawing.Size(114, 26)
+        Me.btnSaveSettings.TabIndex = 4
+        Me.btnSaveSettings.Text = "Save Settings"
+        Me.btnSaveSettings.UseVisualStyleBackColor = True
         '
         'lblNumMiners
         '
         Me.lblNumMiners.AutoSize = True
-        Me.lblNumMiners.Location = New System.Drawing.Point(144, 9)
+        Me.lblNumMiners.Location = New System.Drawing.Point(6, 17)
         Me.lblNumMiners.Name = "lblNumMiners"
         Me.lblNumMiners.Size = New System.Drawing.Size(66, 13)
         Me.lblNumMiners.TabIndex = 115
@@ -361,9 +375,9 @@ Partial Class frmIceBeltFlip
         'lblm3perhrperminer
         '
         Me.lblm3perhrperminer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblm3perhrperminer.Location = New System.Drawing.Point(390, 25)
+        Me.lblm3perhrperminer.Location = New System.Drawing.Point(213, 32)
         Me.lblm3perhrperminer.Name = "lblm3perhrperminer"
-        Me.lblm3perhrperminer.Size = New System.Drawing.Size(90, 18)
+        Me.lblm3perhrperminer.Size = New System.Drawing.Size(97, 20)
         Me.lblm3perhrperminer.TabIndex = 122
         Me.lblm3perhrperminer.Text = "999,999.00"
         Me.lblm3perhrperminer.TextAlign = System.Drawing.ContentAlignment.MiddleRight
@@ -371,7 +385,7 @@ Partial Class frmIceBeltFlip
         'lblm3perhrperminer1
         '
         Me.lblm3perhrperminer1.AutoSize = True
-        Me.lblm3perhrperminer1.Location = New System.Drawing.Point(390, 9)
+        Me.lblm3perhrperminer1.Location = New System.Drawing.Point(210, 16)
         Me.lblm3perhrperminer1.Name = "lblm3perhrperminer1"
         Me.lblm3perhrperminer1.Size = New System.Drawing.Size(68, 13)
         Me.lblm3perhrperminer1.TabIndex = 121
@@ -379,226 +393,285 @@ Partial Class frmIceBeltFlip
         '
         'btnCloseSmall
         '
-        Me.btnCloseSmall.Location = New System.Drawing.Point(380, 481)
+        Me.btnCloseSmall.Location = New System.Drawing.Point(523, 400)
         Me.btnCloseSmall.Name = "btnCloseSmall"
-        Me.btnCloseSmall.Size = New System.Drawing.Size(113, 28)
+        Me.btnCloseSmall.Size = New System.Drawing.Size(87, 40)
         Me.btnCloseSmall.TabIndex = 145
         Me.btnCloseSmall.Text = "Close"
         Me.btnCloseSmall.UseVisualStyleBackColor = True
         '
-        'btnSaveSettingsSmall
+        'btnSaveChecks
         '
-        Me.btnSaveSettingsSmall.Location = New System.Drawing.Point(254, 481)
-        Me.btnSaveSettingsSmall.Name = "btnSaveSettingsSmall"
-        Me.btnSaveSettingsSmall.Size = New System.Drawing.Size(113, 28)
-        Me.btnSaveSettingsSmall.TabIndex = 144
-        Me.btnSaveSettingsSmall.Text = "Save Selected Ores"
-        Me.btnSaveSettingsSmall.UseVisualStyleBackColor = True
+        Me.btnSaveChecks.Location = New System.Drawing.Point(523, 354)
+        Me.btnSaveChecks.Name = "btnSaveChecks"
+        Me.btnSaveChecks.Size = New System.Drawing.Size(87, 40)
+        Me.btnSaveChecks.TabIndex = 144
+        Me.btnSaveChecks.Text = "Save Ice Selected "
+        Me.btnSaveChecks.UseVisualStyleBackColor = True
         '
         'gbSum1
         '
+        Me.gbSum1.Controls.Add(Me.lblBeltIPH1)
+        Me.gbSum1.Controls.Add(Me.lblBeltIPH)
+        Me.gbSum1.Controls.Add(Me.Label1)
+        Me.gbSum1.Controls.Add(Me.lblTotalRefineVolume)
+        Me.gbSum1.Controls.Add(Me.lblTotalBeltValue)
         Me.gbSum1.Controls.Add(Me.lblTotalIPH1)
-        Me.gbSum1.Controls.Add(Me.lblTotalBeltVolume1)
-        Me.gbSum1.Controls.Add(Me.lblBeltTotalIsk1)
-        Me.gbSum1.Controls.Add(Me.lblTotalHourstoFlip1)
-        Me.gbSum1.Controls.Add(Me.lblTotalIskLevel1)
-        Me.gbSum1.Controls.Add(Me.lblIPH1)
+        Me.gbSum1.Controls.Add(Me.lblTotalBeltVolume)
+        Me.gbSum1.Controls.Add(Me.lblTotalBeltValue1)
+        Me.gbSum1.Controls.Add(Me.lblTotalRefineValue1)
+        Me.gbSum1.Controls.Add(Me.lblTotalHourstoFlip)
+        Me.gbSum1.Controls.Add(Me.lblTotalRefineValue)
+        Me.gbSum1.Controls.Add(Me.lblRefineIPH)
         Me.gbSum1.Controls.Add(Me.lblTotalBeltVol1)
         Me.gbSum1.Controls.Add(Me.lblHourstoFlip1)
-        Me.gbSum1.Location = New System.Drawing.Point(253, 358)
+        Me.gbSum1.Location = New System.Drawing.Point(8, 344)
         Me.gbSum1.Name = "gbSum1"
-        Me.gbSum1.Size = New System.Drawing.Size(243, 117)
+        Me.gbSum1.Size = New System.Drawing.Size(509, 99)
         Me.gbSum1.TabIndex = 147
         Me.gbSum1.TabStop = False
+        '
+        'lblBeltIPH1
+        '
+        Me.lblBeltIPH1.AutoSize = True
+        Me.lblBeltIPH1.Location = New System.Drawing.Point(38, 78)
+        Me.lblBeltIPH1.Name = "lblBeltIPH1"
+        Me.lblBeltIPH1.Size = New System.Drawing.Size(68, 13)
+        Me.lblBeltIPH1.TabIndex = 67
+        Me.lblBeltIPH1.Text = "Isk per Hour:"
+        Me.lblBeltIPH1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblBeltIPH
+        '
+        Me.lblBeltIPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblBeltIPH.Location = New System.Drawing.Point(112, 75)
+        Me.lblBeltIPH.Name = "lblBeltIPH"
+        Me.lblBeltIPH.Size = New System.Drawing.Size(125, 18)
+        Me.lblBeltIPH.TabIndex = 66
+        Me.lblBeltIPH.Text = "100,000.00"
+        Me.lblBeltIPH.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(271, 35)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(106, 13)
+        Me.Label1.TabIndex = 65
+        Me.Label1.Text = "Refine Total Volume:"
+        Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblTotalRefineVolume
+        '
+        Me.lblTotalRefineVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalRefineVolume.Location = New System.Drawing.Point(378, 33)
+        Me.lblTotalRefineVolume.Name = "lblTotalRefineVolume"
+        Me.lblTotalRefineVolume.Size = New System.Drawing.Size(125, 18)
+        Me.lblTotalRefineVolume.TabIndex = 64
+        Me.lblTotalRefineVolume.Text = "100,000.00"
+        Me.lblTotalRefineVolume.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblTotalBeltValue
+        '
+        Me.lblTotalBeltValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalBeltValue.Location = New System.Drawing.Point(112, 12)
+        Me.lblTotalBeltValue.Name = "lblTotalBeltValue"
+        Me.lblTotalBeltValue.Size = New System.Drawing.Size(125, 18)
+        Me.lblTotalBeltValue.TabIndex = 63
+        Me.lblTotalBeltValue.Text = "100,000.00"
+        Me.lblTotalBeltValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'lblTotalIPH1
         '
         Me.lblTotalIPH1.AutoSize = True
-        Me.lblTotalIPH1.Location = New System.Drawing.Point(18, 65)
+        Me.lblTotalIPH1.Location = New System.Drawing.Point(275, 57)
         Me.lblTotalIPH1.Name = "lblTotalIPH1"
-        Me.lblTotalIPH1.Size = New System.Drawing.Size(68, 13)
+        Me.lblTotalIPH1.Size = New System.Drawing.Size(102, 13)
         Me.lblTotalIPH1.TabIndex = 61
-        Me.lblTotalIPH1.Text = "Isk per Hour:"
+        Me.lblTotalIPH1.Text = "Refine Isk per Hour:"
         Me.lblTotalIPH1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'lblTotalBeltVolume1
+        'lblTotalBeltVolume
         '
-        Me.lblTotalBeltVolume1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblTotalBeltVolume1.Location = New System.Drawing.Point(97, 84)
-        Me.lblTotalBeltVolume1.Name = "lblTotalBeltVolume1"
-        Me.lblTotalBeltVolume1.Size = New System.Drawing.Size(127, 18)
-        Me.lblTotalBeltVolume1.TabIndex = 60
-        Me.lblTotalBeltVolume1.Text = "100,000.00"
-        Me.lblTotalBeltVolume1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalBeltVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalBeltVolume.Location = New System.Drawing.Point(112, 33)
+        Me.lblTotalBeltVolume.Name = "lblTotalBeltVolume"
+        Me.lblTotalBeltVolume.Size = New System.Drawing.Size(125, 18)
+        Me.lblTotalBeltVolume.TabIndex = 60
+        Me.lblTotalBeltVolume.Text = "100,000.00"
+        Me.lblTotalBeltVolume.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'lblBeltTotalIsk1
+        'lblTotalBeltValue1
         '
-        Me.lblBeltTotalIsk1.AutoSize = True
-        Me.lblBeltTotalIsk1.Location = New System.Drawing.Point(18, 21)
-        Me.lblBeltTotalIsk1.Name = "lblBeltTotalIsk1"
-        Me.lblBeltTotalIsk1.Size = New System.Drawing.Size(72, 13)
-        Me.lblBeltTotalIsk1.TabIndex = 52
-        Me.lblBeltTotalIsk1.Text = "Belt Total Isk:"
-        Me.lblBeltTotalIsk1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.lblTotalBeltValue1.AutoSize = True
+        Me.lblTotalBeltValue1.Location = New System.Drawing.Point(21, 13)
+        Me.lblTotalBeltValue1.Name = "lblTotalBeltValue1"
+        Me.lblTotalBeltValue1.Size = New System.Drawing.Size(85, 13)
+        Me.lblTotalBeltValue1.TabIndex = 62
+        Me.lblTotalBeltValue1.Text = "Belt Total Value:"
+        Me.lblTotalBeltValue1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'lblTotalHourstoFlip1
+        'lblTotalRefineValue1
         '
-        Me.lblTotalHourstoFlip1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblTotalHourstoFlip1.Location = New System.Drawing.Point(97, 40)
-        Me.lblTotalHourstoFlip1.Name = "lblTotalHourstoFlip1"
-        Me.lblTotalHourstoFlip1.Size = New System.Drawing.Size(127, 18)
-        Me.lblTotalHourstoFlip1.TabIndex = 57
-        Me.lblTotalHourstoFlip1.Text = "100,000.00"
-        Me.lblTotalHourstoFlip1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalRefineValue1.AutoSize = True
+        Me.lblTotalRefineValue1.Location = New System.Drawing.Point(279, 15)
+        Me.lblTotalRefineValue1.Name = "lblTotalRefineValue1"
+        Me.lblTotalRefineValue1.Size = New System.Drawing.Size(98, 13)
+        Me.lblTotalRefineValue1.TabIndex = 52
+        Me.lblTotalRefineValue1.Text = "Refine Total Value:"
+        Me.lblTotalRefineValue1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'lblTotalIskLevel1
+        'lblTotalHourstoFlip
         '
-        Me.lblTotalIskLevel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblTotalIskLevel1.Location = New System.Drawing.Point(97, 18)
-        Me.lblTotalIskLevel1.Name = "lblTotalIskLevel1"
-        Me.lblTotalIskLevel1.Size = New System.Drawing.Size(127, 18)
-        Me.lblTotalIskLevel1.TabIndex = 53
-        Me.lblTotalIskLevel1.Text = "100,000.00"
-        Me.lblTotalIskLevel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalHourstoFlip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalHourstoFlip.Location = New System.Drawing.Point(112, 54)
+        Me.lblTotalHourstoFlip.Name = "lblTotalHourstoFlip"
+        Me.lblTotalHourstoFlip.Size = New System.Drawing.Size(125, 18)
+        Me.lblTotalHourstoFlip.TabIndex = 57
+        Me.lblTotalHourstoFlip.Text = "100,000.00"
+        Me.lblTotalHourstoFlip.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
-        'lblIPH1
+        'lblTotalRefineValue
         '
-        Me.lblIPH1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblIPH1.Location = New System.Drawing.Point(97, 62)
-        Me.lblIPH1.Name = "lblIPH1"
-        Me.lblIPH1.Size = New System.Drawing.Size(127, 18)
-        Me.lblIPH1.TabIndex = 59
-        Me.lblIPH1.Text = "100,000.00"
-        Me.lblIPH1.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotalRefineValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalRefineValue.Location = New System.Drawing.Point(378, 12)
+        Me.lblTotalRefineValue.Name = "lblTotalRefineValue"
+        Me.lblTotalRefineValue.Size = New System.Drawing.Size(125, 18)
+        Me.lblTotalRefineValue.TabIndex = 53
+        Me.lblTotalRefineValue.Text = "100,000.00"
+        Me.lblTotalRefineValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblRefineIPH
+        '
+        Me.lblRefineIPH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblRefineIPH.Location = New System.Drawing.Point(378, 54)
+        Me.lblRefineIPH.Name = "lblRefineIPH"
+        Me.lblRefineIPH.Size = New System.Drawing.Size(125, 18)
+        Me.lblRefineIPH.TabIndex = 59
+        Me.lblRefineIPH.Text = "100,000.00"
+        Me.lblRefineIPH.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'lblTotalBeltVol1
         '
         Me.lblTotalBeltVol1.AutoSize = True
-        Me.lblTotalBeltVol1.Location = New System.Drawing.Point(18, 87)
+        Me.lblTotalBeltVol1.Location = New System.Drawing.Point(13, 33)
         Me.lblTotalBeltVol1.Name = "lblTotalBeltVol1"
-        Me.lblTotalBeltVol1.Size = New System.Drawing.Size(73, 13)
+        Me.lblTotalBeltVol1.Size = New System.Drawing.Size(93, 13)
         Me.lblTotalBeltVol1.TabIndex = 54
-        Me.lblTotalBeltVol1.Text = "Belt Total Vol:"
+        Me.lblTotalBeltVol1.Text = "Belt Total Volume:"
         Me.lblTotalBeltVol1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'lblHourstoFlip1
         '
         Me.lblHourstoFlip1.AutoSize = True
-        Me.lblHourstoFlip1.Location = New System.Drawing.Point(18, 43)
+        Me.lblHourstoFlip1.Location = New System.Drawing.Point(37, 57)
         Me.lblHourstoFlip1.Name = "lblHourstoFlip1"
         Me.lblHourstoFlip1.Size = New System.Drawing.Size(69, 13)
         Me.lblHourstoFlip1.TabIndex = 56
         Me.lblHourstoFlip1.Text = "Hours to Flip:"
         Me.lblHourstoFlip1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'lblSmallBeltMineralComp
+        'lblIceProductComposition
         '
-        Me.lblSmallBeltMineralComp.AutoSize = True
-        Me.lblSmallBeltMineralComp.Location = New System.Drawing.Point(320, 255)
-        Me.lblSmallBeltMineralComp.Name = "lblSmallBeltMineralComp"
-        Me.lblSmallBeltMineralComp.Size = New System.Drawing.Size(122, 13)
-        Me.lblSmallBeltMineralComp.TabIndex = 146
-        Me.lblSmallBeltMineralComp.Text = "Belt Mineral Composition"
-        Me.lblSmallBeltMineralComp.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        Me.lblIceProductComposition.AutoSize = True
+        Me.lblIceProductComposition.Location = New System.Drawing.Point(395, 183)
+        Me.lblIceProductComposition.Name = "lblIceProductComposition"
+        Me.lblIceProductComposition.Size = New System.Drawing.Size(122, 13)
+        Me.lblIceProductComposition.TabIndex = 146
+        Me.lblIceProductComposition.Text = "Ice Product Composition"
+        Me.lblIceProductComposition.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
-        'lstOresLevel1
+        'lstIce
         '
-        Me.lstOresLevel1.CheckBoxes = True
-        Me.lstOresLevel1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.checkboxSmall, Me.orenameSmall, Me.numberroidsSmall, Me.unitsSmall})
-        Me.lstOresLevel1.FullRowSelect = True
-        Me.lstOresLevel1.GridLines = True
-        Me.lstOresLevel1.HideSelection = False
-        Me.lstOresLevel1.Location = New System.Drawing.Point(12, 271)
-        Me.lstOresLevel1.MultiSelect = False
-        Me.lstOresLevel1.Name = "lstOresLevel1"
-        Me.lstOresLevel1.Size = New System.Drawing.Size(235, 238)
-        Me.lstOresLevel1.TabIndex = 141
-        Me.lstOresLevel1.UseCompatibleStateImageBehavior = False
-        Me.lstOresLevel1.View = System.Windows.Forms.View.Details
+        Me.lstIce.CheckBoxes = True
+        Me.lstIce.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.checkboxIce, Me.IceName, Me.IceUnits, Me.IcePPU})
+        Me.lstIce.FullRowSelect = True
+        Me.lstIce.GridLines = True
+        Me.lstIce.HideSelection = False
+        Me.lstIce.Location = New System.Drawing.Point(9, 199)
+        Me.lstIce.MultiSelect = False
+        Me.lstIce.Name = "lstIce"
+        Me.lstIce.Size = New System.Drawing.Size(287, 148)
+        Me.lstIce.TabIndex = 141
+        Me.lstIce.UseCompatibleStateImageBehavior = False
+        Me.lstIce.View = System.Windows.Forms.View.Details
         '
-        'checkboxSmall
+        'checkboxIce
         '
-        Me.checkboxSmall.Text = ""
-        Me.checkboxSmall.Width = 25
+        Me.checkboxIce.Text = ""
+        Me.checkboxIce.Width = 25
         '
-        'orenameSmall
+        'IceName
         '
-        Me.orenameSmall.Text = "Ore"
-        Me.orenameSmall.Width = 100
+        Me.IceName.Text = "Ice"
+        Me.IceName.Width = 112
         '
-        'numberroidsSmall
+        'IceUnits
         '
-        Me.numberroidsSmall.Text = "Rocks"
-        Me.numberroidsSmall.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        Me.numberroidsSmall.Width = 43
+        Me.IceUnits.Text = "Units"
+        Me.IceUnits.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.IceUnits.Width = 50
         '
-        'unitsSmall
+        'IcePPU
         '
-        Me.unitsSmall.Text = "Units"
-        Me.unitsSmall.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.unitsSmall.Width = 63
+        Me.IcePPU.Text = "Price per Unit"
+        Me.IcePPU.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.IcePPU.Width = 96
         '
-        'lstMineralsLevel1
+        'lstIceProducts
         '
-        Me.lstMineralsLevel1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.mineralsSmall, Me.minsunitsSmall, Me.totaliskSmall})
-        Me.lstMineralsLevel1.FullRowSelect = True
-        Me.lstMineralsLevel1.GridLines = True
-        Me.lstMineralsLevel1.HideSelection = False
-        Me.lstMineralsLevel1.Location = New System.Drawing.Point(253, 271)
-        Me.lstMineralsLevel1.MultiSelect = False
-        Me.lstMineralsLevel1.Name = "lstMineralsLevel1"
-        Me.lstMineralsLevel1.Size = New System.Drawing.Size(243, 81)
-        Me.lstMineralsLevel1.TabIndex = 142
-        Me.lstMineralsLevel1.UseCompatibleStateImageBehavior = False
-        Me.lstMineralsLevel1.View = System.Windows.Forms.View.Details
+        Me.lstIceProducts.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.iceProducts, Me.units, Me.totalISK})
+        Me.lstIceProducts.FullRowSelect = True
+        Me.lstIceProducts.GridLines = True
+        Me.lstIceProducts.HideSelection = False
+        Me.lstIceProducts.Location = New System.Drawing.Point(302, 199)
+        Me.lstIceProducts.MultiSelect = False
+        Me.lstIceProducts.Name = "lstIceProducts"
+        Me.lstIceProducts.Size = New System.Drawing.Size(308, 148)
+        Me.lstIceProducts.TabIndex = 142
+        Me.lstIceProducts.UseCompatibleStateImageBehavior = False
+        Me.lstIceProducts.View = System.Windows.Forms.View.Details
         '
-        'mineralsSmall
+        'iceProducts
         '
-        Me.mineralsSmall.Text = "Mineral"
-        Me.mineralsSmall.Width = 57
+        Me.iceProducts.Text = "Ice Product"
+        Me.iceProducts.Width = 120
         '
-        'minsunitsSmall
+        'units
         '
-        Me.minsunitsSmall.Text = "Units"
-        Me.minsunitsSmall.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.minsunitsSmall.Width = 79
+        Me.units.Text = "Units"
+        Me.units.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.units.Width = 78
         '
-        'totaliskSmall
+        'totalISK
         '
-        Me.totaliskSmall.Text = "Total Isk"
-        Me.totaliskSmall.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.totaliskSmall.Width = 103
+        Me.totalISK.Text = "Total Isk"
+        Me.totalISK.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.totalISK.Width = 106
         '
-        'lblSmallBeltOreComp
+        'lblBeltComp
         '
-        Me.lblSmallBeltOreComp.AutoSize = True
-        Me.lblSmallBeltOreComp.Location = New System.Drawing.Point(79, 255)
-        Me.lblSmallBeltOreComp.Name = "lblSmallBeltOreComp"
-        Me.lblSmallBeltOreComp.Size = New System.Drawing.Size(105, 13)
-        Me.lblSmallBeltOreComp.TabIndex = 143
-        Me.lblSmallBeltOreComp.Text = "Belt Ore Composition"
-        Me.lblSmallBeltOreComp.TextAlign = System.Drawing.ContentAlignment.TopCenter
-        '
-        'RefineStation
-        '
-        Me.RefineStation.Location = New System.Drawing.Point(286, 70)
-        Me.RefineStation.Name = "RefineStation"
-        Me.RefineStation.Size = New System.Drawing.Size(303, 128)
-        Me.RefineStation.TabIndex = 125
+        Me.lblBeltComp.AutoSize = True
+        Me.lblBeltComp.Location = New System.Drawing.Point(101, 183)
+        Me.lblBeltComp.Name = "lblBeltComp"
+        Me.lblBeltComp.Size = New System.Drawing.Size(103, 13)
+        Me.lblBeltComp.TabIndex = 143
+        Me.lblBeltComp.Text = "Ice Belt Composition"
+        Me.lblBeltComp.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'frmIceBeltFlip
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(672, 537)
-        Me.Controls.Add(Me.btnCloseSmall)
-        Me.Controls.Add(Me.btnSaveSettingsSmall)
-        Me.Controls.Add(Me.gbSum1)
-        Me.Controls.Add(Me.lblSmallBeltMineralComp)
-        Me.Controls.Add(Me.lstOresLevel1)
-        Me.Controls.Add(Me.lstMineralsLevel1)
-        Me.Controls.Add(Me.lblSmallBeltOreComp)
+        Me.ClientSize = New System.Drawing.Size(619, 446)
+        Me.Controls.Add(Me.lblIceProductComposition)
+        Me.Controls.Add(Me.lstIce)
+        Me.Controls.Add(Me.lstIceProducts)
+        Me.Controls.Add(Me.lblBeltComp)
         Me.Controls.Add(Me.gbSummarySettings)
+        Me.Controls.Add(Me.btnCloseSmall)
+        Me.Controls.Add(Me.btnSaveChecks)
+        Me.Controls.Add(Me.gbSum1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
@@ -608,12 +681,12 @@ Partial Class frmIceBeltFlip
         Me.Text = "Ice Anomaly Belts"
         Me.gbSummarySettings.ResumeLayout(False)
         Me.gbSummarySettings.PerformLayout()
+        Me.gbMineTaxBroker.ResumeLayout(False)
+        Me.gbMineTaxBroker.PerformLayout()
         Me.gbTrueSec.ResumeLayout(False)
         Me.gbTrueSec.PerformLayout()
         Me.gbSpace.ResumeLayout(False)
         Me.gbSpace.PerformLayout()
-        Me.gbMineTaxBroker.ResumeLayout(False)
-        Me.gbMineTaxBroker.PerformLayout()
         Me.gbSum1.ResumeLayout(False)
         Me.gbSum1.PerformLayout()
         Me.ResumeLayout(False)
@@ -623,16 +696,10 @@ Partial Class frmIceBeltFlip
 
     Friend WithEvents gbSummarySettings As GroupBox
     Friend WithEvents gbTrueSec As GroupBox
-    Friend WithEvents rbtn10percent As RadioButton
-    Friend WithEvents rbtn5percent As RadioButton
+    Friend WithEvents rbtnNullWeak As RadioButton
+    Friend WithEvents rbtnLowsec As RadioButton
     Friend WithEvents rbtnHighsec As RadioButton
-    Friend WithEvents btnRefresh As Button
-    Friend WithEvents gbMineTaxBroker As GroupBox
-    Friend WithEvents txtBrokerFeeRate As TextBox
-    Friend WithEvents chkIPHperMiner As CheckBox
-    Friend WithEvents chkCompressOre As CheckBox
-    Friend WithEvents chkIncludeTaxes As CheckBox
-    Friend WithEvents chkBrokerFees As CheckBox
+    Friend WithEvents btnRefine As Button
     Friend WithEvents lblCycleTime As Label
     Friend WithEvents txtCycleTime As TextBox
     Friend WithEvents txtm3perCycle As TextBox
@@ -643,32 +710,44 @@ Partial Class frmIceBeltFlip
     Friend WithEvents lblm3perhrperminer As Label
     Friend WithEvents lblm3perhrperminer1 As Label
     Friend WithEvents btnCloseSmall As Button
-    Friend WithEvents btnSaveSettingsSmall As Button
+    Friend WithEvents btnSaveChecks As Button
     Friend WithEvents gbSum1 As GroupBox
     Friend WithEvents lblTotalIPH1 As Label
-    Friend WithEvents lblTotalBeltVolume1 As Label
-    Friend WithEvents lblBeltTotalIsk1 As Label
-    Friend WithEvents lblTotalHourstoFlip1 As Label
-    Friend WithEvents lblTotalIskLevel1 As Label
-    Friend WithEvents lblIPH1 As Label
+    Friend WithEvents lblTotalBeltVolume As Label
+    Friend WithEvents lblTotalRefineValue1 As Label
+    Friend WithEvents lblTotalHourstoFlip As Label
+    Friend WithEvents lblTotalRefineValue As Label
+    Friend WithEvents lblRefineIPH As Label
     Friend WithEvents lblTotalBeltVol1 As Label
     Friend WithEvents lblHourstoFlip1 As Label
-    Friend WithEvents lblSmallBeltMineralComp As Label
-    Friend WithEvents lstOresLevel1 As ListView
-    Friend WithEvents checkboxSmall As ColumnHeader
-    Friend WithEvents orenameSmall As ColumnHeader
-    Friend WithEvents numberroidsSmall As ColumnHeader
-    Friend WithEvents unitsSmall As ColumnHeader
-    Friend WithEvents lstMineralsLevel1 As ListView
-    Friend WithEvents mineralsSmall As ColumnHeader
-    Friend WithEvents minsunitsSmall As ColumnHeader
-    Friend WithEvents totaliskSmall As ColumnHeader
-    Friend WithEvents lblSmallBeltOreComp As Label
-    Friend WithEvents RadioButton1 As RadioButton
+    Friend WithEvents lblIceProductComposition As Label
+    Friend WithEvents lstIce As ListView
+    Friend WithEvents checkboxIce As ColumnHeader
+    Friend WithEvents IceName As ColumnHeader
+    Friend WithEvents IceUnits As ColumnHeader
+    Friend WithEvents lstIceProducts As ListView
+    Friend WithEvents iceProducts As ColumnHeader
+    Friend WithEvents units As ColumnHeader
+    Friend WithEvents totalISK As ColumnHeader
+    Friend WithEvents lblBeltComp As Label
+    Friend WithEvents rbtnNullStrong As RadioButton
     Friend WithEvents gbSpace As GroupBox
     Friend WithEvents rbtnMinmatar As RadioButton
     Friend WithEvents rbtnGallente As RadioButton
     Friend WithEvents rbtnCaldari As RadioButton
     Friend WithEvents rbtnAmarr As RadioButton
-    Friend WithEvents RefineStation As ManufacturingFacility
+    Friend WithEvents ReprocessingFacility As ManufacturingFacility
+    Friend WithEvents gbMineTaxBroker As GroupBox
+    Friend WithEvents txtBrokerFeeRate As TextBox
+    Friend WithEvents chkIPHperMiner As CheckBox
+    Friend WithEvents chkCompressIce As CheckBox
+    Friend WithEvents chkIncludeTaxes As CheckBox
+    Friend WithEvents chkBrokerFees As CheckBox
+    Friend WithEvents IcePPU As ColumnHeader
+    Friend WithEvents lblTotalBeltValue As Label
+    Friend WithEvents lblTotalBeltValue1 As Label
+    Friend WithEvents lblBeltIPH1 As Label
+    Friend WithEvents lblBeltIPH As Label
+    Friend WithEvents Label1 As Label
+    Friend WithEvents lblTotalRefineVolume As Label
 End Class

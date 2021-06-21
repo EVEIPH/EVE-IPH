@@ -47,6 +47,9 @@ Public Module SettingsVariables
     ' For bonus popout on structure viewer
     Public StructureBonusPopoutViewerSettings As StructureBonusPopoutSettings
 
+    Public UserIceBeltFlipSettings As IceBeltFlipSettings
+    Public UserIceBeltCheckSettings As IceBeltCheckSettings
+
 End Module
 
 Public Class ProgramSettings
@@ -769,7 +772,7 @@ Public Class ProgramSettings
     Public Const ReactionFacilityUsageColumnName As String = "Reaction Facility Usage"
     Public Const ReactionFacilityFWSystemLevelColumnName As String = "Reaction Facility FW System Level"
 
-    ' Industry Flip Belt settings
+    ' Industry Ore/Ice Flip Belt settings
     Private DefaultCycleTime As Double = 180
     Private Defaultm3perCycle As Double = 3000
     Private DefaultNumMiners As Integer = 1
@@ -779,6 +782,7 @@ Public Class ProgramSettings
     Private DefaultBFBrokerFeeRate As Double = 0.05
     Private DefaultIncludeTaxes As Boolean = True
     Private DefaultTruesec As String = ""
+    Private DefaultSpace As String = ""
 
     ' Industry flip belt defaults
     Private DefaultPlagioclase As Boolean = True
@@ -829,6 +833,32 @@ Public Class ProgramSettings
     Private DefaultGoldenOmber As Boolean = True
     Private DefaultMagmaMercoxit As Boolean = True
     Private DefaultVitreousMercoxit As Boolean = True
+
+    ' Ice Belt Flip - checks
+    Private DefaultBlueIce As Boolean = True
+    Private DefaultClearIcicle As Boolean = True
+    Private DefaultDarkGlitter As Boolean = True
+    Private DefaultEnrichedClearIcicle As Boolean = True
+    Private DefaultGelidus As Boolean = True
+    Private DefaultGlacialMass As Boolean = True
+    Private DefaultGlareCrust As Boolean = True
+    Private DefaultKrystallos As Boolean = True
+    Private DefaultPristineWhiteGlaze As Boolean = True
+    Private DefaultSmoothGlacialMass As Boolean = True
+    Private DefaultThickBlueIce As Boolean = True
+    Private DefaultWhiteGlaze As Boolean = True
+    Private DefaultCompressedBlueIce As Boolean = True
+    Private DefaultCompressedClearIcicle As Boolean = True
+    Private DefaultCompressedDarkGlitter As Boolean = True
+    Private DefaultCompressedEnrichedClearIcicle As Boolean = True
+    Private DefaultCompressedGelidus As Boolean = True
+    Private DefaultCompressedGlacialMass As Boolean = True
+    Private DefaultCompressedGlareCrust As Boolean = True
+    Private DefaultCompressedKrystallos As Boolean = True
+    Private DefaultCompressedPristineWhiteGlaze As Boolean = True
+    Private DefaultCompressedSmoothGlacialMass As Boolean = True
+    Private DefaultCompressedThickBlueIce As Boolean = True
+    Private DefaultCompressedWhiteGlaze As Boolean = True
 
     ' Default Shopping List Settings
     Private DefaultAlwaysonTop As Boolean = False
@@ -916,6 +946,8 @@ Public Class ProgramSettings
     Private MarketHistoryViewSettings As MarketHistoryViewerSettings
     Private UpwellStructureViewerSettings As UpwellStructureSettings
     Private BPViewSettings As BPViewerSettings
+    Private IceBeltFlipSetting As IceBeltFlipSettings
+    Private IceBeltCheckSetting As IceBeltCheckSettings
 
     ' Multiple versions of Asset windows
     Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
@@ -946,6 +978,9 @@ Public Class ProgramSettings
     Private Const MarketHistoryViewerSettingsFileName As String = "MarketHistoryViewerSettings"
     Private Const UpwellStructureViewerSettingsFileName As String = "UpwellStructureViewerSettings"
     Private Const StructureBonusPopoutViewerSettingsFileName As String = "StructureBonusPopoutViewerSettings"
+
+    Private Const IceBeltFlipSettingsFileName As String = "IceBeltFlipSettings"
+    Private Const IceBeltFlipCheckSettingsFileName As String = "IceBeltFlipCheckSettings"
 
     ' For BP List Viewer
     Public DefaultBPViewerTechChecks As Boolean = True
@@ -982,6 +1017,8 @@ Public Class ProgramSettings
         IndustryJobsColumnSettings = Nothing
         ManufacturingTabColumnSettings = Nothing
         IndustryFlipBeltsSettings = Nothing
+        IceBeltFlipSetting = Nothing
+        IceBeltCheckSetting = Nothing
         ShoppingListTabSettings = Nothing
         MarketHistoryViewSettings = Nothing
         UpwellStructureViewerSettings = Nothing
@@ -3758,6 +3795,99 @@ Public Class ProgramSettings
 
 #End Region
 
+#Region "Ice Belt Flip"
+
+    ' Loads the tab settings
+    Public Function LoadIceFlipBeltColumnSettings() As IceBeltFlipSettings
+        Dim TempSettings As IceBeltFlipSettings = Nothing
+
+        Try
+            If FileExists(SettingsFolder, IceBeltFlipSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .CycleTime = CDbl(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeDouble, IceBeltFlipSettingsFileName, "CycleTime", DefaultCycleTime))
+                    .m3perCycle = CDbl(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeDouble, IceBeltFlipSettingsFileName, "m3perCycle", Defaultm3perCycle))
+                    .NumMiners = CInt(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeInteger, IceBeltFlipSettingsFileName, "NumMiners", DefaultNumMiners))
+                    .CompressOre = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "CompressOre", DefaultCompressOre))
+                    .IPHperMiner = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "IPHperMiner", DefaultIPHperMiner))
+                    .IncludeBrokerFees = CInt(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeInteger, IceBeltFlipSettingsFileName, "IncludeBrokerFees", DefaultIncludeBrokerFees))
+                    .IncludeTaxes = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
+                    .SystemSecurity = CStr(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeString, IceBeltFlipSettingsFileName, "SystemSecurity", DefaultTruesec))
+                    .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
+                    .Space = CStr(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeString, IceBeltFlipSettingsFileName, "Space", DefaultSpace))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultIceBeltFlipSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultIceBeltFlipSettings()
+        End Try
+
+        ' Save them locally and then export
+        IceBeltFlipSetting = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Loads the Defaults for the tab
+    Public Function SetDefaultIceBeltFlipSettings() As IceBeltFlipSettings
+        Dim LocalSettings As IceBeltFlipSettings
+
+        With LocalSettings
+            .CycleTime = DefaultCycleTime
+            .m3perCycle = Defaultm3perCycle
+            .NumMiners = DefaultNumMiners
+            .CompressOre = DefaultCompressOre
+            .IPHperMiner = DefaultIPHperMiner
+            .IncludeBrokerFees = DefaultIncludeBrokerFees
+            .BrokerFeeRate = DefaultBFBrokerFeeRate
+            .IncludeTaxes = DefaultIncludeTaxes
+            .SystemSecurity = DefaultTruesec
+            .Space = DefaultSpace
+        End With
+
+        ' Save locally
+        IceBeltFlipSetting = LocalSettings
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveIceBeltFlipSettings(SentSettings As IceBeltFlipSettings)
+        Dim IceBeltFlipSettingsList(8) As Setting
+
+        Try
+            IceBeltFlipSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
+            IceBeltFlipSettingsList(1) = New Setting("m3perCycle", CStr(SentSettings.m3perCycle))
+            IceBeltFlipSettingsList(2) = New Setting("NumMiners", CStr(SentSettings.NumMiners))
+            IceBeltFlipSettingsList(3) = New Setting("CompressedOre", CStr(SentSettings.CompressOre))
+            IceBeltFlipSettingsList(4) = New Setting("IPHperMiner", CStr(SentSettings.IPHperMiner))
+            IceBeltFlipSettingsList(5) = New Setting("IncludeBrokerFees", CStr(SentSettings.IncludeBrokerFees))
+            IceBeltFlipSettingsList(6) = New Setting("IncludeTaxes", CStr(SentSettings.IncludeTaxes))
+            IceBeltFlipSettingsList(7) = New Setting("SystemSecurity", CStr(SentSettings.SystemSecurity))
+            IceBeltFlipSettingsList(8) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+
+            Call WriteSettingsToFile(SettingsFolder, IceBeltFlipSettingsFileName, IceBeltFlipSettingsList, IceBeltFlipSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetIceBeltFlipSettings() As IceBeltFlipSettings
+        Return IceBeltFlipSetting
+    End Function
+
+#End Region
+
 #Region "Industry Belt Ore Checks"
 
     ' Loads the tab settings
@@ -4023,6 +4153,146 @@ Public Class ProgramSettings
             Case BeltType.Colossal
                 Return IndustryBeltOreChecksSettings5
         End Select
+    End Function
+
+#End Region
+
+#Region "Ice Belt Ore Checks"
+
+    ' Loads the tab settings
+    Public Function LoadIceBeltOreChecksSettings() As IceBeltCheckSettings
+        Dim TempSettings As IceBeltCheckSettings = Nothing
+
+        Try
+            If FileExists(SettingsFolder, IceBeltFlipCheckSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .BlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "BlueIce", DefaultBlueIce))
+                    .ClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "ClearIcicle", DefaultClearIcicle))
+                    .DarkGlitter = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "DarkGlitter", DefaultDarkGlitter))
+                    .EnrichedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "EnrichedClearIcicle", DefaultEnrichedClearIcicle))
+                    .Gelidus = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "Gelidus", DefaultGelidus))
+                    .GlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "GlacialMass", DefaultGlacialMass))
+                    .GlareCrust = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "GlareCrust", DefaultGlareCrust))
+                    .Krystallos = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "Krystallos", DefaultKrystallos))
+                    .PristineWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "PristineWhiteGlaze", DefaultPristineWhiteGlaze))
+                    .SmoothGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "SmoothGlacialMass", DefaultSmoothGlacialMass))
+                    .ThickBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "ThickBlueIce", DefaultThickBlueIce))
+                    .WhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "WhiteGlaze", DefaultWhiteGlaze))
+
+                    .CompressedBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedBlueIce", DefaultCompressedBlueIce))
+                    .CompressedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedClearIcicle", DefaultCompressedClearIcicle))
+                    .CompressedDarkGlitter = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedDarkGlitter", DefaultCompressedDarkGlitter))
+                    .CompressedEnrichedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedEnrichedClearIcicle", DefaultCompressedEnrichedClearIcicle))
+                    .CompressedGelidus = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGelidus", DefaultCompressedGelidus))
+                    .CompressedGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGlacialMass", DefaultCompressedGlacialMass))
+                    .CompressedGlareCrust = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGlareCrust", DefaultCompressedGlareCrust))
+                    .CompressedKrystallos = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedKrystallos", DefaultCompressedKrystallos))
+                    .CompressedPristineWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedPristineWhiteGlaze", DefaultCompressedPristineWhiteGlaze))
+                    .CompressedSmoothGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedSmoothGlacialMass", DefaultCompressedSmoothGlacialMass))
+                    .CompressedThickBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedThickBlueIce", DefaultCompressedThickBlueIce))
+                    .CompressedWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedWhiteGlaze", DefaultCompressedWhiteGlaze))
+
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultIceBeltChecksSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultIceBeltChecksSettings()
+        End Try
+
+        ' Save them locally and then export
+        IceBeltCheckSetting = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Loads the Defaults for the tab
+    Public Function SetDefaultIceBeltChecksSettings() As IceBeltCheckSettings
+        Dim LocalSettings As IceBeltCheckSettings
+
+        With LocalSettings
+            .BlueIce = DefaultBlueIce
+            .ClearIcicle = DefaultClearIcicle
+            .DarkGlitter = DefaultDarkGlitter
+            .EnrichedClearIcicle = DefaultEnrichedClearIcicle
+            .Gelidus = DefaultGelidus
+            .GlacialMass = DefaultGlacialMass
+            .GlareCrust = DefaultGlareCrust
+            .Krystallos = DefaultKrystallos
+            .PristineWhiteGlaze = DefaultPristineWhiteGlaze
+            .SmoothGlacialMass = DefaultSmoothGlacialMass
+            .ThickBlueIce = DefaultThickBlueIce
+            .WhiteGlaze = DefaultWhiteGlaze
+            .CompressedBlueIce = DefaultCompressedBlueIce
+            .CompressedClearIcicle = DefaultCompressedClearIcicle
+            .CompressedDarkGlitter = DefaultCompressedDarkGlitter
+            .CompressedEnrichedClearIcicle = DefaultCompressedEnrichedClearIcicle
+            .CompressedGelidus = DefaultCompressedGelidus
+            .CompressedGlacialMass = DefaultCompressedGlacialMass
+            .CompressedGlareCrust = DefaultCompressedGlareCrust
+            .CompressedKrystallos = DefaultCompressedKrystallos
+            .CompressedPristineWhiteGlaze = DefaultCompressedPristineWhiteGlaze
+            .CompressedSmoothGlacialMass = DefaultCompressedSmoothGlacialMass
+            .CompressedThickBlueIce = DefaultCompressedThickBlueIce
+            .CompressedWhiteGlaze = DefaultCompressedWhiteGlaze
+        End With
+
+        ' Save Locally
+        IceBeltCheckSetting = LocalSettings
+
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveIceBeltChecksSettings(SentSettings As IceBeltCheckSettings)
+        Dim IceBeltOreChecksList(23) As Setting
+
+        Try
+            IceBeltOreChecksList(0) = New Setting("BlueIce", CStr(SentSettings.BlueIce))
+            IceBeltOreChecksList(1) = New Setting("ClearIcicle", CStr(SentSettings.ClearIcicle))
+            IceBeltOreChecksList(2) = New Setting("DarkGlitter", CStr(SentSettings.DarkGlitter))
+            IceBeltOreChecksList(3) = New Setting("EnrichedClearIcicle", CStr(SentSettings.EnrichedClearIcicle))
+            IceBeltOreChecksList(4) = New Setting("Gelidus", CStr(SentSettings.Gelidus))
+            IceBeltOreChecksList(5) = New Setting("GlacialMass", CStr(SentSettings.GlacialMass))
+            IceBeltOreChecksList(6) = New Setting("GlareCrust", CStr(SentSettings.GlareCrust))
+            IceBeltOreChecksList(7) = New Setting("Krystallos", CStr(SentSettings.Krystallos))
+            IceBeltOreChecksList(8) = New Setting("PristineWhiteGlaze", CStr(SentSettings.PristineWhiteGlaze))
+            IceBeltOreChecksList(9) = New Setting("SmoothGlacialMass", CStr(SentSettings.SmoothGlacialMass))
+            IceBeltOreChecksList(10) = New Setting("ThickBlueIce", CStr(SentSettings.ThickBlueIce))
+            IceBeltOreChecksList(11) = New Setting("WhiteGlaze", CStr(SentSettings.WhiteGlaze))
+
+            IceBeltOreChecksList(12) = New Setting("CompressedBlueIce", CStr(SentSettings.CompressedBlueIce))
+            IceBeltOreChecksList(13) = New Setting("CompressedClearIcicle", CStr(SentSettings.CompressedClearIcicle))
+            IceBeltOreChecksList(14) = New Setting("CompressedDarkGlitter", CStr(SentSettings.CompressedDarkGlitter))
+            IceBeltOreChecksList(15) = New Setting("CompressedEnrichedClearIcicle", CStr(SentSettings.CompressedEnrichedClearIcicle))
+            IceBeltOreChecksList(16) = New Setting("CompressedGelidus", CStr(SentSettings.CompressedGelidus))
+            IceBeltOreChecksList(17) = New Setting("CompressedGlacialMass", CStr(SentSettings.CompressedGlacialMass))
+            IceBeltOreChecksList(18) = New Setting("CompressedGlareCrust", CStr(SentSettings.CompressedGlareCrust))
+            IceBeltOreChecksList(19) = New Setting("CompressedKrystallos", CStr(SentSettings.CompressedKrystallos))
+            IceBeltOreChecksList(20) = New Setting("CompressedPristineWhiteGlaze", CStr(SentSettings.CompressedPristineWhiteGlaze))
+            IceBeltOreChecksList(21) = New Setting("CompressedSmoothGlacialMass", CStr(SentSettings.CompressedSmoothGlacialMass))
+            IceBeltOreChecksList(22) = New Setting("CompressedThickBlueIce", CStr(SentSettings.CompressedThickBlueIce))
+            IceBeltOreChecksList(23) = New Setting("CompressedWhiteGlaze", CStr(SentSettings.CompressedWhiteGlaze))
+
+            Call WriteSettingsToFile(SettingsFolder, IceBeltFlipCheckSettingsFileName, IceBeltOreChecksList, IceBeltFlipCheckSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetIceBeltOreChecksSettings(Belt As BeltType) As IceBeltCheckSettings
+        Return IceBeltCheckSetting
     End Function
 
 #End Region
@@ -5538,6 +5808,50 @@ Public Structure IndustryBeltOreChecks
     Dim GoldenOmber As Boolean
     Dim MagmaMercoxit As Boolean
     Dim VitreousMercoxit As Boolean
+End Structure
+
+' For Ice Flip Belt Settings
+Public Structure IceBeltFlipSettings
+    Dim CycleTime As Double
+    Dim m3perCycle As Double
+    Dim NumMiners As Integer
+    Dim CompressOre As Boolean
+    Dim IPHperMiner As Boolean
+    Dim IncludeTaxes As Boolean
+    Dim IncludeBrokerFees As Integer
+    Dim BrokerFeeRate As Double
+    Dim SystemSecurity As String
+    Dim Space As String
+End Structure
+
+' For the checked ore on each mining tab
+Public Structure IceBeltCheckSettings
+    Dim BlueIce As Boolean
+    Dim ClearIcicle As Boolean
+    Dim DarkGlitter As Boolean
+    Dim EnrichedClearIcicle As Boolean
+    Dim Gelidus As Boolean
+    Dim GlacialMass As Boolean
+    Dim GlareCrust As Boolean
+    Dim Krystallos As Boolean
+    Dim PristineWhiteGlaze As Boolean
+    Dim SmoothGlacialMass As Boolean
+    Dim ThickBlueIce As Boolean
+    Dim WhiteGlaze As Boolean
+
+    Dim CompressedBlueIce As Boolean
+    Dim CompressedClearIcicle As Boolean
+    Dim CompressedDarkGlitter As Boolean
+    Dim CompressedEnrichedClearIcicle As Boolean
+    Dim CompressedGelidus As Boolean
+    Dim CompressedGlacialMass As Boolean
+    Dim CompressedGlareCrust As Boolean
+    Dim CompressedKrystallos As Boolean
+    Dim CompressedPristineWhiteGlaze As Boolean
+    Dim CompressedSmoothGlacialMass As Boolean
+    Dim CompressedThickBlueIce As Boolean
+    Dim CompressedWhiteGlaze As Boolean
+
 End Structure
 
 ' For Assets Selected Item Settings

@@ -411,6 +411,9 @@ Public Class frmMain
         UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
         UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
 
+        UserIceBeltFlipSettings = AllSettings.LoadIceFlipBeltColumnSettings
+        UserIceBeltCheckSettings = AllSettings.LoadIceBeltOreChecksSettings
+
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
         UserAssetWindowRefinerySettings = AllSettings.LoadAssetWindowSettings(AssetWindow.Refinery)
@@ -872,34 +875,34 @@ Public Class frmMain
 
         If FacilityType = ProductionType.None Then
             ' Initialize the BP facility
-            Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing, Me)
+            Call BPTabFacility.InitializeControl(CharID, ProgramLocation.BlueprintTab, ProductionType.Manufacturing, Me)
 
             ' Load up the Manufacturing tab facilities
-            Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
-            Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
-            Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
-            Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
-            Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
-            Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
-            Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
-            Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
-            Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
+            Call CalcBaseFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
+            Call CalcInventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
+            Call CalcT3InventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
+            Call CalcCopyFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
+            Call CalcSupersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
+            Call CalcCapitalsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
+            Call CalcSubsystemsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
+            Call CalcReactionsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
+            Call CalcBoostersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
 
             ' Two facilities with check options - load the one they save
             If UserManufacturingTabSettings.CheckCapitalComponentsFacility Then
-                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
+                Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
             Else
-                Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
+                Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
             End If
 
             If UserManufacturingTabSettings.CheckT3DestroyerFacility Then
-                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
+                Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
             Else
-                Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
+                Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
             End If
 
             ' Load the mining tab refinery
-            Call MineRefineFacility.InitializeControl(FacilityView.LimitedRefinery, CharID, ProgramLocation.MiningTab, ProductionType.Refinery, Me)
+            Call MineRefineFacility.InitializeControl(CharID, ProgramLocation.MiningTab, ProductionType.Refinery, Me)
 
         Else ' Multi-save
             ' Need to see what facility to reload
@@ -910,40 +913,40 @@ Public Class frmMain
                 ' Get the current facility that's viewed
                 SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
                 ' Just reload all the facilities
-                Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
+                Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
                 ' Now reload the one that was shown
-                Call BPTabFacility.InitializeControl(FacilityView.FullControls, CharID, ProgramLocation.BlueprintTab, SavedPT, Me)
+                Call BPTabFacility.InitializeControl(CharID, ProgramLocation.BlueprintTab, SavedPT, Me)
             Else
                 ' Saving on the bp tab, so that is all updated, but we need to update the manufacturing tab facility that was saved on BP
                 SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
 
                 Select Case FacilityType
                     Case ProductionType.BoosterManufacturing
-                        Call CalcBoostersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
+                        Call CalcBoostersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
                     Case ProductionType.CapitalComponentManufacturing
-                        Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
+                        Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
                     Case ProductionType.CapitalManufacturing
-                        Call CalcCapitalsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
+                        Call CalcCapitalsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
                     Case ProductionType.ComponentManufacturing
-                        Call CalcComponentsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
+                        Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
                     Case ProductionType.Copying
-                        Call CalcCopyFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
+                        Call CalcCopyFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
                     Case ProductionType.Invention
-                        Call CalcInventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
+                        Call CalcInventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
                     Case ProductionType.Manufacturing
-                        Call CalcBaseFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
+                        Call CalcBaseFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
                     Case ProductionType.Reactions
-                        Call CalcReactionsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
+                        Call CalcReactionsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
                     Case ProductionType.SubsystemManufacturing
-                        Call CalcSubsystemsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
+                        Call CalcSubsystemsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
                     Case ProductionType.SuperManufacturing
-                        Call CalcSupersFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
+                        Call CalcSupersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
                     Case ProductionType.T3CruiserManufacturing
-                        Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
+                        Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
                     Case ProductionType.T3DestroyerManufacturing
-                        Call CalcT3ShipsFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
+                        Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
                     Case ProductionType.T3Invention
-                        Call CalcT3InventionFacility.InitializeControl(FacilityView.LimitedControls, CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
+                        Call CalcT3InventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
                 End Select
             End If
         End If
@@ -1849,13 +1852,13 @@ Public Class frmMain
         f1.Show()
     End Sub
 
-    Private Sub mnuIndustryUpgradeBelts_Click(sender As System.Object, e As System.EventArgs) Handles mnuIndustryUpgradeBelts.Click
+    Private Sub mnuAnomalyOreBeltsUpgradeBelts_Click(sender As System.Object, e As System.EventArgs) Handles mnuAnomalyOreBelts.Click
         Dim f1 As New frmIndustryBeltFlip
 
         f1.Show()
     End Sub
 
-    Private Sub mnuIceAnomalyBelts_Click(sender As Object, e As EventArgs) Handles mnuIceAnomalyBelts.Click
+    Private Sub mnuIceBelts_Click(sender As Object, e As EventArgs) Handles mnuIceBelts.Click
         Dim f1 As New frmIceBeltFlip
 
         f1.Show()
@@ -2438,7 +2441,7 @@ Public Class frmMain
             End If
 
             ' Finally, refresh the bptab facility
-            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
+            Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
 
         End If
 
@@ -2656,7 +2659,7 @@ Public Class frmMain
         ' Always do indicies first since facilities has a field it uses
         If ESIData.UpdateIndustrySystemsCostIndex(f1.lblStatus, f1.pgStatus) Then
             ' Reload the industry facilities now
-            Call BPTabFacility.InitializeFacilities(FacilityView.FullControls, ProgramLocation.BlueprintTab)
+            Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
 
             ' Refresh the BP Tab if there is a blueprint selected
             If Not IsNothing(SelectedBlueprint) Then
@@ -7332,7 +7335,7 @@ ExitForm:
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Reload all the facilities to get the change
-        Call BPTabFacility.InitializeControl(FacilityView.FullControls, SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType, Me)
+        Call BPTabFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType, Me)
 
         ' Refresh the bp, which will reload the facility with the changes
         Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
@@ -13092,43 +13095,43 @@ CheckTechs:
 
         ' Make sure they have a facility loaded - if not, load the default for the type
         If Not CalcBaseFacility.GetFacility(ProductionType.Manufacturing).FullyLoaded Then
-            CalcBaseFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
+            CalcBaseFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.Manufacturing)
         End If
         If Not CalcComponentsFacility.GetFacility(ProductionType.ComponentManufacturing).FullyLoaded Then
-            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
+            CalcComponentsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing)
         End If
         If Not CalcComponentsFacility.GetFacility(ProductionType.CapitalComponentManufacturing).FullyLoaded Then
-            CalcComponentsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
+            CalcComponentsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing)
         End If
         If Not CalcInventionFacility.GetFacility(ProductionType.Invention).FullyLoaded Then
-            CalcInventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Invention)
+            CalcInventionFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.Invention)
         End If
         If Not CalcCopyFacility.GetFacility(ProductionType.Copying).FullyLoaded Then
-            CalcCopyFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Copying)
+            CalcCopyFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.Copying)
         End If
         If Not CalcT3InventionFacility.GetFacility(ProductionType.T3Invention).FullyLoaded Then
-            CalcT3InventionFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
+            CalcT3InventionFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.T3Invention)
         End If
         If Not CalcSupersFacility.GetFacility(ProductionType.SuperManufacturing).FullyLoaded Then
-            CalcSupersFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
+            CalcSupersFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing)
         End If
         If Not CalcCapitalsFacility.GetFacility(ProductionType.CapitalManufacturing).FullyLoaded Then
-            CalcCapitalsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
+            CalcCapitalsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing)
         End If
         If Not CalcT3ShipsFacility.GetFacility(ProductionType.T3CruiserManufacturing).FullyLoaded Then
-            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
+            CalcT3ShipsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing)
         End If
         If Not CalcT3ShipsFacility.GetFacility(ProductionType.T3DestroyerManufacturing).FullyLoaded Then
-            CalcT3ShipsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
+            CalcT3ShipsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing)
         End If
         If Not CalcSubsystemsFacility.GetFacility(ProductionType.SubsystemManufacturing).FullyLoaded Then
-            CalcSubsystemsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
+            CalcSubsystemsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing)
         End If
         If Not CalcBoostersFacility.GetFacility(ProductionType.BoosterManufacturing).FullyLoaded Then
-            CalcBoostersFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
+            CalcBoostersFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing)
         End If
         If Not CalcReactionsFacility.GetFacility(ProductionType.Reactions).FullyLoaded Then
-            CalcReactionsFacility.InitializeFacilities(FacilityView.LimitedControls, ProgramLocation.ManufacturingTab, ProductionType.Reactions)
+            CalcReactionsFacility.InitializeFacilities(ProgramLocation.ManufacturingTab, ProductionType.Reactions)
         End If
 
         If Not SavedRefreshValue Then

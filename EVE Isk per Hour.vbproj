@@ -228,6 +228,12 @@
     <Compile Include="frmIceBeltFlip.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmIndustryBeltFlip.Designer.vb">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIndustryBeltFlip.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmMaterialListViewer.Designer.vb">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
     </Compile>
@@ -382,12 +388,6 @@
       <DependentUpon>frmError.vb</DependentUpon>
     </Compile>
     <Compile Include="frmError.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmIndustryBeltFlip.Designer.vb">
-      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmIndustryBeltFlip.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmIndustryJobsViewer.Designer.vb">
@@ -549,6 +549,9 @@
     <EmbeddedResource Include="frmIceBeltFlip.resx">
       <DependentUpon>frmIceBeltFlip.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmIndustryBeltFlip.resx">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMaterialListViewer.resx">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
     </EmbeddedResource>
@@ -616,10 +619,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmError.resx">
       <DependentUpon>frmError.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmIndustryBeltFlip.resx">
-      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmIndustryJobsViewer.resx">

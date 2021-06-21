@@ -13,7 +13,7 @@ Public Class frmUpwellStructureFitting
 
     ' Public settings after intialized and returned for setting in the facilities
     Public UpwellStructureName As String = ""
-    Private SelectedStructureView As FacilityView ' To help determine where we save citadels, etc. 
+    Private SelectedStructureLocation As ProgramLocation ' To help determine where we save citadels, etc. 
     Private SelectedCharacterID As Long
     Private SelectedFacilityProductionType As ProductionType
     Private SelectedSolarSystemID As Long
@@ -123,7 +123,7 @@ Public Class frmUpwellStructureFitting
     End Structure
 
     Public Sub New(ByVal InitUSName As String, ByVal CharacterID As Long, ByVal ProductionTypeCode As ProductionType,
-                   ByVal FacilityLocation As FacilityView, ByVal FacilitySystem As String)
+                   ByVal FacilityLocation As ProgramLocation, ByVal FacilitySystem As String)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -131,7 +131,7 @@ Public Class frmUpwellStructureFitting
         ' Save these varibles for later
         SelectedCharacterID = CharacterID
         SelectedFacilityProductionType = ProductionTypeCode
-        SelectedStructureView = FacilityLocation
+        SelectedStructureLocation = FacilityLocation
 
         ' Put all the slot images into an array
         With SlotPictureBoxList
@@ -208,7 +208,7 @@ Public Class frmUpwellStructureFitting
         End If
 
         'enable/ disable depending on the view
-        If SelectedStructureView = FacilityView.NoView Then
+        If SelectedStructureLocation = ProgramLocation.None Then
             ' They aren't connected to a system
             chkHighSec.Enabled = True
             chkLowSec.Enabled = True
@@ -625,9 +625,9 @@ Public Class frmUpwellStructureFitting
         ' Now load up the modules if any are saved for this structure
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, INVENTORY_TYPES "
         SQL &= "WHERE UPWELL_STRUCTURES_INSTALLED_MODULES.FACILITY_ID = INVENTORY_TYPES.typeID "
-        SQL &= "And FACILITY_VIEW = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
+        SQL &= "AND PROGRAM_LOCATION = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureView), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, FormatDBString(SentUSName)), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureLocation), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, FormatDBString(SentUSName)), EVEDB.DBREf)
         rsStructure = DBCommand.ExecuteReader
 
         Dim InstalledModules As New List(Of Integer)
@@ -1786,15 +1786,15 @@ Public Class frmUpwellStructureFitting
             EVEDB.BeginSQLiteTransaction()
             ' Delete everything first, then insert the new records
             EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
-            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} ",
-            SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView), SelectedUpwellStructure.TypeID))
+            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4} ",
+            SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), SelectedUpwellStructure.TypeID))
 
             ' Insert all the modules on the facility
             Dim Modules As New List(Of StructureModule)
             Modules = GetInstalledSlots()
             For Each InstalledModule In Modules
                 SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
-                SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
+                SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
                 EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
@@ -1810,8 +1810,8 @@ Public Class frmUpwellStructureFitting
                 End If
 
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
-                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
-                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureView)))
+                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} "
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation)))
             End If
 
             EVEDB.CommitSQLiteTransaction()

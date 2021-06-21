@@ -104,7 +104,7 @@ Public Class frmRefinery
         Call UpdateProcessingSkills()
 
         ' Load the refinery
-        Call RefineryFacility.InitializeControl(FacilityView.LimitedRefinery, SelectedCharacter.ID, ProgramLocation.Refinery, ProductionType.Refinery, Me)
+        Call RefineryFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.Refinery, ProductionType.Refinery, Me)
 
         ItemsColumnClicked = 1
         ItemsColumnSortType = SortOrder.Ascending

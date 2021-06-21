@@ -67,9 +67,10 @@ Partial Class frmMain
         Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuViewESIStatus = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuIndustryUpgradeBelts = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuIceAnomalyBelts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuRefinery = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuOreFlips = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuAnomalyOreBelts = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuIceBelts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSettings = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUserSettings = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectDefaultChar = New System.Windows.Forms.ToolStripMenuItem()
@@ -1348,28 +1349,35 @@ Partial Class frmMain
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuIndustryUpgradeBelts, Me.mnuIceAnomalyBelts, Me.mnuRefinery})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuRefinery, Me.mnuOreFlips})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(46, 20)
         Me.mnuTools.Text = "Tools"
         '
-        'mnuIndustryUpgradeBelts
-        '
-        Me.mnuIndustryUpgradeBelts.Name = "mnuIndustryUpgradeBelts"
-        Me.mnuIndustryUpgradeBelts.Size = New System.Drawing.Size(194, 22)
-        Me.mnuIndustryUpgradeBelts.Text = "Ore Sov Anomaly Belts"
-        '
-        'mnuIceAnomalyBelts
-        '
-        Me.mnuIceAnomalyBelts.Name = "mnuIceAnomalyBelts"
-        Me.mnuIceAnomalyBelts.Size = New System.Drawing.Size(194, 22)
-        Me.mnuIceAnomalyBelts.Text = "Ice Anomaly Belts"
-        '
         'mnuRefinery
         '
         Me.mnuRefinery.Name = "mnuRefinery"
-        Me.mnuRefinery.Size = New System.Drawing.Size(194, 22)
+        Me.mnuRefinery.Size = New System.Drawing.Size(219, 22)
         Me.mnuRefinery.Text = "Refinery"
+        '
+        'mnuOreFlips
+        '
+        Me.mnuOreFlips.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuAnomalyOreBelts, Me.mnuIceBelts})
+        Me.mnuOreFlips.Name = "mnuOreFlips"
+        Me.mnuOreFlips.Size = New System.Drawing.Size(219, 22)
+        Me.mnuOreFlips.Text = "Mining Belt Flip Calculators"
+        '
+        'mnuAnomalyOreBelts
+        '
+        Me.mnuAnomalyOreBelts.Name = "mnuAnomalyOreBelts"
+        Me.mnuAnomalyOreBelts.Size = New System.Drawing.Size(180, 22)
+        Me.mnuAnomalyOreBelts.Text = "Ore Soverignty Belts"
+        '
+        'mnuIceBelts
+        '
+        Me.mnuIceBelts.Name = "mnuIceBelts"
+        Me.mnuIceBelts.Size = New System.Drawing.Size(180, 22)
+        Me.mnuIceBelts.Text = "Ice Belts"
         '
         'mnuSettings
         '
@@ -10812,7 +10820,6 @@ Partial Class frmMain
     Friend WithEvents mnuTools As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuCurrentIndustryJobs As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripSeparator5 As System.Windows.Forms.ToolStripSeparator
-    Friend WithEvents mnuIndustryUpgradeBelts As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRefinery As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuUpdateData As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuUpdateIndustryFacilities As System.Windows.Forms.ToolStripMenuItem
@@ -11590,7 +11597,6 @@ Partial Class frmMain
     Friend WithEvents cmbMineNumMiningDrones As ComboBox
     Friend WithEvents lblMineMiningDroneYield As Label
     Friend WithEvents lblMineDroneIdealRange As Label
-    Friend WithEvents mnuIceAnomalyBelts As ToolStripMenuItem
     Friend WithEvents chkMineBoosterDroneRig2 As CheckBox
     Friend WithEvents chkMineBoosterDroneRig1 As CheckBox
     Friend WithEvents tabMiningDrones As TabControl
@@ -11716,4 +11722,7 @@ Partial Class frmMain
     Friend WithEvents lblMineFacilityMoonOreRate1 As Label
     Friend WithEvents lblMineFacilityOreRate1 As Label
     Friend WithEvents gbMineOreStuctureRates As GroupBox
+    Friend WithEvents mnuOreFlips As ToolStripMenuItem
+    Friend WithEvents mnuAnomalyOreBelts As ToolStripMenuItem
+    Friend WithEvents mnuIceBelts As ToolStripMenuItem
 End Class
