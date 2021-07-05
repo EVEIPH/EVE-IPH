@@ -216,6 +216,12 @@
     <Compile Include="frmChooseFacility.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmConversionSettings.Designer.vb">
+      <DependentUpon>frmConversionSettings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmConversionSettings.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmESIStatus.Designer.vb">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
     </Compile>
@@ -542,6 +548,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmChooseFacility.resx">
       <DependentUpon>frmChooseFacility.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmConversionSettings.resx">
+      <DependentUpon>frmConversionSettings.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>

@@ -524,7 +524,6 @@ Partial Class frmMain
         Me.btnDCRefresh = New System.Windows.Forms.Button()
         Me.tabManufacturing = New System.Windows.Forms.TabPage()
         Me.gbCalcBPSelectOptions = New System.Windows.Forms.GroupBox()
-        Me.btnCalcT2T3FacilityToggle = New System.Windows.Forms.Button()
         Me.gbCalcIgnoreinCalcs = New System.Windows.Forms.GroupBox()
         Me.chkCalcIgnoreMinerals = New System.Windows.Forms.CheckBox()
         Me.chkCalcIgnoreT1Item = New System.Windows.Forms.CheckBox()
@@ -5742,7 +5741,6 @@ Partial Class frmMain
         '
         'gbCalcBPSelectOptions
         '
-        Me.gbCalcBPSelectOptions.Controls.Add(Me.btnCalcT2T3FacilityToggle)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcIgnoreinCalcs)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbIncludeTaxesFees)
         Me.gbCalcBPSelectOptions.Controls.Add(Me.gbCalcSellExessItems)
@@ -5777,15 +5775,6 @@ Partial Class frmMain
         Me.gbCalcBPSelectOptions.TabIndex = 0
         Me.gbCalcBPSelectOptions.TabStop = False
         Me.gbCalcBPSelectOptions.Text = "Blueprint Filters:"
-        '
-        'btnCalcT2T3FacilityToggle
-        '
-        Me.btnCalcT2T3FacilityToggle.Location = New System.Drawing.Point(716, 138)
-        Me.btnCalcT2T3FacilityToggle.Name = "btnCalcT2T3FacilityToggle"
-        Me.btnCalcT2T3FacilityToggle.Size = New System.Drawing.Size(57, 22)
-        Me.btnCalcT2T3FacilityToggle.TabIndex = 24
-        Me.btnCalcT2T3FacilityToggle.Text = "T3 Inv"
-        Me.btnCalcT2T3FacilityToggle.UseVisualStyleBackColor = True
         '
         'gbCalcIgnoreinCalcs
         '
@@ -11686,7 +11675,6 @@ Partial Class frmMain
     Friend WithEvents cmbMineMiningRig3 As ComboBox
     Friend WithEvents cmbMineMiningRig2 As ComboBox
     Friend WithEvents cmbMineMiningRig1 As ComboBox
-    Friend WithEvents btnCalcT2T3FacilityToggle As Button
     Friend WithEvents tabPriceProfile As TabControl
     Friend WithEvents tabPriceProfileRaw As TabPage
     Friend WithEvents gbPPDefaultSettings As GroupBox

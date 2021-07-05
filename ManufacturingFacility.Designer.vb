@@ -57,6 +57,8 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityActivities = New System.Windows.Forms.ComboBox()
         Me.lblFacilityActivity = New System.Windows.Forms.Label()
         Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
+        Me.chkConvertToOre = New System.Windows.Forms.CheckBox()
+        Me.btnConversiontoOreSettings = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -112,9 +114,9 @@ Partial Class ManufacturingFacility
         '
         Me.cmbFacility.FormattingEnabled = True
         Me.cmbFacility.ItemHeight = 13
-        Me.cmbFacility.Location = New System.Drawing.Point(4, 63)
+        Me.cmbFacility.Location = New System.Drawing.Point(5, 60)
         Me.cmbFacility.Name = "cmbFacility"
-        Me.cmbFacility.Size = New System.Drawing.Size(291, 21)
+        Me.cmbFacility.Size = New System.Drawing.Size(274, 21)
         Me.cmbFacility.TabIndex = 14
         Me.cmbFacility.Text = "Select Facility"
         '
@@ -371,10 +373,32 @@ Partial Class ManufacturingFacility
         Me.lblFacilityActivity.TabIndex = 0
         Me.lblFacilityActivity.Text = "Activity:"
         '
+        'chkConvertToOre
+        '
+        Me.chkConvertToOre.AutoSize = True
+        Me.chkConvertToOre.Location = New System.Drawing.Point(32, 274)
+        Me.chkConvertToOre.Name = "chkConvertToOre"
+        Me.chkConvertToOre.Size = New System.Drawing.Size(95, 17)
+        Me.chkConvertToOre.TabIndex = 33
+        Me.chkConvertToOre.Text = "Convert to Ore"
+        Me.chkConvertToOre.UseVisualStyleBackColor = True
+        '
+        'btnConversiontoOreSettings
+        '
+        Me.btnConversiontoOreSettings.AutoSize = True
+        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(168, 270)
+        Me.btnConversiontoOreSettings.Name = "btnConversiontoOreSettings"
+        Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(111, 23)
+        Me.btnConversiontoOreSettings.TabIndex = 34
+        Me.btnConversiontoOreSettings.Text = "Conversion Settings"
+        Me.btnConversiontoOreSettings.UseVisualStyleBackColor = True
+        '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.btnConversiontoOreSettings)
+        Me.Controls.Add(Me.chkConvertToOre)
         Me.Controls.Add(Me.lblModules)
         Me.Controls.Add(Me.lblFuelBlocks)
         Me.Controls.Add(Me.lblLargeShips)
@@ -409,7 +433,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbFuelBlocks)
         Me.Controls.Add(Me.cmbModules)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(303, 343)
+        Me.Size = New System.Drawing.Size(303, 296)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -448,4 +472,6 @@ Partial Class ManufacturingFacility
     Friend WithEvents cmbFacilityActivities As ComboBox
     Friend WithEvents lblFacilityActivity As Label
     Friend WithEvents mainToolTip As ToolTip
+    Friend WithEvents chkConvertToOre As CheckBox
+    Friend WithEvents btnConversiontoOreSettings As Button
 End Class
