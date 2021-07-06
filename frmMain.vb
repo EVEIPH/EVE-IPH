@@ -278,7 +278,7 @@ Public Class frmMain
 #Region "Initialization Code"
 
     ' Set default window theme so tabs in invention window display correctly on all systems
-    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr, _
+    Public Declare Unicode Function SetWindowTheme Lib "uxtheme.dll" (ByVal hWnd As IntPtr,
         ByVal pszSubAppName As String, ByVal pszSubIdList As String) As Integer
 
     Public Sub New()
