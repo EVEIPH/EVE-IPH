@@ -71,15 +71,18 @@ Public Class frmMain
 
     ' For letting manual check/override of build/buy calculations
     Private IgnoreListViewItemChecks As Boolean
-    Private BPBBItems As New List(Of BPBBItem)
 
-    Private BPBBItemtoFind As New Integer
-    Private BBItemtoFind As New BuildBuyItem
+    ' New version of BB items - if checked, then use it for all blueprints not just the one selected on
+    Private BBItems As New List(Of BuildBuyItem)
+    Private BBItemToFind As New Long
 
-    Public Structure BPBBItem
-        Dim BPID As Integer
-        Dim BBItems As List(Of BuildBuyItem)
-    End Structure
+    'Private BPBBItems As New List(Of BPBBItem)
+    'Private BPBBItemtoFind As New Integer
+
+    'Public Structure BPBBItem
+    '    Dim BPID As Integer
+    '    Dim BBItems As List(Of BuildBuyItem)
+    'End Structure
 
     Private Structure BPHistoryItem
         Dim BPID As Long
@@ -1340,9 +1343,18 @@ Public Class frmMain
         Me.Cursor = Cursors.Default
     End Sub
 
+    '' Predicate for finding the BPBuildBuyItem in full list
+    'Public Function FindBPBBItem(ByVal Item As BPBBItem) As Boolean
+    '    If BPBBItemtoFind = Item.BPID Then
+    '        Return True
+    '    Else
+    '        Return False
+    '    End If
+    'End Function
+
     ' Predicate for finding the BPBuildBuyItem in full list
-    Public Function FindBPBBItem(ByVal Item As BPBBItem) As Boolean
-        If BPBBItemtoFind = Item.BPID Then
+    Public Function FindBBItem(ByVal Item As BuildBuyItem) As Boolean
+        If BBItemToFind = Item.ItemID Then
             Return True
         Else
             Return False
@@ -2615,7 +2627,8 @@ Public Class frmMain
 
     Private Sub mnuResetBuildBuyManualSelections_Click(sender As Object, e As EventArgs) Handles mnuResetBuildBuyManualSelections.Click
         ' Reset the list
-        BPBBItems = New List(Of BPBBItem)
+        ' BPBBItems = New List(Of BPBBItem)
+        BBItems = New List(Of BuildBuyItem)
         Call RefreshBP()
         MsgBox("Manual Build/Buy List Reset")
     End Sub
@@ -4506,9 +4519,7 @@ Tabs:
         If Not IgnoreListViewItemChecks Then
             ' Process user checks, insert the item id and the check state in the bb list
             Dim CheckedItem As New BuildBuyItem
-            Dim TempBPItem As New BPBBItem
-            Dim FoundBPItem As New BPBBItem
-            Dim FoundItem As New BuildBuyItem
+            Dim FoundBBItem As New BuildBuyItem
 
             CheckedItem.BuildItem = e.Item.Checked
             CheckedItem.ItemID = GetTypeID(RemoveItemNameRuns(e.Item.SubItems(0).Text))
@@ -4531,29 +4542,18 @@ Tabs:
                 Exit Sub
             End If
 
-            ' See if the BB Items for the BP are in the list
-            BPBBItemtoFind = SelectedBlueprint.GetBPID
-            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+            ' See if the item is in the list
+            BBItemToFind = CheckedItem.ItemID
+            FoundBBItem = BBItems.Find(AddressOf FindBBItem)
 
             ' See if the item checked is in the list, if so, update the temp, remove the old items and replace
-            If FoundBPItem.BPID <> 0 Then
-                ' In list, so just add the item to the found BP item if not there or update if there
-                For Each Item In FoundBPItem.BBItems
-                    If Item.ItemID = CheckedItem.ItemID Then
-                        ' just remove it then add later
-                        FoundBPItem.BBItems.Remove(Item)
-                        Exit For
-                    End If
-                Next
-                ' Add the item with current info
-                FoundBPItem.BBItems.Add(CheckedItem)
-            Else
-                ' New item to add, now add the item that was toggled
-                TempBPItem.BPID = SelectedBlueprint.GetBPID
-                TempBPItem.BBItems = New List(Of BuildBuyItem)
-                TempBPItem.BBItems.Add(CheckedItem)
-                Call BPBBItems.Add(TempBPItem)
+            If FoundBBItem.ItemID <> 0 Then
+                ' In list, so just remove and re-add
+                BBItems.Remove(FoundBBItem)
             End If
+
+            ' Add the item
+            BBItems.Add(CheckedItem)
 
             If Not FirstLoad And Not IgnoreRefresh Then
                 Call RefreshBP()
@@ -6360,28 +6360,28 @@ Tabs:
         BPTE = CInt(txtBPTE.Text)
 
         ' Get the Build/Buy preference list if needed
-        Dim BPBuildBuyPref As List(Of BuildBuyItem)
-        If chkBPBuildBuy.Checked Then
-            ' Look up the list of preferences if this bp is in the list
-            BPBBItemtoFind = BPID
-            Dim FoundBPItem As New BPBBItem
-            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+        'Dim BPBuildBuyPref As List(Of BuildBuyItem)
+        'If chkBPBuildBuy.Checked Then
+        '    ' Look up the list of preferences if this bp is in the list
+        '    BPBBItemtoFind = BPID
+        '    Dim FoundBPItem As New BPBBItem
+        '    FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
 
-            If FoundBPItem.BPID <> 0 Then
-                BPBuildBuyPref = FoundBPItem.BBItems
-            Else
-                ' Not found
-                BPBuildBuyPref = Nothing
-            End If
-        Else
-            BPBuildBuyPref = Nothing
-        End If
+        '    If FoundBPItem.BPID <> 0 Then
+        '        BPBuildBuyPref = FoundBPItem.BBItems
+        '    Else
+        '        ' Not found
+        '        BPBuildBuyPref = Nothing
+        '    End If
+        'Else
+        '    BPBuildBuyPref = Nothing
+        'End If
 
         ' Construct Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
                                           ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref)
+                                          UserBPTabSettings.BuildT2T3Materials, True, BBItems)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then

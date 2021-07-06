@@ -54,7 +54,11 @@ Public Class EVEAssets
         readerData = DBCommand.ExecuteReader
 
         If readerData.Read Then
-            CacheDate = CDate(readerData.GetString(0))
+            If IsDBNull(readerData.GetValue(0)) Then
+                CacheDate = NoDate
+            Else
+                CacheDate = CDate(readerData.GetString(0))
+            End If
         Else
             CacheDate = NoDate
         End If
