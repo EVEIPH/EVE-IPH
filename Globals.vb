@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "July 20, 2021 Release"
+    Public Const SDEVersion As String = "July 13, 2021 Release"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -104,6 +104,7 @@ Public Module Public_Variables
 
     ' For a new shopping list, so we can upate it when it's open
     Public frmShop As frmShoppingList = New frmShoppingList
+    Public frmConversionOptions As frmConversiontoOreSettings
     Public CopyPasteRefineryMaterialText As String
 
     ' Same with assets

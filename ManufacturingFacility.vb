@@ -845,6 +845,9 @@ Public Class ManufacturingFacility
 
             txtFacilityManualTE.Left = txtFacilityManualTax.Left
 
+            chkConvertToOre.Visible = False
+            btnConversiontoOreSettings.Visible = False
+
         Else
             ' Use Manual boxes for refinery stats
             lblFacilityManualME.Top = btnFacilitySave.Top + 4
@@ -864,6 +867,18 @@ Public Class ManufacturingFacility
             txtFacilityManualTax.Top = txtFacilityManualME.Top
             txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width - 2
             txtFacilityManualTax.Visible = True
+
+            ' Add reprocessing check and settings button if on BP tab - covernt left 34, button left 135
+            If SelectedLocation = ProgramLocation.BlueprintTab Then
+                chkConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 4
+                chkConvertToOre.Left = lblFacilityManualME.Left + 33
+                chkConvertToOre.Visible = True
+
+                btnConversiontoOreSettings.Top = chkConvertToOre.Top - 4
+                btnConversiontoOreSettings.Left = chkConvertToOre.Left + chkConvertToOre.Width + 5
+                btnConversiontoOreSettings.Visible = True
+
+            End If
 
         End If
 
@@ -3805,6 +3820,30 @@ Public Class ManufacturingFacility
             End If
         End If
     End Sub
+
+    Private Sub btnConversiontoOreSettings_Click(sender As Object, e As EventArgs) Handles btnConversiontoOreSettings.Click
+        ' Make sure it's not disposed
+        If frmConversionOptions.IsDisposed Then
+            ' Make new form
+            frmConversionOptions = New frmConversiontoOreSettings
+        End If
+
+        ' Now open the Shopping List
+        frmConversionOptions.Show()
+        frmConversionOptions.Focus()
+
+        Application.DoEvents()
+
+    End Sub
+
+    Private Sub chkConvertToOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkConvertToOre.CheckedChanged
+        Call RefreshMainBP()
+    End Sub
+
+    ' For determining if the convert to ore box is checked in the object
+    Public Function ConvertToOre() As Boolean
+        Return chkConvertToOre.Checked
+    End Function
 
 #End Region
 

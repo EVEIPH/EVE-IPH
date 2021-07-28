@@ -1335,7 +1335,7 @@ Public Class ShoppingList
             With TotalItemList(i)
                 ' Item sort order is Build Type, Decryptor, NumBps, and Relic for the group name
                 TempMat = New Material(.TypeID, .Name, .BuildType & "|" & .Decryptor & "|" & CStr(.NumBPs) & "|" & CStr(.Relic) & "|" _
-                                       & .ManufacturingFacility.FacilityName, .Runs, .BuildVolume / .Runs, 0, CStr(.ItemME), CStr(.ItemTE))
+                                       & .ManufacturingFacility.FacilityName, .Runs, (.BuildVolume / .Runs) / .PortionSize, 0, CStr(.ItemME), CStr(.ItemTE))
             End With
             ReturnMaterials.InsertMaterial(TempMat)
         Next

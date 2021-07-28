@@ -419,6 +419,11 @@ Public Class frmMain
         UserAssetWindowRefinerySettings = AllSettings.LoadAssetWindowSettings(AssetWindow.Refinery)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
+        ' These will be used for all areas in the program - I may make specific to each reprocessing facility if requested, then will move to the manufacturing facility object
+        UserConversiontoOreSettings = AllSettings.LoadConversiontoOreSettings()
+
+        frmConversionOptions = New frmConversiontoOreSettings
+
         ' Display to the user any issues with ESI endpoints
         Call SetProgress("Checking Status of ESI...")
         Call ESIData.GetESIStatus()

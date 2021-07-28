@@ -376,17 +376,18 @@ Partial Class ManufacturingFacility
         'chkConvertToOre
         '
         Me.chkConvertToOre.AutoSize = True
-        Me.chkConvertToOre.Location = New System.Drawing.Point(32, 274)
+        Me.chkConvertToOre.Location = New System.Drawing.Point(34, 260)
         Me.chkConvertToOre.Name = "chkConvertToOre"
         Me.chkConvertToOre.Size = New System.Drawing.Size(95, 17)
         Me.chkConvertToOre.TabIndex = 33
         Me.chkConvertToOre.Text = "Convert to Ore"
         Me.chkConvertToOre.UseVisualStyleBackColor = True
+        Me.chkConvertToOre.Visible = False
         '
         'btnConversiontoOreSettings
         '
         Me.btnConversiontoOreSettings.AutoSize = True
-        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(168, 270)
+        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(135, 256)
         Me.btnConversiontoOreSettings.Name = "btnConversiontoOreSettings"
         Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(111, 23)
         Me.btnConversiontoOreSettings.TabIndex = 34
@@ -433,7 +434,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbFuelBlocks)
         Me.Controls.Add(Me.cmbModules)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(303, 296)
+        Me.Size = New System.Drawing.Size(330, 296)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

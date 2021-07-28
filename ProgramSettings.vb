@@ -1,7 +1,6 @@
 ﻿
 Imports System.Xml
 Imports System.IO
-Imports System.Text.RegularExpressions
 
 Public Module SettingsVariables
 
@@ -886,40 +885,41 @@ Public Class ProgramSettings
     Private DefaultC4 As Boolean = True
     Private DefaultC5 As Boolean = True
     Private DefaultC6 As Boolean = True
+    Public DefaultOverrideValue As Integer = -1 ' -1 is not overridden, 0 is false, 1 true for override value
 
-    Private DefaultArkonorOverride As Integer = -1
-    Private DefaultBistotOverride As Integer = -1
-    Private DefaultCrokiteOverride As Integer = -1
-    Private DefaultDarkOchreOverride As Integer = -1
-    Private DefaultGneissOverride As Integer = -1
-    Private DefaultHedbergiteOverride As Integer = -1
-    Private DefaultHemorphiteOverride As Integer = -1
-    Private DefaultJaspetOverride As Integer = -1
-    Private DefaultKerniteOverride As Integer = -1
-    Private DefaultMercoxitOverride As Integer = -1
-    Private DefaultOmberOverride As Integer = -1
-    Private DefaultPlagioclaseOverride As Integer = -1
-    Private DefaultPyroxeresOverride As Integer = -1
-    Private DefaultScorditeOverride As Integer = -1
-    Private DefaultSpodumainOverride As Integer = -1
-    Private DefaultVeldsparOverride As Integer = -1
+    'Private DefaultArkonorOverride As Integer = -1
+    'Private DefaultBistotOverride As Integer = -1
+    'Private DefaultCrokiteOverride As Integer = -1
+    'Private DefaultDarkOchreOverride As Integer = -1
+    'Private DefaultGneissOverride As Integer = -1
+    'Private DefaultHedbergiteOverride As Integer = -1
+    'Private DefaultHemorphiteOverride As Integer = -1
+    'Private DefaultJaspetOverride As Integer = -1
+    'Private DefaultKerniteOverride As Integer = -1
+    'Private DefaultMercoxitOverride As Integer = -1
+    'Private DefaultOmberOverride As Integer = -1
+    'Private DefaultPlagioclaseOverride As Integer = -1
+    'Private DefaultPyroxeresOverride As Integer = -1
+    'Private DefaultScorditeOverride As Integer = -1
+    'Private DefaultSpodumainOverride As Integer = -1
+    'Private DefaultVeldsparOverride As Integer = -1
 
-    Private DefaultTalassoniteOverride As Integer = -1
-    Private DefaultRakoveneOverride As Integer = -1
-    Private DefaultBezdnacineOverride As Integer = -1
+    'Private DefaultTalassoniteOverride As Integer = -1
+    'Private DefaultRakoveneOverride As Integer = -1
+    'Private DefaultBezdnacineOverride As Integer = -1
 
-    Private DefaultClearIcicleOverride As Integer = -1
-    Private DefaultGlacialMassOverride As Integer = -1
-    Private DefaultBlueIceOverride As Integer = -1
-    Private DefaultWhiteGlazeOverride As Integer = -1
-    Private DefaultGlareCrustOverride As Integer = -1
-    Private DefaultDarkGlitterOverride As Integer = -1
-    Private DefaultGelidusOverride As Integer = -1
-    Private DefaultKrystallosOverride As Integer = -1
-    Private DefaultThickBlueIceOverride As Integer = -1
-    Private DefaultPristineWhiteGlazeOverride As Integer = -1
-    Private DefaultSmoothGlacialMassOverride As Integer = -1
-    Private DefaultEnrichedClearIcicleOverride As Integer = -1
+    'Private DefaultClearIcicleOverride As Integer = -1
+    'Private DefaultGlacialMassOverride As Integer = -1
+    'Private DefaultBlueIceOverride As Integer = -1
+    'Private DefaultWhiteGlazeOverride As Integer = -1
+    'Private DefaultGlareCrustOverride As Integer = -1
+    'Private DefaultDarkGlitterOverride As Integer = -1
+    'Private DefaultGelidusOverride As Integer = -1
+    'Private DefaultKrystallosOverride As Integer = -1
+    'Private DefaultThickBlueIceOverride As Integer = -1
+    'Private DefaultPristineWhiteGlazeOverride As Integer = -1
+    'Private DefaultSmoothGlacialMassOverride As Integer = -1
+    'Private DefaultEnrichedClearIcicleOverride As Integer = -1
 
     ' Default Shopping List Settings
     Private DefaultAlwaysonTop As Boolean = False
@@ -1087,6 +1087,9 @@ Public Class ProgramSettings
         MarketHistoryViewSettings = Nothing
         UpwellStructureViewerSettings = Nothing
         BPViewSettings = Nothing
+        ConversionToOreSetting = Nothing
+
+        ReDim ConversionToOreSetting.OverrideChecks(28)
 
     End Sub
 
@@ -4398,37 +4401,50 @@ Public Class ProgramSettings
                     .C5 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeBoolean, ConvertToOreSettings, "C5", DefaultC5))
                     .C6 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeBoolean, ConvertToOreSettings, "C6", DefaultC6))
 
-                    .ArkonorOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ArkonorOverride", DefaultArkonorOverride))
-                    .BistotOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BistotOverride", DefaultBistotOverride))
-                    .CrokiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "CrokiteOverride", DefaultCrokiteOverride))
-                    .DarkOchreOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "DarkOchreOverride", DefaultDarkOchreOverride))
-                    .GneissOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GneissOverride", DefaultGneissOverride))
-                    .HedbergiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "HedbergiteOverride", DefaultHedbergiteOverride))
-                    .HemorphiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "HemorphiteOverride", DefaultHemorphiteOverride))
-                    .JaspetOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "JaspetOverride", DefaultJaspetOverride))
-                    .KerniteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "KerniteOverride", DefaultKerniteOverride))
-                    .MercoxitOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "MercoxitOverride", DefaultMercoxitOverride))
-                    .OmberOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "OmberOverride", DefaultOmberOverride))
-                    .PlagioclaseOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PlagioclaseOverride", DefaultPlagioclaseOverride))
-                    .PyroxeresOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PyroxeresOverride", DefaultPyroxeresOverride))
-                    .ScorditeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ScorditeOverride", DefaultScorditeOverride))
-                    .SpodumainOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "SpodumainOverride", DefaultSpodumainOverride))
-                    .VeldsparOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "VeldsparOverride", DefaultVeldsparOverride))
-                    .TalassoniteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "TalassoniteOverride", DefaultTalassoniteOverride))
-                    .RakoveneOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "RakoveneOverride", DefaultRakoveneOverride))
-                    .BezdnacineOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BezdnacineOverride", DefaultBezdnacineOverride))
-                    .ClearIcicleOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ClearIcicleOverride", DefaultClearIcicleOverride))
-                    .GlacialMassOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GlacialMassOverride", DefaultGlacialMassOverride))
-                    .BlueIceOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BlueIceOverride", DefaultBlueIceOverride))
-                    .WhiteGlazeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "WhiteGlazeOverride", DefaultWhiteGlazeOverride))
-                    .GlareCrustOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GlareCrustOverride", DefaultGlareCrustOverride))
-                    .DarkGlitterOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "DarkGlitterOverride", DefaultDarkGlitterOverride))
-                    .GelidusOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GelidusOverride", DefaultGelidusOverride))
-                    .KrystallosOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "KrystallosOverride", DefaultKrystallosOverride))
-                    .ThickBlueIceOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ThickBlueIceOverride", DefaultThickBlueIceOverride))
-                    .PristineWhiteGlazeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PristineWhiteGlazeOverride", DefaultPristineWhiteGlazeOverride))
-                    .SmoothGlacialMassOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "SmoothGlacialMassOverride", DefaultSmoothGlacialMassOverride))
-                    .EnrichedClearIcicleOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "EnrichedClearIcicleOverride", DefaultEnrichedClearIcicleOverride))
+                    Dim OverrideString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeString, ConvertToOreSettings, "OverrideChecks", ""))
+
+                    If OverrideString = "" Then
+                        .OverrideChecks = GetDefaultOverrideChecks()
+                    Else
+                        ' Parse it out and Save values
+                        Dim Items As String() = OverrideString.Split(New Char() {","c})
+
+                        For i = 0 To 28
+                            .OverrideChecks(i) = CInt(Items(i))
+                        Next
+                    End If
+
+                    '.ArkonorOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ArkonorOverride", DefaultArkonorOverride))
+                    '.BistotOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BistotOverride", DefaultBistotOverride))
+                    '.CrokiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "CrokiteOverride", DefaultCrokiteOverride))
+                    '.DarkOchreOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "DarkOchreOverride", DefaultDarkOchreOverride))
+                    '.GneissOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GneissOverride", DefaultGneissOverride))
+                    '.HedbergiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "HedbergiteOverride", DefaultHedbergiteOverride))
+                    '.HemorphiteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "HemorphiteOverride", DefaultHemorphiteOverride))
+                    '.JaspetOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "JaspetOverride", DefaultJaspetOverride))
+                    '.KerniteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "KerniteOverride", DefaultKerniteOverride))
+                    '.MercoxitOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "MercoxitOverride", DefaultMercoxitOverride))
+                    '.OmberOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "OmberOverride", DefaultOmberOverride))
+                    '.PlagioclaseOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PlagioclaseOverride", DefaultPlagioclaseOverride))
+                    '.PyroxeresOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PyroxeresOverride", DefaultPyroxeresOverride))
+                    '.ScorditeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ScorditeOverride", DefaultScorditeOverride))
+                    '.SpodumainOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "SpodumainOverride", DefaultSpodumainOverride))
+                    '.VeldsparOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "VeldsparOverride", DefaultVeldsparOverride))
+                    '.TalassoniteOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "TalassoniteOverride", DefaultTalassoniteOverride))
+                    '.RakoveneOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "RakoveneOverride", DefaultRakoveneOverride))
+                    '.BezdnacineOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BezdnacineOverride", DefaultBezdnacineOverride))
+                    '.ClearIcicleOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ClearIcicleOverride", DefaultClearIcicleOverride))
+                    '.GlacialMassOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GlacialMassOverride", DefaultGlacialMassOverride))
+                    '.BlueIceOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "BlueIceOverride", DefaultBlueIceOverride))
+                    '.WhiteGlazeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "WhiteGlazeOverride", DefaultWhiteGlazeOverride))
+                    '.GlareCrustOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GlareCrustOverride", DefaultGlareCrustOverride))
+                    '.DarkGlitterOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "DarkGlitterOverride", DefaultDarkGlitterOverride))
+                    '.GelidusOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "GelidusOverride", DefaultGelidusOverride))
+                    '.KrystallosOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "KrystallosOverride", DefaultKrystallosOverride))
+                    '.ThickBlueIceOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "ThickBlueIceOverride", DefaultThickBlueIceOverride))
+                    '.PristineWhiteGlazeOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "PristineWhiteGlazeOverride", DefaultPristineWhiteGlazeOverride))
+                    '.SmoothGlacialMassOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "SmoothGlacialMassOverride", DefaultSmoothGlacialMassOverride))
+                    '.EnrichedClearIcicleOverride = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettings, SettingTypes.TypeInteger, ConvertToOreSettings, "EnrichedClearIcicleOverride", DefaultEnrichedClearIcicleOverride))
 
                 End With
 
@@ -4479,39 +4495,41 @@ Public Class ProgramSettings
             .C5 = DefaultC5
             .C6 = DefaultC6
 
-            .ArkonorOverride = DefaultArkonorOverride
-            .BistotOverride = DefaultBistotOverride
-            .CrokiteOverride = DefaultCrokiteOverride
-            .DarkOchreOverride = DefaultDarkOchreOverride
-            .GneissOverride = DefaultGneissOverride
-            .HedbergiteOverride = DefaultHedbergiteOverride
-            .HemorphiteOverride = DefaultHemorphiteOverride
-            .JaspetOverride = DefaultJaspetOverride
-            .KerniteOverride = DefaultKerniteOverride
-            .MercoxitOverride = DefaultMercoxitOverride
-            .OmberOverride = DefaultOmberOverride
-            .PlagioclaseOverride = DefaultPlagioclaseOverride
-            .PyroxeresOverride = DefaultPyroxeresOverride
-            .ScorditeOverride = DefaultScorditeOverride
-            .SpodumainOverride = DefaultSpodumainOverride
-            .VeldsparOverride = DefaultVeldsparOverride
+            .OverrideChecks = GetDefaultOverrideChecks()
 
-            .TalassoniteOverride = DefaultTalassoniteOverride
-            .RakoveneOverride = DefaultRakoveneOverride
-            .BezdnacineOverride = DefaultBezdnacineOverride
+            '.ArkonorOverride = DefaultArkonorOverride
+            '.BistotOverride = DefaultBistotOverride
+            '.CrokiteOverride = DefaultCrokiteOverride
+            '.DarkOchreOverride = DefaultDarkOchreOverride
+            '.GneissOverride = DefaultGneissOverride
+            '.HedbergiteOverride = DefaultHedbergiteOverride
+            '.HemorphiteOverride = DefaultHemorphiteOverride
+            '.JaspetOverride = DefaultJaspetOverride
+            '.KerniteOverride = DefaultKerniteOverride
+            '.MercoxitOverride = DefaultMercoxitOverride
+            '.OmberOverride = DefaultOmberOverride
+            '.PlagioclaseOverride = DefaultPlagioclaseOverride
+            '.PyroxeresOverride = DefaultPyroxeresOverride
+            '.ScorditeOverride = DefaultScorditeOverride
+            '.SpodumainOverride = DefaultSpodumainOverride
+            '.VeldsparOverride = DefaultVeldsparOverride
 
-            .ClearIcicleOverride = DefaultClearIcicleOverride
-            .GlacialMassOverride = DefaultGlacialMassOverride
-            .BlueIceOverride = DefaultBlueIceOverride
-            .WhiteGlazeOverride = DefaultWhiteGlazeOverride
-            .GlareCrustOverride = DefaultGlareCrustOverride
-            .DarkGlitterOverride = DefaultDarkGlitterOverride
-            .GelidusOverride = DefaultGelidusOverride
-            .KrystallosOverride = DefaultKrystallosOverride
-            .ThickBlueIceOverride = DefaultThickBlueIceOverride
-            .PristineWhiteGlazeOverride = DefaultPristineWhiteGlazeOverride
-            .SmoothGlacialMassOverride = DefaultSmoothGlacialMassOverride
-            .EnrichedClearIcicleOverride = DefaultEnrichedClearIcicleOverride
+            '.TalassoniteOverride = DefaultTalassoniteOverride
+            '.RakoveneOverride = DefaultRakoveneOverride
+            '.BezdnacineOverride = DefaultBezdnacineOverride
+
+            '.ClearIcicleOverride = DefaultClearIcicleOverride
+            '.GlacialMassOverride = DefaultGlacialMassOverride
+            '.BlueIceOverride = DefaultBlueIceOverride
+            '.WhiteGlazeOverride = DefaultWhiteGlazeOverride
+            '.GlareCrustOverride = DefaultGlareCrustOverride
+            '.DarkGlitterOverride = DefaultDarkGlitterOverride
+            '.GelidusOverride = DefaultGelidusOverride
+            '.KrystallosOverride = DefaultKrystallosOverride
+            '.ThickBlueIceOverride = DefaultThickBlueIceOverride
+            '.PristineWhiteGlazeOverride = DefaultPristineWhiteGlazeOverride
+            '.SmoothGlacialMassOverride = DefaultSmoothGlacialMassOverride
+            '.EnrichedClearIcicleOverride = DefaultEnrichedClearIcicleOverride
         End With
 
         ' Save Locally
@@ -4549,37 +4567,46 @@ Public Class ProgramSettings
             ConvertSetting(20) = New Setting("C4", CStr(SentSettings.C4))
             ConvertSetting(21) = New Setting("C5", CStr(SentSettings.C5))
             ConvertSetting(22) = New Setting("C6", CStr(SentSettings.C6))
-            ConvertSetting(23) = New Setting("ArkonorOverride", CStr(SentSettings.ArkonorOverride))
-            ConvertSetting(24) = New Setting("BistotOverride", CStr(SentSettings.BistotOverride))
-            ConvertSetting(25) = New Setting("CrokiteOverride", CStr(SentSettings.CrokiteOverride))
-            ConvertSetting(26) = New Setting("DarkOchreOverride", CStr(SentSettings.DarkOchreOverride))
-            ConvertSetting(27) = New Setting("GneissOverride", CStr(SentSettings.GneissOverride))
-            ConvertSetting(28) = New Setting("HedbergiteOverride", CStr(SentSettings.HedbergiteOverride))
-            ConvertSetting(29) = New Setting("HemorphiteOverride", CStr(SentSettings.HemorphiteOverride))
-            ConvertSetting(30) = New Setting("JaspetOverride", CStr(SentSettings.JaspetOverride))
-            ConvertSetting(31) = New Setting("KerniteOverride", CStr(SentSettings.KerniteOverride))
-            ConvertSetting(32) = New Setting("MercoxitOverride", CStr(SentSettings.MercoxitOverride))
-            ConvertSetting(33) = New Setting("OmberOverride", CStr(SentSettings.OmberOverride))
-            ConvertSetting(34) = New Setting("PlagioclaseOverride", CStr(SentSettings.PlagioclaseOverride))
-            ConvertSetting(35) = New Setting("PyroxeresOverride", CStr(SentSettings.PyroxeresOverride))
-            ConvertSetting(36) = New Setting("ScorditeOverride", CStr(SentSettings.ScorditeOverride))
-            ConvertSetting(37) = New Setting("SpodumainOverride", CStr(SentSettings.SpodumainOverride))
-            ConvertSetting(38) = New Setting("VeldsparOverride", CStr(SentSettings.VeldsparOverride))
-            ConvertSetting(39) = New Setting("TalassoniteOverride", CStr(SentSettings.TalassoniteOverride))
-            ConvertSetting(40) = New Setting("RakoveneOverride", CStr(SentSettings.RakoveneOverride))
-            ConvertSetting(41) = New Setting("BezdnacineOverride", CStr(SentSettings.BezdnacineOverride))
-            ConvertSetting(42) = New Setting("ClearIcicleOverride", CStr(SentSettings.ClearIcicleOverride))
-            ConvertSetting(43) = New Setting("GlacialMassOverride", CStr(SentSettings.GlacialMassOverride))
-            ConvertSetting(44) = New Setting("BlueIceOverride", CStr(SentSettings.BlueIceOverride))
-            ConvertSetting(45) = New Setting("WhiteGlazeOverride", CStr(SentSettings.WhiteGlazeOverride))
-            ConvertSetting(46) = New Setting("GlareCrustOverride", CStr(SentSettings.GlareCrustOverride))
-            ConvertSetting(47) = New Setting("DarkGlitterOverride", CStr(SentSettings.DarkGlitterOverride))
-            ConvertSetting(48) = New Setting("GelidusOverride", CStr(SentSettings.GelidusOverride))
-            ConvertSetting(49) = New Setting("KrystallosOverride", CStr(SentSettings.KrystallosOverride))
-            ConvertSetting(50) = New Setting("ThickBlueIceOverride", CStr(SentSettings.ThickBlueIceOverride))
-            ConvertSetting(51) = New Setting("PristineWhiteGlazeOverride", CStr(SentSettings.PristineWhiteGlazeOverride))
-            ConvertSetting(52) = New Setting("SmoothGlacialMassOverride", CStr(SentSettings.SmoothGlacialMassOverride))
-            ConvertSetting(53) = New Setting("EnrichedClearIcicleOverride", CStr(SentSettings.EnrichedClearIcicleOverride))
+
+            ' For overridechecks, just make one long string with the value for each index in order
+            Dim OverrideList As String = ""
+
+            For Each CheckValue In SentSettings.OverrideChecks
+                OverrideList &= CheckValue & ","
+            Next
+            ConvertSetting(23) = New Setting("OverrideChecks", OverrideList)
+
+            'ConvertSetting(23) = New Setting("ArkonorOverride", CStr(SentSettings.ArkonorOverride))
+            'ConvertSetting(24) = New Setting("BistotOverride", CStr(SentSettings.BistotOverride))
+            'ConvertSetting(25) = New Setting("CrokiteOverride", CStr(SentSettings.CrokiteOverride))
+            'ConvertSetting(26) = New Setting("DarkOchreOverride", CStr(SentSettings.DarkOchreOverride))
+            'ConvertSetting(27) = New Setting("GneissOverride", CStr(SentSettings.GneissOverride))
+            'ConvertSetting(28) = New Setting("HedbergiteOverride", CStr(SentSettings.HedbergiteOverride))
+            'ConvertSetting(29) = New Setting("HemorphiteOverride", CStr(SentSettings.HemorphiteOverride))
+            'ConvertSetting(30) = New Setting("JaspetOverride", CStr(SentSettings.JaspetOverride))
+            'ConvertSetting(31) = New Setting("KerniteOverride", CStr(SentSettings.KerniteOverride))
+            'ConvertSetting(32) = New Setting("MercoxitOverride", CStr(SentSettings.MercoxitOverride))
+            'ConvertSetting(33) = New Setting("OmberOverride", CStr(SentSettings.OmberOverride))
+            'ConvertSetting(34) = New Setting("PlagioclaseOverride", CStr(SentSettings.PlagioclaseOverride))
+            'ConvertSetting(35) = New Setting("PyroxeresOverride", CStr(SentSettings.PyroxeresOverride))
+            'ConvertSetting(36) = New Setting("ScorditeOverride", CStr(SentSettings.ScorditeOverride))
+            'ConvertSetting(37) = New Setting("SpodumainOverride", CStr(SentSettings.SpodumainOverride))
+            'ConvertSetting(38) = New Setting("VeldsparOverride", CStr(SentSettings.VeldsparOverride))
+            'ConvertSetting(39) = New Setting("TalassoniteOverride", CStr(SentSettings.TalassoniteOverride))
+            'ConvertSetting(40) = New Setting("RakoveneOverride", CStr(SentSettings.RakoveneOverride))
+            'ConvertSetting(41) = New Setting("BezdnacineOverride", CStr(SentSettings.BezdnacineOverride))
+            'ConvertSetting(42) = New Setting("ClearIcicleOverride", CStr(SentSettings.ClearIcicleOverride))
+            'ConvertSetting(43) = New Setting("GlacialMassOverride", CStr(SentSettings.GlacialMassOverride))
+            'ConvertSetting(44) = New Setting("BlueIceOverride", CStr(SentSettings.BlueIceOverride))
+            'ConvertSetting(45) = New Setting("WhiteGlazeOverride", CStr(SentSettings.WhiteGlazeOverride))
+            'ConvertSetting(46) = New Setting("GlareCrustOverride", CStr(SentSettings.GlareCrustOverride))
+            'ConvertSetting(47) = New Setting("DarkGlitterOverride", CStr(SentSettings.DarkGlitterOverride))
+            'ConvertSetting(48) = New Setting("GelidusOverride", CStr(SentSettings.GelidusOverride))
+            'ConvertSetting(49) = New Setting("KrystallosOverride", CStr(SentSettings.KrystallosOverride))
+            'ConvertSetting(50) = New Setting("ThickBlueIceOverride", CStr(SentSettings.ThickBlueIceOverride))
+            'ConvertSetting(51) = New Setting("PristineWhiteGlazeOverride", CStr(SentSettings.PristineWhiteGlazeOverride))
+            'ConvertSetting(52) = New Setting("SmoothGlacialMassOverride", CStr(SentSettings.SmoothGlacialMassOverride))
+            'ConvertSetting(53) = New Setting("EnrichedClearIcicleOverride", CStr(SentSettings.EnrichedClearIcicleOverride))
 
             Call WriteSettingsToFile(SettingsFolder, IceBeltFlipCheckSettingsFileName, ConvertSetting, IceBeltFlipCheckSettingsFileName)
 
@@ -4592,6 +4619,16 @@ Public Class ProgramSettings
     ' Returns the tab settings
     Public Function GetConversiontoOreSettings(Belt As BeltType) As ConversionToOreSettings
         Return ConversionToOreSetting
+    End Function
+
+    Private Function GetDefaultOverrideChecks() As Integer()
+        Dim ReturnList(28) As Integer
+        For i = 0 To 28
+            ReturnList(i) = DefaultOverrideValue
+        Next
+
+        Return ReturnList
+
     End Function
 
 #End Region
@@ -6179,39 +6216,42 @@ Public Structure ConversionToOreSettings
     Dim C5 As Boolean
     Dim C6 As Boolean
 
-    Dim ArkonorOverride As Integer
-    Dim BistotOverride As Integer
-    Dim CrokiteOverride As Integer
-    Dim DarkOchreOverride As Integer
-    Dim GneissOverride As Integer
-    Dim HedbergiteOverride As Integer
-    Dim HemorphiteOverride As Integer
-    Dim JaspetOverride As Integer
-    Dim KerniteOverride As Integer
-    Dim MercoxitOverride As Integer
-    Dim OmberOverride As Integer
-    Dim PlagioclaseOverride As Integer
-    Dim PyroxeresOverride As Integer
-    Dim ScorditeOverride As Integer
-    Dim SpodumainOverride As Integer
-    Dim VeldsparOverride As Integer
+    ' List of 29 check boxes cooresponds to the checks on settings for override savings
+    Dim OverrideChecks() As Integer
 
-    Dim TalassoniteOverride As Integer
-    Dim RakoveneOverride As Integer
-    Dim BezdnacineOverride As Integer
+    'Dim ArkonorOverride As Integer
+    'Dim BistotOverride As Integer
+    'Dim CrokiteOverride As Integer
+    'Dim DarkOchreOverride As Integer
+    'Dim GneissOverride As Integer
+    'Dim HedbergiteOverride As Integer
+    'Dim HemorphiteOverride As Integer
+    'Dim JaspetOverride As Integer
+    'Dim KerniteOverride As Integer
+    'Dim MercoxitOverride As Integer
+    'Dim OmberOverride As Integer
+    'Dim PlagioclaseOverride As Integer
+    'Dim PyroxeresOverride As Integer
+    'Dim ScorditeOverride As Integer
+    'Dim SpodumainOverride As Integer
+    'Dim VeldsparOverride As Integer
 
-    Dim ClearIcicleOverride As Integer
-    Dim GlacialMassOverride As Integer
-    Dim BlueIceOverride As Integer
-    Dim WhiteGlazeOverride As Integer
-    Dim GlareCrustOverride As Integer
-    Dim DarkGlitterOverride As Integer
-    Dim GelidusOverride As Integer
-    Dim KrystallosOverride As Integer
-    Dim ThickBlueIceOverride As Integer
-    Dim PristineWhiteGlazeOverride As Integer
-    Dim SmoothGlacialMassOverride As Integer
-    Dim EnrichedClearIcicleOverride As Integer
+    'Dim TalassoniteOverride As Integer
+    'Dim RakoveneOverride As Integer
+    'Dim BezdnacineOverride As Integer
+
+    'Dim ClearIcicleOverride As Integer
+    'Dim GlacialMassOverride As Integer
+    'Dim BlueIceOverride As Integer
+    'Dim WhiteGlazeOverride As Integer
+    'Dim GlareCrustOverride As Integer
+    'Dim DarkGlitterOverride As Integer
+    'Dim GelidusOverride As Integer
+    'Dim KrystallosOverride As Integer
+    'Dim ThickBlueIceOverride As Integer
+    'Dim PristineWhiteGlazeOverride As Integer
+    'Dim SmoothGlacialMassOverride As Integer
+    'Dim EnrichedClearIcicleOverride As Integer
 
 End Structure
 
