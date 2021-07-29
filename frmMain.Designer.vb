@@ -9808,7 +9808,7 @@ Partial Class frmMain
         '
         'txtBPMarketPriceEdit
         '
-        Me.txtBPMarketPriceEdit.Location = New System.Drawing.Point(53, 97)
+        Me.txtBPMarketPriceEdit.Location = New System.Drawing.Point(124, 32)
         Me.txtBPMarketPriceEdit.Name = "txtBPMarketPriceEdit"
         Me.txtBPMarketPriceEdit.Size = New System.Drawing.Size(131, 20)
         Me.txtBPMarketPriceEdit.TabIndex = 60

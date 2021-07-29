@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "June 15, 2021 Release"
+    Public Const SDEVersion As String = "July 13, 2021 Release"
     Public Const VersionNumber As String = "4.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -376,7 +376,7 @@ Public Module Public_Variables
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 11%, Max Sales Tax: 5%, Min Sales Tax: 2.25%
-        Return (5.0 - (Accounting * 0.11 * 5.0)) / 100 * ItemMarketCost
+        Return (2.5 - (Accounting * 0.11 * 5.0)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -387,7 +387,7 @@ Public Module Public_Variables
         If BrokerFee.IncludeFee = BrokerFeeType.Fee Then
             ' 5%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
             ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
-            Dim BrokerTax = 5.0 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+            Dim BrokerTax = 2.5 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
             TempFee = (BrokerTax / 100) * ItemMarketCost
         ElseIf BrokerFee.IncludeFee = BrokerFeeType.SpecialFee Then
             ' use a flat rate to set the fee
