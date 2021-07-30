@@ -376,7 +376,7 @@ Public Module Public_Variables
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 11%, Max Sales Tax: 5%, Min Sales Tax: 2.25%
-        Return (2.5 - (Accounting * 0.11 * 5.0)) / 100 * ItemMarketCost
+        Return (2.5 - (Accounting * 0.11 * 2.5)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
