@@ -62,6 +62,7 @@ Class ReprocessingPlant
         ' Upwells - ReprocessingYield = (50+ RigModifier × (1 + SecurityModifier)) × (1 + StructureModifier)×(1+(0.03×R))×(1+(0.02×Re))×(1+(0.02×Op))×(1+Im)
         ' Station - ReprocessingYield = StationEquipment x (1 + Processing skill x 0.03) x (1 + Processing Efficiency skill x 0.02) x (1 + Ore Processing skill x 0.02) x (1 + Processing Implant)
         ' The implantModifier is 1.01, 1.02 and 1.04 for RX-801, RX-802 and RX-804 respectively.
+
         If ScrapReprocessing Then
             ' Base Station Equipment x (1 + Scrapmetal Processing x 0.02) - scrapmetal processing is only modifier that applies
             TotalYield = ReprocessingFacility.BaseME * (1 + (0.02 * ProcessingSkill))
@@ -89,6 +90,8 @@ Class ReprocessingPlant
             If ScrapReprocessing Then
                 NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
             Else
+                ' Dim x As Double = readerRefine.GetInt64(4) * RefineBatches * TotalYield
+                '  Debug.Print(readerRefine.GetString(1) & ": " & CStr(x))
                 NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
             End If
 

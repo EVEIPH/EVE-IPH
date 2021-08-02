@@ -57,7 +57,7 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityActivities = New System.Windows.Forms.ComboBox()
         Me.lblFacilityActivity = New System.Windows.Forms.Label()
         Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
-        Me.chkConvertToOre = New System.Windows.Forms.CheckBox()
+        Me.chkFacilityConvertToOre = New System.Windows.Forms.CheckBox()
         Me.btnConversiontoOreSettings = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
@@ -373,16 +373,16 @@ Partial Class ManufacturingFacility
         Me.lblFacilityActivity.TabIndex = 0
         Me.lblFacilityActivity.Text = "Activity:"
         '
-        'chkConvertToOre
+        'chkFacilityConvertToOre
         '
-        Me.chkConvertToOre.AutoSize = True
-        Me.chkConvertToOre.Location = New System.Drawing.Point(34, 260)
-        Me.chkConvertToOre.Name = "chkConvertToOre"
-        Me.chkConvertToOre.Size = New System.Drawing.Size(95, 17)
-        Me.chkConvertToOre.TabIndex = 33
-        Me.chkConvertToOre.Text = "Convert to Ore"
-        Me.chkConvertToOre.UseVisualStyleBackColor = True
-        Me.chkConvertToOre.Visible = False
+        Me.chkFacilityConvertToOre.AutoSize = True
+        Me.chkFacilityConvertToOre.Location = New System.Drawing.Point(34, 260)
+        Me.chkFacilityConvertToOre.Name = "chkFacilityConvertToOre"
+        Me.chkFacilityConvertToOre.Size = New System.Drawing.Size(95, 17)
+        Me.chkFacilityConvertToOre.TabIndex = 33
+        Me.chkFacilityConvertToOre.Text = "Convert to Ore"
+        Me.chkFacilityConvertToOre.UseVisualStyleBackColor = True
+        Me.chkFacilityConvertToOre.Visible = False
         '
         'btnConversiontoOreSettings
         '
@@ -399,7 +399,7 @@ Partial Class ManufacturingFacility
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(Me.btnConversiontoOreSettings)
-        Me.Controls.Add(Me.chkConvertToOre)
+        Me.Controls.Add(Me.chkFacilityConvertToOre)
         Me.Controls.Add(Me.lblModules)
         Me.Controls.Add(Me.lblFuelBlocks)
         Me.Controls.Add(Me.lblLargeShips)
@@ -473,6 +473,6 @@ Partial Class ManufacturingFacility
     Friend WithEvents cmbFacilityActivities As ComboBox
     Friend WithEvents lblFacilityActivity As Label
     Friend WithEvents mainToolTip As ToolTip
-    Friend WithEvents chkConvertToOre As CheckBox
+    Friend WithEvents chkFacilityConvertToOre As CheckBox
     Friend WithEvents btnConversiontoOreSettings As Button
 End Class

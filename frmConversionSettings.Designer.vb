@@ -148,12 +148,10 @@ Partial Class frmConversiontoOreSettings
         'rbtnConversionNone
         '
         Me.rbtnConversionNone.AutoSize = True
-        Me.rbtnConversionNone.Checked = True
-        Me.rbtnConversionNone.Location = New System.Drawing.Point(12, 19)
+        Me.rbtnConversionNone.Location = New System.Drawing.Point(9, 19)
         Me.rbtnConversionNone.Name = "rbtnConversionNone"
         Me.rbtnConversionNone.Size = New System.Drawing.Size(51, 17)
         Me.rbtnConversionNone.TabIndex = 77
-        Me.rbtnConversionNone.TabStop = True
         Me.rbtnConversionNone.Text = "None"
         Me.rbtnConversionNone.UseVisualStyleBackColor = True
         '
@@ -185,7 +183,7 @@ Partial Class frmConversiontoOreSettings
         'chkCompressedOre
         '
         Me.chkCompressedOre.AutoSize = True
-        Me.chkCompressedOre.Location = New System.Drawing.Point(15, 42)
+        Me.chkCompressedOre.Location = New System.Drawing.Point(9, 42)
         Me.chkCompressedOre.Name = "chkCompressedOre"
         Me.chkCompressedOre.Size = New System.Drawing.Size(104, 17)
         Me.chkCompressedOre.TabIndex = 79
@@ -195,7 +193,7 @@ Partial Class frmConversiontoOreSettings
         'rbtnConversionOre
         '
         Me.rbtnConversionOre.AutoSize = True
-        Me.rbtnConversionOre.Location = New System.Drawing.Point(69, 19)
+        Me.rbtnConversionOre.Location = New System.Drawing.Point(67, 19)
         Me.rbtnConversionOre.Name = "rbtnConversionOre"
         Me.rbtnConversionOre.Size = New System.Drawing.Size(42, 17)
         Me.rbtnConversionOre.TabIndex = 80
@@ -205,7 +203,7 @@ Partial Class frmConversiontoOreSettings
         'rbtnConversionIce
         '
         Me.rbtnConversionIce.AutoSize = True
-        Me.rbtnConversionIce.Location = New System.Drawing.Point(117, 19)
+        Me.rbtnConversionIce.Location = New System.Drawing.Point(116, 19)
         Me.rbtnConversionIce.Name = "rbtnConversionIce"
         Me.rbtnConversionIce.Size = New System.Drawing.Size(40, 17)
         Me.rbtnConversionIce.TabIndex = 79
@@ -257,12 +255,10 @@ Partial Class frmConversiontoOreSettings
         'rbtnRefinePrice
         '
         Me.rbtnRefinePrice.AutoSize = True
-        Me.rbtnRefinePrice.Checked = True
         Me.rbtnRefinePrice.Location = New System.Drawing.Point(9, 13)
         Me.rbtnRefinePrice.Name = "rbtnRefinePrice"
         Me.rbtnRefinePrice.Size = New System.Drawing.Size(83, 17)
         Me.rbtnRefinePrice.TabIndex = 81
-        Me.rbtnRefinePrice.TabStop = True
         Me.rbtnRefinePrice.Text = "Refine Price"
         Me.rbtnRefinePrice.UseVisualStyleBackColor = True
         '

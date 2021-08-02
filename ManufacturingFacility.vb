@@ -767,6 +767,8 @@ Public Class ManufacturingFacility
         chkFacilityIncludeCost.Checked = SelectedFacility.IncludeActivityCost
         chkFacilityIncludeTime.Checked = SelectedFacility.IncludeActivityTime
 
+        chkFacilityConvertToOre.Checked = SelectedFacility.ConvertToOre
+
         ChangingUsageChecks = False
 
         ' Finally show the results and save the facility locally
@@ -845,7 +847,7 @@ Public Class ManufacturingFacility
 
             txtFacilityManualTE.Left = txtFacilityManualTax.Left
 
-            chkConvertToOre.Visible = False
+            chkFacilityConvertToOre.Visible = False
             btnConversiontoOreSettings.Visible = False
 
         Else
@@ -870,12 +872,12 @@ Public Class ManufacturingFacility
 
             ' Add reprocessing check and settings button if on BP tab - covernt left 34, button left 135
             If SelectedLocation = ProgramLocation.BlueprintTab Then
-                chkConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 4
-                chkConvertToOre.Left = lblFacilityManualME.Left + 33
-                chkConvertToOre.Visible = True
+                chkFacilityConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 4
+                chkFacilityConvertToOre.Left = lblFacilityManualME.Left + 33
+                chkFacilityConvertToOre.Visible = True
 
-                btnConversiontoOreSettings.Top = chkConvertToOre.Top - 4
-                btnConversiontoOreSettings.Left = chkConvertToOre.Left + chkConvertToOre.Width + 5
+                btnConversiontoOreSettings.Top = chkFacilityConvertToOre.Top - 4
+                btnConversiontoOreSettings.Left = chkFacilityConvertToOre.Left + chkFacilityConvertToOre.Width + 5
                 btnConversiontoOreSettings.Visible = True
 
             End If
@@ -3836,14 +3838,16 @@ Public Class ManufacturingFacility
 
     End Sub
 
-    Private Sub chkConvertToOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkConvertToOre.CheckedChanged
-        Call RefreshMainBP()
+    Private Sub chkConvertToOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityConvertToOre.CheckedChanged
+        If Not ChangingUsageChecks Then
+            SelectedFacility.ConvertToOre = chkFacilityConvertToOre.Checked
+            ' Facility is loaded, so save it to default and dynamic variable
+            Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
+            Call RefreshMainBP()
+            ' Update usage after completed building the bp
+            'lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
+        End If
     End Sub
-
-    ' For determining if the convert to ore box is checked in the object
-    Public Function ConvertToOre() As Boolean
-        Return chkConvertToOre.Checked
-    End Function
 
 #End Region
 
@@ -4025,6 +4029,8 @@ Public Class IndustryFacility
 
     Private ControlForm As Form  ' Where the control lives
 
+    Public ConvertToOre As Boolean ' if convert to ore option is selected
+
     ' Default multiplier rates if we can't find them
     Public Const DefaultTaxRate As Double = 0
     Public Const DefaultMaterialMultiplier As Double = 1
@@ -4072,7 +4078,7 @@ Public Class IndustryFacility
         ScrapmetalRefineRate = 0
 
         ControlForm = Nothing
-
+        ConvertToOre = False
         FullyLoaded = False
 
     End Sub
@@ -4114,6 +4120,7 @@ Public Class IndustryFacility
         CopyOfMe.ScrapmetalRefineRate = ScrapmetalRefineRate
         CopyOfMe.FullyLoaded = FullyLoaded
         CopyOfMe.ControlForm = ControlForm
+        CopyOfMe.ConvertToOre = ConvertToOre
 
         Return CopyOfMe
 
@@ -4134,7 +4141,7 @@ Public Class IndustryFacility
         SQL &= "CASE WHEN UPGRADE_LEVEL IS NULL THEN 0 ELSE UPGRADE_LEVEL END AS FW_UPGRADE_LEVEL, SF.ACTIVITY_COST_PER_SECOND, "
         SQL &= "CASE WHEN COST_INDEX IS NULL THEN 0 ELSE COST_INDEX END AS COST_INDEX,"
         SQL &= "SF.INCLUDE_ACTIVITY_COST, SF.INCLUDE_ACTIVITY_TIME, SF.INCLUDE_ACTIVITY_USAGE, "
-        SQL &= "SF.FACILITY_TAX, SF.MATERIAL_MULTIPLIER, SF.TIME_MULTIPLIER, SF.COST_MULTIPLIER, security "
+        SQL &= "SF.FACILITY_TAX, SF.MATERIAL_MULTIPLIER, SF.TIME_MULTIPLIER, SF.COST_MULTIPLIER, security, CONVERT_TO_ORE "
         SQL &= "FROM SAVED_FACILITIES AS SF, FACILITY_PRODUCTION_TYPES, REGIONS, SOLAR_SYSTEMS, FACILITY_TYPES, INDUSTRY_ACTIVITIES "
         SQL &= "LEFT JOIN FW_SYSTEM_UPGRADES ON FW_SYSTEM_UPGRADES.SOLAR_SYSTEM_ID = SF.SOLAR_SYSTEM_ID "
         SQL &= "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES "
@@ -4191,6 +4198,7 @@ Public Class IndustryFacility
                 SolarSystemSecurity = .GetDouble(18)
                 FWUpgradeLevel = .GetInt32(8)
                 ActivityCostPerSecond = .GetFloat(9)
+                ConvertToOre = CBool(.GetInt32(19))
 
                 IncludeActivityCost = CBool(.GetInt32(11))
                 IncludeActivityTime = CBool(.GetInt32(12))
@@ -4344,6 +4352,7 @@ ExitBlock:
                     TempSQL &= "INCLUDE_ACTIVITY_TIME = {6}, "
                     TempSQL &= "INCLUDE_ACTIVITY_USAGE = {7}, "
                     TempSQL &= "FACILITY_TAX = {8}, "
+                    TempSQL &= "CONVERT_TO_ORE = {11}"
 
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
@@ -4377,7 +4386,7 @@ ExitBlock:
                     TempSQL &= "AND PROGRAM_LOCATION = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, CInt(FacilityProductionType), CharacterID)
+                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, CInt(FacilityProductionType), CharacterID, ConvertToOre)
 
                 Else
                     Dim MEValue As String = "NULL"
@@ -4403,9 +4412,9 @@ ExitBlock:
                     End If
 
                     ' Insert
-                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14});",
+                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
                                         CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                                        CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, MEValue, TEValue, CostValue)
+                                        CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, MEValue, TEValue, CostValue, ConvertToOre)
                 End If
 
                 ' Save it
@@ -4489,6 +4498,8 @@ ExitBlock:
             ElseIf .IncludeActivityTime <> IncludeActivityTime And CompareTimeCheck Then
                 Return False
             ElseIf .IncludeActivityUsage <> IncludeActivityUsage Then
+                Return False
+            ElseIf .ConvertToOre <> ConvertToOre And FacilityProductionType = ProductionType.Refinery Then
                 Return False
             End If
         End With

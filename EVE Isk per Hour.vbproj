@@ -276,7 +276,7 @@
     <Compile Include="ManufacturingFacility.vb">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MineralstoOre.vb" />
+    <Compile Include="ConvertToOre.vb" />
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

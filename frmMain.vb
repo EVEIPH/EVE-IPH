@@ -6306,6 +6306,8 @@ Tabs:
         Dim CopyFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Copying)
         Dim InventionFacility As New IndustryFacility
 
+        Dim ReprocessingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Refinery)
+
         If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
             ' Set the invention facility data
             If BPTech = BPTechLevel.T3 Then
@@ -6372,7 +6374,7 @@ Tabs:
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
                                           UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
                                           ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref)
+                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
 
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
@@ -6388,11 +6390,6 @@ Tabs:
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
         BPComponentMats = SelectedBlueprint.GetComponentMaterials.GetMaterialList
         BPBuiltItems = SelectedBlueprint.BuiltComponentList.GetBuiltItemList
-
-        'If chkBPUseOre.Checked Then
-        Dim MTO As New MineralstoOre()
-        ' BPRawMats = MTO.GetOresfromMinerals(MineRefineFacility.GetFacility(ProductionType.Refinery), BPRawMats)
-        'End If
 
         If chkBPBuildBuy.Checked Then
             lblBPComponentMats.Text = "Build/Buy Component Material List"

@@ -162,6 +162,9 @@ Public Class Blueprint
     Private ReactionFacility As IndustryFacility
     Private CopyFacility As IndustryFacility
     Private InventionFacility As IndustryFacility
+    Private ReprocessingFacility As IndustryFacility
+
+    Private OreConversionSettings As ConversionToOreSettings
 
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
@@ -179,7 +182,8 @@ Public Class Blueprint
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
                 ByVal BPSellExcessItems As Boolean, ByVal BuildT2T3MaterialType As BuildMatType, ByVal OriginalBlueprint As Boolean,
-                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing)
+                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing, Optional BPReprocessingFacility As IndustryFacility = Nothing,
+                Optional CompressedOreSettings As ConversionToOreSettings = Nothing)
 
         Dim readerBP As SQLiteDataReader
         Dim SQL As String = ""
@@ -310,6 +314,9 @@ Public Class Blueprint
         ComponentManufacturingFacility = BPComponentProductionFacility
         CapitalComponentManufacturingFacility = BPCapComponentProductionFacility
         ReactionFacility = BPReactionFacility
+
+        OreConversionSettings = CompressedOreSettings
+        ReprocessingFacility = BPReprocessingFacility
 
         ' See if we want to include the costs
         IncludeManufacturingUsage = BPProductionFacility.IncludeActivityUsage
@@ -825,6 +832,14 @@ Public Class Blueprint
             ' Finally recalculate our prices
             Call SetPriceData(SetTaxes, BrokerFeeData)
 
+        End If
+
+        ' If the BP has a reprocessing facility, see if we wwant to convert minerals/ice to ore and then run this
+        If Not IsNothing(ReprocessingFacility) Then
+            If ReprocessingFacility.ConvertToOre Then
+                Dim ReplaceMinerals As New ConvertToOre(ReprocessingFacility, UserConversiontoOreSettings)
+                RawMaterials = ReplaceMinerals.GetOresfromMinerals(RawMaterials)
+            End If
         End If
 
     End Sub
