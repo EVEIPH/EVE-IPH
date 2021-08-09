@@ -9,12 +9,15 @@ Public Class frmConversiontoOreSettings
     Private m_ControlsCollection As ControlsCollection
     Private OreCheckBoxes() As CheckBox
     Private OreLabels() As Label
+    Private IgnoreChecks() As CheckBox
+    Private IgnoreLabels() As Label
 
     Public Sub New()
-        ' This call is required by the designer.
-        InitializeComponent()
 
         FirstFormLoad = True
+
+        ' This call is required by the designer.
+        InitializeComponent()
 
         ' Settings
         With UserConversiontoOreSettings
@@ -71,11 +74,17 @@ Public Class frmConversiontoOreSettings
         ' Get Region check boxes (note index starts at 1)
         OreCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkOre"), CheckBox())
         OreLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblOre"), Label())
+        IgnoreChecks = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkIgnore"), CheckBox())
+        IgnoreLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblIgnore"), Label())
 
         Call RefreshOreList()
 
         FirstFormLoad = False
 
+    End Sub
+
+    Protected Overrides Sub Finalize()
+        MyBase.Finalize()
     End Sub
 
     Public ReadOnly Property MyControls() As Collection
@@ -224,7 +233,6 @@ Public Class frmConversiontoOreSettings
 
     ' Checks all the data entered
     Private Function CheckMiningEntryData() As Boolean
-        ' - need a variant
 
         ' Check the location
         If chkHighSec.Checked = False And chkLowSec.Checked = False And chkNullSec.Checked = False Then
@@ -306,6 +314,11 @@ Public Class frmConversiontoOreSettings
                     End If
                 Next
 
+                ' Update ignore checks too
+                For Each IgnoreItem In .IgnoreRefinedItems
+
+                Next
+
             End If
         End With
 
@@ -376,6 +389,8 @@ Public Class frmConversiontoOreSettings
 
             .SelectedOres = UserConversiontoOreSettings.SelectedOres
 
+            .IgnoreRefinedItems = UserConversiontoOreSettings.IgnoreRefinedItems
+
         End With
 
         ' Save the data to the local variable
@@ -435,6 +450,7 @@ Public Class frmConversiontoOreSettings
             Dim Index As Integer = CInt(CType(sender, Label).Name.ToString.Substring(6))
             'Check the index
             OreCheckBoxes(Index).Checked = Not OreCheckBoxes(Index).Checked
+            Call UpdateSettingsRefresh()
         End If
     End Sub
 
@@ -452,7 +468,38 @@ Public Class frmConversiontoOreSettings
 
             ' They manually updated the check so change it here
             UserConversiontoOreSettings.OverrideChecks(CInt(SelectedCheckbox.Name.ToString.Substring(6)) - 1) = CInt(SelectedCheckbox.Checked)
-            'Call UpdateSettingsRefresh()
+            Call UpdateSettingsRefresh()
+        End If
+    End Sub
+
+    Private Sub IgnoreLabels_Click(sender As Object, e As EventArgs) Handles lblIgnore1.Click, lblIgnore2.Click, lblIgnore3.Click, lblIgnore4.Click,
+                                                                             lblIgnore5.Click, lblIgnore6.Click, lblIgnore7.Click, lblIgnore8.Click,
+                                                                             lblIgnore9.Click, lblIgnore10.Click, lblIgnore11.Click, lblIgnore12.Click,
+                                                                             lblIgnore13.Click, lblIgnore14.Click, lblIgnore15.Click
+
+        ' Find the index and toggle the check
+        If Not FirstFormLoad Then
+            Dim Index As Integer = CInt(CType(sender, Label).Name.ToString.Substring(9))
+            'Check the index
+            IgnoreChecks(Index).Checked = Not IgnoreChecks(Index).Checked
+            Call UpdateSettingsRefresh()
+        End If
+    End Sub
+
+    Private Sub IgnoreChecks_CheckedChanged(sender As Object, e As EventArgs) Handles chkIgnore1.CheckedChanged, chkIgnore2.CheckedChanged, chkIgnore3.CheckedChanged,
+                                                                                      chkIgnore4.CheckedChanged, chkIgnore5.CheckedChanged, chkIgnore6.CheckedChanged,
+                                                                                      chkIgnore7.CheckedChanged, chkIgnore8.CheckedChanged, chkIgnore9.CheckedChanged,
+                                                                                      chkIgnore10.CheckedChanged, chkIgnore11.CheckedChanged, chkIgnore12.CheckedChanged,
+                                                                                      chkIgnore13.CheckedChanged, chkIgnore14.CheckedChanged, chkIgnore15.CheckedChanged
+        If Not FirstFormLoad Then
+            ' Get the check number then update the override list
+            Dim SelectedCheck As CheckBox = CType(sender, CheckBox)
+            Dim Index As Integer = CInt(SelectedCheck.Name.ToString.Substring(9)) - 1
+
+            ' They manually updated an ignore check
+            UserConversiontoOreSettings.IgnoreRefinedItems(CInt(SelectedCheck.Name.ToString.Substring(9)) - 1) = CInt(SelectedCheck.Checked)
+
+            Call UpdateSettingsRefresh()
         End If
     End Sub
 
@@ -517,6 +564,9 @@ Public Class frmConversiontoOreSettings
 
         ' Always update the current settings locally, then refresh the ore/ice checks
         Call UpdateSettingsRefresh()
+
+        gbIgnoreMinerals.Enabled = Ore
+        gbIgnoreIceProducts.Enabled = Ice
 
         ' Finally, tabs
         tabPageIce.Enabled = Ice

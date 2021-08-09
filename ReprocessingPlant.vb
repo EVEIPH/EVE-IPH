@@ -21,7 +21,8 @@ Class ReprocessingPlant
     End Function
 
     Public Function Reprocess(ByVal ItemID As Long, ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, ByVal ProcessingSkill As Integer,
-                                 ByVal TotalQuantity As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double) As Materials
+                              ByVal TotalQuantity As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double,
+                              Optional MintoOreFormat As Boolean = False, Optional ByRef RefinedMineralsList As List(Of String) = Nothing) As Materials
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
         Dim SQL As String
@@ -30,6 +31,7 @@ Class ReprocessingPlant
         Dim RefinedMats As New Materials
         Dim RefinedMat As Material
         Dim NewMaterialQuantity As Long
+        Dim DoubleNewMaterialQuantity As Double
 
         Dim TempCost As Double = 0
         Dim AdjustedCost As Double = 0
@@ -75,31 +77,60 @@ Class ReprocessingPlant
             TotalYield = 1
         End If
 
-        ' Get the Mats that will come from refining 1 batch
-        SQL = "SELECT REPROCESSING.REFINED_MATERIAL_ID, REPROCESSING.REFINED_MATERIAL, REPROCESSING.REFINED_MATERIAL_GROUP, "
-        SQL = SQL & "REPROCESSING.REFINED_MATERIAL_VOLUME, REPROCESSING.REFINED_MATERIAL_QUANTITY, ITEM_PRICES.PRICE "
-        SQL = SQL & "FROM REPROCESSING, ITEM_PRICES "
-        SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & ItemID & " "
-        SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
+        ' Add the base material
+        If MintoOreFormat Then
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerRefine = DBCommand.ExecuteReader
+            ' Get all the materials that could come from refining ores, even if zero, and add them to the list
+            SQL = "SELECT typeID, typeName, groupName, volume, CASE WHEN REFINED_MATERIAL_QUANTITY IS NULL THEN 0 ELSE REFINED_MATERIAL_QUANTITY END AS QUANTITY, PRICE "
+            SQL = SQL & "FROM INVENTORY_TYPES, INVENTORY_GROUPS, ITEM_PRICES LEFT JOIN REPROCESSING ON REPROCESSING.REFINED_MATERIAL_ID = INVENTORY_TYPES.typeID "
+            SQL = SQL & "AND REPROCESSING.ITEM_ID = " & ItemID & " WHERE INVENTORY_TYPES.groupID IN (18,423) AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
+            SQL = SQL & "AND typeID NOT IN (27029,48927) AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID ORDER BY typeID"
 
-        While readerRefine.Read
-            ' Calculate the refine amount based on yield
-            If ScrapReprocessing Then
-                NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
-            Else
-                ' Dim x As Double = readerRefine.GetInt64(4) * RefineBatches * TotalYield
-                '  Debug.Print(readerRefine.GetString(1) & ": " & CStr(x))
-                NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
-            End If
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerRefine = DBCommand.ExecuteReader
 
-            ' Add the base material
-            RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
-                                      NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
-            RefinedMats.InsertMaterial(RefinedMat)
-        End While
+            While readerRefine.Read
+                DoubleNewMaterialQuantity = CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield
+
+                RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
+                    DoubleNewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
+
+                RefinedMats.InsertMaterial(RefinedMat)
+
+                ' If this has a quantity, then add the mineral name to the list for use
+                If DoubleNewMaterialQuantity <> 0 Then
+                    RefinedMineralsList.Add(readerRefine.GetString(1))
+                End If
+
+            End While
+        Else
+            ' Get the Mats that will come from refining 1 batch
+            SQL = "SELECT REPROCESSING.REFINED_MATERIAL_ID, REPROCESSING.REFINED_MATERIAL, REPROCESSING.REFINED_MATERIAL_GROUP, "
+            SQL = SQL & "REPROCESSING.REFINED_MATERIAL_VOLUME, REPROCESSING.REFINED_MATERIAL_QUANTITY, ITEM_PRICES.PRICE "
+            SQL = SQL & "FROM REPROCESSING, ITEM_PRICES "
+            SQL = SQL & "WHERE REPROCESSING.ITEM_ID= " & ItemID & " "
+            SQL = SQL & "AND REPROCESSING.REFINED_MATERIAL_ID = ITEM_PRICES.ITEM_ID "
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerRefine = DBCommand.ExecuteReader
+
+            While readerRefine.Read
+                ' Calculate the refine amount based on yield
+                If ScrapReprocessing Then
+                    NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
+                Else
+                    NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
+                End If
+
+                RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
+                        NewMaterialQuantity, readerRefine.GetDouble(3), If(readerRefine.IsDBNull(5), 0, readerRefine.GetDouble(5)), "", "")
+
+                RefinedMats.InsertMaterial(RefinedMat)
+
+            End While
+        End If
+
+        Dim RefinedMatQuantity As Double
 
         ' Subtract the station's refine tax
         For Each RefinedMaterial In RefinedMats.GetMaterialList
@@ -107,8 +138,13 @@ Class ReprocessingPlant
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerRefine = DBCommand.ExecuteReader
             readerRefine.Read()
+            If MintoOreFormat Then
+                RefinedMatQuantity = RefinedMaterial.GetDQuantity
+            Else
+                RefinedMatQuantity = RefinedMaterial.GetQuantity
+            End If
             ' Adjust the station tax on the material (by reference) - get the total adjusted price times tax rate minus total cost (save total)
-            TempCost = RefinedMaterial.GetTotalCost - (readerRefine.GetDouble(0) * RefinedMaterial.GetQuantity * ReprocessingFacility.TaxRate)
+            TempCost = RefinedMaterial.GetTotalCost - (readerRefine.GetDouble(0) * RefinedMatQuantity * ReprocessingFacility.TaxRate)
             RefinedMaterial.SetTotalCost(TempCost)
             AdjustedCost += TempCost
         Next

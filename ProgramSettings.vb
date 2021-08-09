@@ -4368,7 +4368,7 @@ Public Class ProgramSettings
                     .C6 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C6", DefaultC6))
 
                     Dim OverrideString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "OverrideChecks", ""))
-                    ReDim TempSettings.OverrideChecks(28)
+                    ReDim .OverrideChecks(28)
 
                     If OverrideString = "" Then
                         .OverrideChecks = GetDefaultOverrideChecks()
@@ -4382,7 +4382,15 @@ Public Class ProgramSettings
                     End If
 
                     .SelectedOres = New List(Of OreType)
+                    ReDim .IgnoreRefinedItems(15)
+                    Dim IgnoreRefinedItemsSTring As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "IgnoreRefinedItemsSTring", ""))
 
+                    If IgnoreRefinedItemsSTring <> "" Then
+                        Dim RefinedItems As String() = OverrideString.Split(New Char() {","c})
+                        For i = 0 To 15
+                            .IgnoreRefinedItems(i) = CInt(RefinedItems(i))
+                        Next
+                    End If
                 End With
 
             Else
@@ -4434,6 +4442,7 @@ Public Class ProgramSettings
 
             .OverrideChecks = GetDefaultOverrideChecks()
             .SelectedOres = New List(Of OreType)
+            .IgnoreRefinedItems = GetDefaultIgnoreChecks()
         End With
 
         ' Save Locally
@@ -4445,7 +4454,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveConversionToOreSettings(SentSettings As ConversionToOreSettings)
-        Dim ConvertSetting(23) As Setting
+        Dim ConvertSetting(24) As Setting
 
         Try
             ConvertSetting(0) = New Setting("ConversionType", CStr(SentSettings.ConversionType))
@@ -4481,6 +4490,13 @@ Public Class ProgramSettings
             OverrideList = OverrideList.Substring(0, Len(OverrideList) - 1)
             ConvertSetting(23) = New Setting("OverrideChecks", OverrideList)
 
+            Dim IgnoreItemsList As String = ""
+            For Each item In SentSettings.IgnoreRefinedItems
+                IgnoreItemsList &= item & ","
+            Next
+            IgnoreItemsList = IgnoreItemsList.Substring(0, Len(IgnoreItemsList) - 1)
+            ConvertSetting(24) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
+
             Call WriteSettingsToFile(SettingsFolder, ConvertToOreSettingsFileName, ConvertSetting, ConvertToOreSettingsFileName)
 
         Catch ex As Exception
@@ -4497,6 +4513,16 @@ Public Class ProgramSettings
     Private Function GetDefaultOverrideChecks() As Integer()
         Dim ReturnList(28) As Integer
         For i = 0 To 28
+            ReturnList(i) = DefaultOverrideValue
+        Next
+
+        Return ReturnList
+
+    End Function
+
+    Private Function GetDefaultIgnoreChecks() As Integer()
+        Dim ReturnList(15) As Integer
+        For i = 0 To 15
             ReturnList(i) = DefaultOverrideValue
         Next
 
@@ -6092,6 +6118,8 @@ Public Structure ConversionToOreSettings
     Dim OverrideChecks() As Integer
 
     Dim SelectedOres As List(Of OreType)
+    ' Names of all the item checks that they want to ignore in minerals/ice products to ores (meaning don't consider them in the conversion)
+    Dim IgnoreRefinedItems() As Integer
 
 End Structure
 

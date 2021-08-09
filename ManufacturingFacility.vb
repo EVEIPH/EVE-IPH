@@ -804,84 +804,86 @@ Public Class ManufacturingFacility
     Private Sub LoadManualBoxes(PT As ProductionType)
         Const LeftLabelLocation As Integer = 1
 
-        If PT <> ProductionType.Refinery Then
-            ' Load all the manual labels and text
-            lblFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 4
-            lblFacilityManualME.Left = LeftLabelLocation
-            lblFacilityManualME.Text = "ME:"
+        ' Load all the manual labels and text
+        lblFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 4
+        lblFacilityManualME.Left = LeftLabelLocation
+
+        txtFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 1
+        txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width
+
+        lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 7
+        lblFacilityManualCost.Left = LeftLabelLocation
+        lblFacilityManualCost.Text = "Cost:"
+
+        txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 1
+        txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width
+
+        ' Reset manual ME so it aligns with cost box
+        txtFacilityManualME.Left = txtFacilityManualCost.Left
+
+        lblFacilityManualTE.Top = lblFacilityManualME.Top
+        lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3
+        lblFacilityManualTE.Text = "TE:"
+
+        txtFacilityManualTE.Top = txtFacilityManualME.Top
+        txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width
+
+
+        lblFacilityManualTax.Top = lblFacilityManualCost.Top
+        lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width + 3
+        lblFacilityManualTax.Text = "Tax:"
+
+
+        txtFacilityManualTax.Top = txtFacilityManualCost.Top
+        txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width
+
+
+        txtFacilityManualTE.Left = txtFacilityManualTax.Left
+
+        chkFacilityConvertToOre.Visible = False
+        btnConversiontoOreSettings.Visible = False
+
+        If PT = ProductionType.Refinery Then
+            lblFacilityManualME.Text = "Rate:"
+            mainToolTip.SetToolTip(lblFacilityManualME, "This is the facilities base refining rate.")
+
+            ' Move the tax box up to match the TE box positions
+            lblFacilityManualTax.Top = lblFacilityManualTE.Top
+            lblFacilityManualTax.Left = lblFacilityManualTE.Left
+            txtFacilityManualTax.Top = txtFacilityManualTE.Top
+            txtFacilityManualTax.Left = txtFacilityManualTE.Left
+
             lblFacilityManualME.Visible = True
-
-            txtFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 1
-            txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width
             txtFacilityManualME.Visible = True
-
-            lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 7
-            lblFacilityManualCost.Left = LeftLabelLocation
-            lblFacilityManualCost.Text = "Cost:"
-            lblFacilityManualCost.Visible = True
-
-            txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 1
-            txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width
-            txtFacilityManualCost.Visible = True
-
-            ' Reset manual ME so it aligns with cost box
-            txtFacilityManualME.Left = txtFacilityManualCost.Left
-
-            lblFacilityManualTE.Top = lblFacilityManualME.Top
-            lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3
-            lblFacilityManualTE.Text = "TE:"
-            lblFacilityManualTE.Visible = True
-
-            txtFacilityManualTE.Top = txtFacilityManualME.Top
-            txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width
-            txtFacilityManualTE.Visible = True
-
-            lblFacilityManualTax.Top = lblFacilityManualCost.Top
-            lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width + 3
-            lblFacilityManualTax.Text = "Tax:"
+            lblFacilityManualCost.Visible = False
+            txtFacilityManualCost.Visible = False
+            lblFacilityManualTE.Visible = False
+            txtFacilityManualTE.Visible = False
             lblFacilityManualTax.Visible = True
-
-            txtFacilityManualTax.Top = txtFacilityManualCost.Top
-            txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width
             txtFacilityManualTax.Visible = True
 
-            txtFacilityManualTE.Left = txtFacilityManualTax.Left
-
-            chkFacilityConvertToOre.Visible = False
-            btnConversiontoOreSettings.Visible = False
-
-        Else
-            ' Use Manual boxes for refinery stats
-            lblFacilityManualME.Top = btnFacilitySave.Top + 4
-            lblFacilityManualME.Left = LeftLabelLocation
-            lblFacilityManualME.Text = "Base Rate:"
-            lblFacilityManualME.Visible = True
-
-            txtFacilityManualME.Top = btnFacilitySave.Top + 1
-            txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width - 2
-            txtFacilityManualME.Visible = True
-
-            lblFacilityManualTax.Top = lblFacilityManualME.Top
-            lblFacilityManualTax.Left = txtFacilityManualME.Left + txtFacilityManualME.Width
-            lblFacilityManualTax.Text = "Tax:"
-            lblFacilityManualTax.Visible = True
-
-            txtFacilityManualTax.Top = txtFacilityManualME.Top
-            txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width - 2
-            txtFacilityManualTax.Visible = True
-
-            ' Add reprocessing check and settings button if on BP tab - covernt left 34, button left 135
+            ' Add reprocessing check and settings button if on BP tab and a refinery
             If SelectedLocation = ProgramLocation.BlueprintTab Then
-                chkFacilityConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 4
-                chkFacilityConvertToOre.Left = lblFacilityManualME.Left + 33
+                chkFacilityConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 5
+                chkFacilityConvertToOre.Left = cmbFacilityRegion.Left + 7
                 chkFacilityConvertToOre.Visible = True
 
                 btnConversiontoOreSettings.Top = chkFacilityConvertToOre.Top - 4
-                btnConversiontoOreSettings.Left = chkFacilityConvertToOre.Left + chkFacilityConvertToOre.Width + 5
+                btnConversiontoOreSettings.Left = chkFacilityConvertToOre.Left + chkFacilityConvertToOre.Width + 3
                 btnConversiontoOreSettings.Visible = True
-
             End If
+        Else
+            lblFacilityManualME.Text = "ME:"
+            mainToolTip.SetToolTip(lblFacilityManualME, "")
 
+            lblFacilityManualME.Visible = True
+            txtFacilityManualME.Visible = True
+            lblFacilityManualCost.Visible = True
+            txtFacilityManualCost.Visible = True
+            lblFacilityManualTE.Visible = True
+            txtFacilityManualTE.Visible = True
+            lblFacilityManualTax.Visible = True
+            txtFacilityManualTax.Visible = True
         End If
 
     End Sub
@@ -1026,7 +1028,7 @@ Public Class ManufacturingFacility
                 PreviousProductionType = SelectedProductionType
 
                 ' Load the facility for this activity and flag that it was loaded from this combo
-                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, True)
+                Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, False, True, False)
 
                 ' Reset all previous to current list, since all the combos should be loaded
                 PreviousFacilityType = GetFacilityTypeCode(cmbFacilityType.Text)

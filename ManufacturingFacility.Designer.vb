@@ -239,7 +239,6 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualTax.Name = "txtFacilityManualTax"
         Me.txtFacilityManualTax.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualTax.TabIndex = 22
-        Me.txtFacilityManualTax.Text = "100.00%"
         Me.txtFacilityManualTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'lblFacilityManualTax
@@ -267,7 +266,6 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualTE.Name = "txtFacilityManualTE"
         Me.txtFacilityManualTE.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualTE.TabIndex = 20
-        Me.txtFacilityManualTE.Text = "100.00%"
         Me.txtFacilityManualTE.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtFacilityManualME
@@ -277,7 +275,6 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualME.Name = "txtFacilityManualME"
         Me.txtFacilityManualME.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualME.TabIndex = 16
-        Me.txtFacilityManualME.Text = "100.00%"
         Me.txtFacilityManualME.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'lblFacilityManualTE
@@ -314,7 +311,6 @@ Partial Class ManufacturingFacility
         Me.txtFacilityManualCost.Name = "txtFacilityManualCost"
         Me.txtFacilityManualCost.Size = New System.Drawing.Size(50, 20)
         Me.txtFacilityManualCost.TabIndex = 18
-        Me.txtFacilityManualCost.Text = "100.00%"
         Me.txtFacilityManualCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'lblFacilityFWUpgrade
@@ -386,12 +382,11 @@ Partial Class ManufacturingFacility
         '
         'btnConversiontoOreSettings
         '
-        Me.btnConversiontoOreSettings.AutoSize = True
-        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(135, 256)
+        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(140, 256)
         Me.btnConversiontoOreSettings.Name = "btnConversiontoOreSettings"
-        Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(111, 23)
+        Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(56, 22)
         Me.btnConversiontoOreSettings.TabIndex = 34
-        Me.btnConversiontoOreSettings.Text = "Conversion Settings"
+        Me.btnConversiontoOreSettings.Text = "Settings"
         Me.btnConversiontoOreSettings.UseVisualStyleBackColor = True
         '
         'ManufacturingFacility

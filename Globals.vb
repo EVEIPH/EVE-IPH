@@ -5,7 +5,6 @@ Imports System.Net
 Imports System.IO
 Imports System.Management
 Imports System.Security.Cryptography
-Imports LpSolveDotNet
 
 ' Place to store all public variables and functions
 Public Module Public_Variables
@@ -708,131 +707,6 @@ InvalidDate:
     End Function
 
 #End Region
-
-    Public Function TestLPSolve(MineralList As List(Of Material)) As List(Of Material)
-        Dim LPTest As LpSolve
-        Dim LPReturn As lpsolve_return
-        Dim j As Integer
-        Dim colno() As Integer
-        Dim row() As Double
-
-        Call LpSolve.Init()
-
-        LPTest = LpSolve.make_lp(0, 2)
-
-        ReDim colno(1)
-        ReDim row(1)
-
-        With LPTest
-            .set_col_name(1, "x")
-            .set_col_name(2, "y")
-
-            .set_add_rowmode(True) ' makes building the model faster if it is done rows by row
-
-            ' construct first row (120 x + 210 y <= 15000)
-            j = 0
-
-            colno(j) = 1 ' first column
-            row(j) = 120
-            j = j + 1
-
-            colno(j) = 2 ' second column
-            row(j) = 210
-            j = j + 1
-
-            ' add the row to lpsolve
-            If .add_constraintex(j, row, colno, lpsolve_constr_types.LE, 15000) = False Then
-                Application.DoEvents()
-            End If
-
-            ' construct second row (110 x + 30 y <= 4000)
-            j = 0
-
-            colno(j) = 1 ' first column
-            row(j) = 110
-            j = j + 1
-
-            colno(j) = 2 ' second column
-            row(j) = 30
-            j = j + 1
-
-            ' add the row to lpsolve
-            If .add_constraintex(j, row, colno, lpsolve_constr_types.LE, 4000) = False Then
-                Application.DoEvents()
-            End If
-
-            ' construct third row (x + y <= 75)
-            j = 0
-
-            colno(j) = 1 ' first column
-            row(j) = 1
-            j = j + 1
-
-            colno(j) = 2 ' second column
-            row(j) = 1
-            j = j + 1
-
-            ' add the row to lpsolve
-            If .add_constraintex(j, row, colno, lpsolve_constr_types.LE, 75) = False Then
-                Application.DoEvents()
-            End If
-
-            .set_add_rowmode(False) ' rowmode should be turned off again when done building the model
-
-            ' set the objective function (143 x + 60 y)
-            j = 0
-
-            colno(j) = 1 ' first column
-            row(j) = 143
-            j = j + 1
-
-            colno(j) = 2 ' second column
-            row(j) = 60
-            j = j + 1
-
-            ' set the objective in lpsolve
-            If .set_obj_fnex(j, row, colno) = False Then
-                Application.DoEvents()
-            End If
-
-            ' set the object direction to maximize
-            .set_maxim()
-
-            ' just out of curioucity, now show the model in lp format on screen
-            ' this only works if this is a console application. If not, use write_lp and a filename
-            .write_lp("model.lp")
-
-            ' I only want to see important messages on screen while solving
-            .set_verbose(lpsolve_verbosity.IMPORTANT)
-
-            ' Now let lpsolve calculate a solution
-            LPReturn = .solve()
-            If LPReturn = lpsolve_return.OPTIMAL Then
-                Application.DoEvents()
-            Else
-                Application.DoEvents()
-            End If
-
-            ' a solution is calculated, now lets get some results
-
-            ' objective value
-            Debug.WriteLine("Objective value: " & .get_objective())
-
-            ' variable values
-            .get_variables(row)
-            For j = 1 To 2
-                Debug.WriteLine(.get_col_name(j) & ": " & row(j - 1))
-            Next
-
-            ' we are done now
-
-
-        End With
-
-
-        Return Nothing
-
-    End Function
 
     ' Checks entry of percentage chars in keypress
     Public Function CheckPercentCharEntry(ke As KeyPressEventArgs, box As TextBox) As Boolean
