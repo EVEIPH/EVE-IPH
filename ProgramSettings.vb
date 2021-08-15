@@ -869,7 +869,6 @@ Public Class ProgramSettings
     Private DefaultHighSec As Boolean = True
     Private DefaultLowSec As Boolean = True
     Private DefaultNullSec As Boolean = True
-    Private DefaultIndyLevel As String = "Level 0"
     Private DefaultOreVariant0 As Boolean = True
     Private DefaultOreVariant5 As Boolean = True
     Private DefaultOreVariant10 As Boolean = True
@@ -886,6 +885,7 @@ Public Class ProgramSettings
     Private DefaultC5 As Boolean = True
     Private DefaultC6 As Boolean = True
     Public DefaultOverrideValue As Integer = 1 ' 1 is not overridden, 0 is false, -1 true for override value
+    Public DefaultIgnoreValue As Integer = 0
 
     ' Default Shopping List Settings
     Private DefaultAlwaysonTop As Boolean = False
@@ -4342,7 +4342,6 @@ Public Class ProgramSettings
                 With TempSettings
                     .ConversionType = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "ConversionType", DefaultConversionType))
                     .MinimizeOn = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "MinimizeOn", DefaultMinimizeOn))
-                    .IndyLevel = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "IndyLevel", DefaultIndyLevel))
 
                     .CompressedIce = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedIce", DefaultCompressedIce))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedOre", DefaultCompressedOre))
@@ -4382,12 +4381,13 @@ Public Class ProgramSettings
                     End If
 
                     .SelectedOres = New List(Of OreType)
-                    ReDim .IgnoreRefinedItems(15)
-                    Dim IgnoreRefinedItemsSTring As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "IgnoreRefinedItemsSTring", ""))
+                    .IgnoreItems = New List(Of String)
+                    ReDim .IgnoreRefinedItems(14)
+                    Dim IgnoreRefinedItemsString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "IgnoreRefinedItems", ""))
 
-                    If IgnoreRefinedItemsSTring <> "" Then
-                        Dim RefinedItems As String() = OverrideString.Split(New Char() {","c})
-                        For i = 0 To 15
+                    If IgnoreRefinedItemsString <> "" Then
+                        Dim RefinedItems As String() = IgnoreRefinedItemsString.Split(New Char() {","c})
+                        For i = 0 To 14
                             .IgnoreRefinedItems(i) = CInt(RefinedItems(i))
                         Next
                     End If
@@ -4423,7 +4423,6 @@ Public Class ProgramSettings
             .HighSec = DefaultHighSec
             .LowSec = DefaultLowSec
             .NullSec = DefaultNullSec
-            .IndyLevel = DefaultIndyLevel
             .OreVariant0 = DefaultOreVariant0
             .OreVariant5 = DefaultOreVariant5
             .OreVariant10 = DefaultOreVariant10
@@ -4443,6 +4442,7 @@ Public Class ProgramSettings
             .OverrideChecks = GetDefaultOverrideChecks()
             .SelectedOres = New List(Of OreType)
             .IgnoreRefinedItems = GetDefaultIgnoreChecks()
+            .IgnoreItems = New List(Of String)
         End With
 
         ' Save Locally
@@ -4454,7 +4454,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveConversionToOreSettings(SentSettings As ConversionToOreSettings)
-        Dim ConvertSetting(24) As Setting
+        Dim ConvertSetting(23) As Setting
 
         Try
             ConvertSetting(0) = New Setting("ConversionType", CStr(SentSettings.ConversionType))
@@ -4464,22 +4464,21 @@ Public Class ProgramSettings
             ConvertSetting(4) = New Setting("HighSec", CStr(SentSettings.HighSec))
             ConvertSetting(5) = New Setting("LowSec", CStr(SentSettings.LowSec))
             ConvertSetting(6) = New Setting("NullSec", CStr(SentSettings.NullSec))
-            ConvertSetting(7) = New Setting("IndyLevel", CStr(SentSettings.IndyLevel))
-            ConvertSetting(8) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
-            ConvertSetting(9) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
-            ConvertSetting(10) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
-            ConvertSetting(11) = New Setting("Amarr", CStr(SentSettings.Amarr))
-            ConvertSetting(12) = New Setting("Caldari", CStr(SentSettings.Caldari))
-            ConvertSetting(13) = New Setting("Gallente", CStr(SentSettings.Gallente))
-            ConvertSetting(14) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
-            ConvertSetting(15) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
-            ConvertSetting(16) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
-            ConvertSetting(17) = New Setting("C1", CStr(SentSettings.C1))
-            ConvertSetting(18) = New Setting("C2", CStr(SentSettings.C2))
-            ConvertSetting(19) = New Setting("C3", CStr(SentSettings.C3))
-            ConvertSetting(20) = New Setting("C4", CStr(SentSettings.C4))
-            ConvertSetting(21) = New Setting("C5", CStr(SentSettings.C5))
-            ConvertSetting(22) = New Setting("C6", CStr(SentSettings.C6))
+            ConvertSetting(7) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
+            ConvertSetting(8) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
+            ConvertSetting(9) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
+            ConvertSetting(10) = New Setting("Amarr", CStr(SentSettings.Amarr))
+            ConvertSetting(11) = New Setting("Caldari", CStr(SentSettings.Caldari))
+            ConvertSetting(12) = New Setting("Gallente", CStr(SentSettings.Gallente))
+            ConvertSetting(13) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
+            ConvertSetting(14) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
+            ConvertSetting(15) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
+            ConvertSetting(16) = New Setting("C1", CStr(SentSettings.C1))
+            ConvertSetting(17) = New Setting("C2", CStr(SentSettings.C2))
+            ConvertSetting(18) = New Setting("C3", CStr(SentSettings.C3))
+            ConvertSetting(19) = New Setting("C4", CStr(SentSettings.C4))
+            ConvertSetting(20) = New Setting("C5", CStr(SentSettings.C5))
+            ConvertSetting(21) = New Setting("C6", CStr(SentSettings.C6))
 
             ' For overridechecks, just make one long string with the value for each index in order
             Dim OverrideList As String = ""
@@ -4488,14 +4487,14 @@ Public Class ProgramSettings
                 OverrideList &= CheckValue & ","
             Next
             OverrideList = OverrideList.Substring(0, Len(OverrideList) - 1)
-            ConvertSetting(23) = New Setting("OverrideChecks", OverrideList)
+            ConvertSetting(22) = New Setting("OverrideChecks", OverrideList)
 
             Dim IgnoreItemsList As String = ""
             For Each item In SentSettings.IgnoreRefinedItems
                 IgnoreItemsList &= item & ","
             Next
             IgnoreItemsList = IgnoreItemsList.Substring(0, Len(IgnoreItemsList) - 1)
-            ConvertSetting(24) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
+            ConvertSetting(23) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
 
             Call WriteSettingsToFile(SettingsFolder, ConvertToOreSettingsFileName, ConvertSetting, ConvertToOreSettingsFileName)
 
@@ -4523,7 +4522,7 @@ Public Class ProgramSettings
     Private Function GetDefaultIgnoreChecks() As Integer()
         Dim ReturnList(15) As Integer
         For i = 0 To 15
-            ReturnList(i) = DefaultOverrideValue
+            ReturnList(i) = DefaultIgnoreValue
         Next
 
         Return ReturnList
@@ -6098,7 +6097,6 @@ Public Structure ConversionToOreSettings
     Dim HighSec As Boolean
     Dim LowSec As Boolean
     Dim NullSec As Boolean
-    Dim IndyLevel As String
     Dim OreVariant0 As Boolean
     Dim OreVariant5 As Boolean
     Dim OreVariant10 As Boolean
@@ -6116,10 +6114,10 @@ Public Structure ConversionToOreSettings
     Dim C6 As Boolean
     ' List of 29 check boxes cooresponds to the checks on settings for override savings
     Dim OverrideChecks() As Integer
-
     Dim SelectedOres As List(Of OreType)
     ' Names of all the item checks that they want to ignore in minerals/ice products to ores (meaning don't consider them in the conversion)
     Dim IgnoreRefinedItems() As Integer
+    Dim IgnoreItems As List(Of String)
 
 End Structure
 

@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class frmRefinery
+Partial Class frmReprocessingPlant
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -22,7 +22,7 @@ Partial Class frmRefinery
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmRefinery))
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmReprocessingPlant))
         Me.btnRefine = New System.Windows.Forms.Button()
         Me.btnClose = New System.Windows.Forms.Button()
         Me.btnShowAssets = New System.Windows.Forms.Button()
@@ -129,12 +129,13 @@ Partial Class frmRefinery
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.tabRefinery = New System.Windows.Forms.TabControl()
         Me.tabpMain = New System.Windows.Forms.TabPage()
+        Me.chkRecursiveRefine = New System.Windows.Forms.CheckBox()
         Me.btnClear = New System.Windows.Forms.Button()
         Me.btnCopyOutput = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cmbBeanCounterRefining = New System.Windows.Forms.ComboBox()
+        Me.RefineryFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabpSkills = New System.Windows.Forms.TabPage()
-        Me.chkRecursiveRefine = New System.Windows.Forms.CheckBox()
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.lblTotalItemList = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeTotal = New System.Windows.Forms.Label()
@@ -144,7 +145,6 @@ Partial Class frmRefinery
         Me.lblReturnRatePercentOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingValueOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeOutput = New System.Windows.Forms.Label()
-        Me.RefineryFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstItemstoRefine = New EVE_Isk_per_Hour.MyListView()
         Me.lstRefineOutput = New EVE_Isk_per_Hour.MyListView()
         Me.gbRefineYields.SuspendLayout()
@@ -1207,6 +1207,16 @@ Partial Class frmRefinery
         Me.tabpMain.Text = "Main"
         Me.tabpMain.UseVisualStyleBackColor = True
         '
+        'chkRecursiveRefine
+        '
+        Me.chkRecursiveRefine.AutoSize = True
+        Me.chkRecursiveRefine.Location = New System.Drawing.Point(74, 156)
+        Me.chkRecursiveRefine.Name = "chkRecursiveRefine"
+        Me.chkRecursiveRefine.Size = New System.Drawing.Size(108, 17)
+        Me.chkRecursiveRefine.TabIndex = 132
+        Me.chkRecursiveRefine.Text = "Drill Down Refine"
+        Me.chkRecursiveRefine.UseVisualStyleBackColor = True
+        '
         'btnClear
         '
         Me.btnClear.Location = New System.Drawing.Point(333, 128)
@@ -1245,6 +1255,14 @@ Partial Class frmRefinery
         Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(235, 21)
         Me.cmbBeanCounterRefining.TabIndex = 130
         '
+        'RefineryFacility
+        '
+        Me.RefineryFacility.BackColor = System.Drawing.Color.Transparent
+        Me.RefineryFacility.Location = New System.Drawing.Point(6, 6)
+        Me.RefineryFacility.Name = "RefineryFacility"
+        Me.RefineryFacility.Size = New System.Drawing.Size(303, 105)
+        Me.RefineryFacility.TabIndex = 43
+        '
         'tabpSkills
         '
         Me.tabpSkills.Controls.Add(Me.tabProcessingSkills)
@@ -1256,16 +1274,6 @@ Partial Class frmRefinery
         Me.tabpSkills.TabIndex = 1
         Me.tabpSkills.Text = "Skills"
         Me.tabpSkills.UseVisualStyleBackColor = True
-        '
-        'chkRecursiveRefine
-        '
-        Me.chkRecursiveRefine.AutoSize = True
-        Me.chkRecursiveRefine.Location = New System.Drawing.Point(74, 156)
-        Me.chkRecursiveRefine.Name = "chkRecursiveRefine"
-        Me.chkRecursiveRefine.Size = New System.Drawing.Size(108, 17)
-        Me.chkRecursiveRefine.TabIndex = 132
-        Me.chkRecursiveRefine.Text = "Drill Down Refine"
-        Me.chkRecursiveRefine.UseVisualStyleBackColor = True
         '
         'chkToggle
         '
@@ -1358,14 +1366,6 @@ Partial Class frmRefinery
         Me.lblReprocessingVolumeOutput.Text = "-"
         Me.lblReprocessingVolumeOutput.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'RefineryFacility
-        '
-        Me.RefineryFacility.BackColor = System.Drawing.Color.Transparent
-        Me.RefineryFacility.Location = New System.Drawing.Point(6, 6)
-        Me.RefineryFacility.Name = "RefineryFacility"
-        Me.RefineryFacility.Size = New System.Drawing.Size(303, 105)
-        Me.RefineryFacility.TabIndex = 43
-        '
         'lstItemstoRefine
         '
         Me.lstItemstoRefine.CheckBoxes = True
@@ -1395,7 +1395,7 @@ Partial Class frmRefinery
         Me.lstRefineOutput.UseCompatibleStateImageBehavior = False
         Me.lstRefineOutput.View = System.Windows.Forms.View.Details
         '
-        'frmRefinery
+        'frmReprocessingPlant
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
@@ -1419,9 +1419,9 @@ Partial Class frmRefinery
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
-        Me.Name = "frmRefinery"
+        Me.Name = "frmReprocessingPlant"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Refinery"
+        Me.Text = "Reprocessing PLan"
         Me.gbRefineYields.ResumeLayout(False)
         Me.gbRefineYields.PerformLayout()
         Me.tabProcessingSkills.ResumeLayout(False)

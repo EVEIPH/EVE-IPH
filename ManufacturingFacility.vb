@@ -57,7 +57,7 @@ Public Class ManufacturingFacility
     Private SelectedCopyFacility As New IndustryFacility
     Private SelectedReactionsFacility As New IndustryFacility
 
-    Private SelectedRefiningFacility As New IndustryFacility
+    Private SelectedReprocessingFacility As New IndustryFacility
 
     Private DefaultManufacturingFacility As New IndustryFacility
     Private DefaultComponentManufacturingFacility As New IndustryFacility
@@ -198,7 +198,7 @@ Public Class ManufacturingFacility
         ' Move and show the selected controls depending on the view sent
         Select Case FormLocation
             Case ProgramLocation.BlueprintTab
-                lblFacilityActivity.Top = 2
+                lblFacilityActivity.Top = 1
                 lblFacilityActivity.Left = LeftLabelLocation
                 lblFacilityActivity.Visible = True
 
@@ -265,18 +265,7 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Visible = False
                 btnFacilityFitting.Enabled = False
 
-                Call LoadManualBoxes(InitialProductionType)
-
-                cmbFacilityFWUpgrade.Top = btnFacilitySave.Top + btnFacilitySave.Height
-                cmbFacilityFWUpgrade.Left = (cmbFacility.Left + cmbFacility.Width) - cmbFacilityFWUpgrade.Width
-                cmbFacilityFWUpgrade.Visible = False
-
-                lblFacilityFWUpgrade.Height = 30
-                lblFacilityFWUpgrade.Width = 51
-                lblFacilityFWUpgrade.Top = (cmbFacilityFWUpgrade.Top + cmbFacilityFWUpgrade.Height) - lblFacilityFWUpgrade.Height
-                lblFacilityFWUpgrade.Left = cmbFacilityFWUpgrade.Left - lblFacilityFWUpgrade.Width
-                lblFacilityFWUpgrade.Visible = False
-                Call lblFacilityFWUpgrade.SendToBack()
+                Call LoadManualBoxes(InitialProductionType, FormLocation)
 
                 ' Set initial settings to load 
                 If SelectedBPID = 0 Then
@@ -375,7 +364,7 @@ Public Class ManufacturingFacility
                 lblFacilityDefault.Left = (cmbFacility.Left + cmbFacility.Width) - lblFacilityDefault.Width
                 Call lblFacilityDefault.SendToBack()
 
-                btnFacilitySave.Top = cmbFacility.Top + cmbFacility.Height + 2
+                btnFacilitySave.Top = cmbFacility.Top + cmbFacility.Height + 3
                 btnFacilitySave.Left = (cmbFacility.Left + cmbFacility.Width) - btnFacilitySave.Width + 1
                 btnFacilitySave.Visible = True
                 btnFacilitySave.Enabled = False
@@ -385,19 +374,7 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Visible = False
                 btnFacilityFitting.Enabled = False
 
-                Call LoadManualBoxes(InitialProductionType)
-
-                ' Visible will be set later
-                cmbFacilityFWUpgrade.Top = btnFacilitySave.Top + btnFacilitySave.Height + 4
-                cmbFacilityFWUpgrade.Left = (cmbFacility.Left + cmbFacility.Width) - cmbFacilityFWUpgrade.Width
-                cmbFacilityFWUpgrade.Visible = False
-
-                lblFacilityFWUpgrade.Height = 13
-                lblFacilityFWUpgrade.Width = 71
-                lblFacilityFWUpgrade.Top = cmbFacilityFWUpgrade.Top + 4
-                lblFacilityFWUpgrade.Left = cmbFacilityFWUpgrade.Left - lblFacilityFWUpgrade.Width
-                lblFacilityFWUpgrade.Visible = False
-                Call lblFacilityFWUpgrade.SendToBack()
+                Call LoadManualBoxes(InitialProductionType, FormLocation)
 
                 ' Position these but they will be shown later
                 lblModules.Top = cmbFacility.Top
@@ -498,7 +475,7 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Visible = False
                 btnFacilityFitting.Enabled = False
 
-                Call LoadManualBoxes(InitialProductionType)
+                Call LoadManualBoxes(InitialProductionType, FormLocation)
 
                 ' Never will be visible for refining
                 lblFacilityManualCost.Visible = False
@@ -573,8 +550,10 @@ Public Class ManufacturingFacility
             Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation, SelectedControlForm)
             SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Refinery, FacilityLocation, SelectedControlForm)
-            SelectedRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation, SelectedControlForm)
+            ' Set the refining rates for the reprocessing facility so these are set on first load
+            Call SetRefiningRates(SelectedFacility)
+            SelectedReprocessingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
 
         ElseIf FacilityLocation = ProgramLocation.ManufacturingTab Or RefreshSelectedOnly Then
@@ -586,8 +565,10 @@ Public Class ManufacturingFacility
 
         ElseIf FacilityLocation = ProgramLocation.MiningTab Or FacilityLocation = ProgramLocation.Refinery Or FacilityLocation = ProgramLocation.SovBelts Or FacilityLocation = ProgramLocation.IceBelts Then
 
-            Call SelectedFacility.InitalizeFacility(ProductionType.Refinery, FacilityLocation, SelectedControlForm)
-            SelectedRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation, SelectedControlForm)
+            ' Set the refining rates for the reprocessing facility so these are set on first load
+            Call SetRefiningRates(SelectedFacility)
+            SelectedReprocessingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
         Else
             ' Leave, no valid option sent
@@ -687,8 +668,8 @@ Public Class ManufacturingFacility
                     SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
-            Case ProductionType.Refinery
-                SelectedRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
+            Case ProductionType.Reprocessing
+                SelectedReprocessingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 DefaultRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
         End Select
 
@@ -717,7 +698,7 @@ Public Class ManufacturingFacility
         SelectedProductionType = GetProductionType(ItemGroupID, ItemCategoryID, cmbFacilityActivities.Text)
 
         ' Reload the manual text boxes based on the production type
-        Call LoadManualBoxes(SelectedProductionType)
+        Call LoadManualBoxes(SelectedProductionType, SelectedLocation)
 
         Application.DoEvents()
 
@@ -801,21 +782,24 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility manual boxes depending on the type of facility
-    Private Sub LoadManualBoxes(PT As ProductionType)
+    Private Sub LoadManualBoxes(PT As ProductionType, SentFrom As ProgramLocation)
         Const LeftLabelLocation As Integer = 1
+        Dim Spacer As Integer = 0
+
+        If SentFrom = ProgramLocation.BlueprintTab Then
+            Spacer = 1
+        End If
 
         ' Load all the manual labels and text
-        lblFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 4
+        lblFacilityManualME.Top = btnFacilitySave.Top + 4
         lblFacilityManualME.Left = LeftLabelLocation
-
-        txtFacilityManualME.Top = cmbFacility.Top + cmbFacility.Height + 1
+        txtFacilityManualME.Top = btnFacilitySave.Top + 1
         txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width
 
-        lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 7
+        lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 8
         lblFacilityManualCost.Left = LeftLabelLocation
         lblFacilityManualCost.Text = "Cost:"
-
-        txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 1
+        txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 2
         txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width
 
         ' Reset manual ME so it aligns with cost box
@@ -823,58 +807,84 @@ Public Class ManufacturingFacility
 
         lblFacilityManualTE.Top = lblFacilityManualME.Top
         lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3
-        lblFacilityManualTE.Text = "TE:"
-
         txtFacilityManualTE.Top = txtFacilityManualME.Top
         txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width
-
 
         lblFacilityManualTax.Top = lblFacilityManualCost.Top
         lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width + 3
         lblFacilityManualTax.Text = "Tax:"
-
-
         txtFacilityManualTax.Top = txtFacilityManualCost.Top
         txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width
-
-
         txtFacilityManualTE.Left = txtFacilityManualTax.Left
+
+        ' FW Boxes - visible is set if the system is FW system - doesn't affect reprocessing so don't load for those
+        cmbFacilityFWUpgrade.Top = btnFacilitySave.Top + btnFacilitySave.Height + 1
+        cmbFacilityFWUpgrade.Left = (cmbFacility.Left + cmbFacility.Width) - cmbFacilityFWUpgrade.Width
+        cmbFacilityFWUpgrade.Visible = False
+
+        lblFacilityFWUpgrade.Top = cmbFacilityFWUpgrade.Top + 2
+        lblFacilityFWUpgrade.Left = cmbFacilityFWUpgrade.Left - lblFacilityFWUpgrade.Width + 2
+        lblFacilityFWUpgrade.Visible = False
+        Call lblFacilityFWUpgrade.SendToBack()
 
         chkFacilityConvertToOre.Visible = False
         btnConversiontoOreSettings.Visible = False
 
-        If PT = ProductionType.Refinery Then
-            lblFacilityManualME.Text = "Rate:"
+        If PT = ProductionType.Reprocessing Then
+            Dim AdjustmentSpace As Integer
+            If SelectedLocation = ProgramLocation.BlueprintTab Then
+                lblFacilityManualME.Text = "Ore Eff:"
+                AdjustmentSpace = 0
+            Else
+                lblFacilityManualME.Text = "Base Efficiency:"
+                AdjustmentSpace = -2
+            End If
+
+            txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width ' Reset this
             mainToolTip.SetToolTip(lblFacilityManualME, "This is the facilities base refining rate.")
 
             ' Move the tax box up to match the TE box positions
-            lblFacilityManualTax.Top = lblFacilityManualTE.Top
-            lblFacilityManualTax.Left = lblFacilityManualTE.Left
-            txtFacilityManualTax.Top = txtFacilityManualTE.Top
-            txtFacilityManualTax.Left = txtFacilityManualTE.Left
-
-            lblFacilityManualME.Visible = True
-            txtFacilityManualME.Visible = True
-            lblFacilityManualCost.Visible = False
-            txtFacilityManualCost.Visible = False
-            lblFacilityManualTE.Visible = False
-            txtFacilityManualTE.Visible = False
-            lblFacilityManualTax.Visible = True
-            txtFacilityManualTax.Visible = True
+            lblFacilityManualTax.Top = lblFacilityManualME.Top
+            lblFacilityManualTax.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3 + AdjustmentSpace
+            txtFacilityManualTax.Top = txtFacilityManualME.Top
+            txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width + AdjustmentSpace
 
             ' Add reprocessing check and settings button if on BP tab and a refinery
             If SelectedLocation = ProgramLocation.BlueprintTab Then
-                chkFacilityConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 5
-                chkFacilityConvertToOre.Left = cmbFacilityRegion.Left + 7
+                ' Move the TE box under the ME box for Ore/Ice rates
+                lblFacilityManualTE.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 8
+                lblFacilityManualTE.Left = LeftLabelLocation
+                lblFacilityManualTE.Text = "Ice Eff:"
+                txtFacilityManualTE.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 2
+                txtFacilityManualTE.Left = txtFacilityManualME.Left
+
+                btnConversiontoOreSettings.Top = btnFacilitySave.Top + btnFacilitySave.Height + 1
+                btnConversiontoOreSettings.Left = btnFacilitySave.Left - 16
+                btnConversiontoOreSettings.Visible = True
+
+                chkFacilityConvertToOre.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 6
+                chkFacilityConvertToOre.Left = btnConversiontoOreSettings.Left - chkFacilityConvertToOre.Width + 5
                 chkFacilityConvertToOre.Visible = True
 
-                btnConversiontoOreSettings.Top = chkFacilityConvertToOre.Top - 4
-                btnConversiontoOreSettings.Left = chkFacilityConvertToOre.Left + chkFacilityConvertToOre.Width + 3
-                btnConversiontoOreSettings.Visible = True
+                ' Reset the left position of the tax box based on the check box for conversion
+                txtFacilityManualTax.Left = chkFacilityConvertToOre.Left
+                lblFacilityManualTax.Left = txtFacilityManualTax.Left - lblFacilityManualTax.Width
             End If
+
+            lblFacilityManualME.Visible = True
+            txtFacilityManualME.Visible = True
+            lblFacilityManualTE.Visible = True
+            txtFacilityManualTE.Visible = True
+            lblFacilityManualCost.Visible = False
+            txtFacilityManualCost.Visible = False
+            lblFacilityManualTax.Visible = True
+            txtFacilityManualTax.Visible = True
+
         Else
             lblFacilityManualME.Text = "ME:"
             mainToolTip.SetToolTip(lblFacilityManualME, "")
+            lblFacilityManualTE.Text = "TE:"
+            mainToolTip.SetToolTip(lblFacilityManualTE, "")
 
             lblFacilityManualME.Visible = True
             txtFacilityManualME.Visible = True
@@ -994,16 +1004,9 @@ Public Class ManufacturingFacility
             End If
         End If
 
-        ' If we are on the blueprint tab and the blueprint sent has products from refined ore or ice, then add reprocessing
+        ' If we are on the blueprint tab, then add reprocessing activity because everything can have minerals or the components do
         If SelectedLocation = ProgramLocation.BlueprintTab Then
-            ' 18 is Minerals and 423 is Ice Products
-            DBCommand = New SQLiteCommand(String.Format("SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0} AND MATERIAL_GROUP_ID IN (18, 423)", BPID), EVEDB.DBREf)
-            readerBP = DBCommand.ExecuteReader
-            If readerBP.Read Then
-                cmbFacilityActivities.Items.Add(ActivityReprocessing)
-            End If
-
-            readerBP.Close()
+            cmbFacilityActivities.Items.Add(ActivityReprocessing)
         End If
 
         cmbFacilityActivities.EndUpdate()
@@ -1637,7 +1640,7 @@ Public Class ManufacturingFacility
                         SQL = String.Format(SQL, CInt(Services.StandupInventionLab))
                     Case ProductionType.Reactions
                         SQL = String.Format(SQL, CInt(Services.StandupCompositeReactor))
-                    Case ProductionType.Refinery
+                    Case ProductionType.Reprocessing
                         SQL = String.Format(SQL, CInt(Services.StandupReprocessingFaclity))
                     Case Else ' All others get manufacturing
                         SQL = String.Format(SQL, CInt(Services.StandupManufacturingPlant))
@@ -1835,13 +1838,37 @@ Public Class ManufacturingFacility
         Dim DFTimeMultiplier As Double = 0
         Dim DFCostMultiplier As Double = 0
         Dim DFTax As Double = 0
-        Dim SavedMaterialMultiplier As Double = 0
-        Dim SavedTimeMultiplier As Double = 0
-        Dim SavedCostMultiplier As Double = 0
-        Dim SavedTax As Double = 0
+        Dim SavedMaterialMultiplier As Double = -1
+        Dim SavedTimeMultiplier As Double = -1
+        Dim SavedCostMultiplier As Double = -1
+        Dim SavedTax As Double = -1
 
         Dim StructureModifier As Double = 0
         Dim TempDefaultFacility As New IndustryFacility
+
+        Dim CostText As String
+        Dim TaxText As String
+        Dim MMText As String
+        Dim TMText As String
+
+        ' Get the facility ID first
+        ' Not in there for either character or default, so use the defaults
+        If FacilityType = FacilityTypes.Station Then
+            ' Load the Stations in system for the activity we are doing
+            SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
+        ElseIf FacilityType = FacilityTypes.UpwellStructure Then
+            SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+        End If
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsLoader = DBCommand.ExecuteReader
+        rsLoader.Read()
+
+        If rsLoader.HasRows Then
+            FacilityID = rsLoader.GetInt64(0)
+        Else
+            FacilityID = -1
+        End If
 
         ' Process system if needed
         Dim SystemName As String
@@ -1859,35 +1886,24 @@ Public Class ManufacturingFacility
             SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_TYPE = {2} AND PROGRAM_LOCATION = {3} "
             SQL &= "AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text)) & " "
             SQL &= "AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName)) & " "
+            SQL &= "AND FACILITY_ID = {4}"
 
             ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
-            DBCommand = New SQLiteCommand(String.Format(SQL, CStr(SelectedCharacter.ID), CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation)), EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(String.Format(SQL, CStr(SelectedCharacter.ID), CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation), CStr(FacilityID)), EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
 
             If Not rsLoader.HasRows Then
                 ' Need to look up the default - CharID = 0
                 rsLoader.Close()
-                DBCommand = New SQLiteCommand(String.Format(SQL, "0", CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation)), EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(String.Format(SQL, "0", CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation), CStr(FacilityID)), EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
                 rsLoader.Read()
             End If
 
-            If Not rsLoader.HasRows Then
-                rsLoader.Close()
+            '  Load values from the saved facility
+            If rsLoader.HasRows Then
 
-                ' Not in there for either character or default, so use the defaults
-                If FacilityType = FacilityTypes.Station Then
-                    ' Load the Stations in system for the activity we are doing
-                    SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
-                ElseIf FacilityType = FacilityTypes.UpwellStructure Then
-                    SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
-                End If
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsLoader = DBCommand.ExecuteReader
-                rsLoader.Read()
-            Else
                 ' Save the values from the saved information - saved facility values
                 If Not IsDBNull(rsLoader.GetValue(1)) Then
                     SavedTax = rsLoader.GetDouble(1)
@@ -1898,7 +1914,7 @@ Public Class ManufacturingFacility
                 End If
 
                 If Not IsDBNull(rsLoader.GetValue(3)) Then
-                    SavedMaterialMultiplier = rsLoader.GetDouble(3)
+                    SavedTimeMultiplier = rsLoader.GetDouble(3)
                 End If
 
                 If Not IsDBNull(rsLoader.GetValue(4)) Then
@@ -1906,37 +1922,19 @@ Public Class ManufacturingFacility
                 End If
             End If
 
-            If rsLoader.HasRows Then
+            rsLoader.Close()
+
+            Dim Standing As Double = 0
+
+            If FacilityID <> -1 Then
                 ' Load default data
-                FacilityID = rsLoader.GetInt64(0)
 
                 ' Pull default data for ME/TE/CE
                 Select Case FacilityType
                     Case FacilityTypes.Station
-                        If BuildType = ProductionType.Refinery Then
-                            SQL = "SELECT REPROCESSING_EFFICIENCY, REPROCESSING_TAX_RATE, CASE WHEN STANDING IS NULL THEN 0 ELSE STANDING END, "
-                            SQL &= "CASE WHEN TRAINED_SKILL_LEVEL IS NULL THEN 0 ELSE TRAINED_SKILL_LEVEL END FROM STATIONS "
-                            SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID AND CHARACTER_STANDINGS.CHARACTER_ID = {0} "
-                            SQL &= "LEFT JOIN CHARACTER_SKILLS ON CHARACTER_STANDINGS.CHARACTER_ID = CHARACTER_SKILLS.CHARACTER_ID AND SKILL_TYPE_ID = 3359 WHERE STATION_ID = {1}"
-
-                            DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, FacilityID), EVEDB.DBREf)
-                            rsStats = DBCommand.ExecuteReader
-                            rsStats.Read()
-
-                            ' Save the base repro efficiency in the station
-                            DFMaterialMultiplier = rsStats.GetDouble(0)
-
-                            ' Tax rate will be based on standings with station corp
-                            ' Effective Standing = Unadjusted Standing + (10 - Unadjusted Standing) * 4% * Connections Skill Level
-                            Dim Standing As Double = rsStats.GetDouble(2) + (10 - rsStats.GetDouble(2)) * (0.04 * rsStats.GetDouble(3))
-                            ' Rate = StationBaseRate * (1-(.75 * CorpStanding)/5) - Note: Corp Standing affected by Connections
-                            DFTax = rsStats.GetDouble(1) * (1 - (0.75 * Standing) / 5)
-
-                            If DFTax < 0 Then
-                                DFTax = 0
-                            End If
-
-                            rsStats.Close()
+                        If BuildType = ProductionType.Reprocessing Then
+                            ' Get Refine rate and tax for station
+                            DFTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, DFMaterialMultiplier)
                         Else
                             DFTax = DefaultStationTaxRate
                             ' For production in stations, they are always 1
@@ -1947,8 +1945,9 @@ Public Class ManufacturingFacility
 
                     Case FacilityTypes.UpwellStructure
 
-                        SQL = "SELECT MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
-                        SQL &= "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+                        ' Get the base facilility multipler - reprocessing is always base modified by the structure multiplier
+                        SQL = "SELECT CASE WHEN ACTIVITY_ID = -2 THEN " & CStr(BaseRefineRate) & " * (1 + MATERIAL_MULTIPLIER) ELSE MATERIAL_MULTIPLIER END,"
+                        SQL &= "TIME_MULTIPLIER, COST_MULTIPLIER FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
 
                         Select Case Activity
                             Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
@@ -1971,15 +1970,7 @@ Public Class ManufacturingFacility
                         DFTimeMultiplier = rsStats.GetDouble(1)
                         DFCostMultiplier = rsStats.GetDouble(2)
                         DFTax = DefaultStructureTaxRate
-
-                        ' For refineries, need to calculate the base reprocessing amount, else, use production bonus
-                        If Activity = ActivityReprocessing Then
-                            StructureModifier = rsStats.GetDouble(0)
-                            ' The default will assume no rigs - if a refinery rig is installed, it will replace this - but if not, it's base of 50 multipled by any structure bonus
-                            DFMaterialMultiplier = 0.5 * (1 + StructureModifier)
-                        Else
-                            DFMaterialMultiplier = rsStats.GetDouble(0)
-                        End If
+                        DFMaterialMultiplier = rsStats.GetDouble(0)
 
                         rsStats.Close()
 
@@ -2080,26 +2071,28 @@ Public Class ManufacturingFacility
             .BaseME = DFMaterialMultiplier
             .BaseTE = DFTimeMultiplier
             .BaseCost = DFCostMultiplier
+            .BaseTax = DFTax
 
             ' Set the final rates on what we calculated or saved
-            If SavedTax = 0 Then
+            If SavedTax = -1 Then
                 .TaxRate = DFTax
             Else
                 .TaxRate = SavedTax
             End If
-            If SavedMaterialMultiplier = 0 Then
+
+            If SavedMaterialMultiplier = -1 Then
                 .MaterialMultiplier = DFMaterialMultiplier
             Else
                 .MaterialMultiplier = SavedMaterialMultiplier
             End If
 
-            If SavedTimeMultiplier = 0 Then
+            If SavedTimeMultiplier = -1 Then
                 .TimeMultiplier = DFTimeMultiplier
             Else
                 .TimeMultiplier = SavedTimeMultiplier
             End If
 
-            If SavedCostMultiplier = 0 Then
+            If SavedCostMultiplier = -1 Then
                 .CostMultiplier = DFCostMultiplier
             Else
                 .CostMultiplier = SavedCostMultiplier
@@ -2139,23 +2132,35 @@ Public Class ManufacturingFacility
                 .CostIndex = 0
             End If
 
+            ' Always display the bonus, not the multiplier
+            If Activity = ActivityReprocessing Then
+                ' Reset the refine rates first, then refresh
+                Call SetRefiningRates(SelectedFacility)
+                ' This is just the calculated value since it's really not a multiplier - get full value
+                If SelectedLocation = ProgramLocation.BlueprintTab Then
+                    MMText = FormatPercent(.OreFacilityRefineRate, 2)
+                    TMText = FormatPercent(.IceFacilityRefineRate, 2)
+                Else
+                    MMText = FormatPercent(.MaterialMultiplier, 2) ' For non-BP reprocessing facilties, show the base rate only
+                    TMText = FormatPercent(1 - .TimeMultiplier, 2)
+                End If
+            Else
+                MMText = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
+                TMText = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
+            End If
+
+            CostText = FormatPercent(1 - SelectedFacility.CostMultiplier, 2)
+            TaxText = FormatPercent(SelectedFacility.TaxRate, 1)
         End With
 
-        ' Always display the bonus, not the multiplier
-        Dim MMText As String
-        If Activity = ActivityReprocessing Then
-            ' This is just the calculated value since it's really not a multiplier
-            MMText = FormatPercent(DFMaterialMultiplier, 2)
-        Else
-            MMText = FormatPercent(1 - DFMaterialMultiplier, 2)
-        End If
-        Dim TMText As String = FormatPercent(1 - DFTimeMultiplier, 2)
-        Dim CostText As String = FormatPercent(1 - DFCostMultiplier, 2)
-        Dim TaxText As String = FormatPercent(DFTax, 1)
-
         If FacilityType = FacilityTypes.UpwellStructure Then
-            txtFacilityManualME.Enabled = True
-            txtFacilityManualTE.Enabled = True
+            If SelectedProductionType = ProductionType.Reprocessing Then
+                txtFacilityManualME.Enabled = False ' Disable the updating of base refining efficiency
+                txtFacilityManualTE.Enabled = False
+            Else
+                txtFacilityManualME.Enabled = True
+                txtFacilityManualTE.Enabled = True
+            End If
             txtFacilityManualTax.Enabled = True
             txtFacilityManualCost.Enabled = True
         Else ' Disable for non-upwell
@@ -2199,6 +2204,22 @@ Public Class ManufacturingFacility
             Call CostIndexUpdateText()
         End If
 
+        ' Update the refining rates for refinery facilities
+        If SelectedProductionType = ProductionType.Reprocessing Then
+            If Not FirstLoad Then
+                Select Case SelectedLocation
+                    Case ProgramLocation.MiningTab
+                        Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
+                    Case ProgramLocation.Refinery
+                        Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
+                    Case ProgramLocation.SovBelts
+                        Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
+                    Case ProgramLocation.IceBelts
+                        Call CType(SelectedControlForm, frmIceBeltFlip).RefreshGrids()
+                End Select
+            End If
+        End If
+
         ' Loaded up, let them save it
         btnFacilitySave.Visible = True
         PreviousEquipment = cmbFacility.Text
@@ -2207,25 +2228,6 @@ Public Class ManufacturingFacility
 
         ' Facility is loaded, so save it to default and dynamic variable
         Call SetFacility(SelectedFacility, BuildType, False, False)
-
-        ' Finally, update the refining rates for refinery facilities
-        If SelectedProductionType = ProductionType.Refinery Then
-            ' Set the refine rates first, then refresh
-            Call SetRefiningRates()
-            Call SetSelectedFacility(SelectedProductionType, SelectedLocation)
-            If Not FirstLoad Then
-                Select Case SelectedLocation
-                    Case ProgramLocation.MiningTab
-                        Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
-                    Case ProgramLocation.Refinery
-                        Call CType(SelectedControlForm, frmRefinery).RefreshRefiningRates()
-                    Case ProgramLocation.SovBelts
-                        Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
-                    Case ProgramLocation.IceBelts
-                        Call CType(SelectedControlForm, frmIceBeltFlip).RefreshGrids()
-                End Select
-            End If
-        End If
 
         Application.DoEvents()
 
@@ -2466,14 +2468,14 @@ Public Class ManufacturingFacility
                     SelectedReactionsFacility.IsDefault = False
                     SentFacility.IsDefault = False
                 End If
-            Case ProductionType.Refinery
-                PreviousFacility = CType(SelectedRefiningFacility.Clone, IndustryFacility)
-                SelectedRefiningFacility = SentFacility
-                If SelectedRefiningFacility.IsEqual(DefaultRefiningFacility) Then
-                    SelectedRefiningFacility.IsDefault = True
+            Case ProductionType.Reprocessing
+                PreviousFacility = CType(SelectedReprocessingFacility.Clone, IndustryFacility)
+                SelectedReprocessingFacility = SentFacility
+                If SelectedReprocessingFacility.IsEqual(DefaultRefiningFacility) Then
+                    SelectedReprocessingFacility.IsDefault = True
                     SentFacility.IsDefault = True
                 Else
-                    SelectedRefiningFacility.IsDefault = False
+                    SelectedReprocessingFacility.IsDefault = False
                     SentFacility.IsDefault = False
                 End If
             Case Else
@@ -2560,6 +2562,10 @@ Public Class ManufacturingFacility
 
         ' After showing, select the name of the citadel chosen and then dispose
         cmbFacility.Text = StructureViewer.UpwellStructureName
+        If StructureViewer.SavedFacility Then
+            ' Save it here too but don't show the dialog
+            Call SaveSelectedFacility(True)
+        End If
 
         Call StructureViewer.Dispose()
 
@@ -2587,9 +2593,12 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub btnFacilitySave_Click(sender As Object, e As EventArgs) Handles btnFacilitySave.Click
-        If SelectedFacility.FullyLoaded Then
+        Call SaveSelectedFacility(False)
+    End Sub
 
-            If SelectedFacility.SaveFacility(SelectedCharacterID, SelectedLocation) Then
+    Private Sub SaveSelectedFacility(SupressSaveMessage As Boolean)
+        If SelectedFacility.FullyLoaded Then
+            If SelectedFacility.SaveFacility(SelectedCharacterID, SelectedLocation, SupressSaveMessage) Then
                 ' Just saved, so must be the default
                 Call SetDefaultVisuals(True)
             Else
@@ -2625,7 +2634,7 @@ Public Class ManufacturingFacility
                     DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 Case ProductionType.T3Invention
                     DefaultT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-                Case ProductionType.Refinery
+                Case ProductionType.Reprocessing
                     DefaultRefiningFacility = CType(SelectedFacility.Clone, IndustryFacility)
             End Select
 
@@ -2748,7 +2757,7 @@ Public Class ManufacturingFacility
                 GroupID = ItemIDs.TacticalDestroyerGroupID
                 TechLevel = BPTechLevel.T3
                 ActivityComboText = ActivityManufacturing
-            Case ProductionType.Refinery
+            Case ProductionType.Reprocessing
                 CategoryID = ItemIDs.AsteroidsCategoryID
                 GroupID = 0
                 TechLevel = 0
@@ -2804,7 +2813,7 @@ Public Class ManufacturingFacility
                 Case ProductionType.CapitalComponentManufacturing
                     FacilityActivity = ActivityCapComponentManufacturing
                     ReturnFacility = CType(DefaultCapitalComponentManufacturingFacility.Clone, IndustryFacility)
-                Case ProductionType.Refinery
+                Case ProductionType.Reprocessing
                     FacilityActivity = ActivityReprocessing
                     ReturnFacility = CType(DefaultRefiningFacility.Clone, IndustryFacility)
             End Select
@@ -2849,9 +2858,9 @@ Public Class ManufacturingFacility
                 Case ProductionType.CapitalComponentManufacturing
                     FacilityActivity = ActivityCapComponentManufacturing
                     ReturnFacility = CType(SelectedCapitalComponentManufacturingFacility.Clone, IndustryFacility)
-                Case ProductionType.Refinery
+                Case ProductionType.Reprocessing
                     FacilityActivity = ActivityReprocessing
-                    ReturnFacility = CType(SelectedRefiningFacility.Clone, IndustryFacility)
+                    ReturnFacility = CType(SelectedReprocessingFacility.Clone, IndustryFacility)
             End Select
         End If
 
@@ -2937,12 +2946,16 @@ Public Class ManufacturingFacility
         If Activity = ActivityReprocessing Then
             ' Only two boxes shown for refining
             txtFacilityManualME.Visible = Value
-            txtFacilityManualTE.Visible = False
+            If SelectedLocation = ProgramLocation.BlueprintTab Then
+                txtFacilityManualTE.Visible = Value
+            Else
+                txtFacilityManualTE.Visible = False
+            End If
             txtFacilityManualTax.Visible = Value
             txtFacilityManualCost.Visible = False
 
             lblFacilityManualME.Visible = Value
-            lblFacilityManualTE.Visible = False
+            lblFacilityManualTE.Visible = Value
             lblFacilityManualTax.Visible = Value
             lblFacilityManualCost.Visible = False
         Else
@@ -3056,7 +3069,7 @@ Public Class ManufacturingFacility
             Case ActivityReactions
                 SelectedIndyType = ProductionType.Reactions
             Case ActivityReprocessing
-                SelectedIndyType = ProductionType.Refinery
+                SelectedIndyType = ProductionType.Reprocessing
         End Select
 
         Return SelectedIndyType
@@ -3119,6 +3132,12 @@ Public Class ManufacturingFacility
                 f1.UsageSplits.Add(RawCostSplit)
             End If
 
+            'Reprocessing usage
+            If SelectedReprocessingFacility.ConvertToOre Then
+                RawCostSplit.UsageName = "Reprocessing Usage"
+                RawCostSplit.UsageValue = SelectedReprocessingFacility.FacilityUsage
+                f1.UsageSplits.Add(RawCostSplit)
+            End If
 
             f1.Show()
         End If
@@ -3235,7 +3254,7 @@ Public Class ManufacturingFacility
             Warzone = False
         End If
 
-        If Warzone Then
+        If Warzone And SelectedFacility.FacilityProductionType <> ProductionType.Reprocessing Then
             lblFacilityFWUpgrade.Enabled = True
             lblFacilityFWUpgrade.Visible = True
             cmbFacilityFWUpgrade.Enabled = True
@@ -3414,9 +3433,9 @@ Public Class ManufacturingFacility
                 Else
                     Return DefaultT3InventionFacility
                 End If
-            Case ProductionType.Refinery
-                If SelectedRefiningFacility.FullyLoaded Then
-                    Return SelectedRefiningFacility
+            Case ProductionType.Reprocessing
+                If SelectedReprocessingFacility.FullyLoaded Then
+                    Return SelectedReprocessingFacility
                 Else
                     Return DefaultRefiningFacility
                 End If
@@ -3498,7 +3517,7 @@ Public Class ManufacturingFacility
     End Function
 
     Public Sub UpdateRefineYieldLabel(NewValue As Double)
-        If SelectedProductionType = ProductionType.Refinery Then
+        If SelectedProductionType = ProductionType.Reprocessing Then
             txtFacilityManualME.Text = FormatPercent(NewValue, 2)
         End If
     End Sub
@@ -3519,17 +3538,10 @@ Public Class ManufacturingFacility
         Call mainToolTip.SetToolTip(lblFacilityUsage, ToolTipText)
     End Sub
 
-    ' Used to update the material multipler value for refining
-    Public Sub UpdateRefiningMaterialMultiplier(ByVal NewMM As Double)
-        If SelectedProductionType = ProductionType.Refinery Then
-            SelectedRefiningFacility.MaterialMultiplier = NewMM
-        End If
-    End Sub
-
     ' Sets all the refine rates for the three different types of refinables for the selected facility
-    Private Sub SetRefiningRates()
-        With SelectedFacility
-            If SelectedProductionType = ProductionType.Refinery Then
+    Private Sub SetRefiningRates(ByRef ReprocessingFacility As IndustryFacility)
+        With ReprocessingFacility
+            If ReprocessingFacility.FacilityProductionType = ProductionType.Reprocessing Then
                 Dim DefaultRefineRate As Double = .MaterialMultiplier
                 .OreFacilityRefineRate = GetRefineRate(RefineMaterialType.Ore, DefaultRefineRate)
                 .MoonOreFacilityRefineRate = GetRefineRate(RefineMaterialType.MoonOre, DefaultRefineRate)
@@ -3544,7 +3556,7 @@ Public Class ManufacturingFacility
         Dim RefineValue As Double = DefaultValue
 
         ' Process all but scrapmetal to account for rigs/etc.
-        If SelectedProductionType = ProductionType.Refinery And SelectedFacility.FacilityType = FacilityTypes.UpwellStructure Then
+        If SelectedProductionType = ProductionType.Reprocessing And SelectedFacility.FacilityType = FacilityTypes.UpwellStructure Then
             If RefineType <> RefineMaterialType.Scrapmetal Then
                 Dim InstalledModules As List(Of Integer)
                 Dim ItemGroupID As Integer
@@ -3569,13 +3581,13 @@ Public Class ManufacturingFacility
                     Call GetRigBonus(StructureModule, GetSystemSecurityAttribute(SelectedFacility.SolarSystemName), ReturnedAttribute, TempBonus)
                     ' Look for ItemAttributes.refiningYieldMultiplier to get the correct value
                     If ReturnedAttribute = ItemAttributes.refiningYieldMultiplier Then
-                        RefineValue = (TempBonus * 100) * (SelectedFacility.MaterialMultiplier / 0.5) ' Calculate new base refine amount (the structure modifier is mulitplied to 50% base)
+                        RefineValue = (TempBonus * 100) * (SelectedFacility.MaterialMultiplier / BaseRefineRate) ' Calculate new base refine amount (the structure modifier is multiplied to 50% base)
                         Exit For
                     End If
                 Next
             Else
                 ' Scrapmetal is pretty basic - just return the base ME as 50% for all structures and we will adjust outside of object for scrapmetal
-                RefineValue = 0.5
+                RefineValue = BaseRefineRate
             End If
         End If
 
@@ -3742,13 +3754,29 @@ Public Class ManufacturingFacility
 
             Select Case Box
                 Case BoxType._ME
-                    SelectedFacility.MaterialMultiplier = 1 - FormatManualEntry(txtFacilityManualME.Text)
-                    GetFacility(SelectedFacility.FacilityProductionType).MaterialMultiplier = SelectedFacility.MaterialMultiplier
-                    txtFacilityManualME.Text = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
+                    If SelectedFacility.FacilityProductionType = ProductionType.Reprocessing And SelectedLocation = ProgramLocation.BlueprintTab Then
+                        ' For reprocessing, just set it to what they put in as it's the rate they refine
+                        ' This is the ore rate but for others, save it as the base refine rate
+                        SelectedFacility.OreFacilityRefineRate = FormatManualEntry(txtFacilityManualME.Text)
+                        GetFacility(SelectedFacility.FacilityProductionType).OreFacilityRefineRate = SelectedFacility.OreFacilityRefineRate
+                        txtFacilityManualME.Text = FormatPercent(SelectedFacility.OreFacilityRefineRate, 2)
+                    Else
+                        SelectedFacility.MaterialMultiplier = 1 - FormatManualEntry(txtFacilityManualME.Text)
+                        GetFacility(SelectedFacility.FacilityProductionType).MaterialMultiplier = SelectedFacility.MaterialMultiplier
+                        txtFacilityManualME.Text = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
+                    End If
                 Case BoxType._TE
-                    SelectedFacility.TimeMultiplier = 1 - FormatManualEntry(txtFacilityManualTE.Text)
-                    GetFacility(SelectedFacility.FacilityProductionType).TimeMultiplier = SelectedFacility.TimeMultiplier
-                    txtFacilityManualTE.Text = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
+                    If SelectedFacility.FacilityProductionType = ProductionType.Reprocessing And SelectedLocation = ProgramLocation.BlueprintTab Then
+                        ' For reprocessing, just set it to what they put in as it's the rate they refine
+                        ' This is the ice rate
+                        SelectedFacility.IceFacilityRefineRate = FormatManualEntry(txtFacilityManualTE.Text)
+                        GetFacility(SelectedFacility.FacilityProductionType).TimeMultiplier = SelectedFacility.IceFacilityRefineRate
+                        txtFacilityManualTE.Text = FormatPercent(SelectedFacility.IceFacilityRefineRate, 2)
+                    Else
+                        SelectedFacility.TimeMultiplier = 1 - FormatManualEntry(txtFacilityManualTE.Text)
+                        GetFacility(SelectedFacility.FacilityProductionType).TimeMultiplier = SelectedFacility.TimeMultiplier
+                        txtFacilityManualTE.Text = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
+                    End If
                 Case BoxType._Cost
                     SelectedFacility.CostMultiplier = 1 - FormatManualEntry(txtFacilityManualCost.Text)
                     GetFacility(SelectedFacility.FacilityProductionType).CostMultiplier = SelectedFacility.CostMultiplier
@@ -3797,19 +3825,7 @@ Public Class ManufacturingFacility
 
     End Function
 
-    Private Sub cmbModules_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbModules.SelectedIndexChanged
-
-        Call SetResetRefresh()
-
-    End Sub
-
-    Private Sub cmbFuelBlocks_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbFuelBlocks.SelectedIndexChanged
-
-        Call SetResetRefresh()
-
-    End Sub
-
-    Private Sub cmbLargeShips_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbLargeShips.SelectedIndexChanged
+    Private Sub POSCombos_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbModules.SelectedIndexChanged, cmbFuelBlocks.SelectedIndexChanged, cmbLargeShips.SelectedIndexChanged
 
         Call SetResetRefresh()
 
@@ -3829,10 +3845,12 @@ Public Class ManufacturingFacility
         ' Make sure it's not disposed
         If frmConversionOptions.IsDisposed Then
             ' Make new form
-            frmConversionOptions = New frmConversiontoOreSettings
+            frmConversionOptions = New frmConversiontoOreSettings()
         End If
+        ' Save where this form is from
+        frmConversionOptions.SelectedLocation = SelectedLocation
 
-        ' Now open the Shopping List
+        ' Now open the form
         frmConversionOptions.Show()
         frmConversionOptions.Focus()
 
@@ -3840,14 +3858,14 @@ Public Class ManufacturingFacility
 
     End Sub
 
-    Private Sub chkConvertToOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityConvertToOre.CheckedChanged
+    Private Sub chkFacilityConvertToOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkFacilityConvertToOre.CheckedChanged
         If Not ChangingUsageChecks Then
             SelectedFacility.ConvertToOre = chkFacilityConvertToOre.Checked
             ' Facility is loaded, so save it to default and dynamic variable
             Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
             Call RefreshMainBP()
             ' Update usage after completed building the bp
-            'lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
+            lblFacilityUsage.Text = FormatNumber(GetSelectedFacility.FacilityUsage, 2)
         End If
     End Sub
 
@@ -3898,7 +3916,7 @@ Public Enum ProductionType
     T3DestroyerManufacturing = 13
 
     ' New types
-    Refinery = 17
+    Reprocessing = 17
 
 End Enum
 
@@ -4026,6 +4044,7 @@ Public Class IndustryFacility
     Public BaseME As Double ' The ME bonus from default
     Public BaseTE As Double ' The TE bonus from default
     Public BaseCost As Double ' The Cost bonus from default
+    Public BaseTax As Double ' Base tax rate from default
 
     Public FullyLoaded As Boolean ' This facility was fully loaded in all parts
 
@@ -4073,6 +4092,7 @@ Public Class IndustryFacility
         BaseME = 0
         BaseTE = 0
         BaseCost = 0
+        BaseTax = 0
 
         OreFacilityRefineRate = 0
         MoonOreFacilityRefineRate = 0
@@ -4116,6 +4136,7 @@ Public Class IndustryFacility
         CopyOfMe.BaseME = BaseME
         CopyOfMe.BaseTE = BaseTE
         CopyOfMe.BaseCost = BaseCost
+        CopyOfMe.BaseTax = BaseTax
         CopyOfMe.OreFacilityRefineRate = OreFacilityRefineRate
         CopyOfMe.MoonOreFacilityRefineRate = MoonOreFacilityRefineRate
         CopyOfMe.IceFacilityRefineRate = IceFacilityRefineRate
@@ -4191,7 +4212,7 @@ Public Class IndustryFacility
                 RegionID = .GetInt64(5)
                 ' Paste the cost index to the solar system name
                 CostIndex = .GetFloat(10)
-                If InitialProductionType <> ProductionType.Refinery Then
+                If InitialProductionType <> ProductionType.Reprocessing Then
                     SolarSystemName = .GetString(6) & " (" & FormatNumber(CostIndex, 4) & ")"
                 Else
                     SolarSystemName = .GetString(6)
@@ -4206,26 +4227,26 @@ Public Class IndustryFacility
                 IncludeActivityTime = CBool(.GetInt32(12))
                 IncludeActivityUsage = CBool(.GetInt32(13))
 
-                ' Save these values for later lookup - use -1 for null indicator - these are what they saved manually
-                If IsDBNull(.GetValue(14)) Then
+                ' Save these values for later lookup - use -1 for null indicator - these are what they saved manually - can't save a value for a station
+                If IsDBNull(.GetValue(14)) Or FacilityType = FacilityTypes.Station Then
                     TaxRate = -1
                 Else
                     TaxRate = .GetDouble(14)
                 End If
 
-                If IsDBNull(.GetValue(15)) Then
+                If IsDBNull(.GetValue(15)) Or FacilityType = FacilityTypes.Station Then
                     MaterialMultiplier = -1
                 Else
                     MaterialMultiplier = .GetDouble(15)
                 End If
 
-                If IsDBNull(.GetValue(16)) Then
+                If IsDBNull(.GetValue(16)) Or FacilityType = FacilityTypes.Station Then
                     TimeMultiplier = -1
                 Else
                     TimeMultiplier = .GetDouble(16)
                 End If
 
-                If IsDBNull(.GetValue(17)) Then
+                If IsDBNull(.GetValue(17)) Or FacilityType = FacilityTypes.Station Then
                     CostMultiplier = -1
                 Else
                     CostMultiplier = .GetDouble(17)
@@ -4233,16 +4254,17 @@ Public Class IndustryFacility
 
                 ' Now, depending on type, look up the name, cost index, tax, and multipliers from the stations table (this is mainly for speed)
                 If FacilityType = FacilityTypes.Station Then ' Stations
-                    If InitialProductionType = ProductionType.Refinery Then
-                        SQL = "SELECT STATION_NAME, REPROCESSING_TAX_RATE, REPROCESSING_EFFICIENCY, 1, 1 "
+                    If InitialProductionType = ProductionType.Reprocessing Then
+                        SQL = "SELECT STATION_NAME, REPROCESSING_TAX_RATE, REPROCESSING_EFFICIENCY, 0, 0 "
                     Else
                         SQL = "SELECT STATION_NAME," & CStr(DefaultStationTaxRate) & ", 1, 1, 1 "
                     End If
                     SQL = SQL & "FROM STATIONS WHERE STATION_ID = " & CStr(FacilityID) & " "
                 ElseIf FacilityType = FacilityTypes.UpwellStructure Then
-                    SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, " & CStr(DefaultStructureTaxRate) & " AS FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
-                    SQL = SQL & "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_TYPE_ID = " & CStr(FacilityID) & " "
-                    SQL = SQL & "AND ACTIVITY_ID = " & CStr(ActivityID) & " "
+                    SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, " & CStr(DefaultStructureTaxRate) & " AS FACILITY_TAX, "
+                    SQL &= "CASE WHEN ACTIVITY_ID = -2 THEN " & CStr(BaseRefineRate) & " * (1 + MATERIAL_MULTIPLIER) ELSE MATERIAL_MULTIPLIER END, TIME_MULTIPLIER, COST_MULTIPLIER "
+                    SQL &= "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_TYPE_ID = " & CStr(FacilityID) & " "
+                    SQL &= "AND ACTIVITY_ID = " & CStr(ActivityID) & " "
                 End If
 
                 rsLoader.Close()
@@ -4253,15 +4275,6 @@ Public Class IndustryFacility
                 If rsLoader.HasRows Then
                     With rsLoader
                         FacilityName = .GetString(0) ' Need to deal with the case of all on calc base facility
-
-                        ' For the remaining values, if they saved a value manually, then use that, else use what was queried and if null, use the default
-                        If IsDBNull(.GetValue(1)) And TaxRate = -1 Then
-                            ' Nothing in DB and they didn't save anything, so use the default rate
-                            TaxRate = DefaultTaxRate
-                        ElseIf TaxRate = -1 Then
-                            ' use what was in db
-                            TaxRate = .GetDouble(1)
-                        End If
 
                         If IsDBNull(.GetValue(2)) And MaterialMultiplier = -1 Then
                             MaterialMultiplier = DefaultMaterialMultiplier
@@ -4286,6 +4299,22 @@ Public Class IndustryFacility
                         End If
 
                         BaseCost = .GetDouble(4)
+
+                        ' For the remaining values, if they saved a value manually, then use that, else use what was queried and if null, use the default
+                        If IsDBNull(.GetValue(1)) And TaxRate = -1 Then
+                            ' Nothing in DB and they didn't save anything, so use the default rate
+                            TaxRate = DefaultTaxRate
+                        ElseIf TaxRate = -1 Then
+                            ' Nothing from saved facilties, so use what is in SDE unless it's 
+                            If InitialProductionType = ProductionType.Reprocessing And FacilityType = FacilityTypes.Station Then
+                                ' Calculate it for reprocessing in stations - structures are always 0 unless saved otherwise
+                                TaxRate = CalculateStationReprocessingTaxRate(CLng(CharID), FacilityID, Nothing)
+                            Else
+                                TaxRate = .GetDouble(1)
+                            End If
+                        End If
+
+                        BaseTax = TaxRate
 
                     End With
                 Else
@@ -4315,7 +4344,41 @@ ExitBlock:
 
     End Sub
 
-    Public Function SaveFacility(CharacterID As Long, Location As ProgramLocation) As Boolean
+    Public Function CalculateStationReprocessingTaxRate(CharacterID As Long, SentFacilityID As Long, ByRef EfficiencyRate As Double) As Double
+        Dim Standing As Double = 0
+        Dim CalcTax As Double = 0
+        Dim UnadjustedCorpStanding As Double = 0
+
+        Dim SQL As String = ""
+        Dim rsStats As SQLiteDataReader
+
+        SQL = "SELECT REPROCESSING_TAX_RATE, CASE WHEN STANDING IS NULL THEN 0 ELSE STANDING END, REPROCESSING_EFFICIENCY FROM STATIONS "
+        SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID And CHARACTER_STANDINGS.CHARACTER_ID = {0} WHERE STATION_ID = {1}"
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, CharacterID, SentFacilityID), EVEDB.DBREf)
+        rsStats = DBCommand.ExecuteReader
+        rsStats.Read()
+
+        UnadjustedCorpStanding = rsStats.GetDouble(1)
+        EfficiencyRate = rsStats.GetDouble(2)
+
+        ' Refinery Tax rate will be based on standings with station corp
+        ' Effective Standing = Unadjusted Standing + (10 - Unadjusted Standing) * 4% * Connections Skill Level
+        Standing = UnadjustedCorpStanding + (10 - UnadjustedCorpStanding) * (0.04 * SelectedCharacter.Skills.GetSkillLevel(3359))
+        ' Rate = StationBaseTaxRate * (1-(.75 * CorpStanding)/5) - Note: Corp Standing affected by Connections
+        CalcTax = rsStats.GetDouble(0) * (1 - (0.75 * Standing) / 5)
+
+        If CalcTax < 0 Then
+            CalcTax = 0
+        End If
+
+        rsStats.Close()
+
+        Return CalcTax
+
+    End Function
+
+    Public Function SaveFacility(CharacterID As Long, Location As ProgramLocation, SupressNotice As Boolean) As Boolean
         Dim SQL As String
         Dim TempSQL As String
         Dim rsCheck As SQLiteDataReader
@@ -4353,12 +4416,18 @@ ExitBlock:
                     TempSQL &= "INCLUDE_ACTIVITY_COST = {5}, "
                     TempSQL &= "INCLUDE_ACTIVITY_TIME = {6}, "
                     TempSQL &= "INCLUDE_ACTIVITY_USAGE = {7}, "
-                    TempSQL &= "FACILITY_TAX = {8}, "
-                    TempSQL &= "CONVERT_TO_ORE = {11}"
+                    TempSQL &= "CONVERT_TO_ORE = {8},"
 
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
+                        If TaxRate <> BaseTax Then
+                            TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
+                            ManualEntries = True
+                        Else
+                            TempSQL &= "FACILITY_TAX = NULL, "
+                        End If
+
                         If MaterialMultiplier <> BaseME Then
                             TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
                             ManualEntries = True
@@ -4381,23 +4450,30 @@ ExitBlock:
                     Else
                         TempSQL &= "MATERIAL_MULTIPLIER = NULL, "
                         TempSQL &= "TIME_MULTIPLIER = NULL, "
-                        TempSQL &= "COST_MULTIPLIER = NULL "
+                        TempSQL &= "COST_MULTIPLIER = NULL, "
+                        TempSQL &= "FACILITY_TAX = NULL "
                     End If
 
                     TempSQL &= "WHERE PRODUCTION_TYPE = {9} AND CHARACTER_ID = {10} "
                     TempSQL &= "AND PROGRAM_LOCATION = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, CInt(FacilityProductionType), CharacterID, ConvertToOre)
+                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType), CharacterID)
 
                 Else
                     Dim MEValue As String = "NULL"
                     Dim TEValue As String = "NULL"
                     Dim CostValue As String = "NULL"
+                    Dim TaxValue As String = "NULL"
 
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
+                        If TaxRate <> BaseTax Then
+                            TaxValue = CStr(TaxRate)
+                            ManualEntries = True
+                        End If
+
                         If MaterialMultiplier <> BaseME Then
                             MEValue = CStr(MaterialMultiplier)
                             ManualEntries = True
@@ -4416,14 +4492,14 @@ ExitBlock:
                     ' Insert
                     SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
                                         CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                                        CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxRate, MEValue, TEValue, CostValue, ConvertToOre)
+                                        CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxValue, MEValue, TEValue, CostValue, ConvertToOre)
                 End If
 
                 ' Save it
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
-                If ManualEntries Then
+                If ManualEntries And FacilityProductionType <> ProductionType.Reprocessing Then
                     SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4}"
                     EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
                 End If
@@ -4454,7 +4530,9 @@ ExitBlock:
                 Call CType(ControlForm, frmMain).LoadFacilities(Location, FacilityProductionType)
             End If
 
-            Call MsgBox("Facility Saved", vbInformation, Application.ProductName)
+            If Not SupressNotice Then
+                Call MsgBox("Facility Saved", vbInformation, Application.ProductName)
+            End If
 
             Return True
 
@@ -4501,7 +4579,7 @@ ExitBlock:
                 Return False
             ElseIf .IncludeActivityUsage <> IncludeActivityUsage Then
                 Return False
-            ElseIf .ConvertToOre <> ConvertToOre And FacilityProductionType = ProductionType.Refinery Then
+            ElseIf .ConvertToOre <> ConvertToOre And FacilityProductionType = ProductionType.Reprocessing Then
                 Return False
             End If
         End With

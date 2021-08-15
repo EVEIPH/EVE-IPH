@@ -422,7 +422,7 @@ Public Class frmMain
         ' These will be used for all areas in the program - I may make specific to each reprocessing facility if requested, then will move to the manufacturing facility object
         UserConversiontoOreSettings = AllSettings.LoadConversiontoOreSettings()
 
-        frmConversionOptions = New frmConversiontoOreSettings
+        frmConversionOptions = New frmConversiontoOreSettings()
 
         ' Display to the user any issues with ESI endpoints
         Call SetProgress("Checking Status of ESI...")
@@ -907,7 +907,7 @@ Public Class frmMain
             End If
 
             ' Load the mining tab refinery
-            Call MineRefineFacility.InitializeControl(CharID, ProgramLocation.MiningTab, ProductionType.Refinery, Me)
+            Call MineRefineFacility.InitializeControl(CharID, ProgramLocation.MiningTab, ProductionType.Reprocessing, Me)
 
         Else ' Multi-save
             ' Need to see what facility to reload
@@ -1771,6 +1771,13 @@ Public Class frmMain
                 End If
             End If
 
+            'Reprocessing usage
+            If SelectedBlueprint.GetReprocessingFacility.ConvertToOre And SelectedBlueprint.GetReprocessingUsage > 0 Then
+                RawCostSplit.SplitName = "Reprocessing Usage"
+                RawCostSplit.SplitValue = SelectedBlueprint.GetReprocessingUsage
+                f1.CostSplits.Add(RawCostSplit)
+            End If
+
             ' Taxes
             RawCostSplit.SplitName = "Taxes"
             RawCostSplit.SplitValue = SelectedBlueprint.GetSalesTaxes
@@ -1824,8 +1831,8 @@ Public Class frmMain
     End Sub
 
     ' Opens the refinery window from menu
-    Private Sub mnuRefinery_Click(sender As System.Object, e As System.EventArgs) Handles mnuRefinery.Click
-        Dim f1 As New frmRefinery
+    Private Sub mnuRefinery_Click(sender As System.Object, e As System.EventArgs) Handles mnuReprocessingPlant.Click
+        Dim f1 As New frmReprocessingPlant
 
         Call f1.Show()
 
@@ -3290,11 +3297,7 @@ Tabs:
                         .Items.Add("Avg Buy")
                         .Items.Add("Median Buy")
                         .Items.Add("Percentile Buy")
-                        .Items.Add("Min Buy & Sell")
-                        .Items.Add("Max Buy & Sell")
-                        .Items.Add("Avg Buy & Sell")
-                        .Items.Add("Median Buy & Sell")
-                        .Items.Add("Percentile Buy & Sell")
+                        .Items.Add("Split Price")
                     End If
 
                     ' Set the bounds of the control
@@ -4118,12 +4121,6 @@ Tabs:
             Call RefreshBP()
         End If
 
-    End Sub
-
-    Private Sub chkBPCompressedOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPCompressedOre.CheckedChanged
-        If Not FirstLoad Then
-            Call RefreshBP()
-        End If
     End Sub
 
     Private Sub chkBPIgnoreMinerals_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreMinerals.CheckedChanged
@@ -6306,7 +6303,7 @@ Tabs:
         Dim CopyFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Copying)
         Dim InventionFacility As New IndustryFacility
 
-        Dim ReprocessingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Refinery)
+        Dim ReprocessingFacility As IndustryFacility = BPTabFacility.GetFacility(ProductionType.Reprocessing)
 
         If BPTech = BPTechLevel.T2 Or BPTech = BPTechLevel.T3 Then
             ' Set the invention facility data
@@ -6572,9 +6569,7 @@ Tabs:
             ' Fill the Raw List
             lstBPRawMats.Items.Clear()
             lstBPRawMats.BeginUpdate()
-            'If (chkBPCompressedOre.Checked) Then
-            '    Call CalculateCompressedOres(BPRawMats)
-            'Else
+
             For i = 0 To BPRawMats.Count - 1
                 rawlstViewRow = New ListViewItem(BPRawMats(i).GetMaterialName)
                 'The remaining columns are subitems  
@@ -6927,10 +6922,7 @@ ExitForm:
         lblBPMarketCost.Text = FormatNumber(SelectedBlueprint.GetItemMarketPrice / DivideUnits, 2)
 
         ' Materials (bottom labels)
-        ' If Not chkBPCompressedOre.Checked Then
         lblBPRawMatCost.Text = FormatNumber(SelectedBlueprint.GetRawMaterials.GetTotalMaterialsCost, 2)
-        'End If
-
         lblBPComponentMatCost.Text = FormatNumber(SelectedBlueprint.GetComponentMaterials.GetTotalMaterialsCost, 2)
 
         ' Taxes/Fees
@@ -7103,6 +7095,8 @@ ExitForm:
         BPTabFacility.GetFacility(ProductionType.Invention).FacilityUsage = SelectedBlueprint.GetInventionUsage() / DivideUnits
         BPTabFacility.GetFacility(ProductionType.Copying).FacilityUsage = SelectedBlueprint.GetCopyUsage() / DivideUnits
 
+        BPTabFacility.GetFacility(ProductionType.Reprocessing).FacilityUsage = SelectedBlueprint.GetReprocessingUsage() / DivideUnits
+
         ' Show the usage cost for the activity selected
         If UsedFacility.IncludeActivityUsage Then
             Select Case UsedFacility.Activity
@@ -7124,6 +7118,9 @@ ExitForm:
                 Case ManufacturingFacility.ActivityReactions
                     UsedFacility.FacilityUsage = SelectedBlueprint.GetReactionFacilityUsage / DivideUnits
                     TTText = GetUsageToolTipText(SelectedBlueprint.GetReactionFacility, True)
+                Case ManufacturingFacility.ActivityReprocessing
+                    UsedFacility.FacilityUsage = SelectedBlueprint.GetReprocessingUsage / DivideUnits
+                    TTText = GetUsageToolTipText(SelectedBlueprint.GetReprocessingFacility, True)
             End Select
         Else
             UsedFacility.FacilityUsage = 0
@@ -18275,6 +18272,7 @@ Leave:
         Dim IceBlocksPerLoad As Integer
 
         Dim ReprocessingYield As Double ' For reference out of refining
+        Dim ReprocessingTax As Double
 
         Dim TotalDroneIceBlocksPerHour As Integer = 0
         Dim TotalDroneOrePerHour As Double = 0
@@ -18439,7 +18437,7 @@ Leave:
         ' Refining
         Dim ReprocessedMaterials As New Materials
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(MineRefineFacility.GetFacility(ProductionType.Refinery), ImplantValue)
+        Dim ReprocessingStation As New ReprocessingPlant(MineRefineFacility.GetFacility(ProductionType.Reprocessing), ImplantValue)
 
         ' Loop through all the ores and determine ore amount, refine, 
         While readerMine.Read
@@ -18576,11 +18574,16 @@ Leave:
 
                 ' Refine total Ore we mined for an hour and save the total isk/hour
                 ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
-                                                                        TempOre.UnitsPerHour, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
+                                                                        TempOre.UnitsPerHour, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, ReprocessingTax)
 
                 TempOre.RefineYield = ReprocessingYield
 
-                TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
+                If ReprocessingStation.GetFacilility.IncludeActivityUsage Then
+                    TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost - ReprocessingTax
+                Else
+                    TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
+                End If
+
                 If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
                     ' Add (subtract from total isk) the heavy water cost
                     TempOre.IPH = TempOre.IPH - HeavyWaterCost
@@ -18591,7 +18594,7 @@ Leave:
 
                 ' Calculate the unit price by refining one batch
                 ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
-                                                                        TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield)
+                                                                        TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, Nothing)
                 TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                 TempOre.RefineType = "Refined"
                 OreList.Add(TempOre)

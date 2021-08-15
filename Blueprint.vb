@@ -58,6 +58,7 @@ Public Class Blueprint
     ' How much it costs to use each facility to manufacture items and parts
     Private ManufacturingFacilityUsage As Double
     Private IncludeManufacturingUsage As Boolean
+    Private ReprocessingUsage As Double
     Private ComponentFacilityUsage As Double
     Private CapComponentFacilityUsage As Double
     Private ReactionFacilityUsage As Double ' This stores the main reaction usage if the reaction is a composite and has other reactions
@@ -182,7 +183,7 @@ Public Class Blueprint
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
                 ByVal BPSellExcessItems As Boolean, ByVal BuildT2T3MaterialType As BuildMatType, ByVal OriginalBlueprint As Boolean,
-                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing, Optional BPReprocessingFacility As IndustryFacility = Nothing,
+                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing, Optional ByRef BPReprocessingFacility As IndustryFacility = Nothing,
                 Optional CompressedOreSettings As ConversionToOreSettings = Nothing)
 
         Dim readerBP As SQLiteDataReader
@@ -248,6 +249,7 @@ Public Class Blueprint
         CapComponentFacilityUsage = 0
         ReactionFacilityUsage = 0
         TotalReactionFacilityUsage = 0
+        ReprocessingUsage = 0
 
         CopyUsage = 0
         InventionUsage = 0
@@ -834,11 +836,18 @@ Public Class Blueprint
 
         End If
 
-        ' If the BP has a reprocessing facility, see if we wwant to convert minerals/ice to ore and then run this
+        Dim ReturnedExcess As New Materials
+        ReprocessingUsage = 0
+
+        ' If the BP has a reprocessing facility, see if we want to convert minerals/ice to ore and then run this
         If Not IsNothing(ReprocessingFacility) Then
             If ReprocessingFacility.ConvertToOre Then
                 Dim ReplaceMinerals As New ConvertToOre(ReprocessingFacility, UserConversiontoOreSettings)
-                RawMaterials = ReplaceMinerals.GetOresfromMinerals(RawMaterials)
+                RawMaterials = ReplaceMinerals.GetOresfromMinerals(RawMaterials, ReturnedExcess, ReprocessingUsage)
+                ' Add the excess minerals to the main excess function
+                Call ExcessMaterials.InsertMaterialList(ReturnedExcess.GetMaterialList)
+                ' Adjust the price data again to handle the update to excess prices and reprocessing usage
+                Call SetPriceData(SetTaxes, BrokerFeeData)
             End If
         End If
 
@@ -1702,6 +1711,28 @@ SkipProcessing:
 
     End Sub
 
+    Private Sub AdjustSellExcessValue(ByVal _SetTaxes As Boolean, ByVal _BrokerFeeData As BrokerFeeInfo)
+        'Total up the excess material amounts
+        SellExcessAmount = 0 ' reset
+
+        If SellExcessItems Then
+            For Each Item In ExcessMaterials.GetMaterialList
+                SellExcessAmount += Item.GetTotalCost
+            Next
+
+            ' Apply taxes and fees
+            If _SetTaxes Then
+                SellExcessAmount -= GetSalesTax(SellExcessAmount)
+            End If
+
+            SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount, _BrokerFeeData)
+
+            If SellExcessAmount < 0 Then
+                SellExcessAmount = 0
+            End If
+        End If
+    End Sub
+
     ' Sets all price data for the user to get on this blueprint, Set public so can reset with fees/taxes
     Public Sub SetPriceData(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo)
         Dim TaxesFees As Double = 0
@@ -1737,6 +1768,13 @@ SkipProcessing:
             ComponentUsage += ReactionFacilityUsage
         End If
 
+        If Not IsNothing(ReprocessingFacility) Then
+            If Not ReprocessingFacility.IncludeActivityUsage Then
+                ' if we don't want to show this, reset to 0
+                ReprocessingUsage = 0
+            End If
+        End If
+
         ' Finalize invention and copying usage and total cost of all invention
         Call SetCopyUsage()
         Call SetInventionUsage()
@@ -1760,35 +1798,18 @@ SkipProcessing:
             CopyCost = 0
         End If
 
-        TotalUsage = MainFacilityUsage + ComponentUsage + InventionUsage + CopyUsage + RemainingReactionUsage
+        TotalUsage = MainFacilityUsage + ComponentUsage + InventionUsage + CopyUsage + RemainingReactionUsage + ReprocessingUsage
 
-        'Total up the excess material amounts
-        SellExcessAmount = 0 ' reset
-
-        If SellExcessItems Then
-            For Each Item In ExcessMaterials.GetMaterialList
-                SellExcessAmount += Item.GetTotalCost
-            Next
-
-            ' Apply taxes and fees
-            If SetTaxes Then
-                SellExcessAmount -= GetSalesTax(SellExcessAmount)
-            End If
-
-            SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount, BrokerFeeData)
-
-            If SellExcessAmount < 0 Then
-                SellExcessAmount = 0
-            End If
-        End If
+        ' Set up the excess material amounts
+        Call AdjustSellExcessValue(SetTaxes, BrokerFeeData)
 
         ' Totals 
         TotalRawCost = RawMaterials.GetTotalMaterialsCost + InventionCost + CopyCost + TaxesFees + AdditionalCosts + TotalUsage - SellExcessAmount
-        TotalComponentCost = ComponentMaterials.GetTotalMaterialsCost + InventionCost + CopyCost + TaxesFees + AdditionalCosts + (TotalUsage - ComponentUsage - RemainingReactionUsage) - SellExcessAmount ' don't build components
+        TotalComponentCost = ComponentMaterials.GetTotalMaterialsCost + InventionCost + CopyCost + TaxesFees + AdditionalCosts + (TotalUsage - ComponentUsage - RemainingReactionUsage - ReprocessingUsage) - SellExcessAmount ' don't build components
 
         ' Don't include usage in the total cost above but if we are doing build/buy add it back
         If BuildBuy Then
-            TotalComponentCost += (ComponentUsage + RemainingReactionUsage)
+            TotalComponentCost += (ComponentUsage + RemainingReactionUsage + ReprocessingUsage)
         Else
             ' For component cost without build/buy, we are buying all the components so nothing to build and sell
             TotalComponentCost += SellExcessAmount
@@ -2614,6 +2635,11 @@ SkipProcessing:
         Return ReactionFacility
     End Function
 
+    ' Returns the Reprocessing facility used
+    Public Function GetReprocessingFacility() As IndustryFacility
+        Return ReprocessingFacility
+    End Function
+
     ' Returns the base job cost for this blueprint
     Public Function GetBaseJobCost() As Double
         Return BaseJobCost
@@ -2657,6 +2683,11 @@ SkipProcessing:
     ' Returns the total facility tax/fee usage for all reaction usage
     Public Function GetTotalReactionFacilityUsage() As Double
         Return TotalReactionFacilityUsage
+    End Function
+
+    ' Returns the cost to refine any ores that were converted from minerals
+    Public Function GetReprocessingUsage() As Double
+        Return ReprocessingUsage
     End Function
 
     ' Returns the max production limit for this blueprint

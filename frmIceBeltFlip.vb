@@ -27,7 +27,7 @@ Public Class frmIceBeltFlip
         Call LoadSettings()
 
         ' Load the mining tab refinery
-        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.IceBelts, ProductionType.Refinery, Me)
+        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.IceBelts, ProductionType.Reprocessing, Me)
 
         IceColumnClicked = 0
         IceColumnSortOrder = SortOrder.None
@@ -227,6 +227,8 @@ Public Class frmIceBeltFlip
         Dim TimeToFlipPer As Double
 
         Dim RefinedMaterials As New Materials
+        Dim TotalRefiningUsage As Double = 0
+        Dim SingleRefiningUsage As Double = 0
 
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
@@ -240,9 +242,9 @@ Public Class frmIceBeltFlip
         Dim BFI As New BrokerFeeInfo
         BFI = GetBrokerFeeData(chkBrokerFees, txtBrokerFeeRate)
 
-        ReprocessingStation = New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Refinery), UserApplicationSettings.RefiningImplantValue)
+        ReprocessingStation = New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), UserApplicationSettings.RefiningImplantValue)
 
-        ' Make sure to refine ore
+        ' Make sure to refine ice
         ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.IceFacilityRefineRate
         ' Update the label to show the base refine bonus with rigs
         ReprocessingFacility.UpdateRefineYieldLabel(ReprocessingStation.GetFacilility.IceFacilityRefineRate)
@@ -263,7 +265,8 @@ Public Class frmIceBeltFlip
                     ' Refine each ore in the ore list, store refined minerals
                     RefinedMaterials = ReprocessingStation.Reprocess(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
                                                                  SelectedCharacter.Skills.GetSkillLevel("Ice Processing"),
-                                                                 CType(item.SubItems(2).Text, Double), chkIncludeTaxes.Checked, BFI, OutputNumber)
+                                                                 CType(item.SubItems(2).Text, Double), chkIncludeTaxes.Checked, BFI, OutputNumber, SingleRefiningUsage)
+                    TotalRefiningUsage += SingleRefiningUsage
 
                     ' Store the refined materials
                     TotalRefinedMinerals.InsertMaterialList(RefinedMaterials.GetMaterialList)
@@ -286,6 +289,9 @@ Public Class frmIceBeltFlip
                 DBCommand = Nothing
 
             Next
+
+            ' Update the total usage for doing this refining
+            ReprocessingFacility.GetSelectedFacility.FacilityUsage = TotalRefiningUsage
 
             ' Sort the list
             Call TotalRefinedMinerals.SortMaterialListByQuantity()

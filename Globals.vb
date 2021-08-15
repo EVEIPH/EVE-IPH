@@ -10,7 +10,7 @@ Imports System.Security.Cryptography
 Public Module Public_Variables
     ' DB name and version
     Public Const SDEVersion As String = "July 13, 2021 Release"
-    Public Const VersionNumber As String = "4.0.*"
+    Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -141,6 +141,8 @@ Public Module Public_Variables
     Public Const NumIndustryJobColumns As Integer = 20
 
     Public Const AlphaAccountTaxRate As Double = 0.02
+
+    Public Const BaseRefineRate As Double = 0.5
 
     Public Const NoDate As Date = #1/1/1900#
     Public Const NoExpiry As Date = #1/1/2200#

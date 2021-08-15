@@ -3,8 +3,10 @@ Imports System.Data.SQLite
 
 Public Class frmConversiontoOreSettings
     Private FirstFormLoad As Boolean
+    Private Reset As Boolean
     Private OresChecked As Boolean
     Private OretoFind As String
+    Public SelectedLocation As ProgramLocation
 
     Private m_ControlsCollection As ControlsCollection
     Private OreCheckBoxes() As CheckBox
@@ -15,6 +17,7 @@ Public Class frmConversiontoOreSettings
     Public Sub New()
 
         FirstFormLoad = True
+        Reset = False
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -48,8 +51,6 @@ Public Class frmConversiontoOreSettings
             chkLowSec.Checked = .LowSec
             chkNullSec.Checked = .NullSec
 
-            cmbNullAnomLevel.Text = .IndyLevel
-
             chkUseBaseOre.Checked = .OreVariant0
             chkUse5percent.Checked = .OreVariant5
             chkUse10percent.Checked = .OreVariant10
@@ -67,7 +68,7 @@ Public Class frmConversiontoOreSettings
             chkC6.Checked = .C6
 
             gbWHClasses.Enabled = chkWH.Checked
-            'cmbNullAnomLevel.Enabled = chkNullSec.Checked
+
         End With
 
         m_ControlsCollection = New ControlsCollection(Me)
@@ -221,7 +222,7 @@ Public Class frmConversiontoOreSettings
             End While
         End If
 
-        ' Update all the ore checks
+        ' Update all the ore checks and adjust the orelist depending on overrides
         Call UpdateOreChecks(OreList)
 
         ' If they have nothing checked, let them know
@@ -264,12 +265,13 @@ Public Class frmConversiontoOreSettings
 
     End Function
 
-    Private Sub UpdateOreChecks(SentOres As List(Of OreType))
+    Private Sub UpdateOreChecks(ByRef SentOres As List(Of OreType))
         Dim FoundItem As OreType
 
         FirstFormLoad = True ' pause check updates
         OresChecked = False
         UserConversiontoOreSettings.SelectedOres = New List(Of OreType) ' Reset and add each ore to the list when selected
+        UserConversiontoOreSettings.IgnoreItems = New List(Of String) ' Reset this too
 
         ' Clear all checks
         For i = 1 To OreCheckBoxes.Count - 1
@@ -300,23 +302,29 @@ Public Class frmConversiontoOreSettings
                             ' Its the same as the checked value from query, so reset the override check to default
                             .OverrideChecks(i) = AllSettings.DefaultOverrideValue
                         End If
-                        ' Save the value if checked
+                        ' Save ore info
+                        FoundItem.OreName = OreLabels(i + 1).Text
+                        If i + 1 >= 20 Then
+                            FoundItem.OreGroup = "Ice"
+                        Else
+                            FoundItem.OreGroup = "Ore"
+                        End If
+                        ' If checked add it to the list, else remove it
                         If OreCheckBoxes(i + 1).Checked Then
-                            FoundItem.OreName = OreLabels(i + 1).Text
-                            If i + 1 >= 20 Then
-                                FoundItem.OreGroup = "Ice"
-                            Else
-                                FoundItem.OreGroup = "Ore"
-                            End If
                             .SelectedOres.Add(FoundItem)
                             OresChecked = True
+                        Else
+                            .SelectedOres.Remove(FoundItem)
                         End If
                     End If
                 Next
 
                 ' Update ignore checks too
-                For Each IgnoreItem In .IgnoreRefinedItems
-
+                For i = 0 To .IgnoreRefinedItems.Count - 1
+                    IgnoreChecks(i + 1).Checked = CBool(.IgnoreRefinedItems(i))
+                    If IgnoreChecks(i + 1).Checked Then
+                        .IgnoreItems.Add(IgnoreLabels(i + 1).Text)
+                    End If
                 Next
 
             End If
@@ -364,7 +372,6 @@ Public Class frmConversiontoOreSettings
             .HighSec = chkHighSec.Checked
             .LowSec = chkLowSec.Checked
             .NullSec = chkNullSec.Checked
-            .IndyLevel = cmbNullAnomLevel.Text
 
             .Amarr = chkAmarr.Checked
             .Caldari = chkCaldari.Checked
@@ -386,11 +393,9 @@ Public Class frmConversiontoOreSettings
 
             ' Override Checks is already set each time one is checked
             .OverrideChecks = UserConversiontoOreSettings.OverrideChecks
-
             .SelectedOres = UserConversiontoOreSettings.SelectedOres
-
             .IgnoreRefinedItems = UserConversiontoOreSettings.IgnoreRefinedItems
-
+            .IgnoreItems = UserConversiontoOreSettings.IgnoreItems
         End With
 
         ' Save the data to the local variable
@@ -409,6 +414,12 @@ Public Class frmConversiontoOreSettings
         If Not FirstFormLoad And Not FirstLoad Then
             Call UpdateSettings()
             Call RefreshOreList()
+            ' Load the bp on bp tab
+            If Not IsNothing(SelectedBlueprint) And SelectedLocation = ProgramLocation.BlueprintTab Then
+                With SelectedBlueprint
+                    Call frmMain.UpdateBPGrids(.GetTypeID, .GetTechLevel, False, .GetItemGroupID, .GetItemCategoryID, SentFromLocation.BlueprintTab)
+                End With
+            End If
         End If
     End Sub
 
@@ -418,18 +429,48 @@ Public Class frmConversiontoOreSettings
         Call UpdateSettings(True)
     End Sub
 
+    Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles btnReset.Click
+        ' Clear the ignore and overrides, then reload the form
+        ReDim UserConversiontoOreSettings.OverrideChecks(28)
+        ReDim UserConversiontoOreSettings.IgnoreRefinedItems(14)
+
+        For i = 0 To 28
+            UserConversiontoOreSettings.OverrideChecks(i) = 1
+        Next
+
+        For i = 0 To 14
+            UserConversiontoOreSettings.IgnoreRefinedItems(i) = 0
+        Next
+
+        Reset = True
+        For i = 1 To IgnoreChecks.Count - 1
+            IgnoreChecks(i).Checked = False
+        Next
+        Reset = False
+        Call RefreshOreList()
+
+    End Sub
+
     Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click
         Me.Hide()
     End Sub
 
     Private Sub chkWH_CheckedChanged(sender As Object, e As EventArgs) Handles chkWH.CheckedChanged
         gbWHClasses.Enabled = chkWH.Checked
+        Call UpdateSettingsRefresh()
     End Sub
 
-    Private Sub Option_Changed(sender As Object, e As EventArgs) Handles chkCompressedIce.CheckedChanged, chkCompressedOre.CheckedChanged, rbtnRefinePrice.CheckedChanged, rbtnOreVolume.CheckedChanged,
-            rbtnOrePrice.CheckedChanged, chkHighSec.CheckedChanged, chkLowSec.CheckedChanged, cmbNullAnomLevel.SelectedIndexChanged, chkUseBaseOre.CheckedChanged,
-            chkUse5percent.CheckedChanged, chkUse10percent.CheckedChanged, chkAmarr.CheckedChanged, chkCaldari.CheckedChanged, chkGallente.CheckedChanged, chkMinmatar.CheckedChanged,
-            chkWH.CheckedChanged, chkTriglavian.CheckedChanged, chkC1.CheckedChanged, chkC2.CheckedChanged, chkC3.CheckedChanged, chkC4.CheckedChanged, chkC5.CheckedChanged, chkC6.CheckedChanged
+    Private Sub RadioOption_Changed(sender As Object, e As EventArgs) Handles rbtnRefinePrice.CheckedChanged, rbtnOreVolume.CheckedChanged, rbtnOrePrice.CheckedChanged
+
+        ' Always update the current settings locally, then refresh the ore/ice checks
+        If CType(sender, RadioButton).Checked Then
+            Call UpdateSettingsRefresh()
+        End If
+
+    End Sub
+
+    Private Sub CheckOption_Changed(sender As Object, e As EventArgs) Handles chkCompressedIce.CheckedChanged, chkCompressedOre.CheckedChanged, chkHighSec.CheckedChanged, chkLowSec.CheckedChanged, chkUseBaseOre.CheckedChanged, chkUse5percent.CheckedChanged, chkUse10percent.CheckedChanged, chkAmarr.CheckedChanged, chkCaldari.CheckedChanged, chkGallente.CheckedChanged,
+            chkMinmatar.CheckedChanged, chkWH.CheckedChanged, chkTriglavian.CheckedChanged, chkC1.CheckedChanged, chkC2.CheckedChanged, chkC3.CheckedChanged, chkC4.CheckedChanged, chkC5.CheckedChanged, chkC6.CheckedChanged
 
         ' Always update the current settings locally, then refresh the ore/ice checks
         Call UpdateSettingsRefresh()
@@ -450,7 +491,6 @@ Public Class frmConversiontoOreSettings
             Dim Index As Integer = CInt(CType(sender, Label).Name.ToString.Substring(6))
             'Check the index
             OreCheckBoxes(Index).Checked = Not OreCheckBoxes(Index).Checked
-            Call UpdateSettingsRefresh()
         End If
     End Sub
 
@@ -482,7 +522,6 @@ Public Class frmConversiontoOreSettings
             Dim Index As Integer = CInt(CType(sender, Label).Name.ToString.Substring(9))
             'Check the index
             IgnoreChecks(Index).Checked = Not IgnoreChecks(Index).Checked
-            Call UpdateSettingsRefresh()
         End If
     End Sub
 
@@ -496,10 +535,11 @@ Public Class frmConversiontoOreSettings
             Dim SelectedCheck As CheckBox = CType(sender, CheckBox)
             Dim Index As Integer = CInt(SelectedCheck.Name.ToString.Substring(9)) - 1
 
-            ' They manually updated an ignore check
-            UserConversiontoOreSettings.IgnoreRefinedItems(CInt(SelectedCheck.Name.ToString.Substring(9)) - 1) = CInt(SelectedCheck.Checked)
-
-            Call UpdateSettingsRefresh()
+            If Not Reset Then
+                ' They manually updated an ignore check
+                UserConversiontoOreSettings.IgnoreRefinedItems(CInt(SelectedCheck.Name.ToString.Substring(9)) - 1) = CInt(SelectedCheck.Checked)
+                Call UpdateSettingsRefresh()
+            End If
         End If
     End Sub
 

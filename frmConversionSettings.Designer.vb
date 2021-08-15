@@ -36,7 +36,6 @@ Partial Class frmConversiontoOreSettings
         Me.rbtnOreVolume = New System.Windows.Forms.RadioButton()
         Me.rbtnRefinePrice = New System.Windows.Forms.RadioButton()
         Me.gbSystemSecurity = New System.Windows.Forms.GroupBox()
-        Me.cmbNullAnomLevel = New System.Windows.Forms.ComboBox()
         Me.gbOreVariants = New System.Windows.Forms.GroupBox()
         Me.chkUse10percent = New System.Windows.Forms.CheckBox()
         Me.chkUse5percent = New System.Windows.Forms.CheckBox()
@@ -44,7 +43,6 @@ Partial Class frmConversiontoOreSettings
         Me.chkLowSec = New System.Windows.Forms.CheckBox()
         Me.chkHighSec = New System.Windows.Forms.CheckBox()
         Me.chkNullSec = New System.Windows.Forms.CheckBox()
-        Me.lblNullAnomLevel = New System.Windows.Forms.Label()
         Me.gbMineOreLoc = New System.Windows.Forms.GroupBox()
         Me.chkTriglavian = New System.Windows.Forms.CheckBox()
         Me.chkCaldari = New System.Windows.Forms.CheckBox()
@@ -158,6 +156,7 @@ Partial Class frmConversiontoOreSettings
         Me.chkIgnore1 = New System.Windows.Forms.CheckBox()
         Me.chkIgnore3 = New System.Windows.Forms.CheckBox()
         Me.btnSaveSettings = New System.Windows.Forms.Button()
+        Me.btnReset = New System.Windows.Forms.Button()
         Me.gbConversionType.SuspendLayout()
         Me.gbMinimizeOn.SuspendLayout()
         Me.gbSystemSecurity.SuspendLayout()
@@ -174,7 +173,7 @@ Partial Class frmConversiontoOreSettings
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(105, 341)
+        Me.btnClose.Location = New System.Drawing.Point(52, 341)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(96, 30)
         Me.btnClose.TabIndex = 7
@@ -300,29 +299,16 @@ Partial Class frmConversiontoOreSettings
         '
         'gbSystemSecurity
         '
-        Me.gbSystemSecurity.Controls.Add(Me.cmbNullAnomLevel)
         Me.gbSystemSecurity.Controls.Add(Me.gbOreVariants)
         Me.gbSystemSecurity.Controls.Add(Me.chkLowSec)
         Me.gbSystemSecurity.Controls.Add(Me.chkHighSec)
         Me.gbSystemSecurity.Controls.Add(Me.chkNullSec)
-        Me.gbSystemSecurity.Controls.Add(Me.lblNullAnomLevel)
         Me.gbSystemSecurity.Location = New System.Drawing.Point(12, 83)
         Me.gbSystemSecurity.Name = "gbSystemSecurity"
         Me.gbSystemSecurity.Size = New System.Drawing.Size(144, 110)
         Me.gbSystemSecurity.TabIndex = 2
         Me.gbSystemSecurity.TabStop = False
         Me.gbSystemSecurity.Text = "System Security:"
-        '
-        'cmbNullAnomLevel
-        '
-        Me.cmbNullAnomLevel.FormattingEnabled = True
-        Me.cmbNullAnomLevel.Items.AddRange(New Object() {"Level 0", "Level 1", "Level 2", "Level 3", "Level 4", "Level 5"})
-        Me.cmbNullAnomLevel.Location = New System.Drawing.Point(75, 53)
-        Me.cmbNullAnomLevel.Name = "cmbNullAnomLevel"
-        Me.cmbNullAnomLevel.Size = New System.Drawing.Size(59, 21)
-        Me.cmbNullAnomLevel.TabIndex = 4
-        Me.cmbNullAnomLevel.Text = "Level 0"
-        Me.cmbNullAnomLevel.Visible = False
         '
         'gbOreVariants
         '
@@ -395,16 +381,6 @@ Partial Class frmConversiontoOreSettings
         Me.chkNullSec.TabIndex = 2
         Me.chkNullSec.Text = "Null Sec"
         Me.chkNullSec.UseVisualStyleBackColor = True
-        '
-        'lblNullAnomLevel
-        '
-        Me.lblNullAnomLevel.AutoSize = True
-        Me.lblNullAnomLevel.Location = New System.Drawing.Point(72, 38)
-        Me.lblNullAnomLevel.Name = "lblNullAnomLevel"
-        Me.lblNullAnomLevel.Size = New System.Drawing.Size(59, 13)
-        Me.lblNullAnomLevel.TabIndex = 3
-        Me.lblNullAnomLevel.Text = "Indy Level:"
-        Me.lblNullAnomLevel.Visible = False
         '
         'gbMineOreLoc
         '
@@ -1492,18 +1468,28 @@ Partial Class frmConversiontoOreSettings
         '
         'btnSaveSettings
         '
-        Me.btnSaveSettings.Location = New System.Drawing.Point(214, 341)
+        Me.btnSaveSettings.Location = New System.Drawing.Point(159, 341)
         Me.btnSaveSettings.Name = "btnSaveSettings"
         Me.btnSaveSettings.Size = New System.Drawing.Size(96, 30)
         Me.btnSaveSettings.TabIndex = 8
         Me.btnSaveSettings.Text = "Save Settings"
         Me.btnSaveSettings.UseVisualStyleBackColor = True
         '
+        'btnReset
+        '
+        Me.btnReset.Location = New System.Drawing.Point(266, 341)
+        Me.btnReset.Name = "btnReset"
+        Me.btnReset.Size = New System.Drawing.Size(96, 30)
+        Me.btnReset.TabIndex = 9
+        Me.btnReset.Text = "Reset"
+        Me.btnReset.UseVisualStyleBackColor = True
+        '
         'frmConversiontoOreSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(415, 380)
+        Me.Controls.Add(Me.btnReset)
         Me.Controls.Add(Me.btnSaveSettings)
         Me.Controls.Add(Me.tabOreSkills)
         Me.Controls.Add(Me.gbSystemSecurity)
@@ -1576,8 +1562,6 @@ Partial Class frmConversiontoOreSettings
     Friend WithEvents rbtnOrePrice As RadioButton
     Friend WithEvents rbtnOreVolume As RadioButton
     Friend WithEvents rbtnRefinePrice As RadioButton
-    Friend WithEvents lblNullAnomLevel As Label
-    Friend WithEvents cmbNullAnomLevel As ComboBox
     Friend WithEvents tabPageIce As TabPage
     Friend WithEvents tabPageOres As TabPage
     Friend WithEvents lblOre17 As Label
@@ -1678,4 +1662,5 @@ Partial Class frmConversiontoOreSettings
     Friend WithEvents lblIgnore15 As Label
     Friend WithEvents lblIgnore11 As Label
     Friend WithEvents gbIgnoreMinerals As GroupBox
+    Friend WithEvents btnReset As Button
 End Class

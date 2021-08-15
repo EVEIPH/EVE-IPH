@@ -21,7 +21,7 @@ Class ReprocessingPlant
     End Function
 
     Public Function Reprocess(ByVal ItemID As Long, ByVal ReprocessingSkill As Integer, ByVal ReprocessingEfficiencySkill As Integer, ByVal ProcessingSkill As Integer,
-                              ByVal TotalQuantity As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double,
+                              ByVal TotalQuantity As Double, ByVal IncludeTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByRef TotalYield As Double, ByRef ReprocessingFees As Double,
                               Optional MintoOreFormat As Boolean = False, Optional ByRef RefinedMineralsList As List(Of String) = Nothing) As Materials
         Dim RefineBatches As Long ' Number of batches of refine units we can refine from total
 
@@ -119,7 +119,7 @@ Class ReprocessingPlant
                 If ScrapReprocessing Then
                     NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
                 Else
-                    NewMaterialQuantity = CLng(Math.Round(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield, 0))
+                    NewMaterialQuantity = CLng(Math.Floor(CLng(readerRefine.GetValue(4)) * RefineBatches * TotalYield))
                 End If
 
                 RefinedMat = New Material(readerRefine.GetInt64(0), readerRefine.GetString(1), readerRefine.GetString(2),
@@ -131,8 +131,10 @@ Class ReprocessingPlant
         End If
 
         Dim RefinedMatQuantity As Double
+        Dim SingleReprocessingFee As Double
+        ReprocessingFees = 0
 
-        ' Subtract the station's refine tax
+        ' Subtract the station's refine tax - or usage
         For Each RefinedMaterial In RefinedMats.GetMaterialList
             SQL = "SELECT ADJUSTED_PRICE FROM ITEM_PRICES WHERE ITEM_ID = " & RefinedMaterial.GetMaterialTypeID
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -143,10 +145,14 @@ Class ReprocessingPlant
             Else
                 RefinedMatQuantity = RefinedMaterial.GetQuantity
             End If
-            ' Adjust the station tax on the material (by reference) - get the total adjusted price times tax rate minus total cost (save total)
-            TempCost = RefinedMaterial.GetTotalCost - (readerRefine.GetDouble(0) * RefinedMatQuantity * ReprocessingFacility.TaxRate)
-            RefinedMaterial.SetTotalCost(TempCost)
-            AdjustedCost += TempCost
+            If RefinedMatQuantity > 0 Then
+                SingleReprocessingFee = (readerRefine.GetDouble(0) * RefinedMatQuantity * ReprocessingFacility.TaxRate)
+                ReprocessingFees += SingleReprocessingFee
+                ' Adjust the station tax on the material - get the total adjusted price times tax rate minus total cost (save total)
+                TempCost = RefinedMaterial.GetTotalCost - SingleReprocessingFee
+                RefinedMaterial.SetTotalCost(TempCost)
+                AdjustedCost += TempCost
+            End If
         Next
 
         ' Update the total cost for the list

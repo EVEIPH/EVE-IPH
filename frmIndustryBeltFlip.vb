@@ -39,7 +39,7 @@ Public Class frmIndustryBeltFlip
         Call LoadSettings()
 
         ' Load the mining tab refinery
-        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.SovBelts, ProductionType.Refinery, Me)
+        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.SovBelts, ProductionType.Reprocessing, Me)
 
         Ore1ColumnClicked = 0
         Ore1ColumnSortOrder = SortOrder.None
@@ -252,7 +252,7 @@ Public Class frmIndustryBeltFlip
 
         BFI = GetBrokerFeeData(chkBrokerFees, txtBrokerFeeRate)
 
-        ReprocessingStation = New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Refinery), UserApplicationSettings.RefiningImplantValue)
+        ReprocessingStation = New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), UserApplicationSettings.RefiningImplantValue)
 
         ' Make sure to refine ore
         ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.OreFacilityRefineRate
@@ -509,6 +509,8 @@ Public Class frmIndustryBeltFlip
         Dim TimeToFlipPer As Double
 
         Dim RefinedMaterials As New Materials
+        Dim TotalRefiningUsage As Double = 0
+        Dim SingleRefiningUsage As Double = 0
 
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
@@ -613,7 +615,8 @@ Public Class frmIndustryBeltFlip
                     ' Refine each ore in the ore list, store refined minerals
                     RefinedMaterials = ReprocessingStation.Reprocess(readerBelts.GetInt64(0), SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
                                                                  SelectedCharacter.Skills.GetSkillLevel(OreName & " Processing"),
-                                                                 CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, BFI, OutputNumber)
+                                                                 CType(item.SubItems(3).Text, Double), chkIncludeTaxes.Checked, BFI, OutputNumber, SingleRefiningUsage)
+                    TotalRefiningUsage += SingleRefiningUsage
 
                     ' Store the refined materials
                     TotalRefinedMinerals.InsertMaterialList(RefinedMaterials.GetMaterialList)
@@ -658,6 +661,9 @@ Public Class frmIndustryBeltFlip
                 DBCommand = Nothing
 
             Next
+
+            ' Update the total usage for doing this refining
+            ReprocessingFacility.GetSelectedFacility.FacilityUsage = TotalRefiningUsage
 
             ' Sort the list
             Call TotalRefinedMinerals.SortMaterialListByQuantity()

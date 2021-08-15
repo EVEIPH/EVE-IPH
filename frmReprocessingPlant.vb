@@ -1,7 +1,7 @@
 ﻿
 Imports System.Data.SQLite
 
-Public Class frmRefinery
+Public Class frmReprocessingPlant
 
     Private ItemsColumnClicked As Integer
     Private ItemsColumnSortType As SortOrder
@@ -104,7 +104,7 @@ Public Class frmRefinery
         Call UpdateProcessingSkills()
 
         ' Load the refinery
-        Call RefineryFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.Refinery, ProductionType.Refinery, Me)
+        Call RefineryFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.Refinery, ProductionType.Reprocessing, Me)
 
         ItemsColumnClicked = 1
         ItemsColumnSortType = SortOrder.Ascending
@@ -352,7 +352,9 @@ Public Class frmRefinery
     ' Refines all materials in the item list and updates the item list with return amount of refining and the output list of materials
     Private Sub btnRefine_Click(sender As Object, e As EventArgs) Handles btnRefine.Click
         Dim ReprocessedMaterials As New Materials
-        Dim RefinedCost As Double
+        Dim ReprocessedCost As Double
+        Dim ReprocessingUsage As Double
+        Dim TotalReprocessingUsage As Double = 0
         Dim ItemCost As Double
         Dim ItemlstViewRow As ListViewItem
         Dim TotalItemListValue As Double = 0
@@ -379,18 +381,21 @@ Public Class frmRefinery
                 ' Refine the item
                 With Item.SubItems
                     Call ReprocessMaterial(CInt(.Item(7).Text), .Item(0).Text, CInt(.Item(1).Text), .Item(6).Text, chkRecursiveRefine.Checked,
-                                                             ReprocessedMaterials, ReprocessingYield)
+                                                             ReprocessedMaterials, ReprocessingYield, ReprocessingUsage)
                 End With
+
+                ' Save the processing cost
+                TotalReprocessingUsage += ReprocessingUsage
 
                 ' Update the refine rate to the current row, refined cost, and loss % of the refine
                 Item.SubItems.Item(3).Text = FormatPercent(ReprocessingYield, 1)
-                RefinedCost = ReprocessedMaterials.GetTotalMaterialsCost
-                Item.SubItems.Item(4).Text = FormatNumber(RefinedCost, 2)
+                ReprocessedCost = ReprocessedMaterials.GetTotalMaterialsCost
+                Item.SubItems.Item(4).Text = FormatNumber(ReprocessedCost, 2)
                 ItemCost = CDbl(Item.SubItems.Item(2).Text)
                 If ItemCost = 0 Then
                     Item.SubItems.Item(5).Text = FormatPercent(1, 1)
                 Else
-                    Item.SubItems.Item(5).Text = FormatPercent(RefinedCost / ItemCost, 1)
+                    Item.SubItems.Item(5).Text = FormatPercent(ReprocessedCost / ItemCost, 1)
                 End If
 
                 ' Add the materials to the main material list
@@ -399,6 +404,9 @@ Public Class frmRefinery
             End If
         Next
         lstItemstoRefine.EndUpdate()
+
+        ' Update the total usage for doing this refining
+        RefineryFacility.GetSelectedFacility.FacilityUsage = TotalReprocessingUsage
 
         ' Now update the main output list
         lstRefineOutput.Items.Clear()
@@ -427,15 +435,18 @@ Public Class frmRefinery
     End Sub
 
     Private Sub ReprocessMaterial(ByVal ItemID As Long, ByVal ItemName As String, ByVal ItemQuantity As Long, ByVal ItemGroup As String,
-                                  ByVal RecursiveRefine As Boolean, ByRef MaterialOutputs As Materials, ByRef ReprocessingYieldOutput As Double)
+                                  ByVal RecursiveRefine As Boolean, ByRef MaterialOutputs As Materials, ByRef ReprocessingYieldOutput As Double,
+                                  ByRef ReprocessingFees As Double)
         Dim BFI As New BrokerFeeInfo
         Dim TempOutputs As New Materials
         Dim RecursiveOutput As New Materials
         Dim UpdatedOutputs As New Materials
         Dim ReprocessingYield As Double
+        Dim ReprocessingUsage As Double
+        Dim LocalReprocessingUsage As Double = 0
 
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(RefineryFacility.GetFacility(ProductionType.Refinery), CDbl(UserApplicationSettings.RefiningImplantValue))
+        Dim ReprocessingStation As New ReprocessingPlant(RefineryFacility.GetFacility(ProductionType.Reprocessing), CDbl(UserApplicationSettings.RefiningImplantValue))
 
         ' Update the material modifier based on the type of ore
         If ItemGroup.Contains("Moon") Then
@@ -449,7 +460,9 @@ Public Class frmRefinery
         End If
 
         ' Refine the first item
-        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbRefining.Text), CInt(cmbRefineryEff.Text), GetProcessingSkill(ItemName, ItemGroup), ItemQuantity, False, BFI, ReprocessingYield)
+        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbRefining.Text), CInt(cmbRefineryEff.Text), GetProcessingSkill(ItemName, ItemGroup),
+                                                    ItemQuantity, False, BFI, ReprocessingYield, ReprocessingUsage)
+        LocalReprocessingUsage = ReprocessingUsage
 
         ' If the items returned can be further refined, and we want to recursively refine, then send again
         If RecursiveRefine Then
@@ -464,9 +477,11 @@ Public Class frmRefinery
                 If rsRefine.HasRows Then
                     ' Refine the item again and add it's materials to the main list
                     Call ReprocessMaterial(Mat.GetMaterialTypeID, Mat.GetMaterialName, Mat.GetQuantity, ItemGroup,
-                                           chkRecursiveRefine.Checked, RecursiveOutput, ReprocessingYield)
+                                           chkRecursiveRefine.Checked, RecursiveOutput, ReprocessingYield, ReprocessingUsage)
                     ' Add the final refined output to the main list
                     UpdatedOutputs.InsertMaterialList(RecursiveOutput.GetMaterialList)
+                    ' Save usage
+                    LocalReprocessingUsage += ReprocessingUsage
                 Else
                     UpdatedOutputs.InsertMaterial(Mat)
                 End If
@@ -476,6 +491,7 @@ Public Class frmRefinery
 
         MaterialOutputs = TempOutputs
         ReprocessingYieldOutput = ReprocessingYield
+        ReprocessingFees = LocalReprocessingUsage
 
     End Sub
 

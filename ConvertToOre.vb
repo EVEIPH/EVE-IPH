@@ -5,24 +5,30 @@ Imports LpSolveDotNet
 Public Class ConvertToOre
     Private Refinery As ReprocessingPlant
     Private OreConversionSettings As ConversionToOreSettings
+    Private RefineFacilty As IndustryFacility
 
     Private Structure OreDetails
         Dim ID As Integer
         Dim Name As String
+        Dim BaseName As String ' Instead of Compressed Dense Veldspar, just Veldspar
         Dim Group As String
+        Dim RefineRate As Double
         Dim Volume As Double
         Dim Price As Double
         Dim MinimizeOnValue As Double
         Dim RefinedOreList As Materials
+        Dim RefineUnits As Integer
     End Structure
 
     Public Sub New(ByRef RefineryStation As IndustryFacility, ByVal ConversionSettings As ConversionToOreSettings)
         Refinery = New ReprocessingPlant(RefineryStation, UserApplicationSettings.RefiningImplantValue)
         OreConversionSettings = ConversionSettings
+        ' Make sure we set the refining rates for use based on rigs installed
+        RefineFacilty = RefineryStation
     End Sub
 
     ' Replaces any minerals or ice products with the best ore or ice based on settings
-    Public Function GetOresfromMinerals(ByVal BuildMaterialList As Materials) As Materials
+    Public Function GetOresfromMinerals(ByVal BuildMaterialList As Materials, ByRef ExcessMaterials As Materials, ByRef ReprocessingUsage As Double) As Materials
         Dim SQL As String = ""
         Dim SelectionSQL As String = ""
         Dim rsOre As SQLiteDataReader
@@ -81,21 +87,29 @@ Public Class ConvertToOre
                 While rsOre.Read()
                     TempOre.ID = rsOre.GetInt32(0)
                     TempOre.Name = rsOre.GetString(1)
+                    TempOre.RefineUnits = rsOre.GetInt32(2)
                     TempOre.Volume = rsOre.GetDouble(3)
                     TempOre.Price = rsOre.GetDouble(4)
                     TempOre.Group = Ore.OreGroup
+                    TempOre.BaseName = Ore.OreName
                     If Ore.OreGroup = "Ice" Then
                         ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel("Ice Processing")
+                        TempOre.RefineRate = Refinery.GetFacilility.IceFacilityRefineRate ' Set the refining rate too
                     Else
                         ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel(Ore.OreName & " Processing")
+                        TempOre.RefineRate = Refinery.GetFacilility.OreFacilityRefineRate ' Set the refining rate too
                     End If
+
+                    Refinery.GetFacilility.MaterialMultiplier = TempOre.RefineRate
+
                     ReturnRefinedItemsList = New List(Of String)
+
                     ' Refine but use a double for material quantities to get partial refining value to be more exact
                     TempOre.RefinedOreList = Refinery.Reprocess(TempOre.ID, SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
-                                                                ProcessingSkill, rsOre.GetInt32(2), False, New BrokerFeeInfo, Nothing, True, ReturnRefinedItemsList)
+                                                                ProcessingSkill, TempOre.RefineUnits, False, New BrokerFeeInfo, Nothing, Nothing, True, ReturnRefinedItemsList)
 
                     ' For Ice, if the isotopes don't exist in the returned list for what we need in the material list, don't add it
-                    If Ore.OreGroup = "Ice" Then
+                    If Ore.OreGroup = "Ice" And Not IsNothing(BuildMaterialList.SearchListbyName("Isotopes")) Then
                         For Each Item In ReturnRefinedItemsList
                             If Item.Contains("Isotopes") Then
                                 ' Check it
@@ -118,7 +132,7 @@ Public Class ConvertToOre
 
                     ' Add any refined minerals to the list not already added
                     For Each Item In ReturnRefinedItemsList
-                        If Not RefinedItemsList.Contains(Item) Then
+                        If Not RefinedItemsList.Contains(Item) And Not .IgnoreItems.Contains(Item) Then
                             RefinedItemsList.Add(Item)
                         End If
                     Next
@@ -130,6 +144,11 @@ NextOre:
                 rsOre.Close()
             Next
         End With
+
+        If OreData.Count = 0 Then
+            ' If no ores match what we need, then just return the main list
+            Return BuildMaterialList
+        End If
 
         ' Initialize model
         Call LpSolve.Init()
@@ -187,24 +206,54 @@ NextOre:
 
         End With
 
+        ' Process for returning the final new list with ores
+        Dim MatLookup As Material
+        Dim RefinedMaterials As New Materials
+        Dim ReturnRefineryFee As Double = 0
+
         ' Now, for each refined item we converted, remove it from the material list sent
         For Each Item In RefinedItemsList
-            BuildMaterialList.RemoveMaterial(BuildMaterialList.SearchListbyName(Item))
+            ' Save the original amounts
+            MatLookup = BuildMaterialList.SearchListbyName(Item)
+            Call ExcessMaterials.InsertMaterial(MatLookup)
+            BuildMaterialList.RemoveMaterial(MatLookup)
         Next
 
         ' Add all the items we converted in LP Solve
         For CI = 1 To OreData.Count
-            OutputQuantity = CInt(Math.Ceiling(Outputs(CI - 1)))
-
             With OreData(CI)
+                OutputQuantity = CInt(Math.Ceiling(Outputs(CI - 1))) * .RefineUnits
                 If OutputQuantity <> 0 Then
-                    If .Group = "Ore" And Not OreConversionSettings.CompressedOre Then
-                        ' Basic ore needs 100 units to refine (ice compression is 1 to 1 - just new mass)
-                        OutputQuantity *= 100
-                    End If
                     BuildMaterialList.InsertMaterial(New Material(.ID, .Name, .Group, OutputQuantity, .Volume, .Price, "", ""))
+
+                    ' Refine this to calculate excess minerals
+                    If .Group = "Ice" Then
+                        ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel("Ice Processing")
+                    Else
+                        ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel(.BaseName & " Processing")
+                    End If
+
+                    ' Set the correct refining rate
+                    Refinery.GetFacilility.MaterialMultiplier = .RefineRate
+
+                    ' Insert the refined materials for totals later
+                    RefinedMaterials.InsertMaterialList(Refinery.Reprocess(.ID, SelectedCharacter.Skills.GetSkillLevel(3385), SelectedCharacter.Skills.GetSkillLevel(3389),
+                                                         ProcessingSkill, OutputQuantity, False, New BrokerFeeInfo, Nothing, ReturnRefineryFee).GetMaterialList)
+                    ' Get the total cost to refine
+                    ReprocessingUsage += ReturnRefineryFee
+
                 End If
             End With
+        Next
+
+        ' Finaly adjust the excess materials
+        ' Refined materials from this ore we solved for should be greater than or equal to what is needed, so just subtract all minerals from the totals needed
+        For Each mat In ExcessMaterials.GetMaterialList
+            MatLookup = RefinedMaterials.SearchListbyName(mat.GetMaterialName)
+            If Not IsNothing(MatLookup) Then
+                ' Adjust the quantity in the excess material list
+                mat.SetQuantity(MatLookup.GetQuantity - mat.GetQuantity)
+            End If
         Next
 
         Return BuildMaterialList
