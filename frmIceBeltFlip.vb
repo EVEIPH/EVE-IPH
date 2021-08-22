@@ -26,8 +26,7 @@ Public Class frmIceBeltFlip
         ' Add any initialization after the InitializeComponent() call.
         Call LoadSettings()
 
-        ' Load the mining tab refinery
-        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.IceBelts, ProductionType.Reprocessing, Me)
+        Call InitializeReprocessingFacility()
 
         IceColumnClicked = 0
         IceColumnSortOrder = SortOrder.None
@@ -36,6 +35,11 @@ Public Class frmIceBeltFlip
 
         FirstLoad = False
 
+    End Sub
+
+    Public Sub InitializeReprocessingFacility()
+        ' Load the mining tab refinery
+        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.IceBelts, ProductionType.Reprocessing, Me)
     End Sub
 
     Private Sub frmIceBeltFlip_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
@@ -685,6 +689,10 @@ Public Class frmIceBeltFlip
 
     Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
         txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+    End Sub
+
+    Private Sub frmIceBeltFlip_Disposed(sender As Object, e As EventArgs) Handles Me.Disposed
+        IceBeltFlipOpen = False
     End Sub
 
 #End Region

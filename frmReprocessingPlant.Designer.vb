@@ -134,7 +134,6 @@ Partial Class frmReprocessingPlant
         Me.btnCopyOutput = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cmbBeanCounterRefining = New System.Windows.Forms.ComboBox()
-        Me.RefineryFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabpSkills = New System.Windows.Forms.TabPage()
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.lblTotalItemList = New System.Windows.Forms.Label()
@@ -145,6 +144,7 @@ Partial Class frmReprocessingPlant
         Me.lblReturnRatePercentOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingValueOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeOutput = New System.Windows.Forms.Label()
+        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstItemstoRefine = New EVE_Isk_per_Hour.MyListView()
         Me.lstRefineOutput = New EVE_Isk_per_Hour.MyListView()
         Me.gbRefineYields.SuspendLayout()
@@ -1191,7 +1191,7 @@ Partial Class frmReprocessingPlant
         Me.tabpMain.Controls.Add(Me.btnCopyOutput)
         Me.tabpMain.Controls.Add(Me.Label1)
         Me.tabpMain.Controls.Add(Me.cmbBeanCounterRefining)
-        Me.tabpMain.Controls.Add(Me.RefineryFacility)
+        Me.tabpMain.Controls.Add(Me.ReprocessingFacility)
         Me.tabpMain.Controls.Add(Me.lblItemSelect)
         Me.tabpMain.Controls.Add(Me.btnCopyPasteAssets)
         Me.tabpMain.Controls.Add(Me.btnShowAssets)
@@ -1210,11 +1210,11 @@ Partial Class frmReprocessingPlant
         'chkRecursiveRefine
         '
         Me.chkRecursiveRefine.AutoSize = True
-        Me.chkRecursiveRefine.Location = New System.Drawing.Point(74, 156)
+        Me.chkRecursiveRefine.Location = New System.Drawing.Point(62, 157)
         Me.chkRecursiveRefine.Name = "chkRecursiveRefine"
-        Me.chkRecursiveRefine.Size = New System.Drawing.Size(108, 17)
+        Me.chkRecursiveRefine.Size = New System.Drawing.Size(128, 17)
         Me.chkRecursiveRefine.TabIndex = 132
-        Me.chkRecursiveRefine.Text = "Drill Down Refine"
+        Me.chkRecursiveRefine.Text = "Drill Down Reprocess"
         Me.chkRecursiveRefine.UseVisualStyleBackColor = True
         '
         'btnClear
@@ -1254,14 +1254,6 @@ Partial Class frmReprocessingPlant
         Me.cmbBeanCounterRefining.Name = "cmbBeanCounterRefining"
         Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(235, 21)
         Me.cmbBeanCounterRefining.TabIndex = 130
-        '
-        'RefineryFacility
-        '
-        Me.RefineryFacility.BackColor = System.Drawing.Color.Transparent
-        Me.RefineryFacility.Location = New System.Drawing.Point(6, 6)
-        Me.RefineryFacility.Name = "RefineryFacility"
-        Me.RefineryFacility.Size = New System.Drawing.Size(303, 105)
-        Me.RefineryFacility.TabIndex = 43
         '
         'tabpSkills
         '
@@ -1366,6 +1358,14 @@ Partial Class frmReprocessingPlant
         Me.lblReprocessingVolumeOutput.Text = "-"
         Me.lblReprocessingVolumeOutput.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
+        'ReprocessingFacility
+        '
+        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
+        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
+        Me.ReprocessingFacility.Name = "ReprocessingFacility"
+        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
+        Me.ReprocessingFacility.TabIndex = 43
+        '
         'lstItemstoRefine
         '
         Me.lstItemstoRefine.CheckBoxes = True
@@ -1421,7 +1421,7 @@ Partial Class frmReprocessingPlant
         Me.MinimizeBox = False
         Me.Name = "frmReprocessingPlant"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Reprocessing PLan"
+        Me.Text = "Reprocessing Plant"
         Me.gbRefineYields.ResumeLayout(False)
         Me.gbRefineYields.PerformLayout()
         Me.tabProcessingSkills.ResumeLayout(False)
@@ -1447,7 +1447,7 @@ Partial Class frmReprocessingPlant
     Friend WithEvents btnClose As System.Windows.Forms.Button
     Friend WithEvents lstRefineOutput As MyListView
     Friend WithEvents lstItemstoRefine As MyListView
-    Friend WithEvents RefineryFacility As ManufacturingFacility
+    Friend WithEvents ReprocessingFacility As ManufacturingFacility
     Friend WithEvents btnShowAssets As Button
     Friend WithEvents btnCopyPasteAssets As Button
     Friend WithEvents btnSelectAssets As Button

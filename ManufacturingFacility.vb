@@ -406,7 +406,7 @@ Public Class ManufacturingFacility
                 ' also set the activity combo text to show what type of activity this facility is, even if not visible
                 Call GetFacilityBPItemData(InitialProductionType, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, cmbFacilityActivities.Text)
 
-            Case ProgramLocation.MiningTab, ProgramLocation.Refinery, ProgramLocation.SovBelts, ProgramLocation.IceBelts
+            Case ProgramLocation.MiningTab, ProgramLocation.ReprocessingPlant, ProgramLocation.SovBelts, ProgramLocation.IceBelts
                 cmbFacilityActivities.Visible = False
 
                 lblFacilityType.Top = 5
@@ -563,7 +563,7 @@ Public Class ManufacturingFacility
 
             Call SetSelectedFacility(InitialProductionType, FacilityLocation)
 
-        ElseIf FacilityLocation = ProgramLocation.MiningTab Or FacilityLocation = ProgramLocation.Refinery Or FacilityLocation = ProgramLocation.SovBelts Or FacilityLocation = ProgramLocation.IceBelts Then
+        ElseIf FacilityLocation = ProgramLocation.MiningTab Or FacilityLocation = ProgramLocation.ReprocessingPlant Or FacilityLocation = ProgramLocation.SovBelts Or FacilityLocation = ProgramLocation.IceBelts Then
 
             Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation, SelectedControlForm)
             ' Set the refining rates for the reprocessing facility so these are set on first load
@@ -908,10 +908,13 @@ Public Class ManufacturingFacility
         cmbFacilityActivities.BeginUpdate()
 
         ' If it's a reaction, only load that activity and manufacturing for fuel blocks
-        If BPGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or BPGroupID = ItemIDs.ReactionCompositesGroupID Or BPGroupID = ItemIDs.ReactionPolymersGroupID Or BPGroupID = ItemIDs.ReactionsIntermediateGroupID Then
+        If BPGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or BPGroupID = ItemIDs.ReactionCompositesGroupID Or BPGroupID = ItemIDs.ReactionPolymersGroupID Or
+            BPGroupID = ItemIDs.ReactionsIntermediateGroupID Or BPCategoryID = ItemIDs.BoosterCategoryID Then
             cmbFacilityActivities.Items.Clear()
             cmbFacilityActivities.Items.Add(ActivityReactions)
             cmbFacilityActivities.Items.Add(ActivityManufacturing)
+            ' Add reprocessing due to minerals
+            cmbFacilityActivities.Items.Add(ActivityReprocessing)
 
             ' Start with reactions for a new facility because its a call to load not from combo
             cmbFacilityActivities.Text = ActivityReactions
@@ -978,17 +981,18 @@ Public Class ManufacturingFacility
             End Select
 
             ' check for adding reactions if full controls (only bp tab) 
+            ' Maybe just check if the bp or bp item material requires a reaction skill, then add reactions facility?
             SQL = ""
             If BuildMatTypeSelection = BuildMatType.ProcessedMaterials Then
-                SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
-                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS "
-                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0}) "
-                SQL &= "AND MATERIAL_GROUP IN ('Composite'))"
+                SQL = "SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE PRODUCT_ID IN "
+                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT "
+                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0}) "
+                SQL &= "AND MATERIAL_GROUP_ID IN (429,712))"
             ElseIf BuildMatTypeSelection = BuildMatType.RawMaterials Then
-                SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID IN "
-                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN "
-                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = {0}) "
-                SQL &= "AND MATERIAL_GROUP IN ('Composite','Hybrid Polymers','Intermediate Materials','Biochemical Material','Harvestable Cloud'))"
+                SQL = "SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE PRODUCT_ID IN "
+                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID IN "
+                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0}) "
+                SQL &= "AND MATERIAL_GROUP_ID IN (428,429,711,712,974))"
             End If
 
             If SQL <> "" Then
@@ -1883,7 +1887,7 @@ Public Class ManufacturingFacility
             ' First, see if this facility is a saved facility, and use the values saved in the table
             SQL = "SELECT FACILITY_ID, FACILITY_TAX, MATERIAL_MULTIPLIER, TIME_MULTIPLIER, COST_MULTIPLIER "
             SQL &= "FROM SAVED_FACILITIES "
-            SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_TYPE = {2} AND PROGRAM_LOCATION = {3} "
+            SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_TYPE = {2} AND FACILITY_VIEW = {3} "
             SQL &= "AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text)) & " "
             SQL &= "AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName)) & " "
             SQL &= "AND FACILITY_ID = {4}"
@@ -1923,8 +1927,6 @@ Public Class ManufacturingFacility
             End If
 
             rsLoader.Close()
-
-            Dim Standing As Double = 0
 
             If FacilityID <> -1 Then
                 ' Load default data
@@ -2210,7 +2212,7 @@ Public Class ManufacturingFacility
                 Select Case SelectedLocation
                     Case ProgramLocation.MiningTab
                         Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
-                    Case ProgramLocation.Refinery
+                    Case ProgramLocation.ReprocessingPlant
                         Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
                     Case ProgramLocation.SovBelts
                         Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
@@ -2291,7 +2293,7 @@ Public Class ManufacturingFacility
         End If
 
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
-        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4} "
+        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
         SQL &= "AND UPWELL_STRUCTURES_INSTALLED_MODULES.INSTALLED_MODULE_ID = ENGINEERING_RIG_BONUSES.typeID AND activityId = {7} "
         SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
         DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, CStr(SelectedProductionType), CStr(SystemID), CStr(SelectedLocation),
@@ -3878,7 +3880,7 @@ Public Enum ProgramLocation
     BlueprintTab = 0
     ManufacturingTab = 1
     MiningTab = 2
-    Refinery = 3
+    ReprocessingPlant = 3
     SovBelts = 4
     IceBelts = 5
 End Enum
@@ -4175,7 +4177,7 @@ Public Class IndustryFacility
         SQL &= "AND SF.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID "
         SQL &= "AND SF.FACILITY_TYPE = FACILITY_TYPES.FACILITY_TYPE_ID "
         SQL &= "AND FACILITY_PRODUCTION_TYPES.ACTIVITY_ID = INDUSTRY_ACTIVITIES.activityID "
-        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.PROGRAM_LOCATION = {1} ", CStr(InitialProductionType), CStr(FacilityLocation))
+        SQL &= String.Format("AND SF.PRODUCTION_TYPE = {0} AND SF.FACILITY_VIEW = {1} ", CStr(InitialProductionType), CStr(FacilityLocation))
 
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
         Dim CharID As String = ""
@@ -4400,7 +4402,7 @@ ExitBlock:
 
             For Each LID In LocationList
                 ' See if the record exists - only save one set of facilities for now
-                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND PROGRAM_LOCATION = {1} AND CHARACTER_ID = {2}",
+                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
                         CInt(FacilityProductionType), LID, CharacterID)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsCheck = DBCommand.ExecuteReader
@@ -4455,7 +4457,7 @@ ExitBlock:
                     End If
 
                     TempSQL &= "WHERE PRODUCTION_TYPE = {9} AND CHARACTER_ID = {10} "
-                    TempSQL &= "AND PROGRAM_LOCATION = " & CStr(LID)
+                    TempSQL &= "AND FACILITY_VIEW = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                     CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType), CharacterID)
@@ -4490,7 +4492,7 @@ ExitBlock:
                     End If
 
                     ' Insert
-                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
+                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},NULL,{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
                                         CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                                         CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxValue, MEValue, TEValue, CostValue, ConvertToOre)
                 End If
@@ -4500,7 +4502,7 @@ ExitBlock:
 
                 ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
                 If ManualEntries And FacilityProductionType <> ProductionType.Reprocessing Then
-                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4}"
+                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
                     EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
                 End If
 
@@ -4526,8 +4528,43 @@ ExitBlock:
             Next
 
             ' Refresh the main facilites if sharing facility saves
-            If (Location = ProgramLocation.BlueprintTab Or Location = ProgramLocation.ManufacturingTab) And UserApplicationSettings.ShareSavedFacilities Then
-                Call CType(ControlForm, frmMain).LoadFacilities(Location, FacilityProductionType)
+            If UserApplicationSettings.ShareSavedFacilities Then
+                ' Refresh the facilities - except the one I just saved it on
+                If FacilityProductionType = ProductionType.Reprocessing Then
+                    If Location = ProgramLocation.ReprocessingPlant Or Location = ProgramLocation.SovBelts Or Location = ProgramLocation.IceBelts Then
+                        ' If any of these checked, need to refresh the bp, mining, and manufacturing tabs - the others will load when opened
+                        Call frmMain.LoadFacilities(ProgramLocation.BlueprintTab, FacilityProductionType)
+                        Call frmMain.LoadFacilities(ProgramLocation.MiningTab, FacilityProductionType)
+                        Call frmMain.LoadFacilities(ProgramLocation.ManufacturingTab, FacilityProductionType)
+                    ElseIf Location = ProgramLocation.BlueprintTab Then
+                        Call frmMain.LoadFacilities(ProgramLocation.MiningTab, FacilityProductionType)
+                        Call frmMain.LoadFacilities(ProgramLocation.ManufacturingTab, FacilityProductionType)
+                    ElseIf Location = ProgramLocation.MiningTab Then
+                        Call frmMain.LoadFacilities(ProgramLocation.BlueprintTab, FacilityProductionType)
+                        Call frmMain.LoadFacilities(ProgramLocation.ManufacturingTab, FacilityProductionType)
+                    ElseIf Location = ProgramLocation.ManufacturingTab Then
+                        Call frmMain.LoadFacilities(ProgramLocation.BlueprintTab, FacilityProductionType)
+                        Call frmMain.LoadFacilities(ProgramLocation.MiningTab, FacilityProductionType)
+                    End If
+                    If Location <> ProgramLocation.ReprocessingPlant And ReprocessingPlantOpen Then
+                        Call CType(Application.OpenForms.Item("frmReprocessingPlant"), frmReprocessingPlant).InitializeReprocessingFacility()
+                    End If
+
+                    If Location <> ProgramLocation.IceBelts And IceBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
+                        Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
+                    End If
+
+                    If Location <> ProgramLocation.SovBelts And OreBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
+                        Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
+                    End If
+                Else
+                    ' non- reprocessing is just limited to bp and manufacturing tab
+                    If Location = ProgramLocation.BlueprintTab Then
+                        Call frmMain.LoadFacilities(ProgramLocation.ManufacturingTab, FacilityProductionType)
+                    Else
+                        Call frmMain.LoadFacilities(ProgramLocation.BlueprintTab, FacilityProductionType)
+                    End If
+                End If
             End If
 
             If Not SupressNotice Then
@@ -4553,7 +4590,7 @@ ExitBlock:
                 Return False
             ElseIf .FacilityProductionType <> FacilityProductionType Then
                 Return False
-            ElseIf .FacilityName <> FacilityName And Not FacilityProductionType = ProductionType.Manufacturing Then
+            ElseIf .FacilityName <> FacilityName Then
                 Return False
             ElseIf .RegionName <> RegionName Then
                 Return False

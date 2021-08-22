@@ -200,9 +200,7 @@ Public Class Blueprint
         If readerBP.Read Then
             ' Set the variables
             BlueprintID = readerBP.GetInt32(0)
-            If Developer Then ' Really only need BP name for debugging
-                BlueprintName = GetTypeName(readerBP.GetInt32(0))
-            End If
+            BlueprintName = GetTypeName(readerBP.GetInt32(0))
             BlueprintGroupID = readerBP.GetInt32(1)
             ItemID = readerBP.GetInt64(2)
             ItemName = GetTypeName(readerBP.GetInt32(2))
@@ -770,8 +768,7 @@ Public Class Blueprint
                     End If
 
                     ' Figure out if we build or buy
-                    Dim BuildFlag As Boolean = GetBuildBuyFlag(OneItemMarketPrice, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalBuildCost,
-                                                               ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
+                    Dim BuildFlag As Boolean = GetBuildFlag(ComponentBlueprint, OneItemMarketPrice, BuildQuantity, OwnedBP, SetTaxes, BrokerFeeData)
 
                     If (BuildBuy And BuildFlag) Then
                         ' Market cost is greater than build cost, so set the mat cost to the build cost - or just building (not build/buy)
@@ -898,6 +895,9 @@ Public Class Blueprint
         Dim ExtraMaterial As Material = Nothing
         Dim RefUsedMat As Material = Nothing
 
+        Dim UsesReactions As Boolean = False
+        Dim IgnoreBuild As Boolean = False
+
         ' Select all materials to buid this BP
         SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_GROUP_ID, MATERIAL_CATEGORY_ID,  "
         SQL = SQL & "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE, groupName "
@@ -983,25 +983,36 @@ Public Class Blueprint
                     ComponentBPPortionSize = 1
                 End If
 
-                Dim UsesReactions As Boolean = False
+                IgnoreBuild = False
+
+                ' If this is an advanced composite reaction, and the advanced option is selected, then don't build anything and add as raw material
+                If ItemGroupID = ItemIDs.ReactionCompositesGroupID And T2T3MaterialType = BuildMatType.AdvMaterials Then
+                    IgnoreBuild = True
+                ElseIf (BlueprintName.Contains("Standard") Or BlueprintName.Contains("Synth")) And T2T3MaterialType = BuildMatType.ProcessedMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochmeicalsGroupID Then
+                    IgnoreBuild = True
+                ElseIf (BlueprintName.Contains("Improved") Or BlueprintName.Contains("Strong")) And T2T3MaterialType <> BuildMatType.RawMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochmeicalsGroupID Then
+                    IgnoreBuild = True
+                End If
+
+                UsesReactions = False
 
                 ' See what material type this is and if we want to build it (reactions)
                 Select Case CurrentMaterialGroupID
-                    Case 429 ' Composite
+                    Case ItemIDs.ReactionCompositesGroupID
                         If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
-                    Case 428, 974 ' Intermediate, Hybrid Polymers
-                        If T2T3MaterialType = BuildMatType.RawMaterials Then
+                    Case ItemIDs.ReactionsIntermediateGroupID, ItemIDs.ReactionPolymersGroupID
+                        If T2T3MaterialType = BuildMatType.RawMaterials Then ' Or (ItemGroupID = ItemIDs.ReactionCompositesGroupID And T2T3MaterialType = BuildMatType.AdvMaterials) Then
                             UsesReactions = True
                         End If
-                    Case 712 ' Biochemical
-                        If CurrentMaterial.GetMaterialName.Contains("Strong") Or CurrentMaterial.GetMaterialName.Contains("Improved") Then
+                    Case ItemIDs.ReactionBiochmeicalsGroupID
+                        ' Special processing for boosters
+                        If CurrentMaterial.GetMaterialName.Contains("Improved") Or CurrentMaterial.GetMaterialName.Contains("Strong") Then
                             ' This has intermediate material types
-                            Application.DoEvents()
-                            If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
-                                UsesReactions = True
-                            End If
+                            UsesReactions = True
+                        ElseIf (CurrentMaterial.GetMaterialName.Contains("Standard") Or CurrentMaterial.GetMaterialName.Contains("Synth")) And T2T3MaterialType = BuildMatType.ProcessedMaterials Then
+                            UsesReactions = True
                         Else ' Only builds one level
                             If T2T3MaterialType = BuildMatType.RawMaterials Then
                                 UsesReactions = True
@@ -1020,8 +1031,8 @@ Public Class Blueprint
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
 
-                If readerME.Read Then
-                    ' We can build it from another BP
+                If readerME.Read And Not IgnoreBuild Then
+                    ' We can build it from another BP 
                     HasBuildableComponents = True
 
                     ' Look up the ME/TE and owned data for the bp
@@ -1051,9 +1062,9 @@ Public Class Blueprint
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
                     ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
-                                                       1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
-                                                       ComponentManufacturingFacility, CapitalComponentManufacturingFacility,
-                                                       ReactionFacility, SellExcessItems, T2T3MaterialType, False, BBList)
+                                                           1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
+                                                           ComponentManufacturingFacility, CapitalComponentManufacturingFacility,
+                                                           ReactionFacility, SellExcessItems, T2T3MaterialType, False, BBList)
 
                     ' Set this blueprint with the quantity needed and get it's mats
                     Call ComponentBlueprint.BuildItem(SetTaxes, BrokerFeeData, SetProductionCosts, IgnoreMinerals, IgnoreT1Item, ExcessBuildMaterials)
@@ -1107,8 +1118,7 @@ Public Class Blueprint
                     End If
 
                     ' Figure out if we build or if cheaper to buy
-                    Dim BuildItem As Boolean = GetBuildBuyFlag(CurrentMaterial.GetCostPerItem, ComponentBlueprint.GetPortionSize, BuildQuantity, ComponentBlueprint.GetTotalBuildCost,
-                                                                ComponentBlueprint.BPExcessMaterials, OwnedBP, ComponentBlueprint.ItemID, SetTaxes, BrokerFeeData)
+                    Dim BuildItem As Boolean = GetBuildFlag(ComponentBlueprint, CurrentMaterial.GetCostPerItem, BuildQuantity, OwnedBP, SetTaxes, BrokerFeeData)
 
                     If (BuildItem And BuildBuy) Or Not BuildBuy Then
                         '*** BUILD ***
@@ -1129,7 +1139,7 @@ Public Class Blueprint
                         ' Use any materials before continuing
                         If Not IsNothing(ExcessBuildMaterials) Then
                             Call UseExcessMaterials(ExcessBuildMaterials, CurrentMaterial.GetMaterialTypeID, CurrentMaterial.GetQuantity - BuiltQuantity,
-                                        SavedExcessMaterialList, UsedExcessMaterial)
+                                            SavedExcessMaterialList, UsedExcessMaterial)
                         End If
 
                         ' Save the production time for this component
@@ -1179,7 +1189,7 @@ Public Class Blueprint
 
                             ' Add the built item to the built component list for later use
                             TempBuiltItem = SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize,
-                                                TempME, TempTE, ComponentBlueprint, BuildQuantity)
+                                                    TempME, TempTE, ComponentBlueprint, BuildQuantity)
 
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
 
@@ -1204,7 +1214,7 @@ Public Class Blueprint
                         Else '*** BUILD ALL COMPONENTS ***
                             ' Add the built item to the built component list for later use
                             BuiltComponentList.AddBuiltItem(CType(SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize, TempME, TempTE,
-                                        ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
+                                            ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
 
                             ' Insert the existing component that we are using into the component list as set in the original BP
                             ComponentMaterials.InsertMaterial(CurrentMaterial, ComponentBlueprint.GetTotalBuildCost)
@@ -1265,30 +1275,30 @@ Public Class Blueprint
 
                 Else ' Just raw material 
                     If readerME.HasRows Then
-                        ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
-                        ' For example, see modulated core strip miner and polarized heavy pulse weapons.
-                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
-                        CurrentMaterial.SetItemME(CStr(TempME))
+                            ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
+                            ' For example, see modulated core strip miner and polarized heavy pulse weapons.
+                            Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                            CurrentMaterial.SetItemME(CStr(TempME))
+                        End If
+
+                        ' We are not building these
+                        CurrentMaterial.SetBuildItem(False)
+
+                        ' Insert the raw mats
+                        RawMaterials.InsertMaterial(CurrentMaterial)
+                        ' Also insert into component list
+                        ComponentMaterials.InsertMaterial(CurrentMaterial)
+                        ' These are from the bp and not a component
+                        BPRawMats.InsertMaterial(CurrentMaterial)
+
                     End If
 
-                    ' We are not building these
-                    CurrentMaterial.SetBuildItem(False)
-
-                    ' Insert the raw mats
-                    RawMaterials.InsertMaterial(CurrentMaterial)
-                    ' Also insert into component list
-                    ComponentMaterials.InsertMaterial(CurrentMaterial)
-                    ' These are from the bp and not a component
-                    BPRawMats.InsertMaterial(CurrentMaterial)
-
-                End If
-
-                readerME.Close()
-                readerME = Nothing
+                    readerME.Close()
+                    readerME = Nothing
 
 SkipProcessing:
 
-            End If
+                End If
 
         End While
 
@@ -2039,14 +2049,20 @@ SkipProcessing:
 
     End Function
 
-    Private Function GetBuildBuyFlag(ByVal OneItemMarketCost As Double, ByVal ItemPortionSize As Long, ByVal Runs As Long, ByVal TotalBuildCost As Double, ByVal BPExcessMaterials As Materials,
-                                     ByVal OwnedBP As Boolean, ByVal ComponentItemID As Long, ByVal SetTaxes As Boolean, ByVal BFData As BrokerFeeInfo) As Boolean
+    ' Determines if the item we are building should be bought or built for the main bp
+    Private Function GetBuildFlag(ByVal ItemBlueprint As Blueprint, ByVal OneItemMarketCost As Double, ByVal Runs As Long,
+                                  ByVal OwnedBP As Boolean, ByVal SetTaxes As Boolean, ByVal BFData As BrokerFeeInfo) As Boolean
         Dim CheapertoBuild As Boolean = False
         Dim ExcessAmount As Double = 0
 
+        ' First, check the overrides based on settings
+        If (BPUserSettings.AlwaysBuyFuelBlocks And ItemBlueprint.BlueprintName.Contains("Fuel Block")) Or (BPUserSettings.AlwaysBuyRAMs And ItemBlueprint.BlueprintName.Contains("R.A.M.")) Then
+            Return False
+        End If
+
         ' Get the excess amount cost of the build item for checking build/buy
         If SellExcessItems Then
-            ExcessAmount = BPExcessMaterials.GetTotalMaterialsCost
+            ExcessAmount = ItemBlueprint.BPExcessMaterials.GetTotalMaterialsCost
             ' Add any excess for the main component too
             If SetTaxes Then
                 ExcessAmount -= GetSalesTax(ExcessAmount)
@@ -2056,7 +2072,7 @@ SkipProcessing:
         End If
 
         ' See if the costs to build are less than buy - cost to buy is greater than cost to build (compare total portion size for component)
-        If ((OneItemMarketCost * ItemPortionSize) * Runs) > (TotalBuildCost - ExcessAmount) Then
+        If ((OneItemMarketCost * ItemBlueprint.GetPortionSize) * Runs) > (ItemBlueprint.GetTotalBuildCost - ExcessAmount) Then
             CheapertoBuild = True
         End If
 
@@ -2068,7 +2084,7 @@ SkipProcessing:
             BuildItem = (OneItemMarketCost = 0) Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
         Else
             ' Look up the override value and if not found, use the default
-            BuildItem = ManualBuildBuyValue(ComponentItemID, CheapertoBuild)
+            BuildItem = ManualBuildBuyValue(ItemBlueprint.ItemID, CheapertoBuild)
         End If
 
         Return BuildItem

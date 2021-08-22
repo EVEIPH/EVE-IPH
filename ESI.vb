@@ -403,6 +403,7 @@ Public Class ESI
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
         Dim Response As String = ""
+        Dim TokenExpireDate As Date
 
         Try
             ' See if we update the token data first
@@ -422,8 +423,9 @@ Public Class ESI
                 SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
 
                 With TokenData
+                    TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
                     SQL = String.Format(SQL, FormatDBString(.access_token),
-                    Format(DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow), SQLiteDateFormat),
+                    Format(TokenExpireDate, SQLiteDateFormat),
                     FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
                 End With
 
@@ -439,7 +441,7 @@ Public Class ESI
                 ' Now update the copy used in IPH so we don't re-query
                 SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
                 SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
-                SelectedCharacter.CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
+                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
 
             End If
 
@@ -979,6 +981,7 @@ Public Class ESI
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESICorporationRoles))(ReturnData)
         Else
+            ' No corp roles returned
             Return Nothing
         End If
 
@@ -2063,6 +2066,12 @@ Public Class ESIErrorProcessor
         If ErrorCode = 403 And ErrorResponse = "The given character doesn't have the required role(s)" And URL.Contains("/corporations/") Then
             'This is a call to corporation roles that now errors if you don't have any roles. The response will return all roles for the characters in the corp and you 
             ' need personel manager or director to really do it so don't error if it's just a character with those roles only
+            Exit Sub
+        End If
+
+        ' This is the error we get if you switch corps and the old corp id is attached to your account info, which may not need to be updated
+        ' The change in corp number seems to take a bit to complete, so they will have to wait until this info is refereshed in ESI - so we will supress this error
+        If ErrorResponse = "Received bad session variable(s): ""corporation_id"" " And URL.Contains("/corporations/") Then
             Exit Sub
         End If
 

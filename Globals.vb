@@ -229,6 +229,11 @@ Public Module Public_Variables
     Public MaxStationID As Long = 67000000
     Public MinStationID As Long = 60000000
 
+    ' Opened forms from menu
+    Public ReprocessingPlantOpen As Boolean
+    Public OreBeltFlipOpen As Boolean
+    Public IceBeltFlipOpen As Boolean
+
     ' For scanning assets
     Public Enum ScanType
         Personal = 0

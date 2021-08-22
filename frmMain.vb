@@ -789,6 +789,10 @@ Public Class frmMain
         ' For handling click events
         UpdatingCheck = False
 
+        ReprocessingPlantOpen = False
+        OreBeltFlipOpen = False
+        IceBeltFlipOpen = False
+
         ' All set, we are done loading
         FirstLoad = False
 
@@ -914,44 +918,45 @@ Public Class frmMain
             Dim SavedPT As ProductionType
 
             ' They saved a facility on the manufacturing tab, so init all the facilities on the bp tab and reload the current facility
-            If FacilityLocation <> ProgramLocation.BlueprintTab Then
+            If FacilityLocation = ProgramLocation.BlueprintTab Then
                 ' Get the current facility that's viewed
                 SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
                 ' Just reload all the facilities
-                Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
+                Call BPTabFacility.InitializeFacilities(FacilityLocation)
                 ' Now reload the one that was shown
-                Call BPTabFacility.InitializeControl(CharID, ProgramLocation.BlueprintTab, SavedPT, Me)
+                'Call BPTabFacility.InitializeControl(CharID, FacilityLocation, SavedPT, Me)
+            ElseIf FacilityLocation = ProgramLocation.MiningTab Then
+                ' Load the mining tab refinery
+                Call MineRefineFacility.InitializeFacilities(FacilityLocation)
             Else
-                ' Saving on the bp tab, so that is all updated, but we need to update the manufacturing tab facility that was saved on BP
-                SavedPT = BPTabFacility.GetSelectedFacility.FacilityProductionType
-
+                ' Init the manufacturing tab facilities
                 Select Case FacilityType
                     Case ProductionType.BoosterManufacturing
-                        Call CalcBoostersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.BoosterManufacturing, Me)
+                        Call CalcBoostersFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.CapitalComponentManufacturing
-                        Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalComponentManufacturing, Me)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.CapitalManufacturing
-                        Call CalcCapitalsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.CapitalManufacturing, Me)
+                        Call CalcCapitalsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.ComponentManufacturing
-                        Call CalcComponentsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.ComponentManufacturing, Me)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.Copying
-                        Call CalcCopyFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Copying, Me)
+                        Call CalcCopyFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.Invention
-                        Call CalcInventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Invention, Me)
+                        Call CalcInventionFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.Manufacturing
-                        Call CalcBaseFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Manufacturing, Me)
+                        Call CalcBaseFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.Reactions
-                        Call CalcReactionsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.Reactions, Me)
+                        Call CalcReactionsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.SubsystemManufacturing
-                        Call CalcSubsystemsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SubsystemManufacturing, Me)
+                        Call CalcSubsystemsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.SuperManufacturing
-                        Call CalcSupersFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.SuperManufacturing, Me)
+                        Call CalcSupersFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.T3CruiserManufacturing
-                        Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3CruiserManufacturing, Me)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.T3DestroyerManufacturing
-                        Call CalcT3ShipsFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3DestroyerManufacturing, Me)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
                     Case ProductionType.T3Invention
-                        Call CalcT3InventionFacility.InitializeControl(CharID, ProgramLocation.ManufacturingTab, ProductionType.T3Invention, Me)
+                        Call CalcT3InventionFacility.InitializeFacilities(FacilityLocation)
                 End Select
             End If
         End If
@@ -1831,10 +1836,11 @@ Public Class frmMain
     End Sub
 
     ' Opens the refinery window from menu
-    Private Sub mnuRefinery_Click(sender As System.Object, e As System.EventArgs) Handles mnuReprocessingPlant.Click
+    Private Sub mnuReprocessingPlant_Click(sender As System.Object, e As System.EventArgs) Handles mnuReprocessingPlant.Click
         Dim f1 As New frmReprocessingPlant
 
         Call f1.Show()
+        ReprocessingPlantOpen = True
 
     End Sub
 
@@ -1868,18 +1874,19 @@ Public Class frmMain
         Dim f1 As New frmIndustryBeltFlip
 
         f1.Show()
+        OreBeltFlipOpen = True
     End Sub
 
     Private Sub mnuIceBelts_Click(sender As Object, e As EventArgs) Handles mnuIceBelts.Click
         Dim f1 As New frmIceBeltFlip
 
         f1.Show()
+        IceBeltFlipOpen = True
     End Sub
 
     ' Full reset - will delete all data downloaded, updated, or otherwise set by the user
     Private Sub mnuResetAllData_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuResetAllData.Click
         Dim Response As MsgBoxResult
-        Dim SQL As String
 
         Response = MsgBox("This will reset all data for the program including ESI Tokens, Blueprints, Assets, Industry Jobs, and Price data." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
 
@@ -1887,41 +1894,33 @@ Public Class frmMain
             Application.UseWaitCursor = True
             Application.DoEvents()
 
-            SQL = "DELETE FROM ESI_CHARACTER_DATA"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CHARACTER_DATA")
 
-            SQL = "DELETE FROM ESI_CORPORATION_DATA"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CORPORATION_DATA")
 
-            SQL = "DELETE FROM CHARACTER_STANDINGS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_STANDINGS")
 
-            SQL = "DELETE FROM CHARACTER_SKILLS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_SKILLS")
 
-            SQL = "DELETE FROM OWNED_BLUEPRINTS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS")
 
-            SQL = "DELETE FROM ITEM_PRICES_CACHE"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ITEM_PRICES_CACHE")
 
-            SQL = "DELETE FROM ASSETS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ASSETS")
 
-            SQL = "DELETE FROM INDUSTRY_JOBS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_JOBS")
 
-            SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CURRENT_RESEARCH_AGENTS")
 
-            SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = 0"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET PRICE = 0")
 
-            SQL = "DELETE FROM MARKET_HISTORY"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY")
 
-            SQL = "DELETE FROM MARKET_HISTORY_UPDATE_CACHE"
-            EVEDB.ExecuteNonQuerySQL(SQL)
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
+
+            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILTIES WHERE CHARACTER_ID <> 0")
+            ' Re-load all the forms' facilities
+            Call LoadFacilities()
 
             ' Reset all the cache dates
             Call ResetESIDates()
@@ -1936,19 +1935,18 @@ Public Class frmMain
             Application.DoEvents()
 
             Call SelectedCharacter.LoadDummyCharacter(True)
-
-            MsgBox("All Data Reset", vbInformation, Application.ProductName)
-
-            ' Need to set a default, open that form
-            Dim f2 = New frmSetCharacterDefault
-            f2.ShowDialog()
-
-            Call LoadCharacterNamesinMenu()
-
             ' Reset the tabs
             Call ResetTabs()
 
             FirstLoad = False
+
+            MsgBox("All Data Reset", vbInformation, Application.ProductName)
+
+            ' Need to set a default, open that form
+            'Dim f2 = New frmSetCharacterDefault
+            'f2.ShowDialog()
+
+            'Call LoadCharacterNamesinMenu()
 
         End If
 
@@ -2027,6 +2025,16 @@ Public Class frmMain
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET PUBLIC_STRUCTURES_CACHED_UNTIL = NULL")
 
         MsgBox("ESI Public Structure data reset", vbInformation, Application.ProductName)
+
+    End Sub
+
+    Private Sub mnuResetSavedFacilities_Click(sender As Object, e As EventArgs) Handles mnuResetSavedFacilities.Click
+
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILTIES WHERE CHARACTER_ID <> 0")
+        ' Re-load all the forms' facilities
+        Call LoadFacilities()
+
+        MsgBox("Saved Facility data reset", vbInformation, Application.ProductName)
 
     End Sub
 
@@ -11460,8 +11468,9 @@ CheckTechs:
             ColumnPositions(.AvgItemsperOrder) = ProgramSettings.AvgItemsperOrderColumnName
             ColumnPositions(.CurrentSellOrders) = ProgramSettings.CurrentSellOrdersColumnName
             ColumnPositions(.CurrentBuyOrders) = ProgramSettings.CurrentBuyOrdersColumnName
-            ColumnPositions(.ItemsinStock) = ProgramSettings.ItemsinStockColumnName
             ColumnPositions(.ItemsinProduction) = ProgramSettings.ItemsinProductionColumnName
+            ColumnPositions(.ItemsinStock) = ProgramSettings.ItemsinStockColumnName
+            ColumnPositions(.MaterialCost) = ProgramSettings.MaterialCostColumnName
             ColumnPositions(.TotalCost) = ProgramSettings.TotalCostColumnName
             ColumnPositions(.BaseJobCost) = ProgramSettings.BaseJobCostColumnName
             ColumnPositions(.NumBPs) = ProgramSettings.NumBPsColumnName
@@ -11470,6 +11479,8 @@ CheckTechs:
             ColumnPositions(.Race) = ProgramSettings.RaceColumnName
             ColumnPositions(.VolumeperItem) = ProgramSettings.VolumeperItemColumnName
             ColumnPositions(.TotalVolume) = ProgramSettings.TotalVolumeColumnName
+            ColumnPositions(.SellExcess) = ProgramSettings.SellExcessColumnName
+            ColumnPositions(.ROI) = ProgramSettings.ROIColumnName
             ColumnPositions(.PortionSize) = ProgramSettings.PortionSizeColumnName
             ColumnPositions(.ManufacturingJobFee) = ProgramSettings.ManufacturingJobFeeColumnName
             ColumnPositions(.ManufacturingFacilityName) = ProgramSettings.ManufacturingFacilityNameColumnName
@@ -11526,6 +11537,14 @@ CheckTechs:
             ColumnPositions(.ReactionFacilityTEBonus) = ProgramSettings.ReactionFacilityTEBonusColumnName
             ColumnPositions(.ReactionFacilityUsage) = ProgramSettings.ReactionFacilityUsageColumnName
             ColumnPositions(.ReactionFacilityFWSystemLevel) = ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+            ColumnPositions(.ReprocessingFacilityName) = ProgramSettings.ReprocessingFacilityNameColumnName
+            ColumnPositions(.ReprocessingFacilitySystem) = ProgramSettings.ReprocessingFacilitySystemColumnName
+            ColumnPositions(.ReprocessingFacilityRegion) = ProgramSettings.ReprocessingFacilityRegionColumnName
+            ColumnPositions(.ReprocessingFacilityTax) = ProgramSettings.ReprocessingFacilityTaxColumnName
+            ColumnPositions(.ReprocessingFacilityUsage) = ProgramSettings.ReprocessingFacilityUsageColumnName
+            ColumnPositions(.ReprocessingFacilityOreRefineRate) = ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+            ColumnPositions(.ReprocessingFacilityIceRefineRate) = ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+            ColumnPositions(.ReprocessingFacilityMoonRefineRate) = ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
         End With
 
         ' First column is always the ListID
@@ -11598,16 +11617,18 @@ CheckTechs:
                     Return .TotalItemsSoldWidth
                 Case ProgramSettings.TotalOrdersFilledColumnName
                     Return .TotalOrdersFilledWidth
-                Case ProgramSettings.ItemsinProductionColumnName
-                    Return .ItemsinProductionWidth
-                Case ProgramSettings.ItemsinStockColumnName
-                    Return .ItemsinStockWidth
                 Case ProgramSettings.AvgItemsperOrderColumnName
                     Return .AvgItemsperOrderWidth
                 Case ProgramSettings.CurrentSellOrdersColumnName
                     Return .CurrentSellOrdersWidth
                 Case ProgramSettings.CurrentBuyOrdersColumnName
                     Return .CurrentBuyOrdersWidth
+                Case ProgramSettings.ItemsinProductionColumnName
+                    Return .ItemsinProductionWidth
+                Case ProgramSettings.ItemsinStockColumnName
+                    Return .ItemsinStockWidth
+                Case ProgramSettings.MaterialCostColumnName
+                    Return .MaterialCostWidth
                 Case ProgramSettings.TotalCostColumnName
                     Return .TotalCostWidth
                 Case ProgramSettings.BaseJobCostColumnName
@@ -11624,6 +11645,10 @@ CheckTechs:
                     Return .VolumeperItemWidth
                 Case ProgramSettings.TotalVolumeColumnName
                     Return .TotalVolumeWidth
+                Case ProgramSettings.SellExcessColumnName
+                    Return .SellExcessWidth
+                Case ProgramSettings.ROIColumnName
+                    Return .ROIWidth
                 Case ProgramSettings.PortionSizeColumnName
                     Return .PortionSizeWidth
                 Case ProgramSettings.ManufacturingJobFeeColumnName
@@ -11736,6 +11761,22 @@ CheckTechs:
                     Return .ReactionFacilityUsageWidth
                 Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                     Return .ReactionFacilityFWSystemLevelWidth
+                Case ProgramSettings.ReprocessingFacilityNameColumnName
+                    Return .ReprocessingFacilityNameWidth
+                Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                    Return .ReprocessingFacilitySystemWidth
+                Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                    Return .ReprocessingFacilityRegionWidth
+                Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                    Return .ReprocessingFacilityTaxWidth
+                Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                    Return .ReprocessingFacilityUsageWidth
+                Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                    Return .ReprocessingFacilityOreRefineRateWidth
+                Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                    Return .ReprocessingFacilityIceRefineRateWidth
+                Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
+                    Return .ReprocessingFacilityMoonRefineRateWidth
                 Case Else
                     Return 0
             End Select
@@ -11867,6 +11908,12 @@ CheckTechs:
                         .CurrentSellOrders = i
                     Case ProgramSettings.CurrentBuyOrdersColumnName
                         .CurrentBuyOrders = i
+                    Case ProgramSettings.ItemsinProductionColumnName
+                        .ItemsinProduction = i
+                    Case ProgramSettings.ItemsinStockColumnName
+                        .ItemsinStock = i
+                    Case ProgramSettings.MaterialCostColumnName
+                        .MaterialCost = i
                     Case ProgramSettings.TotalCostColumnName
                         .TotalCost = i
                     Case ProgramSettings.BaseJobCostColumnName
@@ -11883,6 +11930,10 @@ CheckTechs:
                         .VolumeperItem = i
                     Case ProgramSettings.TotalVolumeColumnName
                         .TotalVolume = i
+                    Case ProgramSettings.SellExcessColumnName
+                        .SellExcess = i
+                    Case ProgramSettings.ROIColumnName
+                        .ROI = i
                     Case ProgramSettings.PortionSizeColumnName
                         .PortionSize = i
                     Case ProgramSettings.ManufacturingJobFeeColumnName
@@ -11995,6 +12046,22 @@ CheckTechs:
                         .ReactionFacilityUsage = i
                     Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                         .ReactionFacilityFWSystemLevel = i
+                    Case ProgramSettings.ReprocessingFacilityNameColumnName
+                        .ReprocessingFacilityName = i
+                    Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                        .ReprocessingFacilitySystem = i
+                    Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                        .ReprocessingFacilityRegion = i
+                    Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                        .ReprocessingFacilityTax = i
+                    Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                        .ReprocessingFacilityUsage = i
+                    Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                        .ReprocessingFacilityOreRefineRate = i
+                    Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                        .ReprocessingFacilityIceRefineRate = i
+                    Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
+                        .ReprocessingFacilityMoonRefineRate = i
                 End Select
             Next
         End With
@@ -12082,6 +12149,12 @@ CheckTechs:
                         .CurrentSellOrdersWidth = NewWidth
                     Case ProgramSettings.CurrentBuyOrdersColumnName
                         .CurrentBuyOrdersWidth = NewWidth
+                    Case ProgramSettings.ItemsinProductionColumnName
+                        .ItemsinProductionWidth = NewWidth
+                    Case ProgramSettings.ItemsinStockColumnName
+                        .ItemsinStockWidth = NewWidth
+                    Case ProgramSettings.MaterialCostColumnName
+                        .MaterialCostWidth = NewWidth
                     Case ProgramSettings.TotalCostColumnName
                         .TotalCostWidth = NewWidth
                     Case ProgramSettings.BaseJobCostColumnName
@@ -12098,6 +12171,10 @@ CheckTechs:
                         .VolumeperItemWidth = NewWidth
                     Case ProgramSettings.TotalVolumeColumnName
                         .TotalVolumeWidth = NewWidth
+                    Case ProgramSettings.SellExcessColumnName
+                        .SellExcessWidth = NewWidth
+                    Case ProgramSettings.ROIColumnName
+                        .ROIWidth = NewWidth
                     Case ProgramSettings.PortionSizeColumnName
                         .PortionSizeWidth = NewWidth
                     Case ProgramSettings.ManufacturingJobFeeColumnName
@@ -12210,6 +12287,22 @@ CheckTechs:
                         .ReactionFacilityUsageWidth = NewWidth
                     Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                         .ReactionFacilityFWSystemLevelWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityNameColumnName
+                        .ReprocessingFacilityNameWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                        .ReprocessingFacilitySystemWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                        .ReprocessingFacilityRegionWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                        .ReprocessingFacilityTaxWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                        .ReprocessingFacilityUsageWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                        .ReprocessingFacilityOreRefineRateWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                        .ReprocessingFacilityIceRefineRateWidth = NewWidth
+                    Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
+                        .ReprocessingFacilityMoonRefineRateWidth = NewWidth
                 End Select
             End With
         End If
@@ -12299,6 +12392,8 @@ CheckTechs:
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ItemsinStockColumnName
                 Return HorizontalAlignment.Right
+            Case ProgramSettings.MaterialCostColumnName
+                Return HorizontalAlignment.Right
             Case ProgramSettings.TotalCostColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.BaseJobCostColumnName
@@ -12314,6 +12409,10 @@ CheckTechs:
             Case ProgramSettings.VolumeperItemColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.TotalVolumeColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.SellExcessColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ROIColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.PortionSizeColumnName
                 Return HorizontalAlignment.Right
@@ -12410,13 +12509,13 @@ CheckTechs:
             Case ProgramSettings.InventionFacilityFWSystemLevelColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilityNameColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilitySystemColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilityRegionColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilitySystemIndexColumnName
-                Return HorizontalAlignment.Left
+                Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilityTaxColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilityMEBonusColumnName
@@ -12426,6 +12525,22 @@ CheckTechs:
             Case ProgramSettings.ReactionFacilityUsageColumnName
                 Return HorizontalAlignment.Right
             Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityNameColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                Return HorizontalAlignment.Right
+            Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
                 Return HorizontalAlignment.Right
             Case Else
                 Return 0
@@ -12985,6 +13100,8 @@ CheckTechs:
         ' For the optimal decryptor checking
         Dim OptimalDecryptorItems As New List(Of OptimalDecryptorItem)
 
+        Dim ItemIsReaction As Boolean
+
         ' Set this now and enable it if they calculate
         AddToShoppingListToolStripMenuItem.Enabled = False
 
@@ -13242,6 +13359,13 @@ CheckTechs:
                 ' Save the runs for checking decryptors and relics later
                 InsertItem.SavedBPRuns = readerBPs.GetInt32(25)
 
+                Select Case InsertItem.ItemGroupID
+                    Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                        ItemIsReaction = True
+                    Case Else
+                        ItemIsReaction = False
+                End Select
+
                 ' ME value, either what the entered or in the table
                 Select Case TempItemType
                     Case 3, 15, 16
@@ -13255,7 +13379,10 @@ CheckTechs:
                             InsertItem.BPME = CInt(readerBPs.GetValue(9))
                         End If
                     Case Else
-                        If InsertItem.Owned = No Then
+                        If ItemIsReaction Then
+                            ' Can't research reactions
+                            InsertItem.BPTE = 0
+                        ElseIf InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPME = CInt(txtCalcTempME.Text)
                         Else
@@ -13277,7 +13404,10 @@ CheckTechs:
                             InsertItem.BPTE = CInt(readerBPs.GetValue(10))
                         End If
                     Case Else
-                        If InsertItem.Owned = No Then
+                        If ItemIsReaction Then
+                            ' Can't research reactions
+                            InsertItem.BPTE = 0
+                        ElseIf InsertItem.Owned = No Then
                             ' Use the default
                             InsertItem.BPTE = CInt(txtCalcTempTE.Text)
                         Else
@@ -13318,12 +13448,11 @@ CheckTechs:
                 Dim BuildType As ProductionType
 
                 ' Set the facility for manufacturing and set it to the current selected facility for this type
-                Select Case InsertItem.ItemGroupID
-                    Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
-                        BuildType = ProductionType.Reactions
-                    Case Else
-                        BuildType = TempFacility.GetProductionType(InsertItem.ItemGroupID, InsertItem.ItemCategoryID, ManufacturingFacility.ActivityManufacturing)
-                End Select
+                If ItemIsReaction Then
+                    BuildType = ProductionType.Reactions
+                Else
+                    BuildType = TempFacility.GetProductionType(InsertItem.ItemGroupID, InsertItem.ItemCategoryID, ManufacturingFacility.ActivityManufacturing)
+                End If
 
                 Select Case BuildType
                     Case ProductionType.Manufacturing
@@ -13711,6 +13840,9 @@ CheckTechs:
                                 InsertItem.Race = GetRace(ManufacturingBlueprint.GetRaceID)
                                 InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
+                                InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
+                                InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
 
                                 If chkCalcPPU.Checked Then
                                     InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -13745,6 +13877,8 @@ CheckTechs:
                                 InsertItem.CapComponentManufacturingFacilityUsage = 0
                                 InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                                 InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
+                                InsertItem.ReprocessingFacilityUsage = ManufacturingBlueprint.GetReprocessingUsage
+
                                 ' Save the bp
                                 InsertItem.Blueprint = ManufacturingBlueprint
 
@@ -13778,6 +13912,9 @@ CheckTechs:
                             InsertItem.Race = GetRace(ManufacturingBlueprint.GetRaceID)
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
+                            InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
+                            InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
+                            InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
 
                             If chkCalcPPU.Checked Then
                                 InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -13812,6 +13949,7 @@ CheckTechs:
                             InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetTotalReactionFacilityUsage
                             InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                             InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
+                            InsertItem.ReprocessingFacilityUsage = ManufacturingBlueprint.GetReprocessingUsage
 
                             ' Save the bp
                             InsertItem.Blueprint = ManufacturingBlueprint
@@ -13863,6 +14001,9 @@ CheckTechs:
                                 InsertItem.Race = GetRace(ManufacturingBlueprint.GetRaceID)
                                 InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
+                                InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
+                                InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
 
                                 If chkCalcPPU.Checked Then
                                     InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -13897,6 +14038,7 @@ CheckTechs:
                                 InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
                                 InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                                 InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
+                                InsertItem.ReprocessingFacilityUsage = ManufacturingBlueprint.GetReprocessingUsage
 
                                 ' Save the bp
                                 InsertItem.Blueprint = ManufacturingBlueprint
@@ -13962,6 +14104,9 @@ CheckTechs:
                             InsertItem.Race = GetRace(ManufacturingBlueprint.GetRaceID)
                             InsertItem.VolumeperItem = ManufacturingBlueprint.GetItemVolume
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
+                            InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
+                            InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
+                            InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
 
                             If chkCalcPPU.Checked Then
                                 InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -14008,6 +14153,7 @@ CheckTechs:
                             InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
                             InsertItem.CopyFacilityUsage = ManufacturingBlueprint.GetCopyUsage
                             InsertItem.InventionFacilityUsage = ManufacturingBlueprint.GetInventionUsage
+                            InsertItem.ReprocessingFacilityUsage = ManufacturingBlueprint.GetReprocessingUsage
 
                             ' Save the bp
                             InsertItem.Blueprint = ManufacturingBlueprint
@@ -14205,6 +14351,12 @@ DisplayResults:
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).TotalVolume / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.PortionSizeColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).PortionSize, 0))
+                    Case ProgramSettings.MaterialCostColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).MaterialCost, 2))
+                    Case ProgramSettings.SellExcessColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).SellExcess, 2))
+                    Case ProgramSettings.ROIColumnName
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).ROI, 2))
 
                     Case ProgramSettings.ManufacturingJobFeeColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).JobFee / FinalItemList(i).DivideUnits, 2))
@@ -14321,6 +14473,24 @@ DisplayResults:
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).ReactionFacilityUsage / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                         BPList.SubItems.Add(CStr(FinalItemList(i).ReactionFacility.FWUpgradeLevel))
+
+                    Case ProgramSettings.ReprocessingFacilityNameColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.FacilityName)
+                    Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.SolarSystemName)
+                    Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).ReprocessingFacility.TaxRate, 1))
+                    Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.RegionName)
+                    Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.OreFacilityRefineRate))
+                    Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.IceFacilityRefineRate))
+                    Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
+                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.MoonOreFacilityRefineRate))
+                    Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ReprocessingFacilityUsage / FinalItemList(i).DivideUnits, 2))
+
                 End Select
             Next
 
@@ -15466,6 +15636,7 @@ ExitCalc:
         Public Profit As Double
         Public ProfitPercent As Double
         Public IPH As Double
+        Public MaterialCost As Double
         Public TotalCost As Double
         Public CalcType As String ' Type of calculation to get the profit - either Components, Raw Mats or Build/Buy
         Public BlueprintType As BPType
@@ -15513,6 +15684,9 @@ ExitCalc:
         Public InventionFacilityUsage As Double
         Public InventionFacility As IndustryFacility
 
+        Public ReprocessingFacilityUsage As Double
+        Public ReprocessingFacility As IndustryFacility
+
         Public BPProductionTime As String
         Public TotalProductionTime As String
         Public CopyTime As String
@@ -15531,6 +15705,9 @@ ExitCalc:
         Public TotalVolume As Double
         Public PortionSize As Integer
         Public DivideUnits As Integer
+
+        Public SellExcess As Double
+        Public ROI As Double
 
         Public JobFee As Double
 
@@ -15557,6 +15734,7 @@ ExitCalc:
             CopyofMe.ProfitPercent = ProfitPercent
             CopyofMe.IPH = IPH
             CopyofMe.TotalCost = TotalCost
+            CopyofMe.MaterialCost = MaterialCost
             CopyofMe.CalcType = CalcType
             CopyofMe.BlueprintType = BlueprintType
 
@@ -15597,6 +15775,7 @@ ExitCalc:
             CopyofMe.ReactionFacility = ReactionFacility
             CopyofMe.InventionFacility = InventionFacility
             CopyofMe.CopyFacility = CopyFacility
+            CopyofMe.ReprocessingFacility = ReprocessingFacility
 
             CopyofMe.BPProductionTime = BPProductionTime
             CopyofMe.TotalProductionTime = TotalProductionTime
@@ -15613,6 +15792,8 @@ ExitCalc:
             CopyofMe.TotalVolume = TotalVolume
             CopyofMe.PortionSize = PortionSize
             CopyofMe.DivideUnits = DivideUnits
+            CopyofMe.SellExcess = SellExcess
+            CopyofMe.ROI = ROI
 
             CopyofMe.JobFee = JobFee
 
@@ -15622,6 +15803,7 @@ ExitCalc:
             CopyofMe.ReactionFacilityUsage = ReactionFacilityUsage
             CopyofMe.CopyFacilityUsage = CopyFacilityUsage
             CopyofMe.InventionFacilityUsage = InventionFacilityUsage
+            CopyofMe.ReprocessingFacilityUsage = ReprocessingFacilityUsage
 
             Return CopyofMe
 

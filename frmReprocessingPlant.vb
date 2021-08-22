@@ -50,7 +50,7 @@ Public Class frmReprocessingPlant
         lstItemstoRefine.Columns.Add("Quantity", 51, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Total Cost", 100, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Rate", 43, HorizontalAlignment.Right)
-        lstItemstoRefine.Columns.Add("Refined Cost", 100, HorizontalAlignment.Right)
+        lstItemstoRefine.Columns.Add("Refined Value", 100, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("% Return", 55, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Material Group", 0, HorizontalAlignment.Right) ' Hidden
         lstItemstoRefine.Columns.Add("Item ID", 0, HorizontalAlignment.Right) ' Hidden
@@ -103,14 +103,18 @@ Public Class frmReprocessingPlant
         ' Update the ore processing skills
         Call UpdateProcessingSkills()
 
-        ' Load the refinery
-        Call RefineryFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.Refinery, ProductionType.Reprocessing, Me)
+        Call InitializeReprocessingFacility()
 
         ItemsColumnClicked = 1
         ItemsColumnSortType = SortOrder.Ascending
         OutputColumnClicked = 1
         OutputColumnSortType = SortOrder.Ascending
 
+    End Sub
+
+    Public Sub InitializeReprocessingFacility()
+        ' Load the facility
+        Call ReprocessingFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.ReprocessingPlant, ProductionType.Reprocessing, Me)
     End Sub
 
 #Region "Object Events"
@@ -401,12 +405,17 @@ Public Class frmReprocessingPlant
                 ' Add the materials to the main material list
                 Call MaterialOutput.InsertMaterialList(ReprocessedMaterials.GetMaterialList)
                 Application.DoEvents()
+            Else
+                ' Clear the output data 
+                Item.SubItems.Item(3).Text = ""
+                Item.SubItems.Item(4).Text = ""
+                Item.SubItems.Item(5).Text = ""
             End If
         Next
         lstItemstoRefine.EndUpdate()
 
         ' Update the total usage for doing this refining
-        RefineryFacility.GetSelectedFacility.FacilityUsage = TotalReprocessingUsage
+        ReprocessingFacility.GetSelectedFacility.FacilityUsage = TotalReprocessingUsage
 
         ' Now update the main output list
         lstRefineOutput.Items.Clear()
@@ -422,10 +431,11 @@ Public Class frmReprocessingPlant
         lstRefineOutput.EndUpdate()
 
         ' Update the total values for the two lists and rate
-        lblListTotalValueOutput.Text = FormatNumber(TotalItemListValue, 2)
-        lblReturnRatePercentOutput.Text = FormatPercent(MaterialOutput.GetTotalMaterialsCost / TotalItemListValue, 1)
-        lblReprocessingValueOutput.Text = FormatNumber(MaterialOutput.GetTotalMaterialsCost, 2)
-        lblReprocessingVolumeOutput.Text = FormatNumber(MaterialOutput.GetTotalVolume, 2)
+        Dim TotalValue = MaterialOutput.GetTotalMaterialsCost - TotalReprocessingUsage  ' Subtract usage first
+        lblListTotalValueOutput.Text = FormatNumber(TotalItemListValue, 2) ' Total value of the items reprocessed
+        lblReturnRatePercentOutput.Text = FormatPercent(TotalValue / TotalItemListValue, 1) ' Amount of stuff recieved / total value of stuff reprocessed
+        lblReprocessingValueOutput.Text = FormatNumber(TotalValue, 2) ' Total value of stuff reprocessed minus usage
+        lblReprocessingVolumeOutput.Text = FormatNumber(MaterialOutput.GetTotalVolume, 2) ' Total volume of output stuff
 
         ' Sort the  list
         Call ListViewColumnSorter(OutputColumnClicked, CType(lstRefineOutput, ListView), OutputColumnClicked, OutputColumnSortType)
@@ -446,7 +456,7 @@ Public Class frmReprocessingPlant
         Dim LocalReprocessingUsage As Double = 0
 
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(RefineryFacility.GetFacility(ProductionType.Reprocessing), CDbl(UserApplicationSettings.RefiningImplantValue))
+        Dim ReprocessingStation As New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), CDbl(UserApplicationSettings.RefiningImplantValue))
 
         ' Update the material modifier based on the type of ore
         If ItemGroup.Contains("Moon") Then
@@ -628,7 +638,7 @@ Public Class frmReprocessingPlant
     End Sub
 
     Public Sub RefreshRefiningRates()
-        With RefineryFacility.GetSelectedFacility
+        With ReprocessingFacility.GetSelectedFacility
             ' These are bases rate without processing skills or implant
             lblOreRate.Text = FormatPercent(.OreFacilityRefineRate, 2)
             lblMoonRate.Text = FormatPercent(.MoonOreFacilityRefineRate, 2)
@@ -714,4 +724,7 @@ Public Class frmReprocessingPlant
 
     End Sub
 
+    Private Sub frmReprocessingPlant_Disposed(sender As Object, e As EventArgs) Handles Me.Disposed
+        ReprocessingPlantOpen = False
+    End Sub
 End Class

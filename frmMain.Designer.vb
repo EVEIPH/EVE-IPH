@@ -806,7 +806,6 @@ Partial Class frmMain
         Me.chkStructureModules = New System.Windows.Forms.CheckBox()
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
-        Me.chkBPUseOre = New System.Windows.Forms.CheckBox()
         Me.btnBPBuiltComponents = New System.Windows.Forms.Button()
         Me.btnBPComponents = New System.Windows.Forms.Button()
         Me.rbtnBPRawT2MatType = New System.Windows.Forms.RadioButton()
@@ -969,6 +968,7 @@ Partial Class frmMain
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
         Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.mnuResetSavedFacilities = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1198,7 +1198,7 @@ Partial Class frmMain
         '
         'mnuResetData
         '
-        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIPublicStructures, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
+        Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIPublicStructures, Me.mnuResetSavedFacilities, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
         Me.mnuResetData.Name = "mnuResetData"
         Me.mnuResetData.Size = New System.Drawing.Size(250, 22)
         Me.mnuResetData.Text = "Reset Data"
@@ -8731,7 +8731,6 @@ Partial Class frmMain
         '
         'tabBlueprints
         '
-        Me.tabBlueprints.Controls.Add(Me.chkBPUseOre)
         Me.tabBlueprints.Controls.Add(Me.btnBPBuiltComponents)
         Me.tabBlueprints.Controls.Add(Me.btnBPComponents)
         Me.tabBlueprints.Controls.Add(Me.rbtnBPRawT2MatType)
@@ -8770,19 +8769,6 @@ Partial Class frmMain
         Me.tabBlueprints.TabIndex = 0
         Me.tabBlueprints.Text = "Blueprints"
         Me.tabBlueprints.UseVisualStyleBackColor = True
-        '
-        'chkBPUseOre
-        '
-        Me.chkBPUseOre.AutoSize = True
-        Me.chkBPUseOre.Checked = True
-        Me.chkBPUseOre.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkBPUseOre.Location = New System.Drawing.Point(590, 592)
-        Me.chkBPUseOre.Name = "chkBPUseOre"
-        Me.chkBPUseOre.Size = New System.Drawing.Size(122, 17)
-        Me.chkBPUseOre.TabIndex = 6
-        Me.chkBPUseOre.Text = "Use Ore for Minerals"
-        Me.chkBPUseOre.TextAlign = System.Drawing.ContentAlignment.TopLeft
-        Me.chkBPUseOre.UseVisualStyleBackColor = True
         '
         'btnBPBuiltComponents
         '
@@ -10531,6 +10517,12 @@ Partial Class frmMain
         Me.tabMain.Size = New System.Drawing.Size(1145, 641)
         Me.tabMain.TabIndex = 1
         '
+        'mnuResetSavedFacilities
+        '
+        Me.mnuResetSavedFacilities.Name = "mnuResetSavedFacilities"
+        Me.mnuResetSavedFacilities.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetSavedFacilities.Text = "Reset Saved Facilities"
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11590,7 +11582,6 @@ Partial Class frmMain
     Friend WithEvents lblMineBoosterDroneInterfacingSkill As Label
     Friend WithEvents lblMineBoosterDroneName As Label
     Friend WithEvents cmbMineBoosterDroneInterfacingSkill As ComboBox
-    Friend WithEvents chkBPUseOre As CheckBox
     Friend WithEvents tabMiningProcessingSkills As TabControl
     Friend WithEvents tabPageOres As TabPage
     Friend WithEvents cmbOreProcessing3 As ComboBox
@@ -11699,4 +11690,5 @@ Partial Class frmMain
     Friend WithEvents mnuOreFlips As ToolStripMenuItem
     Friend WithEvents mnuAnomalyOreBelts As ToolStripMenuItem
     Friend WithEvents mnuIceBelts As ToolStripMenuItem
+    Friend WithEvents mnuResetSavedFacilities As ToolStripMenuItem
 End Class

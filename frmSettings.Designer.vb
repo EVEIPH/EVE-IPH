@@ -49,6 +49,8 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
+        Me.chkAlwaysBuyRAMs = New System.Windows.Forms.CheckBox()
+        Me.chkAlwaysBuyFuelBlocks = New System.Windows.Forms.CheckBox()
         Me.chkSaveBPRelicsDecryptors = New System.Windows.Forms.CheckBox()
         Me.chkBuildBuyDefault = New System.Windows.Forms.CheckBox()
         Me.chkSuggestBuildwhenBPnotOwned = New System.Windows.Forms.CheckBox()
@@ -351,6 +353,8 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
+        Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyRAMs)
+        Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyFuelBlocks)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildBuyDefault)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
@@ -360,6 +364,26 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
+        '
+        'chkAlwaysBuyRAMs
+        '
+        Me.chkAlwaysBuyRAMs.AutoSize = True
+        Me.chkAlwaysBuyRAMs.Location = New System.Drawing.Point(9, 98)
+        Me.chkAlwaysBuyRAMs.Name = "chkAlwaysBuyRAMs"
+        Me.chkAlwaysBuyRAMs.Size = New System.Drawing.Size(121, 17)
+        Me.chkAlwaysBuyRAMs.TabIndex = 40
+        Me.chkAlwaysBuyRAMs.Text = "Always Buy R.A.M.s"
+        Me.chkAlwaysBuyRAMs.UseVisualStyleBackColor = True
+        '
+        'chkAlwaysBuyFuelBlocks
+        '
+        Me.chkAlwaysBuyFuelBlocks.AutoSize = True
+        Me.chkAlwaysBuyFuelBlocks.Location = New System.Drawing.Point(9, 78)
+        Me.chkAlwaysBuyFuelBlocks.Name = "chkAlwaysBuyFuelBlocks"
+        Me.chkAlwaysBuyFuelBlocks.Size = New System.Drawing.Size(138, 17)
+        Me.chkAlwaysBuyFuelBlocks.TabIndex = 39
+        Me.chkAlwaysBuyFuelBlocks.Text = "Always Buy Fuel Blocks"
+        Me.chkAlwaysBuyFuelBlocks.UseVisualStyleBackColor = True
         '
         'chkSaveBPRelicsDecryptors
         '
@@ -604,7 +628,7 @@ Partial Class frmSettings
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 78)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 71)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -615,7 +639,7 @@ Partial Class frmSettings
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 53)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 48)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -927,4 +951,6 @@ Partial Class frmSettings
     Friend WithEvents chkSupressESImsgs As CheckBox
     Friend WithEvents chkLoadMaxAlphaSkills As CheckBox
     Friend WithEvents chkShareFacilities As CheckBox
+    Friend WithEvents chkAlwaysBuyRAMs As CheckBox
+    Friend WithEvents chkAlwaysBuyFuelBlocks As CheckBox
 End Class

@@ -638,7 +638,7 @@ Public Class frmUpwellStructureFitting
         ' Now load up the modules if any are saved for this structure
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, INVENTORY_TYPES "
         SQL &= "WHERE UPWELL_STRUCTURES_INSTALLED_MODULES.FACILITY_ID = INVENTORY_TYPES.typeID "
-        SQL &= "AND PROGRAM_LOCATION = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
+        SQL &= "AND FACILITY_VIEW = {0} And PRODUCTION_TYPE = {1} And CHARACTER_ID = {2} And SOLAR_SYSTEM_ID = {3} And typeName = '{4}'"
 
         DBCommand = New SQLiteCommand(String.Format(SQL, CInt(SelectedStructureLocation), CInt(SelectedFacilityProductionType), SelectedCharacterID, SelectedSolarSystemID, FormatDBString(SentUSName)), EVEDB.DBREf)
         rsStructure = DBCommand.ExecuteReader
@@ -1804,7 +1804,7 @@ Public Class frmUpwellStructureFitting
             EVEDB.BeginSQLiteTransaction()
             ' Delete everything first, then insert the new records
             EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
-            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} AND FACILITY_ID = {4} ",
+            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} ",
             SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), SelectedUpwellStructure.TypeID))
 
             ' Insert all the modules on the facility
@@ -1828,7 +1828,7 @@ Public Class frmUpwellStructureFitting
                 End If
 
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
-                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND PROGRAM_LOCATION = {3} "
+                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
                 EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation)))
             End If
 
