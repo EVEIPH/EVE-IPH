@@ -4629,8 +4629,8 @@ Public Class ProgramSettings
     End Function
 
     Private Function GetDefaultIgnoreChecks() As Integer()
-        Dim ReturnList(15) As Integer
-        For i = 0 To 15
+        Dim ReturnList(14) As Integer
+        For i = 0 To 14
             ReturnList(i) = DefaultIgnoreValue
         Next
 
