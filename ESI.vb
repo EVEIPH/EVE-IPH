@@ -1,4 +1,5 @@
 ﻿Imports System.Net
+Imports System.Web
 Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
@@ -106,6 +107,9 @@ Public Class ESI
 
             AuthThreadReference = New Thread(AddressOf GetAuthorizationfromWeb)
             AuthThreadReference.Start()
+
+            ' Reset this to make sure it only comes up if they hit the button
+            CancelESISSOLogin = False
 
             ' Now loop until thread is done, 60 seconds goes by, or cancel clicked
             Do
@@ -277,8 +281,6 @@ Public Class ESI
             ' Convert byte data to string
             Data = Encoding.UTF8.GetString(Response)
 
-            ' TODO Need to do some verification here
-
             ' Parse the data to the class
             AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
             Success = True
@@ -401,6 +403,7 @@ Public Class ESI
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
         Dim Response As String = ""
+        Dim TokenExpireDate As Date
 
         Try
             ' See if we update the token data first
@@ -420,8 +423,9 @@ Public Class ESI
                 SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
 
                 With TokenData
+                    TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
                     SQL = String.Format(SQL, FormatDBString(.access_token),
-                    Format(DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow), SQLiteDateFormat),
+                    Format(TokenExpireDate, SQLiteDateFormat),
                     FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
                 End With
 
@@ -437,7 +441,7 @@ Public Class ESI
                 ' Now update the copy used in IPH so we don't re-query
                 SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
                 SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
-                SelectedCharacter.CharacterTokenData.TokenExpiration = DateAdd(DateInterval.Second, TokenData.expires_in, DateTime.UtcNow)
+                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
 
             End If
 
@@ -543,7 +547,8 @@ Public Class ESI
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
     Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
                                      Optional ByVal ManualAuthToken As String = "",
-                                     Optional ByVal IgnoreCacheDate As Boolean = False) As Boolean
+                                     Optional ByVal IgnoreCacheDate As Boolean = False,
+                                     Optional ByVal SupressMessages As Boolean = False) As Boolean
         Dim TokenData As ESITokenData
         Dim CharacterData As New ESICharacterData
         Dim CharacterID As Long
@@ -657,7 +662,7 @@ Public Class ESI
                 ' Update after we update/insert the record
                 Call CB.UpdateCacheDate(CacheDateType.PublicCorporationData, CacheDate, CharacterData.PublicData.corporation_id)
 
-                If CharacterID = 0 Then
+                If CharacterID = 0 And Not SupressMessages Then
                     MsgBox("Character successfully added to IPH", vbInformation, Application.ProductName)
                 End If
 
@@ -976,6 +981,7 @@ Public Class ESI
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESICorporationRoles))(ReturnData)
         Else
+            ' No corp roles returned
             Return Nothing
         End If
 
@@ -1069,7 +1075,7 @@ Public Class ESI
     End Function
 
     ' Updates the db with orders from structures for the items and region sent
-    Public Function UpdateStructureMarketOrders(RegionIDs As List(Of String), ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
+    Public Function UpdateStructureMarketOrders(RegionIDs As List(Of String), PriceSystem As String, ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
         Dim CacheDate As Date = NoDate
@@ -1082,17 +1088,19 @@ Public Class ESI
             Return True
         End If
 
-        For Each ID In RegionIDs
-            RegionList &= ID & ","
-        Next
-        ' Strip last comma
-        RegionList = RegionList.Substring(0, Len(RegionList) - 1)
+        If PriceSystem <> "" Then
+            ' Only look up structures in this system
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & PriceSystem & " AND STATION_ID >70000000"
+        Else
+            For Each ID In RegionIDs
+                RegionList &= ID & ","
+            Next
+            ' Strip last comma
+            RegionList = RegionList.Substring(0, Len(RegionList) - 1)
 
-        ' First, get all the structures in that region
-        SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") "
-        SQL &= "AND STATION_TYPE_ID IN "
-        SQL &= "(SELECT TYPEID FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG, INVENTORY_CATEGORIES AS IC "
-        SQL &= "WHERE IT.groupID = IG.groupID AND IG.categoryID = IC.categoryID AND IG.categoryID = 65 AND IT.published <> 0) "
+            ' Get all the structures in that region
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") AND STATION_ID >70000000"
+        End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
@@ -1169,7 +1177,6 @@ Public Class ESI
                         ' Reset the error handler
                         ESIErrorHandler = New ESIErrorProcessor
                         Call EVEDB.RollbackSQLiteTransaction()
-
                         If CancelUpdatePrices Then
                             Return True ' They wanted this so don't error
                         Else
@@ -1884,6 +1891,7 @@ Public Class ESI
 
         Catch ex As Exception
             MsgBox("Failed to update public structure data: " & ex.Message, vbInformation, Application.ProductName)
+            Call EVEDB.CommitSQLiteTransaction()
 
             Return False
 
@@ -1972,6 +1980,7 @@ Public Class ESI
     End Function
 
     Private Function GetURLSafeCode(SentCode As Byte()) As String
+        ' Note, says on jwt that we can't pad with "=" https://tools.ietf.org/html/rfc7515#section-2
         Return Convert.ToBase64String(SentCode).Replace("+", "-").Replace("/", "_").TrimEnd(CChar("="))
     End Function
 
@@ -2057,6 +2066,12 @@ Public Class ESIErrorProcessor
         If ErrorCode = 403 And ErrorResponse = "The given character doesn't have the required role(s)" And URL.Contains("/corporations/") Then
             'This is a call to corporation roles that now errors if you don't have any roles. The response will return all roles for the characters in the corp and you 
             ' need personel manager or director to really do it so don't error if it's just a character with those roles only
+            Exit Sub
+        End If
+
+        ' This is the error we get if you switch corps and the old corp id is attached to your account info, which may not need to be updated
+        ' The change in corp number seems to take a bit to complete, so they will have to wait until this info is refereshed in ESI - so we will supress this error
+        If ErrorResponse = "Received bad session variable(s): ""corporation_id"" " And URL.Contains("/corporations/") Then
             Exit Sub
         End If
 

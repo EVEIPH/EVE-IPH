@@ -680,8 +680,6 @@ Public Class frmManualPriceUpdate
             Call LoadMineralPrices()
         ElseIf tabPrices.SelectedTab.Text = "Advanced Composites" Then
             Call LoadMoonPrices()
-            'ElseIf tabPrices.SelectedTab.Text = "POS Fuel" Then
-            '    Call LoadPOSPrices()
         ElseIf tabPrices.SelectedTab.Text = "Item Search" Then
             txtItemSearch.Focus()
         End If

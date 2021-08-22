@@ -211,6 +211,14 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
+    Private Sub chkBuyFuelBlocks_CheckedChanged(sender As Object, e As EventArgs) Handles chkAlwaysBuyFuelBlocks.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkBuyRAMs_CheckedChanged(sender As Object, e As EventArgs) Handles chkAlwaysBuyRAMs.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
     Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs)
         btnSave.Text = "Save"
     End Sub
@@ -354,6 +362,8 @@ Public Class frmSettings
                 .SetToolTip(gbStationStandings, "Station standings affect broker fees and some other industry related fees based on standing. These values here will be used in those calculations.")
                 .SetToolTip(gbProxySettings, "When proxy information is in both the port and address, IPH will use this to connect to CCP servers. Note this information will also be used with the EVE IPH updater")
 
+                .SetToolTip(chkAlwaysBuyFuelBlocks, "When selected, IPH will always force buying of fuel blocks as components in Build/Buy calculations")
+                .SetToolTip(chkAlwaysBuyRAMs, "When selected, IPH will always force buying of R.A.M.s as components in Build/Buy calculations")
             End With
         End If
 
@@ -463,6 +473,8 @@ Public Class frmSettings
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
+            chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
+            chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
@@ -534,6 +546,7 @@ Public Class frmSettings
         Dim OldMaxAlphaSkillsSetting As Boolean = UserApplicationSettings.LoadMaxAlphaSkills
 
         Dim Settings As New ProgramSettings
+        Dim ReloadFacilties As Boolean = False
 
         If btnSave.Text = "Save" Then
 
@@ -599,6 +612,10 @@ Public Class frmSettings
                 ' Now set these
                 .LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
                 .LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
+
+                If .SaveFacilitiesbyChar <> CBool(chkSaveFacilitiesbyChar.Checked) Then
+                    ReloadFacilties = True
+                End If
                 .SaveFacilitiesbyChar = CBool(chkSaveFacilitiesbyChar.Checked)
 
                 If UserApplicationSettings.LoadBPsbyChar <> CBool(chkLoadBPsbyChar.Checked) Then
@@ -657,6 +674,9 @@ Public Class frmSettings
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
+                .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked
+                .AlwaysBuyRAMs = chkAlwaysBuyRAMs.Checked
+
                 .AlphaAccount = chkAlphaAccount.Checked
                 .UseActiveSkillLevels = chkUseActiveSkills.Checked
                 .LoadMaxAlphaSkills = chkLoadMaxAlphaSkills.Checked
@@ -706,6 +726,24 @@ Public Class frmSettings
                 ' Set the flag first
                 Call SelectedCharacter.Skills.SetActiveSkillFlagValue(UserApplicationSettings.UseActiveSkillLevels)
                 Call SelectedCharacter.Skills.LoadCharacterSkills(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData)
+            End If
+
+            ' If they changed what the original value was for the shared facilities, reload them
+            If ReloadFacilties Then
+                ' Load all the forms' facilities 
+                Call frmMain.LoadFacilities()
+
+                If ReprocessingPlantOpen Then
+                    Call CType(Application.OpenForms.Item("frmReprocessingPlant"), frmReprocessingPlant).InitializeReprocessingFacility()
+                End If
+
+                If IceBeltFlipOpen Then
+                    Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
+                End If
+
+                If OreBeltFlipOpen Then
+                    Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
+                End If
             End If
 
             ' Re-init any tabs that have settings changes before displaying dialog

@@ -48,6 +48,10 @@ Partial Class frmManageAccounts
         Me.txtAccessTokenExpDate = New System.Windows.Forms.TextBox()
         Me.txtAccessToken = New System.Windows.Forms.TextBox()
         Me.btnRefreshToken = New System.Windows.Forms.Button()
+        Me.btnCopyAccesToken = New System.Windows.Forms.Button()
+        Me.btnCopyCharacterID = New System.Windows.Forms.Button()
+        Me.txtCharacterID = New System.Windows.Forms.TextBox()
+        Me.lblCharacterID = New System.Windows.Forms.Label()
         Me.gbAccountData.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -164,6 +168,10 @@ Partial Class frmManageAccounts
         '
         'gbAccountData
         '
+        Me.gbAccountData.Controls.Add(Me.lblCharacterID)
+        Me.gbAccountData.Controls.Add(Me.txtCharacterID)
+        Me.gbAccountData.Controls.Add(Me.btnCopyCharacterID)
+        Me.gbAccountData.Controls.Add(Me.btnCopyAccesToken)
         Me.gbAccountData.Controls.Add(Me.Label1)
         Me.gbAccountData.Controls.Add(Me.btnCopyAll)
         Me.gbAccountData.Controls.Add(Me.lblRefreshToken)
@@ -218,7 +226,7 @@ Partial Class frmManageAccounts
         Me.txtRefreshToken.Location = New System.Drawing.Point(6, 77)
         Me.txtRefreshToken.Name = "txtRefreshToken"
         Me.txtRefreshToken.ReadOnly = True
-        Me.txtRefreshToken.Size = New System.Drawing.Size(504, 20)
+        Me.txtRefreshToken.Size = New System.Drawing.Size(279, 20)
         Me.txtRefreshToken.TabIndex = 2
         '
         'txtAccessTokenExpDate
@@ -234,7 +242,7 @@ Partial Class frmManageAccounts
         Me.txtAccessToken.Location = New System.Drawing.Point(6, 34)
         Me.txtAccessToken.Name = "txtAccessToken"
         Me.txtAccessToken.ReadOnly = True
-        Me.txtAccessToken.Size = New System.Drawing.Size(504, 20)
+        Me.txtAccessToken.Size = New System.Drawing.Size(390, 20)
         Me.txtAccessToken.TabIndex = 0
         '
         'btnRefreshToken
@@ -245,6 +253,41 @@ Partial Class frmManageAccounts
         Me.btnRefreshToken.TabIndex = 12
         Me.btnRefreshToken.Text = "Refresh Token Data"
         Me.btnRefreshToken.UseVisualStyleBackColor = True
+        '
+        'btnCopyAccesToken
+        '
+        Me.btnCopyAccesToken.Location = New System.Drawing.Point(402, 33)
+        Me.btnCopyAccesToken.Name = "btnCopyAccesToken"
+        Me.btnCopyAccesToken.Size = New System.Drawing.Size(108, 21)
+        Me.btnCopyAccesToken.TabIndex = 14
+        Me.btnCopyAccesToken.Text = "Copy Acces Token"
+        Me.btnCopyAccesToken.UseVisualStyleBackColor = True
+        '
+        'btnCopyCharacterID
+        '
+        Me.btnCopyCharacterID.Location = New System.Drawing.Point(402, 76)
+        Me.btnCopyCharacterID.Name = "btnCopyCharacterID"
+        Me.btnCopyCharacterID.Size = New System.Drawing.Size(108, 21)
+        Me.btnCopyCharacterID.TabIndex = 15
+        Me.btnCopyCharacterID.Text = "Copy Character ID"
+        Me.btnCopyCharacterID.UseVisualStyleBackColor = True
+        '
+        'txtCharacterID
+        '
+        Me.txtCharacterID.Location = New System.Drawing.Point(291, 77)
+        Me.txtCharacterID.Name = "txtCharacterID"
+        Me.txtCharacterID.ReadOnly = True
+        Me.txtCharacterID.Size = New System.Drawing.Size(105, 20)
+        Me.txtCharacterID.TabIndex = 16
+        '
+        'lblCharacterID
+        '
+        Me.lblCharacterID.AutoSize = True
+        Me.lblCharacterID.Location = New System.Drawing.Point(291, 61)
+        Me.lblCharacterID.Name = "lblCharacterID"
+        Me.lblCharacterID.Size = New System.Drawing.Size(70, 13)
+        Me.lblCharacterID.TabIndex = 17
+        Me.lblCharacterID.Text = "Character ID:"
         '
         'frmManageAccounts
         '
@@ -297,4 +340,8 @@ Partial Class frmManageAccounts
     Friend WithEvents colAccessTokenExpireDate As ColumnHeader
     Friend WithEvents btnRefreshToken As Button
     Friend WithEvents colTokenType As ColumnHeader
+    Friend WithEvents lblCharacterID As Label
+    Friend WithEvents txtCharacterID As TextBox
+    Friend WithEvents btnCopyCharacterID As Button
+    Friend WithEvents btnCopyAccesToken As Button
 End Class

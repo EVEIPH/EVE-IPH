@@ -121,7 +121,7 @@ Public Class Corporation
 
     End Sub
 
-    ' Updates the public informaton about the corporation in DB
+    ' Updates the public informaton about the corporation in DB. 
     Private Sub UpdateCorporationData(ByVal CorporationID As Long)
         Dim ESIData As New ESI
         Dim CB As New CacheBox

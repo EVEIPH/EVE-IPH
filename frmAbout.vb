@@ -44,4 +44,17 @@
     Private Sub pbPaypal_MouseLeave(sender As Object, e As EventArgs) Handles pbPaypal.MouseLeave
         Me.Cursor = Cursors.Default
     End Sub
+
+    Private Sub pbPatreon_Click(sender As Object, e As EventArgs) Handles pbPatreon.Click
+        ' Take them to the donation page
+        Call Process.Start("https://www.patreon.com/user?u=51064427&fan_landing=true")
+    End Sub
+
+    Private Sub pbPatreon_MouseEnter(sender As Object, e As EventArgs) Handles pbPatreon.MouseEnter
+        Me.Cursor = Cursors.Hand
+    End Sub
+
+    Private Sub pbPatreon_MouseLeave(sender As Object, e As EventArgs) Handles pbPatreon.MouseLeave
+        Me.Cursor = Cursors.Default
+    End Sub
 End Class

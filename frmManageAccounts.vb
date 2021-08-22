@@ -110,12 +110,14 @@ Public Class frmManageAccounts
             txtAccessToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
             txtAccessTokenExpDate.Text = lstAccounts.SelectedItems.Item(0).SubItems(7).Text
             txtRefreshToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
+            txtCharacterID.Text = lstAccounts.SelectedItems.Item(0).SubItems(0).Text
             btnRefreshToken.Enabled = True
             btnDeleteCharacter.Enabled = True
             btnCopyAll.Enabled = True
         Else
             lstScopes.Items.Clear()
             txtAccessToken.Text = ""
+            txtCharacterID.Text = ""
             txtAccessTokenExpDate.Text = ""
             txtAccessTokenExpDate.Text = ""
             btnRefreshToken.Enabled = False
@@ -275,6 +277,16 @@ Public Class frmManageAccounts
         ' Paste to clipboard
         Call CopyTextToClipboard(OutputText)
 
+    End Sub
+
+    Private Sub btnCopyCharacterID_Click(sender As Object, e As EventArgs) Handles btnCopyCharacterID.Click
+        ' Paste to clipboard
+        Call CopyTextToClipboard(txtCharacterID.Text)
+    End Sub
+
+    Private Sub btnCopyAccesToken_Click(sender As Object, e As EventArgs) Handles btnCopyAccesToken.Click
+        ' Paste to clipboard
+        Call CopyTextToClipboard(txtAccessToken.Text)
     End Sub
 
     Private Sub txtRefreshToken_KeyDown(sender As Object, e As KeyEventArgs) Handles txtRefreshToken.KeyDown

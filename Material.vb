@@ -5,8 +5,9 @@ Public Class Material
 
     Private TypeID As Long
     Private TypeName As String
-    Private GroupName As String
+    Private _GroupName As String
     Private Quantity As Long
+    Private DQuantity As Double
     Private Volume As Double
 
     ' Look up cost per item when not set
@@ -29,8 +30,9 @@ Public Class Material
         TypeID = SentTypeID
         TypeName = SentTypeName
         Quantity = SentQuantity
+        DQuantity = -1
         Volume = SentVolume
-        GroupName = SentGroupName
+        _GroupName = SentGroupName
         BuildItem = isBuiltItem
         ItemType = SentItemType
 
@@ -56,15 +58,59 @@ Public Class Material
 
     End Sub
 
+    Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Double,
+                   ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String,
+                   Optional ByVal isBuiltItem As Boolean = False, Optional ByVal SentItemType As Integer = 0)
+        TypeID = SentTypeID
+        TypeName = SentTypeName
+        Quantity = -1
+        DQuantity = SentQuantity
+        Volume = SentVolume
+        _GroupName = SentGroupName
+        BuildItem = isBuiltItem
+        ItemType = SentItemType
+
+        If Trim(SentItemME) <> "" Then
+            ItemME = SentItemME
+        Else
+            ItemME = "-"
+        End If
+
+        If Trim(SentItemTE) <> "" Then
+            ItemTE = SentItemTE
+        Else
+            ItemTE = "-"
+        End If
+
+        If SentPrice = 0 Then
+            CostPerItem = GetItemPrice(TypeID)
+        Else
+            CostPerItem = SentPrice
+        End If
+
+        Call SetTotalCostVolume()
+    End Sub
+
     ' For doing a deep copy of Materials
     Public Function Clone() As Object Implements ICloneable.Clone
-        Dim CopyOfMe As New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.Quantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.ItemTE, Me.BuildItem, Me.ItemType)
+        Dim CopyofMe As Material
+        If Me.DQuantity = -1 Then
+            CopyofMe = New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.Quantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.ItemTE, Me.BuildItem, Me.ItemType)
+        Else
+            CopyofMe = New Material(Me.TypeID, Me.TypeName, Me.GroupName, Me.DQuantity, Me.Volume, Me.CostPerItem, Me.ItemME, Me.ItemTE, Me.BuildItem, Me.ItemType)
+        End If
+
         Return CopyOfMe
     End Function
 
     Private Sub SetTotalCostVolume()
-        TotalCost = CostPerItem * Quantity
-        TotalMatVolume = Volume * Quantity
+        If DQuantity = -1 Then
+            TotalCost = CostPerItem * Quantity
+            TotalMatVolume = Volume * Quantity
+        Else
+            TotalCost = CostPerItem * DQuantity
+            TotalMatVolume = Volume * DQuantity
+        End If
     End Sub
 
     ' Adds quantity to the material and upates the total cost and volume
@@ -77,6 +123,20 @@ Public Class Material
     ' Sets the quantity of the material and sets the total cost and volume
     Public Sub SetQuantity(ByVal SentQuantity As Long)
         Quantity = SentQuantity
+        ' New quantity means new total price and volume
+        Call SetTotalCostVolume()
+    End Sub
+
+    ' Adds quantity to the material and upates the total cost and volume
+    Public Sub AddDQuantity(ByVal SentQuantity As Double)
+        DQuantity = DQuantity + SentQuantity
+        ' New quantity means new total price and volume
+        Call SetTotalCostVolume()
+    End Sub
+
+    ' Sets the quantity of the material and sets the total cost and volume
+    Public Sub SetDQuantity(ByVal SentQuantity As Double)
+        DQuantity = SentQuantity
         ' New quantity means new total price and volume
         Call SetTotalCostVolume()
     End Sub
@@ -130,9 +190,22 @@ Public Class Material
         Return Quantity
     End Function
 
-    Public Function GetMaterialGroup() As String
-        Return GroupName
+    Public Function GetDQuantity() As Double
+        Return DQuantity
     End Function
+
+    'Public Function GetMaterialGroup() As String
+    '    Return GroupName
+    'End Function
+
+    Public Property GroupName() As String
+        Get
+            Return _GroupName
+        End Get
+        Set(value As String)
+            _GroupName = value
+        End Set
+    End Property
 
     Public Function GetVolume() As Double
         Return Volume

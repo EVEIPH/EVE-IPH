@@ -4,7 +4,6 @@ Imports System.IO
 Imports System.Net
 Imports System.Text
 Imports System.Collections.Specialized
-Imports System.Threading
 Imports Newtonsoft.Json
 
 Public Class frmShoppingList
@@ -161,7 +160,7 @@ Public Class frmShoppingList
         lstBuild.Columns.Add("ME", 30, HorizontalAlignment.Right)
         lstBuild.Columns.Add("TE", 0, HorizontalAlignment.Right) ' Hidden
         lstBuild.Columns.Add("Facility Location", 0, HorizontalAlignment.Left) 'Hidden to help build at component facility
-        lstBuild.Columns.Add("Facility Type", 0, HorizontalAlignment.Left) 'Hidden flag for pos building
+        lstBuild.Columns.Add("Facility Type", 0, HorizontalAlignment.Left) 'Hidden flag 
         lstBuild.Columns.Add("IncludeActivityCost", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstBuild.Columns.Add("IncludeActivityTime", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstBuild.Columns.Add("IncludeActivityUsage", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
@@ -177,7 +176,7 @@ Public Class frmShoppingList
         lstItems.Columns.Add("Build Type", 71, HorizontalAlignment.Left) ' 71 min text
         lstItems.Columns.Add("Decryptor", 105, HorizontalAlignment.Left) '105 min text
         lstItems.Columns.Add("Location", 132, HorizontalAlignment.Left) '132 min text
-        lstItems.Columns.Add("Facility Type", 0, HorizontalAlignment.Left) 'Hidden flag for pos building
+        lstItems.Columns.Add("Facility Type", 0, HorizontalAlignment.Left) 'Hidden flag
         lstItems.Columns.Add("IgnoredInvention", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredMinerals", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
         lstItems.Columns.Add("IgnoredT1BaseItem", 0, HorizontalAlignment.Left) 'Hidden flag for ignore variables
@@ -576,7 +575,7 @@ Public Class frmShoppingList
         lstBuild.BeginUpdate()
         lstBuild.Items.Clear()
 
-        ' TotalShoppingList.GetFullBuildList uses BuildItem for built in pos, and Volume for the facility ME value
+        ' TotalShoppingList.GetFullBuildList uses BuildItem and Volume for the facility ME value
         BuildItems = TotalShoppingList.GetFullBuildList
 
         ' Now load the grid with all the mats
@@ -683,12 +682,12 @@ Public Class frmShoppingList
 
         readerAssets.Close()
 
-        If AssetLocationFlagList.Count <> 0 Then
+        If AssetLocationFlagList.Count <> 0 Or CutPasteUpdate Then
 
             ' Loop through the lists, starting with the build list first and find quantities in hanger to build
             For i = 0 To 3 ' 4 lists
                 Application.DoEvents()
-                ' TotalShoppingList.GetFullBuildList.Clone uses BuildItem for built in pos, and Volume for the facility ME value
+                ' TotalShoppingList.GetFullBuildList.Clone uses BuildItem and Volume for the facility ME value
                 Select Case i
                     Case 0
                         ProcessList = CType(TotalShoppingList.GetFullBuildMaterialList.Clone, Materials)
@@ -840,34 +839,34 @@ Public Class frmShoppingList
             Call RefreshLists()
 
             ' Refresh the asset list with updated assets
-            If chkUpdateAssetsWhenUsed.Checked Then
-                ' First, need to refresh assets for character and corp if used
-                If Not IsNothing(frmShoppingAssets) Then
-                    If Not frmShoppingAssets.IsDisposed Then
-                        If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-                        Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
-                                                                   UserApplicationSettings.LoadAssetsonStartup)
-                        End If
-                        frmShoppingAssets.RefreshTree()
-                    End If
-                End If
+            'If chkUpdateAssetsWhenUsed.Checked Then
+            '    ' First, need to refresh assets for character and corp if used
+            '    If Not IsNothing(frmShoppingAssets) Then
+            '        If Not frmShoppingAssets.IsDisposed Then
+            '            If frmShoppingAssets.rbtnAllAssets.Checked = True Or frmShoppingAssets.rbtnCorpAssets.Checked = True Then
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+            '                                                       SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            '            Else ' Just personal
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+            '                                                       UserApplicationSettings.LoadAssetsonStartup)
+            '            End If
+            '            'frmShoppingAssets.RefreshTree()
+            '        End If
+            '    End If
 
-                If Not IsNothing(frmDefaultAssets) Then
-                    If Not frmDefaultAssets.IsDisposed Then
-                        If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                   SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-                        Else ' Just personal
-                            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
-                                                                   UserApplicationSettings.LoadAssetsonStartup)
-                        End If
-                        frmDefaultAssets.RefreshTree()
-                    End If
-                End If
-            End If
+            '    If Not IsNothing(frmDefaultAssets) Then
+            '        If Not frmDefaultAssets.IsDisposed Then
+            '            If frmDefaultAssets.rbtnAllAssets.Checked = True Or frmDefaultAssets.rbtnCorpAssets.Checked = True Then
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+            '                                                       SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            '            Else ' Just personal
+            '                SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData,
+            '                                                       UserApplicationSettings.LoadAssetsonStartup)
+            '            End If
+            '            'frmDefaultAssets.RefreshTree()
+            '        End If
+            '    End If
+            'End If
             Application.DoEvents()
         Else
             MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
@@ -1760,7 +1759,7 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub btnCopyPasteAssets_Click(sender As System.Object, e As System.EventArgs) Handles btnCopyPasteAssets.Click
-        Dim f1 As New frmCopyandPaste(CopyPasteWindowType.Materials)
+        Dim f1 As New frmCopyandPaste(CopyPasteWindowType.Materials, CopyPasteWindowLocation.Assets)
 
         f1.ShowDialog()
 
@@ -2586,30 +2585,40 @@ Tabs:
         Dim Response As Byte()
         Dim Data As String = ""
         Dim PostParameters As New NameValueCollection
+        Dim Items As New NameValueCollection
 
         Try
+            '' Look at creating this call using json data - Call works below but only returns prices, which I really don't need
+            'Dim test As New EAItem
+            'test.market_name = "jita"
+            'Dim item As New typeIDs
+            'item.type_id = 34
+            'Dim eaitems As New List(Of typeIDs)
+            'eaitems.Add(item)
+            'test.items = eaitems
+            'Dim JSONresult As String = JsonConvert.SerializeObject(test)
+            'Dim myURI As Uri = New Uri("https://evepraisal.com/appraisal/structured.json")
 
-            ' See if we are in an error limited state
-            If ESIErrorHandler.ErrorLimitReached Then
-                ' Need to wait until we are ready to continue
-                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-            End If
+            ''curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
 
-            'curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
+            'Data = SendRequest(myURI, Encoding.UTF8.GetBytes(JSONresult), "application/json", "POST")
 
+            '' Convert byte data to string
+            'Data = Encoding.UTF8.GetString(Response)
 
-            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=dodixie&raw_textarea=basilisk", "POST", PostParameters)
+            '' Parse the data to the class
+            'AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            'Success = True
 
-            ' Convert byte data to string
+            ' This returns an ID for the raw text values - tested and works
+            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=basilisk " & vbCrLf & "rifter" & vbCrLf & "hulk" & vbCrLf & "zydrine 44", "POST", PostParameters)
             Data = Encoding.UTF8.GetString(Response)
 
-            ' Parse the data to the class
-            AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
-            Success = True
+            ' Need to parse data and pull id for permanent link - https://evepraisal.com/a/yifsu
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
+            Call MsgBox(ex.Message)
 
         Catch ex As Exception
             Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
@@ -2618,11 +2627,37 @@ Tabs:
 
     End Sub
 
+    Private Function SendRequest(uri As Uri, jsonDataBytes As Byte(), contentType As String, method As String) As String
+        Dim response As String
+        Dim request As WebRequest
+
+        request = WebRequest.Create(uri)
+        request.ContentLength = jsonDataBytes.Length
+        request.ContentType = contentType
+        request.Method = method
+
+        Using requestStream = request.GetRequestStream
+            requestStream.Write(jsonDataBytes, 0, jsonDataBytes.Length)
+            requestStream.Close()
+
+            Using responseStream = request.GetResponse.GetResponseStream
+                Using reader As New StreamReader(responseStream)
+                    response = reader.ReadToEnd()
+                End Using
+            End Using
+        End Using
+
+        Return response
+    End Function
+
+
     Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
         If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
             txtBrokerFeeRate.Visible = True
+            lblFeeRate.Visible = True
         Else
             txtBrokerFeeRate.Visible = False
+            lblFeeRate.Visible = False
         End If
     End Sub
 
@@ -2672,4 +2707,13 @@ Public Class eprasialItems
     <JsonProperty("route")> Public route As String
     <JsonProperty("status")> Public status As String
     <JsonProperty("tags")> Public tags As List(Of String)
+End Class
+
+Public Class EAItem
+    Public market_name As String
+    Public items As List(Of typeIDs)
+End Class
+
+Public Class typeIDs
+    Public type_id As Integer
 End Class

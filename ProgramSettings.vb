@@ -1,7 +1,6 @@
 ﻿
 Imports System.Xml
 Imports System.IO
-Imports System.Text.RegularExpressions
 
 Public Module SettingsVariables
 
@@ -17,8 +16,6 @@ Public Module SettingsVariables
     Public UserManufacturingTabSettings As ManufacturingTabSettings
     ' Datacores
     Public UserDCTabSettings As DataCoreTabSettings
-    ' Reactions Tab
-    Public UserReactionTabSettings As ReactionsTabSettings
     ' Update Prices Tab Settings
     Public UserUpdatePricesTabSettings As UpdatePriceTabSettings
     ' Mining Tab Settings
@@ -41,14 +38,18 @@ Public Module SettingsVariables
     Public UserAssetWindowDefaultSettings As AssetWindowSettings
     Public UserAssetWindowManufacturingTabSettings As AssetWindowSettings
     Public UserAssetWindowShoppingListSettings As AssetWindowSettings
-    ' For LP store
-    Public UserLPStoreSettings As LPStore
+    Public UserAssetWindowRefinerySettings As AssetWindowSettings
     ' For the Blueprint List Viewer
     Public UserBPViewerSettings As BPViewerSettings
     ' For Upwell Structure viewer
     Public UserUpwellStructureSettings As UpwellStructureSettings
     ' For bonus popout on structure viewer
     Public StructureBonusPopoutViewerSettings As StructureBonusPopoutSettings
+
+    Public UserIceBeltFlipSettings As IceBeltFlipSettings
+    Public UserIceBeltCheckSettings As IceBeltCheckSettings
+
+    Public UserConversiontoOreSettings As ConversionToOreSettings
 
 End Module
 
@@ -97,7 +98,6 @@ Public Class ProgramSettings
     Public DefaultInventCorpStanding As Double = 5.0 ' Corp standing of where this blueprint will be invented
     Public DefaultBrokerCorpStanding As Double = 5.0 ' Corp standing of where this blueprint will be sold
     Public DefaultBrokerFactionStanding As Double = 5.0 ' Faction standing of where this blueprint will be sold (for Broker calc)
-    Public DefaultRefineCorpStanding As Double = 6.67 ' Corp standing for use of refining
 
     Public DefaultIncludeCopyTimes As Boolean = False ' If we include copy times in IPH calcs for invention
     Public DefaultIncludeInventionTimes As Boolean = False ' If we include invention times in IPH calcs for invention
@@ -107,13 +107,14 @@ Public Class ProgramSettings
     Public DefaultCopySlotModifier As String = "1.0" ' The default copy slot modifier for T1 BPC copies to use in invention
     Public DefaultInventionSlotModifier As String = "1.0" ' Default invention time
     Public DefaultBuildSlotModifier As String = "1.0" ' Default build time for production
-    Public DefaultRefiningEfficency As Double = 0.5 ' Default refining equipment
-
-    Public DefaultRefineTax As Double = 0.05 ' Default tax rate
 
     Public DefaultCheckBuildBuy As Boolean = False
     Public DefaultIgnoreRareandShipSkinBPs As Boolean = True
     Public DefaultSaveBPRelicsDecryptors As Boolean = False
+    Public DefaultRefineDrillDown As Boolean = False
+
+    Public DefaultAlwaysBuyFuelBlocks As Boolean = False
+    Public DefaultAlwaysBuyRAMs As Boolean = False
 
     Public DefaultSettingME As Integer = 0
     Public DefaultSettingTE As Integer = 0
@@ -201,9 +202,9 @@ Public Class ProgramSettings
     Public DefaultBPSellExcessItems As Boolean = True
 
     ' Update Prices Default Settings
-    Public DefaultPriceChecks As Boolean = False
+    Public DefaultPriceChecks As Boolean = True
     Public DefaultPriceSystem As String = "Jita"
-    Public DefaultPriceRegion As String = ""
+    Public DefaultPriceRegion As String = "The Forge"
     Public DefaultPriceRawMatsCombo As String = "Min Sell"
     Public DefaultPriceItemsCombo As String = "Min Sell"
     Public DefaultUPColumnSort As Integer = 1
@@ -388,6 +389,8 @@ Public Class ProgramSettings
     Public DefaultMiningOreImplant As String = None
     Public DefaultMiningIceImplant As String = None
     Public DefaultMiningGasImplant As String = None
+    Public DefaultBeancounterImplant As String = None
+    Public DefaultMiningRig As String = None
     Public DefaultMiningCheckUseHauler As Boolean = True
     Public DefaultMiningRoundTripMin As Integer = 1
     Public DefaultMiningRoundTripSec As Integer = 0
@@ -407,10 +410,17 @@ Public Class ProgramSettings
     Public DefaultMiningCompressedOre As Boolean = False
     Public DefaultMiningUnrefinedOre As Boolean = False
     Public DefaultMiningIndustrialReconfig As Integer = 0
-    Public DefaultMiningRig As Boolean = False
     Public DefaultMiningNumberofMiners As Integer = 1
-    Public DefaultMiningColumnSort As Integer = 8
+    Public DefaultMiningColumnSort As Integer = 9
     Public DefaultMiningColumnSortType As String = "Decending"
+    Public DefaultMiningDrone As String = "None"
+    Public DefaultNumMiningDrone As String = "0"
+    Public DefaultIceMiningDrone As String = "None"
+    Public DefaultNumIceMiningdrone As String = "0"
+    Public DefaultDroneSkills As String = "-1"
+    Public DefaultDroneRigs As String = None
+    Public DefaultBoosterDroneRigs As Integer = 0
+    Public DefaultBoosterUseDrones As Boolean = False
 
     ' Industry Jobs column settings
     Public DefaultJobState As Integer = 1
@@ -462,205 +472,227 @@ Public Class ProgramSettings
     Public Const JobTypeColumn As String = "Job Type"
 
     ' Manufacturing Tab column settings - index 0 is for hidden id column
-    Public DefaultMTItemCategory As Integer = 1
-    Public DefaultMTItemGroup As Integer = 0
-    Public DefaultMTItemName As Integer = 2
-    Public DefaultMTOwned As Integer = 3
-    Public DefaultMTTech As Integer = 4
-    Public DefaultMTBPME As Integer = 5
-    Public DefaultMTBPTE As Integer = 6
-    Public DefaultMTInputs As Integer = 7
-    Public DefaultMTCompared As Integer = 8
-    Public DefaultMTTotalRuns As Integer = 0
-    Public DefaultMTSingleInventedBPCRuns As Integer = 0
-    Public DefaultMTProductionLines As Integer = 0
-    Public DefaultMTLaboratoryLines As Integer = 0
-    Public DefaultMTTotalInventionCost As Integer = 0
-    Public DefaultMTTotalCopyCost As Integer = 0
-    Public DefaultMTTaxes As Integer = 0
-    Public DefaultMTBrokerFees As Integer = 0
-    Public DefaultMTBPProductionTime As Integer = 0
-    Public DefaultMTTotalProductionTime As Integer = 0
-    Public DefaultMTCopyTime As Integer = 0
-    Public DefaultMTInventionTime As Integer = 0
-    Public DefaultMTItemMarketPrice As Integer = 0
-    Public DefaultMTProfit As Integer = 9
-    Public DefaultMTProfitPercentage As Integer = 0
-    Public DefaultMTIskperHour As Integer = 10
-    Public DefaultMTSVR As Integer = 11
-    Public DefaultMTSVRxIPH As Integer = 0
-    Public DefaultMTPriceTrend As Integer = 0
-    Public DefaultMTTotalItemsSold As Integer = 0
-    Public DefaultMTTotalOrdersFilled As Integer = 0
-    Public DefaultMTAvgItemsperOrder As Integer = 0
-    Public DefaultMTCurrentSellOrders As Integer = 0
-    Public DefaultMTCurrentBuyOrders As Integer = 0
-    Public DefaultMTItemsinProduction As Integer = 0
-    Public DefaultMTItemsinStock As Integer = 0
-    Public DefaultMTTotalCost As Integer = 12
-    Public DefaultMTBaseJobCost As Integer = 0
-    Public DefaultMTNumBPs As Integer = 0
-    Public DefaultMTInventionChance As Integer = 0
-    Public DefaultMTBPType As Integer = 0
-    Public DefaultMTRace As Integer = 0
-    Public DefaultMTVolumeperItem As Integer = 0
-    Public DefaultMTTotalVolume As Integer = 0
-    Public DefaultMTPortionSize As Integer = 0
-    Public DefaultMTManufacturingJobFee As Integer = 0
-    Public DefaultMTManufacturingFacilityName As Integer = 0
-    Public DefaultMTManufacturingFacilitySystem As Integer = 0
-    Public DefaultMTManufacturingFacilityRegion As Integer = 0
-    Public DefaultMTManufacturingFacilitySystemIndex As Integer = 0
-    Public DefaultMTManufacturingFacilityTax As Integer = 0
-    Public DefaultMTManufacturingFacilityMEBonus As Integer = 0
-    Public DefaultMTManufacturingFacilityTEBonus As Integer = 0
-    Public DefaultMTManufacturingFacilityUsage As Integer = 0
-    Public DefaultMTManufacturingFacilityFWSystemLevel As Integer = 0
-    Public DefaultMTComponentFacilityName As Integer = 0
-    Public DefaultMTComponentFacilitySystem As Integer = 0
-    Public DefaultMTComponentFacilityRegion As Integer = 0
-    Public DefaultMTComponentFacilitySystemIndex As Integer = 0
-    Public DefaultMTComponentFacilityTax As Integer = 0
-    Public DefaultMTComponentFacilityMEBonus As Integer = 0
-    Public DefaultMTComponentFacilityTEBonus As Integer = 0
-    Public DefaultMTComponentFacilityUsage As Integer = 0
-    Public DefaultMTComponentFacilityFWSystemLevel As Integer = 0
-    Public DefaultMTCapComponentFacilityName As Integer = 0
-    Public DefaultMTCapComponentFacilitySystem As Integer = 0
-    Public DefaultMTCapComponentFacilityRegion As Integer = 0
-    Public DefaultMTCapComponentFacilitySystemIndex As Integer = 0
-    Public DefaultMTCapComponentFacilityTax As Integer = 0
-    Public DefaultMTCapComponentFacilityMEBonus As Integer = 0
-    Public DefaultMTCapComponentFacilityTEBonus As Integer = 0
-    Public DefaultMTCapComponentFacilityUsage As Integer = 0
-    Public DefaultMTCapComponentFacilityFWSystemLevel As Integer = 0
-    Public DefaultMTCopyingFacilityName As Integer = 0
-    Public DefaultMTCopyingFacilitySystem As Integer = 0
-    Public DefaultMTCopyingFacilityRegion As Integer = 0
-    Public DefaultMTCopyingFacilitySystemIndex As Integer = 0
-    Public DefaultMTCopyingFacilityTax As Integer = 0
-    Public DefaultMTCopyingFacilityMEBonus As Integer = 0
-    Public DefaultMTCopyingFacilityTEBonus As Integer = 0
-    Public DefaultMTCopyingFacilityUsage As Integer = 0
-    Public DefaultMTCopyingFacilityFWSystemLevel As Integer = 0
-    Public DefaultMTInventionFacilityName As Integer = 0
-    Public DefaultMTInventionFacilitySystem As Integer = 0
-    Public DefaultMTInventionFacilityRegion As Integer = 0
-    Public DefaultMTInventionFacilitySystemIndex As Integer = 0
-    Public DefaultMTInventionFacilityTax As Integer = 0
-    Public DefaultMTInventionFacilityMEBonus As Integer = 0
-    Public DefaultMTInventionFacilityTEBonus As Integer = 0
-    Public DefaultMTInventionFacilityUsage As Integer = 0
-    Public DefaultMTInventionFacilityFWSystemLevel As Integer = 0
-    Public DefaultMTReactionFacilityName As Integer = 0
-    Public DefaultMTReactionFacilitySystem As Integer = 0
-    Public DefaultMTReactionFacilityRegion As Integer = 0
-    Public DefaultMTReactionFacilitySystemIndex As Integer = 0
-    Public DefaultMTReactionFacilityTax As Integer = 0
-    Public DefaultMTReactionFacilityMEBonus As Integer = 0
-    Public DefaultMTReactionFacilityTEBonus As Integer = 0
-    Public DefaultMTReactionFacilityUsage As Integer = 0
-    Public DefaultMTReactionFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTItemCategory As Integer = 3
+    Dim DefaultMTItemGroup As Integer = 0
+    Dim DefaultMTItemName As Integer = 4
+    Dim DefaultMTOwned As Integer = 5
+    Dim DefaultMTTech As Integer = 6
+    Dim DefaultMTBPME As Integer = 7
+    Dim DefaultMTBPTE As Integer = 8
+    Dim DefaultMTInputs As Integer = 9
+    Dim DefaultMTCompared As Integer = 10
+    Dim DefaultMTTotalRuns As Integer = 0
+    Dim DefaultMTSingleInventedBPCRuns As Integer = 0
+    Dim DefaultMTProductionLines As Integer = 0
+    Dim DefaultMTLaboratoryLines As Integer = 0
+    Dim DefaultMTTotalInventionCost As Integer = 0
+    Dim DefaultMTTotalCopyCost As Integer = 0
+    Dim DefaultMTTaxes As Integer = 0
+    Dim DefaultMTBrokerFees As Integer = 0
+    Dim DefaultMTBPProductionTime As Integer = 0
+    Dim DefaultMTTotalProductionTime As Integer = 0
+    Dim DefaultMTCopyTime As Integer = 0
+    Dim DefaultMTInventionTime As Integer = 0
+    Dim DefaultMTItemMarketPrice As Integer = 0
+    Dim DefaultMTProfit As Integer = 11
+    Dim DefaultMTProfitPercentage As Integer = 0
+    Dim DefaultMTIskperHour As Integer = 12
+    Dim DefaultMTSVR As Integer = 13
+    Dim DefaultMTSVRxIPH As Integer = 0
+    Dim DefaultMTPriceTrend As Integer = 0
+    Dim DefaultMTTotalItemsSold As Integer = 0
+    Dim DefaultMTTotalOrdersFilled As Integer = 0
+    Dim DefaultMTAvgItemsperOrder As Integer = 0
+    Dim DefaultMTCurrentSellOrders As Integer = 0
+    Dim DefaultMTCurrentBuyOrders As Integer = 0
+    Dim DefaultMTItemsinProduction As Integer = 0
+    Dim DefaultMTItemsinStock As Integer = 0
+    Dim DefaultMTMaterialCost As Integer = 0
+    Dim DefaultMTTotalCost As Integer = 14
+    Dim DefaultMTBaseJobCost As Integer = 0
+    Dim DefaultMTNumBPs As Integer = 0
+    Dim DefaultMTInventionChance As Integer = 0
+    Dim DefaultMTBPType As Integer = 0
+    Dim DefaultMTRace As Integer = 0
+    Dim DefaultMTVolumeperItem As Integer = 0
+    Dim DefaultMTTotalVolume As Integer = 0
+    Dim DefaultMTSellExcess As Integer = 0
+    Dim DefaultMTROI As Integer = 0
+    Dim DefaultMTPortionSize As Integer = 0
+    Dim DefaultMTManufacturingJobFee As Integer = 0
+    Dim DefaultMTManufacturingFacilityName As Integer = 0
+    Dim DefaultMTManufacturingFacilitySystem As Integer = 0
+    Dim DefaultMTManufacturingFacilityRegion As Integer = 0
+    Dim DefaultMTManufacturingFacilitySystemIndex As Integer = 0
+    Dim DefaultMTManufacturingFacilityTax As Integer = 0
+    Dim DefaultMTManufacturingFacilityMEBonus As Integer = 0
+    Dim DefaultMTManufacturingFacilityTEBonus As Integer = 0
+    Dim DefaultMTManufacturingFacilityUsage As Integer = 0
+    Dim DefaultMTManufacturingFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTComponentFacilityName As Integer = 0
+    Dim DefaultMTComponentFacilitySystem As Integer = 0
+    Dim DefaultMTComponentFacilityRegion As Integer = 0
+    Dim DefaultMTComponentFacilitySystemIndex As Integer = 0
+    Dim DefaultMTComponentFacilityTax As Integer = 0
+    Dim DefaultMTComponentFacilityMEBonus As Integer = 0
+    Dim DefaultMTComponentFacilityTEBonus As Integer = 0
+    Dim DefaultMTComponentFacilityUsage As Integer = 0
+    Dim DefaultMTComponentFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTCapComponentFacilityName As Integer = 0
+    Dim DefaultMTCapComponentFacilitySystem As Integer = 0
+    Dim DefaultMTCapComponentFacilityRegion As Integer = 0
+    Dim DefaultMTCapComponentFacilitySystemIndex As Integer = 0
+    Dim DefaultMTCapComponentFacilityTax As Integer = 0
+    Dim DefaultMTCapComponentFacilityMEBonus As Integer = 0
+    Dim DefaultMTCapComponentFacilityTEBonus As Integer = 0
+    Dim DefaultMTCapComponentFacilityUsage As Integer = 0
+    Dim DefaultMTCapComponentFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTCopyingFacilityName As Integer = 0
+    Dim DefaultMTCopyingFacilitySystem As Integer = 0
+    Dim DefaultMTCopyingFacilityRegion As Integer = 0
+    Dim DefaultMTCopyingFacilitySystemIndex As Integer = 0
+    Dim DefaultMTCopyingFacilityTax As Integer = 0
+    Dim DefaultMTCopyingFacilityMEBonus As Integer = 0
+    Dim DefaultMTCopyingFacilityTEBonus As Integer = 0
+    Dim DefaultMTCopyingFacilityUsage As Integer = 0
+    Dim DefaultMTCopyingFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTInventionFacilityName As Integer = 0
+    Dim DefaultMTInventionFacilitySystem As Integer = 0
+    Dim DefaultMTInventionFacilityRegion As Integer = 0
+    Dim DefaultMTInventionFacilitySystemIndex As Integer = 0
+    Dim DefaultMTInventionFacilityTax As Integer = 0
+    Dim DefaultMTInventionFacilityMEBonus As Integer = 0
+    Dim DefaultMTInventionFacilityTEBonus As Integer = 0
+    Dim DefaultMTInventionFacilityUsage As Integer = 0
+    Dim DefaultMTInventionFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTReactionFacilityName As Integer = 0
+    Dim DefaultMTReactionFacilitySystem As Integer = 0
+    Dim DefaultMTReactionFacilityRegion As Integer = 0
+    Dim DefaultMTReactionFacilitySystemIndex As Integer = 0
+    Dim DefaultMTReactionFacilityTax As Integer = 0
+    Dim DefaultMTReactionFacilityMEBonus As Integer = 0
+    Dim DefaultMTReactionFacilityTEBonus As Integer = 0
+    Dim DefaultMTReactionFacilityUsage As Integer = 0
+    Dim DefaultMTReactionFacilityFWSystemLevel As Integer = 0
+    Dim DefaultMTReprocessingFacilityName As Integer = 0
+    Dim DefaultMTReprocessingFacilitySystem As Integer = 0
+    Dim DefaultMTReprocessingFacilityRegion As Integer = 0
+    Dim DefaultMTReprocessingFacilityTax As Integer = 0
+    Dim DefaultMTReprocessingFacilityUsage As Integer = 0
+    Dim DefaultMTReprocessingFacilityOreRefineRate As Integer = 0
+    Dim DefaultMTReprocessingFacilityIceRefineRate As Integer = 0
+    Dim DefaultMTReprocessingFacilityMoonRefineRate As Integer = 0
 
-    Public DefaultMTItemCategoryWidth As Integer = 100
-    Public DefaultMTItemGroupWidth As Integer = 100
-    Public DefaultMTItemNameWidth As Integer = 225
-    Public DefaultMTOwnedWidth As Integer = 50
-    Public DefaultMTTechWidth As Integer = 37
-    Public DefaultMTBPMEWidth As Integer = 28
-    Public DefaultMTBPTEWidth As Integer = 28
-    Public DefaultMTInputsWidth As Integer = 150
-    Public DefaultMTComparedWidth As Integer = 80
-    Public DefaultMTTotalRunsWidth As Integer = 64
-    Public DefaultMTSingleInventedBPCRunsWidth As Integer = 138
-    Public DefaultMTProductionLinesWidth As Integer = 92
-    Public DefaultMTLaboratoryLinesWidth As Integer = 92
-    Public DefaultMTTotalInventionCostWidth As Integer = 107
-    Public DefaultMTTotalCopyCostWidth As Integer = 88
-    Public DefaultMTTaxesWidth As Integer = 91
-    Public DefaultMTBrokerFeesWidth As Integer = 100
-    Public DefaultMTBPProductionTimeWidth As Integer = 106
-    Public DefaultMTTotalProductionTimeWidth As Integer = 116
-    Public DefaultMTCopyTimeWidth As Integer = 100
-    Public DefaultMTInventionTimeWidth As Integer = 100
-    Public DefaultMTItemMarketPriceWidth As Integer = 100
-    Public DefaultMTProfitWidth As Integer = 100
-    Public DefaultMTProfitPercentageWidth As Integer = 100
-    Public DefaultMTIskperHourWidth As Integer = 100
-    Public DefaultMTSVRWidth As Integer = 100
-    Public DefaultMTSVRxIPHWidth As Integer = 100
-    Public DefaultMTPriceTrendWidth As Integer = 100
-    Public DefaultMTTotalItemsSoldWidth As Integer = 100
-    Public DefaultMTTotalOrdersFilledWidth As Integer = 100
-    Public DefaultMTAvgItemsperOrderWidth As Integer = 100
-    Public DefaultMTCurrentSellOrdersWidth As Integer = 100
-    Public DefaultMTCurrentBuyOrdersWidth As Integer = 100
-    Public DefaultMTItemsinProductionWidth As Integer = 100
-    Public DefaultMTItemsinStockWidth As Integer = 100
-    Public DefaultMTTotalCostWidth As Integer = 100
-    Public DefaultMTBaseJobCostWidth As Integer = 100
-    Public DefaultMTNumBPsWidth As Integer = 57
-    Public DefaultMTInventionChanceWidth As Integer = 100
-    Public DefaultMTBPTypeWidth As Integer = 54
-    Public DefaultMTRaceWidth As Integer = 77
-    Public DefaultMTVolumeperItemWidth As Integer = 89
-    Public DefaultMTTotalVolumeWidth As Integer = 75
-    Public DefaultMTPortionSizeWidth As Integer = 75
-    Public DefaultMTManufacturingJobFeeWidth As Integer = 122
-    Public DefaultMTManufacturingFacilityNameWidth As Integer = 150
-    Public DefaultMTManufacturingFacilitySystemWidth As Integer = 152
-    Public DefaultMTManufacturingFacilityRegionWidth As Integer = 154
-    Public DefaultMTManufacturingFacilitySystemIndexWidth As Integer = 184
-    Public DefaultMTManufacturingFacilityTaxWidth As Integer = 138
-    Public DefaultMTManufacturingFacilityMEBonusWidth As Integer = 169
-    Public DefaultMTManufacturingFacilityTEBonusWidth As Integer = 166
-    Public DefaultMTManufacturingFacilityUsageWidth As Integer = 149
-    Public DefaultMTManufacturingFacilityFWSystemLevelWidth As Integer = 150
-    Public DefaultMTComponentFacilityNameWidth As Integer = 145
-    Public DefaultMTComponentFacilitySystemWidth As Integer = 140
-    Public DefaultMTComponentFacilityRegionWidth As Integer = 138
-    Public DefaultMTComponentFacilitySystemIndexWidth As Integer = 168
-    Public DefaultMTComponentFacilityTaxWidth As Integer = 122
-    Public DefaultMTComponentFacilityMEBonusWidth As Integer = 153
-    Public DefaultMTComponentFacilityTEBonusWidth As Integer = 153
-    Public DefaultMTComponentFacilityUsageWidth As Integer = 136
-    Public DefaultMTComponentFacilityFWSystemLevelWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityNameWidth As Integer = 150
-    Public DefaultMTCapComponentFacilitySystemWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityRegionWidth As Integer = 150
-    Public DefaultMTCapComponentFacilitySystemIndexWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityTaxWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityMEBonusWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityTEBonusWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityUsageWidth As Integer = 150
-    Public DefaultMTCapComponentFacilityFWSystemLevelWidth As Integer = 150
-    Public DefaultMTCopyingFacilityNameWidth As Integer = 116
-    Public DefaultMTCopyingFacilitySystemWidth As Integer = 122
-    Public DefaultMTCopyingFacilityRegionWidth As Integer = 122
-    Public DefaultMTCopyingFacilitySystemIndexWidth As Integer = 153
-    Public DefaultMTCopyingFacilityTaxWidth As Integer = 107
-    Public DefaultMTCopyingFacilityMEBonusWidth As Integer = 137
-    Public DefaultMTCopyingFacilityTEBonusWidth As Integer = 135
-    Public DefaultMTCopyingFacilityUsageWidth As Integer = 121
-    Public DefaultMTCopyingFacilityFWSystemLevelWidth As Integer = 150
-    Public DefaultMTInventionFacilityNameWidth As Integer = 122
-    Public DefaultMTInventionFacilitySystemWidth As Integer = 130
-    Public DefaultMTInventionFacilityRegionWidth As Integer = 129
-    Public DefaultMTInventionFacilitySystemIndexWidth As Integer = 156
-    Public DefaultMTInventionFacilityTaxWidth As Integer = 112
-    Public DefaultMTInventionFacilityMEBonusWidth As Integer = 144
-    Public DefaultMTInventionFacilityTEBonusWidth As Integer = 141
-    Public DefaultMTInventionFacilityUsageWidth As Integer = 127
-    Public DefaultMTInventionFacilityFWSystemLevelWidth As Integer = 150
-    Public DefaultMTReactionFacilityNameWidth As Integer = 122
-    Public DefaultMTReactionFacilitySystemWidth As Integer = 130
-    Public DefaultMTReactionFacilityRegionWidth As Integer = 129
-    Public DefaultMTReactionFacilitySystemIndexWidth As Integer = 156
-    Public DefaultMTReactionFacilityTaxWidth As Integer = 112
-    Public DefaultMTReactionFacilityMEBonusWidth As Integer = 144
-    Public DefaultMTReactionFacilityTEBonusWidth As Integer = 141
-    Public DefaultMTReactionFacilityUsageWidth As Integer = 127
-    Public DefaultMTReactionFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTItemCategoryWidth As Integer = 100
+    Dim DefaultMTItemGroupWidth As Integer = 100
+    Dim DefaultMTItemNameWidth As Integer = 225
+    Dim DefaultMTOwnedWidth As Integer = 50
+    Dim DefaultMTTechWidth As Integer = 37
+    Dim DefaultMTBPMEWidth As Integer = 28
+    Dim DefaultMTBPTEWidth As Integer = 28
+    Dim DefaultMTInputsWidth As Integer = 150
+    Dim DefaultMTComparedWidth As Integer = 80
+    Dim DefaultMTTotalRunsWidth As Integer = 64
+    Dim DefaultMTSingleInventedBPCRunsWidth As Integer = 138
+    Dim DefaultMTProductionLinesWidth As Integer = 92
+    Dim DefaultMTLaboratoryLinesWidth As Integer = 92
+    Dim DefaultMTTotalInventionCostWidth As Integer = 107
+    Dim DefaultMTTotalCopyCostWidth As Integer = 88
+    Dim DefaultMTTaxesWidth As Integer = 91
+    Dim DefaultMTBrokerFeesWidth As Integer = 100
+    Dim DefaultMTBPProductionTimeWidth As Integer = 106
+    Dim DefaultMTTotalProductionTimeWidth As Integer = 116
+    Dim DefaultMTCopyTimeWidth As Integer = 100
+    Dim DefaultMTInventionTimeWidth As Integer = 100
+    Dim DefaultMTItemMarketPriceWidth As Integer = 100
+    Dim DefaultMTProfitWidth As Integer = 100
+    Dim DefaultMTProfitPercentageWidth As Integer = 100
+    Dim DefaultMTIskperHourWidth As Integer = 100
+    Dim DefaultMTSVRWidth As Integer = 100
+    Dim DefaultMTSVRxIPHWidth As Integer = 100
+    Dim DefaultMTPriceTrendWidth As Integer = 100
+    Dim DefaultMTTotalItemsSoldWidth As Integer = 100
+    Dim DefaultMTTotalOrdersFilledWidth As Integer = 100
+    Dim DefaultMTAvgItemsperOrderWidth As Integer = 100
+    Dim DefaultMTCurrentSellOrdersWidth As Integer = 100
+    Dim DefaultMTCurrentBuyOrdersWidth As Integer = 100
+    Dim DefaultMTItemsinProductionWidth As Integer = 100
+    Dim DefaultMTItemsinStockWidth As Integer = 100
+    Dim DefaultMTMaterialCostWidth As Integer = 100
+    Dim DefaultMTTotalCostWidth As Integer = 100
+    Dim DefaultMTBaseJobCostWidth As Integer = 100
+    Dim DefaultMTNumBPsWidth As Integer = 57
+    Dim DefaultMTInventionChanceWidth As Integer = 100
+    Dim DefaultMTBPTypeWidth As Integer = 54
+    Dim DefaultMTRaceWidth As Integer = 77
+    Dim DefaultMTVolumeperItemWidth As Integer = 89
+    Dim DefaultMTTotalVolumeWidth As Integer = 75
+    Dim DefaultMTSellExcessWidth As Integer = 100
+    Dim DefaultMTROIWidth As Integer = 100
+    Dim DefaultMTPortionSizeWidth As Integer = 75
+    Dim DefaultMTManufacturingJobFeeWidth As Integer = 122
+    Dim DefaultMTManufacturingFacilityNameWidth As Integer = 150
+    Dim DefaultMTManufacturingFacilitySystemWidth As Integer = 152
+    Dim DefaultMTManufacturingFacilityRegionWidth As Integer = 154
+    Dim DefaultMTManufacturingFacilitySystemIndexWidth As Integer = 184
+    Dim DefaultMTManufacturingFacilityTaxWidth As Integer = 138
+    Dim DefaultMTManufacturingFacilityMEBonusWidth As Integer = 169
+    Dim DefaultMTManufacturingFacilityTEBonusWidth As Integer = 166
+    Dim DefaultMTManufacturingFacilityUsageWidth As Integer = 149
+    Dim DefaultMTManufacturingFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTComponentFacilityNameWidth As Integer = 145
+    Dim DefaultMTComponentFacilitySystemWidth As Integer = 140
+    Dim DefaultMTComponentFacilityRegionWidth As Integer = 138
+    Dim DefaultMTComponentFacilitySystemIndexWidth As Integer = 168
+    Dim DefaultMTComponentFacilityTaxWidth As Integer = 122
+    Dim DefaultMTComponentFacilityMEBonusWidth As Integer = 153
+    Dim DefaultMTComponentFacilityTEBonusWidth As Integer = 153
+    Dim DefaultMTComponentFacilityUsageWidth As Integer = 136
+    Dim DefaultMTComponentFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityNameWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilitySystemWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityRegionWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilitySystemIndexWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityTaxWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityMEBonusWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityTEBonusWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityUsageWidth As Integer = 150
+    Dim DefaultMTCapComponentFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTCopyingFacilityNameWidth As Integer = 116
+    Dim DefaultMTCopyingFacilitySystemWidth As Integer = 122
+    Dim DefaultMTCopyingFacilityRegionWidth As Integer = 122
+    Dim DefaultMTCopyingFacilitySystemIndexWidth As Integer = 153
+    Dim DefaultMTCopyingFacilityTaxWidth As Integer = 107
+    Dim DefaultMTCopyingFacilityMEBonusWidth As Integer = 137
+    Dim DefaultMTCopyingFacilityTEBonusWidth As Integer = 135
+    Dim DefaultMTCopyingFacilityUsageWidth As Integer = 121
+    Dim DefaultMTCopyingFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTInventionFacilityNameWidth As Integer = 122
+    Dim DefaultMTInventionFacilitySystemWidth As Integer = 130
+    Dim DefaultMTInventionFacilityRegionWidth As Integer = 129
+    Dim DefaultMTInventionFacilitySystemIndexWidth As Integer = 156
+    Dim DefaultMTInventionFacilityTaxWidth As Integer = 112
+    Dim DefaultMTInventionFacilityMEBonusWidth As Integer = 144
+    Dim DefaultMTInventionFacilityTEBonusWidth As Integer = 141
+    Dim DefaultMTInventionFacilityUsageWidth As Integer = 127
+    Dim DefaultMTInventionFacilityFWSystemLevelWidth As Integer = 150
+    Dim DefaultMTReactionFacilityNameWidth As Integer = 150
+    Dim DefaultMTReactionFacilitySystemWidth As Integer = 150
+    Dim DefaultMTReactionFacilityRegionWidth As Integer = 150
+    Dim DefaultMTReactionFacilitySystemIndexWidth As Integer = 150
+    Dim DefaultMTReactionFacilityTaxWidth As Integer = 150
+    Dim DefaultMTReactionFacilityMEBonusWidth As Integer = 150
+    Dim DefaultMTReactionFacilityTEBonusWidth As Integer = 150
+    Dim DefaultMTReactionFacilityUsageWidth As Integer = 150
+    Dim DefaultMTReactionFacilityFWSystemLevelWidth As Integer = 122
+    Dim DefaultMTReprocessingFacilityNameWidth As Integer = 122
+    Dim DefaultMTReprocessingFacilitySystemWidth As Integer = 130
+    Dim DefaultMTReprocessingFacilityRegionWidth As Integer = 129
+    Dim DefaultMTReprocessingFacilityTaxWidth As Integer = 112
+    Dim DefaultMTReprocessingFacilityUsageWidth As Integer = 127
+    Dim DefaultMTReprocessingFacilityOreRefineRateWidth As Integer = 144
+    Dim DefaultMTReprocessingFacilityIceRefineRateWidth As Integer = 144
+    Dim DefaultMTReprocessingFacilityMoonRefineRateWidth As Integer = 144
 
     Public DefaultMTOrderType As String = "Ascending"
     Public DefaultMTOrderByColumn As Integer = 3
@@ -701,6 +733,7 @@ Public Class ProgramSettings
     Public Const CurrentBuyOrdersColumnName As String = "Current Buy Orders"
     Public Const ItemsinProductionColumnName As String = "Items in Production"
     Public Const ItemsinStockColumnName As String = "Items in Stock"
+    Public Const MaterialCostColumnName As String = "Material Cost"
     Public Const TotalCostColumnName As String = "Total Cost"
     Public Const BaseJobCostColumnName As String = "Base Job Cost"
     Public Const NumBPsColumnName As String = "Num BPs"
@@ -709,6 +742,8 @@ Public Class ProgramSettings
     Public Const RaceColumnName As String = "Race"
     Public Const VolumeperItemColumnName As String = "Volume per Item"
     Public Const TotalVolumeColumnName As String = "Total Volume"
+    Public Const SellExcessColumnName As String = "Sell Excess Amount"
+    Public Const ROIColumnName As String = "Return on Investment"
     Public Const PortionSizeColumnName As String = "Portion Size"
     Public Const ManufacturingJobFeeColumnName As String = "Manufacturing Job Fee"
     Public Const ManufacturingFacilityNameColumnName As String = "Manufacturing Facility Name"
@@ -765,8 +800,16 @@ Public Class ProgramSettings
     Public Const ReactionFacilityTEBonusColumnName As String = "Reaction Facility TE Bonus"
     Public Const ReactionFacilityUsageColumnName As String = "Reaction Facility Usage"
     Public Const ReactionFacilityFWSystemLevelColumnName As String = "Reaction Facility FW System Level"
+    Public Const ReprocessingFacilityNameColumnName As String = "Reprocessing Facility Name"
+    Public Const ReprocessingFacilitySystemColumnName As String = "Reprocessing Facility System"
+    Public Const ReprocessingFacilityRegionColumnName As String = "Reprocessing Facility Region"
+    Public Const ReprocessingFacilityTaxColumnName As String = "Reprocessing Facility Tax"
+    Public Const ReprocessingFacilityUsageColumnName As String = "Reprocessing Facility Usage"
+    Public Const ReprocessingFacilityOreRefineRateColumnName As String = "Reprocessing Facility Ore Efficiency Rate"
+    Public Const ReprocessingFacilityIceRefineRateColumnName As String = "Reprocessing Facility Ice Efficiency Rate"
+    Public Const ReprocessingFacilityMoonRefineRateColumnName As String = "Reprocessing Facility Moon Efficiency Rate"
 
-    ' Industry Flip Belt settings
+    ' Industry Ore/Ice Flip Belt settings
     Private DefaultCycleTime As Double = 180
     Private Defaultm3perCycle As Double = 3000
     Private DefaultNumMiners As Integer = 1
@@ -776,6 +819,7 @@ Public Class ProgramSettings
     Private DefaultBFBrokerFeeRate As Double = 0.05
     Private DefaultIncludeTaxes As Boolean = True
     Private DefaultTruesec As String = ""
+    Private DefaultSpace As String = ""
 
     ' Industry flip belt defaults
     Private DefaultPlagioclase As Boolean = True
@@ -826,6 +870,58 @@ Public Class ProgramSettings
     Private DefaultGoldenOmber As Boolean = True
     Private DefaultMagmaMercoxit As Boolean = True
     Private DefaultVitreousMercoxit As Boolean = True
+
+    ' Ice Belt Flip - checks
+    Private DefaultBlueIce As Boolean = True
+    Private DefaultClearIcicle As Boolean = True
+    Private DefaultDarkGlitter As Boolean = True
+    Private DefaultEnrichedClearIcicle As Boolean = True
+    Private DefaultGelidus As Boolean = True
+    Private DefaultGlacialMass As Boolean = True
+    Private DefaultGlareCrust As Boolean = True
+    Private DefaultKrystallos As Boolean = True
+    Private DefaultPristineWhiteGlaze As Boolean = True
+    Private DefaultSmoothGlacialMass As Boolean = True
+    Private DefaultThickBlueIce As Boolean = True
+    Private DefaultWhiteGlaze As Boolean = True
+    Private DefaultCompressedBlueIce As Boolean = True
+    Private DefaultCompressedClearIcicle As Boolean = True
+    Private DefaultCompressedDarkGlitter As Boolean = True
+    Private DefaultCompressedEnrichedClearIcicle As Boolean = True
+    Private DefaultCompressedGelidus As Boolean = True
+    Private DefaultCompressedGlacialMass As Boolean = True
+    Private DefaultCompressedGlareCrust As Boolean = True
+    Private DefaultCompressedKrystallos As Boolean = True
+    Private DefaultCompressedPristineWhiteGlaze As Boolean = True
+    Private DefaultCompressedSmoothGlacialMass As Boolean = True
+    Private DefaultCompressedThickBlueIce As Boolean = True
+    Private DefaultCompressedWhiteGlaze As Boolean = True
+
+    ' ConvertToOre
+    Private DefaultConversionType As String = None
+    Private DefaultMinimizeOn As String = "Refine Price"
+    Private DefaultCompressedOre As Boolean = True
+    Private DefaultCompressedIce As Boolean = True
+    Private DefaultHighSec As Boolean = True
+    Private DefaultLowSec As Boolean = True
+    Private DefaultNullSec As Boolean = True
+    Private DefaultOreVariant0 As Boolean = True
+    Private DefaultOreVariant5 As Boolean = True
+    Private DefaultOreVariant10 As Boolean = True
+    Private DefaultAmarr As Boolean = True
+    Private DefaultCaldari As Boolean = True
+    Private DefaultGallente As Boolean = True
+    Private DefaultMinmatar As Boolean = True
+    Private DefaultWormhole As Boolean = False
+    Private DefaultTriglavian As Boolean = False
+    Private DefaultC1 As Boolean = True
+    Private DefaultC2 As Boolean = True
+    Private DefaultC3 As Boolean = True
+    Private DefaultC4 As Boolean = True
+    Private DefaultC5 As Boolean = True
+    Private DefaultC6 As Boolean = True
+    Public DefaultOverrideValue As Integer = 1 ' 1 is not overridden, 0 is false, -1 true for override value
+    Public DefaultIgnoreValue As Integer = 0
 
     ' Default Shopping List Settings
     Private DefaultAlwaysonTop As Boolean = False
@@ -904,21 +1000,23 @@ Public Class ProgramSettings
     Private BPSettings As BPTabSettings
     Private ManufacturingSettings As ManufacturingTabSettings
     Private DatacoreSettings As DataCoreTabSettings
-    Private ReactionSettings As ReactionsTabSettings
     Private MiningSettings As MiningTabSettings
     Private UpdatePricesSettings As UpdatePriceTabSettings
     Private IndustryJobsColumnSettings As IndustryJobsColumnSettings
     Private ManufacturingTabColumnSettings As ManufacturingTabColumnSettings
     Private IndustryFlipBeltsSettings As IndustryFlipBeltSettings
     Private ShoppingListTabSettings As ShoppingListSettings
-    Private LPStoreSettings As LPStore
     Private MarketHistoryViewSettings As MarketHistoryViewerSettings
     Private UpwellStructureViewerSettings As UpwellStructureSettings
     Private BPViewSettings As BPViewerSettings
+    Private IceBeltFlipSetting As IceBeltFlipSettings
+    Private IceBeltCheckSetting As IceBeltCheckSettings
+    Private ConversionToOreSetting As ConversionToOreSettings
 
     ' Multiple versions of Asset windows
     Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
     Private AssetWindowSettingsShoppingList As AssetWindowSettings
+    Private AssetWindowsettingsRefinery As AssetWindowSettings
 
     ' 5 belt types
     Private IndustryBeltOreChecksSettings1 As IndustryBeltOreChecks
@@ -945,6 +1043,11 @@ Public Class ProgramSettings
     Private Const UpwellStructureViewerSettingsFileName As String = "UpwellStructureViewerSettings"
     Private Const StructureBonusPopoutViewerSettingsFileName As String = "StructureBonusPopoutViewerSettings"
 
+    Private Const IceBeltFlipSettingsFileName As String = "IceBeltFlipSettings"
+    Private Const IceBeltFlipCheckSettingsFileName As String = "IceBeltFlipCheckSettings"
+
+    Private Const ConvertToOreSettingsFileName As String = "ConvertToOreSettings"
+
     ' For BP List Viewer
     Public DefaultBPViewerTechChecks As Boolean = True
     Public DefaultBPViewerSizeChecks As Boolean = False
@@ -965,6 +1068,7 @@ Public Class ProgramSettings
     Private Const AssetWindowFileNameDefault As String = "AssetWindowSettingsDefault"
     Private Const AssetWindowFileNameManufacturingTab As String = "AssetWindowSettingsManufacturingTab"
     Private Const AssetWindowFileNameShoppingList As String = "AssetWindowSettingsShoppingList"
+    Private Const AssetWindowFileNameRefinery As String = "AssetWindowFileNameRefinery"
 
     Private Const XMLfileType As String = ".xml"
 
@@ -974,17 +1078,20 @@ Public Class ProgramSettings
         BPSettings = Nothing
         ManufacturingSettings = Nothing
         DatacoreSettings = Nothing
-        ReactionSettings = Nothing
         MiningSettings = Nothing
         UpdatePricesSettings = Nothing
         IndustryJobsColumnSettings = Nothing
         ManufacturingTabColumnSettings = Nothing
         IndustryFlipBeltsSettings = Nothing
+        IceBeltFlipSetting = Nothing
+        IceBeltCheckSetting = Nothing
         ShoppingListTabSettings = Nothing
-        LPStoreSettings = Nothing
         MarketHistoryViewSettings = Nothing
         UpwellStructureViewerSettings = Nothing
         BPViewSettings = Nothing
+        ConversionToOreSetting = Nothing
+
+        ReDim ConversionToOreSetting.OverrideChecks(28)
 
     End Sub
 
@@ -1153,6 +1260,8 @@ Public Class ProgramSettings
                     .EVEMarketerRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVEMarketerRefreshInterval", DefaultEVEMarketerRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
+                    .AlwaysBuyFuelBlocks = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyFuelBlocks", DefaultAlwaysBuyFuelBlocks))
+                    .AlwaysBuyRAMs = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyRAMs", DefaultAlwaysBuyRAMs))
                     .IgnoreSVRThresholdValue = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "IgnoreSVRThresholdValue", DefaultIgnoreSVRThresholdValue))
                     .SVRAveragePriceRegion = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceRegion", DefaultSVRAveragePriceRegion))
                     .SVRAveragePriceDuration = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceDuration", DefaultSVRAveragePriceDuration))
@@ -1165,6 +1274,7 @@ Public Class ProgramSettings
                     .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultUseActiveSkills))
                     .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
                     .ShareSavedFacilities = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShareSavedFacilities", DefaultDisableGATracking))
+                    .RefineDrillDown = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "RefineDrillDown", DefaultRefineDrillDown))
                 End With
 
             Else
@@ -1224,6 +1334,9 @@ Public Class ProgramSettings
             .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
             .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
+            .AlwaysBuyFuelBlocks = DefaultAlwaysBuyFuelBlocks
+            .AlwaysBuyRAMs = DefaultAlwaysBuyRAMs
+
             .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
             .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
@@ -1239,6 +1352,8 @@ Public Class ProgramSettings
 
             .LoadBPsbyChar = DefaultLoadBPsbyChar
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
+
+            .RefineDrillDown = DefaultRefineDrillDown
         End With
 
         ' Save locally
@@ -1249,7 +1364,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(37) As Setting
+        Dim ApplicationSettingsList(40) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1290,6 +1405,9 @@ Public Class ProgramSettings
             ApplicationSettingsList(35) = New Setting("SupressESIStatusMessages", CStr(SentSettings.SupressESIStatusMessages))
             ApplicationSettingsList(36) = New Setting("LoadMaxAlphaSkills", CStr(SentSettings.LoadMaxAlphaSkills))
             ApplicationSettingsList(37) = New Setting("ShareSavedFacilities", CStr(SentSettings.ShareSavedFacilities))
+            ApplicationSettingsList(38) = New Setting("RefineDrillDown", CStr(SentSettings.RefineDrillDown))
+            ApplicationSettingsList(39) = New Setting("AlwaysBuyFuelBlocks", CStr(SentSettings.AlwaysBuyFuelBlocks))
+            ApplicationSettingsList(40) = New Setting("AlwaysBuyRAMs", CStr(SentSettings.AlwaysBuyRAMs))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1616,78 +1734,64 @@ Public Class ProgramSettings
                 'Get the settings
                 With TempSettings
                     .AllRawMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AllRawMats", DefaultPriceChecks))
-                    .Minerals = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Minerals", DefaultPriceChecks))
-                    .IceProducts = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "IceProducts", DefaultPriceChecks))
+                    .AdvancedProtectiveTechnology = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedProtectiveTechnology", DefaultPriceChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Gas", DefaultPriceChecks))
-                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
-                    .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
-                    .AncientRelics = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientRelics", DefaultPriceChecks))
-                    .AncientSalvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientSalvage", DefaultPriceChecks))
-                    .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
-                    .StationComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StationComponents", DefaultPriceChecks))
+                    .IceProducts = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "IceProducts", DefaultPriceChecks))
+                    .MolecularForgingTools = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgingTools", DefaultPriceChecks))
+                    .FactionMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FactionMaterials", DefaultPriceChecks))
+                    .NamedComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "NamedComponents", DefaultPriceChecks))
+                    .Minerals = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Minerals", DefaultPriceChecks))
                     .Planetary = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Planetary", DefaultPriceChecks))
+                    .RawMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMaterials", DefaultPriceChecks))
+                    .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
+                    .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
+                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
+
+                    .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMoonMats", DefaultPriceChecks))
+                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
+                    .MolecularForgedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgedMats", DefaultPriceChecks))
+                    .Polymers = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Polymers", DefaultPriceChecks))
+                    .ProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProcessedMoonMats", DefaultPriceChecks))
+                    .RawMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMoonMats", DefaultPriceChecks))
+
+                    .AncientRelics = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AncientRelics", DefaultPriceChecks))
                     .Datacores = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Datacores", DefaultPriceChecks))
                     .Decryptors = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Decryptors", DefaultPriceChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
-                    .Celestials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Celestials", DefaultPriceChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
-                    .Implants = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Implants", DefaultPriceChecks))
-                    .RawMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMats", DefaultPriceChecks))
-                    .ProcessedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProcessedMats", DefaultPriceChecks))
-                    .AdvancedMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMats", DefaultPriceChecks))
-                    .MatsandCompounds = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MatsandCompounds", DefaultPriceChecks))
-                    .DroneComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "DroneComponents", DefaultPriceChecks))
-                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
-                    .Polymers = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Polymers", DefaultPriceChecks))
-                    .Asteroids = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Asteroids", DefaultPriceChecks))
+                    .RDB = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RDB", DefaultPriceChecks))
+
                     .AllManufacturedItems = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AllManufacturedItems", DefaultPriceChecks))
+
                     .Ships = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Ships", DefaultPriceChecks))
+                    .Charges = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Charges", DefaultPriceChecks))
                     .Modules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Modules", DefaultPriceChecks))
                     .Drones = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Drones", DefaultPriceChecks))
-                    .Boosters = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Boosters", DefaultPriceChecks))
                     .Rigs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Rigs", DefaultPriceChecks))
-                    .Charges = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Charges", DefaultPriceChecks))
                     .Subsystems = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Subsystems", DefaultPriceChecks))
+                    .Deployables = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Deployables", DefaultPriceChecks))
+                    .Boosters = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Boosters", DefaultPriceChecks))
                     .Structures = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Structures", DefaultPriceChecks))
-                    .Tools = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Tools", DefaultPriceChecks))
-                    .CapT2Components = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapT2Components", DefaultPriceChecks))
-                    .CapitalComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalComponents", DefaultPriceChecks))
-                    .Components = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Components", DefaultPriceChecks))
-                    .Hybrid = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Hybrid", DefaultPriceChecks))
-                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
+                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureRigs", DefaultPriceChecks))
+                    .Celestials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Celestials", DefaultPriceChecks))
+                    .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
+                    .Implants = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Implants", DefaultPriceChecks))
+
+                    .AdvancedCapComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedCapComponents", DefaultPriceChecks))
+                    .AdvancedComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedComponents", DefaultPriceChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FuelBlocks", DefaultPriceChecks))
+                    .ProtectiveComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProtectiveComponents", DefaultPriceChecks))
+                    .RAM = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RAM", DefaultPriceChecks))
+                    .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalShipComponents", DefaultPriceChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
+                    .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "SubsystemComponents", DefaultPriceChecks))
+
                     .T1 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T1", DefaultPriceChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T2", DefaultPriceChecks))
                     .T3 = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "T3", DefaultPriceChecks))
                     .Faction = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Faction", DefaultPriceChecks))
                     .Pirate = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Pirate", DefaultPriceChecks))
                     .Storyline = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Storyline", DefaultPriceChecks))
-                    .StructureModules = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureModules", DefaultPriceChecks))
-                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AbyssalMaterials", DefaultPriceChecks))
-                    .MolecularForgedMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "MolecularForgedMaterials", DefaultPriceChecks))
 
-                    Dim TempRegions As String = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegions", DefaultPriceRegion))
-                    Dim RegionList As New List(Of String)
-                    Dim RegionCount As Integer
-
-                    If TempRegions <> "0" Then
-                        RegionCount = Regex.Matches(TempRegions, Regex.Escape(",")).Count + 1 ' Add one for last item + 1 ' Add one for last item
-                    End If
-
-                    Dim ReaderStartPosition As Integer = 0
-                    Dim CommaLoc As Integer
-
-                    For i = 0 To RegionCount - 1
-                        CommaLoc = InStr(TempRegions.Substring(ReaderStartPosition), ",")
-                        If CommaLoc <> 0 Then
-                            RegionList.Add(TempRegions.Substring(ReaderStartPosition, CommaLoc - 1))
-                        Else ' At the end
-                            RegionList.Add(TempRegions.Substring(ReaderStartPosition))
-                        End If
-                        ReaderStartPosition = ReaderStartPosition + CommaLoc
-                    Next
-
-                    .SelectedRegions = RegionList
+                    .SelectedRegion = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedRegion", DefaultPriceRegion))
                     .SelectedSystem = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "SelectedSystem", DefaultPriceSystem))
                     .ItemsCombo = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "ItemsCombo", DefaultPriceItemsCombo))
                     .RawMatsCombo = CStr(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeString, UpdatePricesFileName, "RawMatsCombo", DefaultPriceRawMatsCombo))
@@ -1733,98 +1837,89 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(66) As Setting
+        Dim UpdatePricesSettingsList(68) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
-            UpdatePricesSettingsList(1) = New Setting("Minerals", CStr(PriceSettings.Minerals))
-            UpdatePricesSettingsList(2) = New Setting("IceProducts", CStr(PriceSettings.IceProducts))
-            UpdatePricesSettingsList(3) = New Setting("Gas", CStr(PriceSettings.Gas))
-            UpdatePricesSettingsList(4) = New Setting("AncientRelics", CStr(PriceSettings.AncientRelics))
-            UpdatePricesSettingsList(5) = New Setting("AncientSalvage", CStr(PriceSettings.AncientSalvage))
-            UpdatePricesSettingsList(6) = New Setting("Salvage", CStr(PriceSettings.Salvage))
-            UpdatePricesSettingsList(7) = New Setting("StationComponents", CStr(PriceSettings.StationComponents))
+
+            UpdatePricesSettingsList(1) = New Setting("AdvancedProtectiveTechnology", CStr(PriceSettings.AdvancedProtectiveTechnology))
+            UpdatePricesSettingsList(2) = New Setting("Gas", CStr(PriceSettings.Gas))
+            UpdatePricesSettingsList(3) = New Setting("IceProducts", CStr(PriceSettings.IceProducts))
+            UpdatePricesSettingsList(4) = New Setting("MolecularForgingTools", CStr(PriceSettings.MolecularForgingTools))
+            UpdatePricesSettingsList(5) = New Setting("FactionMaterials", CStr(PriceSettings.FactionMaterials))
+            UpdatePricesSettingsList(6) = New Setting("NamedComponents", CStr(PriceSettings.NamedComponents))
+            UpdatePricesSettingsList(7) = New Setting("Minerals", CStr(PriceSettings.Minerals))
             UpdatePricesSettingsList(8) = New Setting("Planetary", CStr(PriceSettings.Planetary))
-            UpdatePricesSettingsList(9) = New Setting("Datacores", CStr(PriceSettings.Datacores))
-            UpdatePricesSettingsList(10) = New Setting("Decryptors", CStr(PriceSettings.Decryptors))
-            UpdatePricesSettingsList(11) = New Setting("RawMats", CStr(PriceSettings.RawMats))
-            UpdatePricesSettingsList(12) = New Setting("ProcessedMats", CStr(PriceSettings.ProcessedMats))
-            UpdatePricesSettingsList(13) = New Setting("AdvancedMats", CStr(PriceSettings.AdvancedMats))
-            UpdatePricesSettingsList(14) = New Setting("MatsandCompounds", CStr(PriceSettings.MatsandCompounds))
-            UpdatePricesSettingsList(15) = New Setting("DroneComponents", CStr(PriceSettings.DroneComponents))
-            UpdatePricesSettingsList(16) = New Setting("BoosterMats", CStr(PriceSettings.BoosterMats))
-            UpdatePricesSettingsList(17) = New Setting("Polymers", CStr(PriceSettings.Polymers))
-            UpdatePricesSettingsList(18) = New Setting("AllManufacturedItems", CStr(PriceSettings.AllManufacturedItems))
-            UpdatePricesSettingsList(19) = New Setting("Ships", CStr(PriceSettings.Ships))
-            UpdatePricesSettingsList(20) = New Setting("Modules", CStr(PriceSettings.Modules))
-            UpdatePricesSettingsList(21) = New Setting("Drones", CStr(PriceSettings.Drones))
-            UpdatePricesSettingsList(22) = New Setting("Boosters", CStr(PriceSettings.Boosters))
-            UpdatePricesSettingsList(23) = New Setting("Rigs", CStr(PriceSettings.Rigs))
-            UpdatePricesSettingsList(24) = New Setting("Charges", CStr(PriceSettings.Charges))
-            UpdatePricesSettingsList(25) = New Setting("Subsystems", CStr(PriceSettings.Subsystems))
-            UpdatePricesSettingsList(26) = New Setting("Structures", CStr(PriceSettings.Structures))
-            UpdatePricesSettingsList(27) = New Setting("Tools", CStr(PriceSettings.Tools))
-            UpdatePricesSettingsList(28) = New Setting("CapT2Components", CStr(PriceSettings.CapT2Components))
-            UpdatePricesSettingsList(29) = New Setting("CapitalComponents", CStr(PriceSettings.CapitalComponents))
-            UpdatePricesSettingsList(30) = New Setting("Components", CStr(PriceSettings.Components))
-            UpdatePricesSettingsList(31) = New Setting("Hybrid", CStr(PriceSettings.Hybrid))
-            UpdatePricesSettingsList(32) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
-            UpdatePricesSettingsList(33) = New Setting("T1", CStr(PriceSettings.T1))
-            UpdatePricesSettingsList(34) = New Setting("T2", CStr(PriceSettings.T2))
-            UpdatePricesSettingsList(35) = New Setting("T3", CStr(PriceSettings.T3))
-            UpdatePricesSettingsList(36) = New Setting("Faction", CStr(PriceSettings.Faction))
-            UpdatePricesSettingsList(37) = New Setting("Pirate", CStr(PriceSettings.Pirate))
-            UpdatePricesSettingsList(38) = New Setting("Storyline", CStr(PriceSettings.Storyline))
-            Dim RegionList As String = ""
-            If Not IsNothing(PriceSettings.SelectedRegions) Then
-                For i = 0 To PriceSettings.SelectedRegions.Count - 1
-                    RegionList = RegionList & PriceSettings.SelectedRegions(i) & ","
-                Next
-                If RegionList <> "" Then
-                    ' Strip last comma
-                    RegionList = RegionList.Substring(0, Len(RegionList) - 1)
-                End If
-            Else
-                RegionList = "0"
-            End If
-            UpdatePricesSettingsList(39) = New Setting("SelectedRegions", RegionList)
-            UpdatePricesSettingsList(40) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
-            UpdatePricesSettingsList(41) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
-            UpdatePricesSettingsList(42) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
+            UpdatePricesSettingsList(9) = New Setting("RawMaterials", CStr(PriceSettings.RawMaterials))
+            UpdatePricesSettingsList(10) = New Setting("Salvage", CStr(PriceSettings.Salvage))
+            UpdatePricesSettingsList(11) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(12) = New Setting("BPCs", CStr(PriceSettings.BPCs))
 
-            UpdatePricesSettingsList(43) = New Setting("Asteroids", CStr(PriceSettings.Asteroids))
-            UpdatePricesSettingsList(44) = New Setting("Misc", CStr(PriceSettings.Misc))
+            UpdatePricesSettingsList(13) = New Setting("AdvancedMoonMats", CStr(PriceSettings.AdvancedMoonMats))
+            UpdatePricesSettingsList(14) = New Setting("BoosterMats", CStr(PriceSettings.BoosterMats))
+            UpdatePricesSettingsList(15) = New Setting("MolecularForgedMats", CStr(PriceSettings.MolecularForgedMats))
+            UpdatePricesSettingsList(16) = New Setting("Polymers", CStr(PriceSettings.Polymers))
+            UpdatePricesSettingsList(17) = New Setting("ProcessedMoonMats", CStr(PriceSettings.ProcessedMoonMats))
+            UpdatePricesSettingsList(18) = New Setting("RawMoonMats", CStr(PriceSettings.RawMoonMats))
 
-            UpdatePricesSettingsList(45) = New Setting("Deployables", CStr(PriceSettings.Deployables))
-            UpdatePricesSettingsList(46) = New Setting("Celestials", CStr(PriceSettings.Celestials))
-            UpdatePricesSettingsList(47) = New Setting("Implants", CStr(PriceSettings.Implants))
+            UpdatePricesSettingsList(19) = New Setting("AncientRelics", CStr(PriceSettings.AncientRelics))
+            UpdatePricesSettingsList(20) = New Setting("Datacores", CStr(PriceSettings.Datacores))
+            UpdatePricesSettingsList(21) = New Setting("Decryptors", CStr(PriceSettings.Decryptors))
+            UpdatePricesSettingsList(22) = New Setting("RDB", CStr(PriceSettings.RDB))
 
-            UpdatePricesSettingsList(48) = New Setting("BPCs", CStr(PriceSettings.BPCs))
+            UpdatePricesSettingsList(23) = New Setting("AllManufacturedItems", CStr(PriceSettings.AllManufacturedItems))
 
-            UpdatePricesSettingsList(49) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
-            UpdatePricesSettingsList(50) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
+            UpdatePricesSettingsList(24) = New Setting("Ships", CStr(PriceSettings.Ships))
+            UpdatePricesSettingsList(25) = New Setting("Charges", CStr(PriceSettings.Charges))
+            UpdatePricesSettingsList(26) = New Setting("Modules", CStr(PriceSettings.Modules))
+            UpdatePricesSettingsList(27) = New Setting("Drones", CStr(PriceSettings.Drones))
+            UpdatePricesSettingsList(28) = New Setting("Rigs", CStr(PriceSettings.Rigs))
+            UpdatePricesSettingsList(29) = New Setting("Subsystems", CStr(PriceSettings.Subsystems))
+            UpdatePricesSettingsList(30) = New Setting("Deployables", CStr(PriceSettings.Deployables))
+            UpdatePricesSettingsList(31) = New Setting("Boosters", CStr(PriceSettings.Boosters))
+            UpdatePricesSettingsList(32) = New Setting("Structures", CStr(PriceSettings.Structures))
+            UpdatePricesSettingsList(33) = New Setting("StructureRigs", CStr(PriceSettings.StructureRigs))
+            UpdatePricesSettingsList(34) = New Setting("Celestials", CStr(PriceSettings.Celestials))
+            UpdatePricesSettingsList(35) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
+            UpdatePricesSettingsList(36) = New Setting("Implants", CStr(PriceSettings.Implants))
 
-            UpdatePricesSettingsList(51) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
-            UpdatePricesSettingsList(52) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
-            UpdatePricesSettingsList(53) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
-            UpdatePricesSettingsList(54) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
+            UpdatePricesSettingsList(37) = New Setting("AdvancedCapComponents", CStr(PriceSettings.AdvancedCapComponents))
+            UpdatePricesSettingsList(38) = New Setting("AdvancedComponents", CStr(PriceSettings.AdvancedComponents))
+            UpdatePricesSettingsList(39) = New Setting("FuelBlocks", CStr(PriceSettings.FuelBlocks))
+            UpdatePricesSettingsList(40) = New Setting("ProtectiveComponents", CStr(PriceSettings.ProtectiveComponents))
+            UpdatePricesSettingsList(41) = New Setting("RAM", CStr(PriceSettings.RAM))
+            UpdatePricesSettingsList(42) = New Setting("CapitalShipComponents", CStr(PriceSettings.CapitalShipComponents))
+            UpdatePricesSettingsList(43) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
+            UpdatePricesSettingsList(44) = New Setting("SubsystemComponents", CStr(PriceSettings.SubsystemComponents))
 
-            UpdatePricesSettingsList(55) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
-            UpdatePricesSettingsList(56) = New Setting("PPRawRegion", CStr(PriceSettings.PPRawRegion))
-            UpdatePricesSettingsList(57) = New Setting("PPRawSystem", CStr(PriceSettings.PPRawSystem))
-            UpdatePricesSettingsList(58) = New Setting("PPRawPriceMod", CStr(PriceSettings.PPRawPriceMod))
+            UpdatePricesSettingsList(45) = New Setting("T1", CStr(PriceSettings.T1))
+            UpdatePricesSettingsList(46) = New Setting("T2", CStr(PriceSettings.T2))
+            UpdatePricesSettingsList(47) = New Setting("T3", CStr(PriceSettings.T3))
+            UpdatePricesSettingsList(48) = New Setting("Faction", CStr(PriceSettings.Faction))
+            UpdatePricesSettingsList(49) = New Setting("Pirate", CStr(PriceSettings.Pirate))
+            UpdatePricesSettingsList(50) = New Setting("Storyline", CStr(PriceSettings.Storyline))
+            UpdatePricesSettingsList(51) = New Setting("SelectedRegion", PriceSettings.SelectedRegion)
+            UpdatePricesSettingsList(52) = New Setting("SelectedSystem", CStr(PriceSettings.SelectedSystem))
+            UpdatePricesSettingsList(53) = New Setting("ItemsCombo", CStr(PriceSettings.ItemsCombo))
+            UpdatePricesSettingsList(54) = New Setting("RawMatsCombo", CStr(PriceSettings.RawMatsCombo))
 
-            UpdatePricesSettingsList(59) = New Setting("PPItemsPriceType", CStr(PriceSettings.PPItemsPriceType))
-            UpdatePricesSettingsList(60) = New Setting("PPItemsRegion", CStr(PriceSettings.PPItemsRegion))
-            UpdatePricesSettingsList(61) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
-            UpdatePricesSettingsList(62) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
+            UpdatePricesSettingsList(55) = New Setting("ColumnSort", CStr(PriceSettings.ColumnSort))
+            UpdatePricesSettingsList(56) = New Setting("ColumnSortType", CStr(PriceSettings.ColumnSortType))
 
-            UpdatePricesSettingsList(63) = New Setting("StructureModules", CStr(PriceSettings.StructureModules))
-            UpdatePricesSettingsList(64) = New Setting("AbyssalMaterials", CStr(PriceSettings.AbyssalMaterials))
+            UpdatePricesSettingsList(57) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
+            UpdatePricesSettingsList(58) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
+            UpdatePricesSettingsList(59) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
+            UpdatePricesSettingsList(60) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
 
-            UpdatePricesSettingsList(65) = New Setting("StructureComponents", CStr(PriceSettings.StructureComponents))
+            UpdatePricesSettingsList(61) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
+            UpdatePricesSettingsList(62) = New Setting("PPRawRegion", CStr(PriceSettings.PPRawRegion))
+            UpdatePricesSettingsList(63) = New Setting("PPRawSystem", CStr(PriceSettings.PPRawSystem))
+            UpdatePricesSettingsList(64) = New Setting("PPRawPriceMod", CStr(PriceSettings.PPRawPriceMod))
 
-            UpdatePricesSettingsList(66) = New Setting("MolecularForgedMaterials", CStr(PriceSettings.MolecularForgedMaterials))
+            UpdatePricesSettingsList(65) = New Setting("PPItemsPriceType", CStr(PriceSettings.PPItemsPriceType))
+            UpdatePricesSettingsList(66) = New Setting("PPItemsRegion", CStr(PriceSettings.PPItemsRegion))
+            UpdatePricesSettingsList(67) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
+            UpdatePricesSettingsList(68) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
@@ -1839,54 +1934,63 @@ Public Class ProgramSettings
 
         With LocalSettings
             .AllRawMats = DefaultPriceChecks
-            .Minerals = DefaultPriceChecks
-            .IceProducts = DefaultPriceChecks
+            .AdvancedProtectiveTechnology = DefaultPriceChecks
             .Gas = DefaultPriceChecks
-            .AbyssalMaterials = DefaultPriceChecks
-            .MolecularForgedMaterials = DefaultPriceChecks
-            .BPCs = DefaultPriceChecks
-            .Misc = DefaultPriceChecks
-            .AncientRelics = DefaultPriceChecks
-            .AncientSalvage = DefaultPriceChecks
-            .Salvage = DefaultPriceChecks
-            .StationComponents = DefaultPriceChecks
+            .IceProducts = DefaultPriceChecks
+            .MolecularForgingTools = DefaultPriceChecks
+            .FactionMaterials = DefaultPriceChecks
+            .NamedComponents = DefaultPriceChecks
+            .Minerals = DefaultPriceChecks
             .Planetary = DefaultPriceChecks
+            .RawMaterials = DefaultPriceChecks
+            .Salvage = DefaultPriceChecks
+            .Misc = DefaultPriceChecks
+            .BPCs = DefaultPriceChecks
+
+            .AdvancedMoonMats = DefaultPriceChecks
+            .BoosterMats = DefaultPriceChecks
+            .MolecularForgedMats = DefaultPriceChecks
+            .Polymers = DefaultPriceChecks
+            .ProcessedMoonMats = DefaultPriceChecks
+            .RawMoonMats = DefaultPriceChecks
+
+            .AncientRelics = DefaultPriceChecks
             .Datacores = DefaultPriceChecks
             .Decryptors = DefaultPriceChecks
-            .RawMats = DefaultPriceChecks
-            .ProcessedMats = DefaultPriceChecks
-            .AdvancedMats = DefaultPriceChecks
-            .MatsandCompounds = DefaultPriceChecks
-            .DroneComponents = DefaultPriceChecks
-            .BoosterMats = DefaultPriceChecks
-            .Polymers = DefaultPriceChecks
-            .Asteroids = DefaultPriceChecks
+            .RDB = DefaultPriceChecks
+
             .AllManufacturedItems = DefaultPriceChecks
+
             .Ships = DefaultPriceChecks
+            .Charges = DefaultPriceChecks
             .Modules = DefaultPriceChecks
             .Drones = DefaultPriceChecks
-            .Boosters = DefaultPriceChecks
             .Rigs = DefaultPriceChecks
-            .Charges = DefaultPriceChecks
             .Subsystems = DefaultPriceChecks
-            .Structures = DefaultPriceChecks
-            .Tools = DefaultPriceChecks
-            .CapT2Components = DefaultPriceChecks
-            .CapitalComponents = DefaultPriceChecks
-            .Components = DefaultPriceChecks
-            .Hybrid = DefaultPriceChecks
-            .StructureComponents = DefaultPriceChecks
-            .FuelBlocks = DefaultPriceChecks
-            .Implants = DefaultPriceChecks
-            .Celestials = DefaultPriceChecks
             .Deployables = DefaultPriceChecks
+            .Boosters = DefaultPriceChecks
+            .Structures = DefaultPriceChecks
+            .StructureRigs = DefaultPriceChecks
+            .Celestials = DefaultPriceChecks
+            .StructureModules = DefaultPriceChecks
+            .Implants = DefaultPriceChecks
+
+            .AdvancedCapComponents = DefaultPriceChecks
+            .AdvancedComponents = DefaultPriceChecks
+            .FuelBlocks = DefaultPriceChecks
+            .ProtectiveComponents = DefaultPriceChecks
+            .RAM = DefaultPriceChecks
+            .CapitalShipComponents = DefaultPriceChecks
+            .StructureComponents = DefaultPriceChecks
+            .SubsystemComponents = DefaultPriceChecks
+
             .T1 = DefaultPriceChecks
             .T2 = DefaultPriceChecks
             .T3 = DefaultPriceChecks
             .Faction = DefaultPriceChecks
             .Pirate = DefaultPriceChecks
             .Storyline = DefaultPriceChecks
-            .SelectedRegions = Nothing
+            .SelectedRegion = DefaultPriceRegion
             .SelectedSystem = DefaultPriceSystem
             .ItemsCombo = DefaultPriceItemsCombo
             .RawMatsCombo = DefaultPriceRawMatsCombo
@@ -2438,119 +2542,6 @@ Public Class ProgramSettings
 
 #End Region
 
-#Region "Reactions Tab Settings"
-
-    ' Loads the tab settings
-    Public Function LoadReactionSettings() As ReactionsTabSettings
-        Dim TempSettings As ReactionsTabSettings = Nothing
-
-        Try
-            If FileExists(SettingsFolder, ReactionSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .POSFuelCost = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "POSFuelCost", DefaultReactPOSFuelCost))
-                    .CheckTaxes = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckTaxes", DefaultReactCheckTaxes))
-                    .CheckFees = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckFees", DefaultReactCheckFees))
-                    .CheckAdvMoonMats = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckAdvMoonMats", DefaultReactItemChecks))
-                    .CheckProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckProcessedMoonMats", DefaultReactItemChecks))
-                    .CheckHybrid = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckHybrid", DefaultReactItemChecks))
-                    .CheckComplexBio = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckComplexBio", DefaultReactItemChecks))
-                    .CheckSimpleBio = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckSimpleBio", DefaultReactItemChecks))
-                    .CheckBuildBasic = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckBuildBasic", DefaultReactItemChecks))
-                    .CheckIgnoreMarket = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckIgnoreMarket", DefaultReactItemChecks))
-                    .CheckRefine = CBool(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeBoolean, ReactionSettingsFileName, "CheckRefine", DefaultReactItemChecks))
-                    .NumberofPOS = CInt(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "NumberofPOS", DefaultReactNumPOS))
-                    .RefineryEfficiency = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryEfficiency", DefaultRefiningEfficency))
-                    .RefineryTax = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryTax", DefaultRefineTax))
-                    .RefineryStanding = CDbl(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeDouble, ReactionSettingsFileName, "RefineryStanding", DefaultRefineCorpStanding))
-                    .ColumnSort = CInt(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeInteger, ReactionSettingsFileName, "ColumnSort", DefaultReactColumnSort))
-                    .ColumnSortType = CStr(GetSettingValue(SettingsFolder, ReactionSettingsFileName, SettingTypes.TypeString, ReactionSettingsFileName, "ColumnSortType", DefaultReactColumnSortType))
-                End With
-
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultReactionSettings()
-            End If
-
-        Catch ex As Exception
-            MsgBox("An error occured when loading Reaction Tab Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultReactionSettings()
-        End Try
-
-        ' Save them locally and then export
-        ReactionSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    ' Loads the Defaults for the tab
-    Public Function SetDefaultReactionSettings() As ReactionsTabSettings
-        Dim LocalSettings As ReactionsTabSettings
-
-        LocalSettings.POSFuelCost = DefaultReactPOSFuelCost
-        LocalSettings.CheckTaxes = DefaultReactCheckTaxes
-        LocalSettings.CheckFees = DefaultReactCheckFees
-        LocalSettings.CheckAdvMoonMats = DefaultReactItemChecks
-        LocalSettings.CheckProcessedMoonMats = DefaultReactItemChecks
-        LocalSettings.CheckHybrid = DefaultReactItemChecks
-        LocalSettings.CheckComplexBio = DefaultReactItemChecks
-        LocalSettings.CheckSimpleBio = DefaultReactItemChecks
-        LocalSettings.CheckBuildBasic = DefaultReactItemChecks
-        LocalSettings.CheckIgnoreMarket = DefaultReactItemChecks
-        LocalSettings.CheckRefine = DefaultReactItemChecks
-        LocalSettings.NumberofPOS = DefaultReactNumPOS
-        LocalSettings.RefineryEfficiency = DefaultRefiningEfficency
-        LocalSettings.RefineryTax = DefaultRefineTax
-        LocalSettings.RefineryStanding = DefaultRefineCorpStanding
-        LocalSettings.ColumnSort = DefaultReactColumnSort
-        LocalSettings.ColumnSortType = DefaultReactColumnSortType
-
-        ' Save locally
-        ReactionSettings = LocalSettings
-        Return LocalSettings
-
-    End Function
-
-    ' Saves the tab settings to XML
-    Public Sub SaveReactionSettings(SentSettings As ReactionsTabSettings)
-        Dim ReactionSettingsList(16) As Setting
-
-        Try
-            ReactionSettingsList(0) = New Setting("POSFuelCost", CStr(SentSettings.POSFuelCost))
-            ReactionSettingsList(1) = New Setting("CheckTaxes", CStr(SentSettings.CheckTaxes))
-            ReactionSettingsList(2) = New Setting("CheckFees", CStr(SentSettings.CheckFees))
-            ReactionSettingsList(3) = New Setting("CheckAdvMoonMats", CStr(SentSettings.CheckAdvMoonMats))
-            ReactionSettingsList(4) = New Setting("CheckProcessedMoonMats", CStr(SentSettings.CheckProcessedMoonMats))
-            ReactionSettingsList(5) = New Setting("CheckHybrid", CStr(SentSettings.CheckHybrid))
-            ReactionSettingsList(6) = New Setting("CheckComplexBio", CStr(SentSettings.CheckComplexBio))
-            ReactionSettingsList(7) = New Setting("CheckSimpleBio", CStr(SentSettings.CheckSimpleBio))
-            ReactionSettingsList(8) = New Setting("CheckBuildBasic", CStr(SentSettings.CheckBuildBasic))
-            ReactionSettingsList(9) = New Setting("CheckIgnoreMarket", CStr(SentSettings.CheckIgnoreMarket))
-            ReactionSettingsList(10) = New Setting("CheckRefine", CStr(SentSettings.CheckRefine))
-            ReactionSettingsList(11) = New Setting("NumberofPOS", CStr(SentSettings.NumberofPOS))
-            ReactionSettingsList(12) = New Setting("RefineryEfficiency", CStr(SentSettings.RefineryEfficiency))
-            ReactionSettingsList(13) = New Setting("RefineryTax", CStr(SentSettings.RefineryTax))
-            ReactionSettingsList(14) = New Setting("RefineryStanding", CStr(SentSettings.RefineryStanding))
-            ReactionSettingsList(15) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            ReactionSettingsList(16) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
-
-            Call WriteSettingsToFile(SettingsFolder, ReactionSettingsFileName, ReactionSettingsList, ReactionSettingsFileName)
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving Reaction Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the tab settings
-    Public Function GetReactionSettings() As ReactionsTabSettings
-        Return ReactionSettings
-    End Function
-
-#End Region
-
 #Region "Mining Tab Settings"
 
     ' Loads the tab settings
@@ -2574,11 +2565,6 @@ Public Class ProgramSettings
                     .CheckIncludeFees = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "BrokerFeeRate", DefaultMiningBrokerFeeRate))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
-                    .CheckIncludeJumpFuelCosts = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeJumpFuelCosts", DefaultMiningCheckIncludeJumpFuelCosts))
-                    .TotalJumpFuelCost = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelCost", DefaultMiningTotalJumpFuelCost))
-                    .TotalJumpFuelM3 = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "TotalJumpFuelM3", DefaultMiningTotalJumpFuelM3))
-                    .JumpCompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpCompressedOre", DefaultMiningJumpCompressedOre))
-                    .JumpMinerals = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "JumpMinerals", DefaultMiningJumpMinerals))
                     .OreMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreMiningShip", DefaultMiningMiningShip))
                     .IceMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningShip", DefaultMiningIceMiningShip))
                     .GasMiningShip = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasMiningShip", DefaultMiningGasMiningShip))
@@ -2612,13 +2598,10 @@ Public Class ProgramSettings
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
                     .CheckRorqDeployed = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
-                    .MiningDroneM3perHour = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "MiningDroneM3perHour", DefaultMiningDroneM3perHour))
                     .RefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
                     .UnrefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
                     .IndustrialReconfig = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "IndustrialReconfig", DefaultMiningIndustrialReconfig))
-                    .MercoxitMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MercoxitMiningRig", DefaultMiningRig))
-                    .IceMiningRig = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "IceMiningRig", DefaultMiningRig))
                     .CheckSovWormhole = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovWormhole", DefaultMiningCheckSovWormhole))
                     .CheckSovMoon = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMoon", DefaultMiningCheckSovMoon))
                     .CheckSovC1 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC1", DefaultMiningCheckSovC1))
@@ -2628,11 +2611,41 @@ Public Class ProgramSettings
                     .CheckSovC5 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC5", DefaultMiningCheckSovC5))
                     .CheckSovC6 = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovC6", DefaultMiningCheckSovC6))
                     .NumberofMiners = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumberofMiners", DefaultMiningNumberofMiners))
-                    .RefiningEfficiency = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
-                    .RefineCorpStanding = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
-                    .RefiningTax = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "RefiningTax", DefaultRefineTax))
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "ColumnSort", DefaultMiningColumnSort))
                     .ColumnSortType = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ColumnSortType", DefaultMiningColumnSortType))
+                    .MiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "MiningDrone", DefaultMiningDrone))
+                    .IceMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceMiningDrone", DefaultIceMiningDrone))
+                    .NumMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "NumMiningDrones", DefaultNumMiningDrone))
+                    .NumIceMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "NumIceMiningDrones", DefaultNumIceMiningdrone))
+                    .DroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneOpSkill", DefaultDroneSkills))
+                    .DroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneSpecSkill", DefaultDroneSkills))
+                    .DroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "DroneInterfaceSkill", DefaultDroneSkills))
+                    .IceDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneOpSkill", DefaultDroneSkills))
+                    .IceDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneSpecSkill", DefaultDroneSkills))
+                    .IceDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterMiningDrone", DefaultMiningDrone))
+                    .BoosterIceMiningDrone = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceMiningDrone", DefaultIceMiningDrone))
+                    .BoosterNumMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterNumMiningDrones", DefaultNumMiningDrone))
+                    .BoosterNumIceMiningDrones = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterNumIceMiningDrones", DefaultNumIceMiningdrone))
+                    .BoosterDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneOpSkill", DefaultDroneSkills))
+                    .BoosterDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneSpecSkill", DefaultDroneSkills))
+                    .BoosterDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterIceDroneOpSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneOpSkill", DefaultDroneSkills))
+                    .BoosterIceDroneSpecSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneSpecSkill", DefaultDroneSkills))
+                    .BoosterIceDroneInterfaceSkill = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "BoosterIceDroneInterfaceSkill", DefaultDroneSkills))
+                    .BoosterUseDrones = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "BoosterUseDrones", DefaultBoosterUseDrones))
+                    .ShipDroneRig1 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig1", DefaultDroneRigs))
+                    .ShipDroneRig2 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig2", DefaultDroneRigs))
+                    .ShipDroneRig3 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipDroneRig3", DefaultDroneRigs))
+                    .ShipIceDroneRig1 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig1", DefaultDroneRigs))
+                    .ShipIceDroneRig2 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig2", DefaultDroneRigs))
+                    .ShipIceDroneRig3 = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "ShipIceDroneRig3", DefaultDroneRigs))
+                    .BoosterDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig1", DefaultBoosterDroneRigs))
+                    .BoosterDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig2", DefaultBoosterDroneRigs))
+                    .BoosterDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterDroneRig3", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultBoosterDroneRigs))
+                    .BoosterIceDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig3", DefaultBoosterDroneRigs))
                 End With
 
             Else
@@ -2679,11 +2692,6 @@ Public Class ProgramSettings
             .CheckIncludeFees = DefaultMiningCheckIncludeFees
             .BrokerFeeRate = DefaultMiningBrokerFeeRate
             .CheckIncludeTaxes = DefaultMiningCheckIncludeTaxes
-            .CheckIncludeJumpFuelCosts = DefaultMiningCheckIncludeJumpFuelCosts
-            .TotalJumpFuelCost = DefaultMiningTotalJumpFuelCost
-            .TotalJumpFuelM3 = DefaultMiningTotalJumpFuelM3
-            .JumpCompressedOre = DefaultMiningJumpCompressedOre
-            .JumpMinerals = DefaultMiningJumpMinerals
             .OreMiningShip = DefaultMiningMiningShip
             .IceMiningShip = DefaultMiningIceMiningShip
             .GasMiningShip = DefaultMiningGasMiningShip
@@ -2717,19 +2725,50 @@ Public Class ProgramSettings
             .CheckMineForemanLaserRangeBoost = DefaultMiningCheckMineForemanLaserOpBoost
             .CheckMiningForemanMindLink = DefaultMiningCheckMiningForemanMindLink
             .CheckRorqDeployed = DefaultMiningRorqDeployed
-            .MiningDroneM3perHour = DefaultMiningDroneM3perHour
             .RefinedOre = DefaultMiningRefinedOre
             .UnrefinedOre = DefaultMiningUnrefinedOre
             .CompressedOre = DefaultMiningCompressedOre
             .IndustrialReconfig = DefaultMiningIndustrialReconfig
-            .MercoxitMiningRig = DefaultMiningRig
-            .IceMiningRig = DefaultMiningRig
             .NumberofMiners = DefaultNumMiners
-            .RefineCorpStanding = DefaultRefineCorpStanding
-            .RefiningEfficiency = DefaultRefiningEfficency
-            .RefiningTax = DefaultRefineTax
             .ColumnSort = DefaultMiningColumnSort
             .ColumnSortType = DefaultMiningColumnSortType
+
+            .MiningDrone = DefaultMiningDrone
+            .NumMiningDrones = DefaultNumMiningDrone
+            .IceMiningDrone = DefaultIceMiningDrone
+            .NumIceMiningDrones = DefaultNumIceMiningdrone
+            .DroneOpSkill = DefaultDroneSkills
+            .DroneSpecSkill = DefaultDroneSkills
+            .DroneInterfaceSkill = DefaultDroneSkills
+            .IceDroneOpSkill = DefaultDroneSkills
+            .IceDroneSpecSkill = DefaultDroneSkills
+            .IceDroneInterfaceSkill = DefaultDroneSkills
+
+            .BoosterMiningDrone = DefaultMiningDrone
+            .BoosterNumMiningDrones = DefaultNumMiningDrone
+            .BoosterIceMiningDrone = DefaultIceMiningDrone
+            .BoosterNumIceMiningDrones = DefaultNumIceMiningdrone
+            .BoosterDroneOpSkill = DefaultDroneSkills
+            .BoosterDroneSpecSkill = DefaultDroneSkills
+            .BoosterDroneInterfaceSkill = DefaultDroneSkills
+            .BoosterIceDroneOpSkill = DefaultDroneSkills
+            .BoosterIceDroneSpecSkill = DefaultDroneSkills
+            .BoosterIceDroneInterfaceSkill = DefaultDroneSkills
+
+            .BoosterUseDrones = DefaultBoosterUseDrones
+            .ShipDroneRig1 = DefaultDroneRigs
+            .ShipDroneRig2 = DefaultDroneRigs
+            .ShipDroneRig3 = DefaultDroneRigs
+            .BoosterDroneRig1 = DefaultBoosterDroneRigs
+            .BoosterDroneRig2 = DefaultBoosterDroneRigs
+            .BoosterDroneRig3 = DefaultBoosterDroneRigs
+            .ShipIceDroneRig1 = DefaultDroneRigs
+            .ShipIceDroneRig2 = DefaultDroneRigs
+            .ShipIceDroneRig3 = DefaultDroneRigs
+            .BoosterIceDroneRig1 = DefaultBoosterDroneRigs
+            .BoosterIceDroneRig2 = DefaultBoosterDroneRigs
+            .BoosterIceDroneRig3 = DefaultBoosterDroneRigs
+
         End With
 
         ' Save locally
@@ -2740,7 +2779,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(71) As Setting
+        Dim MiningSettingsList(93) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2754,70 +2793,96 @@ Public Class ProgramSettings
             MiningSettingsList(8) = New Setting("CheckSovMinmatar", CStr(SentSettings.CheckSovMinmatar))
             MiningSettingsList(9) = New Setting("CheckIncludeFees", CStr(SentSettings.CheckIncludeFees))
             MiningSettingsList(10) = New Setting("CheckIncludeTaxes", CStr(SentSettings.CheckIncludeTaxes))
-            MiningSettingsList(11) = New Setting("CheckIncludeJumpFuelCosts", CStr(SentSettings.CheckIncludeJumpFuelCosts))
-            MiningSettingsList(12) = New Setting("TotalJumpFuelCost", CStr(SentSettings.TotalJumpFuelCost))
-            MiningSettingsList(13) = New Setting("TotalJumpFuelM3", CStr(SentSettings.TotalJumpFuelM3))
-            MiningSettingsList(14) = New Setting("JumpCompressedOre", CStr(SentSettings.JumpCompressedOre))
-            MiningSettingsList(15) = New Setting("JumpMinerals", CStr(SentSettings.JumpMinerals))
-            MiningSettingsList(16) = New Setting("OreMiningShip", CStr(SentSettings.OreMiningShip))
-            MiningSettingsList(17) = New Setting("IceMiningShip", CStr(SentSettings.IceMiningShip))
-            MiningSettingsList(18) = New Setting("OreStrip", CStr(SentSettings.OreStrip))
-            MiningSettingsList(19) = New Setting("IceStrip", CStr(SentSettings.IceStrip))
-            MiningSettingsList(20) = New Setting("NumOreMiners", CStr(SentSettings.NumOreMiners))
-            MiningSettingsList(21) = New Setting("NumIceMiners", CStr(SentSettings.NumIceMiners))
-            MiningSettingsList(22) = New Setting("OreUpgrade", CStr(SentSettings.OreUpgrade))
-            MiningSettingsList(23) = New Setting("IceUpgrade", CStr(SentSettings.IceUpgrade))
-            MiningSettingsList(24) = New Setting("NumOreUpgrades", CStr(SentSettings.NumOreUpgrades))
-            MiningSettingsList(25) = New Setting("NumIceUpgrades", CStr(SentSettings.NumIceUpgrades))
-            MiningSettingsList(26) = New Setting("MichiiImplant", CStr(SentSettings.MichiiImplant))
-            MiningSettingsList(27) = New Setting("T2Crystals", CStr(SentSettings.T2Crystals))
-            MiningSettingsList(28) = New Setting("OreImplant", CStr(SentSettings.OreImplant))
-            MiningSettingsList(29) = New Setting("IceImplant", CStr(SentSettings.IceImplant))
-            MiningSettingsList(30) = New Setting("CheckUseHauler", CStr(SentSettings.CheckUseHauler))
-            MiningSettingsList(31) = New Setting("RoundTripMin", CStr(SentSettings.RoundTripMin))
-            MiningSettingsList(32) = New Setting("RoundTripSec", CStr(SentSettings.RoundTripSec))
-            MiningSettingsList(33) = New Setting("Haulerm3", CStr(SentSettings.Haulerm3))
-            MiningSettingsList(34) = New Setting("CheckUseFleetBooster", CStr(SentSettings.CheckUseFleetBooster))
-            MiningSettingsList(35) = New Setting("BoosterShip", CStr(SentSettings.BoosterShip))
-            MiningSettingsList(36) = New Setting("BoosterShipSkill", CStr(SentSettings.BoosterShipSkill))
-            MiningSettingsList(37) = New Setting("MiningFormanSkill", CStr(SentSettings.MiningFormanSkill))
-            MiningSettingsList(38) = New Setting("MiningDirectorSkill", CStr(SentSettings.MiningDirectorSkill))
-            MiningSettingsList(39) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
-            MiningSettingsList(40) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
-            MiningSettingsList(41) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
-            MiningSettingsList(42) = New Setting("MiningDroneM3perHour", CStr(SentSettings.MiningDroneM3perHour))
-            MiningSettingsList(43) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
-            MiningSettingsList(44) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
-            MiningSettingsList(45) = New Setting("MercoxitMiningRig", CStr(SentSettings.MercoxitMiningRig))
-            MiningSettingsList(46) = New Setting("IceMiningRig", CStr(SentSettings.IceMiningRig))
-            MiningSettingsList(47) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
-            MiningSettingsList(48) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
-            MiningSettingsList(49) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
-            MiningSettingsList(50) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
-            MiningSettingsList(51) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
-            MiningSettingsList(52) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
-            MiningSettingsList(53) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
-            MiningSettingsList(54) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
-            MiningSettingsList(55) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
-            MiningSettingsList(56) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
-            MiningSettingsList(57) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
-            MiningSettingsList(58) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
-            MiningSettingsList(59) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
-            MiningSettingsList(60) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
-            MiningSettingsList(61) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            MiningSettingsList(62) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
-            MiningSettingsList(63) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
+            MiningSettingsList(11) = New Setting("OreMiningShip", CStr(SentSettings.OreMiningShip))
+            MiningSettingsList(12) = New Setting("IceMiningShip", CStr(SentSettings.IceMiningShip))
+            MiningSettingsList(13) = New Setting("OreStrip", CStr(SentSettings.OreStrip))
+            MiningSettingsList(14) = New Setting("IceStrip", CStr(SentSettings.IceStrip))
+            MiningSettingsList(15) = New Setting("NumOreMiners", CStr(SentSettings.NumOreMiners))
+            MiningSettingsList(16) = New Setting("NumIceMiners", CStr(SentSettings.NumIceMiners))
+            MiningSettingsList(17) = New Setting("OreUpgrade", CStr(SentSettings.OreUpgrade))
+            MiningSettingsList(18) = New Setting("IceUpgrade", CStr(SentSettings.IceUpgrade))
+            MiningSettingsList(19) = New Setting("NumOreUpgrades", CStr(SentSettings.NumOreUpgrades))
+            MiningSettingsList(20) = New Setting("NumIceUpgrades", CStr(SentSettings.NumIceUpgrades))
+            MiningSettingsList(21) = New Setting("MichiiImplant", CStr(SentSettings.MichiiImplant))
+            MiningSettingsList(22) = New Setting("T2Crystals", CStr(SentSettings.T2Crystals))
+            MiningSettingsList(23) = New Setting("OreImplant", CStr(SentSettings.OreImplant))
+            MiningSettingsList(24) = New Setting("IceImplant", CStr(SentSettings.IceImplant))
+            MiningSettingsList(25) = New Setting("CheckUseHauler", CStr(SentSettings.CheckUseHauler))
+            MiningSettingsList(26) = New Setting("RoundTripMin", CStr(SentSettings.RoundTripMin))
+            MiningSettingsList(27) = New Setting("RoundTripSec", CStr(SentSettings.RoundTripSec))
+            MiningSettingsList(28) = New Setting("Haulerm3", CStr(SentSettings.Haulerm3))
+            MiningSettingsList(29) = New Setting("CheckUseFleetBooster", CStr(SentSettings.CheckUseFleetBooster))
+            MiningSettingsList(30) = New Setting("BoosterShip", CStr(SentSettings.BoosterShip))
+            MiningSettingsList(31) = New Setting("BoosterShipSkill", CStr(SentSettings.BoosterShipSkill))
+            MiningSettingsList(32) = New Setting("MiningFormanSkill", CStr(SentSettings.MiningFormanSkill))
+            MiningSettingsList(33) = New Setting("MiningDirectorSkill", CStr(SentSettings.MiningDirectorSkill))
+            MiningSettingsList(34) = New Setting("CheckMineForemanLaserOpBoost", CStr(SentSettings.CheckMineForemanLaserOpBoost))
+            MiningSettingsList(35) = New Setting("CheckMiningForemanMindLink", CStr(SentSettings.CheckMiningForemanMindLink))
+            MiningSettingsList(36) = New Setting("CheckRorqDeployed", CStr(SentSettings.CheckRorqDeployed))
+            MiningSettingsList(37) = New Setting("RefinedOre", CStr(SentSettings.RefinedOre))
+            MiningSettingsList(38) = New Setting("IndustrialReconfig", CStr(SentSettings.IndustrialReconfig))
+            MiningSettingsList(39) = New Setting("CheckMineForemanLaserRangeBoost", CStr(SentSettings.CheckMineForemanLaserRangeBoost))
+            MiningSettingsList(40) = New Setting("GasMiningShip", CStr(SentSettings.GasMiningShip))
+            MiningSettingsList(41) = New Setting("GasHarvester", CStr(SentSettings.GasHarvester))
+            MiningSettingsList(42) = New Setting("NumGasHarvesters", CStr(SentSettings.NumGasHarvesters))
+            MiningSettingsList(43) = New Setting("GasUpgrade", CStr(SentSettings.GasUpgrade))
+            MiningSettingsList(44) = New Setting("NumGasUpgrades", CStr(SentSettings.NumGasUpgrades))
+            MiningSettingsList(45) = New Setting("GasImplant", CStr(SentSettings.GasImplant))
+            MiningSettingsList(46) = New Setting("CheckSovWormhole", CStr(SentSettings.CheckSovWormhole))
+            MiningSettingsList(47) = New Setting("CheckSovC1", CStr(SentSettings.CheckSovC1))
+            MiningSettingsList(48) = New Setting("CheckSovC2", CStr(SentSettings.CheckSovC2))
+            MiningSettingsList(49) = New Setting("CheckSovC3", CStr(SentSettings.CheckSovC3))
+            MiningSettingsList(50) = New Setting("CheckSovC4", CStr(SentSettings.CheckSovC4))
+            MiningSettingsList(51) = New Setting("CheckSovC5", CStr(SentSettings.CheckSovC5))
+            MiningSettingsList(52) = New Setting("CheckSovC6", CStr(SentSettings.CheckSovC6))
+            MiningSettingsList(53) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
+            MiningSettingsList(54) = New Setting("UnrefinedOre", CStr(SentSettings.UnrefinedOre))
+            MiningSettingsList(55) = New Setting("NumberofMiners", CStr(SentSettings.NumberofMiners))
 
-            MiningSettingsList(64) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            MiningSettingsList(65) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            MiningSettingsList(66) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
+            MiningSettingsList(56) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
+            MiningSettingsList(57) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
 
-            MiningSettingsList(67) = New Setting("ColumnSort", CStr(SentSettings.ColumnSort))
-            MiningSettingsList(68) = New Setting("ColumnSortType", CStr(SentSettings.ColumnSortType))
+            MiningSettingsList(58) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
+            MiningSettingsList(59) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            MiningSettingsList(60) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
 
-            MiningSettingsList(69) = New Setting("CheckSovMoon", CStr(SentSettings.CheckSovMoon))
-            MiningSettingsList(70) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
-            MiningSettingsList(71) = New Setting("CheckSovTriglavian", CStr(SentSettings.CheckSovTriglavian))
+            MiningSettingsList(61) = New Setting("MiningDrone", CStr(SentSettings.MiningDrone))
+            MiningSettingsList(62) = New Setting("NumMiningDrones", CStr(SentSettings.NumMiningDrones))
+            MiningSettingsList(63) = New Setting("IceMiningDrone", CStr(SentSettings.IceMiningDrone))
+            MiningSettingsList(64) = New Setting("NumIceMiningDrones", CStr(SentSettings.NumIceMiningDrones))
+            MiningSettingsList(65) = New Setting("DroneOpSkill", CStr(SentSettings.DroneOpSkill))
+            MiningSettingsList(66) = New Setting("DroneSpecSkill", CStr(SentSettings.DroneSpecSkill))
+            MiningSettingsList(67) = New Setting("DroneInterfaceSkill", CStr(SentSettings.DroneInterfaceSkill))
+
+            MiningSettingsList(68) = New Setting("BoosterMiningDrone", CStr(SentSettings.BoosterMiningDrone))
+            MiningSettingsList(69) = New Setting("BoosterNumMiningDrones", CStr(SentSettings.BoosterNumMiningDrones))
+            MiningSettingsList(70) = New Setting("BoosterIceMiningDrone", CStr(SentSettings.BoosterIceMiningDrone))
+            MiningSettingsList(71) = New Setting("BoosterNumIceMiningDrones", CStr(SentSettings.BoosterNumIceMiningDrones))
+            MiningSettingsList(72) = New Setting("BoosterDroneOpSkill", CStr(SentSettings.BoosterDroneOpSkill))
+            MiningSettingsList(73) = New Setting("BoosterDroneSpecSkill", CStr(SentSettings.BoosterDroneSpecSkill))
+            MiningSettingsList(74) = New Setting("BoosterDroneInterfaceSkill", CStr(SentSettings.BoosterDroneInterfaceSkill))
+
+            MiningSettingsList(75) = New Setting("BoosterUseDrones", CStr(SentSettings.BoosterUseDrones))
+            MiningSettingsList(76) = New Setting("ShipDroneRig1", CStr(SentSettings.ShipDroneRig1))
+            MiningSettingsList(77) = New Setting("ShipDroneRig2", CStr(SentSettings.ShipDroneRig2))
+            MiningSettingsList(78) = New Setting("ShipDroneRig3", CStr(SentSettings.ShipDroneRig3))
+            MiningSettingsList(79) = New Setting("BoosterDroneRig1", CStr(SentSettings.BoosterDroneRig1))
+            MiningSettingsList(80) = New Setting("BoosterDroneRig2", CStr(SentSettings.BoosterDroneRig2))
+            MiningSettingsList(81) = New Setting("BoosterDroneRig3", CStr(SentSettings.BoosterDroneRig3))
+
+            MiningSettingsList(82) = New Setting("ShipIceDroneRig1", CStr(SentSettings.ShipIceDroneRig1))
+            MiningSettingsList(83) = New Setting("ShipIceDroneRig2", CStr(SentSettings.ShipIceDroneRig2))
+            MiningSettingsList(84) = New Setting("ShipIceDroneRig3", CStr(SentSettings.ShipIceDroneRig3))
+            MiningSettingsList(85) = New Setting("BoosterIceDroneRig1", CStr(SentSettings.BoosterIceDroneRig1))
+            MiningSettingsList(86) = New Setting("BoosterIceDroneRig2", CStr(SentSettings.BoosterIceDroneRig2))
+            MiningSettingsList(87) = New Setting("BoosterIceDroneRig3", CStr(SentSettings.BoosterIceDroneRig3))
+
+            MiningSettingsList(88) = New Setting("IceDroneOpSkill", CStr(SentSettings.IceDroneOpSkill))
+            MiningSettingsList(89) = New Setting("IceDroneSpecSkill", CStr(SentSettings.IceDroneSpecSkill))
+            MiningSettingsList(90) = New Setting("IceDroneInterfaceSkill", CStr(SentSettings.IceDroneInterfaceSkill))
+            MiningSettingsList(91) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
+            MiningSettingsList(92) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
+            MiningSettingsList(93) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -3088,6 +3153,7 @@ Public Class ProgramSettings
                     .CurrentBuyOrders = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentBuyOrders", DefaultMTCurrentBuyOrders))
                     .ItemsinProduction = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemsinProduction", DefaultMTItemsinProduction))
                     .ItemsinStock = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemsinStock", DefaultMTItemsinStock))
+                    .MaterialCost = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "MaterialCost", DefaultMTMaterialCost))
                     .TotalCost = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalCost", DefaultMTTotalCost))
                     .BaseJobCost = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "BaseJobCost", DefaultMTBaseJobCost))
                     .NumBPs = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "NumBPs", DefaultMTNumBPs))
@@ -3096,6 +3162,8 @@ Public Class ProgramSettings
                     .Race = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "Race", DefaultMTRace))
                     .VolumeperItem = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "VolumeperItem", DefaultMTVolumeperItem))
                     .TotalVolume = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalVolume", DefaultMTTotalVolume))
+                    .SellExcess = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SellExcess", DefaultMTSellExcess))
+                    .ROI = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ROI", DefaultMTROI))
                     .PortionSize = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "PortionSize", DefaultMTPortionSize))
                     .ManufacturingJobFee = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ManufacturingJobFee", DefaultMTManufacturingJobFee))
                     .ManufacturingFacilityName = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ManufacturingFacilityName", DefaultMTManufacturingFacilityName))
@@ -3152,6 +3220,14 @@ Public Class ProgramSettings
                     .ReactionFacilityTEBonus = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityTEBonus", DefaultMTReactionFacilityTEBonus))
                     .ReactionFacilityUsage = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityUsage", DefaultMTReactionFacilityUsage))
                     .ReactionFacilityFWSystemLevel = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityFWSystemLevel", DefaultMTReactionFacilityFWSystemLevel))
+                    .ReprocessingFacilityName = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityName", DefaultMTReprocessingFacilityName))
+                    .ReprocessingFacilitySystem = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilitySystem", DefaultMTReprocessingFacilitySystem))
+                    .ReprocessingFacilityRegion = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityRegion", DefaultMTReprocessingFacilityRegion))
+                    .ReprocessingFacilityTax = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityTax", DefaultMTReprocessingFacilityTax))
+                    .ReprocessingFacilityUsage = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityUsage", DefaultMTReprocessingFacilityUsage))
+                    .ReprocessingFacilityOreRefineRate = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityOreRefineRate", DefaultMTReprocessingFacilityOreRefineRate))
+                    .ReprocessingFacilityIceRefineRate = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityIceRefineRate", DefaultMTReprocessingFacilityIceRefineRate))
+                    .ReprocessingFacilityMoonRefineRate = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityMoonRefineRate", DefaultMTReprocessingFacilityMoonRefineRate))
 
                     .ItemCategoryWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemCategoryWidth", DefaultMTItemCategoryWidth))
                     .ItemGroupWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemGroupWidth", DefaultMTItemGroupWidth))
@@ -3188,6 +3264,7 @@ Public Class ProgramSettings
                     .CurrentBuyOrdersWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "CurrentBuyOrdersWidth", DefaultMTCurrentBuyOrdersWidth))
                     .ItemsinProductionWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemsinProductionWidth", DefaultMTItemsinProductionWidth))
                     .ItemsinStockWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ItemsinStockWidth", DefaultMTItemsinStockWidth))
+                    .MaterialCostWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "MaterialCostWidth", DefaultMTMaterialCostWidth))
                     .TotalCostWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalCostWidth", DefaultMTTotalCostWidth))
                     .BaseJobCostWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "BaseJobCostWidth", DefaultMTBaseJobCostWidth))
                     .NumBPsWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "NumBPsWidth", DefaultMTNumBPsWidth))
@@ -3196,6 +3273,8 @@ Public Class ProgramSettings
                     .RaceWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "RaceWidth", DefaultMTRaceWidth))
                     .VolumeperItemWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "VolumeperItemWidth", DefaultMTVolumeperItemWidth))
                     .TotalVolumeWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "TotalVolumeWidth", DefaultMTTotalVolumeWidth))
+                    .SellExcessWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "SellExcessWidth", DefaultMTSellExcessWidth))
+                    .ROIWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ROIWidth", DefaultMTROIWidth))
                     .PortionSizeWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "PortionSizeWidth", DefaultMTPortionSizeWidth))
                     .ManufacturingJobFeeWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ManufacturingJobFeeWidth", DefaultMTManufacturingJobFeeWidth))
                     .ManufacturingFacilityNameWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ManufacturingFacilityNameWidth", DefaultMTManufacturingFacilityNameWidth))
@@ -3252,6 +3331,14 @@ Public Class ProgramSettings
                     .ReactionFacilityTEBonusWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityTEBonusWidth", DefaultMTReactionFacilityTEBonusWidth))
                     .ReactionFacilityUsageWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityUsageWidth", DefaultMTReactionFacilityUsageWidth))
                     .ReactionFacilityFWSystemLevelWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReactionFacilityFWSystemLevelWidth", DefaultMTReactionFacilityFWSystemLevelWidth))
+                    .ReprocessingFacilityNameWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityNameWidth", DefaultMTReprocessingFacilityNameWidth))
+                    .ReprocessingFacilitySystemWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilitySystemWidth", DefaultMTReprocessingFacilitySystemWidth))
+                    .ReprocessingFacilityRegionWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityRegionWidth", DefaultMTReprocessingFacilityRegionWidth))
+                    .ReprocessingFacilityTaxWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityTaxWidth", DefaultMTReprocessingFacilityTaxWidth))
+                    .ReprocessingFacilityUsageWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityUsageWidth", DefaultMTReprocessingFacilityUsageWidth))
+                    .ReprocessingFacilityOreRefineRateWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityOreRefineRateWidth", DefaultMTReprocessingFacilityOreRefineRateWidth))
+                    .ReprocessingFacilityIceRefineRateWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityIceRefineRateWidth", DefaultMTReprocessingFacilityIceRefineRateWidth))
+                    .ReprocessingFacilityMoonRefineRateWidth = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, "ManufacturingTabColumnSettings", "ReprocessingFacilityMoonRefineRateWidth", DefaultMTReprocessingFacilityMoonRefineRateWidth))
 
                     .OrderByColumn = CInt(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeInteger, ManufacturingTabColumnSettingsFileName, "OrderByColumn", DefaultMTOrderByColumn))
                     .OrderType = CStr(GetSettingValue(SettingsFolder, ManufacturingTabColumnSettingsFileName, SettingTypes.TypeString, ManufacturingTabColumnSettingsFileName, "OrderType", DefaultMTOrderType))
@@ -3316,6 +3403,7 @@ Public Class ProgramSettings
             .CurrentBuyOrders = DefaultMTCurrentBuyOrders
             .ItemsinProduction = DefaultMTItemsinProduction
             .ItemsinStock = DefaultMTItemsinStock
+            .MaterialCost = DefaultMTMaterialCost
             .TotalCost = DefaultMTTotalCost
             .BaseJobCost = DefaultMTBaseJobCost
             .NumBPs = DefaultMTNumBPs
@@ -3324,6 +3412,8 @@ Public Class ProgramSettings
             .Race = DefaultMTRace
             .VolumeperItem = DefaultMTVolumeperItem
             .TotalVolume = DefaultMTTotalVolume
+            .SellExcess = DefaultMTSellExcess
+            .ROI = DefaultMTROI
             .PortionSize = DefaultMTPortionSize
             .ManufacturingJobFee = DefaultMTManufacturingJobFee
             .ManufacturingFacilityName = DefaultMTManufacturingFacilityName
@@ -3380,6 +3470,14 @@ Public Class ProgramSettings
             .ReactionFacilityTEBonus = DefaultMTReactionFacilityTEBonus
             .ReactionFacilityUsage = DefaultMTReactionFacilityUsage
             .ReactionFacilityFWSystemLevel = DefaultMTReactionFacilityFWSystemLevel
+            .ReprocessingFacilityName = DefaultMTReprocessingFacilityName
+            .ReprocessingFacilitySystem = DefaultMTReprocessingFacilitySystem
+            .ReprocessingFacilityRegion = DefaultMTReprocessingFacilityRegion
+            .ReprocessingFacilityTax = DefaultMTReprocessingFacilityTax
+            .ReprocessingFacilityUsage = DefaultMTReprocessingFacilityUsage
+            .ReprocessingFacilityOreRefineRate = DefaultMTReprocessingFacilityOreRefineRate
+            .ReprocessingFacilityIceRefineRate = DefaultMTReprocessingFacilityIceRefineRate
+            .ReprocessingFacilityMoonRefineRate = DefaultMTReprocessingFacilityMoonRefineRate
 
             .ItemCategoryWidth = DefaultMTItemCategoryWidth
             .ItemGroupWidth = DefaultMTItemGroupWidth
@@ -3416,6 +3514,7 @@ Public Class ProgramSettings
             .CurrentBuyOrdersWidth = DefaultMTCurrentBuyOrdersWidth
             .ItemsinProductionWidth = DefaultMTItemsinProductionWidth
             .ItemsinStockWidth = DefaultMTItemsinStockWidth
+            .MaterialCostWidth = DefaultMTMaterialCostWidth
             .TotalCostWidth = DefaultMTTotalCostWidth
             .BaseJobCostWidth = DefaultMTBaseJobCostWidth
             .NumBPsWidth = DefaultMTNumBPsWidth
@@ -3424,6 +3523,8 @@ Public Class ProgramSettings
             .RaceWidth = DefaultMTRaceWidth
             .VolumeperItemWidth = DefaultMTVolumeperItemWidth
             .TotalVolumeWidth = DefaultMTTotalVolumeWidth
+            .SellExcessWidth = DefaultMTSellExcessWidth
+            .ROIWidth = DefaultMTROIWidth
             .PortionSizeWidth = DefaultMTPortionSizeWidth
             .ManufacturingJobFeeWidth = DefaultMTManufacturingJobFeeWidth
             .ManufacturingFacilityNameWidth = DefaultMTManufacturingFacilityNameWidth
@@ -3480,6 +3581,14 @@ Public Class ProgramSettings
             .ReactionFacilityTEBonusWidth = DefaultMTReactionFacilityTEBonusWidth
             .ReactionFacilityUsageWidth = DefaultMTReactionFacilityUsageWidth
             .ReactionFacilityFWSystemLevelWidth = DefaultMTReactionFacilityFWSystemLevelWidth
+            .ReprocessingFacilityNameWidth = DefaultMTReprocessingFacilityNameWidth
+            .ReprocessingFacilitySystemWidth = DefaultMTReprocessingFacilitySystemWidth
+            .ReprocessingFacilityRegionWidth = DefaultMTReprocessingFacilityRegionWidth
+            .ReprocessingFacilityTaxWidth = DefaultMTReprocessingFacilityTaxWidth
+            .ReprocessingFacilityUsageWidth = DefaultMTReprocessingFacilityUsageWidth
+            .ReprocessingFacilityOreRefineRateWidth = DefaultMTReprocessingFacilityOreRefineRateWidth
+            .ReprocessingFacilityIceRefineRateWidth = DefaultMTReprocessingFacilityIceRefineRateWidth
+            .ReprocessingFacilityMoonRefineRateWidth = DefaultMTReprocessingFacilityMoonRefineRateWidth
 
             .OrderByColumn = DefaultMTOrderByColumn
             .OrderType = DefaultMTOrderType
@@ -3494,7 +3603,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingTabColumnSettings(SentSettings As ManufacturingTabColumnSettings)
-        Dim ManufacturingTabColumnSettingsList(199) As Setting
+        Dim ManufacturingTabColumnSettingsList(221) As Setting
 
         Try
             ManufacturingTabColumnSettingsList(0) = New Setting("ItemCategory", CStr(SentSettings.ItemCategory))
@@ -3532,173 +3641,195 @@ Public Class ProgramSettings
             ManufacturingTabColumnSettingsList(32) = New Setting("CurrentBuyOrders", CStr(SentSettings.CurrentBuyOrders))
             ManufacturingTabColumnSettingsList(33) = New Setting("ItemsinProduction", CStr(SentSettings.ItemsinProduction))
             ManufacturingTabColumnSettingsList(34) = New Setting("ItemsinStock", CStr(SentSettings.ItemsinStock))
-            ManufacturingTabColumnSettingsList(35) = New Setting("TotalCost", CStr(SentSettings.TotalCost))
-            ManufacturingTabColumnSettingsList(36) = New Setting("BaseJobCost", CStr(SentSettings.BaseJobCost))
-            ManufacturingTabColumnSettingsList(37) = New Setting("NumBPs", CStr(SentSettings.NumBPs))
-            ManufacturingTabColumnSettingsList(38) = New Setting("InventionChance", CStr(SentSettings.InventionChance))
-            ManufacturingTabColumnSettingsList(39) = New Setting("BPType", CStr(SentSettings.BPType))
-            ManufacturingTabColumnSettingsList(40) = New Setting("Race", CStr(SentSettings.Race))
-            ManufacturingTabColumnSettingsList(41) = New Setting("VolumeperItem", CStr(SentSettings.VolumeperItem))
-            ManufacturingTabColumnSettingsList(42) = New Setting("TotalVolume", CStr(SentSettings.TotalVolume))
-            ManufacturingTabColumnSettingsList(43) = New Setting("PortionSize", CStr(SentSettings.PortionSize))
-            ManufacturingTabColumnSettingsList(44) = New Setting("ManufacturingJobFee", CStr(SentSettings.ManufacturingJobFee))
-            ManufacturingTabColumnSettingsList(45) = New Setting("ManufacturingFacilityName", CStr(SentSettings.ManufacturingFacilityName))
-            ManufacturingTabColumnSettingsList(46) = New Setting("ManufacturingFacilitySystem", CStr(SentSettings.ManufacturingFacilitySystem))
-            ManufacturingTabColumnSettingsList(47) = New Setting("ManufacturingFacilityRegion", CStr(SentSettings.ManufacturingFacilityRegion))
-            ManufacturingTabColumnSettingsList(48) = New Setting("ManufacturingFacilitySystemIndex", CStr(SentSettings.ManufacturingFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(49) = New Setting("ManufacturingFacilityTax", CStr(SentSettings.ManufacturingFacilityTax))
-            ManufacturingTabColumnSettingsList(50) = New Setting("ManufacturingFacilityMEBonus", CStr(SentSettings.ManufacturingFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(51) = New Setting("ManufacturingFacilityTEBonus", CStr(SentSettings.ManufacturingFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(52) = New Setting("ManufacturingFacilityUsage", CStr(SentSettings.ManufacturingFacilityUsage))
-            ManufacturingTabColumnSettingsList(53) = New Setting("ManufacturingFacilityFWSystemLevel", CStr(SentSettings.ManufacturingFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(54) = New Setting("ComponentFacilityName", CStr(SentSettings.ComponentFacilityName))
-            ManufacturingTabColumnSettingsList(55) = New Setting("ComponentFacilitySystem", CStr(SentSettings.ComponentFacilitySystem))
-            ManufacturingTabColumnSettingsList(56) = New Setting("ComponentFacilityRegion", CStr(SentSettings.ComponentFacilityRegion))
-            ManufacturingTabColumnSettingsList(57) = New Setting("ComponentFacilitySystemIndex", CStr(SentSettings.ComponentFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(58) = New Setting("ComponentFacilityTax", CStr(SentSettings.ComponentFacilityTax))
-            ManufacturingTabColumnSettingsList(59) = New Setting("ComponentFacilityMEBonus", CStr(SentSettings.ComponentFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(60) = New Setting("ComponentFacilityTEBonus", CStr(SentSettings.ComponentFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(61) = New Setting("ComponentFacilityUsage", CStr(SentSettings.ComponentFacilityUsage))
-            ManufacturingTabColumnSettingsList(62) = New Setting("ComponentFacilityFWSystemLevel", CStr(SentSettings.ComponentFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(63) = New Setting("CapComponentFacilityName", CStr(SentSettings.CapComponentFacilityName))
-            ManufacturingTabColumnSettingsList(64) = New Setting("CapComponentFacilitySystem", CStr(SentSettings.CapComponentFacilitySystem))
-            ManufacturingTabColumnSettingsList(65) = New Setting("CapComponentFacilityRegion", CStr(SentSettings.CapComponentFacilityRegion))
-            ManufacturingTabColumnSettingsList(66) = New Setting("CapComponentFacilitySystemIndex", CStr(SentSettings.CapComponentFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(67) = New Setting("CapComponentFacilityTax", CStr(SentSettings.CapComponentFacilityTax))
-            ManufacturingTabColumnSettingsList(68) = New Setting("CapComponentFacilityMEBonus", CStr(SentSettings.CapComponentFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(69) = New Setting("CapComponentFacilityTEBonus", CStr(SentSettings.CapComponentFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(70) = New Setting("CapComponentFacilityUsage", CStr(SentSettings.CapComponentFacilityUsage))
-            ManufacturingTabColumnSettingsList(71) = New Setting("CapComponentFacilityFWSystemLevel", CStr(SentSettings.CapComponentFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(72) = New Setting("CopyingFacilityName", CStr(SentSettings.CopyingFacilityName))
-            ManufacturingTabColumnSettingsList(73) = New Setting("CopyingFacilitySystem", CStr(SentSettings.CopyingFacilitySystem))
-            ManufacturingTabColumnSettingsList(74) = New Setting("CopyingFacilityRegion", CStr(SentSettings.CopyingFacilityRegion))
-            ManufacturingTabColumnSettingsList(75) = New Setting("CopyingFacilitySystemIndex", CStr(SentSettings.CopyingFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(76) = New Setting("CopyingFacilityTax", CStr(SentSettings.CopyingFacilityTax))
-            ManufacturingTabColumnSettingsList(77) = New Setting("CopyingFacilityMEBonus", CStr(SentSettings.CopyingFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(78) = New Setting("CopyingFacilityTEBonus", CStr(SentSettings.CopyingFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(79) = New Setting("CopyingFacilityUsage", CStr(SentSettings.CopyingFacilityUsage))
-            ManufacturingTabColumnSettingsList(80) = New Setting("CopyingFacilityFWSystemLevel", CStr(SentSettings.CopyingFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(81) = New Setting("InventionFacilityName", CStr(SentSettings.InventionFacilityName))
-            ManufacturingTabColumnSettingsList(82) = New Setting("InventionFacilitySystem", CStr(SentSettings.InventionFacilitySystem))
-            ManufacturingTabColumnSettingsList(83) = New Setting("InventionFacilityRegion", CStr(SentSettings.InventionFacilityRegion))
-            ManufacturingTabColumnSettingsList(84) = New Setting("InventionFacilitySystemIndex", CStr(SentSettings.InventionFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(85) = New Setting("InventionFacilityTax", CStr(SentSettings.InventionFacilityTax))
-            ManufacturingTabColumnSettingsList(86) = New Setting("InventionFacilityMEBonus", CStr(SentSettings.InventionFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(87) = New Setting("InventionFacilityTEBonus", CStr(SentSettings.InventionFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(88) = New Setting("InventionFacilityUsage", CStr(SentSettings.InventionFacilityUsage))
-            ManufacturingTabColumnSettingsList(89) = New Setting("InventionFacilityFWSystemLevel", CStr(SentSettings.InventionFacilityFWSystemLevel))
-            ManufacturingTabColumnSettingsList(90) = New Setting("ReactionFacilityName", CStr(SentSettings.ReactionFacilityName))
-            ManufacturingTabColumnSettingsList(91) = New Setting("ReactionFacilitySystem", CStr(SentSettings.ReactionFacilitySystem))
-            ManufacturingTabColumnSettingsList(92) = New Setting("ReactionFacilityRegion", CStr(SentSettings.ReactionFacilityRegion))
-            ManufacturingTabColumnSettingsList(93) = New Setting("ReactionFacilitySystemIndex", CStr(SentSettings.ReactionFacilitySystemIndex))
-            ManufacturingTabColumnSettingsList(94) = New Setting("ReactionFacilityTax", CStr(SentSettings.ReactionFacilityTax))
-            ManufacturingTabColumnSettingsList(95) = New Setting("ReactionFacilityMEBonus", CStr(SentSettings.ReactionFacilityMEBonus))
-            ManufacturingTabColumnSettingsList(96) = New Setting("ReactionFacilityTEBonus", CStr(SentSettings.ReactionFacilityTEBonus))
-            ManufacturingTabColumnSettingsList(97) = New Setting("ReactionFacilityUsage", CStr(SentSettings.ReactionFacilityUsage))
-            ManufacturingTabColumnSettingsList(98) = New Setting("ReactionFacilityFWSystemLevel", CStr(SentSettings.ReactionFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(35) = New Setting("MaterialCost", CStr(SentSettings.MaterialCost))
+            ManufacturingTabColumnSettingsList(36) = New Setting("TotalCost", CStr(SentSettings.TotalCost))
+            ManufacturingTabColumnSettingsList(37) = New Setting("BaseJobCost", CStr(SentSettings.BaseJobCost))
+            ManufacturingTabColumnSettingsList(38) = New Setting("NumBPs", CStr(SentSettings.NumBPs))
+            ManufacturingTabColumnSettingsList(39) = New Setting("InventionChance", CStr(SentSettings.InventionChance))
+            ManufacturingTabColumnSettingsList(40) = New Setting("BPType", CStr(SentSettings.BPType))
+            ManufacturingTabColumnSettingsList(41) = New Setting("Race", CStr(SentSettings.Race))
+            ManufacturingTabColumnSettingsList(42) = New Setting("VolumeperItem", CStr(SentSettings.VolumeperItem))
+            ManufacturingTabColumnSettingsList(43) = New Setting("TotalVolume", CStr(SentSettings.TotalVolume))
+            ManufacturingTabColumnSettingsList(44) = New Setting("SellExcess", CStr(SentSettings.SellExcess))
+            ManufacturingTabColumnSettingsList(45) = New Setting("ROI", CStr(SentSettings.ROI))
+            ManufacturingTabColumnSettingsList(46) = New Setting("PortionSize", CStr(SentSettings.PortionSize))
+            ManufacturingTabColumnSettingsList(47) = New Setting("ManufacturingJobFee", CStr(SentSettings.ManufacturingJobFee))
+            ManufacturingTabColumnSettingsList(48) = New Setting("ManufacturingFacilityName", CStr(SentSettings.ManufacturingFacilityName))
+            ManufacturingTabColumnSettingsList(49) = New Setting("ManufacturingFacilitySystem", CStr(SentSettings.ManufacturingFacilitySystem))
+            ManufacturingTabColumnSettingsList(50) = New Setting("ManufacturingFacilityRegion", CStr(SentSettings.ManufacturingFacilityRegion))
+            ManufacturingTabColumnSettingsList(51) = New Setting("ManufacturingFacilitySystemIndex", CStr(SentSettings.ManufacturingFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(52) = New Setting("ManufacturingFacilityTax", CStr(SentSettings.ManufacturingFacilityTax))
+            ManufacturingTabColumnSettingsList(53) = New Setting("ManufacturingFacilityMEBonus", CStr(SentSettings.ManufacturingFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(54) = New Setting("ManufacturingFacilityTEBonus", CStr(SentSettings.ManufacturingFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(55) = New Setting("ManufacturingFacilityUsage", CStr(SentSettings.ManufacturingFacilityUsage))
+            ManufacturingTabColumnSettingsList(56) = New Setting("ManufacturingFacilityFWSystemLevel", CStr(SentSettings.ManufacturingFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(57) = New Setting("ComponentFacilityName", CStr(SentSettings.ComponentFacilityName))
+            ManufacturingTabColumnSettingsList(58) = New Setting("ComponentFacilitySystem", CStr(SentSettings.ComponentFacilitySystem))
+            ManufacturingTabColumnSettingsList(59) = New Setting("ComponentFacilityRegion", CStr(SentSettings.ComponentFacilityRegion))
+            ManufacturingTabColumnSettingsList(60) = New Setting("ComponentFacilitySystemIndex", CStr(SentSettings.ComponentFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(61) = New Setting("ComponentFacilityTax", CStr(SentSettings.ComponentFacilityTax))
+            ManufacturingTabColumnSettingsList(62) = New Setting("ComponentFacilityMEBonus", CStr(SentSettings.ComponentFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(63) = New Setting("ComponentFacilityTEBonus", CStr(SentSettings.ComponentFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(64) = New Setting("ComponentFacilityUsage", CStr(SentSettings.ComponentFacilityUsage))
+            ManufacturingTabColumnSettingsList(65) = New Setting("ComponentFacilityFWSystemLevel", CStr(SentSettings.ComponentFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(66) = New Setting("CapComponentFacilityName", CStr(SentSettings.CapComponentFacilityName))
+            ManufacturingTabColumnSettingsList(67) = New Setting("CapComponentFacilitySystem", CStr(SentSettings.CapComponentFacilitySystem))
+            ManufacturingTabColumnSettingsList(68) = New Setting("CapComponentFacilityRegion", CStr(SentSettings.CapComponentFacilityRegion))
+            ManufacturingTabColumnSettingsList(69) = New Setting("CapComponentFacilitySystemIndex", CStr(SentSettings.CapComponentFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(70) = New Setting("CapComponentFacilityTax", CStr(SentSettings.CapComponentFacilityTax))
+            ManufacturingTabColumnSettingsList(71) = New Setting("CapComponentFacilityMEBonus", CStr(SentSettings.CapComponentFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(72) = New Setting("CapComponentFacilityTEBonus", CStr(SentSettings.CapComponentFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(73) = New Setting("CapComponentFacilityUsage", CStr(SentSettings.CapComponentFacilityUsage))
+            ManufacturingTabColumnSettingsList(74) = New Setting("CapComponentFacilityFWSystemLevel", CStr(SentSettings.CapComponentFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(75) = New Setting("CopyingFacilityName", CStr(SentSettings.CopyingFacilityName))
+            ManufacturingTabColumnSettingsList(76) = New Setting("CopyingFacilitySystem", CStr(SentSettings.CopyingFacilitySystem))
+            ManufacturingTabColumnSettingsList(77) = New Setting("CopyingFacilityRegion", CStr(SentSettings.CopyingFacilityRegion))
+            ManufacturingTabColumnSettingsList(78) = New Setting("CopyingFacilitySystemIndex", CStr(SentSettings.CopyingFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(79) = New Setting("CopyingFacilityTax", CStr(SentSettings.CopyingFacilityTax))
+            ManufacturingTabColumnSettingsList(80) = New Setting("CopyingFacilityMEBonus", CStr(SentSettings.CopyingFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(81) = New Setting("CopyingFacilityTEBonus", CStr(SentSettings.CopyingFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(82) = New Setting("CopyingFacilityUsage", CStr(SentSettings.CopyingFacilityUsage))
+            ManufacturingTabColumnSettingsList(83) = New Setting("CopyingFacilityFWSystemLevel", CStr(SentSettings.CopyingFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(84) = New Setting("InventionFacilityName", CStr(SentSettings.InventionFacilityName))
+            ManufacturingTabColumnSettingsList(85) = New Setting("InventionFacilitySystem", CStr(SentSettings.InventionFacilitySystem))
+            ManufacturingTabColumnSettingsList(86) = New Setting("InventionFacilityRegion", CStr(SentSettings.InventionFacilityRegion))
+            ManufacturingTabColumnSettingsList(87) = New Setting("InventionFacilitySystemIndex", CStr(SentSettings.InventionFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(88) = New Setting("InventionFacilityTax", CStr(SentSettings.InventionFacilityTax))
+            ManufacturingTabColumnSettingsList(89) = New Setting("InventionFacilityMEBonus", CStr(SentSettings.InventionFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(90) = New Setting("InventionFacilityTEBonus", CStr(SentSettings.InventionFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(91) = New Setting("InventionFacilityUsage", CStr(SentSettings.InventionFacilityUsage))
+            ManufacturingTabColumnSettingsList(92) = New Setting("InventionFacilityFWSystemLevel", CStr(SentSettings.InventionFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(93) = New Setting("ReactionFacilityName", CStr(SentSettings.ReactionFacilityName))
+            ManufacturingTabColumnSettingsList(94) = New Setting("ReactionFacilitySystem", CStr(SentSettings.ReactionFacilitySystem))
+            ManufacturingTabColumnSettingsList(95) = New Setting("ReactionFacilityRegion", CStr(SentSettings.ReactionFacilityRegion))
+            ManufacturingTabColumnSettingsList(96) = New Setting("ReactionFacilitySystemIndex", CStr(SentSettings.ReactionFacilitySystemIndex))
+            ManufacturingTabColumnSettingsList(97) = New Setting("ReactionFacilityTax", CStr(SentSettings.ReactionFacilityTax))
+            ManufacturingTabColumnSettingsList(98) = New Setting("ReactionFacilityMEBonus", CStr(SentSettings.ReactionFacilityMEBonus))
+            ManufacturingTabColumnSettingsList(99) = New Setting("ReactionFacilityTEBonus", CStr(SentSettings.ReactionFacilityTEBonus))
+            ManufacturingTabColumnSettingsList(100) = New Setting("ReactionFacilityUsage", CStr(SentSettings.ReactionFacilityUsage))
+            ManufacturingTabColumnSettingsList(101) = New Setting("ReactionFacilityFWSystemLevel", CStr(SentSettings.ReactionFacilityFWSystemLevel))
+            ManufacturingTabColumnSettingsList(102) = New Setting("ReprocessingFacilityName", CStr(SentSettings.ReprocessingFacilityName))
+            ManufacturingTabColumnSettingsList(103) = New Setting("ReprocessingFacilitySystem", CStr(SentSettings.ReprocessingFacilitySystem))
+            ManufacturingTabColumnSettingsList(104) = New Setting("ReprocessingFacilityRegion", CStr(SentSettings.ReprocessingFacilityRegion))
+            ManufacturingTabColumnSettingsList(105) = New Setting("ReprocessingFacilityTax", CStr(SentSettings.ReprocessingFacilityTax))
+            ManufacturingTabColumnSettingsList(106) = New Setting("ReprocessingFacilityUsage", CStr(SentSettings.ReprocessingFacilityUsage))
+            ManufacturingTabColumnSettingsList(107) = New Setting("ReprocessingFacilityOreRefineRate", CStr(SentSettings.ReprocessingFacilityOreRefineRate))
+            ManufacturingTabColumnSettingsList(108) = New Setting("ReprocessingFacilityIceRefineRate", CStr(SentSettings.ReprocessingFacilityIceRefineRate))
+            ManufacturingTabColumnSettingsList(109) = New Setting("ReprocessingFacilityMoonRefineRate", CStr(SentSettings.ReprocessingFacilityMoonRefineRate))
 
-            ManufacturingTabColumnSettingsList(99) = New Setting("ItemCategoryWidth", CStr(SentSettings.ItemCategoryWidth))
-            ManufacturingTabColumnSettingsList(100) = New Setting("ItemGroupWidth", CStr(SentSettings.ItemGroupWidth))
-            ManufacturingTabColumnSettingsList(101) = New Setting("ItemNameWidth", CStr(SentSettings.ItemNameWidth))
-            ManufacturingTabColumnSettingsList(102) = New Setting("OwnedWidth", CStr(SentSettings.OwnedWidth))
-            ManufacturingTabColumnSettingsList(103) = New Setting("TechWidth", CStr(SentSettings.TechWidth))
-            ManufacturingTabColumnSettingsList(104) = New Setting("BPMEWidth", CStr(SentSettings.BPMEWidth))
-            ManufacturingTabColumnSettingsList(105) = New Setting("BPTEWidth", CStr(SentSettings.BPTEWidth))
-            ManufacturingTabColumnSettingsList(106) = New Setting("InputsWidth", CStr(SentSettings.InputsWidth))
-            ManufacturingTabColumnSettingsList(107) = New Setting("ComparedWidth", CStr(SentSettings.ComparedWidth))
-            ManufacturingTabColumnSettingsList(108) = New Setting("TotalRunsWidth", CStr(SentSettings.TotalRunsWidth))
-            ManufacturingTabColumnSettingsList(109) = New Setting("SingleInventedBPCRunsWidth", CStr(SentSettings.SingleInventedBPCRunsWidth))
-            ManufacturingTabColumnSettingsList(110) = New Setting("ProductionLinesWidth", CStr(SentSettings.ProductionLinesWidth))
-            ManufacturingTabColumnSettingsList(111) = New Setting("LaboratoryLinesWidth", CStr(SentSettings.LaboratoryLinesWidth))
-            ManufacturingTabColumnSettingsList(112) = New Setting("TotalInventionCostWidth", CStr(SentSettings.TotalInventionCostWidth))
-            ManufacturingTabColumnSettingsList(113) = New Setting("TotalCopyCostWidth", CStr(SentSettings.TotalCopyCostWidth))
-            ManufacturingTabColumnSettingsList(114) = New Setting("TaxesWidth", CStr(SentSettings.TaxesWidth))
-            ManufacturingTabColumnSettingsList(115) = New Setting("BrokerFeesWidth", CStr(SentSettings.BrokerFeesWidth))
-            ManufacturingTabColumnSettingsList(116) = New Setting("BPProductionTimeWidth", CStr(SentSettings.BPProductionTimeWidth))
-            ManufacturingTabColumnSettingsList(117) = New Setting("TotalProductionTimeWidth", CStr(SentSettings.TotalProductionTimeWidth))
-            ManufacturingTabColumnSettingsList(118) = New Setting("CopyTimeWidth", CStr(SentSettings.CopyTimeWidth))
-            ManufacturingTabColumnSettingsList(119) = New Setting("InventionTimeWidth", CStr(SentSettings.InventionTimeWidth))
-            ManufacturingTabColumnSettingsList(120) = New Setting("ItemMarketPriceWidth", CStr(SentSettings.ItemMarketPriceWidth))
-            ManufacturingTabColumnSettingsList(121) = New Setting("ProfitWidth", CStr(SentSettings.ProfitWidth))
-            ManufacturingTabColumnSettingsList(122) = New Setting("ProfitPercentageWidth", CStr(SentSettings.ProfitPercentageWidth))
-            ManufacturingTabColumnSettingsList(123) = New Setting("IskperHourWidth", CStr(SentSettings.IskperHourWidth))
-            ManufacturingTabColumnSettingsList(124) = New Setting("SVRWidth", CStr(SentSettings.SVRWidth))
-            ManufacturingTabColumnSettingsList(125) = New Setting("SVRxIPHWidth", CStr(SentSettings.SVRxIPHWidth))
-            ManufacturingTabColumnSettingsList(126) = New Setting("PriceTrendWidth", CStr(SentSettings.PriceTrendWidth))
-            ManufacturingTabColumnSettingsList(127) = New Setting("TotalItemsSoldWidth", CStr(SentSettings.TotalItemsSoldWidth))
-            ManufacturingTabColumnSettingsList(128) = New Setting("TotalOrdersFilledWidth", CStr(SentSettings.TotalOrdersFilledWidth))
-            ManufacturingTabColumnSettingsList(129) = New Setting("AvgItemsperOrderWidth", CStr(SentSettings.AvgItemsperOrderWidth))
-            ManufacturingTabColumnSettingsList(130) = New Setting("CurrentSellOrdersWidth", CStr(SentSettings.CurrentSellOrdersWidth))
-            ManufacturingTabColumnSettingsList(131) = New Setting("CurrentBuyOrdersWidth", CStr(SentSettings.CurrentBuyOrdersWidth))
-            ManufacturingTabColumnSettingsList(132) = New Setting("ItemsinProductionWidth", CStr(SentSettings.ItemsinProductionWidth))
-            ManufacturingTabColumnSettingsList(133) = New Setting("ItemsinStockWidth", CStr(SentSettings.ItemsinStockWidth))
-            ManufacturingTabColumnSettingsList(134) = New Setting("TotalCostWidth", CStr(SentSettings.TotalCostWidth))
-            ManufacturingTabColumnSettingsList(135) = New Setting("BaseJobCostWidth", CStr(SentSettings.BaseJobCostWidth))
-            ManufacturingTabColumnSettingsList(136) = New Setting("NumBPsWidth", CStr(SentSettings.NumBPsWidth))
-            ManufacturingTabColumnSettingsList(137) = New Setting("InventionChanceWidth", CStr(SentSettings.InventionChanceWidth))
-            ManufacturingTabColumnSettingsList(138) = New Setting("BPTypeWidth", CStr(SentSettings.BPTypeWidth))
-            ManufacturingTabColumnSettingsList(139) = New Setting("RaceWidth", CStr(SentSettings.RaceWidth))
-            ManufacturingTabColumnSettingsList(140) = New Setting("VolumeperItemWidth", CStr(SentSettings.VolumeperItemWidth))
-            ManufacturingTabColumnSettingsList(141) = New Setting("TotalVolumeWidth", CStr(SentSettings.TotalVolumeWidth))
-            ManufacturingTabColumnSettingsList(142) = New Setting("PortionSizeWidth", CStr(SentSettings.PortionSizeWidth))
-            ManufacturingTabColumnSettingsList(143) = New Setting("ManufacturingJobFeeWidth", CStr(SentSettings.ManufacturingJobFeeWidth))
-            ManufacturingTabColumnSettingsList(144) = New Setting("ManufacturingFacilityNameWidth", CStr(SentSettings.ManufacturingFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(145) = New Setting("ManufacturingFacilitySystemWidth", CStr(SentSettings.ManufacturingFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(146) = New Setting("ManufacturingFacilityRegionWidth", CStr(SentSettings.ManufacturingFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(147) = New Setting("ManufacturingFacilitySystemIndexWidth", CStr(SentSettings.ManufacturingFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(148) = New Setting("ManufacturingFacilityTaxWidth", CStr(SentSettings.ManufacturingFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(149) = New Setting("ManufacturingFacilityMEBonusWidth", CStr(SentSettings.ManufacturingFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(150) = New Setting("ManufacturingFacilityTEBonusWidth", CStr(SentSettings.ManufacturingFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(151) = New Setting("ManufacturingFacilityUsageWidth", CStr(SentSettings.ManufacturingFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(152) = New Setting("ManufacturingFacilityFWSystemLevelWidth", CStr(SentSettings.ManufacturingFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(153) = New Setting("ComponentFacilityNameWidth", CStr(SentSettings.ComponentFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(154) = New Setting("ComponentFacilitySystemWidth", CStr(SentSettings.ComponentFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(155) = New Setting("ComponentFacilityRegionWidth", CStr(SentSettings.ComponentFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(156) = New Setting("ComponentFacilitySystemIndexWidth", CStr(SentSettings.ComponentFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(157) = New Setting("ComponentFacilityTaxWidth", CStr(SentSettings.ComponentFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(158) = New Setting("ComponentFacilityMEBonusWidth", CStr(SentSettings.ComponentFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(159) = New Setting("ComponentFacilityTEBonusWidth", CStr(SentSettings.ComponentFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(160) = New Setting("ComponentFacilityUsageWidth", CStr(SentSettings.ComponentFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(161) = New Setting("ComponentFacilityFWSystemLevelWidth", CStr(SentSettings.ComponentFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(162) = New Setting("CapComponentFacilityNameWidth", CStr(SentSettings.CapComponentFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(163) = New Setting("CapComponentFacilitySystemWidth", CStr(SentSettings.CapComponentFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(164) = New Setting("CapComponentFacilityRegionWidth", CStr(SentSettings.CapComponentFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(165) = New Setting("CapComponentFacilitySystemIndexWidth", CStr(SentSettings.CapComponentFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(166) = New Setting("CapComponentFacilityTaxWidth", CStr(SentSettings.CapComponentFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(167) = New Setting("CapComponentFacilityMEBonusWidth", CStr(SentSettings.CapComponentFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(168) = New Setting("CapComponentFacilityTEBonusWidth", CStr(SentSettings.CapComponentFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(169) = New Setting("CapComponentFacilityUsageWidth", CStr(SentSettings.CapComponentFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(170) = New Setting("CapComponentFacilityFWSystemLevelWidth", CStr(SentSettings.CapComponentFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(171) = New Setting("CopyingFacilityNameWidth", CStr(SentSettings.CopyingFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(172) = New Setting("CopyingFacilitySystemWidth", CStr(SentSettings.CopyingFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(173) = New Setting("CopyingFacilityRegionWidth", CStr(SentSettings.CopyingFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(174) = New Setting("CopyingFacilitySystemIndexWidth", CStr(SentSettings.CopyingFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(175) = New Setting("CopyingFacilityTaxWidth", CStr(SentSettings.CopyingFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(176) = New Setting("CopyingFacilityMEBonusWidth", CStr(SentSettings.CopyingFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(177) = New Setting("CopyingFacilityTEBonusWidth", CStr(SentSettings.CopyingFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(178) = New Setting("CopyingFacilityUsageWidth", CStr(SentSettings.CopyingFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(179) = New Setting("CopyingFacilityFWSystemLevelWidth", CStr(SentSettings.CopyingFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(180) = New Setting("InventionFacilityNameWidth", CStr(SentSettings.InventionFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(181) = New Setting("InventionFacilitySystemWidth", CStr(SentSettings.InventionFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(182) = New Setting("InventionFacilityRegionWidth", CStr(SentSettings.InventionFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(183) = New Setting("InventionFacilitySystemIndexWidth", CStr(SentSettings.InventionFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(184) = New Setting("InventionFacilityTaxWidth", CStr(SentSettings.InventionFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(185) = New Setting("InventionFacilityMEBonusWidth", CStr(SentSettings.InventionFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(186) = New Setting("InventionFacilityTEBonusWidth", CStr(SentSettings.InventionFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(187) = New Setting("InventionFacilityUsageWidth", CStr(SentSettings.InventionFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(188) = New Setting("InventionFacilityFWSystemLevelWidth", CStr(SentSettings.InventionFacilityFWSystemLevelWidth))
-            ManufacturingTabColumnSettingsList(189) = New Setting("ReactionFacilityNameWidth", CStr(SentSettings.ReactionFacilityNameWidth))
-            ManufacturingTabColumnSettingsList(190) = New Setting("ReactionFacilitySystemWidth", CStr(SentSettings.ReactionFacilitySystemWidth))
-            ManufacturingTabColumnSettingsList(191) = New Setting("ReactionFacilityRegionWidth", CStr(SentSettings.ReactionFacilityRegionWidth))
-            ManufacturingTabColumnSettingsList(192) = New Setting("ReactionFacilitySystemIndexWidth", CStr(SentSettings.ReactionFacilitySystemIndexWidth))
-            ManufacturingTabColumnSettingsList(193) = New Setting("ReactionFacilityTaxWidth", CStr(SentSettings.ReactionFacilityTaxWidth))
-            ManufacturingTabColumnSettingsList(194) = New Setting("ReactionFacilityMEBonusWidth", CStr(SentSettings.ReactionFacilityMEBonusWidth))
-            ManufacturingTabColumnSettingsList(195) = New Setting("ReactionFacilityTEBonusWidth", CStr(SentSettings.ReactionFacilityTEBonusWidth))
-            ManufacturingTabColumnSettingsList(196) = New Setting("ReactionFacilityUsageWidth", CStr(SentSettings.ReactionFacilityUsageWidth))
-            ManufacturingTabColumnSettingsList(197) = New Setting("ReactionFacilityFWSystemLevelWidth", CStr(SentSettings.ReactionFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(110) = New Setting("ItemCategoryWidth", CStr(SentSettings.ItemCategoryWidth))
+            ManufacturingTabColumnSettingsList(111) = New Setting("ItemGroupWidth", CStr(SentSettings.ItemGroupWidth))
+            ManufacturingTabColumnSettingsList(112) = New Setting("ItemNameWidth", CStr(SentSettings.ItemNameWidth))
+            ManufacturingTabColumnSettingsList(113) = New Setting("OwnedWidth", CStr(SentSettings.OwnedWidth))
+            ManufacturingTabColumnSettingsList(114) = New Setting("TechWidth", CStr(SentSettings.TechWidth))
+            ManufacturingTabColumnSettingsList(115) = New Setting("BPMEWidth", CStr(SentSettings.BPMEWidth))
+            ManufacturingTabColumnSettingsList(116) = New Setting("BPTEWidth", CStr(SentSettings.BPTEWidth))
+            ManufacturingTabColumnSettingsList(117) = New Setting("InputsWidth", CStr(SentSettings.InputsWidth))
+            ManufacturingTabColumnSettingsList(118) = New Setting("ComparedWidth", CStr(SentSettings.ComparedWidth))
+            ManufacturingTabColumnSettingsList(119) = New Setting("TotalRunsWidth", CStr(SentSettings.TotalRunsWidth))
+            ManufacturingTabColumnSettingsList(120) = New Setting("SingleInventedBPCRunsWidth", CStr(SentSettings.SingleInventedBPCRunsWidth))
+            ManufacturingTabColumnSettingsList(121) = New Setting("ProductionLinesWidth", CStr(SentSettings.ProductionLinesWidth))
+            ManufacturingTabColumnSettingsList(122) = New Setting("LaboratoryLinesWidth", CStr(SentSettings.LaboratoryLinesWidth))
+            ManufacturingTabColumnSettingsList(123) = New Setting("TotalInventionCostWidth", CStr(SentSettings.TotalInventionCostWidth))
+            ManufacturingTabColumnSettingsList(124) = New Setting("TotalCopyCostWidth", CStr(SentSettings.TotalCopyCostWidth))
+            ManufacturingTabColumnSettingsList(125) = New Setting("TaxesWidth", CStr(SentSettings.TaxesWidth))
+            ManufacturingTabColumnSettingsList(126) = New Setting("BrokerFeesWidth", CStr(SentSettings.BrokerFeesWidth))
+            ManufacturingTabColumnSettingsList(127) = New Setting("BPProductionTimeWidth", CStr(SentSettings.BPProductionTimeWidth))
+            ManufacturingTabColumnSettingsList(128) = New Setting("TotalProductionTimeWidth", CStr(SentSettings.TotalProductionTimeWidth))
+            ManufacturingTabColumnSettingsList(129) = New Setting("CopyTimeWidth", CStr(SentSettings.CopyTimeWidth))
+            ManufacturingTabColumnSettingsList(130) = New Setting("InventionTimeWidth", CStr(SentSettings.InventionTimeWidth))
+            ManufacturingTabColumnSettingsList(131) = New Setting("ItemMarketPriceWidth", CStr(SentSettings.ItemMarketPriceWidth))
+            ManufacturingTabColumnSettingsList(132) = New Setting("ProfitWidth", CStr(SentSettings.ProfitWidth))
+            ManufacturingTabColumnSettingsList(133) = New Setting("ProfitPercentageWidth", CStr(SentSettings.ProfitPercentageWidth))
+            ManufacturingTabColumnSettingsList(134) = New Setting("IskperHourWidth", CStr(SentSettings.IskperHourWidth))
+            ManufacturingTabColumnSettingsList(135) = New Setting("SVRWidth", CStr(SentSettings.SVRWidth))
+            ManufacturingTabColumnSettingsList(136) = New Setting("SVRxIPHWidth", CStr(SentSettings.SVRxIPHWidth))
+            ManufacturingTabColumnSettingsList(137) = New Setting("PriceTrendWidth", CStr(SentSettings.PriceTrendWidth))
+            ManufacturingTabColumnSettingsList(138) = New Setting("TotalItemsSoldWidth", CStr(SentSettings.TotalItemsSoldWidth))
+            ManufacturingTabColumnSettingsList(139) = New Setting("TotalOrdersFilledWidth", CStr(SentSettings.TotalOrdersFilledWidth))
+            ManufacturingTabColumnSettingsList(140) = New Setting("AvgItemsperOrderWidth", CStr(SentSettings.AvgItemsperOrderWidth))
+            ManufacturingTabColumnSettingsList(141) = New Setting("CurrentSellOrdersWidth", CStr(SentSettings.CurrentSellOrdersWidth))
+            ManufacturingTabColumnSettingsList(142) = New Setting("CurrentBuyOrdersWidth", CStr(SentSettings.CurrentBuyOrdersWidth))
+            ManufacturingTabColumnSettingsList(143) = New Setting("ItemsinProductionWidth", CStr(SentSettings.ItemsinProductionWidth))
+            ManufacturingTabColumnSettingsList(144) = New Setting("ItemsinStockWidth", CStr(SentSettings.ItemsinStockWidth))
+            ManufacturingTabColumnSettingsList(145) = New Setting("MaterialCostWidth", CStr(SentSettings.MaterialCostWidth))
+            ManufacturingTabColumnSettingsList(146) = New Setting("TotalCostWidth", CStr(SentSettings.TotalCostWidth))
+            ManufacturingTabColumnSettingsList(147) = New Setting("BaseJobCostWidth", CStr(SentSettings.BaseJobCostWidth))
+            ManufacturingTabColumnSettingsList(148) = New Setting("NumBPsWidth", CStr(SentSettings.NumBPsWidth))
+            ManufacturingTabColumnSettingsList(149) = New Setting("InventionChanceWidth", CStr(SentSettings.InventionChanceWidth))
+            ManufacturingTabColumnSettingsList(150) = New Setting("BPTypeWidth", CStr(SentSettings.BPTypeWidth))
+            ManufacturingTabColumnSettingsList(151) = New Setting("RaceWidth", CStr(SentSettings.RaceWidth))
+            ManufacturingTabColumnSettingsList(152) = New Setting("VolumeperItemWidth", CStr(SentSettings.VolumeperItemWidth))
+            ManufacturingTabColumnSettingsList(153) = New Setting("TotalVolumeWidth", CStr(SentSettings.TotalVolumeWidth))
+            ManufacturingTabColumnSettingsList(154) = New Setting("SellExcessWidth", CStr(SentSettings.SellExcessWidth))
+            ManufacturingTabColumnSettingsList(155) = New Setting("ROIWidth", CStr(SentSettings.ROIWidth))
+            ManufacturingTabColumnSettingsList(156) = New Setting("PortionSizeWidth", CStr(SentSettings.PortionSizeWidth))
+            ManufacturingTabColumnSettingsList(157) = New Setting("ManufacturingJobFeeWidth", CStr(SentSettings.ManufacturingJobFeeWidth))
+            ManufacturingTabColumnSettingsList(158) = New Setting("ManufacturingFacilityNameWidth", CStr(SentSettings.ManufacturingFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(159) = New Setting("ManufacturingFacilitySystemWidth", CStr(SentSettings.ManufacturingFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(160) = New Setting("ManufacturingFacilityRegionWidth", CStr(SentSettings.ManufacturingFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(161) = New Setting("ManufacturingFacilitySystemIndexWidth", CStr(SentSettings.ManufacturingFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(162) = New Setting("ManufacturingFacilityTaxWidth", CStr(SentSettings.ManufacturingFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(163) = New Setting("ManufacturingFacilityMEBonusWidth", CStr(SentSettings.ManufacturingFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(164) = New Setting("ManufacturingFacilityTEBonusWidth", CStr(SentSettings.ManufacturingFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(165) = New Setting("ManufacturingFacilityUsageWidth", CStr(SentSettings.ManufacturingFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(166) = New Setting("ManufacturingFacilityFWSystemLevelWidth", CStr(SentSettings.ManufacturingFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(167) = New Setting("ComponentFacilityNameWidth", CStr(SentSettings.ComponentFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(168) = New Setting("ComponentFacilitySystemWidth", CStr(SentSettings.ComponentFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(169) = New Setting("ComponentFacilityRegionWidth", CStr(SentSettings.ComponentFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(170) = New Setting("ComponentFacilitySystemIndexWidth", CStr(SentSettings.ComponentFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(171) = New Setting("ComponentFacilityTaxWidth", CStr(SentSettings.ComponentFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(172) = New Setting("ComponentFacilityMEBonusWidth", CStr(SentSettings.ComponentFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(173) = New Setting("ComponentFacilityTEBonusWidth", CStr(SentSettings.ComponentFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(174) = New Setting("ComponentFacilityUsageWidth", CStr(SentSettings.ComponentFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(175) = New Setting("ComponentFacilityFWSystemLevelWidth", CStr(SentSettings.ComponentFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(176) = New Setting("CapComponentFacilityNameWidth", CStr(SentSettings.CapComponentFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(177) = New Setting("CapComponentFacilitySystemWidth", CStr(SentSettings.CapComponentFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(178) = New Setting("CapComponentFacilityRegionWidth", CStr(SentSettings.CapComponentFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(179) = New Setting("CapComponentFacilitySystemIndexWidth", CStr(SentSettings.CapComponentFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(180) = New Setting("CapComponentFacilityTaxWidth", CStr(SentSettings.CapComponentFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(181) = New Setting("CapComponentFacilityMEBonusWidth", CStr(SentSettings.CapComponentFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(182) = New Setting("CapComponentFacilityTEBonusWidth", CStr(SentSettings.CapComponentFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(183) = New Setting("CapComponentFacilityUsageWidth", CStr(SentSettings.CapComponentFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(184) = New Setting("CapComponentFacilityFWSystemLevelWidth", CStr(SentSettings.CapComponentFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(185) = New Setting("CopyingFacilityNameWidth", CStr(SentSettings.CopyingFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(186) = New Setting("CopyingFacilitySystemWidth", CStr(SentSettings.CopyingFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(187) = New Setting("CopyingFacilityRegionWidth", CStr(SentSettings.CopyingFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(188) = New Setting("CopyingFacilitySystemIndexWidth", CStr(SentSettings.CopyingFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(189) = New Setting("CopyingFacilityTaxWidth", CStr(SentSettings.CopyingFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(190) = New Setting("CopyingFacilityMEBonusWidth", CStr(SentSettings.CopyingFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(191) = New Setting("CopyingFacilityTEBonusWidth", CStr(SentSettings.CopyingFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(192) = New Setting("CopyingFacilityUsageWidth", CStr(SentSettings.CopyingFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(193) = New Setting("CopyingFacilityFWSystemLevelWidth", CStr(SentSettings.CopyingFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(194) = New Setting("InventionFacilityNameWidth", CStr(SentSettings.InventionFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(195) = New Setting("InventionFacilitySystemWidth", CStr(SentSettings.InventionFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(196) = New Setting("InventionFacilityRegionWidth", CStr(SentSettings.InventionFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(197) = New Setting("InventionFacilitySystemIndexWidth", CStr(SentSettings.InventionFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(198) = New Setting("InventionFacilityTaxWidth", CStr(SentSettings.InventionFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(199) = New Setting("InventionFacilityMEBonusWidth", CStr(SentSettings.InventionFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(200) = New Setting("InventionFacilityTEBonusWidth", CStr(SentSettings.InventionFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(201) = New Setting("InventionFacilityUsageWidth", CStr(SentSettings.InventionFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(202) = New Setting("InventionFacilityFWSystemLevelWidth", CStr(SentSettings.InventionFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(203) = New Setting("ReactionFacilityNameWidth", CStr(SentSettings.ReactionFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(204) = New Setting("ReactionFacilitySystemWidth", CStr(SentSettings.ReactionFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(205) = New Setting("ReactionFacilityRegionWidth", CStr(SentSettings.ReactionFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(206) = New Setting("ReactionFacilitySystemIndexWidth", CStr(SentSettings.ReactionFacilitySystemIndexWidth))
+            ManufacturingTabColumnSettingsList(207) = New Setting("ReactionFacilityTaxWidth", CStr(SentSettings.ReactionFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(208) = New Setting("ReactionFacilityMEBonusWidth", CStr(SentSettings.ReactionFacilityMEBonusWidth))
+            ManufacturingTabColumnSettingsList(209) = New Setting("ReactionFacilityTEBonusWidth", CStr(SentSettings.ReactionFacilityTEBonusWidth))
+            ManufacturingTabColumnSettingsList(210) = New Setting("ReactionFacilityUsageWidth", CStr(SentSettings.ReactionFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(211) = New Setting("ReactionFacilityFWSystemLevelWidth", CStr(SentSettings.ReactionFacilityFWSystemLevelWidth))
+            ManufacturingTabColumnSettingsList(212) = New Setting("ReprocessingFacilityNameWidth", CStr(SentSettings.ReprocessingFacilityNameWidth))
+            ManufacturingTabColumnSettingsList(213) = New Setting("ReprocessingFacilitySystemWidth", CStr(SentSettings.ReprocessingFacilitySystemWidth))
+            ManufacturingTabColumnSettingsList(214) = New Setting("ReprocessingFacilityRegionWidth", CStr(SentSettings.ReprocessingFacilityRegionWidth))
+            ManufacturingTabColumnSettingsList(215) = New Setting("ReprocessingFacilityTaxWidth", CStr(SentSettings.ReprocessingFacilityTaxWidth))
+            ManufacturingTabColumnSettingsList(216) = New Setting("ReprocessingFacilityUsageWidth", CStr(SentSettings.ReprocessingFacilityUsageWidth))
+            ManufacturingTabColumnSettingsList(217) = New Setting("ReprocessingFacilityOreRefineRateWidth", CStr(SentSettings.ReprocessingFacilityOreRefineRateWidth))
+            ManufacturingTabColumnSettingsList(218) = New Setting("ReprocessingFacilityIceRefineRateWidth", CStr(SentSettings.ReprocessingFacilityIceRefineRateWidth))
+            ManufacturingTabColumnSettingsList(219) = New Setting("ReprocessingFacilityMoonRefineRateWidth", CStr(SentSettings.ReprocessingFacilityMoonRefineRateWidth))
 
-            ManufacturingTabColumnSettingsList(198) = New Setting("OrderMTByColumn", CStr(SentSettings.OrderByColumn))
-            ManufacturingTabColumnSettingsList(199) = New Setting("OrderMTType", CStr(SentSettings.OrderType))
+            ManufacturingTabColumnSettingsList(220) = New Setting("OrderMTByColumn", CStr(SentSettings.OrderByColumn))
+            ManufacturingTabColumnSettingsList(221) = New Setting("OrderMTType", CStr(SentSettings.OrderType))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingTabColumnSettingsFileName, ManufacturingTabColumnSettingsList, ManufacturingTabColumnSettingsFileName)
 
@@ -3734,11 +3865,6 @@ Public Class ProgramSettings
                     .IncludeTaxes = CBool(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeBoolean, IndustryFlipBeltSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
                     .TrueSec = CStr(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeString, IndustryFlipBeltSettingsFileName, "TrueSec", DefaultTruesec))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
-
-                    .RefiningEfficiency = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningEfficiency", DefaultRefiningEfficency))
-                    .RefiningTax = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefiningTax", DefaultRefineTax))
-                    .RefineCorpStanding = CDbl(GetSettingValue(SettingsFolder, IndustryFlipBeltSettingsFileName, SettingTypes.TypeDouble, IndustryFlipBeltSettingsFileName, "RefineCorpStanding", DefaultRefineCorpStanding))
-
                 End With
 
             Else
@@ -3773,9 +3899,6 @@ Public Class ProgramSettings
             .BrokerFeeRate = DefaultBFBrokerFeeRate
             .IncludeTaxes = DefaultIncludeTaxes
             .TrueSec = DefaultTruesec
-            .RefiningEfficiency = DefaultRefiningEfficency
-            .RefineCorpStanding = DefaultRefineCorpStanding
-            .RefiningTax = DefaultRefineTax
         End With
 
         ' Save locally
@@ -3786,7 +3909,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryFlipBeltSettings(SentSettings As IndustryFlipBeltSettings)
-        Dim IndustryFlipBeltSettingsList(11) As Setting
+        Dim IndustryFlipBeltSettingsList(8) As Setting
 
         Try
             IndustryFlipBeltSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
@@ -3797,10 +3920,7 @@ Public Class ProgramSettings
             IndustryFlipBeltSettingsList(5) = New Setting("IncludeBrokerFees", CStr(SentSettings.IncludeBrokerFees))
             IndustryFlipBeltSettingsList(6) = New Setting("IncludeTaxes", CStr(SentSettings.IncludeTaxes))
             IndustryFlipBeltSettingsList(7) = New Setting("TrueSec", CStr(SentSettings.TrueSec))
-            IndustryFlipBeltSettingsList(8) = New Setting("RefiningEfficiency", CStr(SentSettings.RefiningEfficiency))
-            IndustryFlipBeltSettingsList(9) = New Setting("RefineCorpStanding", CStr(SentSettings.RefineCorpStanding))
-            IndustryFlipBeltSettingsList(10) = New Setting("RefiningTax", CStr(SentSettings.RefiningTax))
-            IndustryFlipBeltSettingsList(11) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+            IndustryFlipBeltSettingsList(8) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             Call WriteSettingsToFile(SettingsFolder, IndustryFlipBeltSettingsFileName, IndustryFlipBeltSettingsList, IndustryFlipBeltSettingsFileName)
 
@@ -3813,6 +3933,99 @@ Public Class ProgramSettings
     ' Returns the tab settings
     Public Function GetIndustryFlipBeltSettings() As IndustryFlipBeltSettings
         Return IndustryFlipBeltsSettings
+    End Function
+
+#End Region
+
+#Region "Ice Belt Flip"
+
+    ' Loads the tab settings
+    Public Function LoadIceFlipBeltColumnSettings() As IceBeltFlipSettings
+        Dim TempSettings As IceBeltFlipSettings = Nothing
+
+        Try
+            If FileExists(SettingsFolder, IceBeltFlipSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .CycleTime = CDbl(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeDouble, IceBeltFlipSettingsFileName, "CycleTime", DefaultCycleTime))
+                    .m3perCycle = CDbl(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeDouble, IceBeltFlipSettingsFileName, "m3perCycle", Defaultm3perCycle))
+                    .NumMiners = CInt(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeInteger, IceBeltFlipSettingsFileName, "NumMiners", DefaultNumMiners))
+                    .CompressOre = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "CompressOre", DefaultCompressOre))
+                    .IPHperMiner = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "IPHperMiner", DefaultIPHperMiner))
+                    .IncludeBrokerFees = CInt(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeInteger, IceBeltFlipSettingsFileName, "IncludeBrokerFees", DefaultIncludeBrokerFees))
+                    .IncludeTaxes = CBool(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipSettingsFileName, "IncludeTaxes", DefaultIncludeTaxes))
+                    .SystemSecurity = CStr(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeString, IceBeltFlipSettingsFileName, "SystemSecurity", DefaultTruesec))
+                    .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
+                    .Space = CStr(GetSettingValue(SettingsFolder, IceBeltFlipSettingsFileName, SettingTypes.TypeString, IceBeltFlipSettingsFileName, "Space", DefaultSpace))
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultIceBeltFlipSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultIceBeltFlipSettings()
+        End Try
+
+        ' Save them locally and then export
+        IceBeltFlipSetting = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Loads the Defaults for the tab
+    Public Function SetDefaultIceBeltFlipSettings() As IceBeltFlipSettings
+        Dim LocalSettings As IceBeltFlipSettings
+
+        With LocalSettings
+            .CycleTime = DefaultCycleTime
+            .m3perCycle = Defaultm3perCycle
+            .NumMiners = DefaultNumMiners
+            .CompressOre = DefaultCompressOre
+            .IPHperMiner = DefaultIPHperMiner
+            .IncludeBrokerFees = DefaultIncludeBrokerFees
+            .BrokerFeeRate = DefaultBFBrokerFeeRate
+            .IncludeTaxes = DefaultIncludeTaxes
+            .SystemSecurity = DefaultTruesec
+            .Space = DefaultSpace
+        End With
+
+        ' Save locally
+        IceBeltFlipSetting = LocalSettings
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveIceBeltFlipSettings(SentSettings As IceBeltFlipSettings)
+        Dim IceBeltFlipSettingsList(8) As Setting
+
+        Try
+            IceBeltFlipSettingsList(0) = New Setting("CycleTime", CStr(SentSettings.CycleTime))
+            IceBeltFlipSettingsList(1) = New Setting("m3perCycle", CStr(SentSettings.m3perCycle))
+            IceBeltFlipSettingsList(2) = New Setting("NumMiners", CStr(SentSettings.NumMiners))
+            IceBeltFlipSettingsList(3) = New Setting("CompressedOre", CStr(SentSettings.CompressOre))
+            IceBeltFlipSettingsList(4) = New Setting("IPHperMiner", CStr(SentSettings.IPHperMiner))
+            IceBeltFlipSettingsList(5) = New Setting("IncludeBrokerFees", CStr(SentSettings.IncludeBrokerFees))
+            IceBeltFlipSettingsList(6) = New Setting("IncludeTaxes", CStr(SentSettings.IncludeTaxes))
+            IceBeltFlipSettingsList(7) = New Setting("SystemSecurity", CStr(SentSettings.SystemSecurity))
+            IceBeltFlipSettingsList(8) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
+
+            Call WriteSettingsToFile(SettingsFolder, IceBeltFlipSettingsFileName, IceBeltFlipSettingsList, IceBeltFlipSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetIceBeltFlipSettings() As IceBeltFlipSettings
+        Return IceBeltFlipSetting
     End Function
 
 #End Region
@@ -4086,6 +4299,347 @@ Public Class ProgramSettings
 
 #End Region
 
+#Region "Ice Belt Ore Checks"
+
+    ' Loads the tab settings
+    Public Function LoadIceBeltOreChecksSettings() As IceBeltCheckSettings
+        Dim TempSettings As IceBeltCheckSettings = Nothing
+
+        Try
+            If FileExists(SettingsFolder, IceBeltFlipCheckSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .BlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "BlueIce", DefaultBlueIce))
+                    .ClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "ClearIcicle", DefaultClearIcicle))
+                    .DarkGlitter = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "DarkGlitter", DefaultDarkGlitter))
+                    .EnrichedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "EnrichedClearIcicle", DefaultEnrichedClearIcicle))
+                    .Gelidus = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "Gelidus", DefaultGelidus))
+                    .GlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "GlacialMass", DefaultGlacialMass))
+                    .GlareCrust = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "GlareCrust", DefaultGlareCrust))
+                    .Krystallos = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "Krystallos", DefaultKrystallos))
+                    .PristineWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "PristineWhiteGlaze", DefaultPristineWhiteGlaze))
+                    .SmoothGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "SmoothGlacialMass", DefaultSmoothGlacialMass))
+                    .ThickBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "ThickBlueIce", DefaultThickBlueIce))
+                    .WhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "WhiteGlaze", DefaultWhiteGlaze))
+
+                    .CompressedBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedBlueIce", DefaultCompressedBlueIce))
+                    .CompressedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedClearIcicle", DefaultCompressedClearIcicle))
+                    .CompressedDarkGlitter = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedDarkGlitter", DefaultCompressedDarkGlitter))
+                    .CompressedEnrichedClearIcicle = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedEnrichedClearIcicle", DefaultCompressedEnrichedClearIcicle))
+                    .CompressedGelidus = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGelidus", DefaultCompressedGelidus))
+                    .CompressedGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGlacialMass", DefaultCompressedGlacialMass))
+                    .CompressedGlareCrust = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedGlareCrust", DefaultCompressedGlareCrust))
+                    .CompressedKrystallos = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedKrystallos", DefaultCompressedKrystallos))
+                    .CompressedPristineWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedPristineWhiteGlaze", DefaultCompressedPristineWhiteGlaze))
+                    .CompressedSmoothGlacialMass = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedSmoothGlacialMass", DefaultCompressedSmoothGlacialMass))
+                    .CompressedThickBlueIce = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedThickBlueIce", DefaultCompressedThickBlueIce))
+                    .CompressedWhiteGlaze = CBool(GetSettingValue(SettingsFolder, IceBeltFlipCheckSettingsFileName, SettingTypes.TypeBoolean, IceBeltFlipCheckSettingsFileName, "CompressedWhiteGlaze", DefaultCompressedWhiteGlaze))
+
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultIceBeltChecksSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultIceBeltChecksSettings()
+        End Try
+
+        ' Save them locally and then export
+        IceBeltCheckSetting = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Loads the Defaults for the tab
+    Public Function SetDefaultIceBeltChecksSettings() As IceBeltCheckSettings
+        Dim LocalSettings As IceBeltCheckSettings
+
+        With LocalSettings
+            .BlueIce = DefaultBlueIce
+            .ClearIcicle = DefaultClearIcicle
+            .DarkGlitter = DefaultDarkGlitter
+            .EnrichedClearIcicle = DefaultEnrichedClearIcicle
+            .Gelidus = DefaultGelidus
+            .GlacialMass = DefaultGlacialMass
+            .GlareCrust = DefaultGlareCrust
+            .Krystallos = DefaultKrystallos
+            .PristineWhiteGlaze = DefaultPristineWhiteGlaze
+            .SmoothGlacialMass = DefaultSmoothGlacialMass
+            .ThickBlueIce = DefaultThickBlueIce
+            .WhiteGlaze = DefaultWhiteGlaze
+            .CompressedBlueIce = DefaultCompressedBlueIce
+            .CompressedClearIcicle = DefaultCompressedClearIcicle
+            .CompressedDarkGlitter = DefaultCompressedDarkGlitter
+            .CompressedEnrichedClearIcicle = DefaultCompressedEnrichedClearIcicle
+            .CompressedGelidus = DefaultCompressedGelidus
+            .CompressedGlacialMass = DefaultCompressedGlacialMass
+            .CompressedGlareCrust = DefaultCompressedGlareCrust
+            .CompressedKrystallos = DefaultCompressedKrystallos
+            .CompressedPristineWhiteGlaze = DefaultCompressedPristineWhiteGlaze
+            .CompressedSmoothGlacialMass = DefaultCompressedSmoothGlacialMass
+            .CompressedThickBlueIce = DefaultCompressedThickBlueIce
+            .CompressedWhiteGlaze = DefaultCompressedWhiteGlaze
+        End With
+
+        ' Save Locally
+        IceBeltCheckSetting = LocalSettings
+
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveIceBeltChecksSettings(SentSettings As IceBeltCheckSettings)
+        Dim IceBeltOreChecksList(23) As Setting
+
+        Try
+            IceBeltOreChecksList(0) = New Setting("BlueIce", CStr(SentSettings.BlueIce))
+            IceBeltOreChecksList(1) = New Setting("ClearIcicle", CStr(SentSettings.ClearIcicle))
+            IceBeltOreChecksList(2) = New Setting("DarkGlitter", CStr(SentSettings.DarkGlitter))
+            IceBeltOreChecksList(3) = New Setting("EnrichedClearIcicle", CStr(SentSettings.EnrichedClearIcicle))
+            IceBeltOreChecksList(4) = New Setting("Gelidus", CStr(SentSettings.Gelidus))
+            IceBeltOreChecksList(5) = New Setting("GlacialMass", CStr(SentSettings.GlacialMass))
+            IceBeltOreChecksList(6) = New Setting("GlareCrust", CStr(SentSettings.GlareCrust))
+            IceBeltOreChecksList(7) = New Setting("Krystallos", CStr(SentSettings.Krystallos))
+            IceBeltOreChecksList(8) = New Setting("PristineWhiteGlaze", CStr(SentSettings.PristineWhiteGlaze))
+            IceBeltOreChecksList(9) = New Setting("SmoothGlacialMass", CStr(SentSettings.SmoothGlacialMass))
+            IceBeltOreChecksList(10) = New Setting("ThickBlueIce", CStr(SentSettings.ThickBlueIce))
+            IceBeltOreChecksList(11) = New Setting("WhiteGlaze", CStr(SentSettings.WhiteGlaze))
+
+            IceBeltOreChecksList(12) = New Setting("CompressedBlueIce", CStr(SentSettings.CompressedBlueIce))
+            IceBeltOreChecksList(13) = New Setting("CompressedClearIcicle", CStr(SentSettings.CompressedClearIcicle))
+            IceBeltOreChecksList(14) = New Setting("CompressedDarkGlitter", CStr(SentSettings.CompressedDarkGlitter))
+            IceBeltOreChecksList(15) = New Setting("CompressedEnrichedClearIcicle", CStr(SentSettings.CompressedEnrichedClearIcicle))
+            IceBeltOreChecksList(16) = New Setting("CompressedGelidus", CStr(SentSettings.CompressedGelidus))
+            IceBeltOreChecksList(17) = New Setting("CompressedGlacialMass", CStr(SentSettings.CompressedGlacialMass))
+            IceBeltOreChecksList(18) = New Setting("CompressedGlareCrust", CStr(SentSettings.CompressedGlareCrust))
+            IceBeltOreChecksList(19) = New Setting("CompressedKrystallos", CStr(SentSettings.CompressedKrystallos))
+            IceBeltOreChecksList(20) = New Setting("CompressedPristineWhiteGlaze", CStr(SentSettings.CompressedPristineWhiteGlaze))
+            IceBeltOreChecksList(21) = New Setting("CompressedSmoothGlacialMass", CStr(SentSettings.CompressedSmoothGlacialMass))
+            IceBeltOreChecksList(22) = New Setting("CompressedThickBlueIce", CStr(SentSettings.CompressedThickBlueIce))
+            IceBeltOreChecksList(23) = New Setting("CompressedWhiteGlaze", CStr(SentSettings.CompressedWhiteGlaze))
+
+            Call WriteSettingsToFile(SettingsFolder, IceBeltFlipCheckSettingsFileName, IceBeltOreChecksList, IceBeltFlipCheckSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Ice Flip Belt Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetIceBeltOreChecksSettings(Belt As BeltType) As IceBeltCheckSettings
+        Return IceBeltCheckSetting
+    End Function
+
+#End Region
+
+#Region "Conversion to Ore"
+
+    ' Loads the tab settings
+    Public Function LoadConversiontoOreSettings() As ConversionToOreSettings
+        Dim TempSettings As ConversionToOreSettings = Nothing
+
+        Try
+            If FileExists(SettingsFolder, ConvertToOreSettingsFileName) Then
+                'Get the settings
+                With TempSettings
+                    .ConversionType = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "ConversionType", DefaultConversionType))
+                    .MinimizeOn = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "MinimizeOn", DefaultMinimizeOn))
+
+                    .CompressedIce = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedIce", DefaultCompressedIce))
+                    .CompressedOre = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedOre", DefaultCompressedOre))
+                    .HighSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "HighSec", DefaultHighSec))
+                    .LowSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "LowSec", DefaultLowSec))
+                    .NullSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "NullSec", DefaultNullSec))
+
+                    .OreVariant0 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "OreVariant0", DefaultOreVariant0))
+                    .OreVariant5 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "OreVariant5", DefaultOreVariant5))
+                    .OreVariant10 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "OreVariant10", DefaultOreVariant10))
+                    .Amarr = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Amarr", DefaultAmarr))
+                    .Caldari = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Caldari", DefaultCaldari))
+                    .Gallente = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Gallente", DefaultGallente))
+                    .Minmatar = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Minmatar", DefaultMinmatar))
+                    .Wormhole = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Wormhole", DefaultWormhole))
+                    .Triglavian = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "Triglavian", DefaultTriglavian))
+
+                    .C1 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C1", DefaultC1))
+                    .C2 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C2", DefaultC2))
+                    .C3 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C3", DefaultC3))
+                    .C4 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C4", DefaultC4))
+                    .C5 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C5", DefaultC5))
+                    .C6 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C6", DefaultC6))
+
+                    Dim OverrideString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "OverrideChecks", ""))
+                    ReDim .OverrideChecks(28)
+
+                    If OverrideString = "" Then
+                        .OverrideChecks = GetDefaultOverrideChecks()
+                    Else
+                        ' Parse it out and Save values
+                        Dim Items As String() = OverrideString.Split(New Char() {","c})
+
+                        For i = 0 To 28
+                            .OverrideChecks(i) = CInt(Items(i))
+                        Next
+                    End If
+
+                    .SelectedOres = New List(Of OreType)
+                    .IgnoreItems = New List(Of String)
+                    ReDim .IgnoreRefinedItems(14)
+                    Dim IgnoreRefinedItemsString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "IgnoreRefinedItems", ""))
+
+                    If IgnoreRefinedItemsString <> "" Then
+                        Dim RefinedItems As String() = IgnoreRefinedItemsString.Split(New Char() {","c})
+                        For i = 0 To 14
+                            .IgnoreRefinedItems(i) = CInt(RefinedItems(i))
+                        Next
+                    End If
+                End With
+
+            Else
+                ' Load defaults 
+                TempSettings = SetDefaultConversionToOreSettings()
+            End If
+
+        Catch ex As Exception
+            MsgBox("An error occured when loading Conversion to Ore Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
+            ' Load defaults 
+            TempSettings = SetDefaultConversionToOreSettings()
+        End Try
+
+        ' Save them locally and then export
+        ConversionToOreSetting = TempSettings
+
+        Return TempSettings
+
+    End Function
+
+    ' Loads the Defaults for the tab
+    Public Function SetDefaultConversionToOreSettings() As ConversionToOreSettings
+        Dim LocalSettings As ConversionToOreSettings
+
+        With LocalSettings
+            .ConversionType = DefaultConversionType
+            .MinimizeOn = DefaultMinimizeOn
+            .CompressedOre = DefaultCompressedOre
+            .CompressedIce = DefaultCompressedIce
+            .HighSec = DefaultHighSec
+            .LowSec = DefaultLowSec
+            .NullSec = DefaultNullSec
+            .OreVariant0 = DefaultOreVariant0
+            .OreVariant5 = DefaultOreVariant5
+            .OreVariant10 = DefaultOreVariant10
+            .Amarr = DefaultAmarr
+            .Caldari = DefaultCaldari
+            .Gallente = DefaultGallente
+            .Minmatar = DefaultMinmatar
+            .Wormhole = DefaultWormhole
+            .Triglavian = DefaultTriglavian
+            .C1 = DefaultC1
+            .C2 = DefaultC2
+            .C3 = DefaultC3
+            .C4 = DefaultC4
+            .C5 = DefaultC5
+            .C6 = DefaultC6
+
+            .OverrideChecks = GetDefaultOverrideChecks()
+            .SelectedOres = New List(Of OreType)
+            .IgnoreRefinedItems = GetDefaultIgnoreChecks()
+            .IgnoreItems = New List(Of String)
+        End With
+
+        ' Save Locally
+        ConversionToOreSetting = LocalSettings
+
+        Return LocalSettings
+
+    End Function
+
+    ' Saves the tab settings to XML
+    Public Sub SaveConversionToOreSettings(SentSettings As ConversionToOreSettings)
+        Dim ConvertSetting(23) As Setting
+
+        Try
+            ConvertSetting(0) = New Setting("ConversionType", CStr(SentSettings.ConversionType))
+            ConvertSetting(1) = New Setting("MinimizeOn", CStr(SentSettings.MinimizeOn))
+            ConvertSetting(2) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
+            ConvertSetting(3) = New Setting("CompressedIce", CStr(SentSettings.CompressedIce))
+            ConvertSetting(4) = New Setting("HighSec", CStr(SentSettings.HighSec))
+            ConvertSetting(5) = New Setting("LowSec", CStr(SentSettings.LowSec))
+            ConvertSetting(6) = New Setting("NullSec", CStr(SentSettings.NullSec))
+            ConvertSetting(7) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
+            ConvertSetting(8) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
+            ConvertSetting(9) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
+            ConvertSetting(10) = New Setting("Amarr", CStr(SentSettings.Amarr))
+            ConvertSetting(11) = New Setting("Caldari", CStr(SentSettings.Caldari))
+            ConvertSetting(12) = New Setting("Gallente", CStr(SentSettings.Gallente))
+            ConvertSetting(13) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
+            ConvertSetting(14) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
+            ConvertSetting(15) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
+            ConvertSetting(16) = New Setting("C1", CStr(SentSettings.C1))
+            ConvertSetting(17) = New Setting("C2", CStr(SentSettings.C2))
+            ConvertSetting(18) = New Setting("C3", CStr(SentSettings.C3))
+            ConvertSetting(19) = New Setting("C4", CStr(SentSettings.C4))
+            ConvertSetting(20) = New Setting("C5", CStr(SentSettings.C5))
+            ConvertSetting(21) = New Setting("C6", CStr(SentSettings.C6))
+
+            ' For overridechecks, just make one long string with the value for each index in order
+            Dim OverrideList As String = ""
+
+            For Each CheckValue In SentSettings.OverrideChecks
+                OverrideList &= CheckValue & ","
+            Next
+            OverrideList = OverrideList.Substring(0, Len(OverrideList) - 1)
+            ConvertSetting(22) = New Setting("OverrideChecks", OverrideList)
+
+            Dim IgnoreItemsList As String = ""
+            For Each item In SentSettings.IgnoreRefinedItems
+                IgnoreItemsList &= item & ","
+            Next
+            IgnoreItemsList = IgnoreItemsList.Substring(0, Len(IgnoreItemsList) - 1)
+            ConvertSetting(23) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
+
+            Call WriteSettingsToFile(SettingsFolder, ConvertToOreSettingsFileName, ConvertSetting, ConvertToOreSettingsFileName)
+
+        Catch ex As Exception
+            MsgBox("An error occured when saving Conversion to Ore Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
+        End Try
+
+    End Sub
+
+    ' Returns the tab settings
+    Public Function GetConversiontoOreSettings(Belt As BeltType) As ConversionToOreSettings
+        Return ConversionToOreSetting
+    End Function
+
+    Private Function GetDefaultOverrideChecks() As Integer()
+        Dim ReturnList(28) As Integer
+        For i = 0 To 28
+            ReturnList(i) = DefaultOverrideValue
+        Next
+
+        Return ReturnList
+
+    End Function
+
+    Private Function GetDefaultIgnoreChecks() As Integer()
+        Dim ReturnList(14) As Integer
+        For i = 0 To 14
+            ReturnList(i) = DefaultIgnoreValue
+        Next
+
+        Return ReturnList
+
+    End Function
+
+#End Region
+
 #Region "Asset Window Settings"
 
     ' Loads the tab settings
@@ -4100,6 +4654,8 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
+            Case AssetWindow.Refinery
+                AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
         Try
@@ -4115,57 +4671,63 @@ Public Class ProgramSettings
                     .ItemFilterText = CStr(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "ItemFilterText", DefaultAssetItemTextFilter))
                     .AllItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllItems", DefaultAllItems))
                     .AllRawMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllRawMats", DefaultAssetItemChecks))
-                    .Minerals = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Minerals", DefaultAssetItemChecks))
-                    .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
+
+                    .AdvancedProtectiveTechnology = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedProtectiveTechnology", DefaultAssetItemChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Gas", DefaultAssetItemChecks))
+                    .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
+                    .MolecularForgingTools = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MolecularForgingTools", DefaultAssetItemChecks))
+                    .FactionMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FactionMaterials", DefaultAssetItemChecks))
+                    .NamedComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "NamedComponents", DefaultAssetItemChecks))
+                    .Minerals = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Minerals", DefaultAssetItemChecks))
+                    .Planetary = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
+                    .RawMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMaterials", DefaultAssetItemChecks))
+                    .Salvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
                     .Misc = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Misc", DefaultAssetItemChecks))
                     .BPCs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BPCs", False))
+
+                    .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedMoonMats", DefaultAssetItemChecks))
+                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BoosterMats", DefaultAssetItemChecks))
+                    .MolecularForgedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MolecularForgedMats", DefaultAssetItemChecks))
+                    .Polymers = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Polymers", DefaultAssetItemChecks))
+                    .ProcessedMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProcessedMoonMats", DefaultAssetItemChecks))
+                    .RawMoonMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMoonMats", DefaultAssetItemChecks))
+
                     .AncientRelics = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientRelics", DefaultAssetItemChecks))
-                    .AncientSalvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AncientSalvage", DefaultAssetItemChecks))
-                    .Salvage = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Salvage", DefaultAssetItemChecks))
-                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureRigs", DefaultAssetItemChecks))
-                    .StructureModules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureModules", DefaultAssetItemChecks))
-                    .Planetary = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Planetary", DefaultAssetItemChecks))
                     .Datacores = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Datacores", DefaultAssetItemChecks))
                     .Decryptors = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Decryptors", DefaultAssetItemChecks))
-                    .RawMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RawMats", DefaultAssetItemChecks))
-                    .ProcessedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProcessedMats", DefaultAssetItemChecks))
-                    .AdvancedMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedMats", DefaultAssetItemChecks))
-                    .MatsandCompounds = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "MatsandCompounds", DefaultAssetItemChecks))
-                    .DroneComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DroneComponents", DefaultAssetItemChecks))
-                    .BoosterMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "BoosterMats", DefaultAssetItemChecks))
-                    .Polymers = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Polymers", DefaultAssetItemChecks))
-                    .Asteroids = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Asteroids", DefaultAssetItemChecks))
+                    .RDB = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RDB", DefaultAssetItemChecks))
+
                     .AllManufacturedItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllManufacturedItems", DefaultAssetItemChecks))
+
                     .Ships = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Ships", DefaultAssetItemChecks))
+                    .Charges = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Charges", DefaultAssetItemChecks))
                     .Modules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Modules", DefaultAssetItemChecks))
                     .Drones = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Drones", DefaultAssetItemChecks))
-                    .Boosters = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Boosters", DefaultAssetItemChecks))
                     .Rigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Rigs", DefaultAssetItemChecks))
-                    .Charges = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Charges", DefaultAssetItemChecks))
                     .Subsystems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Subsystems", DefaultAssetItemChecks))
+                    .Deployables = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
+                    .Boosters = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Boosters", DefaultAssetItemChecks))
                     .Structures = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structures", DefaultAssetItemChecks))
-                    .Tools = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Tools", DefaultAssetItemChecks))
-                    .DataInterfaces = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "DataInterfaces", DefaultAssetItemChecks))
-                    .CapT2Components = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapT2Components", DefaultAssetItemChecks))
-                    .CapitalComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalComponents", DefaultAssetItemChecks))
-                    .Components = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Components", DefaultAssetItemChecks))
-                    .Hybrid = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Hybrid", DefaultAssetItemChecks))
-                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
+                    .StructureRigs = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureRigs", DefaultAssetItemChecks))
+                    .Celestials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Celestials", DefaultAssetItemChecks))
+                    .StructureModules = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "StructureModules", DefaultAssetItemChecks))
+                    .Implants = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
+
+                    .AdvancedCapComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedCapComponents", DefaultAssetItemChecks))
+                    .AdvancedComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedComponents", DefaultAssetItemChecks))
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "FuelBlocks", DefaultAssetItemChecks))
+                    .ProtectiveComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "ProtectiveComponents", DefaultAssetItemChecks))
+                    .RAM = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "RAM", DefaultAssetItemChecks))
+                    .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalShipComponents", DefaultAssetItemChecks))
+                    .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
+                    .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SubsystemComponents", DefaultAssetItemChecks))
+
                     .T1 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T1", DefaultAssetItemChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T2", DefaultAssetItemChecks))
                     .T3 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T3", DefaultAssetItemChecks))
                     .Faction = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Faction", DefaultAssetItemChecks))
                     .Pirate = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Pirate", DefaultAssetItemChecks))
                     .Storyline = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Storyline", DefaultAssetItemChecks))
-
-                    .Celestials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Celestials", DefaultAssetItemChecks))
-                    .Deployables = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Deployables", DefaultAssetItemChecks))
-                    .Implants = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Implants", DefaultAssetItemChecks))
-
-                    .AbyssalMaterials = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AbyssalMaterials", DefaultAssetItemChecks))
-
                 End With
 
             Else
@@ -4186,6 +4748,8 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = TempSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = TempSettings
+            Case AssetWindow.Refinery
+                AssetWindowsettingsRefinery = TempSettings
         End Select
 
         Return TempSettings
@@ -4194,7 +4758,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(52) As Setting
+        Dim AssetWindowSettingsList(54) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4204,66 +4768,68 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
+            Case AssetWindow.Refinery
+                AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
         Try
-            AssetWindowSettingsList(0) = New Setting("AllRawMats", CStr(ItemsSelected.AllRawMats))
-            AssetWindowSettingsList(1) = New Setting("Minerals", CStr(ItemsSelected.Minerals))
-            AssetWindowSettingsList(2) = New Setting("IceProducts", CStr(ItemsSelected.IceProducts))
-            AssetWindowSettingsList(3) = New Setting("Gas", CStr(ItemsSelected.Gas))
-            AssetWindowSettingsList(4) = New Setting("AncientRelics", CStr(ItemsSelected.AncientRelics))
-            AssetWindowSettingsList(5) = New Setting("AncientSalvage", CStr(ItemsSelected.AncientSalvage))
-            AssetWindowSettingsList(6) = New Setting("Salvage", CStr(ItemsSelected.Salvage))
-            AssetWindowSettingsList(7) = New Setting("StructureRigs", CStr(ItemsSelected.StructureRigs))
-            AssetWindowSettingsList(8) = New Setting("Planetary", CStr(ItemsSelected.Planetary))
-            AssetWindowSettingsList(9) = New Setting("Datacores", CStr(ItemsSelected.Datacores))
-            AssetWindowSettingsList(10) = New Setting("Decryptors", CStr(ItemsSelected.Decryptors))
-            AssetWindowSettingsList(11) = New Setting("RawMats", CStr(ItemsSelected.RawMats))
-            AssetWindowSettingsList(12) = New Setting("ProcessedMats", CStr(ItemsSelected.ProcessedMats))
-            AssetWindowSettingsList(13) = New Setting("AdvancedMats", CStr(ItemsSelected.AdvancedMats))
-            AssetWindowSettingsList(14) = New Setting("MatsandCompounds", CStr(ItemsSelected.MatsandCompounds))
-            AssetWindowSettingsList(15) = New Setting("DroneComponents", CStr(ItemsSelected.DroneComponents))
-            AssetWindowSettingsList(16) = New Setting("BoosterMats", CStr(ItemsSelected.BoosterMats))
-            AssetWindowSettingsList(17) = New Setting("Polymers", CStr(ItemsSelected.Polymers))
-            AssetWindowSettingsList(18) = New Setting("AllManufacturedItems", CStr(ItemsSelected.AllManufacturedItems))
-            AssetWindowSettingsList(19) = New Setting("Ships", CStr(ItemsSelected.Ships))
-            AssetWindowSettingsList(20) = New Setting("Modules", CStr(ItemsSelected.Modules))
-            AssetWindowSettingsList(21) = New Setting("Drones", CStr(ItemsSelected.Drones))
-            AssetWindowSettingsList(22) = New Setting("Boosters", CStr(ItemsSelected.Boosters))
-            AssetWindowSettingsList(23) = New Setting("Rigs", CStr(ItemsSelected.Rigs))
-            AssetWindowSettingsList(24) = New Setting("Charges", CStr(ItemsSelected.Charges))
-            AssetWindowSettingsList(25) = New Setting("Subsystems", CStr(ItemsSelected.Subsystems))
-            AssetWindowSettingsList(26) = New Setting("Structures", CStr(ItemsSelected.Structures))
-            AssetWindowSettingsList(27) = New Setting("Tools", CStr(ItemsSelected.Tools))
-            AssetWindowSettingsList(28) = New Setting("DataInterfaces", CStr(ItemsSelected.DataInterfaces))
-            AssetWindowSettingsList(29) = New Setting("CapT2Components", CStr(ItemsSelected.CapT2Components))
-            AssetWindowSettingsList(30) = New Setting("CapitalComponents", CStr(ItemsSelected.CapitalComponents))
-            AssetWindowSettingsList(31) = New Setting("Components", CStr(ItemsSelected.Components))
-            AssetWindowSettingsList(32) = New Setting("Hybrid", CStr(ItemsSelected.Hybrid))
-            AssetWindowSettingsList(33) = New Setting("FuelBlocks", CStr(ItemsSelected.FuelBlocks))
-            AssetWindowSettingsList(34) = New Setting("T1", CStr(ItemsSelected.T1))
-            AssetWindowSettingsList(35) = New Setting("T2", CStr(ItemsSelected.T2))
-            AssetWindowSettingsList(36) = New Setting("T3", CStr(ItemsSelected.T3))
-            AssetWindowSettingsList(37) = New Setting("Faction", CStr(ItemsSelected.Faction))
-            AssetWindowSettingsList(38) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
-            AssetWindowSettingsList(39) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
-            AssetWindowSettingsList(40) = New Setting("Asteroids", CStr(ItemsSelected.Asteroids))
-            AssetWindowSettingsList(41) = New Setting("Misc", CStr(ItemsSelected.Misc))
-            AssetWindowSettingsList(42) = New Setting("ItemFilterText", CStr(ItemsSelected.ItemFilterText))
-            AssetWindowSettingsList(43) = New Setting("AllItems", CStr(ItemsSelected.AllItems))
-
             ' Main window
-            AssetWindowSettingsList(44) = New Setting("AssetType", CStr(ItemsSelected.AssetType))
-            AssetWindowSettingsList(45) = New Setting("SortbyName", CStr(ItemsSelected.SortbyName))
+            AssetWindowSettingsList(0) = New Setting("AssetType", CStr(ItemsSelected.AssetType))
+            AssetWindowSettingsList(1) = New Setting("SortbyName", CStr(ItemsSelected.SortbyName))
+            AssetWindowSettingsList(2) = New Setting("ItemFilterText", CStr(ItemsSelected.ItemFilterText))
+            AssetWindowSettingsList(3) = New Setting("AllItems", CStr(ItemsSelected.AllItems))
 
-            AssetWindowSettingsList(46) = New Setting("Celestials", CStr(ItemsSelected.Celestials))
-            AssetWindowSettingsList(47) = New Setting("Deployables", CStr(ItemsSelected.Deployables))
-            AssetWindowSettingsList(48) = New Setting("Implants", CStr(ItemsSelected.Implants))
-            AssetWindowSettingsList(49) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
-            AssetWindowSettingsList(50) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
-            AssetWindowSettingsList(51) = New Setting("AbyssalMaterials", CStr(ItemsSelected.AbyssalMaterials))
-
-            AssetWindowSettingsList(52) = New Setting("StructureComponents", CStr(ItemsSelected.StructureComponents))
+            AssetWindowSettingsList(4) = New Setting("AllRawMats", CStr(ItemsSelected.AllRawMats))
+            AssetWindowSettingsList(5) = New Setting("AdvancedProtectiveTechnology", CStr(ItemsSelected.AdvancedProtectiveTechnology))
+            AssetWindowSettingsList(6) = New Setting("Gas", CStr(ItemsSelected.Gas))
+            AssetWindowSettingsList(7) = New Setting("IceProducts", CStr(ItemsSelected.IceProducts))
+            AssetWindowSettingsList(8) = New Setting("MolecularForgingTools", CStr(ItemsSelected.MolecularForgingTools))
+            AssetWindowSettingsList(9) = New Setting("FactionMaterials", CStr(ItemsSelected.FactionMaterials))
+            AssetWindowSettingsList(10) = New Setting("NamedComponents", CStr(ItemsSelected.NamedComponents))
+            AssetWindowSettingsList(11) = New Setting("Minerals", CStr(ItemsSelected.Minerals))
+            AssetWindowSettingsList(12) = New Setting("Planetary", CStr(ItemsSelected.Planetary))
+            AssetWindowSettingsList(13) = New Setting("RawMaterials", CStr(ItemsSelected.RawMaterials))
+            AssetWindowSettingsList(14) = New Setting("Salvage", CStr(ItemsSelected.Salvage))
+            AssetWindowSettingsList(15) = New Setting("Misc", CStr(ItemsSelected.Misc))
+            AssetWindowSettingsList(16) = New Setting("BPCs", CStr(ItemsSelected.BPCs))
+            AssetWindowSettingsList(17) = New Setting("AdvancedMoonMats", CStr(ItemsSelected.AdvancedMoonMats))
+            AssetWindowSettingsList(18) = New Setting("BoosterMats", CStr(ItemsSelected.BoosterMats))
+            AssetWindowSettingsList(19) = New Setting("MolecularForgedMats", CStr(ItemsSelected.MolecularForgedMats))
+            AssetWindowSettingsList(20) = New Setting("Polymers", CStr(ItemsSelected.Polymers))
+            AssetWindowSettingsList(21) = New Setting("ProcessedMoonMats", CStr(ItemsSelected.ProcessedMoonMats))
+            AssetWindowSettingsList(22) = New Setting("RawMoonMats", CStr(ItemsSelected.RawMoonMats))
+            AssetWindowSettingsList(23) = New Setting("AncientRelics", CStr(ItemsSelected.AncientRelics))
+            AssetWindowSettingsList(24) = New Setting("Datacores", CStr(ItemsSelected.Datacores))
+            AssetWindowSettingsList(25) = New Setting("Decryptors", CStr(ItemsSelected.Decryptors))
+            AssetWindowSettingsList(26) = New Setting("RDB", CStr(ItemsSelected.RDB))
+            AssetWindowSettingsList(27) = New Setting("AllManufacturedItems", CStr(ItemsSelected.AllManufacturedItems))
+            AssetWindowSettingsList(28) = New Setting("Ships", CStr(ItemsSelected.Ships))
+            AssetWindowSettingsList(29) = New Setting("Charges", CStr(ItemsSelected.Charges))
+            AssetWindowSettingsList(30) = New Setting("Modules", CStr(ItemsSelected.Modules))
+            AssetWindowSettingsList(31) = New Setting("Drones", CStr(ItemsSelected.Drones))
+            AssetWindowSettingsList(32) = New Setting("Rigs", CStr(ItemsSelected.Rigs))
+            AssetWindowSettingsList(33) = New Setting("Subsystems", CStr(ItemsSelected.Subsystems))
+            AssetWindowSettingsList(34) = New Setting("Deployables", CStr(ItemsSelected.Deployables))
+            AssetWindowSettingsList(35) = New Setting("Boosters", CStr(ItemsSelected.Boosters))
+            AssetWindowSettingsList(36) = New Setting("Structures", CStr(ItemsSelected.Structures))
+            AssetWindowSettingsList(37) = New Setting("StructureRigs", CStr(ItemsSelected.StructureRigs))
+            AssetWindowSettingsList(38) = New Setting("Celestials", CStr(ItemsSelected.Celestials))
+            AssetWindowSettingsList(39) = New Setting("StructureModules", CStr(ItemsSelected.StructureModules))
+            AssetWindowSettingsList(40) = New Setting("Implants", CStr(ItemsSelected.Implants))
+            AssetWindowSettingsList(41) = New Setting("AdvancedCapComponents", CStr(ItemsSelected.AdvancedCapComponents))
+            AssetWindowSettingsList(42) = New Setting("AdvancedComponents", CStr(ItemsSelected.AdvancedComponents))
+            AssetWindowSettingsList(43) = New Setting("FuelBlocks", CStr(ItemsSelected.FuelBlocks))
+            AssetWindowSettingsList(44) = New Setting("ProtectiveComponents", CStr(ItemsSelected.ProtectiveComponents))
+            AssetWindowSettingsList(45) = New Setting("RAM", CStr(ItemsSelected.RAM))
+            AssetWindowSettingsList(46) = New Setting("CapitalShipComponents", CStr(ItemsSelected.CapitalShipComponents))
+            AssetWindowSettingsList(47) = New Setting("StructureComponents", CStr(ItemsSelected.StructureComponents))
+            AssetWindowSettingsList(48) = New Setting("SubsystemComponents", CStr(ItemsSelected.SubsystemComponents))
+            AssetWindowSettingsList(49) = New Setting("T1", CStr(ItemsSelected.T1))
+            AssetWindowSettingsList(50) = New Setting("T2", CStr(ItemsSelected.T2))
+            AssetWindowSettingsList(51) = New Setting("T3", CStr(ItemsSelected.T3))
+            AssetWindowSettingsList(52) = New Setting("Faction", CStr(ItemsSelected.Faction))
+            AssetWindowSettingsList(53) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
+            AssetWindowSettingsList(54) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4281,6 +4847,8 @@ Public Class ProgramSettings
                 Return AssetWindowSettingsManufacturingTab
             Case AssetWindow.ShoppingList
                 Return AssetWindowSettingsShoppingList
+            Case AssetWindow.Refinery
+                Return AssetWindowsettingsRefinery
             Case Else
                 Return Nothing
         End Select
@@ -4293,58 +4861,60 @@ Public Class ProgramSettings
         With LocalSettings
             .AssetType = DefaultAssetType
             .SortbyName = DefaultAssetSortbyName
-
             .ItemFilterText = DefaultAssetItemTextFilter
             .AllItems = DefaultAllItems
             .AllRawMats = DefaultAssetItemChecks
-            .Minerals = DefaultAssetItemChecks
-            .IceProducts = DefaultAssetItemChecks
+            .AdvancedProtectiveTechnology = DefaultAssetItemChecks
             .Gas = DefaultAssetItemChecks
-            .AbyssalMaterials = DefaultAssetItemChecks
+            .IceProducts = DefaultAssetItemChecks
+            .MolecularForgingTools = DefaultAssetItemChecks
+            .FactionMaterials = DefaultAssetItemChecks
+            .NamedComponents = DefaultAssetItemChecks
+            .Minerals = DefaultAssetItemChecks
+            .Planetary = DefaultAssetItemChecks
+            .RawMaterials = DefaultAssetItemChecks
+            .Salvage = DefaultAssetItemChecks
             .Misc = DefaultAssetItemChecks
             .BPCs = DefaultAssetItemChecks
+            .AdvancedMoonMats = DefaultAssetItemChecks
+            .BoosterMats = DefaultAssetItemChecks
+            .MolecularForgedMats = DefaultAssetItemChecks
+            .Polymers = DefaultAssetItemChecks
+            .ProcessedMoonMats = DefaultAssetItemChecks
+            .RawMoonMats = DefaultAssetItemChecks
             .AncientRelics = DefaultAssetItemChecks
-            .AncientSalvage = DefaultAssetItemChecks
-            .Salvage = DefaultAssetItemChecks
-            .StructureRigs = DefaultAssetItemChecks
-            .StructureModules = DefaultAssetItemChecks
-            .Planetary = DefaultAssetItemChecks
             .Datacores = DefaultAssetItemChecks
             .Decryptors = DefaultAssetItemChecks
-            .RawMats = DefaultAssetItemChecks
-            .ProcessedMats = DefaultAssetItemChecks
-            .AdvancedMats = DefaultAssetItemChecks
-            .MatsandCompounds = DefaultAssetItemChecks
-            .DroneComponents = DefaultAssetItemChecks
-            .BoosterMats = DefaultAssetItemChecks
-            .Polymers = DefaultAssetItemChecks
-            .Asteroids = DefaultAssetItemChecks
+            .RDB = DefaultAssetItemChecks
             .AllManufacturedItems = DefaultAssetItemChecks
             .Ships = DefaultAssetItemChecks
+            .Charges = DefaultAssetItemChecks
             .Modules = DefaultAssetItemChecks
             .Drones = DefaultAssetItemChecks
-            .Boosters = DefaultAssetItemChecks
             .Rigs = DefaultAssetItemChecks
-            .Charges = DefaultAssetItemChecks
             .Subsystems = DefaultAssetItemChecks
+            .Deployables = DefaultAssetItemChecks
+            .Boosters = DefaultAssetItemChecks
             .Structures = DefaultAssetItemChecks
-            .Tools = DefaultAssetItemChecks
-            .DataInterfaces = DefaultAssetItemChecks
-            .CapT2Components = DefaultAssetItemChecks
-            .CapitalComponents = DefaultAssetItemChecks
-            .Components = DefaultAssetItemChecks
-            .Hybrid = DefaultAssetItemChecks
-            .StructureComponents = DefaultAssetItemChecks
+            .StructureRigs = DefaultAssetItemChecks
+            .Celestials = DefaultAssetItemChecks
+            .StructureModules = DefaultAssetItemChecks
+            .Implants = DefaultAssetItemChecks
+            .AdvancedCapComponents = DefaultAssetItemChecks
+            .AdvancedComponents = DefaultAssetItemChecks
             .FuelBlocks = DefaultAssetItemChecks
+            .ProtectiveComponents = DefaultAssetItemChecks
+            .RAM = DefaultAssetItemChecks
+            .CapitalShipComponents = DefaultAssetItemChecks
+            .StructureComponents = DefaultAssetItemChecks
+            .SubsystemComponents = DefaultAssetItemChecks
             .T1 = DefaultAssetItemChecks
             .T2 = DefaultAssetItemChecks
             .T3 = DefaultAssetItemChecks
             .Faction = DefaultAssetItemChecks
             .Pirate = DefaultAssetItemChecks
             .Storyline = DefaultAssetItemChecks
-            .Celestials = DefaultAssetItemChecks
-            .Deployables = DefaultAssetItemChecks
-            .Implants = DefaultAssetItemChecks
+
         End With
 
         ' Save locally - Will have more than one
@@ -4353,128 +4923,12 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = LocalSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = LocalSettings
+            Case AssetWindow.Refinery
+                AssetWindowsettingsRefinery = LocalSettings
         End Select
 
         Return LocalSettings
 
-    End Function
-
-#End Region
-
-#Region "LP Store Settings"
-
-    ' Loads the tab settings
-    Public Function LoadLPStoreSettings() As LPStore
-        Dim TempSettings As LPStore = Nothing
-
-        Try
-
-            If FileExists(SettingsFolder, LPStoreSettingsFileName) Then
-                'Get the settings
-                With TempSettings
-                    .RewardType = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "RewardType", DefaultLPRewardType))
-                    .CheckAgentLevel1 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel1", DefaultLPCheckAgentLevel1))
-                    .CheckAgentLevel2 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel2", DefaultLPCheckAgentLevel2))
-                    .CheckAgentLevel3 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel3", DefaultLPCheckAgentLevel3))
-                    .CheckAgentLevel4 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel4", DefaultLPCheckAgentLevel4))
-                    .CheckAgentLevel5 = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "CheckAgentLevel5", DefaultLPCheckAgentLevel5))
-                    .TextItemSearch = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "TextItemSearch", DefaultLPTextItemSearch))
-                    .LPCostLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostLessThan", DefaultLPLPCostLessThan))
-                    .LPCostGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "LPCostGreaterThan", DefaultLPLPCostGreaterThan))
-                    .ISKCostLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostLessThan", DefaultLPISKCostLessThan))
-                    .ISKCostGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "ISKCostGreaterThan", DefaultLPISKCostGreaterThan))
-                    .StandingLessThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingLessThan", DefaultLPStandingLessThan))
-                    .StandingGreaterThan = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "StandingGreaterThan", DefaultLPStandingGreaterThan))
-                    .SearchOption = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SearchOption", DefaultLPSearchOption))
-                    .HighlightCheck = CBool(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeBoolean, LPStoreSettingsFileName, "HighlightCheck", DefaultLPHighlightCheck))
-                    .SelectedCorporations = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SelectedCorporations", DefaultLPSelectedCorporations))
-                    .SortByOption = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "SortByOption", DefaultLPSortByOption))
-                    .CorpFilter = CStr(GetSettingValue(SettingsFolder, LPStoreSettingsFileName, SettingTypes.TypeString, LPStoreSettingsFileName, "CorpFilter", DefaultLPCorpFilter))
-                End With
-
-            Else
-                ' Load defaults 
-                TempSettings = SetDefaultLPStoreSettings()
-            End If
-
-        Catch ex As Exception
-            MsgBox("An error occured when loading LPStore Settings. Error: " & Err.Description & vbCrLf & "Default settings were loaded.", vbExclamation, Application.ProductName)
-            ' Load defaults 
-            TempSettings = SetDefaultLPStoreSettings()
-        End Try
-
-        ' Save them locally and then export
-        LPStoreSettings = TempSettings
-
-        Return TempSettings
-
-    End Function
-
-    Public Function SetDefaultLPStoreSettings() As LPStore
-        Dim LocalSettings As LPStore
-
-        With LocalSettings
-            .RewardType = DefaultLPRewardType
-            .CorpFilter = DefaultLPCorpFilter
-            .CheckAgentLevel1 = DefaultLPCheckAgentLevel1
-            .CheckAgentLevel2 = DefaultLPCheckAgentLevel2
-            .CheckAgentLevel3 = DefaultLPCheckAgentLevel3
-            .CheckAgentLevel4 = DefaultLPCheckAgentLevel4
-            .CheckAgentLevel5 = DefaultLPCheckAgentLevel5
-            .TextItemSearch = DefaultLPTextItemSearch
-            .LPCostLessThan = DefaultLPLPCostLessThan
-            .LPCostGreaterThan = DefaultLPLPCostGreaterThan
-            .ISKCostLessThan = DefaultLPISKCostLessThan
-            .ISKCostGreaterThan = DefaultLPISKCostGreaterThan
-            .StandingLessThan = DefaultLPStandingLessThan
-            .StandingGreaterThan = DefaultLPStandingGreaterThan
-            .SearchOption = DefaultLPSearchOption
-            .HighlightCheck = DefaultLPHighlightCheck
-            .SelectedCorporations = DefaultLPSelectedCorporations
-            .SortByOption = DefaultLPSortByOption
-        End With
-
-        ' Save locally
-        LPStoreSettings = LocalSettings
-        Return LocalSettings
-
-    End Function
-
-    ' Saves the tab settings to XML
-    Public Sub SaveLPStoreSettings(SentSettings As LPStore)
-        Dim LPStoreSettingsList(17) As Setting
-
-        Try
-            LPStoreSettingsList(0) = New Setting("RewardType", CStr(SentSettings.RewardType))
-            LPStoreSettingsList(1) = New Setting("CheckAgentLevel1", CStr(SentSettings.CheckAgentLevel1))
-            LPStoreSettingsList(2) = New Setting("CheckAgentLevel2", CStr(SentSettings.CheckAgentLevel2))
-            LPStoreSettingsList(3) = New Setting("CheckAgentLevel3", CStr(SentSettings.CheckAgentLevel3))
-            LPStoreSettingsList(4) = New Setting("CheckAgentLevel4", CStr(SentSettings.CheckAgentLevel4))
-            LPStoreSettingsList(5) = New Setting("CheckAgentLevel5", CStr(SentSettings.CheckAgentLevel5))
-            LPStoreSettingsList(6) = New Setting("TextItemSearch", CStr(SentSettings.TextItemSearch))
-            LPStoreSettingsList(7) = New Setting("LPCostLessThan", CStr(SentSettings.LPCostLessThan))
-            LPStoreSettingsList(8) = New Setting("LPCostGreaterThan", CStr(SentSettings.LPCostGreaterThan))
-            LPStoreSettingsList(9) = New Setting("ISKCostLessThan", CStr(SentSettings.ISKCostLessThan))
-            LPStoreSettingsList(10) = New Setting("ISKCostGreaterThan", CStr(SentSettings.ISKCostGreaterThan))
-            LPStoreSettingsList(11) = New Setting("StandingLessThan", CStr(SentSettings.StandingLessThan))
-            LPStoreSettingsList(12) = New Setting("StandingGreaterThan", CStr(SentSettings.StandingGreaterThan))
-            LPStoreSettingsList(13) = New Setting("SearchOption", CStr(SentSettings.SearchOption))
-            LPStoreSettingsList(14) = New Setting("HighlightCheck", CStr(SentSettings.HighlightCheck))
-            LPStoreSettingsList(15) = New Setting("SelectedCorporations", CStr(SentSettings.SelectedCorporations))
-            LPStoreSettingsList(16) = New Setting("SortByOption", CStr(SentSettings.SortByOption))
-            LPStoreSettingsList(17) = New Setting("CorpFilter", CStr(SentSettings.CorpFilter))
-
-            Call WriteSettingsToFile(SettingsFolder, LPStoreSettingsFileName, LPStoreSettingsList, LPStoreSettingsFileName)
-
-        Catch ex As Exception
-            MsgBox("An error occured when saving LP Store Tab Settings. Error: " & Err.Description & vbCrLf & "Settings not saved.", vbExclamation, Application.ProductName)
-        End Try
-
-    End Sub
-
-    ' Returns the tab settings
-    Public Function GetLPStoreSettings() As LPStore
-        Return LPStoreSettings
     End Function
 
 #End Region
@@ -4898,11 +5352,15 @@ Public Structure ApplicationSettings
     Dim CheckBuildBuy As Boolean ' Default for setting the check box for build/buy on the blueprints screen
     Dim SuggestBuildBPNotOwned As Boolean ' For Build/Buy suggestions
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
+    Dim AlwaysBuyFuelBlocks As Boolean ' Forces build/buy to always buy fuel blocks instead of making a decision
+    Dim AlwaysBuyRAMs As Boolean ' Forces build/buy to always buy RAMs instead of making a decision
 
     Dim DisableSVR As Boolean ' For disabling SVR updates
     Dim DisableGATracking As Boolean ' for disabling tracking app usage through Google Analytics
 
     Dim ShareSavedFacilities As Boolean ' to use the same facility everywhere
+
+    Dim RefineDrillDown As Boolean ' This is only on the refinery but since it's the only setting there, I'll just save it with application settings
 
     ' Character options
     Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
@@ -5014,49 +5472,56 @@ End Structure
 ' For Update Price Settings
 Public Structure UpdatePriceTabSettings
     Dim AllRawMats As Boolean
-    Dim Minerals As Boolean
-    Dim IceProducts As Boolean
+
+    Dim AdvancedProtectiveTechnology As Boolean
     Dim Gas As Boolean
-    Dim AbyssalMaterials As Boolean
-    Dim MolecularForgedMaterials As Boolean
-    Dim BPCs As Boolean
-    Dim Misc As Boolean
-    Dim AncientRelics As Boolean
-    Dim AncientSalvage As Boolean
-    Dim Salvage As Boolean
+    Dim IceProducts As Boolean
+    Dim MolecularForgingTools As Boolean
+    Dim FactionMaterials As Boolean
+    Dim NamedComponents As Boolean
+    Dim Minerals As Boolean
     Dim Planetary As Boolean
+    Dim RawMaterials As Boolean
+    Dim Salvage As Boolean
+    Dim Misc As Boolean
+    Dim BPCs As Boolean
+
+    Dim AdvancedMoonMats As Boolean
+    Dim BoosterMats As Boolean
+    Dim MolecularForgedMats As Boolean
+    Dim Polymers As Boolean
+    Dim ProcessedMoonMats As Boolean
+    Dim RawMoonMats As Boolean
+
+    Dim AncientRelics As Boolean
     Dim Datacores As Boolean
     Dim Decryptors As Boolean
-    Dim RawMats As Boolean
-    Dim ProcessedMats As Boolean
-    Dim AdvancedMats As Boolean
-    Dim MatsandCompounds As Boolean
-    Dim DroneComponents As Boolean
-    Dim BoosterMats As Boolean
-    Dim Polymers As Boolean
-    Dim Asteroids As Boolean
+    Dim RDB As Boolean
 
     Dim AllManufacturedItems As Boolean
+
     Dim Ships As Boolean
     Dim Charges As Boolean
     Dim Modules As Boolean
     Dim Drones As Boolean
     Dim Rigs As Boolean
-    Dim Deployables As Boolean
     Dim Subsystems As Boolean
+    Dim Deployables As Boolean
     Dim Boosters As Boolean
     Dim Structures As Boolean
+    Dim StructureRigs As Boolean
     Dim Celestials As Boolean
-    Dim StationComponents As Boolean
     Dim StructureModules As Boolean
-    Dim Tools As Boolean
-    Dim FuelBlocks As Boolean
     Dim Implants As Boolean
-    Dim CapT2Components As Boolean
-    Dim CapitalComponents As Boolean
-    Dim Components As Boolean
-    Dim Hybrid As Boolean
+
+    Dim AdvancedCapComponents As Boolean
+    Dim AdvancedComponents As Boolean
+    Dim FuelBlocks As Boolean
+    Dim ProtectiveComponents As Boolean
+    Dim RAM As Boolean
+    Dim CapitalShipComponents As Boolean
     Dim StructureComponents As Boolean
+    Dim SubsystemComponents As Boolean
 
     Dim T1 As Boolean
     Dim T2 As Boolean
@@ -5065,7 +5530,7 @@ Public Structure UpdatePriceTabSettings
     Dim Pirate As Boolean
     Dim Storyline As Boolean
 
-    Dim SelectedRegions As List(Of String) ' Could have several
+    Dim SelectedRegion As String
     Dim SelectedSystem As String
 
     ' The default price profile settings
@@ -5245,33 +5710,6 @@ Public Structure DataCoreTabSettings
 
 End Structure
 
-' For Reaction Tab Settings
-Public Structure ReactionsTabSettings
-    Dim POSFuelCost As Double
-    Dim NumberofPOS As Integer
-
-    Dim CheckTaxes As Boolean
-    Dim CheckFees As Boolean
-
-    Dim CheckAdvMoonMats As Boolean
-    Dim CheckProcessedMoonMats As Boolean
-    Dim CheckHybrid As Boolean
-    Dim CheckComplexBio As Boolean
-    Dim CheckSimpleBio As Boolean
-
-    Dim CheckBuildBasic As Boolean
-    Dim CheckIgnoreMarket As Boolean
-    Dim CheckRefine As Boolean
-
-    Dim RefineryEfficiency As Double
-    Dim RefineryTax As Double
-    Dim RefineryStanding As Double
-
-    Dim ColumnSort As Integer
-    Dim ColumnSortType As String
-
-End Structure
-
 ' For Mining Settings
 Public Structure MiningTabSettings
     Dim OreType As String ' Ore or Ice
@@ -5299,12 +5737,6 @@ Public Structure MiningTabSettings
     Dim CheckIncludeTaxes As Boolean
     Dim BrokerFeeRate As Double
 
-    Dim CheckIncludeJumpFuelCosts As Boolean
-    Dim TotalJumpFuelCost As Double
-    Dim TotalJumpFuelM3 As Double
-    Dim JumpCompressedOre As Boolean
-    Dim JumpMinerals As Boolean
-
     Dim OreMiningShip As String
     Dim IceMiningShip As String
     Dim GasMiningShip As String
@@ -5323,6 +5755,34 @@ Public Structure MiningTabSettings
     Dim OreImplant As String
     Dim IceImplant As String
     Dim GasImplant As String
+    Dim ShipDroneRig1 As String
+    Dim ShipDroneRig2 As String
+    Dim ShipDroneRig3 As String
+    Dim ShipIceDroneRig1 As String
+    Dim ShipIceDroneRig2 As String
+    Dim ShipIceDroneRig3 As String
+
+    Dim MiningDrone As String
+    Dim NumMiningDrones As String
+    Dim IceMiningDrone As String
+    Dim NumIceMiningDrones As String
+    Dim DroneOpSkill As String
+    Dim DroneSpecSkill As String
+    Dim DroneInterfaceSkill As String
+    Dim IceDroneOpSkill As String
+    Dim IceDroneSpecSkill As String
+    Dim IceDroneInterfaceSkill As String
+
+    Dim BoosterMiningDrone As String
+    Dim BoosterNumMiningDrones As String
+    Dim BoosterIceMiningDrone As String
+    Dim BoosterNumIceMiningDrones As String
+    Dim BoosterDroneOpSkill As String
+    Dim BoosterDroneSpecSkill As String
+    Dim BoosterDroneInterfaceSkill As String
+    Dim BoosterIceDroneOpSkill As String
+    Dim BoosterIceDroneSpecSkill As String
+    Dim BoosterIceDroneInterfaceSkill As String
 
     Dim MichiiImplant As Boolean
     Dim T2Crystals As Boolean
@@ -5340,23 +5800,22 @@ Public Structure MiningTabSettings
     Dim CheckMineForemanLaserOpBoost As Integer ' 0,1,2
     Dim CheckMineForemanLaserRangeBoost As Integer '0,1,2
     Dim CheckMiningForemanMindLink As Boolean
+    Dim BoosterUseDrones As Boolean
+    Dim BoosterDroneRig1 As Integer
+    Dim BoosterDroneRig2 As Integer
+    Dim BoosterDroneRig3 As Integer
+    Dim BoosterIceDroneRig1 As Integer
+    Dim BoosterIceDroneRig2 As Integer
+    Dim BoosterIceDroneRig3 As Integer
 
     Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer
 
-    Dim MiningDroneM3perHour As Double
     Dim NumberofMiners As Integer
 
     Dim RefinedOre As Boolean
     Dim UnrefinedOre As Boolean
     Dim CompressedOre As Boolean
-
-    Dim MercoxitMiningRig As Boolean
-    Dim IceMiningRig As Boolean
-
-    Dim RefiningEfficiency As Double
-    Dim RefiningTax As Double
-    Dim RefineCorpStanding As Double
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
@@ -5461,6 +5920,7 @@ Public Structure ManufacturingTabColumnSettings
     Dim CurrentBuyOrders As Integer
     Dim ItemsinProduction As Integer
     Dim ItemsinStock As Integer
+    Dim MaterialCost As Integer
     Dim TotalCost As Integer
     Dim BaseJobCost As Integer
     Dim NumBPs As Integer
@@ -5469,6 +5929,8 @@ Public Structure ManufacturingTabColumnSettings
     Dim Race As Integer
     Dim VolumeperItem As Integer
     Dim TotalVolume As Integer
+    Dim SellExcess As Integer
+    Dim ROI As Integer
     Dim PortionSize As Integer
     Dim ManufacturingJobFee As Integer
     Dim ManufacturingFacilityName As Integer
@@ -5525,6 +5987,14 @@ Public Structure ManufacturingTabColumnSettings
     Dim ReactionFacilityTEBonus As Integer
     Dim ReactionFacilityUsage As Integer
     Dim ReactionFacilityFWSystemLevel As Integer
+    Dim ReprocessingFacilityName As Integer
+    Dim ReprocessingFacilitySystem As Integer
+    Dim ReprocessingFacilityRegion As Integer
+    Dim ReprocessingFacilityTax As Integer
+    Dim ReprocessingFacilityUsage As Integer
+    Dim ReprocessingFacilityOreRefineRate As Integer
+    Dim ReprocessingFacilityIceRefineRate As Integer
+    Dim ReprocessingFacilityMoonRefineRate As Integer
 
     Dim ItemCategoryWidth As Integer
     Dim ItemGroupWidth As Integer
@@ -5561,6 +6031,7 @@ Public Structure ManufacturingTabColumnSettings
     Dim CurrentBuyOrdersWidth As Integer
     Dim ItemsinProductionWidth As Integer
     Dim ItemsinStockWidth As Integer
+    Dim MaterialCostWidth As Integer
     Dim TotalCostWidth As Integer
     Dim BaseJobCostWidth As Integer
     Dim NumBPsWidth As Integer
@@ -5569,6 +6040,8 @@ Public Structure ManufacturingTabColumnSettings
     Dim RaceWidth As Integer
     Dim VolumeperItemWidth As Integer
     Dim TotalVolumeWidth As Integer
+    Dim SellExcessWidth As Integer
+    Dim ROIWidth As Integer
     Dim PortionSizeWidth As Integer
     Dim ManufacturingJobFeeWidth As Integer
     Dim ManufacturingFacilityNameWidth As Integer
@@ -5625,6 +6098,14 @@ Public Structure ManufacturingTabColumnSettings
     Dim ReactionFacilityTEBonusWidth As Integer
     Dim ReactionFacilityUsageWidth As Integer
     Dim ReactionFacilityFWSystemLevelWidth As Integer
+    Dim ReprocessingFacilityNameWidth As Integer
+    Dim ReprocessingFacilitySystemWidth As Integer
+    Dim ReprocessingFacilityRegionWidth As Integer
+    Dim ReprocessingFacilityTaxWidth As Integer
+    Dim ReprocessingFacilityUsageWidth As Integer
+    Dim ReprocessingFacilityOreRefineRateWidth As Integer
+    Dim ReprocessingFacilityIceRefineRateWidth As Integer
+    Dim ReprocessingFacilityMoonRefineRateWidth As Integer
 
     Dim OrderByColumn As Integer ' What column index the jobs are sorted
     Dim OrderType As String ' Ascending or Descending
@@ -5642,11 +6123,6 @@ Public Structure IndustryFlipBeltSettings
     Dim IncludeTaxes As Boolean
     Dim BrokerFeeRate As Double
     Dim TrueSec As String
-
-    Dim RefiningEfficiency As Double
-    Dim RefineCorpStanding As Double
-    Dim RefiningTax As Double
-
 End Structure
 
 ' For the checked ore on each mining tab
@@ -5701,6 +6177,88 @@ Public Structure IndustryBeltOreChecks
     Dim VitreousMercoxit As Boolean
 End Structure
 
+' For Ice Flip Belt Settings
+Public Structure IceBeltFlipSettings
+    Dim CycleTime As Double
+    Dim m3perCycle As Double
+    Dim NumMiners As Integer
+    Dim CompressOre As Boolean
+    Dim IPHperMiner As Boolean
+    Dim IncludeTaxes As Boolean
+    Dim IncludeBrokerFees As Integer
+    Dim BrokerFeeRate As Double
+    Dim SystemSecurity As String
+    Dim Space As String
+End Structure
+
+' For the checked ore on each mining tab
+Public Structure IceBeltCheckSettings
+    Dim BlueIce As Boolean
+    Dim ClearIcicle As Boolean
+    Dim DarkGlitter As Boolean
+    Dim EnrichedClearIcicle As Boolean
+    Dim Gelidus As Boolean
+    Dim GlacialMass As Boolean
+    Dim GlareCrust As Boolean
+    Dim Krystallos As Boolean
+    Dim PristineWhiteGlaze As Boolean
+    Dim SmoothGlacialMass As Boolean
+    Dim ThickBlueIce As Boolean
+    Dim WhiteGlaze As Boolean
+
+    Dim CompressedBlueIce As Boolean
+    Dim CompressedClearIcicle As Boolean
+    Dim CompressedDarkGlitter As Boolean
+    Dim CompressedEnrichedClearIcicle As Boolean
+    Dim CompressedGelidus As Boolean
+    Dim CompressedGlacialMass As Boolean
+    Dim CompressedGlareCrust As Boolean
+    Dim CompressedKrystallos As Boolean
+    Dim CompressedPristineWhiteGlaze As Boolean
+    Dim CompressedSmoothGlacialMass As Boolean
+    Dim CompressedThickBlueIce As Boolean
+    Dim CompressedWhiteGlaze As Boolean
+
+End Structure
+
+' For Ice Flip Belt Settings
+Public Structure ConversionToOreSettings
+    Dim ConversionType As String
+    Dim MinimizeOn As String
+    Dim CompressedOre As Boolean
+    Dim CompressedIce As Boolean
+    Dim HighSec As Boolean
+    Dim LowSec As Boolean
+    Dim NullSec As Boolean
+    Dim OreVariant0 As Boolean
+    Dim OreVariant5 As Boolean
+    Dim OreVariant10 As Boolean
+    Dim Amarr As Boolean
+    Dim Caldari As Boolean
+    Dim Gallente As Boolean
+    Dim Minmatar As Boolean
+    Dim Wormhole As Boolean
+    Dim Triglavian As Boolean
+    Dim C1 As Boolean
+    Dim C2 As Boolean
+    Dim C3 As Boolean
+    Dim C4 As Boolean
+    Dim C5 As Boolean
+    Dim C6 As Boolean
+    ' List of 29 check boxes cooresponds to the checks on settings for override savings
+    Dim OverrideChecks() As Integer
+    Dim SelectedOres As List(Of OreType)
+    ' Names of all the item checks that they want to ignore in minerals/ice products to ores (meaning don't consider them in the conversion)
+    Dim IgnoreRefinedItems() As Integer
+    Dim IgnoreItems As List(Of String)
+
+End Structure
+
+Public Structure OreType
+    Dim OreName As String
+    Dim OreGroup As String ' Ice or Ore
+End Structure
+
 ' For Assets Selected Item Settings
 Public Structure AssetWindowSettings
 
@@ -5713,49 +6271,56 @@ Public Structure AssetWindowSettings
     Dim AllItems As Boolean
 
     Dim AllRawMats As Boolean
-    Dim Minerals As Boolean
-    Dim IceProducts As Boolean
+
+    Dim AdvancedProtectiveTechnology As Boolean
     Dim Gas As Boolean
-    Dim AbyssalMaterials As Boolean
+    Dim IceProducts As Boolean
+    Dim MolecularForgingTools As Boolean
+    Dim FactionMaterials As Boolean
+    Dim NamedComponents As Boolean
+    Dim Minerals As Boolean
+    Dim Planetary As Boolean
+    Dim RawMaterials As Boolean
+    Dim Salvage As Boolean
     Dim Misc As Boolean
     Dim BPCs As Boolean
+
+    Dim AdvancedMoonMats As Boolean
+    Dim BoosterMats As Boolean
+    Dim MolecularForgedMats As Boolean
+    Dim Polymers As Boolean
+    Dim ProcessedMoonMats As Boolean
+    Dim RawMoonMats As Boolean
+
     Dim AncientRelics As Boolean
-    Dim AncientSalvage As Boolean
-    Dim Salvage As Boolean
-    Dim Planetary As Boolean
     Dim Datacores As Boolean
     Dim Decryptors As Boolean
-    Dim RawMats As Boolean
-    Dim ProcessedMats As Boolean
-    Dim AdvancedMats As Boolean
-    Dim MatsandCompounds As Boolean
-    Dim DroneComponents As Boolean
-    Dim BoosterMats As Boolean
-    Dim Polymers As Boolean
-    Dim Asteroids As Boolean
+    Dim RDB As Boolean
 
     Dim AllManufacturedItems As Boolean
+
     Dim Ships As Boolean
+    Dim Charges As Boolean
     Dim Modules As Boolean
     Dim Drones As Boolean
-    Dim Boosters As Boolean
     Dim Rigs As Boolean
-    Dim Charges As Boolean
     Dim Subsystems As Boolean
-    Dim Structures As Boolean
-    Dim Tools As Boolean
-    Dim DataInterfaces As Boolean
-    Dim CapT2Components As Boolean
-    Dim CapitalComponents As Boolean
-    Dim Components As Boolean
-    Dim Hybrid As Boolean
-    Dim StructureComponents As Boolean
-    Dim FuelBlocks As Boolean
-    Dim StructureRigs As Boolean
-    Dim StructureModules As Boolean
-    Dim Celestials As Boolean
     Dim Deployables As Boolean
+    Dim Boosters As Boolean
+    Dim Structures As Boolean
+    Dim StructureRigs As Boolean
+    Dim Celestials As Boolean
+    Dim StructureModules As Boolean
     Dim Implants As Boolean
+
+    Dim AdvancedCapComponents As Boolean
+    Dim AdvancedComponents As Boolean
+    Dim FuelBlocks As Boolean
+    Dim ProtectiveComponents As Boolean
+    Dim RAM As Boolean
+    Dim CapitalShipComponents As Boolean
+    Dim StructureComponents As Boolean
+    Dim SubsystemComponents As Boolean
 
     Dim T1 As Boolean
     Dim T2 As Boolean
@@ -5796,35 +6361,6 @@ Public Structure BPViewerSettings
     Dim MediumCheck As Boolean
     Dim LargeCheck As Boolean
     Dim XLCheck As Boolean
-End Structure
-
-' Settings on LP Store form
-Public Structure LPStore
-    Dim RewardType As String
-    Dim CorpFilter As String
-
-    Dim CheckAgentLevel1 As Boolean
-    Dim CheckAgentLevel2 As Boolean
-    Dim CheckAgentLevel3 As Boolean
-    Dim CheckAgentLevel4 As Boolean
-    Dim CheckAgentLevel5 As Boolean
-
-    Dim TextItemSearch As String
-
-    Dim LPCostLessThan As String
-    Dim LPCostGreaterThan As String
-    Dim ISKCostLessThan As String
-    Dim ISKCostGreaterThan As String
-    Dim StandingLessThan As String
-    Dim StandingGreaterThan As String
-
-    Dim SearchOption As String
-    Dim SortByOption As String
-
-    Dim HighlightCheck As Boolean
-
-    Dim SelectedCorporations As String ' CSV string with all the corp names checked
-
 End Structure
 
 ' For Upwell Structures fitting window

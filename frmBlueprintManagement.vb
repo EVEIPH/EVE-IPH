@@ -967,8 +967,9 @@ Public Class frmBlueprintManagement
 
         ' Add not Ignored if checked
         If chkNotIgnored.Checked Then
+            TempClause = "IGNORE = 0 "
             If WhereClause = "" Then
-                WhereClause = "WHERE IGNORE = 0 "
+                WhereClause = "WHERE " & TempClause
             Else
                 WhereClause = WhereClause & "AND " & TempClause
             End If
@@ -1068,11 +1069,11 @@ Public Class frmBlueprintManagement
 
         ' See if they want BPOs, Copies, or Invented BPCs
         If rbtnOnlyBPO.Checked Then
-            Copies = " AND BP_TYPE = " & CStr(BPType.Original) & " " ' Only BPO's
+            Copies = " AND BP_TYPE IN (" & CStr(BPType.Original) & ",0) " ' Only BPO's
         ElseIf rbtnOnlyCopies.Checked Then
-            Copies = " AND BP_TYPE = " & CStr(BPType.Copy) & " " ' Only Copies
+            Copies = " AND BP_TYPE IN (" & CStr(BPType.Copy) & ",0) " ' Only Copies
         ElseIf rbtnOnlyInventedBPCs.Checked Then
-            Copies = " AND BP_TYPE = " & CStr(BPType.InventedBPC) & " " ' Only invented bpcs
+            Copies = " AND BP_TYPE IN (" & CStr(BPType.InventedBPC) & ",0) " ' Only invented bpcs
         End If
 
         SizesClause = ""

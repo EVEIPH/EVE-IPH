@@ -51,8 +51,9 @@ Partial Class frmShoppingList
         Me.btnSaveListToFile = New System.Windows.Forms.Button()
         Me.btnLoadListFromFile = New System.Windows.Forms.Button()
         Me.gbOptions = New System.Windows.Forms.GroupBox()
-        Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
+        Me.lblFeeRate = New System.Windows.Forms.Label()
         Me.chkBuyorBuyOrder = New System.Windows.Forms.CheckBox()
+        Me.txtBrokerFeeRate = New System.Windows.Forms.TextBox()
         Me.chkAlwaysOnTop = New System.Windows.Forms.CheckBox()
         Me.lblUsage = New System.Windows.Forms.Label()
         Me.chkUsage = New System.Windows.Forms.CheckBox()
@@ -65,6 +66,7 @@ Partial Class frmShoppingList
         Me.txtAddlCosts = New System.Windows.Forms.TextBox()
         Me.chkFees = New System.Windows.Forms.CheckBox()
         Me.lblAddlCosts = New System.Windows.Forms.Label()
+        Me.chkRebuildItemsfromList = New System.Windows.Forms.CheckBox()
         Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.SaveFileDialog = New System.Windows.Forms.SaveFileDialog()
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
@@ -83,8 +85,6 @@ Partial Class frmShoppingList
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
         Me.Button1 = New System.Windows.Forms.Button()
-        Me.txtBrokerFeeRate = New System.Windows.Forms.TextBox()
-        Me.lblFeeRate = New System.Windows.Forms.Label()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -337,15 +337,15 @@ Partial Class frmShoppingList
         Me.gbOptions.TabStop = False
         Me.gbOptions.Text = "Options:"
         '
-        'chkRebuildItemsfromList
+        'lblFeeRate
         '
-        Me.chkRebuildItemsfromList.AutoSize = True
-        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(562, 642)
-        Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
-        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(179, 17)
-        Me.chkRebuildItemsfromList.TabIndex = 79
-        Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
-        Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
+        Me.lblFeeRate.AutoSize = True
+        Me.lblFeeRate.Location = New System.Drawing.Point(189, 17)
+        Me.lblFeeRate.Name = "lblFeeRate"
+        Me.lblFeeRate.Size = New System.Drawing.Size(54, 13)
+        Me.lblFeeRate.TabIndex = 80
+        Me.lblFeeRate.Text = "Fee Rate:"
+        Me.lblFeeRate.TextAlign = System.Drawing.ContentAlignment.TopRight
         '
         'chkBuyorBuyOrder
         '
@@ -359,6 +359,15 @@ Partial Class frmShoppingList
         Me.chkBuyorBuyOrder.Text = "Calculate Buy Order / Buy Market"
         Me.chkBuyorBuyOrder.ThreeState = True
         Me.chkBuyorBuyOrder.UseVisualStyleBackColor = True
+        '
+        'txtBrokerFeeRate
+        '
+        Me.txtBrokerFeeRate.Location = New System.Drawing.Point(249, 13)
+        Me.txtBrokerFeeRate.Name = "txtBrokerFeeRate"
+        Me.txtBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
+        Me.txtBrokerFeeRate.TabIndex = 79
+        Me.txtBrokerFeeRate.TabStop = False
+        Me.txtBrokerFeeRate.Visible = False
         '
         'chkAlwaysOnTop
         '
@@ -490,6 +499,16 @@ Partial Class frmShoppingList
         Me.lblAddlCosts.Size = New System.Drawing.Size(62, 13)
         Me.lblAddlCosts.TabIndex = 16
         Me.lblAddlCosts.Text = "Add'l Costs:"
+        '
+        'chkRebuildItemsfromList
+        '
+        Me.chkRebuildItemsfromList.AutoSize = True
+        Me.chkRebuildItemsfromList.Location = New System.Drawing.Point(546, 641)
+        Me.chkRebuildItemsfromList.Name = "chkRebuildItemsfromList"
+        Me.chkRebuildItemsfromList.Size = New System.Drawing.Size(179, 17)
+        Me.chkRebuildItemsfromList.TabIndex = 79
+        Me.chkRebuildItemsfromList.Text = "Rebuild Items when Loading List"
+        Me.chkRebuildItemsfromList.UseVisualStyleBackColor = True
         '
         'btnSaveSettings
         '
@@ -657,25 +676,6 @@ Partial Class frmShoppingList
         Me.Button1.Text = "EVEpraisal Test"
         Me.Button1.UseVisualStyleBackColor = True
         Me.Button1.Visible = False
-        '
-        'txtBrokerFeeRate
-        '
-        Me.txtBrokerFeeRate.Location = New System.Drawing.Point(249, 13)
-        Me.txtBrokerFeeRate.Name = "txtBrokerFeeRate"
-        Me.txtBrokerFeeRate.Size = New System.Drawing.Size(48, 20)
-        Me.txtBrokerFeeRate.TabIndex = 79
-        Me.txtBrokerFeeRate.TabStop = False
-        Me.txtBrokerFeeRate.Visible = False
-        '
-        'lblFeeRate
-        '
-        Me.lblFeeRate.AutoSize = True
-        Me.lblFeeRate.Location = New System.Drawing.Point(189, 17)
-        Me.lblFeeRate.Name = "lblFeeRate"
-        Me.lblFeeRate.Size = New System.Drawing.Size(54, 13)
-        Me.lblFeeRate.TabIndex = 80
-        Me.lblFeeRate.Text = "Fee Rate:"
-        Me.lblFeeRate.TextAlign = System.Drawing.ContentAlignment.TopRight
         '
         'frmShoppingList
         '

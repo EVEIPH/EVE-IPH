@@ -73,70 +73,81 @@
             Call UpdateListCheck(.CurrentBuyOrders, 32)
             Call UpdateListCheck(.ItemsinProduction, 33)
             Call UpdateListCheck(.ItemsinStock, 34)
-            Call UpdateListCheck(.TotalCost, 35)
-            Call UpdateListCheck(.BaseJobCost, 36)
-            Call UpdateListCheck(.NumBPs, 37)
-            Call UpdateListCheck(.InventionChance, 38)
-            Call UpdateListCheck(.BPType, 39)
-            Call UpdateListCheck(.Race, 40)
-            Call UpdateListCheck(.VolumeperItem, 41)
-            Call UpdateListCheck(.TotalVolume, 42)
-            Call UpdateListCheck(.PortionSize, 43)
-            Call UpdateListCheck(.ManufacturingJobFee, 44)
-            Call UpdateListCheck(.ManufacturingFacilityName, 45)
-            Call UpdateListCheck(.ManufacturingFacilitySystem, 46)
-            Call UpdateListCheck(.ManufacturingFacilityRegion, 47)
-            Call UpdateListCheck(.ManufacturingFacilitySystemIndex, 48)
-            Call UpdateListCheck(.ManufacturingFacilityTax, 49)
-            Call UpdateListCheck(.ManufacturingFacilityMEBonus, 50)
-            Call UpdateListCheck(.ManufacturingFacilityTEBonus, 51)
-            Call UpdateListCheck(.ManufacturingFacilityUsage, 52)
-            Call UpdateListCheck(.ManufacturingFacilityFWSystemLevel, 53)
-            Call UpdateListCheck(.ComponentFacilityName, 54)
-            Call UpdateListCheck(.ComponentFacilitySystem, 55)
-            Call UpdateListCheck(.ComponentFacilityRegion, 56)
-            Call UpdateListCheck(.ComponentFacilitySystemIndex, 57)
-            Call UpdateListCheck(.ComponentFacilityTax, 58)
-            Call UpdateListCheck(.ComponentFacilityMEBonus, 59)
-            Call UpdateListCheck(.ComponentFacilityTEBonus, 60)
-            Call UpdateListCheck(.ComponentFacilityUsage, 61)
-            Call UpdateListCheck(.ComponentFacilityFWSystemLevel, 62)
-            Call UpdateListCheck(.CapComponentFacilityName, 63)
-            Call UpdateListCheck(.CapComponentFacilitySystem, 64)
-            Call UpdateListCheck(.CapComponentFacilityRegion, 65)
-            Call UpdateListCheck(.CapComponentFacilitySystemIndex, 66)
-            Call UpdateListCheck(.CapComponentFacilityTax, 67)
-            Call UpdateListCheck(.CapComponentFacilityMEBonus, 68)
-            Call UpdateListCheck(.CapComponentFacilityTEBonus, 69)
-            Call UpdateListCheck(.CapComponentFacilityUsage, 70)
-            Call UpdateListCheck(.CapComponentFacilityFWSystemLevel, 71)
-            Call UpdateListCheck(.CopyingFacilityName, 72)
-            Call UpdateListCheck(.CopyingFacilitySystem, 73)
-            Call UpdateListCheck(.CopyingFacilityRegion, 74)
-            Call UpdateListCheck(.CopyingFacilitySystemIndex, 75)
-            Call UpdateListCheck(.CopyingFacilityTax, 76)
-            Call UpdateListCheck(.CopyingFacilityMEBonus, 77)
-            Call UpdateListCheck(.CopyingFacilityTEBonus, 78)
-            Call UpdateListCheck(.CopyingFacilityUsage, 79)
-            Call UpdateListCheck(.CopyingFacilityFWSystemLevel, 80)
-            Call UpdateListCheck(.InventionFacilityName, 81)
-            Call UpdateListCheck(.InventionFacilitySystem, 82)
-            Call UpdateListCheck(.InventionFacilityRegion, 83)
-            Call UpdateListCheck(.InventionFacilitySystemIndex, 84)
-            Call UpdateListCheck(.InventionFacilityTax, 85)
-            Call UpdateListCheck(.InventionFacilityMEBonus, 86)
-            Call UpdateListCheck(.InventionFacilityTEBonus, 87)
-            Call UpdateListCheck(.InventionFacilityUsage, 88)
-            Call UpdateListCheck(.InventionFacilityFWSystemLevel, 89)
-            Call UpdateListCheck(.ReactionFacilityName, 90)
-            Call UpdateListCheck(.ReactionFacilitySystem, 91)
-            Call UpdateListCheck(.ReactionFacilityRegion, 92)
-            Call UpdateListCheck(.ReactionFacilitySystemIndex, 93)
-            Call UpdateListCheck(.ReactionFacilityTax, 94)
-            Call UpdateListCheck(.ReactionFacilityMEBonus, 95)
-            Call UpdateListCheck(.ReactionFacilityTEBonus, 96)
-            Call UpdateListCheck(.ReactionFacilityUsage, 97)
-            Call UpdateListCheck(.ReactionFacilityFWSystemLevel, 98)
+            Call UpdateListCheck(.MaterialCost, 35)
+            Call UpdateListCheck(.TotalCost, 36)
+            Call UpdateListCheck(.BaseJobCost, 37)
+            Call UpdateListCheck(.NumBPs, 38)
+            Call UpdateListCheck(.InventionChance, 39)
+            Call UpdateListCheck(.BPType, 40)
+            Call UpdateListCheck(.Race, 41)
+            Call UpdateListCheck(.VolumeperItem, 42)
+            Call UpdateListCheck(.TotalVolume, 43)
+            Call UpdateListCheck(.SellExcess, 44)
+            Call UpdateListCheck(.ROI, 45)
+            Call UpdateListCheck(.PortionSize, 46)
+            Call UpdateListCheck(.ManufacturingJobFee, 47)
+            Call UpdateListCheck(.ManufacturingFacilityName, 48)
+            Call UpdateListCheck(.ManufacturingFacilitySystem, 49)
+            Call UpdateListCheck(.ManufacturingFacilityRegion, 50)
+            Call UpdateListCheck(.ManufacturingFacilitySystemIndex, 51)
+            Call UpdateListCheck(.ManufacturingFacilityTax, 52)
+            Call UpdateListCheck(.ManufacturingFacilityMEBonus, 53)
+            Call UpdateListCheck(.ManufacturingFacilityTEBonus, 54)
+            Call UpdateListCheck(.ManufacturingFacilityUsage, 55)
+            Call UpdateListCheck(.ManufacturingFacilityFWSystemLevel, 56)
+            Call UpdateListCheck(.ComponentFacilityName, 57)
+            Call UpdateListCheck(.ComponentFacilitySystem, 58)
+            Call UpdateListCheck(.ComponentFacilityRegion, 59)
+            Call UpdateListCheck(.ComponentFacilitySystemIndex, 60)
+            Call UpdateListCheck(.ComponentFacilityTax, 61)
+            Call UpdateListCheck(.ComponentFacilityMEBonus, 62)
+            Call UpdateListCheck(.ComponentFacilityTEBonus, 63)
+            Call UpdateListCheck(.ComponentFacilityUsage, 64)
+            Call UpdateListCheck(.ComponentFacilityFWSystemLevel, 65)
+            Call UpdateListCheck(.CapComponentFacilityName, 66)
+            Call UpdateListCheck(.CapComponentFacilitySystem, 67)
+            Call UpdateListCheck(.CapComponentFacilityRegion, 68)
+            Call UpdateListCheck(.CapComponentFacilitySystemIndex, 69)
+            Call UpdateListCheck(.CapComponentFacilityTax, 70)
+            Call UpdateListCheck(.CapComponentFacilityMEBonus, 71)
+            Call UpdateListCheck(.CapComponentFacilityTEBonus, 72)
+            Call UpdateListCheck(.CapComponentFacilityUsage, 73)
+            Call UpdateListCheck(.CapComponentFacilityFWSystemLevel, 74)
+            Call UpdateListCheck(.CopyingFacilityName, 75)
+            Call UpdateListCheck(.CopyingFacilitySystem, 76)
+            Call UpdateListCheck(.CopyingFacilityRegion, 77)
+            Call UpdateListCheck(.CopyingFacilitySystemIndex, 78)
+            Call UpdateListCheck(.CopyingFacilityTax, 79)
+            Call UpdateListCheck(.CopyingFacilityMEBonus, 80)
+            Call UpdateListCheck(.CopyingFacilityTEBonus, 81)
+            Call UpdateListCheck(.CopyingFacilityUsage, 82)
+            Call UpdateListCheck(.CopyingFacilityFWSystemLevel, 83)
+            Call UpdateListCheck(.InventionFacilityName, 84)
+            Call UpdateListCheck(.InventionFacilitySystem, 85)
+            Call UpdateListCheck(.InventionFacilityRegion, 86)
+            Call UpdateListCheck(.InventionFacilitySystemIndex, 87)
+            Call UpdateListCheck(.InventionFacilityTax, 88)
+            Call UpdateListCheck(.InventionFacilityMEBonus, 89)
+            Call UpdateListCheck(.InventionFacilityTEBonus, 90)
+            Call UpdateListCheck(.InventionFacilityUsage, 91)
+            Call UpdateListCheck(.InventionFacilityFWSystemLevel, 92)
+            Call UpdateListCheck(.ReactionFacilityName, 93)
+            Call UpdateListCheck(.ReactionFacilitySystem, 94)
+            Call UpdateListCheck(.ReactionFacilityRegion, 95)
+            Call UpdateListCheck(.ReactionFacilitySystemIndex, 96)
+            Call UpdateListCheck(.ReactionFacilityTax, 97)
+            Call UpdateListCheck(.ReactionFacilityMEBonus, 98)
+            Call UpdateListCheck(.ReactionFacilityTEBonus, 99)
+            Call UpdateListCheck(.ReactionFacilityUsage, 100)
+            Call UpdateListCheck(.ReactionFacilityFWSystemLevel, 101)
+            Call UpdateListCheck(.ReprocessingFacilityName, 102)
+            Call UpdateListCheck(.ReprocessingFacilitySystem, 103)
+            Call UpdateListCheck(.ReprocessingFacilityRegion, 104)
+            Call UpdateListCheck(.ReprocessingFacilityTax, 105)
+            Call UpdateListCheck(.ReprocessingFacilityUsage, 106)
+            Call UpdateListCheck(.ReprocessingFacilityOreRefineRate, 107)
+            Call UpdateListCheck(.ReprocessingFacilityIceRefineRate, 108)
+            Call UpdateListCheck(.ReprocessingFacilityMoonRefineRate, 109)
 
             chkLstBoxColumns.Update()
 
@@ -230,70 +241,81 @@
             .CurrentBuyOrders = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(32), .CurrentBuyOrders)
             .ItemsinProduction = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(33), .ItemsinProduction)
             .ItemsinStock = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(34), .ItemsinStock)
-            .TotalCost = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(35), .TotalCost)
-            .BaseJobCost = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(36), .BaseJobCost)
-            .NumBPs = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(37), .NumBPs)
-            .InventionChance = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(38), .InventionChance)
-            .BPType = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(39), .BPType)
-            .Race = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(40), .Race)
-            .VolumeperItem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(41), .VolumeperItem)
-            .TotalVolume = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(42), .TotalVolume)
-            .PortionSize = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(43), .PortionSize)
-            .ManufacturingJobFee = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(44), .ManufacturingJobFee)
-            .ManufacturingFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(45), .ManufacturingFacilityName)
-            .ManufacturingFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(46), .ManufacturingFacilitySystem)
-            .ManufacturingFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(47), .ManufacturingFacilityRegion)
-            .ManufacturingFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(48), .ManufacturingFacilitySystemIndex)
-            .ManufacturingFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(49), .ManufacturingFacilityTax)
-            .ManufacturingFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(50), .ManufacturingFacilityMEBonus)
-            .ManufacturingFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(51), .ManufacturingFacilityTEBonus)
-            .ManufacturingFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(52), .ManufacturingFacilityUsage)
-            .ManufacturingFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(53), .ManufacturingFacilityFWSystemLevel)
-            .ComponentFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(54), .ComponentFacilityName)
-            .ComponentFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(55), .ComponentFacilitySystem)
-            .ComponentFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(56), .ComponentFacilityRegion)
-            .ComponentFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(57), .ComponentFacilitySystemIndex)
-            .ComponentFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(58), .ComponentFacilityTax)
-            .ComponentFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(59), .ComponentFacilityMEBonus)
-            .ComponentFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(60), .ComponentFacilityTEBonus)
-            .ComponentFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(61), .ComponentFacilityUsage)
-            .ComponentFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(62), .ComponentFacilityFWSystemLevel)
-            .CapComponentFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(63), .CapComponentFacilityName)
-            .CapComponentFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(64), .CapComponentFacilitySystem)
-            .CapComponentFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(65), .CapComponentFacilityRegion)
-            .CapComponentFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(66), .CapComponentFacilitySystemIndex)
-            .CapComponentFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(67), .CapComponentFacilityTax)
-            .CapComponentFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(68), .CapComponentFacilityMEBonus)
-            .CapComponentFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(69), .CapComponentFacilityTEBonus)
-            .CapComponentFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(70), .CapComponentFacilityUsage)
-            .CapComponentFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(71), .CapComponentFacilityFWSystemLevel)
-            .CopyingFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(72), .CopyingFacilityName)
-            .CopyingFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(73), .CopyingFacilitySystem)
-            .CopyingFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(74), .CopyingFacilityRegion)
-            .CopyingFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(75), .CopyingFacilitySystemIndex)
-            .CopyingFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(76), .CopyingFacilityTax)
-            .CopyingFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(77), .CopyingFacilityMEBonus)
-            .CopyingFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(78), .CopyingFacilityTEBonus)
-            .CopyingFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(79), .CopyingFacilityUsage)
-            .CopyingFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(80), .CopyingFacilityFWSystemLevel)
-            .InventionFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(81), .InventionFacilityName)
-            .InventionFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(82), .InventionFacilitySystem)
-            .InventionFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(83), .InventionFacilityRegion)
-            .InventionFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(84), .InventionFacilitySystemIndex)
-            .InventionFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(85), .InventionFacilityTax)
-            .InventionFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(86), .InventionFacilityMEBonus)
-            .InventionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(87), .InventionFacilityTEBonus)
-            .InventionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(88), .InventionFacilityUsage)
-            .InventionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(89), .InventionFacilityFWSystemLevel)
-            .ReactionFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(90), .ReactionFacilityName)
-            .ReactionFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(91), .ReactionFacilitySystem)
-            .ReactionFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(92), .ReactionFacilityRegion)
-            .ReactionFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(93), .ReactionFacilitySystemIndex)
-            .ReactionFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(94), .ReactionFacilityTax)
-            .ReactionFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(95), .ReactionFacilityMEBonus)
-            .ReactionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(96), .ReactionFacilityTEBonus)
-            .ReactionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(97), .ReactionFacilityUsage)
-            .ReactionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(98), .ReactionFacilityFWSystemLevel)
+            .MaterialCost = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(35), .MaterialCost)
+            .TotalCost = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(36), .TotalCost)
+            .BaseJobCost = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(37), .BaseJobCost)
+            .NumBPs = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(38), .NumBPs)
+            .InventionChance = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(39), .InventionChance)
+            .BPType = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(40), .BPType)
+            .Race = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(41), .Race)
+            .VolumeperItem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(42), .VolumeperItem)
+            .TotalVolume = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(43), .TotalVolume)
+            .SellExcess = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(44), .SellExcess)
+            .ROI = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(45), .ROI)
+            .PortionSize = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(46), .PortionSize)
+            .ManufacturingJobFee = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(47), .ManufacturingJobFee)
+            .ManufacturingFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(48), .ManufacturingFacilityName)
+            .ManufacturingFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(49), .ManufacturingFacilitySystem)
+            .ManufacturingFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(50), .ManufacturingFacilityRegion)
+            .ManufacturingFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(51), .ManufacturingFacilitySystemIndex)
+            .ManufacturingFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(52), .ManufacturingFacilityTax)
+            .ManufacturingFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(53), .ManufacturingFacilityMEBonus)
+            .ManufacturingFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(54), .ManufacturingFacilityTEBonus)
+            .ManufacturingFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(55), .ManufacturingFacilityUsage)
+            .ManufacturingFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(56), .ManufacturingFacilityFWSystemLevel)
+            .ComponentFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(57), .ComponentFacilityName)
+            .ComponentFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(58), .ComponentFacilitySystem)
+            .ComponentFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(59), .ComponentFacilityRegion)
+            .ComponentFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(60), .ComponentFacilitySystemIndex)
+            .ComponentFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(61), .ComponentFacilityTax)
+            .ComponentFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(62), .ComponentFacilityMEBonus)
+            .ComponentFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(63), .ComponentFacilityTEBonus)
+            .ComponentFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(64), .ComponentFacilityUsage)
+            .ComponentFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(65), .ComponentFacilityFWSystemLevel)
+            .CapComponentFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(66), .CapComponentFacilityName)
+            .CapComponentFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(67), .CapComponentFacilitySystem)
+            .CapComponentFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(68), .CapComponentFacilityRegion)
+            .CapComponentFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(69), .CapComponentFacilitySystemIndex)
+            .CapComponentFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(70), .CapComponentFacilityTax)
+            .CapComponentFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(71), .CapComponentFacilityMEBonus)
+            .CapComponentFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(72), .CapComponentFacilityTEBonus)
+            .CapComponentFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(73), .CapComponentFacilityUsage)
+            .CapComponentFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(74), .CapComponentFacilityFWSystemLevel)
+            .CopyingFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(75), .CopyingFacilityName)
+            .CopyingFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(76), .CopyingFacilitySystem)
+            .CopyingFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(77), .CopyingFacilityRegion)
+            .CopyingFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(78), .CopyingFacilitySystemIndex)
+            .CopyingFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(79), .CopyingFacilityTax)
+            .CopyingFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(80), .CopyingFacilityMEBonus)
+            .CopyingFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(81), .CopyingFacilityTEBonus)
+            .CopyingFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(82), .CopyingFacilityUsage)
+            .CopyingFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(83), .CopyingFacilityFWSystemLevel)
+            .InventionFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(84), .InventionFacilityName)
+            .InventionFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(85), .InventionFacilitySystem)
+            .InventionFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(86), .InventionFacilityRegion)
+            .InventionFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(87), .InventionFacilitySystemIndex)
+            .InventionFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(88), .InventionFacilityTax)
+            .InventionFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(89), .InventionFacilityMEBonus)
+            .InventionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(90), .InventionFacilityTEBonus)
+            .InventionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(91), .InventionFacilityUsage)
+            .InventionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(92), .InventionFacilityFWSystemLevel)
+            .ReactionFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(93), .ReactionFacilityName)
+            .ReactionFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(94), .ReactionFacilitySystem)
+            .ReactionFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(95), .ReactionFacilityRegion)
+            .ReactionFacilitySystemIndex = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(96), .ReactionFacilitySystemIndex)
+            .ReactionFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(97), .ReactionFacilityTax)
+            .ReactionFacilityMEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(98), .ReactionFacilityMEBonus)
+            .ReactionFacilityTEBonus = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(99), .ReactionFacilityTEBonus)
+            .ReactionFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(100), .ReactionFacilityUsage)
+            .ReactionFacilityFWSystemLevel = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(101), .ReactionFacilityFWSystemLevel)
+            .ReprocessingFacilityName = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(102), .ReprocessingFacilityName)
+            .ReprocessingFacilitySystem = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(103), .ReprocessingFacilitySystem)
+            .ReprocessingFacilityRegion = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(104), .ReprocessingFacilityRegion)
+            .ReprocessingFacilityTax = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(105), .ReprocessingFacilityTax)
+            .ReprocessingFacilityUsage = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(106), .ReprocessingFacilityUsage)
+            .ReprocessingFacilityOreRefineRate = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(107), .ReprocessingFacilityOreRefineRate)
+            .ReprocessingFacilityIceRefineRate = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(108), .ReprocessingFacilityIceRefineRate)
+            .ReprocessingFacilityMoonRefineRate = GetColumnNumber(chkLstBoxColumns.GetItemCheckState(109), .ReprocessingFacilityMoonRefineRate)
 
             ' Now in case something was removed, we want to update the indicies
             With UserManufacturingTabColumnSettings
@@ -337,6 +359,7 @@
                     ColumnPositions(.CurrentBuyOrders) = ProgramSettings.CurrentBuyOrdersColumnName
                     ColumnPositions(.ItemsinProduction) = ProgramSettings.ItemsinProductionColumnName
                     ColumnPositions(.ItemsinStock) = ProgramSettings.ItemsinStockColumnName
+                    ColumnPositions(.MaterialCost) = ProgramSettings.MaterialCostColumnName
                     ColumnPositions(.TotalCost) = ProgramSettings.TotalCostColumnName
                     ColumnPositions(.BaseJobCost) = ProgramSettings.BaseJobCostColumnName
                     ColumnPositions(.NumBPs) = ProgramSettings.NumBPsColumnName
@@ -345,6 +368,8 @@
                     ColumnPositions(.Race) = ProgramSettings.RaceColumnName
                     ColumnPositions(.VolumeperItem) = ProgramSettings.VolumeperItemColumnName
                     ColumnPositions(.TotalVolume) = ProgramSettings.TotalVolumeColumnName
+                    ColumnPositions(.SellExcess) = ProgramSettings.SellExcessColumnName
+                    ColumnPositions(.ROI) = ProgramSettings.ROIColumnName
                     ColumnPositions(.PortionSize) = ProgramSettings.PortionSizeColumnName
                     ColumnPositions(.ManufacturingJobFee) = ProgramSettings.ManufacturingJobFeeColumnName
                     ColumnPositions(.ManufacturingFacilityName) = ProgramSettings.ManufacturingFacilityNameColumnName
@@ -392,7 +417,7 @@
                     ColumnPositions(.InventionFacilityTEBonus) = ProgramSettings.InventionFacilityTEBonusColumnName
                     ColumnPositions(.InventionFacilityUsage) = ProgramSettings.InventionFacilityUsageColumnName
                     ColumnPositions(.InventionFacilityFWSystemLevel) = ProgramSettings.InventionFacilityFWSystemLevelColumnName
-                    ColumnPositions(.InventionFacilityName) = ProgramSettings.InventionFacilityNameColumnName
+                    ColumnPositions(.ReactionFacilityName) = ProgramSettings.ReactionFacilityNameColumnName
                     ColumnPositions(.ReactionFacilitySystem) = ProgramSettings.ReactionFacilitySystemColumnName
                     ColumnPositions(.ReactionFacilityRegion) = ProgramSettings.ReactionFacilityRegionColumnName
                     ColumnPositions(.ReactionFacilitySystemIndex) = ProgramSettings.ReactionFacilitySystemIndexColumnName
@@ -401,6 +426,14 @@
                     ColumnPositions(.ReactionFacilityTEBonus) = ProgramSettings.ReactionFacilityTEBonusColumnName
                     ColumnPositions(.ReactionFacilityUsage) = ProgramSettings.ReactionFacilityUsageColumnName
                     ColumnPositions(.ReactionFacilityFWSystemLevel) = ProgramSettings.ReactionFacilityFWSystemLevelColumnName
+                    ColumnPositions(.ReprocessingFacilityName) = ProgramSettings.ReprocessingFacilityNameColumnName
+                    ColumnPositions(.ReprocessingFacilitySystem) = ProgramSettings.ReprocessingFacilitySystemColumnName
+                    ColumnPositions(.ReprocessingFacilityRegion) = ProgramSettings.ReprocessingFacilityRegionColumnName
+                    ColumnPositions(.ReprocessingFacilityTax) = ProgramSettings.ReprocessingFacilityTaxColumnName
+                    ColumnPositions(.ReprocessingFacilityUsage) = ProgramSettings.ReprocessingFacilityUsageColumnName
+                    ColumnPositions(.ReprocessingFacilityOreRefineRate) = ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                    ColumnPositions(.ReprocessingFacilityIceRefineRate) = ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                    ColumnPositions(.ReprocessingFacilityMoonRefineRate) = ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
                 End With
 
                 ' Reset the first column is empty
@@ -507,6 +540,8 @@
                                 .ItemsinProduction = i
                             Case ProgramSettings.ItemsinStockColumnName
                                 .ItemsinStock = i
+                            Case ProgramSettings.MaterialCostColumnName
+                                .MaterialCost = i
                             Case ProgramSettings.TotalCostColumnName
                                 .TotalCost = i
                             Case ProgramSettings.BaseJobCostColumnName
@@ -523,6 +558,10 @@
                                 .VolumeperItem = i
                             Case ProgramSettings.TotalVolumeColumnName
                                 .TotalVolume = i
+                            Case ProgramSettings.SellExcessColumnName
+                                .SellExcess = i
+                            Case ProgramSettings.ROIColumnName
+                                .ROI = i
                             Case ProgramSettings.PortionSizeColumnName
                                 .PortionSize = i
                             Case ProgramSettings.ManufacturingJobFeeColumnName
@@ -635,6 +674,22 @@
                                 .ReactionFacilityUsage = i
                             Case ProgramSettings.ReactionFacilityFWSystemLevelColumnName
                                 .ReactionFacilityFWSystemLevel = i
+                            Case ProgramSettings.ReprocessingFacilityNameColumnName
+                                .ReprocessingFacilityName = i
+                            Case ProgramSettings.ReprocessingFacilitySystemColumnName
+                                .ReprocessingFacilitySystem = i
+                            Case ProgramSettings.ReprocessingFacilityRegionColumnName
+                                .ReprocessingFacilityRegion = i
+                            Case ProgramSettings.ReprocessingFacilityTaxColumnName
+                                .ReprocessingFacilityTax = i
+                            Case ProgramSettings.ReprocessingFacilityUsageColumnName
+                                .ReprocessingFacilityUsage = i
+                            Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
+                                .ReprocessingFacilityOreRefineRate = i
+                            Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
+                                .ReprocessingFacilityIceRefineRate = i
+                            Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
+                                .ReprocessingFacilityMoonRefineRate = i
                         End Select
                     Next
                 End With

@@ -129,6 +129,10 @@
       <HintPath>packages\GoogleAnalyticsClientDotNet.Net45.1.0.0.23\lib\net452\GoogleAnalyticsClientDotNet.Net45.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="LpSolveDotNet, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\LpSolveDotNet.4.0.0\lib\net20\LpSolveDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -163,7 +167,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
+    <Compile Include="AssetViewer.Designer.vb">
+      <DependentUpon>AssetViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AssetViewer.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Blueprint.vb" />
+    <Compile Include="BuildBuyItems.vb" />
     <Compile Include="CacheBox.vb" />
     <Compile Include="Character.vb" />
     <Compile Include="ESI.vb" />
@@ -205,10 +216,28 @@
     <Compile Include="frmChooseFacility.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmConversionSettings.Designer.vb">
+      <DependentUpon>frmConversionSettings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmConversionSettings.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmESIStatus.Designer.vb">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
     </Compile>
     <Compile Include="frmESIStatus.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmIceBeltFlip.Designer.vb">
+      <DependentUpon>frmIceBeltFlip.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIceBeltFlip.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmIndustryBeltFlip.Designer.vb">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmIndustryBeltFlip.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMaterialListViewer.Designer.vb">
@@ -247,12 +276,12 @@
     <Compile Include="ManufacturingFacility.vb">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="ConvertToOre.vb" />
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="OreMineral.vb" />
     <Compile Include="frmBlueprintList.Designer.vb">
       <DependentUpon>frmBlueprintList.vb</DependentUpon>
     </Compile>
@@ -302,10 +331,10 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="EVEBlueprints.vb" />
-    <Compile Include="frmRefinery.Designer.vb">
-      <DependentUpon>frmRefinery.vb</DependentUpon>
+    <Compile Include="frmReprocessingPlant.Designer.vb">
+      <DependentUpon>frmReprocessingPlant.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmRefinery.vb">
+    <Compile Include="frmReprocessingPlant.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmInventionMats.Designer.vb">
@@ -365,12 +394,6 @@
       <DependentUpon>frmError.vb</DependentUpon>
     </Compile>
     <Compile Include="frmError.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmIndustryBeltFlip.Designer.vb">
-      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmIndustryBeltFlip.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmIndustryJobsViewer.Designer.vb">
@@ -473,7 +496,7 @@
     <Compile Include="EVENPCStandings.vb" />
     <Compile Include="ProgramSettings.vb" />
     <Compile Include="ProgramUpdater.vb" />
-    <Compile Include="RefiningReprocessing.vb" />
+    <Compile Include="ReprocessingPlant.vb" />
     <Compile Include="EVEResearchAgents.vb" />
     <Compile Include="Settings.vb" />
     <Compile Include="ShoppingList.vb" />
@@ -502,6 +525,9 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AssetViewer.resx">
+      <DependentUpon>AssetViewer.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmAddCharacter.resx">
       <DependentUpon>frmAddCharacter.vb</DependentUpon>
     </EmbeddedResource>
@@ -523,8 +549,17 @@
     <EmbeddedResource Include="frmChooseFacility.resx">
       <DependentUpon>frmChooseFacility.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmConversionSettings.resx">
+      <DependentUpon>frmConversionSettings.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmIceBeltFlip.resx">
+      <DependentUpon>frmIceBeltFlip.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmIndustryBeltFlip.resx">
+      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMaterialListViewer.resx">
       <DependentUpon>frmMaterialListViewer.vb</DependentUpon>
@@ -555,8 +590,8 @@
     <EmbeddedResource Include="frmSelectManufacturingTabColumns.resx">
       <DependentUpon>frmSelectManufacturingTabColumns.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmRefinery.resx">
-      <DependentUpon>frmRefinery.vb</DependentUpon>
+    <EmbeddedResource Include="frmReprocessingPlant.resx">
+      <DependentUpon>frmReprocessingPlant.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmInventionMats.resx">
@@ -593,10 +628,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmError.resx">
       <DependentUpon>frmError.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmIndustryBeltFlip.resx">
-      <DependentUpon>frmIndustryBeltFlip.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmIndustryJobsViewer.resx">
@@ -681,6 +712,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
+    <None Include="Resources\patreon_sm1.png" />
+    <None Include="Resources\Digital-Patreon-Wordmark_FieryCoral.png" />
     <None Include="Resources\PayPalButton.png" />
     <None Include="PayPalDonate.jpg" />
     <None Include="XImage.png" />
@@ -721,7 +754,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets'))" />
+    <Error Condition="!Exists('packages\LpSolveDotNet.Native.win-x86.4.0.0\build\LpSolveDotNet.Native.win-x86.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\LpSolveDotNet.Native.win-x86.4.0.0\build\LpSolveDotNet.Native.win-x86.targets'))" />
   </Target>
+  <Import Project="packages\LpSolveDotNet.Native.win-x86.4.0.0\build\LpSolveDotNet.Native.win-x86.targets" Condition="Exists('packages\LpSolveDotNet.Native.win-x86.4.0.0\build\LpSolveDotNet.Native.win-x86.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
