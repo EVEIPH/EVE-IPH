@@ -326,6 +326,8 @@ Public Class frmMain
 
         FirstLoad = True
 
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+
         ' See if they've disabled GA tracking
         If Not UserApplicationSettings.DisableGATracking Then
             ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
@@ -17515,7 +17517,7 @@ Leave:
             Call UpdateMiningShipEquipment()
             Call UpdateShipMiningDrones()
 
-            If MiningShipSelected() Then
+            If MiningShipSelected() And cmbMineOreType.Text = "Ore" Then
                 chkMineMichiImplant.Enabled = True
             Else
                 chkMineMichiImplant.Enabled = False
@@ -17588,6 +17590,7 @@ Leave:
             chkMineIncludeLowSec.Text = "Low Sec Ice"
             chkMineIncludeNullSec.Text = "Null Sec Ice"
             lstMineGrid.Columns(1).Text = "Ice Name"
+            lblMineFacilityOreRate1.Text = "Ice:"
             tabMiningDrones.Enabled = True
             chkMineMoonMining.Enabled = False ' Can't moon mine ice
             ' No ice in wormholes
@@ -17616,6 +17619,7 @@ Leave:
             chkMineIncludeLowSec.Text = "Low Sec Ore"
             chkMineIncludeNullSec.Text = "Null Sec Ore"
             lstMineGrid.Columns(1).Text = "Ore Name"
+            lblMineFacilityOreRate1.Text = "Ore:"
             tabMiningDrones.Enabled = True
             chkMineMoonMining.Enabled = True ' Moon mining
 
@@ -19519,6 +19523,8 @@ Leave:
         None = 0
         T1 = 1
         T2 = 2
+        Ice = 3
+        Mercoxit = 4
     End Enum
 
     Private Function GetDroneRigType(RigCheck As CheckBox) As DroneRigType
@@ -19538,6 +19544,10 @@ Leave:
         If ComboCheck.Enabled And ComboCheck.Text <> None And ComboCheck.Text <> "" Then
             If ComboCheck.Text.Contains("T2") Then
                 Return DroneRigType.T2
+            ElseIf ComboCheck.Text.Contains("Ice Harvesting") Then
+                Return DroneRigType.Ice
+            ElseIf ComboCheck.Text.Contains("Mercoxit Opt") Then
+                Return DroneRigType.Mercoxit
             Else
                 Return DroneRigType.T1
             End If
@@ -19640,28 +19650,31 @@ Leave:
         Dim RigTech As String = ""
         Dim RigBonus As Double = 0
 
-        Select Case AttribLookup.GetAttribute(ShipName, ItemAttributes.rigSize)
-            Case 1
-                RigName = "Small Drone Mining Augmentor "
-            Case 2
-                RigName = "Medium Drone Mining Augmentor "
-            Case 3
-                RigName = "Large Drone Mining Augmentor "
-            Case 4
-                RigName = "Capital Drone Mining Augmentor "
-        End Select
+        If DroneRig = DroneRigType.T1 Or DroneRig = DroneRigType.T2 Then
 
-        If DroneRig <> DroneRigType.None Then
-            If DroneRig = DroneRigType.T2 Then
-                RigTech = "II"
-            Else
-                RigTech = "I"
-            End If
+            Select Case AttribLookup.GetAttribute(ShipName, ItemAttributes.rigSize)
+                Case 1
+                    RigName = "Small Drone Mining Augmentor "
+                Case 2
+                    RigName = "Medium Drone Mining Augmentor "
+                Case 3
+                    RigName = "Large Drone Mining Augmentor "
+                Case 4
+                    RigName = "Capital Drone Mining Augmentor "
+            End Select
 
-            If DroneType = "Ore" Then
-                RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.miningAmountBonus) / 100
-            Else
-                RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.rofBonus) / 100
+            If DroneRig <> DroneRigType.None Then
+                If DroneRig = DroneRigType.T2 Then
+                    RigTech = "II"
+                Else
+                    RigTech = "I"
+                End If
+
+                If DroneType = "Ore" Then
+                    RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.miningAmountBonus) / 100
+                Else
+                    RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.rofBonus) / 100
+                End If
             End If
         End If
 
@@ -20995,7 +21008,7 @@ Leave:
             ' Apply the rig bonus if selected
             If cmbMineMiningRig1.Text = "Ice Harvesting" Then
                 ' 12% cycle reduction
-                TempCycleTime = TempCycleTime * (1 + AttribLookup.GetAttribute(32819, ItemAttributes.iceHarvestCycleBonus))
+                TempCycleTime = TempCycleTime * ((1 + AttribLookup.GetAttribute(32819, ItemAttributes.iceHarvestCycleBonus) / 100))
             End If
 
         ElseIf cmbMineOreType.Text = "Gas" Then

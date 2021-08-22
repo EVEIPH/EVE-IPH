@@ -2581,7 +2581,6 @@ Tabs:
         Dim AccessTokenOutput As New ESITokenData
         Dim Success As Boolean = False
         Dim WC As New WebClient
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim Response As Byte()
         Dim Data As String = ""
         Dim PostParameters As New NameValueCollection

@@ -1,5 +1,4 @@
 ﻿Imports System.Net
-Imports System.Web
 Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
@@ -88,6 +87,7 @@ Public Class ESI
     Public Sub New()
         AuthorizationToken = ""
         CodeVerifier = ""
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
     End Sub
 
     ''' <summary>
@@ -251,7 +251,6 @@ Public Class ESI
         Dim Response As Byte()
         Dim Data As String = ""
 
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         WC.Headers(HttpRequestHeader.ContentType) = "application/x-www-form-urlencoded"
         WC.Headers(HttpRequestHeader.Host) = "login.eveonline.com"
         WC.Proxy = GetProxyData()
@@ -317,7 +316,6 @@ Public Class ESI
     Private Function GetPublicData(ByVal URL As String, ByRef CacheDate As Date, Optional BodyData As String = "") As String
         Dim Response As String = ""
         Dim WC As New WebClient
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim myWebHeaderCollection As New WebHeaderCollection
         Dim Expires As String = Nothing
         Dim Pages As Integer = Nothing
@@ -400,8 +398,6 @@ Public Class ESI
                                               ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False,
                                               Optional SinglePage As Boolean = False) As String
         Dim WC As New WebClient
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-
         Dim Response As String = ""
         Dim TokenExpireDate As Date
 
@@ -710,7 +706,6 @@ Public Class ESI
     Public Function GetCharacterVerificationData(ByVal TokenData As SavedTokenData, ByVal TokenExpirationDate As Date) As ESICharacterVerificationData
         Dim CacheDate As Date
         Dim WC As New WebClient
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
         Dim Response As String = ""
 
         WC.Proxy = GetProxyData()
