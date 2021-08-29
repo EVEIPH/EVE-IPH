@@ -161,6 +161,8 @@ Public Class Character
             End If
         End If
 
+
+
         Return TriState.UseDefault
 
     End Function

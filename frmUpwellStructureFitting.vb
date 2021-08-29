@@ -1959,7 +1959,7 @@ Public Class frmUpwellStructureFitting
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
                         SQL &= "WHERE TA.attributeID = AT.attributeID "
                         SQL &= "AND TA.typeID = IT.typeID  "
-                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'RefRig%') "
+                        SQL &= "AND TA.attributeID IN (SELECT attributeID FROM ATTRIBUTE_TYPES WHERE attributeName LIKE 'attributeEngRig%') "
 
                     Case "DrillingRigs"
 
@@ -2271,7 +2271,7 @@ Public Class frmUpwellStructureFitting
         Dim ComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
         Dim CapComponentFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.CapitalComponentManufacturing)
         Dim ReactionFacility As IndustryFacility = frmMain.BPTabFacility.GetFacility(ProductionType.Reactions)
-        Dim BPID As Long
+        Dim BPID As Integer
 
         Select Case FuelBlock
             Case FuelBlocks.Nitrogen

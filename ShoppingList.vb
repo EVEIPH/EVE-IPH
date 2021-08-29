@@ -893,6 +893,7 @@ Public Class ShoppingList
                             ' Re-run with new quantity
                             Dim NewRuns As Integer = CInt(Math.Ceiling((FoundBuildItem.ItemQuantity + .ItemQuantity) / FoundBuildItem.PortionSize))
 
+
                             Dim TempBP As New Blueprint(.BPTypeID, NewRuns, .BuildME, .BuildTE, 1,
                                UserBPTabSettings.ProductionLines, SelectedCharacter, UserApplicationSettings, False, 0,
                                .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, .ManufacturingFacility, True, UserBPTabSettings.BuildT2T3Materials, True)

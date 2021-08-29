@@ -804,6 +804,7 @@ Public Class frmMain
     End Sub
 
     Protected Overrides Sub Finalize()
+        Application.DoEvents()
         MyBase.Finalize()
         On Error Resume Next
         EVEDB.CloseDB()
@@ -811,6 +812,8 @@ Public Class frmMain
     End Sub
 
     Private Sub frmMain_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        Application.DoEvents()
+
         If ShowSupportSplash() Then
             Dim f1 As New frmsupportSplash
             f1.ShowDialog()
@@ -1921,6 +1924,10 @@ Public Class frmMain
             EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
 
             Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILTIES WHERE CHARACTER_ID <> 0")
+
+            ' Load the dummy char
+            Call SelectedCharacter.LoadDummyCharacter(True)
+
             ' Re-load all the forms' facilities
             Call LoadFacilities()
 
@@ -1936,7 +1943,6 @@ Public Class frmMain
             Application.UseWaitCursor = False
             Application.DoEvents()
 
-            Call SelectedCharacter.LoadDummyCharacter(True)
             ' Reset the tabs
             Call ResetTabs()
 
@@ -2032,7 +2038,8 @@ Public Class frmMain
 
     Private Sub mnuResetSavedFacilities_Click(sender As Object, e As EventArgs) Handles mnuResetSavedFacilities.Click
 
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILTIES WHERE CHARACTER_ID <> 0")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILITIES WHERE CHARACTER_ID <> 0")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES")
         ' Re-load all the forms' facilities
         Call LoadFacilities()
 
@@ -2268,6 +2275,8 @@ Public Class frmMain
 
         Call LoadCharacterNamesinMenu()
 
+        ' Always reset the selected character id
+
         ' Reinit form
         Call ResetTabs()
 
@@ -2430,42 +2439,51 @@ Public Class frmMain
 
         ' Now that we return, see if the facility setting changed and update as necessary
         If UserApplicationSettings.SaveFacilitiesbyChar <> OldFacilitySaveSetting Then
-
-            ' If they change the character ID for saving facilities, we need to update the objects
-            If UserApplicationSettings.SaveFacilitiesbyChar Then
-                With SelectedCharacter
-                    Call BPTabFacility.ResetSelectedCharacterID(.ID)
-
-                    Call CalcInventionFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcT3InventionFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcCopyFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcSupersFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcCapitalsFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcSubsystemsFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcReactionsFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcBoostersFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcComponentsFacility.ResetSelectedCharacterID(.ID)
-                    Call CalcT3ShipsFacility.ResetSelectedCharacterID(.ID)
-                End With
-            Else
-                Call BPTabFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-
-                Call CalcInventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcT3InventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcCopyFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcSupersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcCapitalsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcSubsystemsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcReactionsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcBoostersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcComponentsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-                Call CalcT3ShipsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
-            End If
-
-            ' Finally, refresh the bptab facility
-            Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
-
+            Call ResetCharacterIDonFacilties()
         End If
+
+    End Sub
+
+    Public Sub ResetCharacterIDonFacilties()
+        ' If they change the character ID for saving facilities, we need to update the objects
+        If UserApplicationSettings.SaveFacilitiesbyChar Then
+            With SelectedCharacter
+                Call BPTabFacility.ResetSelectedCharacterID(.ID)
+
+                Call CalcBaseFacility.ResetSelectedCharacterID(.ID)
+                Call CalcInventionFacility.ResetSelectedCharacterID(.ID)
+                Call CalcT3InventionFacility.ResetSelectedCharacterID(.ID)
+                Call CalcCopyFacility.ResetSelectedCharacterID(.ID)
+                Call CalcSupersFacility.ResetSelectedCharacterID(.ID)
+                Call CalcCapitalsFacility.ResetSelectedCharacterID(.ID)
+                Call CalcSubsystemsFacility.ResetSelectedCharacterID(.ID)
+                Call CalcReactionsFacility.ResetSelectedCharacterID(.ID)
+                Call CalcBoostersFacility.ResetSelectedCharacterID(.ID)
+                Call CalcComponentsFacility.ResetSelectedCharacterID(.ID)
+                Call CalcT3ShipsFacility.ResetSelectedCharacterID(.ID)
+
+                Call MineRefineFacility.ResetSelectedCharacterID(.ID)
+            End With
+        Else
+            Call BPTabFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+
+            Call CalcBaseFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcInventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcT3InventionFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcCopyFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcSupersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcCapitalsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcSubsystemsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcReactionsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcBoostersFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcComponentsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+            Call CalcT3ShipsFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+
+            Call MineRefineFacility.ResetSelectedCharacterID(CommonSavedFacilitiesID)
+        End If
+
+        ' Finally, refresh the bptab facility
+        Call BPTabFacility.InitializeFacilities(ProgramLocation.BlueprintTab)
 
     End Sub
 
@@ -2499,6 +2517,8 @@ Public Class frmMain
     End Sub
 
     Public Sub ResetTabs(Optional ResetBPTab As Boolean = True)
+        Me.Enabled = False
+        Application.DoEvents()
         ' Init all forms
         Me.Cursor = Cursors.WaitCursor
         Call InitBPTab(ResetBPTab)
@@ -2511,7 +2531,8 @@ Public Class frmMain
         Call UpdateSkillPanel()
 
         Me.Cursor = Cursors.Default
-
+        Me.Enabled = True
+        Application.DoEvents()
     End Sub
 
     Private Sub mnuRestoreDefaultBP_Click(sender As System.Object, e As System.EventArgs) Handles mnuRestoreDefaultBP.Click
@@ -6296,8 +6317,8 @@ Tabs:
 
         ' Facility setup
         Dim ComponentFacility As New IndustryFacility
-        Dim ManuFacility As New IndustryFacility
-        ManuFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
+        Dim BuildFacility As New IndustryFacility
+        BuildFacility = BPTabFacility.GetSelectedManufacturingFacility(BPGroupID, BPCategoryID) ' This is the facility to manufacture the item in the blueprint
 
         If SelectedBPText.Contains("Reaction Formula") Then
             'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
@@ -6379,7 +6400,7 @@ Tabs:
 
         ' Construct Blueprint
         SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, ManuFacility,
+                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
                                           ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
                                           UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
 
@@ -8608,6 +8629,8 @@ ExitForm:
         RegionChecked = False
         SystemChecked = False
 
+        Dim DataErrors As Boolean = True
+
         ' Progress Bar Init
         pnlProgressBar.Value = 0
 
@@ -8646,7 +8669,7 @@ ExitForm:
             GoTo ExitSub
         End If
 
-        If Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo) Then
+        If (Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo)) And rbtnPriceSettingSingleSelect.Checked Then
             MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
             GoTo ExitSub
         End If
@@ -8660,6 +8683,8 @@ ExitForm:
             MsgBox("You cannot choose more than one region when downloading CCP Data", MsgBoxStyle.Exclamation, Me.Name)
             GoTo ExitSub
         End If
+
+        DataErrors = False
 
         ' Working
         Call DisableUpdatePricesTab(True)
@@ -8810,11 +8835,14 @@ ExitSub:
 
         Application.UseWaitCursor = False
         Application.DoEvents()
-        ' Enable tab
-        Call DisableUpdatePricesTab(False)
 
-        gbSingleSource.Enabled = SavedgbSSValue
-        gbPriceProfile.Enabled = SavedgbPPValue
+        If Not DataErrors Then
+            ' Enable tab
+            Call DisableUpdatePricesTab(False)
+
+            gbSingleSource.Enabled = SavedgbSSValue
+            gbPriceProfile.Enabled = SavedgbPPValue
+        End If
 
         ' Disable cancel
         btnCancelUpdate.Enabled = False
@@ -13438,7 +13466,7 @@ CheckTechs:
                 InsertItem.LaboratoryLines = CInt(txtCalcLabLines.Text)
 
                 ' Reset all the industry facilities
-                InsertItem.ManufacturingFacility = New IndustryFacility
+                InsertItem.BuildFacility = New IndustryFacility
                 InsertItem.ComponentManufacturingFacility = New IndustryFacility
                 InsertItem.CapComponentManufacturingFacility = New IndustryFacility
                 InsertItem.CopyFacility = New IndustryFacility
@@ -13458,21 +13486,21 @@ CheckTechs:
 
                 Select Case BuildType
                     Case ProductionType.Manufacturing
-                        InsertItem.ManufacturingFacility = CalcBaseFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcBaseFacility.GetFacility(BuildType)
                     Case ProductionType.ComponentManufacturing, ProductionType.CapitalComponentManufacturing
-                        InsertItem.ManufacturingFacility = CalcComponentsFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcComponentsFacility.GetFacility(BuildType)
                     Case ProductionType.BoosterManufacturing
-                        InsertItem.ManufacturingFacility = CalcBoostersFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcBoostersFacility.GetFacility(BuildType)
                     Case ProductionType.CapitalManufacturing
-                        InsertItem.ManufacturingFacility = CalcCapitalsFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcCapitalsFacility.GetFacility(BuildType)
                     Case ProductionType.Reactions
-                        InsertItem.ManufacturingFacility = CalcReactionsFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcReactionsFacility.GetFacility(BuildType)
                     Case ProductionType.SubsystemManufacturing
-                        InsertItem.ManufacturingFacility = CalcSubsystemsFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcSubsystemsFacility.GetFacility(BuildType)
                     Case ProductionType.SuperManufacturing
-                        InsertItem.ManufacturingFacility = CalcSupersFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcSupersFacility.GetFacility(BuildType)
                     Case ProductionType.T3CruiserManufacturing, ProductionType.T3DestroyerManufacturing
-                        InsertItem.ManufacturingFacility = CalcT3ShipsFacility.GetFacility(BuildType)
+                        InsertItem.BuildFacility = CalcT3ShipsFacility.GetFacility(BuildType)
                 End Select
 
                 If BuildType = ProductionType.Reactions Then
@@ -13752,7 +13780,7 @@ CheckTechs:
                     ' Construct the BP
                     ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                                            NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                                           UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
+                                                           UserApplicationSettings, rbtnCalcCompareBuildBuy.Checked, InsertItem.AddlCosts, InsertItem.BuildFacility,
                                                            InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility, InsertItem.ReactionFacility,
                                                            chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
@@ -13873,7 +13901,7 @@ CheckTechs:
                                 End If
 
                                 ' Usage
-                                InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                                InsertItem.BuildFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                                 ' Don't build components in this calculation
                                 InsertItem.ComponentManufacturingFacilityUsage = 0
                                 InsertItem.CapComponentManufacturingFacilityUsage = 0
@@ -13945,7 +13973,7 @@ CheckTechs:
                             End If
 
                             ' Usage
-                            InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                            InsertItem.BuildFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
                             InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetTotalReactionFacilityUsage
@@ -13966,7 +13994,7 @@ CheckTechs:
                             ' Construct the BP
                             ManufacturingBlueprint = New Blueprint(InsertItem.BPID, CInt(txtCalcRuns.Text), InsertItem.BPME, InsertItem.BPTE,
                                                         NumberofBlueprints, CInt(txtCalcProdLines.Text), SelectedCharacter,
-                                                        UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.ManufacturingFacility,
+                                                        UserApplicationSettings, True, InsertItem.AddlCosts, InsertItem.BuildFacility,
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
                                                         InsertItem.ReactionFacility, chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
@@ -14034,7 +14062,7 @@ CheckTechs:
                                 End If
 
                                 ' Usage
-                                InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                                InsertItem.BuildFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                                 InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                                 InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
                                 InsertItem.ReactionFacilityUsage = ManufacturingBlueprint.GetReactionFacilityUsage
@@ -14146,9 +14174,9 @@ CheckTechs:
                             ' If it's a reaction, we don't want to add the manufacturing usage for any fuel blocks if it's a component
                             Select Case InsertItem.ItemGroupID
                                 Case ItemIDs.ReactionsIntermediateGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionBiochmeicalsGroupID
-                                    InsertItem.ManufacturingFacilityUsage = 0
+                                    InsertItem.BuildFacilityUsage = 0
                                 Case Else
-                                    InsertItem.ManufacturingFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
+                                    InsertItem.BuildFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
                             End Select
                             InsertItem.ComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetComponentFacilityUsage
                             InsertItem.CapComponentManufacturingFacilityUsage = ManufacturingBlueprint.GetCapComponentFacilityUsage
@@ -14259,8 +14287,8 @@ DisplayResults:
             ' and the manufacturing facility equal to the component facility
             Select Case FinalItemList(i).ItemGroup
                 Case "Composite", "Biochemical Material", "Hybrid Polymers", "Intermediate Materials"
-                    FinalItemList(i).ReactionFacility = CType(FinalItemList(i).ManufacturingFacility.Clone, IndustryFacility)
-                    FinalItemList(i).ManufacturingFacility = CType(FinalItemList(i).ComponentManufacturingFacility.Clone, IndustryFacility) ' fuel blocks
+                    FinalItemList(i).ReactionFacility = CType(FinalItemList(i).BuildFacility.Clone, IndustryFacility)
+                    FinalItemList(i).BuildFacility = CType(FinalItemList(i).ComponentManufacturingFacility.Clone, IndustryFacility) ' fuel blocks
             End Select
 
             For j = 1 To ColumnPositions.Count - 1
@@ -14363,23 +14391,23 @@ DisplayResults:
                     Case ProgramSettings.ManufacturingJobFeeColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).JobFee / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.ManufacturingFacilityNameColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ManufacturingFacility.FacilityName)
+                        BPList.SubItems.Add(FinalItemList(i).BuildFacility.FacilityName)
                     Case ProgramSettings.ManufacturingFacilitySystemColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ManufacturingFacility.SolarSystemName)
+                        BPList.SubItems.Add(FinalItemList(i).BuildFacility.SolarSystemName)
                     Case ProgramSettings.ManufacturingFacilitySystemIndexColumnName
-                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ManufacturingFacility.CostIndex, 5))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).BuildFacility.CostIndex, 5))
                     Case ProgramSettings.ManufacturingFacilityTaxColumnName
-                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).ManufacturingFacility.TaxRate, 1))
+                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).BuildFacility.TaxRate, 1))
                     Case ProgramSettings.ManufacturingFacilityRegionColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ManufacturingFacility.RegionName)
+                        BPList.SubItems.Add(FinalItemList(i).BuildFacility.RegionName)
                     Case ProgramSettings.ManufacturingFacilityMEBonusColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ManufacturingFacility.MaterialMultiplier))
+                        BPList.SubItems.Add(CStr(FinalItemList(i).BuildFacility.MaterialMultiplier))
                     Case ProgramSettings.ManufacturingFacilityTEBonusColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ManufacturingFacility.TimeMultiplier))
+                        BPList.SubItems.Add(CStr(FinalItemList(i).BuildFacility.TimeMultiplier))
                     Case ProgramSettings.ManufacturingFacilityUsageColumnName
-                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).ManufacturingFacilityUsage / FinalItemList(i).DivideUnits, 2))
+                        BPList.SubItems.Add(FormatNumber(FinalItemList(i).BuildFacilityUsage / FinalItemList(i).DivideUnits, 2))
                     Case ProgramSettings.ManufacturingFacilityFWSystemLevelColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ManufacturingFacility.FWUpgradeLevel))
+                        BPList.SubItems.Add(CStr(FinalItemList(i).BuildFacility.FWUpgradeLevel))
 
                     Case ProgramSettings.ComponentFacilityNameColumnName
                         BPList.SubItems.Add(FinalItemList(i).ComponentManufacturingFacility.FacilityName)
@@ -15603,7 +15631,7 @@ ExitCalc:
                 End If
 
                 Call LoadBPfromEvent(.BPID, .CalcType, .Inputs, SentFromLocation.ManufacturingTab,
-                                     .ManufacturingFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility,
+                                     .BuildFacility, .ComponentManufacturingFacility, .CapComponentManufacturingFacility,
                                      .InventionFacility, .CopyFacility,
                                      chkCalcTaxes.Checked, GetBrokerFeeData(chkCalcFees, txtCalcBrokerFeeRate),
                                      CStr(.BPME), CStr(.BPTE), txtCalcRuns.Text, txtCalcProdLines.Text, txtCalcLabLines.Text,
@@ -15669,8 +15697,8 @@ ExitCalc:
         Public ItemsinStock As Integer
         Public ItemsinProduction As Integer
 
-        Public ManufacturingFacility As IndustryFacility
-        Public ManufacturingFacilityUsage As Double
+        Public BuildFacility As IndustryFacility
+        Public BuildFacilityUsage As Double
         Public ComponentManufacturingFacility As IndustryFacility
         Public ComponentManufacturingFacilityUsage As Double
         Public CapComponentManufacturingFacility As IndustryFacility
@@ -15771,7 +15799,7 @@ ExitCalc:
             CopyofMe.CopyCost = CopyCost
             CopyofMe.InventionCost = InventionCost
 
-            CopyofMe.ManufacturingFacility = ManufacturingFacility
+            CopyofMe.BuildFacility = BuildFacility
             CopyofMe.ComponentManufacturingFacility = ComponentManufacturingFacility
             CopyofMe.CapComponentManufacturingFacility = CapComponentManufacturingFacility
             CopyofMe.ReactionFacility = ReactionFacility
@@ -15799,7 +15827,7 @@ ExitCalc:
 
             CopyofMe.JobFee = JobFee
 
-            CopyofMe.ManufacturingFacilityUsage = ManufacturingFacilityUsage
+            CopyofMe.BuildFacilityUsage = BuildFacilityUsage
             CopyofMe.ComponentManufacturingFacilityUsage = ComponentManufacturingFacilityUsage
             CopyofMe.CapComponentManufacturingFacilityUsage = CapComponentManufacturingFacilityUsage
             CopyofMe.ReactionFacilityUsage = ReactionFacilityUsage
@@ -17956,6 +17984,8 @@ Leave:
 
     Private Sub chkMineRorqDeployedMode_Click(sender As Object, e As EventArgs) Handles chkMineRorqDeployedMode.Click
         Call UpdateIndustrialCoreCheck()
+        Call UpdateShipMiningDroneStats()
+        Call UpdateBoosterMiningDroneStats()
     End Sub
 
     Private Function GetMiningShipImage(ShipName As String) As String
@@ -19569,7 +19599,7 @@ Leave:
         If Not FirstLoad Then
             Call UpdateMiningDroneStats(BoosterMiningDronem3Hr, cmbMineBoosterShipName.Text, cmbMineBoosterShipSkill.Text, cmbMineBoosterDroneName.Text, cmbMineBoosterNumMiningDrones.Text,
                         cmbMineBoosterDroneOpSkill.Text, cmbMineBoosterDroneSpecSkill.Text, cmbMineBoosterDroneInterfacingSkill.Text, lblMineBoosterDroneIdealRange,
-                        lblMineBoosterMiningDroneYield, cmbMineOreType.Text, GetDroneRigType(chkMineBoosterDroneRig1), GetDroneRigType(chkMineBoosterDroneRig2), GetDroneRigType(chkMineBoosterDroneRig3))
+                        lblMineBoosterMiningDroneYield, cmbMineOreType.Text, GetDroneRigType(chkMineBoosterDroneRig1), GetDroneRigType(chkMineBoosterDroneRig2), GetDroneRigType(chkMineBoosterDroneRig3), True)
         End If
     End Sub
 
@@ -19577,7 +19607,7 @@ Leave:
     Private Sub UpdateMiningDroneStats(ByRef MiningAmtVariable As Double, ShipName As String, BaseShipSkill As String,
                                        DroneName As String, NumDrones As String, DroneSkill As String, DroneSpecSkill As String, DroneInterfaceSkill As String,
                                        ByRef RangeLabel As Label, ByRef YieldLabel As Label, OreType As String,
-                                       ByRef Rig1 As DroneRigType, ByRef Rig2 As DroneRigType, ByRef Rig3 As DroneRigType)
+                                       ByRef Rig1 As DroneRigType, ByRef Rig2 As DroneRigType, ByRef Rig3 As DroneRigType, Optional BoosterDrones As Boolean = False)
         ' Initialize
         RangeLabel.Text = "Ideal Range: N/A"
         YieldLabel.Text = "-"
@@ -19588,7 +19618,8 @@ Leave:
             Dim AttribLookup As New EVEAttributes
             Dim DroneMiningAmountpCycle As Double = 0
             ' Update the optimal range for this drone first
-            RangeLabel.Text = "Ideal Range: " & FormatNumber(AttribLookup.GetAttribute(DroneName, ItemAttributes.maxRange), 0) & " m"
+            Dim NavigationBonus As Double = 1 + (SelectedCharacter.Skills.GetSkillLevel(12305) * (AttribLookup.GetAttribute(12305, ItemAttributes.maxVelocityBonus) / 100))
+            RangeLabel.Text = "Ideal Range: " & FormatNumber(AttribLookup.GetAttribute(DroneName, ItemAttributes.maxRange) * NavigationBonus, 0) & " m"
 
             ' Start adding in the rest of the skill bonuses
             Dim MiningDroneOpLevel As Integer = CInt(DroneSkill)
@@ -19612,6 +19643,11 @@ Leave:
                         DroneMiningAmountpCycle *= (1 + (0.1 * CInt(BaseShipSkill)))
                 End Select
 
+                ' Adjust with the core bonus if boosted and using the rorq drones
+                If BoosterDrones Then
+                    DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(CoreBonus.OreDroneMiningYield))
+                End If
+
                 ' Amount of cycles we can do in an hour times the amount per cycle
                 If DroneName <> "" Then
                     MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
@@ -19634,6 +19670,11 @@ Leave:
                     Case Porpoise, Orca, Rorqual
                         IceHarvestDroneCycleTime *= (1 - (0.1 * CInt(BaseShipSkill)))
                 End Select
+
+                ' Adjust with the core bonus if boosted
+                If BoosterDrones Then
+                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(CoreBonus.IceDroneHarvestingSpeed))
+                End If
 
                 MiningAmtVariable = CInt(NumDrones) * (3600 / (IceHarvestDroneCycleTime / 1000) * DroneMiningAmountpCycle)
 
@@ -19788,6 +19829,10 @@ Leave:
             cmbMineAstrogeology.Text = "1"
         End If
 
+        If cmbMineDroneOpSkill.Text = "" Then
+            cmbMineDroneOpSkill.Text = "1"
+        End If
+
         ' Drone specialization skill needs drone op 5
         If CInt(cmbMineDroneOpSkill.Text) = 5 Then
             cmbMineDroneSpecSkill.Enabled = True
@@ -19802,6 +19847,10 @@ Leave:
         Else
             cmbMineDeepCore.Enabled = False
             lblMineDeepCore.Enabled = False
+        End If
+
+        If cmbMineBaseShipSkill.Text = "" Then
+            cmbMineBaseShipSkill.Text = "1"
         End If
 
         ' Set exhumer skill combo for ice, but the prospect can mine ore so enable it for all
@@ -20730,7 +20779,6 @@ Leave:
         Dim Astrogeology As Double
         Dim BaseShipBonus As Double
         Dim Exhumers As Double
-        Dim MiningForeman As Double
         Dim MiningUpgrades As Double
         Dim HighwallImplant As Double
         Dim MichiImplant As Double
@@ -20811,19 +20859,6 @@ Leave:
                 Exhumers = 0
             End If
 
-            ' Finally check mining foreman
-            If chkMineUseFleetBooster.Checked = True Then
-                If chkMineForemanMindlink.Enabled = True And chkMineForemanMindlink.Checked = True Then
-                    ' They have mindlink implant, so replace with implant mining bonus
-                    MiningForeman = AttribLookup.GetAttribute(chkMineForemanMindlink.Text, ItemAttributes.miningAmountBonus)
-                ElseIf cmbMineMiningForeman.Enabled = True Then
-                    ' Just use the level they have
-                    MiningForeman = CInt(cmbMineMiningForeman.Text) * AttribLookup.GetAttribute(lblMineMiningForeman.Text.Substring(0, Len(lblMineMiningForeman.Text) - 1), ItemAttributes.miningAmountBonus)
-                Else
-                    MiningForeman = 1
-                End If
-            End If
-
             ' Add skills
             m3YieldperCycle = m3YieldperCycle * (1 + (AttribLookup.GetAttribute(MiningSkillTypeID, ItemAttributes.miningAmountBonus) * Mining) / 100)
             m3YieldperCycle = m3YieldperCycle * (1 + (AttribLookup.GetAttribute(AstrogeologySkillTypeID, ItemAttributes.miningAmountBonus) * Astrogeology) / 100)
@@ -20832,7 +20867,6 @@ Leave:
             m3YieldperCycle = m3YieldperCycle * ((1 + (MiningUpgrades / 100)) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
             m3YieldperCycle = m3YieldperCycle * (1 + BaseShipBonus)
             m3YieldperCycle = m3YieldperCycle * (1 + Exhumers)
-            m3YieldperCycle = m3YieldperCycle * (1 + (MiningForeman / 100))
             m3YieldperCycle = m3YieldperCycle * RoleBonus
 
             Return m3YieldperCycle
@@ -20857,32 +20891,49 @@ Leave:
 
     End Function
 
+    Private Enum BurstBonusType
+        Range = 0
+        Cycle = 1
+    End Enum
+
+    Private Const MiningLaserFieldEnhancementChargeID As Integer = 42829
+    Private Const MiningLaserOptimizationChargeId As Integer = 42830
+    Private Const MiningDirectorSkillID As Integer = 22552
+    Private Const MiningForemanBurst1_ID As Integer = 42528
+    Private Const MiningForemanBurst2_ID As Integer = 43551
+    Private Const IndustrialCore1_ID As Integer = 28583
+    Private Const IndustrialCore2_ID As Integer = 42890
+
     ' Calculates the total burst bonus from ships and charges
-    Private Function CalculateBurstBonus(BurstType As String, BoostCheckRef As CheckBox) As Double
+    Private Function CalculateBurstBonus(BurstType As BurstBonusType, BoostCheckRef As CheckBox) As Double
         Dim GangBurstBonus As Double
         Dim MindLinkBonus As Double
         Dim BaseChargeBonus As Double
+        Dim AttribLookup As New EVEAttributes
+        Dim MiningDirectorBonus As Double = (1 + (CInt(cmbMineMiningDirector.Text) * (AttribLookup.GetAttribute(MiningDirectorSkillID, ItemAttributes.commandStrengthBonus) / 100)))
 
+        ' Get the burst bonus duration for the mindlink
         If chkMineForemanMindlink.Checked = True And chkMineForemanMindlink.Enabled = True Then
-            MindLinkBonus = 1.25
+            MindLinkBonus = 1 + AttribLookup.GetAttribute(chkMineForemanMindlink.Text, ItemAttributes.mindlinkBonus) / 100
         Else
             MindLinkBonus = 1
         End If
 
-        If BurstType = "Range" Then
-            BaseChargeBonus = 0.3
+        ' Get the bonus for the type of charge used
+        If BurstType = BurstBonusType.Range Then
+            BaseChargeBonus = AttribLookup.GetAttribute(MiningLaserFieldEnhancementChargeID, ItemAttributes.warfareBuff1Multiplier) / 100
         Else
-            BaseChargeBonus = 0.15
+            BaseChargeBonus = AttribLookup.GetAttribute(MiningLaserOptimizationChargeId, ItemAttributes.warfareBuff1Multiplier) / 100
         End If
 
         ' Mining Foreman Link bonus
         If cmbMineMiningDirector.Enabled = True And BoostCheckRef.Enabled Then
             If BoostCheckRef.Checked And BoostCheckRef.CheckState = CheckState.Indeterminate Then
-                ' Checked T2 - T2 gives 25% bonus to charges
-                GangBurstBonus = (BaseChargeBonus * 1.25) * (1 + (CInt(cmbMineMiningDirector.Text) * 0.1)) * MindLinkBonus
+                ' Checked T2 
+                GangBurstBonus = BaseChargeBonus * MiningDirectorBonus * MindLinkBonus * AttribLookup.GetAttribute(MiningForemanBurst2_ID, ItemAttributes.warfareBuff1Value)
             ElseIf BoostCheckRef.Checked Then
                 ' Checked T1
-                GangBurstBonus = BaseChargeBonus * (1 + (CInt(cmbMineMiningDirector.Text) * 0.1)) * MindLinkBonus
+                GangBurstBonus = BaseChargeBonus * MiningDirectorBonus * MindLinkBonus * AttribLookup.GetAttribute(MiningForemanBurst1_ID, ItemAttributes.warfareBuff1Value)
             Else
                 GangBurstBonus = 0
             End If
@@ -20890,22 +20941,16 @@ Leave:
             GangBurstBonus = 0
         End If
 
-        ' Ship boost to bursts
+        ' Ship boost to bursts - all in traits so hard code here
         Select Case cmbMineBoosterShipName.Text
             Case Porpoise
-                GangBurstBonus = GangBurstBonus * (1 + (0.02 * CInt(cmbMineBoosterShipSkill.Text)))
+                GangBurstBonus *= (1 + (0.02 * CInt(cmbMineBoosterShipSkill.Text)))
             Case Orca
-                GangBurstBonus = GangBurstBonus * (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
+                GangBurstBonus *= (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
             Case Rorqual
-                ' Rorq bonus if deployed core
-                If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And chkMineRorqDeployedMode.Enabled Then
-                    If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
-                        GangBurstBonus = GangBurstBonus * (1 + (0.3)) ' 30% max for Industrial core II
-                    Else ' T1
-                        GangBurstBonus = GangBurstBonus * (1 + (0.25)) ' 25% max for Industrial core I
-                    End If
-                End If
-                GangBurstBonus = GangBurstBonus * (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% per level ship bonus
+                ' Rorq industrial core bonus first
+                GangBurstBonus *= (1 + GetIndustrialCorebonus(CoreBonus.BurstStrength))
+                GangBurstBonus *= (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% per level ship bonus
         End Select
 
         Return GangBurstBonus
@@ -20918,7 +20963,7 @@ Leave:
 
         ' Calc range with bursts
         If chkMineUseFleetBooster.Checked Then
-            CalculatedRange = BaseRange * (1 + CalculateBurstBonus("Range", chkMineForemanLaserRangeBoost))
+            CalculatedRange = BaseRange * (1 + CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost))
         Else
             CalculatedRange = BaseRange
         End If
@@ -20933,6 +20978,40 @@ Leave:
 
     End Function
 
+    Private Enum CoreBonus
+        OreDroneMiningYield = 0
+        IceDroneHarvestingSpeed = 1
+        BurstStrength = 2
+    End Enum
+
+    ' Returns the bonus as a percentage for the industrial core for the type sent
+    Private Function GetIndustrialCorebonus(BonusType As CoreBonus) As Double
+        Dim ReturnBonus As Double = 0
+        Dim AttribLookup As New EVEAttributes
+        Dim CoreID As Integer
+
+        ' Only return the bonus if it's on and we are using a booster
+        If chkMineUseFleetBooster.Checked And chkMineRorqDeployedMode.Checked <> False Then
+            If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+                CoreID = IndustrialCore2_ID
+            Else
+                CoreID = IndustrialCore1_ID
+            End If
+
+            Select Case BonusType
+                Case CoreBonus.BurstStrength
+                    ReturnBonus = AttribLookup.GetAttribute(CoreID, ItemAttributes.industrialCoreBonusMiningBurstStrength) / 100
+                Case CoreBonus.IceDroneHarvestingSpeed
+                    ReturnBonus = AttribLookup.GetAttribute(CoreID, ItemAttributes.industrialCoreBonusDroneIceHarvesting) / 100
+                Case CoreBonus.OreDroneMiningYield
+                    ReturnBonus = AttribLookup.GetAttribute(CoreID, ItemAttributes.industrialCoreBonusDroneMining) / 100
+            End Select
+        End If
+
+        Return ReturnBonus
+
+    End Function
+
     ' Returns the cycle time of the mining laser cycle time sent
     Private Function CalculateMiningCycleTime(ByVal BaseCycleTime As Double) As Double
         Dim GangBurstBonus As Double
@@ -20941,13 +21020,13 @@ Leave:
 
         ' Boosters use one module and charges for boosting - Ascension
         If chkMineUseFleetBooster.Checked Then
-            GangBurstBonus = CalculateBurstBonus("Cycle", chkMineForemanLaserOpBoost)
+            GangBurstBonus = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
         Else
             GangBurstBonus = 0
         End If
 
-        ' Get the adjusted time with ganglinks etc
-        TempCycleTime = BaseCycleTime * (1 - GangBurstBonus)
+        ' Get the adjusted time with bursts
+        TempCycleTime = BaseCycleTime * (1 + GangBurstBonus)
 
         ' Changed with YC.118.9.1 - 9/2016
         Select Case cmbMineShipName.Text
@@ -21053,36 +21132,34 @@ Leave:
             OreName = "Dark Ochre"
         End If
 
-        If SelectedCharacter.ID <> DummyCharacterID Then
-            For i = 1 To MineProcessingCombos.Count - 1
-                CurrentProcessingLabel = MineProcessingLabels(i).Text
+        For i = 1 To MineProcessingCombos.Count - 1
+            CurrentProcessingLabel = MineProcessingLabels(i).Text
 
-                ' Special processing for Dark Ochre
-                If CurrentProcessingLabel = "Dark" Then
-                    CurrentProcessingLabel = "Dark Ochre"
-                End If
+            ' Special processing for Dark Ochre
+            If CurrentProcessingLabel = "Dark" Then
+                CurrentProcessingLabel = "Dark Ochre"
+            End If
 
-                If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
-                    ' Found it, return value
-                    Return CInt(MineProcessingCombos(i).Text)
-                Else
-                    ' If it didn't find it, it might be a moon ore - look up the type and check each of those
-                    Dim rsCheck As SQLiteDataReader
-                    DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG WHERE IT.groupID = IG.groupID and typeName = '" & OreName & "'", EVEDB.DBREf)
-                    rsCheck = DBCommand.ExecuteReader
+            If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
+                ' Found it, return value
+                Return CInt(MineProcessingCombos(i).Text)
+            Else
+                ' If it didn't find it, it might be a moon ore - look up the type and check each of those
+                Dim rsCheck As SQLiteDataReader
+                DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG WHERE IT.groupID = IG.groupID and typeName = '" & OreName & "'", EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
 
-                    If rsCheck.Read Then
-                        If rsCheck.GetString(0).Contains(" ") Then
-                            If CurrentProcessingLabel.Contains(rsCheck.GetString(0).Substring(0, InStr(rsCheck.GetString(0), " ") - 1)) Then
-                                Return CInt(MineProcessingCombos(i).Text)
-                            End If
+                If rsCheck.Read Then
+                    If rsCheck.GetString(0).Contains(" ") Then
+                        If CurrentProcessingLabel.Contains(rsCheck.GetString(0).Substring(0, InStr(rsCheck.GetString(0), " ") - 1)) Then
+                            Return CInt(MineProcessingCombos(i).Text)
                         End If
                     End If
-                    rsCheck.Close()
-                    DBCommand = Nothing
                 End If
-            Next
-        End If
+                rsCheck.Close()
+                DBCommand = Nothing
+            End If
+        Next
 
         Return 0
 

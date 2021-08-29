@@ -183,7 +183,8 @@ Public Class Blueprint
                 ByVal BPProductionFacility As IndustryFacility, ByVal BPComponentProductionFacility As IndustryFacility,
                 ByVal BPCapComponentProductionFacility As IndustryFacility, ByVal BPReactionFacility As IndustryFacility,
                 ByVal BPSellExcessItems As Boolean, ByVal BuildT2T3MaterialType As BuildMatType, ByVal OriginalBlueprint As Boolean,
-                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing, Optional ByRef BPReprocessingFacility As IndustryFacility = Nothing,
+                Optional ByRef BuildBuyList As List(Of BuildBuyItem) = Nothing,
+                Optional ByRef BPReprocessingFacility As IndustryFacility = Nothing,
                 Optional CompressedOreSettings As ConversionToOreSettings = Nothing)
 
         Dim readerBP As SQLiteDataReader
@@ -409,6 +410,10 @@ Public Class Blueprint
         ' Save copy and invention facility
         CopyFacility = BPCopyFacility
         InventionFacility = BPInventionFacility
+
+        ' Refresh the data on these for blueprints - categoryID = 9
+        CopyFacility.RefreshMMTMCMBonuses(0, 9)
+        InventionFacility.RefreshMMTMCMBonuses(0, 9)
 
         ' Set the FW bonus levels
         Select Case CopyFacility.FWUpgradeLevel
@@ -904,7 +909,7 @@ Public Class Blueprint
         SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES, INVENTORY_GROUPS "
         SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
         SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS_FACT ON ALL_BLUEPRINTS_FACT.ITEM_ID = ABM.MATERIAL_ID "
-        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & BlueprintID & " And ACTIVITY IN (1,11) "
+        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & CStr(BlueprintID) & " And ACTIVITY IN (1,11) "
         SQL = SQL & "AND MATERIAL_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -927,6 +932,7 @@ Public Class Blueprint
                 ReqBuildSkills.InsertSkill(readerBP.GetInt64(1), readerBP.GetInt32(2), readerBP.GetInt32(2), readerBP.GetInt32(2), 0, False, 0, "", Nothing, True)
 
             ElseIf AddMaterial(CurrentMaterialCategoryID, CurrentMaterialGroupID, IgnoreMinerals, IgnoreT1Item) Then
+
                 ' Save a copy of the excess materials list in case we need to replace it if we don't decide to build this component
                 If Not IsNothing(ExcessBuildMaterials) Then
                     SavedExcessMaterialList = CType(ExcessBuildMaterials.Clone, Materials)
@@ -934,6 +940,9 @@ Public Class Blueprint
 
                 ' Set the current material - adjust with portion size though if sent
                 CurrentMaterial = New Material(readerBP.GetInt64(1), readerBP.GetString(3), readerBP.GetString(11), readerBP.GetInt64(2), readerBP.GetDouble(7), If(readerBP.IsDBNull(8), 0, readerBP.GetDouble(8)), "", "")
+
+                ' Refresh the facility bonuses before we start calculations of ME/TE
+                Call MainManufacturingFacility.RefreshMMTMCMBonuses(ItemGroupID, ItemCategoryID)
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
                 BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
@@ -1036,7 +1045,7 @@ Public Class Blueprint
                     HasBuildableComponents = True
 
                     ' Look up the ME/TE and owned data for the bp
-                    Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                    Call GetMETEforBP(readerME.GetInt32(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
 
                     ' Update the current material's ME
                     CurrentMaterial.SetItemME(CStr(TempME))
@@ -1061,7 +1070,7 @@ Public Class Blueprint
                     End Select
 
                     ' For now only assume 1 bp and 1 line to build it - Later this section will have to be updated to use the remaining lines or maybe lines = numbps
-                    ComponentBlueprint = New Blueprint(readerME.GetInt64(0), BuildQuantity, TempME, TempTE,
+                    ComponentBlueprint = New Blueprint(readerME.GetInt32(0), BuildQuantity, TempME, TempTE,
                                                            1, 1, BPCharacter, BPUserSettings, BuildBuy, 0, TempComponentFacility,
                                                            ComponentManufacturingFacility, CapitalComponentManufacturingFacility,
                                                            ReactionFacility, SellExcessItems, T2T3MaterialType, False, BBList)
@@ -1898,7 +1907,7 @@ SkipProcessing:
         End If
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
-        SQL = "Select Me, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID In (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
+        SQL = "Select ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID In (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
         SQL = SQL & " And BLUEPRINT_ID =" & CStr(BlueprintID) & " And OWNED <> 0 "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader

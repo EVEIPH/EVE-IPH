@@ -102,6 +102,11 @@ Public Class ManufacturingFacility
     Private ManMEInput As Boolean
     Private ManTEInput As Boolean
 
+    Private TaxManualInput As Boolean
+    Private CostManualInput As Boolean
+    Private MEManualInput As Boolean
+    Private TEManualInput As Boolean
+
     Private Enum StationServices
         ReprocessingPlant = 5
         Factory = 14
@@ -511,46 +516,46 @@ Public Class ManufacturingFacility
 
         If FacilityLocation = ProgramLocation.BlueprintTab And Not RefreshSelectedOnly Then
             ' Load all the facilities for  tab - always start with manufacturing
-            Call SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Manufacturing, FacilityLocation)
             SelectedManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation)
             SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation)
             SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.CapitalManufacturing, FacilityLocation)
             SelectedCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCapitalManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.SuperManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.SuperManufacturing, FacilityLocation)
             SelectedSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultSuperManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation)
             SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.SubsystemManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.SubsystemManufacturing, FacilityLocation)
             SelectedSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultSubsystemManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.BoosterManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.BoosterManufacturing, FacilityLocation)
             SelectedBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultBoosterManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Copying, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Copying, FacilityLocation)
             SelectedCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultCopyFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Invention, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Invention, FacilityLocation)
             SelectedInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultInventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Reactions, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reactions, FacilityLocation)
             SelectedReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultReactionsFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3Invention, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3Invention, FacilityLocation)
             SelectedT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3InventionFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation)
             SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
             DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
-            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation)
             ' Set the refining rates for the reprocessing facility so these are set on first load
             Call SetRefiningRates(SelectedFacility)
             SelectedReprocessingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -559,13 +564,13 @@ Public Class ManufacturingFacility
         ElseIf FacilityLocation = ProgramLocation.ManufacturingTab Or RefreshSelectedOnly Then
 
             ' Select what facility to load based on the industry type
-            Call SelectedFacility.InitalizeFacility(InitialProductionType, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(InitialProductionType, FacilityLocation)
 
             Call SetSelectedFacility(InitialProductionType, FacilityLocation)
 
         ElseIf FacilityLocation = ProgramLocation.MiningTab Or FacilityLocation = ProgramLocation.ReprocessingPlant Or FacilityLocation = ProgramLocation.SovBelts Or FacilityLocation = ProgramLocation.IceBelts Then
 
-            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation, SelectedControlForm)
+            Call SelectedFacility.InitalizeFacility(ProductionType.Reprocessing, FacilityLocation)
             ' Set the refining rates for the reprocessing facility so these are set on first load
             Call SetRefiningRates(SelectedFacility)
             SelectedReprocessingFacility = CType(SelectedFacility.Clone, IndustryFacility)
@@ -613,7 +618,7 @@ Public Class ManufacturingFacility
                 DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load component too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.ComponentManufacturing, FacilityLocation)
                     SelectedComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -622,7 +627,7 @@ Public Class ManufacturingFacility
                 DefaultComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load cap component too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.CapitalComponentManufacturing, FacilityLocation)
                     SelectedCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultCapitalComponentManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -637,7 +642,7 @@ Public Class ManufacturingFacility
                 DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load T3 destroyers too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3DestroyerManufacturing, FacilityLocation)
                     SelectedT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -664,7 +669,7 @@ Public Class ManufacturingFacility
                 DefaultT3DestroyerManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 If LoadDualFacilities Then
                     ' Load T3 cruisers too so we can click back and forth
-                    Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation, SelectedControlForm)
+                    Call SelectedFacility.InitalizeFacility(ProductionType.T3CruiserManufacturing, FacilityLocation)
                     SelectedT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                     DefaultT3CruiserManufacturingFacility = CType(SelectedFacility.Clone, IndustryFacility)
                 End If
@@ -1882,6 +1887,8 @@ Public Class ManufacturingFacility
             SystemName = cmbFacilitySystem.Text
         End If
 
+        Dim SystemID As Long = GetSolarSystemID(SystemName)
+
         If FacilityType <> FacilityTypes.None Then
 
             ' First, see if this facility is a saved facility, and use the values saved in the table
@@ -1889,7 +1896,7 @@ Public Class ManufacturingFacility
             SQL &= "FROM SAVED_FACILITIES "
             SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND FACILITY_TYPE = {2} AND FACILITY_VIEW = {3} "
             SQL &= "AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text)) & " "
-            SQL &= "AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName)) & " "
+            SQL &= "AND SOLAR_SYSTEM_ID = " & CStr(SystemID) & " "
             SQL &= "AND FACILITY_ID = {4}"
 
             ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
@@ -1929,20 +1936,18 @@ Public Class ManufacturingFacility
             rsLoader.Close()
 
             If FacilityID <> -1 Then
-                ' Load default data
-
                 ' Pull default data for ME/TE/CE
                 Select Case FacilityType
                     Case FacilityTypes.Station
                         If BuildType = ProductionType.Reprocessing Then
                             ' Get Refine rate and tax for station
-                            DFTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, DFMaterialMultiplier)
+                            SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, SelectedFacility.BaseME)
                         Else
-                            DFTax = DefaultStationTaxRate
+                            SelectedFacility.BaseTax = DefaultStationTaxRate
                             ' For production in stations, they are always 1
-                            DFMaterialMultiplier = 1
-                            DFTimeMultiplier = 1
-                            DFCostMultiplier = 1
+                            SelectedFacility.BaseME = 1
+                            SelectedFacility.BaseTE = 1
+                            SelectedFacility.BaseTax = 1
                         End If
 
                     Case FacilityTypes.UpwellStructure
@@ -1969,10 +1974,10 @@ Public Class ManufacturingFacility
                         rsStats.Read()
 
                         ' Set base multipliers 
-                        DFTimeMultiplier = rsStats.GetDouble(1)
-                        DFCostMultiplier = rsStats.GetDouble(2)
-                        DFTax = DefaultStructureTaxRate
-                        DFMaterialMultiplier = rsStats.GetDouble(0)
+                        SelectedFacility.BaseME = rsStats.GetDouble(0)
+                        SelectedFacility.BaseTE = rsStats.GetDouble(1)
+                        SelectedFacility.BaseCost = rsStats.GetDouble(2)
+                        SelectedFacility.BaseTax = DefaultStructureTaxRate
 
                         rsStats.Close()
 
@@ -1991,61 +1996,19 @@ Public Class ManufacturingFacility
             Dim Defaults As New ProgramSettings
             FacilityName = None
             FacilityID = 0
-            DFMaterialMultiplier = Defaults.FacilityDefaultMM
-            DFTimeMultiplier = Defaults.FacilityDefaultTM
-            DFCostMultiplier = Defaults.FacilityDefaultCM
-            DFTax = Defaults.FacilityDefaultTax
+            SelectedFacility.BaseME = Defaults.FacilityDefaultMM
+            SelectedFacility.BaseTE = Defaults.FacilityDefaultTM
+            SelectedFacility.BaseCost = Defaults.FacilityDefaultCM
+            SelectedFacility.BaseTax = Defaults.FacilityDefaultTax
         End If
 
         ' Now that we have everything, load the full facility into the appropriate selected facility to use later
         With SelectedFacility
-            ' First, if this is a citadel, then look up any saved modules and adjust the MM/TM/CM
-            If FacilityType = FacilityTypes.UpwellStructure Then
-                Dim InstalledModules = New List(Of Integer) ' Reset
-                Dim SystemID As Long = GetSolarSystemID(SystemName)
-                InstalledModules = GetInstalledModules(Activity, FacilityID, ItemGroupID, ItemCategoryID, SystemID)
 
-                If InstalledModules.Count <> 0 Then
-                    ' Get a list of the IDs that we want to use the thukker mat bonus on
-                    Dim ThukkerRigIDs As New List(Of Integer)
-                    Dim AttributeID As Integer = 0
-
-                    SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708"
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsLoader = DBCommand.ExecuteReader
-
-                    While rsLoader.Read
-                        ThukkerRigIDs.Add(rsLoader.GetInt32(0))
-                    End While
-
-                    rsLoader.Close()
-
-                    ' Now, adjust the MM, TM, CM based on modules installed
-                    For Each RigID In InstalledModules
-                        ' Look up the bonus while adjusting for the type of space we are in
-                        Dim RigBonus As Double = 0
-                        Call GetRigBonus(RigID, CInt(GetSystemSecurityAttribute(SystemName)), AttributeID, RigBonus)
-
-                        ' Adjust MM, TM, CM by attribute and set the base to this as well, override whatever they had before
-                        Select Case AttributeID
-                            Case ItemAttributes.attributeEngRigCostBonus
-                                ' Cost
-                                DFCostMultiplier = DFCostMultiplier * (1 - RigBonus)
-                            Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
-                                ' ME - Thukker only applies to cap components and advanced versions, else use the regular bonus
-                                If (ThukkerRigIDs.Contains(RigID) And AttributeID = ItemAttributes.attributeThukkerEngRigMatBonus _
-                                        And (ItemGroupID = ItemIDs.AdvCapitalComponentGroupID Or ItemGroupID = ItemIDs.CapitalComponentGroupID)) _
-                                        Or Not ThukkerRigIDs.Contains(RigID) And AttributeID <> ItemAttributes.attributeThukkerEngRigMatBonus Then
-                                    DFMaterialMultiplier = DFMaterialMultiplier * (1 - RigBonus)
-                                End If
-                            Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
-                                ' TE
-                                DFTimeMultiplier = DFTimeMultiplier * (1 - RigBonus)
-                        End Select
-                    Next
-                    rsLoader.Close()
-                End If
-            End If
+            DFMaterialMultiplier = .BaseME
+            DFTimeMultiplier = .BaseTE
+            DFCostMultiplier = .BaseCost
+            DFTax = .BaseTax
 
             .ActivityCostPerSecond = 0
             Select Case Activity
@@ -2067,13 +2030,24 @@ Public Class ManufacturingFacility
             .FacilityType = FacilityType
             .RegionName = cmbFacilityRegion.Text
             .SolarSystemName = cmbFacilitySystem.Text
+            .SolarSystemID = SystemID
             .FacilityProductionType = BuildType
 
+            ' First, if this is a citadel, then look up any saved modules and adjust the MM/TM/CM
+            If FacilityType = FacilityTypes.UpwellStructure Then
+                ' Refresh the installed rig list
+                Call .UpdateProductionFittingInformation(SelectedCharacter.ID)
+
+                DFMaterialMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.MaterialModifier, .ActivityID, ItemGroupID, ItemCategoryID))
+                DFTimeMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.TimeModifier, .ActivityID, ItemGroupID, ItemCategoryID))
+                DFCostMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.CostModifier, .ActivityID, ItemGroupID, ItemCategoryID))
+            End If
+
             ' Save these first
-            .BaseME = DFMaterialMultiplier
-            .BaseTE = DFTimeMultiplier
-            .BaseCost = DFCostMultiplier
-            .BaseTax = DFTax
+            .OriginalME = DFMaterialMultiplier
+            .OriginalTE = DFTimeMultiplier
+            .OriginalCost = DFCostMultiplier
+            .OriginalTax = DFTax
 
             ' Set the final rates on what we calculated or saved
             If SavedTax = -1 Then
@@ -2101,16 +2075,16 @@ Public Class ManufacturingFacility
             End If
 
             If FacilityType <> FacilityTypes.None Then
-                ' Quick look up for the solarsystemid and region id, Strip off the system index first
-                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemName = '" & FormatDBString(SystemName) & "'"
+                ' Quick look up for the solarsystemid and region id
+                SQL = "SELECT security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(SystemID)
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsLoader = DBCommand.ExecuteReader
                 rsLoader.Read()
 
-                .SolarSystemID = rsLoader.GetInt64(0)
-                .SolarSystemSecurity = rsLoader.GetDouble(1)
-                .RegionID = rsLoader.GetInt64(2)
+                .SolarSystemID = SystemID
+                .SolarSystemSecurity = rsLoader.GetDouble(0)
+                .RegionID = rsLoader.GetInt64(1)
                 rsLoader.Close()
 
                 ' Now look up the cost index 
@@ -2232,103 +2206,6 @@ Public Class ManufacturingFacility
         Call SetFacility(SelectedFacility, BuildType, False, False)
 
         Application.DoEvents()
-
-    End Sub
-
-    Private Function GetSystemSecurityAttribute(SystemName As String) As ItemAttributes
-        ' Get the system security first
-        Dim security As Double = GetSolarSystemSecurityLevel(SystemName)
-
-        If Not IsNothing(security) Then
-            If security <= 0.0 Then
-                Return ItemAttributes.nullSecModifier
-            ElseIf security < 0.45 Then
-                Return ItemAttributes.lowSecModifier
-            Else
-                Return ItemAttributes.hiSecModifier
-            End If
-        Else
-            ' Just assume null
-            Return ItemAttributes.nullSecModifier
-        End If
-    End Function
-
-    ' Returns an array of rigs installed on the facility for info sent
-    Private Function GetInstalledModules(ByVal Activity As String, ByVal FacilityID As Long, ByVal ItemGroupID As Integer,
-                                         ByVal ItemCategoryID As Integer, ByVal SystemID As Long) As List(Of Integer)
-        Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
-        Dim InstalledModules As New List(Of Integer)
-
-        ' Save the current data - this will work for reactions since the groupID is the same for the item being made for lookup
-        Dim TempBPGroupID As Integer = ItemGroupID
-        Dim TempBPCategoryID As Integer = ItemCategoryID
-
-        ' Check the activity and adjust the bp data if needed for components to query the bonuses they saved
-        If Activity = ActivityComponentManufacturing Or Activity = ActivityCapComponentManufacturing Then
-            Select Case ItemGroupID
-                Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CarrierGroupID,
-                     ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.FreighterGroupID, ItemIDs.JumpFreighterGroupID,
-                     ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID, ItemIDs.FAXGroupID
-                    TempBPGroupID = ItemIDs.CapitalComponentGroupID
-                    TempBPCategoryID = ItemIDs.ComponentCategoryID
-                Case Else
-                    TempBPGroupID = ItemIDs.ConstructionComponentsGroupID
-                    TempBPCategoryID = ItemIDs.ComponentCategoryID
-            End Select
-        ElseIf Activity = ActivityCopying Or Activity = ActivityInvention Then
-            TempBPCategoryID = ItemIDs.BlueprintCategoryID
-            TempBPGroupID = ItemIDs.FrigateBlueprintGroupID
-        ElseIf Activity = ActivityReprocessing Then
-            Select Case ItemGroupID
-                Case ItemIDs.IceGroupID ' Ice
-                    TempBPGroupID = ItemGroupID
-                Case ItemIDs.CommonMoonAsteroids, ItemIDs.ExceptionalMoonAsteroids, ItemIDs.RareMoonAsteroids, ItemIDs.UbiquitousMoonAsteroids, ItemIDs.UncommonMoonAsteroids ' Moon ores
-                    TempBPGroupID = ItemIDs.CommonMoonAsteroids
-                Case ItemIDs.Arkonor, ItemIDs.Bistot, ItemIDs.Crokite, ItemIDs.DarkOchre, ItemIDs.Gneiss, ItemIDs.Hedbergite, ItemIDs.Hemorphite, ItemIDs.Jaspet,
-                     ItemIDs.Kernite, ItemIDs.Mercoxit, ItemIDs.Omber, ItemIDs.Plagioclase, ItemIDs.Pyroxeres, ItemIDs.Scordite, ItemIDs.Spodumain, ItemIDs.Veldspar
-                    TempBPGroupID = ItemIDs.Arkonor ' this is the default for all ores
-            End Select
-            TempBPCategoryID = ItemIDs.AsteroidsCategoryID
-        End If
-
-        SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
-        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
-        SQL &= "AND UPWELL_STRUCTURES_INSTALLED_MODULES.INSTALLED_MODULE_ID = ENGINEERING_RIG_BONUSES.typeID AND activityId = {7} "
-        SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
-        DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, CStr(SelectedProductionType), CStr(SystemID), CStr(SelectedLocation),
-                                      CStr(FacilityID), CStr(TempBPCategoryID), CStr(TempBPGroupID), CStr(GetActivityID(Activity))), EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
-
-        While rsLoader.Read()
-            InstalledModules.Add(rsLoader.GetInt32(0))
-        End While
-        rsLoader.Close()
-
-        Return InstalledModules
-
-    End Function
-
-    ' Returns the attribute and bonus for the rig ID and system security sent by reference
-    Private Sub GetRigBonus(ByVal RigID As Integer, ByVal SecurityAttribute As Integer, ByRef Attribute As Integer, ByRef Bonus As Double)
-        Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
-
-        ' Look up the bonus while adjusting for the type of space we are in
-        SQL = "SELECT attributeID, ABS(value * (SELECT value FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND ATTRIBUTEID = {1})/100) AS BONUS "
-        SQL &= "FROM TYPE_ATTRIBUTES WHERE ATTRIBUTEID IN (2593,2594,2595,2713,2714,2653,717) "
-        SQL &= "AND value <> 0 AND TYPEID = {0}"
-        SQL = String.Format(SQL, RigID, CInt(SecurityAttribute))
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
-
-        If rsLoader.Read() Then
-            Attribute = rsLoader.GetInt32(0)
-            Bonus = rsLoader.GetDouble(1)
-        Else
-            Attribute = 0
-            Bonus = 0
-        End If
 
     End Sub
 
@@ -2564,10 +2441,6 @@ Public Class ManufacturingFacility
 
         ' After showing, select the name of the citadel chosen and then dispose
         cmbFacility.Text = StructureViewer.UpwellStructureName
-        If StructureViewer.SavedFacility Then
-            ' Save it here too but don't show the dialog
-            Call SaveSelectedFacility(True)
-        End If
 
         Call StructureViewer.Dispose()
 
@@ -2578,6 +2451,13 @@ Public Class ManufacturingFacility
         Else
             ' If it's not the default, just load the facility so we get the changes from the fitting
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
+        End If
+
+        If StructureViewer.SavedFacility Then
+            ' Update the facility's bonuses based on new fitting
+            'Call SelectedFacility.UpdateProductionFittingInformation(SelectedCharacterID)
+            ' Save it here too but don't show the dialog
+            Call SaveSelectedFacility(True)
         End If
 
         Call SetResetRefresh()
@@ -3040,7 +2920,8 @@ Public Class ManufacturingFacility
                         SelectedIndyType = ProductionType.T3CruiserManufacturing
                     Case ItemIDs.TacticalDestroyerGroupID
                         SelectedIndyType = ProductionType.T3DestroyerManufacturing
-
+                    Case ItemIDs.ProtectiveComponentGroupID
+                        SelectedIndyType = ProductionType.ComponentManufacturing
                     Case Else
                         SelectedIndyType = ProductionType.Manufacturing
 
@@ -3560,11 +3441,8 @@ Public Class ManufacturingFacility
         ' Process all but scrapmetal to account for rigs/etc.
         If SelectedProductionType = ProductionType.Reprocessing And SelectedFacility.FacilityType = FacilityTypes.UpwellStructure Then
             If RefineType <> RefineMaterialType.Scrapmetal Then
-                Dim InstalledModules As List(Of Integer)
                 Dim ItemGroupID As Integer
-                Dim ItemCategoryID As Integer = 0
-                Dim TempBonus As Double
-                Dim ReturnedAttribute As Integer
+                Dim ItemCategoryID As Integer = 25
 
                 Select Case RefineType
                     Case RefineMaterialType.Ore
@@ -3576,17 +3454,11 @@ Public Class ManufacturingFacility
                 End Select
 
                 With SelectedFacility
-                    InstalledModules = GetInstalledModules(.Activity, .FacilityID, ItemGroupID, ItemCategoryID, .SolarSystemID)
-                End With
-
-                For Each StructureModule In InstalledModules
-                    Call GetRigBonus(StructureModule, GetSystemSecurityAttribute(SelectedFacility.SolarSystemName), ReturnedAttribute, TempBonus)
-                    ' Look for ItemAttributes.refiningYieldMultiplier to get the correct value
-                    If ReturnedAttribute = ItemAttributes.refiningYieldMultiplier Then
-                        RefineValue = (TempBonus * 100) * (SelectedFacility.MaterialMultiplier / BaseRefineRate) ' Calculate new base refine amount (the structure modifier is multiplied to 50% base)
-                        Exit For
+                    Dim BonusValue As Double = .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.ReprocessingRate, .ActivityID, ItemGroupID, ItemCategoryID)
+                    If BonusValue > 0 Then
+                        RefineValue = (BonusValue * 100) * (.MaterialMultiplier / BaseRefineRate)
                     End If
-                Next
+                End With
             Else
                 ' Scrapmetal is pretty basic - just return the base ME as 50% for all structures and we will adjust outside of object for scrapmetal
                 RefineValue = BaseRefineRate
@@ -3968,6 +3840,7 @@ Public Enum ItemIDs
     ComponentCategoryID = 17
     CapitalComponentGroupID = 873
     AdvCapitalComponentGroupID = 913
+    ProtectiveComponentGroupID = -3 ' My manual group ID until they fix it in the SDE
 
     BlueprintCategoryID = 9
     FrigateBlueprintGroupID = 105
@@ -4038,21 +3911,24 @@ Public Class IndustryFacility
 
     ' Nullable fields
     Public TaxRate As Double ' The tax rate
-
     Public MaterialMultiplier As Double ' The bonus material percentage or refining rate for materials used in this facility
-    Public RigBonus As Double ' This is the bonus of the rig used - mainly useful for refining facilties
     Public TimeMultiplier As Double ' The bonus to time to conduct an activity in this facility
     Public CostMultiplier As Double ' The bonus to cost to conduct an activity in this facility
+    Public OriginalME As Double ' What we originally loaded to check for manual entries if different
+    Public OriginalTE As Double ' What we originally loaded to check for manual entries if different
+    Public OriginalCost As Double ' What we originally loaded to check for manual entries if different
+    Public OriginalTax As Double ' What we originally loaded to check for manual entries if different
+    Public BaseTax As Double ' Base tax rate from default
     Public BaseME As Double ' The ME bonus from default
     Public BaseTE As Double ' The TE bonus from default
     Public BaseCost As Double ' The Cost bonus from default
-    Public BaseTax As Double ' Base tax rate from default
 
     Public FullyLoaded As Boolean ' This facility was fully loaded in all parts
-
-    Private ControlForm As Form  ' Where the control lives
-
+    Private ControlLocation As ProgramLocation ' Where in the program is this facility
     Public ConvertToOre As Boolean ' if convert to ore option is selected
+
+    ' For all the fitting data
+    Private FittingBonuses As List(Of FittingBonusInfo)
 
     ' Default multiplier rates if we can't find them
     Public Const DefaultTaxRate As Double = 0
@@ -4065,6 +3941,31 @@ Public Class IndustryFacility
     Public MoonOreFacilityRefineRate As Double
     Public IceFacilityRefineRate As Double
     Public ScrapmetalRefineRate As Double
+
+    Private ThukkerRigIDs As List(Of Integer)
+
+    Private Structure FittingBonusInfo
+        Dim RigID As Integer
+        Dim AttributeID As Integer
+        Dim CategoryID As Object
+        Dim GroupID As Object
+        Dim ActivityID As Integer
+        Dim Bonus As Double
+    End Structure
+
+    Private Structure Attributebonus
+        Dim AttributeID As Integer
+        Dim Bonus As Double
+    End Structure
+
+    Public Enum ModifierType
+        MaterialModifier = 0
+        TimeModifier = 1
+        CostModifier = 2
+        ReprocessingRate = 3
+    End Enum
+
+    Private BonusDataToFind As FittingBonusInfo
 
     Public Sub New()
 
@@ -4091,6 +3992,10 @@ Public Class IndustryFacility
         MaterialMultiplier = 0
         TimeMultiplier = 0
         CostMultiplier = 0
+        OriginalTax = 0
+        OriginalME = 0
+        OriginalTE = 0
+        OriginalCost = 0
         BaseME = 0
         BaseTE = 0
         BaseCost = 0
@@ -4101,9 +4006,12 @@ Public Class IndustryFacility
         IceFacilityRefineRate = 0
         ScrapmetalRefineRate = 0
 
-        ControlForm = Nothing
+        ControlLocation = Nothing
         ConvertToOre = False
         FullyLoaded = False
+
+        ThukkerRigIDs = New List(Of Integer)
+        FittingBonuses = New List(Of FittingBonusInfo)
 
     End Sub
 
@@ -4135,6 +4043,10 @@ Public Class IndustryFacility
         CopyOfMe.MaterialMultiplier = MaterialMultiplier
         CopyOfMe.TimeMultiplier = TimeMultiplier
         CopyOfMe.CostMultiplier = CostMultiplier
+        CopyOfMe.OriginalME = OriginalME
+        CopyOfMe.OriginalTE = OriginalTE
+        CopyOfMe.OriginalCost = OriginalCost
+        CopyOfMe.OriginalTax = OriginalTax
         CopyOfMe.BaseME = BaseME
         CopyOfMe.BaseTE = BaseTE
         CopyOfMe.BaseCost = BaseCost
@@ -4144,20 +4056,34 @@ Public Class IndustryFacility
         CopyOfMe.IceFacilityRefineRate = IceFacilityRefineRate
         CopyOfMe.ScrapmetalRefineRate = ScrapmetalRefineRate
         CopyOfMe.FullyLoaded = FullyLoaded
-        CopyOfMe.ControlForm = ControlForm
+        CopyOfMe.ControlLocation = ControlLocation
         CopyOfMe.ConvertToOre = ConvertToOre
+        CopyOfMe.FittingBonuses = FittingBonuses
+        CopyOfMe.ThukkerRigIDs = ThukkerRigIDs
 
         Return CopyOfMe
 
     End Function
 
     ' Load up the facility data from the table as default
-    Public Sub InitalizeFacility(InitialProductionType As ProductionType, FacilityLocation As ProgramLocation, ByRef FacilityForm As Form)
+    Public Sub InitalizeFacility(ByVal InitialProductionType As ProductionType, ByVal FacilityLocation As ProgramLocation)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
 
-        ' Save the reference to the form
-        ControlForm = FacilityForm
+        ' Load these for later use
+        ThukkerRigIDs = New List(Of Integer)
+
+        DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
+        rsLoader = DBCommand.ExecuteReader
+
+        While rsLoader.Read
+            ThukkerRigIDs.Add(rsLoader.GetInt32(0))
+        End While
+
+        rsLoader.Close()
+
+        ' Save the reference to the program location
+        ControlLocation = FacilityLocation
 
         ' Look up all the data in two queries - first base data and try to get the multipliers and cost data - it should only be there for saved outposts (which are being removed)
         SQL = "SELECT SF.FACILITY_ID, SF.FACILITY_TYPE, "
@@ -4190,7 +4116,7 @@ Public Class IndustryFacility
         End If
 
         ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
-        DBCommand = New SQLiteCommand(SQL & String.Format(SQLCharID, CStr(CharID)), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL & String.Format(SQLCharID, CharID), EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
         rsLoader.Read()
 
@@ -4228,6 +4154,9 @@ Public Class IndustryFacility
                 IncludeActivityCost = CBool(.GetInt32(11))
                 IncludeActivityTime = CBool(.GetInt32(12))
                 IncludeActivityUsage = CBool(.GetInt32(13))
+
+                ' Refresh the rigs installed for this facility and information to apply the bonuses
+                Call UpdateProductionFittingInformation(CLng(CharID))
 
                 ' Save these values for later lookup - use -1 for null indicator - these are what they saved manually - can't save a value for a station
                 If IsDBNull(.GetValue(14)) Or FacilityType = FacilityTypes.Station Then
@@ -4423,27 +4352,27 @@ ExitBlock:
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
-                        If TaxRate <> BaseTax Then
+                        If TaxRate <> OriginalTax Then
                             TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "FACILITY_TAX = NULL, "
                         End If
 
-                        If MaterialMultiplier <> BaseME Then
+                        If MaterialMultiplier <> OriginalME Then
                             TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "MATERIAL_MULTIPLIER = NULL, "
                         End If
 
-                        If TimeMultiplier <> BaseTE Then
+                        If TimeMultiplier <> OriginalTE Then
                             TempSQL &= "TIME_MULTIPLIER = " & CStr(TimeMultiplier) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "TIME_MULTIPLIER = NULL, "
                         End If
-                        If CostMultiplier <> BaseCost Then
+                        If CostMultiplier <> OriginalCost Then
                             TempSQL &= "COST_MULTIPLIER = " & CStr(CostMultiplier) & " "
                             ManualEntries = True
                         Else
@@ -4471,21 +4400,21 @@ ExitBlock:
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
-                        If TaxRate <> BaseTax Then
+                        If TaxRate <> OriginalTax Then
                             TaxValue = CStr(TaxRate)
                             ManualEntries = True
                         End If
 
-                        If MaterialMultiplier <> BaseME Then
+                        If MaterialMultiplier <> OriginalME Then
                             MEValue = CStr(MaterialMultiplier)
                             ManualEntries = True
                         End If
 
-                        If TimeMultiplier <> BaseTE Then
+                        If TimeMultiplier <> OriginalTE Then
                             TEValue = CStr(TimeMultiplier)
                             ManualEntries = True
                         End If
-                        If CostMultiplier <> BaseCost Then
+                        If CostMultiplier <> OriginalCost Then
                             CostValue = CStr(CostMultiplier)
                             ManualEntries = True
                         End If
@@ -4495,15 +4424,20 @@ ExitBlock:
                     SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},NULL,{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
                                         CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                                         CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxValue, MEValue, TEValue, CostValue, ConvertToOre)
+
                 End If
 
                 ' Save it
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
+                rsCheck.Close()
+
                 ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
-                If ManualEntries And FacilityProductionType <> ProductionType.Reprocessing Then
-                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
+                If FacilityType = FacilityTypes.UpwellStructure Then
+                    If ManualEntries Then
+                        SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
+                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
+                    End If
                 End If
 
                 ' Update FW upgrade
@@ -4526,6 +4460,38 @@ ExitBlock:
                     rsCheck.Close()
                 End If
             Next
+
+            ' If this is an upwell, and we are saving multiple structures (shared) then we need to update all the shared structure modules as well
+            If FacilityType = FacilityTypes.UpwellStructure And UserApplicationSettings.ShareSavedFacilities Then
+                Dim InstalledModules As New List(Of Integer)
+                ' Look up all the installed modules for the location sent
+                SQL = String.Format("SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2} AND FACILITY_ID = {3} AND SOLAR_SYSTEM_ID = {4}",
+                                    CInt(FacilityProductionType), CStr(Location), CharacterID, FacilityID, SolarSystemID)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+
+                While rsCheck.Read()
+                    InstalledModules.Add(rsCheck.GetInt32(0))
+                End While
+
+                If InstalledModules.Count > 0 Then
+                    ' Delete all in there first for this location ID
+                    EVEDB.BeginSQLiteTransaction()
+                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_ID = {3}"
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CStr(FacilityProductionType), SolarSystemID, FacilityID))
+
+                    ' Now insert all the modules installed on this structure for sharing
+                    For Each ModID In InstalledModules
+                        For Each LID In LocationList
+                            SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
+                                    CharacterID, CStr(FacilityProductionType), SolarSystemID, CStr(LID), FacilityID, ModID)
+                            EVEDB.ExecuteNonQuerySQL(SQL)
+                        Next
+                    Next
+                    EVEDB.CommitSQLiteTransaction()
+                End If
+            End If
+
 
             ' Refresh the main facilites if sharing facility saves
             If UserApplicationSettings.ShareSavedFacilities Then
@@ -4636,6 +4602,322 @@ ExitBlock:
             Case Else
                 Return None
         End Select
+    End Function
+
+    ' Refreshes the MM/TM/CM bonuses for all three for the information sent
+    Public Sub RefreshMMTMCMBonuses(ItemGroupID As Integer, ItemCategoryID As Integer)
+        ' Cost
+        CostMultiplier = BaseCost * (1 - GetFacilityBonusMulitiplier(ModifierType.CostModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        ' Material
+        MaterialMultiplier = BaseME * (1 - GetFacilityBonusMulitiplier(ModifierType.MaterialModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        ' Time
+        TimeMultiplier = BaseTE * (1 - GetFacilityBonusMulitiplier(ModifierType.TimeModifier, ActivityID, ItemGroupID, ItemCategoryID))
+
+    End Sub
+
+    ' Predicate for searching fitting bonuses 
+    Private Function FindStructureBonus(ByVal Item As FittingBonusInfo) As Boolean
+        'SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
+        With BonusDataToFind
+            If .ActivityID = Item.ActivityID And .AttributeID = Item.AttributeID Then
+                If IsNothing(Item.GroupID) Then
+                    If CInt(.CategoryID) = CInt(Item.CategoryID) Then
+                        Return True
+                    End If
+                Else
+                    ' Groupid
+                    If CInt(.GroupID) = CInt(Item.GroupID) Then
+                        Return True
+                    End If
+                End If
+            End If
+        End With
+
+        Return False
+
+    End Function
+
+    Public Function GetFacilityBonusMulitiplier(BonusType As ModifierType, ActivityID As Integer, ItemGroupID As Integer, ItemCategoryID As Integer) As Double
+        Dim FoundData As FittingBonusInfo
+
+        ' Set the base lookup data
+        BonusDataToFind.ActivityID = ActivityID
+        If Not IsNothing(ItemCategoryID) Then
+            BonusDataToFind.CategoryID = ItemCategoryID
+        Else
+            BonusDataToFind.CategoryID = Nothing
+        End If
+        If Not IsNothing(ItemGroupID) Then
+            BonusDataToFind.GroupID = ItemGroupID
+        Else
+            BonusDataToFind.GroupID = Nothing
+        End If
+
+        Select Case BonusType
+            Case ModifierType.MaterialModifier
+                ' Look up thukker first if it's in the correct groupids
+                If Not IsNothing(ItemGroupID) Then
+                    If ItemGroupID = ItemIDs.AdvCapitalComponentGroupID Or ItemGroupID = ItemIDs.CapitalComponentGroupID Then
+                        ' Look for thukker bonus
+                        BonusDataToFind.AttributeID = ItemAttributes.attributeThukkerEngRigMatBonus
+                        FoundData = FittingBonuses.Find(AddressOf FindStructureBonus)
+
+                        If FoundData.Bonus > 0 Then
+                            ' Found the tukker bonus and it's in the groups we are looking at
+                            If ThukkerRigIDs.Contains(FoundData.RigID) Then
+                                Return FoundData.Bonus
+                            End If
+                        End If
+                    End If
+
+                    ' Just look up the normal Material bonus
+                    BonusDataToFind.AttributeID = ItemAttributes.attributeEngRigMatBonus
+
+                End If
+            Case ModifierType.TimeModifier
+                BonusDataToFind.AttributeID = ItemAttributes.attributeEngRigTimeBonus
+            Case ModifierType.CostModifier
+                BonusDataToFind.AttributeID = ItemAttributes.attributeEngRigCostBonus
+            Case ModifierType.ReprocessingRate
+                BonusDataToFind.AttributeID = ItemAttributes.refiningYieldMultiplier
+            Case Else
+                Return 0
+        End Select
+
+        FoundData = FittingBonuses.Find(AddressOf FindStructureBonus)
+
+        Return FoundData.Bonus
+
+    End Function
+
+    ' Updates the fitting bonuses for the facility if upwell and saves that list locally to the facility for searching later
+    Public Sub UpdateProductionFittingInformation(CharacterID As Long)
+        Dim RigBonuses As New List(Of Attributebonus)
+        Dim SQL As String
+        Dim rsLookup1 As SQLiteDataReader
+        Dim rsLookup2 As SQLiteDataReader
+        Dim RigID As Integer
+        Dim Info As FittingBonusInfo
+
+        If FacilityType = FacilityTypes.UpwellStructure Then
+            ' Reset the list
+            FittingBonuses = New List(Of FittingBonusInfo)
+
+            ' Get all the rigs and category/group combos installed on the facility
+            SQL = "SELECT DISTINCT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES AS USIM, ENGINEERING_RIG_BONUSES AS ERB WHERE ERB.typeID = USIM.INSTALLED_MODULE_ID  "
+            SQL &= "AND CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
+            DBCommand = New SQLiteCommand(String.Format(SQL, CharacterID, CStr(FacilityProductionType), CStr(SolarSystemID), CStr(ControlLocation), CStr(FacilityID)), EVEDB.DBREf)
+            rsLookup1 = DBCommand.ExecuteReader
+
+            While rsLookup1.Read()
+                RigID = rsLookup1.GetInt32(0)
+                ' Get the bonues that apply for each rig
+                RigBonuses = GetRigBonuses(RigID, SolarSystemID)
+
+                ' Now lookup all category/group combos and apply all bonuses to it
+                DBCommand = New SQLiteCommand("SELECT groupID, categoryID, activityID FROM ENGINEERING_RIG_BONUSES WHERE typeID =" & CStr(RigID), EVEDB.DBREf)
+                rsLookup2 = DBCommand.ExecuteReader
+
+                While rsLookup2.Read
+                    For Each BonusData In RigBonuses
+                        Info.RigID = RigID
+                        Info.AttributeID = BonusData.AttributeID
+                        Info.Bonus = BonusData.Bonus
+                        If Not IsDBNull(rsLookup2.GetValue(0)) Then
+                            Info.GroupID = rsLookup2.GetValue(0)
+                        Else
+                            Info.GroupID = Nothing
+                        End If
+                        If Not IsDBNull(rsLookup2.GetValue(1)) Then
+                            Info.CategoryID = rsLookup2.GetValue(1)
+                        Else
+                            Info.CategoryID = Nothing
+                        End If
+
+                        Info.ActivityID = rsLookup2.GetInt32(2)
+
+                        ' Insert the fitting bonus
+                        FittingBonuses.Add(Info)
+                    Next
+                End While
+                rsLookup2.Close()
+            End While
+
+            rsLookup1.Close()
+        End If
+
+    End Sub
+
+    ' Returns the Structure modifier based on installed rigs for the sent type
+    Public Function GetStructureModifier(SentModifier As ModifierType, BaseValue As Double, _SystemID As Long, _Activity As String,
+                                         _FacilityID As Long, _ItemGroupID As Integer, _ItemCategoryID As Integer,
+                                         CharacterID As Long, Location As ProgramLocation) As Double
+        Dim rsLoader As SQLiteDataReader
+        Dim InstalledModules = New List(Of Integer) ' Reset
+
+        Dim MM As Double = 1
+        Dim TM As Double = 1
+        Dim CM As Double = 1
+        Dim RefineValue As Double = 0
+
+        InstalledModules = GetInstalledModules(_Activity, _FacilityID, _ItemGroupID, _ItemCategoryID, _SystemID, CharacterID, Location)
+
+        If InstalledModules.Count <> 0 Then
+            ' Get a list of the IDs that we want to use the thukker mat bonus on
+            Dim ThukkerRigIDs As New List(Of Integer)
+            Dim AttributeID As Integer = 0
+
+            DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
+            rsLoader = DBCommand.ExecuteReader
+
+            While rsLoader.Read
+                ThukkerRigIDs.Add(rsLoader.GetInt32(0))
+            End While
+
+            rsLoader.Close()
+
+            ' Now, adjust the MM, TM, CM based on modules installed
+            For Each RigID In InstalledModules
+                ' Look up the bonus while adjusting for the type of space we are in
+                Dim RigBonuses As List(Of Attributebonus)
+                RigBonuses = GetRigBonuses(RigID, _SystemID)
+
+                ' Adjust MM, TM, CM by attribute and set the base to this as well, override whatever they had before
+                For Each Rig In RigBonuses
+                    Select Case Rig.AttributeID
+                        Case ItemAttributes.attributeEngRigCostBonus
+                            ' Cost
+                            CM *= (1 - Rig.Bonus)
+                        Case ItemAttributes.attributeEngRigMatBonus, ItemAttributes.RefRigMatBonus, ItemAttributes.attributeThukkerEngRigMatBonus
+                            ' ME - Thukker only applies to cap components and advanced versions, else use the regular bonus
+                            If (ThukkerRigIDs.Contains(RigID) And AttributeID = ItemAttributes.attributeThukkerEngRigMatBonus _
+                                    And (_ItemGroupID = ItemIDs.AdvCapitalComponentGroupID Or _ItemGroupID = ItemIDs.CapitalComponentGroupID)) _
+                                    Or Not ThukkerRigIDs.Contains(RigID) And AttributeID <> ItemAttributes.attributeThukkerEngRigMatBonus Then
+                                MM *= (1 - Rig.Bonus)
+                            End If
+                        Case ItemAttributes.attributeEngRigTimeBonus, ItemAttributes.RefRigTimeBonus
+                            ' TE
+                            TM *= (1 - Rig.Bonus)
+                        Case ItemAttributes.refiningYieldMultiplier
+                            RefineValue = (Rig.Bonus * 100) * (Me.MaterialMultiplier / BaseRefineRate) ' Calculate new base refine amount (the structure modifier is multiplied to 50% base)
+                    End Select
+                Next
+            Next
+            rsLoader.Close()
+        End If
+
+        Select Case SentModifier
+            Case ModifierType.MaterialModifier
+                Return BaseValue * MM
+            Case ModifierType.TimeModifier
+                Return BaseValue * TM
+            Case ModifierType.CostModifier
+                Return BaseValue * CM
+            Case ModifierType.ReprocessingRate
+                Return RefineValue
+            Case Else
+                Return BaseValue
+        End Select
+
+    End Function
+
+    ' Returns an array of rigs installed on the facility for info sent
+    Private Function GetInstalledModules(ByVal Activity As String, ByVal FacilityID As Long, ByVal ItemGroupID As Integer,
+                                         ByVal ItemCategoryID As Integer, ByVal SystemID As Long, ByVal SelectedCharacterID As Long,
+                                         ByVal SelectedLocation As ProgramLocation) As List(Of Integer)
+        Dim SQL As String = ""
+        Dim rsLoader As SQLiteDataReader
+        Dim InstalledModules As New List(Of Integer)
+
+        ' Save the current data - this will work for reactions since the groupID is the same for the item being made for lookup
+        Dim TempBPGroupID As Integer = ItemGroupID
+        Dim TempBPCategoryID As Integer = ItemCategoryID
+
+        ' Check the activity and adjust the bp data if needed for components to query the bonuses they saved
+        If Activity = ManufacturingFacility.ActivityComponentManufacturing Or Activity = ManufacturingFacility.ActivityCapComponentManufacturing Then
+            Select Case ItemGroupID
+                Case ItemIDs.TitanGroupID, ItemIDs.SupercarrierGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CarrierGroupID,
+                     ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.IndustrialCommandShipGroupID, ItemIDs.FreighterGroupID, ItemIDs.JumpFreighterGroupID,
+                     ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID, ItemIDs.FAXGroupID
+                    TempBPGroupID = ItemIDs.CapitalComponentGroupID
+                    TempBPCategoryID = ItemIDs.ComponentCategoryID
+                Case Else
+                    TempBPGroupID = ItemIDs.ConstructionComponentsGroupID
+                    TempBPCategoryID = ItemIDs.ComponentCategoryID
+            End Select
+        ElseIf Activity = ManufacturingFacility.ActivityCopying Or Activity = ManufacturingFacility.ActivityInvention Then
+            TempBPCategoryID = ItemIDs.BlueprintCategoryID
+            TempBPGroupID = ItemIDs.FrigateBlueprintGroupID
+        ElseIf Activity = ManufacturingFacility.ActivityReprocessing Then
+            Select Case ItemGroupID
+                Case ItemIDs.IceGroupID ' Ice
+                    TempBPGroupID = ItemGroupID
+                Case ItemIDs.CommonMoonAsteroids, ItemIDs.ExceptionalMoonAsteroids, ItemIDs.RareMoonAsteroids, ItemIDs.UbiquitousMoonAsteroids, ItemIDs.UncommonMoonAsteroids ' Moon ores
+                    TempBPGroupID = ItemIDs.CommonMoonAsteroids
+                Case ItemIDs.Arkonor, ItemIDs.Bistot, ItemIDs.Crokite, ItemIDs.DarkOchre, ItemIDs.Gneiss, ItemIDs.Hedbergite, ItemIDs.Hemorphite, ItemIDs.Jaspet,
+                     ItemIDs.Kernite, ItemIDs.Mercoxit, ItemIDs.Omber, ItemIDs.Plagioclase, ItemIDs.Pyroxeres, ItemIDs.Scordite, ItemIDs.Spodumain, ItemIDs.Veldspar
+                    TempBPGroupID = ItemIDs.Arkonor ' this is the default for all ores
+            End Select
+            TempBPCategoryID = ItemIDs.AsteroidsCategoryID
+        End If
+
+        SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
+        SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
+        SQL &= "AND UPWELL_STRUCTURES_INSTALLED_MODULES.INSTALLED_MODULE_ID = ENGINEERING_RIG_BONUSES.typeID AND activityId = {7} "
+        SQL &= "AND ((categoryID = {5} AND groupID IS NULL) OR (categoryID IS NULL AND groupID = {6}))"
+        DBCommand = New SQLiteCommand(String.Format(SQL, SelectedCharacterID, CStr(FacilityProductionType), CStr(SystemID), CStr(SelectedLocation),
+                                      CStr(FacilityID), CStr(TempBPCategoryID), CStr(TempBPGroupID), CStr(ActivityID)), EVEDB.DBREf)
+        rsLoader = DBCommand.ExecuteReader
+
+        While rsLoader.Read()
+            InstalledModules.Add(rsLoader.GetInt32(0))
+        End While
+        rsLoader.Close()
+
+        Return InstalledModules
+
+    End Function
+
+    ' Returns the attribute and bonus for the rig ID and system security sent by reference
+    Private Function GetRigBonuses(ByVal RigID As Integer, ByVal SystemID As Long) As List(Of Attributebonus)
+        Dim SQL As String = ""
+        Dim rsLoader As SQLiteDataReader
+        Dim TempAttribute As Attributebonus
+        Dim SecModifier As ItemAttributes
+        Dim AttributeData As New List(Of Attributebonus)
+
+        ' Get the system security first
+        Dim security As Double = GetSolarSystemSecurityLevel(SystemID)
+
+        If Not IsNothing(security) Then
+            If security <= 0.0 Then
+                SecModifier = ItemAttributes.nullSecModifier
+            ElseIf security < 0.45 Then
+                SecModifier = ItemAttributes.lowSecModifier
+            Else
+                SecModifier = ItemAttributes.hiSecModifier
+            End If
+        Else
+            ' Just assume null
+            SecModifier = ItemAttributes.nullSecModifier
+        End If
+
+        ' Look up the bonus while adjusting for the type of space we are in
+        SQL = "SELECT attributeID, ABS(value * (SELECT value FROM TYPE_ATTRIBUTES WHERE TYPEID = {0} AND attributeID = {1})/100) AS BONUS "
+        SQL &= "FROM TYPE_ATTRIBUTES WHERE attributeID IN (2593,2594,2595,2713,2714,2653,717) "
+        SQL &= "AND value <> 0 AND TYPEID = {0}"
+        SQL = String.Format(SQL, RigID, CInt(SecModifier))
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsLoader = DBCommand.ExecuteReader
+
+        While rsLoader.Read()
+            TempAttribute.AttributeID = rsLoader.GetInt32(0)
+            TempAttribute.Bonus = rsLoader.GetDouble(1)
+            AttributeData.Add(TempAttribute)
+        End While
+
+        Return AttributeData
+
     End Function
 
 End Class

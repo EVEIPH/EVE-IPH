@@ -5,7 +5,6 @@ Imports LpSolveDotNet
 Public Class ConvertToOre
     Private Refinery As ReprocessingPlant
     Private OreConversionSettings As ConversionToOreSettings
-    Private RefineFacilty As IndustryFacility
 
     Private Structure OreDetails
         Dim ID As Integer
@@ -23,8 +22,6 @@ Public Class ConvertToOre
     Public Sub New(ByRef RefineryStation As IndustryFacility, ByVal ConversionSettings As ConversionToOreSettings)
         Refinery = New ReprocessingPlant(RefineryStation, UserApplicationSettings.RefiningImplantValue)
         OreConversionSettings = ConversionSettings
-        ' Make sure we set the refining rates for use based on rigs installed
-        RefineFacilty = RefineryStation
     End Sub
 
     ' Replaces any minerals or ice products with the best ore or ice based on settings

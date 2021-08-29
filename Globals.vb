@@ -450,7 +450,6 @@ Public Module Public_Variables
                 Dim f2 = New frmSetCharacterDefault
                 f2.ShowDialog()
             End If
-
         End If
 
     End Sub
@@ -1327,6 +1326,9 @@ InvalidDate:
             Call frmMain.ResetTabs()
         End If
 
+        ' Reset any of the characterids
+        Call frmMain.ResetCharacterIDonFacilties()
+
         DefaultCharSelected = True
         MsgBox(CharacterName & " selected as Default Character", vbInformation, Application.ProductName)
 
@@ -1664,7 +1666,7 @@ InvalidDate:
 
     End Function
 
-    Public Function GetSolarSystemName(ByVal SystemID As Integer) As String
+    Public Function GetSolarSystemName(ByVal SystemID As Long) As String
         ' Look up Solar System Name
         Dim rsSystem As SQLiteDataReader
         Dim SSName As String
@@ -1706,7 +1708,7 @@ InvalidDate:
 
     End Function
 
-    Public Function GetSolarSystemSecurityLevel(ByVal SystemID As Integer) As Double
+    Public Function GetSolarSystemSecurityLevel(ByVal SystemID As Long) As Double
         ' Look up Solar System ID
         Dim rsSystem As SQLiteDataReader
         Dim security As Double

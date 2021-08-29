@@ -1464,7 +1464,7 @@ Public Class frmShoppingList
                         readerBP.Read()
 
                         ' Build the Item - use everything we can from file import
-                        TempBP = New Blueprint(CLng(readerBP.GetValue(0)), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
+                        TempBP = New Blueprint(readerBP.GetInt32(0), ItemList(i).ItemQuantity, ItemList(i).ItemME, 0, ItemList(i).NumBPs, 1,
                                                SelectedCharacter, UserApplicationSettings, BuildBuy, 0, TempBuildFacility,
                                                TempCompFacility, TempCapCompFacility, TempReactionFacility, UserBPTabSettings.SellExcessBuildItems,
                                                UserBPTabSettings.BuildT2T3Materials, True)
