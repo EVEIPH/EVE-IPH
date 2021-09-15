@@ -8049,7 +8049,8 @@ ExitForm:
         SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(cmbPPDefaultsPriceType.Text) & "', REGION_NAME = '" & FormatDBString(cmbPPDefaultsRegion.Text) & "', "
         SQL = SQL & "SOLAR_SYSTEM_NAME = '" & FormatDBString(cmbPPDefaultsSystem.Text) & "', PRICE_MODIFIER = " & CStr(CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100) & " "
         SQL = SQL & "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
-        If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+
+        If tabPriceProfile.SelectedTab.TabIndex = 0 Then
             SQL = SQL & "1"
         Else
             SQL = SQL & "0"
@@ -8377,7 +8378,7 @@ ExitForm:
             End If
 
             ' Price profile defaults
-            If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+            If tabPriceProfile.SelectedTab.TabIndex = 0 Then
                 .PPRawPriceType = cmbPPDefaultsPriceType.Text
                 .PPRawRegion = cmbPPDefaultsRegion.Text
                 .PPRawSystem = cmbPPDefaultsSystem.Text
@@ -8424,7 +8425,7 @@ ExitForm:
     Private Sub tabPriceProfile_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tabPriceProfile.SelectedIndexChanged
         If Not FirstLoad Then
             With UserUpdatePricesTabSettings
-                If tabPriceProfile.SelectedTab.Text = "Raw Materials" Then
+                If tabPriceProfile.SelectedTab.TabIndex = 0 Then
                     ' First save the items settings
                     .PPItemsPriceType = cmbPPDefaultsPriceType.Text
                     .PPItemsRegion = cmbPPDefaultsRegion.Text
