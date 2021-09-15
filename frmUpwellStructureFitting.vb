@@ -16,6 +16,7 @@ Public Class frmUpwellStructureFitting
     ' Public settings after intialized and returned for setting in the facilities
     Public UpwellStructureName As String = ""
     Public SavedFacility As Boolean
+    Public ResetManualEntries As Boolean
     Private SelectedStructureLocation As ProgramLocation ' To help determine where we save citadels, etc. 
     Private SelectedCharacterID As Long
     Private SelectedFacilityProductionType As ProductionType
@@ -306,6 +307,7 @@ Public Class frmUpwellStructureFitting
         frmPopout = New frmBonusPopout
 
         SavedFacility = False
+        ResetManualEntries = False
         FirstLoad = False
 
     End Sub
@@ -1830,6 +1832,8 @@ Public Class frmUpwellStructureFitting
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
                 SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
                 EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation)))
+                ' Reset the manual flags in the facility
+                ResetManualEntries = True
             End If
 
             EVEDB.CommitSQLiteTransaction()

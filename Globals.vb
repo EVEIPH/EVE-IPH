@@ -934,6 +934,10 @@ InvalidDate:
         Dim ItemLines As String() = Nothing
         Dim ItemColumns As String() = Nothing
 
+        Dim TempString As String = ""
+        Dim TempNumber As String = ""
+        Dim FoundQuantity As Boolean = False
+
         ' Format of imported text for items will always be: Name, Quantity, Group, Category, Size, Slot, Volume, Meta Level, Tech Level, Est. Price
         ' Users can remove columns but the general rule is Name and quantity first, they can separate lines by three ways
         If SentText.Contains(vbCrLf) Then
@@ -962,9 +966,9 @@ InvalidDate:
                     ItemColumns = ItemLines(i).Split(New [Char]() {" "c}, StringSplitOptions.RemoveEmptyEntries)
                     ' After importing a space, make sure we have a full name and then a number before processing. 
                     ' For example, Capital Armor Plates 33 would be a 4 index array but we want to combine the first 3
-                    Dim TempString As String = ""
-                    Dim TempNumber As String = ""
-                    Dim FoundQuantity As Boolean = False
+                    TempString = ""
+                    TempNumber = ""
+                    FoundQuantity = False
 
                     For j = 0 To ItemColumns.Count - 1
                         If Not IsNumeric(ItemColumns(j)) Then
@@ -985,11 +989,16 @@ InvalidDate:
                     ItemColumns(0) = Trim(TempString)
                     ItemColumns(1) = Trim(TempNumber)
 
-                ElseIf ItemLines(i).Contains(",") Then
+                ElseIf ItemLines(i).Contains(",") Then ' Keep this to final case
                     ItemColumns = ItemLines(i).Split(New [Char]() {","c})
                 Else
-                    Exit For ' Don't process
+                    GoTo SkipItem ' Don't process
                     'Dim itemcolumns As String() = ItemLines(i).Split(New String() {"   "}, StringSplitOptions.RemoveEmptyEntries)
+                End If
+
+                ' If the item has a comma after it, strip it off
+                If ItemColumns(0).Substring(Len(ItemColumns(0)) - 1, 1) = "," Then
+                    ItemColumns(0) = ItemColumns(0).Substring(0, Len(ItemColumns(0)) - 1)
                 End If
 
                 SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(ItemColumns(0)) & "'"
@@ -999,6 +1008,17 @@ InvalidDate:
                 readerItem.Read()
 
                 If readerItem.HasRows Then
+                    ' If the itemcolumns doesn't have a number, add it
+                    If ItemColumns.Count = 1 Then
+                        TempString = ItemColumns(0)
+                        ReDim ItemColumns(1)
+                        ItemColumns(0) = TempString
+                        ItemColumns(1) = ""
+                    End If
+
+                    ItemColumns(0) = Trim(ItemColumns(0))
+                    ItemColumns(1) = Trim(ItemColumns(1))
+
                     ' Format number first if needed
                     If ItemColumns(1).Contains(".") Then
                         ' EU number format - quantity is always an integer (27.070)
@@ -1016,7 +1036,7 @@ InvalidDate:
                         Call CopyPasteMaterials.InsertMaterial(TempMaterial)
                     End If
                 End If
-
+SkipItem:
                 readerItem = Nothing
 
             Next
@@ -1233,6 +1253,42 @@ InvalidDate:
         End If
 
         Return False
+
+    End Function
+
+    Public Function BPHasProcRawMats(BPID As Integer, MatType As BuildMatType) As Boolean
+        Dim SQL As String
+        Dim readerBP As SQLiteDataReader
+
+        If MatType = BuildMatType.AdvMaterials Then
+            ' Don't process for advanced since they don't want to drill down for reactions, etc.
+            Return False
+        End If
+
+        SQL = "SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE PRODUCT_ID IN "
+        SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID IN "
+        SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0})) "
+
+        If MatType = BuildMatType.ProcessedMaterials Then
+            SQL &= "AND MATERIAL_GROUP_ID IN (429,712)"
+        ElseIf MatType = BuildMatType.RawMaterials Then
+            SQL &= "AND MATERIAL_GROUP_ID IN (428,429,711,712,974)"
+        End If
+
+        Try
+            DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
+            readerBP = DBCommand.ExecuteReader
+
+            If readerBP.Read Then
+                readerBP.Close()
+                Return True
+            End If
+
+            readerBP.Close()
+            Return False
+        Catch ex As Exception
+            Return False
+        End Try
 
     End Function
 

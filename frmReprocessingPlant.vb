@@ -553,6 +553,7 @@ Public Class frmReprocessingPlant
             If AssetLocationFlagList = "" Then
                 MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
                 Application.UseWaitCursor = False
+                Me.Cursor = Cursors.Default
                 Application.DoEvents()
                 Exit Sub
             Else

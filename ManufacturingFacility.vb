@@ -97,15 +97,6 @@ Public Class ManufacturingFacility
 
     Private FacilityLabelDefaultColor As Color = SystemColors.Highlight
     Private FacilityLabelNonDefaultColor As Color = SystemColors.ButtonShadow
-    Private ManTaxInput As Boolean
-    Private ManCostInput As Boolean
-    Private ManMEInput As Boolean
-    Private ManTEInput As Boolean
-
-    Private TaxManualInput As Boolean
-    Private CostManualInput As Boolean
-    Private MEManualInput As Boolean
-    Private TEManualInput As Boolean
 
     Private Enum StationServices
         ReprocessingPlant = 5
@@ -164,11 +155,6 @@ Public Class ManufacturingFacility
         FactionCitadelList.Add(47514) ' Horizion Fortizar
         FactionCitadelList.Add(47515) ' Marginis Fortizar
         FactionCitadelList.Add(47516) ' Prometheus Fortizar
-
-        ManMEInput = False
-        ManTEInput = False
-        ManCostInput = False
-        ManTaxInput = False
 
         FirstLoad = False
 
@@ -985,32 +971,11 @@ Public Class ManufacturingFacility
                     End If
             End Select
 
-            ' check for adding reactions if full controls (only bp tab) 
-            ' Maybe just check if the bp or bp item material requires a reaction skill, then add reactions facility?
-            SQL = ""
-            If BuildMatTypeSelection = BuildMatType.ProcessedMaterials Then
-                SQL = "SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE PRODUCT_ID IN "
-                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT "
-                SQL &= "WHERE ITEM_ID IN (SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0}) "
-                SQL &= "AND MATERIAL_GROUP_ID IN (429,712))"
-            ElseIf BuildMatTypeSelection = BuildMatType.RawMaterials Then
-                SQL = "SELECT 'X' FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE PRODUCT_ID IN "
-                SQL &= "(SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID IN "
-                SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS_FACT WHERE BLUEPRINT_ID = {0}) "
-                SQL &= "AND MATERIAL_GROUP_ID IN (428,429,711,712,974))"
+            ' If they want to drill down on reactions, add the reactions facility option
+            If BPHasProcRawMats(BPID, BuildMatTypeSelection) Then
+                cmbFacilityActivities.Items.Add(ActivityReactions)
             End If
 
-            If SQL <> "" Then
-                DBCommand = New SQLiteCommand(String.Format(SQL, BPID), EVEDB.DBREf)
-                readerBP = DBCommand.ExecuteReader
-
-                ' If they want to drill down on reactions, add the reactions facility option
-                If readerBP.Read Then
-                    cmbFacilityActivities.Items.Add(ActivityReactions)
-                End If
-
-                readerBP.Close()
-            End If
         End If
 
         ' If we are on the blueprint tab, then add reprocessing activity because everything can have minerals or the components do
@@ -1879,6 +1844,15 @@ Public Class ManufacturingFacility
             FacilityID = -1
         End If
 
+        Dim CharID As String = ""
+
+        ' See what type of character ID
+        If UserApplicationSettings.SaveFacilitiesbyChar Then
+            CharID = CStr(SelectedCharacter.ID)
+        Else
+            CharID = CStr(CommonSavedFacilitiesID)
+        End If
+
         ' Process system if needed
         Dim SystemName As String
         If cmbFacilitySystem.Text.Contains("(") Then
@@ -1900,7 +1874,7 @@ Public Class ManufacturingFacility
             SQL &= "AND FACILITY_ID = {4}"
 
             ' First look up the character to see if it's saved there first (initially only do one set of facilities then allow by character via a setting)
-            DBCommand = New SQLiteCommand(String.Format(SQL, CStr(SelectedCharacter.ID), CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation), CStr(FacilityID)), EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(String.Format(SQL, CharID, CStr(BuildType), CStr(FacilityType), CStr(SelectedLocation), CStr(FacilityID)), EVEDB.DBREf)
             rsLoader = DBCommand.ExecuteReader
             rsLoader.Read()
 
@@ -2036,18 +2010,12 @@ Public Class ManufacturingFacility
             ' First, if this is a citadel, then look up any saved modules and adjust the MM/TM/CM
             If FacilityType = FacilityTypes.UpwellStructure Then
                 ' Refresh the installed rig list
-                Call .UpdateProductionFittingInformation(SelectedCharacter.ID)
+                Call .UpdateProductionFittingInformation(CLng(CharID))
 
                 DFMaterialMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.MaterialModifier, .ActivityID, ItemGroupID, ItemCategoryID))
                 DFTimeMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.TimeModifier, .ActivityID, ItemGroupID, ItemCategoryID))
                 DFCostMultiplier *= (1 - .GetFacilityBonusMulitiplier(IndustryFacility.ModifierType.CostModifier, .ActivityID, ItemGroupID, ItemCategoryID))
             End If
-
-            ' Save these first
-            .OriginalME = DFMaterialMultiplier
-            .OriginalTE = DFTimeMultiplier
-            .OriginalCost = DFCostMultiplier
-            .OriginalTax = DFTax
 
             ' Set the final rates on what we calculated or saved
             If SavedTax = -1 Then
@@ -2458,6 +2426,15 @@ Public Class ManufacturingFacility
             'Call SelectedFacility.UpdateProductionFittingInformation(SelectedCharacterID)
             ' Save it here too but don't show the dialog
             Call SaveSelectedFacility(True)
+        End If
+
+        If StructureViewer.ResetManualEntries Then
+            With SelectedFacility
+                .ManualCost = False
+                .ManualME = False
+                .ManualTax = False
+                .ManualTE = False
+            End With
         End If
 
         Call SetResetRefresh()
@@ -3493,7 +3470,7 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualME_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualME.KeyPress
-        ManMEInput = True
+        SelectedFacility.ManualME = True
         Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
@@ -3512,16 +3489,14 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualME_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualME.LostFocus
-        If ManMEInput Then
+        If SelectedFacility.ManualME Then
             Call SetManualTextBoxValue(BoxType._ME)
             Call UpdateBlueprint()
         End If
-
-        ManMEInput = False
     End Sub
 
     Private Sub txtFacilityManualTE_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTE.KeyPress
-        ManTEInput = True
+        SelectedFacility.ManualTE = True
         Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
@@ -3540,16 +3515,14 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualTE_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTE.LostFocus
-        If ManTEInput Then
+        If SelectedFacility.ManualTE Then
             Call SetManualTextBoxValue(BoxType._TE)
             Call UpdateBlueprint()
         End If
-        ManTEInput = False
     End Sub
 
     Private Sub txtFacilityManualCost_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualCost.KeyPress
-        ManCostInput = True
-        Call SetResetRefresh()
+        SelectedFacility.ManualCost = True
         e.Handled = ProcessKeyPressInput(e)
     End Sub
 
@@ -3567,15 +3540,14 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualCost_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualCost.LostFocus
-        If ManCostInput Then
+        If SelectedFacility.ManualCost Then
             Call SetManualTextBoxValue(BoxType._Cost)
             Call UpdateBlueprint()
         End If
-        ManCostInput = False
     End Sub
 
     Private Sub txtFacilityManualTax_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtFacilityManualTax.KeyPress
-        ManTaxInput = True
+        SelectedFacility.ManualTax = True
         Call SetResetRefresh()
         e.Handled = ProcessKeyPressInput(e)
     End Sub
@@ -3594,11 +3566,10 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub txtFacilityManualTax_LostFocus(sender As Object, e As EventArgs) Handles txtFacilityManualTax.LostFocus
-        If ManTaxInput Then
+        If SelectedFacility.ManualTax Then
             Call SetManualTextBoxValue(BoxType._Tax)
             Call UpdateBlueprint()
         End If
-        ManTaxInput = False
     End Sub
 
     Private Function FormatManualEntry(Entry As String) As Double
@@ -3638,6 +3609,7 @@ Public Class ManufacturingFacility
                         SelectedFacility.MaterialMultiplier = 1 - FormatManualEntry(txtFacilityManualME.Text)
                         GetFacility(SelectedFacility.FacilityProductionType).MaterialMultiplier = SelectedFacility.MaterialMultiplier
                         txtFacilityManualME.Text = FormatPercent(1 - SelectedFacility.MaterialMultiplier, 2)
+                        GetFacility(SelectedFacility.FacilityProductionType).ManualME = True
                     End If
                 Case BoxType._TE
                     If SelectedFacility.FacilityProductionType = ProductionType.Reprocessing And SelectedLocation = ProgramLocation.BlueprintTab Then
@@ -3650,15 +3622,18 @@ Public Class ManufacturingFacility
                         SelectedFacility.TimeMultiplier = 1 - FormatManualEntry(txtFacilityManualTE.Text)
                         GetFacility(SelectedFacility.FacilityProductionType).TimeMultiplier = SelectedFacility.TimeMultiplier
                         txtFacilityManualTE.Text = FormatPercent(1 - SelectedFacility.TimeMultiplier, 2)
+                        GetFacility(SelectedFacility.FacilityProductionType).ManualTE = True
                     End If
                 Case BoxType._Cost
                     SelectedFacility.CostMultiplier = 1 - FormatManualEntry(txtFacilityManualCost.Text)
                     GetFacility(SelectedFacility.FacilityProductionType).CostMultiplier = SelectedFacility.CostMultiplier
                     txtFacilityManualCost.Text = FormatPercent(1 - SelectedFacility.CostMultiplier, 2)
+                    GetFacility(SelectedFacility.FacilityProductionType).ManualCost = True
                 Case BoxType._Tax
                     SelectedFacility.TaxRate = FormatManualEntry(txtFacilityManualTax.Text)
                     GetFacility(SelectedFacility.FacilityProductionType).TaxRate = SelectedFacility.TaxRate
                     txtFacilityManualTax.Text = FormatPercent(SelectedFacility.TaxRate, 2)
+                    GetFacility(SelectedFacility.FacilityProductionType).ManualTax = True
             End Select
 
             ' No longer a default
@@ -3914,10 +3889,10 @@ Public Class IndustryFacility
     Public MaterialMultiplier As Double ' The bonus material percentage or refining rate for materials used in this facility
     Public TimeMultiplier As Double ' The bonus to time to conduct an activity in this facility
     Public CostMultiplier As Double ' The bonus to cost to conduct an activity in this facility
-    Public OriginalME As Double ' What we originally loaded to check for manual entries if different
-    Public OriginalTE As Double ' What we originally loaded to check for manual entries if different
-    Public OriginalCost As Double ' What we originally loaded to check for manual entries if different
-    Public OriginalTax As Double ' What we originally loaded to check for manual entries if different
+    Public ManualME As Boolean ' To check for manual entries if different
+    Public ManualTE As Boolean ' To check for manual entries if different
+    Public ManualCost As Boolean ' To check for manual entries if different
+    Public ManualTax As Boolean ' To check for manual entries if different
     Public BaseTax As Double ' Base tax rate from default
     Public BaseME As Double ' The ME bonus from default
     Public BaseTE As Double ' The TE bonus from default
@@ -3992,10 +3967,10 @@ Public Class IndustryFacility
         MaterialMultiplier = 0
         TimeMultiplier = 0
         CostMultiplier = 0
-        OriginalTax = 0
-        OriginalME = 0
-        OriginalTE = 0
-        OriginalCost = 0
+        ManualTax = False
+        ManualME = False
+        ManualTE = False
+        ManualCost = False
         BaseME = 0
         BaseTE = 0
         BaseCost = 0
@@ -4043,10 +4018,10 @@ Public Class IndustryFacility
         CopyOfMe.MaterialMultiplier = MaterialMultiplier
         CopyOfMe.TimeMultiplier = TimeMultiplier
         CopyOfMe.CostMultiplier = CostMultiplier
-        CopyOfMe.OriginalME = OriginalME
-        CopyOfMe.OriginalTE = OriginalTE
-        CopyOfMe.OriginalCost = OriginalCost
-        CopyOfMe.OriginalTax = OriginalTax
+        CopyOfMe.ManualME = ManualME
+        CopyOfMe.ManualTE = ManualTE
+        CopyOfMe.ManualCost = ManualCost
+        CopyOfMe.ManualTax = ManualTax
         CopyOfMe.BaseME = BaseME
         CopyOfMe.BaseTE = BaseTE
         CopyOfMe.BaseCost = BaseCost
@@ -4352,27 +4327,27 @@ ExitBlock:
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
-                        If TaxRate <> OriginalTax Then
+                        If ManualTax Then
                             TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "FACILITY_TAX = NULL, "
                         End If
 
-                        If MaterialMultiplier <> OriginalME Then
+                        If ManualME Then
                             TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "MATERIAL_MULTIPLIER = NULL, "
                         End If
 
-                        If TimeMultiplier <> OriginalTE Then
+                        If ManualTE Then
                             TempSQL &= "TIME_MULTIPLIER = " & CStr(TimeMultiplier) & ", "
                             ManualEntries = True
                         Else
                             TempSQL &= "TIME_MULTIPLIER = NULL, "
                         End If
-                        If CostMultiplier <> OriginalCost Then
+                        If ManualCost Then
                             TempSQL &= "COST_MULTIPLIER = " & CStr(CostMultiplier) & " "
                             ManualEntries = True
                         Else
@@ -4400,21 +4375,21 @@ ExitBlock:
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
-                        If TaxRate <> OriginalTax Then
+                        If ManualTax Then
                             TaxValue = CStr(TaxRate)
                             ManualEntries = True
                         End If
 
-                        If MaterialMultiplier <> OriginalME Then
+                        If ManualME Then
                             MEValue = CStr(MaterialMultiplier)
                             ManualEntries = True
                         End If
 
-                        If TimeMultiplier <> OriginalTE Then
+                        If ManualTE Then
                             TEValue = CStr(TimeMultiplier)
                             ManualEntries = True
                         End If
-                        If CostMultiplier <> OriginalCost Then
+                        If ManualCost Then
                             CostValue = CStr(CostMultiplier)
                             ManualEntries = True
                         End If
@@ -4607,12 +4582,19 @@ ExitBlock:
     ' Refreshes the MM/TM/CM bonuses for all three for the information sent
     Public Sub RefreshMMTMCMBonuses(ItemGroupID As Integer, ItemCategoryID As Integer)
         ' Cost
-        CostMultiplier = BaseCost * (1 - GetFacilityBonusMulitiplier(ModifierType.CostModifier, ActivityID, ItemGroupID, ItemCategoryID))
-        ' Material
-        MaterialMultiplier = BaseME * (1 - GetFacilityBonusMulitiplier(ModifierType.MaterialModifier, ActivityID, ItemGroupID, ItemCategoryID))
-        ' Time
-        TimeMultiplier = BaseTE * (1 - GetFacilityBonusMulitiplier(ModifierType.TimeModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        If Not ManualCost Then
+            CostMultiplier = BaseCost * (1 - GetFacilityBonusMulitiplier(ModifierType.CostModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        End If
 
+        ' Material
+        If Not ManualME Then
+            MaterialMultiplier = BaseME * (1 - GetFacilityBonusMulitiplier(ModifierType.MaterialModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        End If
+
+        ' Time
+        If Not ManualTE Then
+            TimeMultiplier = BaseTE * (1 - GetFacilityBonusMulitiplier(ModifierType.TimeModifier, ActivityID, ItemGroupID, ItemCategoryID))
+        End If
     End Sub
 
     ' Predicate for searching fitting bonuses 
@@ -4639,16 +4621,27 @@ ExitBlock:
 
     Public Function GetFacilityBonusMulitiplier(BonusType As ModifierType, ActivityID As Integer, ItemGroupID As Integer, ItemCategoryID As Integer) As Double
         Dim FoundData As FittingBonusInfo
+        Dim CategoryID As Integer
+        Dim GroupID As Integer
+
+        Select Case ActivityID
+            Case IndustryActivities.Copying, IndustryActivities.Invention, IndustryActivities.ResearchingTimeLevel, IndustryActivities.ResearchingMaterialLevel
+                CategoryID = 9
+                GroupID = Nothing
+            Case Else
+                CategoryID = ItemCategoryID
+                GroupID = ItemGroupID
+        End Select
 
         ' Set the base lookup data
         BonusDataToFind.ActivityID = ActivityID
         If Not IsNothing(ItemCategoryID) Then
-            BonusDataToFind.CategoryID = ItemCategoryID
+            BonusDataToFind.CategoryID = CategoryID
         Else
             BonusDataToFind.CategoryID = Nothing
         End If
         If Not IsNothing(ItemGroupID) Then
-            BonusDataToFind.GroupID = ItemGroupID
+            BonusDataToFind.GroupID = GroupID
         Else
             BonusDataToFind.GroupID = Nothing
         End If

@@ -871,6 +871,7 @@ Public Class frmShoppingList
         Else
             MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
             Application.UseWaitCursor = False
+            Me.Cursor = Cursors.Default
             Application.DoEvents()
         End If
 
@@ -1770,6 +1771,9 @@ Public Class frmShoppingList
             ' Refresh lists
             Call RefreshLists()
         End If
+
+        ' Clear what they entered
+        CopyPasteMaterialText = ""
 
         CutPasteUpdate = False
 

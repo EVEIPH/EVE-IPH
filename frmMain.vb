@@ -3538,38 +3538,30 @@ Tabs:
 
     Private Sub rbtnBPAdvT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPAdvT2MatType.CheckedChanged
         If rbtnBPAdvT2MatType.Checked Then
-            UserBPTabSettings.BuildT2T3Materials = BuildMatType.AdvMaterials
-            If Not IsNothing(SelectedBlueprint) Then
-                With SelectedBlueprint
-                    Call BPTabFacility.LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, False, False, False, BuildMatType.AdvMaterials)
-                End With
-            End If
-            Call ProcessT2MatSelection()
+            Call LoadT2T3MatFacility(BuildMatType.AdvMaterials)
         End If
     End Sub
 
     Private Sub rbtnBPProcT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPProcT2MatType.CheckedChanged
         If rbtnBPProcT2MatType.Checked Then
-            UserBPTabSettings.BuildT2T3Materials = BuildMatType.ProcessedMaterials
-            If Not IsNothing(SelectedBlueprint) Then
-                With SelectedBlueprint
-                    Call BPTabFacility.LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, False, False, False, BuildMatType.ProcessedMaterials)
-                End With
-            End If
-            Call ProcessT2MatSelection()
+            Call LoadT2T3MatFacility(BuildMatType.ProcessedMaterials)
         End If
     End Sub
 
     Private Sub rbtnBPRawT2MatType_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPRawT2MatType.CheckedChanged
         If rbtnBPRawT2MatType.Checked Then
-            UserBPTabSettings.BuildT2T3Materials = BuildMatType.RawMaterials
-            If Not IsNothing(SelectedBlueprint) Then
-                With SelectedBlueprint
-                    Call BPTabFacility.LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, False, False, False, BuildMatType.RawMaterials)
-                End With
-            End If
-            Call ProcessT2MatSelection()
+            Call LoadT2T3MatFacility(BuildMatType.RawMaterials)
         End If
+    End Sub
+
+    Private Sub LoadT2T3MatFacility(MatType As BuildMatType)
+        UserBPTabSettings.BuildT2T3Materials = MatType
+        If Not IsNothing(SelectedBlueprint) Then
+            With SelectedBlueprint
+                Call BPTabFacility.LoadFacility(.GetBPID, .GetItemGroupID, .GetItemCategoryID, .GetTechLevel, False, False, False, MatType)
+            End With
+        End If
+        Call ProcessT2MatSelection()
     End Sub
 
     Private Sub chkPerUnit_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPPricePerUnit.CheckedChanged
@@ -5834,7 +5826,6 @@ Tabs:
     Private Sub SelectBlueprint(Optional ByVal NewBP As Boolean = True, Optional SentFrom As SentFromLocation = 0, Optional FromEvent As Boolean = False)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
-        Dim readerMat As SQLiteDataReader
         Dim BPID As Integer
         Dim TempTech As Integer
         Dim ItemType As Integer
@@ -5955,19 +5946,8 @@ Tabs:
         ' Set the invention info
         Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
 
-        ' See if it has moon/gas mats
-
-        SQL = "SELECT DISTINCT 'X' FROM ALL_BLUEPRINT_MATERIALS "
-        SQL &= "WHERE (BLUEPRINT_ID = " & CStr(BPID) & " AND MATERIAL_GROUP_ID IN (428,429,974,712) " '428, 429, 974, 712 - Intermediate, Composite, Hybrid Polymers, Biochemical
-        SQL &= "OR BLUEPRINT_ID IN (SELECT BLUEPRINT_ID FROM ALL_BLUEPRINTS WHERE ITEM_ID IN  "
-        SQL &= "(SELECT MATERIAL_ID FROM ALL_BLUEPRINT_MATERIALS WHERE BLUEPRINT_ID = " & CStr(BPID) & ")) "
-        SQL &= "AND MATERIAL_GROUP_ID IN (428,429,974,712))"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerMat = DBCommand.ExecuteReader()
-        readerMat.Read()
-
-        If readerMat.HasRows Then
+        ' If they want to drill down on reactions, check all types
+        If BPHasProcRawMats(BPID, BuildMatType.RawMaterials) Then
             ' Also enable the T2/T3 boxes for moon/gas mat types
             lblBPT2MatTypeSelector.Enabled = True
             rbtnBPAdvT2MatType.Enabled = True
@@ -5984,8 +5964,6 @@ Tabs:
             rbtnBPProcT2MatType.Enabled = False
             rbtnBPRawT2MatType.Enabled = False
         End If
-
-        readerMat.Close()
 
         ' Reactions can't have ME or TE
         If SelectedBPText.Contains("Reaction Formula") Then
