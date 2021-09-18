@@ -45,7 +45,7 @@ Class ReprocessingPlant
         readerRefine = DBCommand.ExecuteReader
 
         If readerRefine.Read Then
-            ' Ore, so process into batches
+            ' Process into batches
             RefineBatches = CLng(Math.Floor(TotalQuantity / CLng(readerRefine.GetValue(0))))
             If RefineBatches = 0 Then
                 ' Can't reprocess if there arne't enough units to refine
@@ -54,7 +54,16 @@ Class ReprocessingPlant
             ScrapReprocessing = False
         Else
             ' Not an ore or ice, so must be scrapmetal processing
-            RefineBatches = CLng(TotalQuantity)
+            SQL = "SELECT UNITS_TO_REPROCESS FROM REPROCESSING WHERE ITEM_ID =" & ItemID
+            readerRefine.Close()
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerRefine = DBCommand.ExecuteReader
+
+            If readerRefine.Read Then
+                RefineBatches = CLng(Math.Floor(TotalQuantity / CLng(readerRefine.GetValue(0))))
+            Else
+                RefineBatches = CLng(TotalQuantity)
+            End If
             ScrapReprocessing = True
         End If
 

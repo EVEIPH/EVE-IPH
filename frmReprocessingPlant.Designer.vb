@@ -134,6 +134,7 @@ Partial Class frmReprocessingPlant
         Me.btnCopyOutput = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cmbBeanCounterRefining = New System.Windows.Forms.ComboBox()
+        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabpSkills = New System.Windows.Forms.TabPage()
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.lblTotalItemList = New System.Windows.Forms.Label()
@@ -144,7 +145,6 @@ Partial Class frmReprocessingPlant
         Me.lblReturnRatePercentOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingValueOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeOutput = New System.Windows.Forms.Label()
-        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstItemstoRefine = New EVE_Isk_per_Hour.MyListView()
         Me.lstRefineOutput = New EVE_Isk_per_Hour.MyListView()
         Me.gbRefineYields.SuspendLayout()
@@ -1249,11 +1249,19 @@ Partial Class frmReprocessingPlant
         '
         Me.cmbBeanCounterRefining.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbBeanCounterRefining.FormattingEnabled = True
-        Me.cmbBeanCounterRefining.Items.AddRange(New Object() {"Zainou 'Beancounter' Reprocessing RX-801", "Zainou 'Beancounter' Reprocessing RX-802", "Zainou 'Beancounter' Reprocessing RX-804"})
+        Me.cmbBeanCounterRefining.Items.AddRange(New Object() {"None", "Zainou 'Beancounter' Reprocessing RX-801", "Zainou 'Beancounter' Reprocessing RX-802", "Zainou 'Beancounter' Reprocessing RX-804"})
         Me.cmbBeanCounterRefining.Location = New System.Drawing.Point(9, 130)
         Me.cmbBeanCounterRefining.Name = "cmbBeanCounterRefining"
         Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(235, 21)
         Me.cmbBeanCounterRefining.TabIndex = 130
+        '
+        'ReprocessingFacility
+        '
+        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
+        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
+        Me.ReprocessingFacility.Name = "ReprocessingFacility"
+        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
+        Me.ReprocessingFacility.TabIndex = 43
         '
         'tabpSkills
         '
@@ -1357,14 +1365,6 @@ Partial Class frmReprocessingPlant
         Me.lblReprocessingVolumeOutput.TabIndex = 263
         Me.lblReprocessingVolumeOutput.Text = "-"
         Me.lblReprocessingVolumeOutput.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        '
-        'ReprocessingFacility
-        '
-        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
-        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
-        Me.ReprocessingFacility.Name = "ReprocessingFacility"
-        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
-        Me.ReprocessingFacility.TabIndex = 43
         '
         'lstItemstoRefine
         '
