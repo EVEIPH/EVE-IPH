@@ -1921,7 +1921,7 @@ Public Class ManufacturingFacility
                             ' For production in stations, they are always 1
                             SelectedFacility.BaseME = 1
                             SelectedFacility.BaseTE = 1
-                            SelectedFacility.BaseTax = 1
+                            SelectedFacility.BaseCost = 1
                         End If
 
                     Case FacilityTypes.UpwellStructure
