@@ -14958,73 +14958,73 @@ ExitCalc:
 
         Select Case ColumnName
             Case ProgramSettings.InventionChanceColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.VolumeperItemColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalVolumeColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalInventionCostColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalCopyCostColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TaxesColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.BrokerFeesColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ItemMarketPriceColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ProfitColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.IskperHourColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.SVRColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.SVRxIPHColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalItemsSoldColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalOrdersFilledColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.AvgItemsperOrderColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.CurrentSellOrdersColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.CurrentBuyOrdersColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ItemsinProductionColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ItemsinStockColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.TotalCostColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.BaseJobCostColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ManufacturingJobFeeColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ManufacturingFacilitySystemIndexColumnName
-                ExportData = FormatNumber(DataText, 5) & Separator
+                ExportData = FormatNumber(DataText, 5)
             Case ProgramSettings.ManufacturingFacilityUsageColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.ComponentFacilitySystemIndexColumnName
-                ExportData = FormatNumber(DataText, 5) & Separator
+                ExportData = FormatNumber(DataText, 5)
             Case ProgramSettings.ComponentFacilityUsageColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.CapComponentFacilitySystemIndexColumnName
-                ExportData = FormatNumber(DataText, 5) & Separator
+                ExportData = FormatNumber(DataText, 5)
             Case ProgramSettings.CapComponentFacilityUsageColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.CopyingFacilitySystemIndexColumnName
-                ExportData = FormatNumber(DataText, 5) & Separator
+                ExportData = FormatNumber(DataText, 5)
             Case ProgramSettings.CopyingFacilityUsageColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.InventionFacilitySystemIndexColumnName
-                ExportData = FormatNumber(DataText, 5) & Separator
+                ExportData = FormatNumber(DataText, 5)
             Case ProgramSettings.InventionFacilityUsageColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case ProgramSettings.PortionSizeColumnName
-                ExportData = Format(DataText, "Fixed") & Separator
+                ExportData = Format(DataText, "Fixed")
             Case Else
-                ExportData = DataText & Separator
+                ExportData = DataText
         End Select
 
         If ExportDataType = SSVDataExport Then
@@ -15032,7 +15032,7 @@ ExitCalc:
             ExportData = ConvertUStoEUDecimal(ExportData)
         End If
 
-        Return ExportData
+        Return Chr(34) + ExportData + Chr(34) + Separator
 
     End Function
 
