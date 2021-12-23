@@ -1517,7 +1517,7 @@ your developer scopes.", vbExclamation, Application.ProductName)
                 TempTE = CInt(txtBPTE.Text)
             End If
 
-            Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), item.SubItems(2).Text, TempME, TempTE, TempBPType,
+            Call UpdateBPinDB(CInt(CDbl(item.SubItems(1).Text)), TempME, TempTE, TempBPType,
                               CInt(item.SubItems(5).Text), CInt(item.SubItems(6).Text), chkMarkasFavorite.Checked,
                               chkMarkasIgnored.Checked, 0, rbtnRemoveAllSettings.Checked)
 
@@ -1986,7 +1986,7 @@ your developer scopes.", vbExclamation, Application.ProductName)
 
             Dim TempRuns As Integer
 
-            UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CurrentRow.SubItems(3).Text, MEValue, TEValue, TempBPType,
+            UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), MEValue, TEValue, TempBPType,
                               CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), SetasFavorite, SetasIgnore)
 
             Call PlayNotifySound()
@@ -1998,7 +1998,7 @@ your developer scopes.", vbExclamation, Application.ProductName)
 
             ' Update the data in the current row
             CurrentRow.SubItems(8).Text = GetBPTypeString(UpdatedBPType)
-            If UpdatedBPType = BPType.NotOwned Then
+            If UpdatedBPType = BPType.NotOwned Or CurrentRow.SubItems(2).Text.Contains("Reaction Formulas") Then ' Reactions are always set to 0
                 ' Update the ME/TE to 0 
                 CurrentRow.SubItems(5).Text = "0"
                 CurrentRow.SubItems(6).Text = "0"

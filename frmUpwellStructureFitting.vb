@@ -2111,25 +2111,25 @@ Public Class frmUpwellStructureFitting
         ' Save just the bp ME data if building
         If rbtnBuildBlocks.Checked Then
             If HeliumFuelBlockBPUpdated Then
-                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtHeliumFuelBlockBPME.Text), OriginalHeliumFuelBlockBPTE, BPType.Original,
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, CInt(txtHeliumFuelBlockBPME.Text), OriginalHeliumFuelBlockBPTE, BPType.Original,
                              OriginalHeliumFuelBlockBPME, OriginalHeliumFuelBlockBPTE)
                 HeliumFuelBlockBPUpdated = False ' Saved, so updated
             End If
 
             If HydrogenFuelBlockBPUpdated Then
-                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtHydrogenFuelBlockBPME.Text), OriginalHydrogenFuelBlockBPTE, BPType.Original,
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, CInt(txtHydrogenFuelBlockBPME.Text), OriginalHydrogenFuelBlockBPTE, BPType.Original,
                              OriginalHydrogenFuelBlockBPME, OriginalHydrogenFuelBlockBPTE)
                 HydrogenFuelBlockBPUpdated = False ' Saved, so updated
             End If
 
             If NitrogenFuelBlockBPUpdated Then
-                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtNitrogenFuelBlockBPME.Text), OriginalNitrogenFuelBlockBPTE, BPType.Original,
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, CInt(txtNitrogenFuelBlockBPME.Text), OriginalNitrogenFuelBlockBPTE, BPType.Original,
                              OriginalNitrogenFuelBlockBPME, OriginalNitrogenFuelBlockBPTE)
                 NitrogenFuelBlockBPUpdated = False ' Saved, so updated
             End If
 
             If OxygenFuelBlockBPUpdated Then
-                Call UpdateBPinDB(FuelBlocks.HeliumBP, "", CInt(txtOxygenFuelBlockBPME.Text), OriginalOxygenFuelBlockBPTE, BPType.Original,
+                Call UpdateBPinDB(FuelBlocks.HeliumBP, CInt(txtOxygenFuelBlockBPME.Text), OriginalOxygenFuelBlockBPTE, BPType.Original,
                              OriginalOxygenFuelBlockBPME, OriginalOxygenFuelBlockBPTE)
                 OxygenFuelBlockBPUpdated = False ' Saved, so updated
             End If

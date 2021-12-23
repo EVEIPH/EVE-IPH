@@ -3,7 +3,7 @@
     Private ItemListColumnClicked As Integer
     Private ItemListColumnSortOrder As SortOrder
 
-    Public Sub New(MaterialList As Materials)
+    Public Sub New(MaterialList As Materials, IncludeTaxes As Boolean, BrokerFeeData As BrokerFeeInfo)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -26,11 +26,36 @@
             TotalCost += Mat.GetTotalCost
         Next
 
-        ' Add the total cost
-        matLine = New ListViewItem("Total Cost")
-        matLine.SubItems.Add("")
-        matLine.SubItems.Add(FormatNumber(TotalCost, 2))
-        Call lstMaterials.Items.Add(matLine)
+        ' Add the tax, fees, and final cost cost
+        If TotalCost > 0 Then
+            Dim Taxes As Double = 0
+            Dim BrokerFees As Double = 0
+
+            matLine = New ListViewItem("Taxes")
+            matLine.SubItems.Add("")
+            If IncludeTaxes Then
+                Taxes = GetSalesTax(TotalCost)
+                matLine.SubItems.Add("-" & FormatNumber(Taxes, 2))
+            Else
+                matLine.SubItems.Add("0.00")
+            End If
+            Call lstMaterials.Items.Add(matLine)
+
+            matLine = New ListViewItem("Broker Fees")
+            matLine.SubItems.Add("")
+            If BrokerFeeData.IncludeFee <> BrokerFeeType.NoFee Then
+                BrokerFees = GetSalesBrokerFee(TotalCost, BrokerFeeData)
+                matLine.SubItems.Add("-" & FormatNumber(BrokerFees, 2))
+            Else
+                matLine.SubItems.Add("0.00")
+            End If
+            Call lstMaterials.Items.Add(matLine)
+
+            matLine = New ListViewItem("Total Sold Value")
+            matLine.SubItems.Add("")
+            matLine.SubItems.Add(FormatNumber(TotalCost - Taxes - BrokerFees, 2))
+            Call lstMaterials.Items.Add(matLine)
+        End If
 
     End Sub
 

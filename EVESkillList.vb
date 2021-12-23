@@ -71,8 +71,6 @@ Public Class EVESkillList
         End While
 
         rsData.Close()
-        rsData = Nothing
-        DBCommand = Nothing
 
     End Sub
 
@@ -133,7 +131,6 @@ Public Class EVESkillList
                     End If
 
                     readerCharacter.Close()
-                    readerCharacter = Nothing
 
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -753,8 +750,6 @@ Public Class EVESkill
         PreReqSkills = PreReqs
 
         readerSkills.Close()
-        readerSkills = Nothing
-        DBCommand = Nothing
 
     End Sub
 

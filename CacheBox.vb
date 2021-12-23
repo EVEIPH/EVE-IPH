@@ -68,6 +68,7 @@ Public Class CacheBox
 
                 End If
             End If
+            rsDate.Close()
         End If
 
         Return True ' Always update if we don't have a date

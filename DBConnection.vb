@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SQLite
+Imports System.IO
 
 <CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")>
 Public Class DBConnection
@@ -6,7 +7,9 @@ Public Class DBConnection
     Private DB As SQLiteConnection
     Private Lock As New Object
 
-    Public Sub New(ByVal DBFileName As String)
+    Public Sub New(ByVal DBFilePath As String, ByVal DBName As String)
+        Dim DBFileName As String = Path.Combine(DBFilePath, DBName)
+
         DB = New SQLiteConnection
         DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
         If DB.State = ConnectionState.Open Then
@@ -16,10 +19,24 @@ Public Class DBConnection
             Threading.Thread.Sleep(5000)
             DB.ConnectionString = "Data Source=" & DBFileName & ";Version=3;"
         End If
+
+        Try
+            Call OpenDB()
+        Catch ex As Exception
+            Call DisplayDBException(ex)
+            End ' Close program
+        End Try
+
+    End Sub
+
+    Private Sub OpenDB()
         DB.Open()
-
         Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL; PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = WAL; PRAGMA count_changes = OFF")
+    End Sub
 
+    Private Sub DisplayDBException(ThrownException As Exception)
+        MsgBox("IPH was unable to open the primary database and will now close." & vbCrLf & vbCrLf & "Error message: " & ThrownException.Message, vbCritical)
+        Call WriteMsgToLog(ThrownException.ToString)
     End Sub
 
     Public Sub CloseDB()

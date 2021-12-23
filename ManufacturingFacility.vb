@@ -1186,7 +1186,6 @@ Public Class ManufacturingFacility
     ' Based on the selections, load the region combo
     Public Sub LoadFacilityRegions(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
         Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
 
         LoadingRegions = True
         LoadingSystems = True
@@ -1240,12 +1239,16 @@ Public Class ManufacturingFacility
 
         SQL = SQL & " GROUP BY REGION_NAME "
 
+        Dim rsLoader As SQLiteDataReader
+
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
             cmbFacilityRegion.Items.Add(rsLoader.GetString(0))
         End While
+
+        rsLoader.Close()
 
         ' Enable the region combo
         cmbFacilityRegion.Enabled = True
@@ -1283,10 +1286,6 @@ Public Class ManufacturingFacility
         LoadingFacilities = False
 
         Call ResetComboLoadVariables(True, False, False)
-
-        rsLoader.Close()
-        rsLoader = Nothing
-        DBCommand = Nothing
 
     End Sub
     Private Sub cmbFacilityRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilityRegion.SelectedIndexChanged
@@ -1343,9 +1342,7 @@ Public Class ManufacturingFacility
 
     ' Based on the selections, load the systems combo
     Public Sub LoadFacilitySystems(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
-
         Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
 
         LoadingSystems = True
         LoadingFacilities = True
@@ -1439,6 +1436,7 @@ Public Class ManufacturingFacility
 
         SQL = SQL & " GROUP BY SSN, CI"
 
+        Dim rsLoader As SQLiteDataReader
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
@@ -1449,6 +1447,8 @@ Public Class ManufacturingFacility
                 cmbFacilitySystem.Items.Add(rsLoader.GetString(0))
             End If
         End While
+
+        rsLoader.Close()
 
         ' Enable the system combo
         cmbFacilitySystem.Enabled = True
@@ -1481,10 +1481,6 @@ Public Class ManufacturingFacility
         LoadingFacilities = False
 
         Call ResetComboLoadVariables(False, True, False)
-
-        rsLoader.Close()
-        rsLoader = Nothing
-        DBCommand = Nothing
 
     End Sub
     Private Sub cmbFacilitySystem_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilitySystem.SelectedIndexChanged
@@ -1544,9 +1540,6 @@ Public Class ManufacturingFacility
     Private Sub LoadFacilities(NewFacility As Boolean, ByRef FacilityActivity As String,
                                  ByRef AutoLoadFacility As Boolean, Optional OverrideFacilityName As String = "")
         Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
-        Dim rsCheck As SQLiteDataReader
-
         LoadingFacilities = True
 
         Dim SystemName As String
@@ -1625,6 +1618,8 @@ Public Class ManufacturingFacility
         ' This is helpful if we auto-load (Capital array before super capital, equipment array before rapid equipment) to choose the one more likely
         SQL = SQL & " ORDER BY FACILITY_NAME"
 
+        Dim rsLoader As SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
@@ -1648,6 +1643,7 @@ Public Class ManufacturingFacility
                     ' no sov and it's nullsec, so add it
                     cmbFacility.Items.Add(rsLoader.GetString(0))
                 End If
+                rsCheck.Close()
             Else
                 cmbFacility.Items.Add(rsLoader.GetString(0))
             End If
@@ -1658,6 +1654,8 @@ Public Class ManufacturingFacility
                 AutoLoadName = rsLoader.GetString(0)
             End If
         End While
+
+        rsLoader.Close()
 
         ' Always load the facility if there is only one and we have a reference to auto load or we are loading a specific facility
         If (i = 1 And Not IsNothing(AutoLoadFacility)) Or cmbFacility.Items.Contains(OverrideFacilityName) _
@@ -1805,7 +1803,6 @@ Public Class ManufacturingFacility
                                     FacilityType As FacilityTypes, FacilityName As String)
         Dim SQL As String = ""
         Dim rsLoader As SQLiteDataReader
-        Dim rsStats As SQLiteDataReader
 
         Dim FacilityID As Long
         Dim DFMaterialMultiplier As Double = 0
@@ -1843,6 +1840,8 @@ Public Class ManufacturingFacility
         Else
             FacilityID = -1
         End If
+
+        rsLoader.Close()
 
         Dim CharID As String = ""
 
@@ -1943,6 +1942,7 @@ Public Class ManufacturingFacility
                                 SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reprocessing) & " "
                         End Select
 
+                        Dim rsStats As SQLiteDataReader
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsStats = DBCommand.ExecuteReader
                         rsStats.Read()
@@ -1960,8 +1960,6 @@ Public Class ManufacturingFacility
                 ' Set the facility to none if not found
                 FacilityType = FacilityTypes.None
             End If
-
-            rsLoader.Close()
 
         End If
 
@@ -2774,28 +2772,34 @@ Public Class ManufacturingFacility
     ' Translates the string facility type into the enum code
     Private Function GetFacilityTypeCode(FacilityType As String) As FacilityTypes
         Dim rsLookup As SQLiteDataReader
+        Dim ReturnType As FacilityTypes = FacilityTypes.None
 
         DBCommand = New SQLiteCommand("SELECT FACILITY_TYPE_ID FROM FACILITY_TYPES WHERE FACILITY_TYPE_NAME = '" & FacilityType & "'", EVEDB.DBREf)
         rsLookup = DBCommand.ExecuteReader
         If rsLookup.Read() Then
-            Return CType(rsLookup.GetInt32(0), FacilityTypes)
-        Else
-            Return FacilityTypes.None
+            ReturnType = CType(rsLookup.GetInt32(0), FacilityTypes)
         End If
+
+        rsLookup.Close()
+
+        Return ReturnType
 
     End Function
 
     ' Translates facility code into name
     Private Function GetFacilityNamefromCode(FacilityType As FacilityTypes) As String
         Dim rsLookup As SQLiteDataReader
+        Dim ReturnName As String = ""
 
         DBCommand = New SQLiteCommand("SELECT FACILITY_TYPE_NAME FROM FACILITY_TYPES WHERE FACILITY_TYPE_ID = " & CInt(FacilityType), EVEDB.DBREf)
         rsLookup = DBCommand.ExecuteReader
         If rsLookup.Read() Then
-            Return rsLookup.GetString(0)
-        Else
-            Return ""
+            ReturnName = rsLookup.GetString(0)
         End If
+
+        rsLookup.Close()
+
+        Return ReturnName
 
     End Function
 
@@ -3007,11 +3011,27 @@ Public Class ManufacturingFacility
     Private Sub CostIndexUpdateText()
 
         If SelectedLocation = ProgramLocation.BlueprintTab And Not FirstLoad Then
-            Dim System As String = cmbFacilitySystem.Text
-            Dim Start As Integer = InStr(System, "(")
-            If System.Contains("(") Then
-                frmMain.txtBPUpdateCostIndex.Text = FormatPercent(System.Substring(Start, InStr(System, ")") - (Start + 1)), 2)
-            End If
+            Dim System As String = ""
+            Dim Start As Integer = 0
+            Dim IndexValue As String = "0"
+
+            Try
+                System = cmbFacilitySystem.Text
+                Start = InStr(System, "(")
+                If System.Contains("(") Then
+                    IndexValue = System.Substring(Start, InStr(System, ")") - (Start + 1))
+
+                    If Not IsNumeric(IndexValue) Then
+                        ' Write the values to error log for now
+                        Call WriteMsgToLog("CostIndexUpdateText Error: System = " & System & ", Start = " & CStr(Start) & " Index Value = " & IndexValue)
+                    End If
+                End If
+            Catch ex As Exception
+                Call WriteMsgToLog("CostIndexUpdateText Error: System = " & System & ", Start = " & CStr(Start) & " Index Value = " & IndexValue & " Facility System Text:" & cmbFacilitySystem.Text & " Error Message:" & ex.Message)
+            End Try
+
+            frmMain.txtBPUpdateCostIndex.Text = FormatPercent(IndexValue, 2)
+
         End If
 
     End Sub
@@ -3060,6 +3080,8 @@ Public Class ManufacturingFacility
             Else
                 Warzone = False
             End If
+
+            rsFW.Close()
 
             If Warzone Then
                 If Not IsNothing(cmbFacilityFWUpgrade) Then
@@ -3114,6 +3136,8 @@ Public Class ManufacturingFacility
             Warzone = False
         End If
 
+        rsFW.Close()
+
         If Warzone And SelectedFacility.FacilityProductionType <> ProductionType.Reprocessing Then
             lblFacilityFWUpgrade.Enabled = True
             lblFacilityFWUpgrade.Visible = True
@@ -3135,6 +3159,8 @@ Public Class ManufacturingFacility
             Else
                 cmbFacilityFWUpgrade.Text = None
             End If
+
+            rsFWLevel.Close()
         Else
             lblFacilityFWUpgrade.Enabled = False
             lblFacilityFWUpgrade.Visible = False
@@ -3143,7 +3169,6 @@ Public Class ManufacturingFacility
             cmbFacilityFWUpgrade.Text = None
             SelectedFacility.FWUpgradeLevel = -1
         End If
-        rsFW.Close()
 
     End Sub
 
@@ -3329,9 +3354,9 @@ Public Class ManufacturingFacility
             ' default setting, if the bp is a reaction, then return the reaction facility not manufacturing
             SelectedActivity = ActivityManufacturing
 
-            Dim rsCheck As SQLiteDataReader
             'Look up the groups for reactions
             If SelectedActivity = ActivityManufacturing Then
+                Dim rsCheck As SQLiteDataReader
                 DBCommand = New SQLiteCommand("SELECT DISTINCT ITEM_GROUP_ID FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID IN (SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE '%Reaction Formula%')", EVEDB.DBREf)
                 rsCheck = DBCommand.ExecuteReader
 
@@ -3340,6 +3365,7 @@ Public Class ManufacturingFacility
                         SelectedActivity = ActivityReactions
                     End If
                 End While
+                rsCheck.Close()
             End If
         End If
 
@@ -4244,8 +4270,6 @@ Public Class IndustryFacility
 ExitBlock:
         On Error Resume Next
         rsLoader.Close()
-        rsLoader = Nothing
-        DBCommand = Nothing
         On Error GoTo 0
 
     End Sub
@@ -4329,7 +4353,7 @@ ExitBlock:
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
                         If ManualTax Then
                             TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
-                            ManualEntries = True
+                            ManualEntries = False ' Tax rate won't affect any of the multiplers so don't reset rigs
                         Else
                             TempSQL &= "FACILITY_TAX = NULL, "
                         End If
@@ -4377,7 +4401,7 @@ ExitBlock:
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
                         If ManualTax Then
                             TaxValue = CStr(TaxRate)
-                            ManualEntries = True
+                            ManualEntries = False ' Tax rate won't affect any of the multiplers so don't reset rigs
                         End If
 
                         If ManualME Then
@@ -4448,6 +4472,8 @@ ExitBlock:
                 While rsCheck.Read()
                     InstalledModules.Add(rsCheck.GetInt32(0))
                 End While
+
+                rsCheck.Close()
 
                 If InstalledModules.Count > 0 Then
                     ' Delete all in there first for this location ID
@@ -4818,8 +4844,6 @@ ExitBlock:
     Private Function GetInstalledModules(ByVal Activity As String, ByVal FacilityID As Long, ByVal ItemGroupID As Integer,
                                          ByVal ItemCategoryID As Integer, ByVal SystemID As Long, ByVal SelectedCharacterID As Long,
                                          ByVal SelectedLocation As ProgramLocation) As List(Of Integer)
-        Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
         Dim InstalledModules As New List(Of Integer)
 
         ' Save the current data - this will work for reactions since the groupID is the same for the item being made for lookup
@@ -4853,6 +4877,9 @@ ExitBlock:
             End Select
             TempBPCategoryID = ItemIDs.AsteroidsCategoryID
         End If
+
+        Dim SQL As String = ""
+        Dim rsLoader As SQLiteDataReader
 
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, ENGINEERING_RIG_BONUSES "
         SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} "
@@ -4908,6 +4935,8 @@ ExitBlock:
             TempAttribute.Bonus = rsLoader.GetDouble(1)
             AttributeData.Add(TempAttribute)
         End While
+
+        rsLoader.Close()
 
         Return AttributeData
 

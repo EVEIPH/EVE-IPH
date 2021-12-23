@@ -613,7 +613,7 @@ Public Class frmSettings
                 .LoadAssetsonStartup = CBool(chkRefreshAssetsonStartup.Checked)
                 .LoadBPsonStartup = CBool(chkRefreshBPsonStartup.Checked)
 
-                If .SaveFacilitiesbyChar <> CBool(chkSaveFacilitiesbyChar.Checked) Then
+                If UserApplicationSettings.SaveFacilitiesbyChar <> CBool(chkSaveFacilitiesbyChar.Checked) Then
                     ReloadFacilties = True
                 End If
                 .SaveFacilitiesbyChar = CBool(chkSaveFacilitiesbyChar.Checked)

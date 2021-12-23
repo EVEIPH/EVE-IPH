@@ -27,7 +27,10 @@
             frmErrorText = frmErrorText & Environment.NewLine & "In addition to a screenshot, copy the data below and send to developer."
             frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "Source: " & e.Exception.Source
             frmErrorText = frmErrorText & Environment.NewLine & "Message: " & e.Exception.Message & vbCrLf
-            frmErrorText = frmErrorText & "Raw Error Text: " & e.Exception.ToString & vbCrLf & "Error Tracking: " & ErrorTracker
+            frmErrorText = frmErrorText & "Raw Error Text: " & e.Exception.ToString & vbCrLf
+            If ErrorTracker <> "" Then
+                frmErrorText &= "Error Tracking: " & ErrorTracker
+            End If
 
             f2.ShowDialog()
 

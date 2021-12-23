@@ -134,8 +134,11 @@ Partial Class frmReprocessingPlant
         Me.btnCopyOutput = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cmbBeanCounterRefining = New System.Windows.Forms.ComboBox()
-        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabpSkills = New System.Windows.Forms.TabPage()
+        Me.btnClear2 = New System.Windows.Forms.Button()
+        Me.btnCopyOutput2 = New System.Windows.Forms.Button()
+        Me.btnRefine2 = New System.Windows.Forms.Button()
+        Me.btnClose2 = New System.Windows.Forms.Button()
         Me.chkToggle = New System.Windows.Forms.CheckBox()
         Me.lblTotalItemList = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeTotal = New System.Windows.Forms.Label()
@@ -145,6 +148,7 @@ Partial Class frmReprocessingPlant
         Me.lblReturnRatePercentOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingValueOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeOutput = New System.Windows.Forms.Label()
+        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstItemstoRefine = New EVE_Isk_per_Hour.MyListView()
         Me.lstRefineOutput = New EVE_Isk_per_Hour.MyListView()
         Me.gbRefineYields.SuspendLayout()
@@ -165,7 +169,7 @@ Partial Class frmReprocessingPlant
         Me.btnRefine.Name = "btnRefine"
         Me.btnRefine.Size = New System.Drawing.Size(74, 30)
         Me.btnRefine.TabIndex = 36
-        Me.btnRefine.Text = "Refine"
+        Me.btnRefine.Text = "Reprocess"
         Me.btnRefine.UseVisualStyleBackColor = True
         '
         'btnClose
@@ -456,7 +460,7 @@ Partial Class frmReprocessingPlant
         '
         Me.cmbOreProcessing6.FormattingEnabled = True
         Me.cmbOreProcessing6.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing6.Location = New System.Drawing.Point(222, 52)
+        Me.cmbOreProcessing6.Location = New System.Drawing.Point(353, 52)
         Me.cmbOreProcessing6.Name = "cmbOreProcessing6"
         Me.cmbOreProcessing6.Size = New System.Drawing.Size(36, 21)
         Me.cmbOreProcessing6.TabIndex = 116
@@ -492,7 +496,7 @@ Partial Class frmReprocessingPlant
         '
         Me.cmbOreProcessing12.FormattingEnabled = True
         Me.cmbOreProcessing12.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing12.Location = New System.Drawing.Point(353, 52)
+        Me.cmbOreProcessing12.Location = New System.Drawing.Point(222, 52)
         Me.cmbOreProcessing12.Name = "cmbOreProcessing12"
         Me.cmbOreProcessing12.Size = New System.Drawing.Size(36, 21)
         Me.cmbOreProcessing12.TabIndex = 110
@@ -666,7 +670,7 @@ Partial Class frmReprocessingPlant
         '
         'lblOreProcessing6
         '
-        Me.lblOreProcessing6.Location = New System.Drawing.Point(160, 56)
+        Me.lblOreProcessing6.Location = New System.Drawing.Point(291, 56)
         Me.lblOreProcessing6.Name = "lblOreProcessing6"
         Me.lblOreProcessing6.Size = New System.Drawing.Size(63, 13)
         Me.lblOreProcessing6.TabIndex = 137
@@ -684,7 +688,7 @@ Partial Class frmReprocessingPlant
         'chkOreProcessing6
         '
         Me.chkOreProcessing6.AutoSize = True
-        Me.chkOreProcessing6.Location = New System.Drawing.Point(141, 55)
+        Me.chkOreProcessing6.Location = New System.Drawing.Point(272, 55)
         Me.chkOreProcessing6.Name = "chkOreProcessing6"
         Me.chkOreProcessing6.Size = New System.Drawing.Size(15, 14)
         Me.chkOreProcessing6.TabIndex = 115
@@ -744,7 +748,7 @@ Partial Class frmReprocessingPlant
         'chkOreProcessing12
         '
         Me.chkOreProcessing12.AutoSize = True
-        Me.chkOreProcessing12.Location = New System.Drawing.Point(272, 55)
+        Me.chkOreProcessing12.Location = New System.Drawing.Point(141, 55)
         Me.chkOreProcessing12.Name = "chkOreProcessing12"
         Me.chkOreProcessing12.Size = New System.Drawing.Size(15, 14)
         Me.chkOreProcessing12.TabIndex = 109
@@ -761,7 +765,7 @@ Partial Class frmReprocessingPlant
         '
         'lblOreProcessing12
         '
-        Me.lblOreProcessing12.Location = New System.Drawing.Point(291, 56)
+        Me.lblOreProcessing12.Location = New System.Drawing.Point(160, 56)
         Me.lblOreProcessing12.Name = "lblOreProcessing12"
         Me.lblOreProcessing12.Size = New System.Drawing.Size(63, 13)
         Me.lblOreProcessing12.TabIndex = 138
@@ -1255,16 +1259,12 @@ Partial Class frmReprocessingPlant
         Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(235, 21)
         Me.cmbBeanCounterRefining.TabIndex = 130
         '
-        'ReprocessingFacility
-        '
-        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
-        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
-        Me.ReprocessingFacility.Name = "ReprocessingFacility"
-        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
-        Me.ReprocessingFacility.TabIndex = 43
-        '
         'tabpSkills
         '
+        Me.tabpSkills.Controls.Add(Me.btnClear2)
+        Me.tabpSkills.Controls.Add(Me.btnCopyOutput2)
+        Me.tabpSkills.Controls.Add(Me.btnRefine2)
+        Me.tabpSkills.Controls.Add(Me.btnClose2)
         Me.tabpSkills.Controls.Add(Me.tabProcessingSkills)
         Me.tabpSkills.Controls.Add(Me.GroupBox1)
         Me.tabpSkills.Location = New System.Drawing.Point(4, 22)
@@ -1274,6 +1274,43 @@ Partial Class frmReprocessingPlant
         Me.tabpSkills.TabIndex = 1
         Me.tabpSkills.Text = "Skills"
         Me.tabpSkills.UseVisualStyleBackColor = True
+        '
+        'btnClear2
+        '
+        Me.btnClear2.Location = New System.Drawing.Point(77, 113)
+        Me.btnClear2.Name = "btnClear2"
+        Me.btnClear2.Size = New System.Drawing.Size(74, 30)
+        Me.btnClear2.TabIndex = 137
+        Me.btnClear2.Text = "Clear"
+        Me.btnClear2.UseVisualStyleBackColor = True
+        '
+        'btnCopyOutput2
+        '
+        Me.btnCopyOutput2.Location = New System.Drawing.Point(4, 143)
+        Me.btnCopyOutput2.Name = "btnCopyOutput2"
+        Me.btnCopyOutput2.Size = New System.Drawing.Size(74, 30)
+        Me.btnCopyOutput2.TabIndex = 136
+        Me.btnCopyOutput2.Text = "Copy Output"
+        Me.btnCopyOutput2.UseVisualStyleBackColor = True
+        '
+        'btnRefine2
+        '
+        Me.btnRefine2.Location = New System.Drawing.Point(4, 113)
+        Me.btnRefine2.Name = "btnRefine2"
+        Me.btnRefine2.Size = New System.Drawing.Size(74, 30)
+        Me.btnRefine2.TabIndex = 134
+        Me.btnRefine2.Text = "Reprocess"
+        Me.btnRefine2.UseVisualStyleBackColor = True
+        '
+        'btnClose2
+        '
+        Me.btnClose2.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.btnClose2.Location = New System.Drawing.Point(77, 143)
+        Me.btnClose2.Name = "btnClose2"
+        Me.btnClose2.Size = New System.Drawing.Size(74, 30)
+        Me.btnClose2.TabIndex = 135
+        Me.btnClose2.Text = "Close"
+        Me.btnClose2.UseVisualStyleBackColor = True
         '
         'chkToggle
         '
@@ -1365,6 +1402,14 @@ Partial Class frmReprocessingPlant
         Me.lblReprocessingVolumeOutput.TabIndex = 263
         Me.lblReprocessingVolumeOutput.Text = "-"
         Me.lblReprocessingVolumeOutput.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'ReprocessingFacility
+        '
+        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
+        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
+        Me.ReprocessingFacility.Name = "ReprocessingFacility"
+        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
+        Me.ReprocessingFacility.TabIndex = 43
         '
         'lstItemstoRefine
         '
@@ -1567,4 +1612,8 @@ Partial Class frmReprocessingPlant
     Friend WithEvents lblReprocessingValueOutput As Label
     Friend WithEvents lblReprocessingVolumeOutput As Label
     Friend WithEvents btnClear As Button
+    Friend WithEvents btnClear2 As Button
+    Friend WithEvents btnCopyOutput2 As Button
+    Friend WithEvents btnRefine2 As Button
+    Friend WithEvents btnClose2 As Button
 End Class

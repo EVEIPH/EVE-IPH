@@ -298,7 +298,7 @@ Public Class ShoppingList
                             End If
                         End If
 
-                        Call rsMatCheck.Close()
+                        rsMatCheck.Close()
 
                     End If
                 Next
@@ -752,6 +752,8 @@ Public Class ShoppingList
         rsMatQuantity.Read()
 
         SingleRunQuantity = rsMatQuantity.GetInt64(0)
+
+        rsMatQuantity.Close()
 
         MEBonus = (1 - (ItemData.ItemME / 100)) * ItemData.ManufacturingFacility.MaterialMultiplier
 
@@ -1727,7 +1729,7 @@ Public Class BuiltItemList
             AddItem.ItemName = UpdateItemNamewithRuns(AddItem.ItemName, Runs)
 
             ' Cost
-            TotalCost = TotalCost + AddItem.BuildMaterials.GetTotalMaterialsCost
+            TotalCost = TotalCost + AddItem.TotalBuildCost
 
             ' Re-add the item
             Call ItemList.Add(AddItem)
@@ -1766,7 +1768,7 @@ Public Class BuiltItemList
             End If
 
             ' Update cost
-            TotalCost = TotalCost - RemoveItem.BuildMaterials.GetTotalMaterialsCost
+            TotalCost = TotalCost - RemoveItem.TotalBuildCost
 
         End If
 
@@ -1835,6 +1837,9 @@ Public Class BuiltItem
     Public IncludeActivityTime As Boolean
     Public IncludeActivityUsage As Boolean
 
+    Public TotalBuildCost As Double
+    Public TotalExcessSellBuildCost As Double
+
     Public Sub New()
         ItemTypeID = 0
         ItemName = ""
@@ -1852,6 +1857,9 @@ Public Class BuiltItem
         IncludeActivityCost = False
         IncludeActivityTime = False
         IncludeActivityUsage = False
+
+        TotalBuildCost = 0
+        TotalExcessSellBuildCost = 0
 
     End Sub
 
@@ -1873,6 +1881,8 @@ Public Class BuiltItem
         CopyOfMe.IncludeActivityUsage = Me.IncludeActivityUsage
         CopyOfMe.IncludeActivityTime = Me.IncludeActivityTime
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost
+        CopyOfMe.TotalBuildCost = Me.TotalBuildCost
+        CopyOfMe.TotalExcessSellBuildCost = Me.TotalExcessSellBuildCost
         CopyOfMe.ComponentBuildList = New List(Of BuiltItem)
         ' Clone each built item in the list
         For Each BI In Me.ComponentBuildList

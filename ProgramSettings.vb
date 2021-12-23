@@ -1780,6 +1780,7 @@ Public Class ProgramSettings
                     .FuelBlocks = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "FuelBlocks", DefaultPriceChecks))
                     .ProtectiveComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "ProtectiveComponents", DefaultPriceChecks))
                     .RAM = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RAM", DefaultPriceChecks))
+                    .NoBuildItems = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "NoBuildItems", False)) ' Default always false on this
                     .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "CapitalShipComponents", DefaultPriceChecks))
                     .StructureComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "StructureComponents", DefaultPriceChecks))
                     .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "SubsystemComponents", DefaultPriceChecks))
@@ -1837,7 +1838,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveUpdatePricesSettings(PriceSettings As UpdatePriceTabSettings)
-        Dim UpdatePricesSettingsList(68) As Setting
+        Dim UpdatePricesSettingsList(69) As Setting
 
         Try
             UpdatePricesSettingsList(0) = New Setting("AllRawMats", CStr(PriceSettings.AllRawMats))
@@ -1921,6 +1922,8 @@ Public Class ProgramSettings
             UpdatePricesSettingsList(67) = New Setting("PPItemsSystem", CStr(PriceSettings.PPItemsSystem))
             UpdatePricesSettingsList(68) = New Setting("PPItemsPriceMod", CStr(PriceSettings.PPItemsPriceMod))
 
+            UpdatePricesSettingsList(69) = New Setting("NoBuildItems", CStr(PriceSettings.NoBuildItems))
+
             Call WriteSettingsToFile(SettingsFolder, UpdatePricesFileName, UpdatePricesSettingsList, UpdatePricesFileName)
 
         Catch ex As Exception
@@ -1980,6 +1983,7 @@ Public Class ProgramSettings
             .FuelBlocks = DefaultPriceChecks
             .ProtectiveComponents = DefaultPriceChecks
             .RAM = DefaultPriceChecks
+            .NoBuildItems = False ' Always false
             .CapitalShipComponents = DefaultPriceChecks
             .StructureComponents = DefaultPriceChecks
             .SubsystemComponents = DefaultPriceChecks
@@ -4721,6 +4725,7 @@ Public Class ProgramSettings
                     .CapitalShipComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "CapitalShipComponents", DefaultAssetItemChecks))
                     .StructureComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Structure Components", DefaultAssetItemChecks))
                     .SubsystemComponents = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SubsystemComponents", DefaultAssetItemChecks))
+                    .NoBuildItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "NoBuildItems", False))
 
                     .T1 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T1", DefaultAssetItemChecks))
                     .T2 = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "T2", DefaultAssetItemChecks))
@@ -4758,7 +4763,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(54) As Setting
+        Dim AssetWindowSettingsList(55) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4830,6 +4835,7 @@ Public Class ProgramSettings
             AssetWindowSettingsList(52) = New Setting("Faction", CStr(ItemsSelected.Faction))
             AssetWindowSettingsList(53) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
             AssetWindowSettingsList(54) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
+            AssetWindowSettingsList(55) = New Setting("NoBuildItems", CStr(ItemsSelected.NoBuildItems))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4905,6 +4911,7 @@ Public Class ProgramSettings
             .FuelBlocks = DefaultAssetItemChecks
             .ProtectiveComponents = DefaultAssetItemChecks
             .RAM = DefaultAssetItemChecks
+            .NoBuildItems = False
             .CapitalShipComponents = DefaultAssetItemChecks
             .StructureComponents = DefaultAssetItemChecks
             .SubsystemComponents = DefaultAssetItemChecks
@@ -5519,6 +5526,7 @@ Public Structure UpdatePriceTabSettings
     Dim FuelBlocks As Boolean
     Dim ProtectiveComponents As Boolean
     Dim RAM As Boolean
+    Dim NoBuildItems As Boolean
     Dim CapitalShipComponents As Boolean
     Dim StructureComponents As Boolean
     Dim SubsystemComponents As Boolean
@@ -6318,6 +6326,7 @@ Public Structure AssetWindowSettings
     Dim FuelBlocks As Boolean
     Dim ProtectiveComponents As Boolean
     Dim RAM As Boolean
+    Dim NoBuildItems As Boolean
     Dim CapitalShipComponents As Boolean
     Dim StructureComponents As Boolean
     Dim SubsystemComponents As Boolean

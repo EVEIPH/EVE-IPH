@@ -138,8 +138,6 @@ Public Class EVEAssets
         End While
 
         readerAssets.Close()
-        DBCommand = Nothing
-        readerAssets = Nothing
 
         AssetList = Assets
 
@@ -243,6 +241,7 @@ Public Class EVEAssets
                     LocationName = UnknownLocation
                 End If
                 readerData.Close()
+
             ElseIf LocationID >= 30000000 And LocationID < 40000000 Then ' See if it's a solar system
                 SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(LocationID)
 
@@ -924,6 +923,8 @@ Public Class EVEAssets
 
             ReturnLocations.Add(TempLocation)
         End While
+
+        readerLocations.Close()
 
         Return ReturnLocations
 

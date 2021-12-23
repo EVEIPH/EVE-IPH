@@ -190,7 +190,7 @@ Public Class EVEBlueprints
 
                                         readerCheck.Close()
                                     End If
-                                    readerCheck = Nothing
+
                                 End If
 
                                 If InsertBP Then
@@ -231,7 +231,6 @@ Public Class EVEBlueprints
                                 End If
 
                                 readerBlueprints.Close()
-                                readerBlueprints = Nothing
 
                                 Call EVEDB.ExecuteNonQuerySQL(SQL)
                             End If

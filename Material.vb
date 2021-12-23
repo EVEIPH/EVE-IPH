@@ -1,5 +1,4 @@
-﻿Imports System.Data.SQLite
-
+﻿
 Public Class Material
     Implements ICloneable
 

@@ -23,4 +23,7 @@ Public Class frmError
         Me.TopMost = True
     End Sub
 
+    Private Sub btnCopy_Click(sender As Object, e As EventArgs) Handles btnCopy.Click
+        Call CopyTextToClipboard(txtError.Text)
+    End Sub
 End Class

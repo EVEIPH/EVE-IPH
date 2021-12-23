@@ -112,6 +112,7 @@ Class ReprocessingPlant
                 End If
 
             End While
+
         Else
             ' Get the Mats that will come from refining 1 batch
             SQL = "SELECT REPROCESSING.REFINED_MATERIAL_ID, REPROCESSING.REFINED_MATERIAL, REPROCESSING.REFINED_MATERIAL_GROUP, "
@@ -137,7 +138,10 @@ Class ReprocessingPlant
                 RefinedMats.InsertMaterial(RefinedMat)
 
             End While
+
         End If
+
+        readerRefine.Close()
 
         Dim RefinedMatQuantity As Double
         Dim SingleReprocessingFee As Double
@@ -163,6 +167,7 @@ Class ReprocessingPlant
                     RefinedMaterial.SetTotalCost(TempCost)
                     AdjustedCost += TempCost
                 End If
+                readerRefine.Close()
             Next
 
             ' Update the total cost for the list

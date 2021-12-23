@@ -118,6 +118,7 @@ Partial Class AssetViewer
         Me.btnToggleRetract = New System.Windows.Forms.Button()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.btnToggleExpand = New System.Windows.Forms.Button()
+        Me.chkNobuild = New System.Windows.Forms.CheckBox()
         Me.tabMain.SuspendLayout()
         Me.tabAssetMain.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
@@ -797,10 +798,11 @@ Partial Class AssetViewer
         '
         'gbItems
         '
+        Me.gbItems.Controls.Add(Me.chkNobuild)
+        Me.gbItems.Controls.Add(Me.chkImplants)
         Me.gbItems.Controls.Add(Me.chkBoosters)
         Me.gbItems.Controls.Add(Me.chkDeployables)
         Me.gbItems.Controls.Add(Me.chkStructureModules)
-        Me.gbItems.Controls.Add(Me.chkImplants)
         Me.gbItems.Controls.Add(Me.chkCelestials)
         Me.gbItems.Controls.Add(Me.chkStructures)
         Me.gbItems.Controls.Add(Me.chkStructureRigs)
@@ -852,7 +854,7 @@ Partial Class AssetViewer
         'chkImplants
         '
         Me.chkImplants.AutoSize = True
-        Me.chkImplants.Location = New System.Drawing.Point(126, 111)
+        Me.chkImplants.Location = New System.Drawing.Point(119, 111)
         Me.chkImplants.Name = "chkImplants"
         Me.chkImplants.Size = New System.Drawing.Size(65, 17)
         Me.chkImplants.TabIndex = 251
@@ -1136,6 +1138,16 @@ Partial Class AssetViewer
         Me.btnToggleExpand.TabIndex = 255
         Me.btnToggleExpand.UseVisualStyleBackColor = False
         '
+        'chkNobuild
+        '
+        Me.chkNobuild.AutoSize = True
+        Me.chkNobuild.Location = New System.Drawing.Point(182, 111)
+        Me.chkNobuild.Name = "chkNobuild"
+        Me.chkNobuild.Size = New System.Drawing.Size(66, 17)
+        Me.chkNobuild.TabIndex = 21
+        Me.chkNobuild.Text = "No Build"
+        Me.chkNobuild.UseVisualStyleBackColor = True
+        '
         'AssetViewer
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1272,4 +1284,5 @@ Partial Class AssetViewer
     Friend WithEvents gbResearchEquipment As GroupBox
     Friend WithEvents gbReactionMaterials As GroupBox
     Friend WithEvents chkProtectiveComponents As CheckBox
+    Friend WithEvents chkNobuild As CheckBox
 End Class

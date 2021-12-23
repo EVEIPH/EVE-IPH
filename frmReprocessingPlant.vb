@@ -163,17 +163,12 @@ Public Class frmReprocessingPlant
             ProcessingLabels(i).Enabled = False
         Next
 
-        cmbRefineryEff.Enabled = False
-
         If cmbRefining.Text = "4" Or cmbRefining.Text = "5" Then
             ' Veld, Scordite, Pyroxeres, and Plag
             Call EnableOreProcessingGroup(1, True)
             Call EnableOreProcessingGroup(2, True)
             Call EnableOreProcessingGroup(9, True)
             Call EnableOreProcessingGroup(10, True)
-
-            ' Reprocessing 4 is needed for this instead of 5
-            cmbRefineryEff.Enabled = True
         End If
 
         If cmbRefining.Text = "5" Then
@@ -211,7 +206,7 @@ Public Class frmReprocessingPlant
             Call EnableOreProcessingGroup(25, True)
         End If
 
-        If cmbRefining.Text = "5" Then
+        If cmbRefining.Text = "4" Then
             cmbRefineryEff.Enabled = True
         End If
 
@@ -246,6 +241,10 @@ Public Class frmReprocessingPlant
     End Sub
 
     Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click
+        Me.Hide()
+    End Sub
+
+    Private Sub btnClose2_Click(sender As Object, e As EventArgs) Handles btnClose2.Click
         Me.Hide()
     End Sub
 
@@ -350,11 +349,20 @@ Public Class frmReprocessingPlant
 
     Private Sub btnSelectAssets_Click(sender As Object, e As EventArgs) Handles btnSelectAssets.Click
         ' They update assets already by pressing on the safe
+        CopyPasteRefineryMaterialText = "" ' Reset this
         Call RefreshMaterialList()
     End Sub
 
     ' Refines all materials in the item list and updates the item list with return amount of refining and the output list of materials
     Private Sub btnRefine_Click(sender As Object, e As EventArgs) Handles btnRefine.Click
+        Call Refine()
+    End Sub
+
+    Private Sub btnRefine2_Click(sender As Object, e As EventArgs) Handles btnRefine2.Click
+        Call Refine()
+    End Sub
+
+    Private Sub Refine()
         Dim ReprocessedMaterials As New Materials
         Dim ReprocessedCost As Double
         Dim ReprocessingUsage As Double
@@ -456,7 +464,7 @@ Public Class frmReprocessingPlant
         Dim LocalReprocessingUsage As Double = 0
 
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), CDbl(UserApplicationSettings.RefiningImplantValue))
+        Dim ReprocessingStation As New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), GetAttribute("refiningYieldMutator", cmbBeanCounterRefining.Text) / 100)
 
         ' Update the material modifier based on the type of ore
         If ItemGroup.Contains("Moon") Then
@@ -469,8 +477,14 @@ Public Class frmReprocessingPlant
             ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.ScrapmetalRefineRate
         End If
 
+        Dim RefineryEfficency As Integer = 0
+
+        If cmbRefineryEff.Enabled = True Then
+            RefineryEfficency = CInt(cmbRefineryEff.Text)
+        End If
+
         ' Refine the first item
-        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbRefining.Text), CInt(cmbRefineryEff.Text), GetProcessingSkill(ItemName, ItemGroup),
+        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbRefining.Text), RefineryEfficency, GetProcessingSkill(ItemName, ItemGroup),
                                                     ItemQuantity, False, BFI, ReprocessingYield, ReprocessingUsage)
         LocalReprocessingUsage = ReprocessingUsage
 
@@ -506,7 +520,7 @@ Public Class frmReprocessingPlant
     End Sub
 
     ' Updates the refine list if we are sent materials or if not, looking up in the DB for assets
-    Private Sub RefreshMaterialList(Optional PasteMaterialList As Materials = Nothing)
+    Public Sub RefreshMaterialList(Optional PasteMaterialList As Materials = Nothing)
         Dim SQL As String = ""
         Dim readerItems As SQLiteDataReader
         Dim ItemlstViewRow As ListViewItem
@@ -518,6 +532,11 @@ Public Class frmReprocessingPlant
         Application.UseWaitCursor = True
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
+
+        If IsNothing(PasteMaterialList) And CopyPasteRefineryMaterialText <> "" Then
+            ' They refreshed prices most likely so use the original copy paste list they set
+            PasteMaterialList = ImportCopyPasteText(CopyPasteRefineryMaterialText)
+        End If
 
         Dim IDString As String = ""
 
@@ -562,7 +581,7 @@ Public Class frmReprocessingPlant
             End If
 
             ' Now get all the assets from the checked locations
-            SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), IT.volume FROM "
+            SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
             SQL &= "ASSETS, INVENTORY_TYPES AS IT "
             SQL &= "WHERE (" & AssetLocationFlagList & ") "
             SQL &= "AND IT.typeID = ASSETS.TypeID "
@@ -588,7 +607,7 @@ Public Class frmReprocessingPlant
         ' First, only add items to the list that we can refine - filter out all the other junk
         For Each Mat In TempMaterialList.GetMaterialList
             SQL = "SELECT ITEM_ID, BELT_TYPE FROM REPROCESSING LEFT JOIN ORES ON REPROCESSING.ITEM_ID = ORES.ORE_ID "
-            SQL &= "WHERE ITEM_ID =" & CStr(Mat.GetMaterialTypeID) & " GROUP BY ITEM_ID, BELT_TYPE"
+            SQL &= "WHERE ITEM_ID =" & CStr(Mat.GetMaterialTypeID) & " GROUP BY ITEM_ID, BELT_TYPE "
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerItems = DBCommand.ExecuteReader
 
@@ -628,7 +647,7 @@ Public Class frmReprocessingPlant
         IgnoreChecks = False
 
         ' Sort the  list
-        Call ListViewColumnSorter(ItemsColumnClicked, CType(lstItemstoRefine, ListView), ItemsColumnClicked, ItemsColumnSortType)
+        Call ListViewColumnSorter(ItemsColumnClicked, CType(lstItemstoRefine, ListView), ItemsColumnClicked, SortOrder.Ascending)
 
         Application.UseWaitCursor = False
         Me.Cursor = Cursors.Default
@@ -705,6 +724,14 @@ Public Class frmReprocessingPlant
     End Sub
 
     Private Sub btnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
+        Call ClearItems()
+    End Sub
+
+    Private Sub btnClear2_Click(sender As Object, e As EventArgs) Handles btnClear2.Click
+        Call ClearItems()
+    End Sub
+
+    Private Sub ClearItems()
         lstItemstoRefine.Items.Clear()
         lstRefineOutput.Items.Clear()
 
@@ -716,6 +743,14 @@ Public Class frmReprocessingPlant
     End Sub
 
     Private Sub btnCopyOutput_Click(sender As Object, e As EventArgs) Handles btnCopyOutput.Click
+        Call CopyOutput()
+    End Sub
+
+    Private Sub btnCopyOutput2_Click(sender As Object, e As EventArgs) Handles btnCopyOutput2.Click
+        Call CopyOutput()
+    End Sub
+
+    Private Sub CopyOutput()
         Dim ClipboardData As New DataObject
 
         Call MaterialOutput.SortMaterialListByQuantity()
@@ -727,5 +762,20 @@ Public Class frmReprocessingPlant
 
     Private Sub frmReprocessingPlant_Disposed(sender As Object, e As EventArgs) Handles Me.Disposed
         ReprocessingPlantOpen = False
+    End Sub
+
+    Private Sub cmbRefining_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbRefining.SelectedIndexChanged
+        If CInt(cmbRefining.Text) >= 4 Then
+            cmbRefineryEff.Enabled = True
+        Else
+            cmbRefineryEff.Enabled = False
+        End If
+        ' Update the ore processing skills
+        Call UpdateProcessingSkills()
+    End Sub
+
+    Private Sub cmbRefineryEff_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbRefineryEff.SelectedIndexChanged
+        ' Update the ore processing skills
+        Call UpdateProcessingSkills()
     End Sub
 End Class

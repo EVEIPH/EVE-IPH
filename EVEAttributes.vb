@@ -14,8 +14,10 @@ Public Class EVEAttributes
         readerSearch = DBCommand.ExecuteReader
 
         If readerSearch.Read Then
+            readerSearch.Close()
             Return GetAttribute(readerSearch.GetInt32(0), AttributeCode)
         Else
+            readerSearch.Close()
             Return Nothing
         End If
 
@@ -32,8 +34,10 @@ Public Class EVEAttributes
         readerSearch = DBCommand.ExecuteReader
 
         If readerSearch.Read Then
+            readerSearch.Close()
             Return GetAttributes(readerSearch.GetInt32(0))
         Else
+            readerSearch.Close()
             Return Nothing
         End If
 
@@ -52,8 +56,10 @@ Public Class EVEAttributes
         readerAttribute = DBCommand.ExecuteReader
 
         If readerAttribute.Read Then
+            readerAttribute.Close()
             Return readerAttribute.GetDouble(0)
         Else
+            readerAttribute.Close()
             Return Nothing
         End If
 
@@ -81,6 +87,8 @@ Public Class EVEAttributes
             Call ReturnList.Add(Record)
 
         End While
+
+        readerAttribute.Close()
 
         Return ReturnList
 

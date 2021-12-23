@@ -387,8 +387,6 @@ Public Class MarketPriceInterface
         Cachedate = ProcessCacheDate(rsCache)
 
         rsCache.Close()
-        rsCache = Nothing
-        DBCommand = Nothing
 
         If Cachedate <= Date.UtcNow Then
             Return True

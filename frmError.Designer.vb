@@ -25,12 +25,12 @@ Partial Class frmError
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmError))
         Me.btnOK = New System.Windows.Forms.Button()
         Me.txtError = New System.Windows.Forms.TextBox()
-        Me.btnSendReport = New System.Windows.Forms.Button()
+        Me.btnCopy = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'btnOK
         '
-        Me.btnOK.Location = New System.Drawing.Point(216, 266)
+        Me.btnOK.Location = New System.Drawing.Point(274, 426)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(97, 30)
         Me.btnOK.TabIndex = 0
@@ -43,28 +43,28 @@ Partial Class frmError
         Me.txtError.Multiline = True
         Me.txtError.Name = "txtError"
         Me.txtError.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtError.Size = New System.Drawing.Size(505, 255)
+        Me.txtError.Size = New System.Drawing.Size(505, 415)
         Me.txtError.TabIndex = 1
         '
-        'btnSendReport
+        'btnCopy
         '
-        Me.btnSendReport.Location = New System.Drawing.Point(79, 266)
-        Me.btnSendReport.Name = "btnSendReport"
-        Me.btnSendReport.Size = New System.Drawing.Size(97, 30)
-        Me.btnSendReport.TabIndex = 2
-        Me.btnSendReport.Text = "Send Report"
-        Me.btnSendReport.UseVisualStyleBackColor = True
-        Me.btnSendReport.Visible = False
+        Me.btnCopy.Location = New System.Drawing.Point(157, 426)
+        Me.btnCopy.Name = "btnCopy"
+        Me.btnCopy.Size = New System.Drawing.Size(97, 30)
+        Me.btnCopy.TabIndex = 2
+        Me.btnCopy.Text = "Copy"
+        Me.btnCopy.UseVisualStyleBackColor = True
         '
         'frmError
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(529, 303)
-        Me.Controls.Add(Me.btnSendReport)
+        Me.ClientSize = New System.Drawing.Size(529, 468)
+        Me.Controls.Add(Me.btnCopy)
         Me.Controls.Add(Me.txtError)
         Me.Controls.Add(Me.btnOK)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
@@ -77,5 +77,5 @@ Partial Class frmError
     End Sub
     Friend WithEvents btnOK As System.Windows.Forms.Button
     Friend WithEvents txtError As System.Windows.Forms.TextBox
-    Friend WithEvents btnSendReport As System.Windows.Forms.Button
+    Friend WithEvents btnCopy As Button
 End Class

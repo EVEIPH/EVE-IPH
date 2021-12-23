@@ -72,8 +72,6 @@ Public Class Corporation
         End While
 
         rsData.Close()
-        DBCommand = Nothing
-        rsData = Nothing
 
         Dim FactoryManager As Boolean = False
         Dim Director As Boolean = False
@@ -225,6 +223,8 @@ Public Class Corporation
         While rsRoles.Read
             ReturnRoles.Add(rsRoles.GetString(0))
         End While
+
+        rsRoles.Close()
 
         Return ReturnRoles
 

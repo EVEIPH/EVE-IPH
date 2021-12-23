@@ -189,8 +189,6 @@ Public Class EVENPCStandings
         End While
 
         readerStandings.Close()
-        DBCommand = Nothing
-        readerStandings = Nothing
 
     End Sub
 

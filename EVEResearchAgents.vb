@@ -58,8 +58,6 @@ Public Class EVEResearchAgents
         End While
 
         readerResearch.Close()
-        DBCommand = Nothing
-        readerResearch = Nothing
 
     End Sub
 

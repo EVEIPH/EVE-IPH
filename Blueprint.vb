@@ -54,6 +54,7 @@ Public Class Blueprint
 
     ' Base Fees for activity
     Private JobFee As Double
+    Private TotalUsage As Double
 
     ' How much it costs to use each facility to manufacture items and parts
     Private ManufacturingFacilityUsage As Double
@@ -174,7 +175,7 @@ Public Class Blueprint
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
-    Private ReactionBPGroups As New List(Of Integer)(New Integer() {1888, 1889, 1890})
+    Private ReactionBPGroups As New List(Of Integer)(New Integer() {1888, 1889, 1890, 4097})
 
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
@@ -255,6 +256,7 @@ Public Class Blueprint
 
         BaseJobCost = 0
         JobFee = 0
+        TotalUsage = 0
 
         InventionDecryptor = NoDecryptor
         Relic = ""
@@ -350,10 +352,6 @@ Public Class Blueprint
 
         BuiltComponentList = New BuiltItemList
         BPRawMats = New Materials
-
-        readerBP.Close()
-        readerBP = Nothing
-        DBCommand = Nothing
 
         ' Set the invention variables to default
         IncludeInventionCosts = False
@@ -702,6 +700,8 @@ Public Class Blueprint
                         PortionSize = rsCheck.GetInt32(3)
                     End If
 
+                    rsCheck.Close()
+
                     ' Build the T1 component
                     If GroupID = ItemIDs.AdvCapitalComponentGroupID Or GroupID = ItemIDs.CapitalComponentGroupID Then
                         ' Use capital component facility
@@ -889,6 +889,7 @@ Public Class Blueprint
 
         Dim SingleRunBuildCost As Double = -1
         Dim SavedExcessMaterialList As New Materials
+        Dim SavedBPExcessMaterialList As New Materials
         Dim SavedUpdateBPExcessMaterialList As New Materials
 
         Dim Mat As Material
@@ -933,9 +934,17 @@ Public Class Blueprint
 
             ElseIf AddMaterial(CurrentMaterialCategoryID, CurrentMaterialGroupID, IgnoreMinerals, IgnoreT1Item) Then
 
-                ' Save a copy of the excess materials list in case we need to replace it if we don't decide to build this component
+                ' Save a copy of the excess materials lists in case we need to replace it if we don't decide to build this component
                 If Not IsNothing(ExcessBuildMaterials) Then
-                    SavedExcessMaterialList = CType(ExcessBuildMaterials.Clone, Materials)
+                    If ExcessBuildMaterials.GetMaterialList.Count <> 0 Then
+                        SavedExcessMaterialList = CType(ExcessBuildMaterials.Clone, Materials)
+                    End If
+                End If
+
+                If Not IsNothing(BPExcessMaterials) Then
+                    If BPExcessMaterials.GetMaterialList.Count <> 0 Then
+                        SavedBPExcessMaterialList = CType(BPExcessMaterials.Clone, Materials)
+                    End If
                 End If
 
                 ' Set the current material - adjust with portion size though if sent
@@ -1189,8 +1198,12 @@ Public Class Blueprint
 
                         ' *** BUILD OR BUY ***
                         If BuildBuy Then
+                            ' Get the total component cost and adjust total with any excess sell
+                            Dim TotalComponentCost As Double = ComponentBlueprint.GetTotalComponentCost
+                            '- AdjustPriceforTaxesandFees(ComponentBlueprint.BPExcessMaterials.GetTotalMaterialsCost, SetTaxes, BrokerFeeData)
 
-                            SingleRunBuildCost = ComponentBlueprint.GetTotalBuildCost / BuildQuantity
+                            ' Add in taxes and fees to the total build cost
+                            SingleRunBuildCost = TotalComponentCost / BuildQuantity
                             CurrentMaterial.SetBuildCostPerItem(SingleRunBuildCost)
 
                             ' Save the item built, it's ME and the materials it used
@@ -1198,9 +1211,9 @@ Public Class Blueprint
 
                             ' Add the built item to the built component list for later use
                             TempBuiltItem = SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize,
-                                                    TempME, TempTE, ComponentBlueprint, BuildQuantity)
+                                                    TempME, TempTE, ComponentBlueprint, BuildQuantity, SetTaxes, BrokerFeeData)
 
-                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetRawMaterials
+                            TempBuiltItem.BuildMaterials = ComponentBlueprint.GetComponentMaterials
 
                             If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
                                 ' Add any buildable components to this item list
@@ -1209,7 +1222,7 @@ Public Class Blueprint
                                 Next
                             End If
 
-                            ' Add this item to the main build list
+                            ' Add this item to the main build list 
                             BuiltComponentList.AddBuiltItem(CType(TempBuiltItem.Clone, BuiltItem))
 
                             ' Use the build cost for the material if the item quantity doesn't match portion size, and insert all components into the build/buy list
@@ -1217,16 +1230,16 @@ Public Class Blueprint
                                 ' Override the total build cost (which for this is the number of runs we need and the cost of each) mostly for items with portion sizes
                                 ComponentMaterials.InsertMaterial(CurrentMaterial, SingleRunBuildCost * BuildQuantity)
                             Else
-                                ComponentMaterials.InsertMaterial(CurrentMaterial, ComponentBlueprint.GetTotalBuildCost)
+                                ComponentMaterials.InsertMaterial(CurrentMaterial, TotalComponentCost)
                             End If
 
-                        Else '*** BUILD ALL COMPONENTS ***
+                        Else '*** BUILD ALL COMPONENTS - so use BUY prices ***
                             ' Add the built item to the built component list for later use
                             BuiltComponentList.AddBuiltItem(CType(SetBuiltItem(readerME.GetInt64(0), CurrentMaterial, CurrentMatQuantity, ComponentBPPortionSize, TempME, TempTE,
-                                            ComponentBlueprint, BuildQuantity).Clone, BuiltItem))
+                                            ComponentBlueprint, BuildQuantity, SetTaxes, BrokerFeeData).Clone, BuiltItem))
 
                             ' Insert the existing component that we are using into the component list as set in the original BP
-                            ComponentMaterials.InsertMaterial(CurrentMaterial, ComponentBlueprint.GetTotalBuildCost)
+                            ComponentMaterials.InsertMaterial(CurrentMaterial)
 
                         End If
 
@@ -1255,7 +1268,7 @@ Public Class Blueprint
                         End If
                     End If
 
-                    ' Adjust excess lists (code seems good)
+                    ' Adjust excess lists 
                     If CurrentMaterial.GetBuildItem Then
                         ' Save the excess for this item
                         If Not IsNothing(ExcessBuildMaterials) Then
@@ -1266,20 +1279,21 @@ Public Class Blueprint
                     ElseIf Not CurrentMaterial.GetBuildItem Then
                         ' Not building this item, so replace the copy we made before we started this bp to reset the list back
                         ExcessBuildMaterials = CType(SavedExcessMaterialList.Clone, Materials)
+                        BPExcessMaterials = CType(SavedBPExcessMaterialList.Clone, Materials)
                         ' Loop through and add back any used excess since we are buying this item
-                        For Each Mat In SavedUpdateBPExcessMaterialList.GetMaterialList
-                            LookupMaterial = BPExcessMaterials.SearchListbyName(Mat.GetMaterialName)
-                            If Not IsNothing(LookupMaterial) Then
-                                ' Remove from list to update total list amount
-                                Call BPExcessMaterials.RemoveMaterial(LookupMaterial)
-                                ' Update what we used and insert back into list
-                                LookupMaterial.SetQuantity(LookupMaterial.GetQuantity + Mat.GetQuantity)
-                                Call BPExcessMaterials.InsertMaterial(LookupMaterial)
-                            Else
-                                ' Just add it back to the list
-                                BPExcessMaterials.InsertMaterial(Mat)
-                            End If
-                        Next
+                        'For Each Mat In SavedUpdateBPExcessMaterialList.GetMaterialList
+                        '    LookupMaterial = BPExcessMaterials.SearchListbyName(Mat.GetMaterialName)
+                        '    If Not IsNothing(LookupMaterial) Then
+                        '        ' Remove from list to update total list amount
+                        '        Call BPExcessMaterials.RemoveMaterial(LookupMaterial)
+                        '        ' Update what we used and insert back into list
+                        '        LookupMaterial.SetQuantity(LookupMaterial.GetQuantity + Mat.GetQuantity)
+                        '        Call BPExcessMaterials.InsertMaterial(LookupMaterial)
+                        '    Else
+                        '        ' Just add it back to the list
+                        '        BPExcessMaterials.InsertMaterial(Mat)
+                        '    End If
+                        'Next
                     End If
 
                 Else ' Just raw material 
@@ -1302,8 +1316,7 @@ Public Class Blueprint
 
                     End If
 
-                    readerME.Close()
-                    readerME = Nothing
+                readerME.Close()
 
 SkipProcessing:
 
@@ -1312,8 +1325,6 @@ SkipProcessing:
         End While
 
         readerBP.Close()
-        readerBP = Nothing
-        DBCommand = Nothing
 
         ' Set the build flag for the blueprint
         If UserHasReqSkills(BPCharacter.Skills, ReqBuildSkills) Then
@@ -1484,27 +1495,34 @@ SkipProcessing:
     End Sub
 
     Private Function SetBuiltItem(TypeID As Long, SentMaterial As Material, MaterialQuantity As Long, PortionSize As Long,
-                                  iME As Integer, iTE As Integer, RefBlueprint As Blueprint, BuildRuns As Long) As BuiltItem
+                                  iME As Integer, iTE As Integer, RefBlueprint As Blueprint, BuildRuns As Long,
+                                  SetTaxes As Boolean, BFData As BrokerFeeInfo) As BuiltItem
 
         ' Save the item built, it's ME and the materials it used
         Dim TempBuiltItem As New BuiltItem
 
-        TempBuiltItem.BPTypeID = TypeID
-        TempBuiltItem.ItemTypeID = SentMaterial.GetMaterialTypeID
-        TempBuiltItem.ItemName = SentMaterial.GetMaterialName
-        TempBuiltItem.ItemQuantity = MaterialQuantity
-        TempBuiltItem.UsedQuantity = CDec(MaterialQuantity / PortionSize) ' use decimal here, don't round yet
-        TempBuiltItem.BuildME = iME
-        TempBuiltItem.BuildTE = iTE
-        TempBuiltItem.ItemVolume = SentMaterial.GetVolume
-        TempBuiltItem.BPRuns = BuildRuns
-        TempBuiltItem.PortionSize = PortionSize
+        With TempBuiltItem
+            .BPTypeID = TypeID
+            .ItemTypeID = SentMaterial.GetMaterialTypeID
+            .ItemName = SentMaterial.GetMaterialName
+            .ItemQuantity = MaterialQuantity
+            .UsedQuantity = CDec(MaterialQuantity / PortionSize) ' use decimal here, don't round yet
+            .BuildME = iME
+            .BuildTE = iTE
+            .ItemVolume = SentMaterial.GetVolume
+            .BPRuns = BuildRuns
+            .PortionSize = PortionSize
 
-        TempBuiltItem.BuildMaterials = RefBlueprint.GetRawMaterials
-        TempBuiltItem.ManufacturingFacility = RefBlueprint.MainManufacturingFacility
-        TempBuiltItem.IncludeActivityCost = RefBlueprint.MainManufacturingFacility.IncludeActivityCost
-        TempBuiltItem.IncludeActivityTime = RefBlueprint.MainManufacturingFacility.IncludeActivityTime
-        TempBuiltItem.IncludeActivityUsage = RefBlueprint.MainManufacturingFacility.IncludeActivityUsage
+            .BuildMaterials = RefBlueprint.GetRawMaterials
+            .ManufacturingFacility = RefBlueprint.MainManufacturingFacility
+            .IncludeActivityCost = RefBlueprint.MainManufacturingFacility.IncludeActivityCost
+            .IncludeActivityTime = RefBlueprint.MainManufacturingFacility.IncludeActivityTime
+            .IncludeActivityUsage = RefBlueprint.MainManufacturingFacility.IncludeActivityUsage
+
+            .TotalBuildCost = RefBlueprint.GetComponentMaterials.GetTotalMaterialsCost + +RefBlueprint.TotalUsage + RefBlueprint.GetSalesTaxes + RefBlueprint.GetSalesBrokerFees
+            .TotalExcessSellBuildCost = .TotalBuildCost - AdjustPriceforTaxesandFees(RefBlueprint.BPExcessMaterials.GetTotalMaterialsCost, SetTaxes, BFData)
+
+        End With
 
         Return TempBuiltItem
 
@@ -1740,11 +1758,7 @@ SkipProcessing:
             Next
 
             ' Apply taxes and fees
-            If _SetTaxes Then
-                SellExcessAmount -= GetSalesTax(SellExcessAmount)
-            End If
-
-            SellExcessAmount -= GetSalesBrokerFee(SellExcessAmount, _BrokerFeeData)
+            SellExcessAmount = AdjustPriceforTaxesandFees(SellExcessAmount, _SetTaxes, _BrokerFeeData)
 
             If SellExcessAmount < 0 Then
                 SellExcessAmount = 0
@@ -1755,7 +1769,6 @@ SkipProcessing:
     ' Sets all price data for the user to get on this blueprint, Set public so can reset with fees/taxes
     Public Sub SetPriceData(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo)
         Dim TaxesFees As Double = 0
-        Dim TotalUsage As Double = 0
         Dim ComponentUsage As Double = 0
         Dim MainFacilityUsage As Double = 0
         Dim RemainingReactionUsage As Double = 0
@@ -1935,7 +1948,6 @@ SkipProcessing:
         End If
 
         readerLookup.Close()
-        readerLookup = Nothing
 
     End Sub
 
@@ -2155,8 +2167,6 @@ SkipProcessing:
         End While
 
         readerBP.Close()
-        readerBP = Nothing
-        DBCommand = Nothing
 
         ' If they selected a decryptor, add that cost for one invention run
         If InventionDecryptor.Name <> None Then
@@ -2178,8 +2188,6 @@ SkipProcessing:
             End If
 
             readerCost.Close()
-            readerCost = Nothing
-            DBCommand = Nothing
 
         End If
 
@@ -2253,8 +2261,6 @@ SkipProcessing:
             End While
 
             readerBP.Close()
-            readerBP = Nothing
-            DBCommand = Nothing
 
             If Not IsNothing(SingleCopyMats.GetMaterialList) Then
                 ' Update the copy mats to reflect the number of copy runs we will do and save into the final list
@@ -2307,6 +2313,7 @@ SkipProcessing:
                     Dim TempMat = New Material(InventionBPCTypeID, readerBP.GetString(0) & " Copy", "Blueprint", 1, 0.1, 0, "", "")
                     InventionMaterials.InsertMaterial(TempMat)
                 End If
+                readerBP.Close()
             End If
 
             TotalInventionCost = InventionMaterials.GetTotalMaterialsCost
@@ -2366,6 +2373,8 @@ SkipProcessing:
         Else
             BaseInventionChance = 0
         End If
+
+        readerLookup.Close()
 
         ' Pull out the invention skills
         For i = 0 To ReqInventionSkills.GetSkillList.Count - 1
@@ -2500,8 +2509,6 @@ SkipProcessing:
         End While
 
         readerItems.Close()
-        readerItems = Nothing
-        DBCommand = Nothing
 
     End Sub
 
@@ -2525,8 +2532,6 @@ SkipProcessing:
         End While
 
         readerItems.Close()
-        readerItems = Nothing
-        DBCommand = Nothing
 
     End Sub
 
@@ -2547,6 +2552,8 @@ SkipProcessing:
         While readerLookup.Read
             BaseJobCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
         End While
+
+        readerLookup.Close()
 
         Return BaseJobCost
 
@@ -2930,6 +2937,8 @@ SkipProcessing:
 
         ' Volume doesn't matter
         TempMat = New Material(ItemID, ItemName, rsGroup.GetString(0), UserRuns, 0, ItemMarketCost, "", "")
+
+        rsGroup.Close()
 
         Return TempMat
 

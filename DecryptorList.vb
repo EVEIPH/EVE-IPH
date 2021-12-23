@@ -23,8 +23,6 @@ Public Class DecryptorList
         End While
 
         readerDecryptor.Close()
-        readerDecryptor = Nothing
-        DBCommand = Nothing
 
     End Sub
 
@@ -159,8 +157,6 @@ Public Class DecryptorList
         End If
 
         readerDecryptor.Close()
-        readerDecryptor = Nothing
-        DBCommand = Nothing
 
     End Sub
 

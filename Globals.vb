@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "July 13, 2021 Release"
+    Public Const SDEVersion As String = "December 7, 2021 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -112,6 +112,7 @@ Public Module Public_Variables
     Public frmShoppingAssets As frmAssetsViewer
     Public frmRefineryAssets As frmAssetsViewer
     Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
+    Public frmRepoPlant As frmReprocessingPlant
 
     ' The only allowed characters for text entry
     Public Const allowedPriceChars As String = "0123456789.,"
@@ -379,11 +380,30 @@ Public Module Public_Variables
 
 #Region "Taxes/Fees"
 
+    Public Function AdjustPriceforTaxesandFees(ByVal OriginalPrice As Double, ByVal SetTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo) As Double
+        If OriginalPrice <= 0 Then
+            Return 0
+        End If
+
+        Dim NewPrice As Double = 0
+
+        ' Apply taxes and fees
+        If SetTax Then
+            NewPrice = OriginalPrice - GetSalesTax(OriginalPrice) - GetSalesBrokerFee(OriginalPrice, BrokerFeeData)
+        Else
+            NewPrice = OriginalPrice - GetSalesBrokerFee(OriginalPrice, BrokerFeeData)
+        End If
+
+        Return NewPrice
+
+    End Function
+
     ' Returns the tax on an item price only
     Public Function GetSalesTax(ByVal ItemMarketCost As Double) As Double
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
-        ' Each level of accounting reduces tax by 11%, Max Sales Tax: 5%, Min Sales Tax: 2.25%
-        Return (2.5 - (Accounting * 0.11 * 2.5)) / 100 * ItemMarketCost
+        ' Each level of accounting reduces tax by 11%, Max/Base Sales Tax: 8%, Min Sales Tax: 3.6%
+        ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
+        Return (8 - (Accounting * 0.11 * 8)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -392,9 +412,10 @@ Public Module Public_Variables
         Dim TempFee As Double
 
         If BrokerFee.IncludeFee = BrokerFeeType.Fee Then
-            ' 5%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
-            ' https://support.eveonline.com/hc/en-us/articles/203218962-Broker-Fee-and-Sales-Tax
-            Dim BrokerTax = 2.5 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+            ' 3%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
+            ' Base broker fee - 3%, Min broker fees: 1.0%
+            ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
+            Dim BrokerTax = 3 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
             TempFee = (BrokerTax / 100) * ItemMarketCost
         ElseIf BrokerFee.IncludeFee = BrokerFeeType.SpecialFee Then
             ' use a flat rate to set the fee
@@ -863,6 +884,7 @@ InvalidDate:
         End If
 
         readerCost.Close()
+
         Return ItemPrice
 
     End Function
@@ -1036,6 +1058,7 @@ InvalidDate:
                         Call CopyPasteMaterials.InsertMaterial(TempMaterial)
                     End If
                 End If
+                readerItem.Close()
 SkipItem:
                 readerItem = Nothing
 
@@ -1322,6 +1345,11 @@ SkipItem:
         ' Manual update of moon materials
         Call frmManualPriceUpdate.LoadMoonPrices()
 
+        ' Reload the prices on the reprocessing plant if open
+        If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
+            frmRepoPlant.RefreshMaterialList()
+        End If
+
         ' Refill the search grid on manual updates
         If Trim(frmManualPriceUpdate.lblLSelectedItem.Text) <> "" Then
             Call frmManualPriceUpdate.FillSearchGrid(frmManualPriceUpdate.lblSelectedItem.Text)
@@ -1345,7 +1373,6 @@ SkipItem:
         End If
 
         readerRegion.Close()
-        DBCommand = Nothing
 
         Return ReturnID
 
@@ -1367,7 +1394,6 @@ SkipItem:
         End If
 
         readerRegion.Close()
-        DBCommand = Nothing
 
         Return ReturnID
 
@@ -1406,7 +1432,6 @@ SkipItem:
         End If
 
         readerRegion.Close()
-        DBCommand = Nothing
 
         Return ReturnName
 
@@ -1430,7 +1455,7 @@ SkipItem:
                                              PricesT3 As CheckBox, PriceCheckT3Enabled As Boolean,
                                              PricesT4 As CheckBox, PriceCheckT4Enabled As Boolean,
                                              PricesT5 As CheckBox, PriceCheckT5Enabled As Boolean,
-                                             PricesT6 As CheckBox, PriceCheckT6Enabled As Boolean) As String
+                                             PricesT6 As CheckBox, PriceCheckT6Enabled As Boolean, NoBuildItems As CheckBox) As String
 
         Dim SQL As String = ""
         Dim TechSQL As String = ""
@@ -1556,6 +1581,10 @@ SkipItem:
         End If
         If RAM.Checked Then
             SQL &= "ITEM_NAME LIKE 'R.A.M.%' OR "
+            ItemChecked = True
+        End If
+        If NoBuildItems.Checked Then
+            SQL &= "MANUFACTURE = -1 OR "
             ItemChecked = True
         End If
         If CapitalShipComponents.Checked Then
@@ -1716,7 +1745,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return SSID
 
@@ -1737,7 +1765,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return SSName
 
@@ -1758,7 +1785,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return security
 
@@ -1779,7 +1805,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return security
 
@@ -1800,7 +1825,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return AID
 
@@ -1821,7 +1845,6 @@ SkipItem:
         End If
 
         rsSystem.Close()
-        DBCommand = Nothing
 
         Return AName
 
@@ -1843,6 +1866,7 @@ SkipItem:
         End While
         RegionCombo.EndUpdate()
         RegionCombo.Text = DefaultRegionName
+
         rsData.Close()
 
     End Sub
@@ -2020,7 +2044,7 @@ SkipItem:
         ' This is an easier way to get all of the strings in the file.
         AllText = File.ReadAllLines(FilePath)
         ' This will append the string to the end of the file.
-        My.Computer.FileSystem.WriteAllText(FilePath, CStr(Now) & ", " & ErrorMsg & Environment.NewLine, True)
+        My.Computer.FileSystem.WriteAllText(FilePath, CStr(Now) & ", " & ErrorMsg & Environment.NewLine & Environment.NewLine & "---" & Environment.NewLine, True)
 
     End Sub
 
@@ -2138,10 +2162,9 @@ SkipItem:
             readerLookup.Close()
 
         Else
+            readerLookup.Close()
             Return Nothing
         End If
-
-        readerLookup.Close()
 
         Return TempMat
 
@@ -2150,7 +2173,7 @@ SkipItem:
     ' Takes the BP ID and relic name (if sent) and returns the TypeID for the item to invent that BP
     Public Function GetInventItemTypeID(ByVal BlueprintTypeID As Long, ByVal RelicName As String) As Long
         Dim SQL As String
-        Dim rsCheck As SQLite.SQLiteDataReader
+        Dim rsCheck As SQLiteDataReader
         Dim InventItemTypeID As Long = 0
 
         ' What is the item we are using to invent?
@@ -2169,13 +2192,15 @@ SkipItem:
             InventItemTypeID = rsCheck.GetInt64(0)
         End If
 
+        rsCheck.Close()
+
         Return InventItemTypeID
 
     End Function
 
     ' Returns the text race for the ID sent
     Public Function GetRace(ByVal RaceID As Integer) As String
-        Dim rsLookup As SQLite.SQLiteDataReader
+        Dim rsLookup As SQLiteDataReader
 
         DBCommand = New SQLiteCommand("SELECT RACE FROM RACE_IDS WHERE ID = " & CStr(RaceID), EVEDB.DBREf)
         rsLookup = DBCommand.ExecuteReader
@@ -2185,6 +2210,8 @@ SkipItem:
         Else
             Return ""
         End If
+
+        rsLookup.Close()
 
     End Function
 
@@ -2204,8 +2231,10 @@ SkipItem:
         readerAttribute = DBCommand.ExecuteReader
 
         If readerAttribute.Read Then
+            readerAttribute.Close()
             Return readerAttribute.GetDouble(0)
         Else
+            readerAttribute.Close()
             Return Nothing
         End If
 
@@ -2266,7 +2295,7 @@ SkipItem:
     End Sub
 
     ' Sets an existing bp in the DB to the ME/TE or adds it if not in DB as a new owned blueprint - this is always due to user input, not API
-    Public Function UpdateBPinDB(ByVal BPID As Long, ByVal BPName As String, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType,
+    Public Function UpdateBPinDB(ByVal BPID As Long, ByVal bpME As Integer, ByVal bpTE As Integer, ByVal SentBPType As BPType,
                                 ByVal OriginalME As Integer, ByVal OriginalTE As Integer,
                                 Optional Favorite As Boolean = False,
                                 Optional Ignore As Boolean = False,
@@ -2279,7 +2308,8 @@ SkipItem:
         Dim TempIgnore As String
         Dim TempOwned As String
         Dim UpdatedBPType As BPType
-        Dim TempBPName As String = BPName
+        Dim BPName As String = ""
+        Dim BPGroup As Integer = 0
         Dim UserRuns As Integer
 
         If SentBPType = BPType.NotOwned And (bpME <> OriginalME Or bpTE <> OriginalTE) Then
@@ -2299,17 +2329,17 @@ SkipItem:
             Else
                 UserRuns = 0
             End If
+            rsMaxRuns.Close()
         End If
 
-        If BPName = "" Then
-            ' Look it up
-            DBCommand = New SQLiteCommand("SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(BPID), EVEDB.DBREf)
-            readerBP = DBCommand.ExecuteReader
-            If readerBP.Read() Then
-                TempBPName = readerBP.GetString(0)
-            End If
-            readerBP.Close()
+        ' Look BP Name and group up
+        DBCommand = New SQLiteCommand("SELECT typeName, groupID FROM INVENTORY_TYPES WHERE typeID = " & CStr(BPID), EVEDB.DBREf)
+        readerBP = DBCommand.ExecuteReader
+        If readerBP.Read() Then
+            BPName = readerBP.GetString(0)
+            BPGroup = readerBP.GetInt32(1)
         End If
+        readerBP.Close()
 
         ' See what ID we use for character bps
         Dim CharID As Long = 0
@@ -2337,7 +2367,7 @@ SkipItem:
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, Me = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
+                SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
                 SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL = SQL & "And BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
@@ -2373,6 +2403,12 @@ SkipItem:
                 TempOwned = "-1" ' User updated, user owned (not API)
             End If
 
+            ' For reactions, always set bpME and bpTE to zero because they can't be researched
+            If BPGroup = 1888 Or BPGroup = 1889 Or BPGroup = 1890 Or BPGroup = 4097 Then
+                bpME = 0
+                bpTE = 0
+            End If
+
             ' See if the BP is in the DB
             SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
             SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
@@ -2385,7 +2421,7 @@ SkipItem:
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
                 SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                SQL = SQL & "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(TempBPName) & "',1,0,"
+                SQL = SQL & "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
                 SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -2405,8 +2441,6 @@ SkipItem:
         End If
 
         readerBP.Close()
-        readerBP = Nothing
-        DBCommand = Nothing
 
         EVEDB.CommitSQLiteTransaction()
 
@@ -2510,7 +2544,6 @@ SkipItem:
         End If
 
         readerBP.Close()
-        readerBP = Nothing
 
         Return ReturnString
 
@@ -2632,7 +2665,6 @@ SkipItem:
         End If
 
         readerIT.Close()
-        readerIT = Nothing
 
         Return ReturnString
 
@@ -2656,7 +2688,6 @@ SkipItem:
         End If
 
         readerIT.Close()
-        readerIT = Nothing
 
         Return ReturnString
 
@@ -2680,7 +2711,6 @@ SkipItem:
         End If
 
         readerIT.Close()
-        readerIT = Nothing
 
         Return ReturnString
 
@@ -2704,7 +2734,6 @@ SkipItem:
         End If
 
         readerIT.Close()
-        readerIT = Nothing
 
         Return ReturnID
 
@@ -2735,7 +2764,6 @@ SkipItem:
         End If
 
         readerBonus.Close()
-        readerBonus = Nothing
 
         Return ReturnBonus
 

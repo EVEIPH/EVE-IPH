@@ -70,10 +70,9 @@ Public Class frmMain
 
     ' For letting manual check/override of build/buy calculations
     Private IgnoreListViewItemChecks As Boolean
-    Private BPBBItems As New List(Of BPBBItem)
 
-    Private BPBBItemtoFind As New Integer
-    Private BBItemtoFind As New BuildBuyItem
+    Private BBItems As New List(Of BuildBuyItem) ' Just the list of itemid and preference for check
+    Private BBItemtoFind As New Long
 
     Public Structure BPBBItem
         Dim BPID As Integer
@@ -384,7 +383,7 @@ Public Class frmMain
         ' Initialize stuff
         Call SetProgress("Initializing Database...")
         Application.DoEvents()
-        EVEDB = New DBConnection(Path.Combine(DBFilePath, SQLiteDBFileName))
+        EVEDB = New DBConnection(DBFilePath, SQLiteDBFileName)
 
         ' For speed on ESI calls
         ServicePointManager.DefaultConnectionLimit = 20
@@ -514,8 +513,8 @@ Public Class frmMain
         lstBPBuiltComponents.Columns.Add("Material", 215, HorizontalAlignment.Left) 'added 25 temp
         lstBPBuiltComponents.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
         lstBPBuiltComponents.Columns.Add("ME", 35, HorizontalAlignment.Center)
-        lstBPBuiltComponents.Columns.Add("Cost Per Item", 90, HorizontalAlignment.Right)
-        lstBPBuiltComponents.Columns.Add("Total Cost", 110, HorizontalAlignment.Right)
+        lstBPBuiltComponents.Columns.Add("Excess Sell Cost", 90, HorizontalAlignment.Right)
+        lstBPBuiltComponents.Columns.Add("Built Cost", 110, HorizontalAlignment.Right)
 
         ' No check for raw mats since the check will be used to toggle build/buy for each item
         lstBPRawMats.Columns.Add("Material", 215, HorizontalAlignment.Left)
@@ -1035,8 +1034,9 @@ Public Class frmMain
                 End If
             End With
 
-
         End While
+
+        rsStatus.Close()
 
     End Sub
 
@@ -1178,6 +1178,8 @@ Public Class frmMain
             Return "-"
         End If
 
+        readerAverage.Close()
+
     End Function
 
     ' Updates the SVR value and then returns it as a string for the item associated with the Selected BP
@@ -1206,6 +1208,13 @@ Public Class frmMain
     End Function
 
 #End Region
+
+    Private Sub mnuViewErrorLog_Click(sender As Object, e As EventArgs) Handles mnuViewErrorLog.Click
+        Dim f1 As New frmErrorLog
+
+        f1.Show()
+
+    End Sub
 
     Public Sub LoadCharacterNamesinMenu()
         ' Default character set, now set the menu name on the panel
@@ -1348,6 +1357,8 @@ Public Class frmMain
             Counter += 1 ' increment
         End While
 
+        rsCharacters.Close()
+
     End Sub
 
     Private Sub SetCharToolStripImage(ByRef TS As ToolStripMenuItem, ByVal Gender As String)
@@ -1371,9 +1382,9 @@ Public Class frmMain
         mnuCharacter.Text = "Character Loaded: " & ToolStripText
     End Sub
 
-    ' Predicate for finding the BPBuildBuyItem in full list
-    Public Function FindBPBBItem(ByVal Item As BPBBItem) As Boolean
-        If BPBBItemtoFind = Item.BPID Then
+    ' Predicate for finding the BuildBuyItem in full list
+    Public Function FindBBItem(ByVal Item As BuildBuyItem) As Boolean
+        If BBItemtoFind = Item.ItemID Then
             Return True
         Else
             Return False
@@ -1442,11 +1453,15 @@ Public Class frmMain
     ' Function to deal with mouse down events to load next or previous blueprint
     Private Sub MouseDownHandling(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
 
+        ' Pause handler for txtbpruns from losing focus so the num bps are updated correctly
+        RemoveHandler txtBPRuns.LostFocus, AddressOf txtBPRuns_LostFocus
         If e.Button = Windows.Forms.MouseButtons.XButton1 Then
             Call LoadPreviousBlueprint()
         ElseIf e.Button = Windows.Forms.MouseButtons.XButton2 Then
             Call LoadNextBlueprint()
         End If
+        AddHandler txtBPRuns.LostFocus, AddressOf txtBPRuns_LostFocus
+
     End Sub
 
     ' Loads a BP sent from a double click on shopping list or manufacturing list, or loading history
@@ -1462,7 +1477,6 @@ Public Class frmMain
         Dim DecryptorName As String = None
         Dim BPDecryptor As New Decryptor
         Dim readerBP As SQLiteDataReader
-        Dim readerRelic As SQLiteDataReader
         Dim SQL As String
         Dim AdjustedRuns As Integer = 0
 
@@ -1519,10 +1533,12 @@ Public Class frmMain
                 SQL = SQL & "And typeID = blueprintTypeID And activityID = 8 And typeName Like '%" & TempRelic & "%'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                Dim readerRelic As SQLiteDataReader
                 readerRelic = DBCommand.ExecuteReader
                 readerRelic.Read()
                 cmbBPRelic.Items.Clear()
                 cmbBPRelic.Text = readerRelic.GetString(0)
+                readerRelic.Close()
                 LoadingRelics = False
                 RelicsLoaded = False ' Allow reload on drop down
 
@@ -1842,9 +1858,9 @@ Public Class frmMain
 
     ' Opens the refinery window from menu
     Private Sub mnuReprocessingPlant_Click(sender As System.Object, e As System.EventArgs) Handles mnuReprocessingPlant.Click
-        Dim f1 As New frmReprocessingPlant
+        frmRepoPlant = New frmReprocessingPlant
 
-        Call f1.Show()
+        Call frmRepoPlant.Show()
         ReprocessingPlantOpen = True
 
     End Sub
@@ -2623,7 +2639,7 @@ Public Class frmMain
 
     Private Sub mnuResetBuildBuyManualSelections_Click(sender As Object, e As EventArgs) Handles mnuResetBuildBuyManualSelections.Click
         ' Reset the list
-        BPBBItems = New List(Of BPBBItem)
+        BBItems = New List(Of BuildBuyItem)
         Call RefreshBP()
         MsgBox("Manual Build/Buy List Reset")
     End Sub
@@ -2917,7 +2933,7 @@ Public Class frmMain
                         TempTE = BaseT2T3TE
                     End If
 
-                    Call UpdateBPinDB(rsData.GetInt64(0), rsData.GetString(1), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0,
+                    Call UpdateBPinDB(rsData.GetInt64(0), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0,
                                       CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
 
                     ' Mark the line with white color since it's no longer going to be unowned
@@ -2998,6 +3014,8 @@ Public Class frmMain
                     SQL = SQL & "WHERE ID = " & CStr(SelectedCharacter.ID) & " "
                     SQL = SQL & "AND GROUP_NAME ='" & CurrentRow.SubItems(0).Text & "' "
                     SQL = SQL & "AND RAW_MATERIAL = " & RawMat
+
+                    rsData.Close()
 
                 Else
                     ' Insert new record
@@ -3281,9 +3299,6 @@ Tabs:
             cmbEdit.Visible = False
         Else ' updates on the price profile grids
 
-            Dim rsData As SQLiteDataReader
-            Dim SQL As String = ""
-
             With cmbEdit
                 UpdatingCombo = True
 
@@ -3297,13 +3312,16 @@ Tabs:
                     .Hide()
                     .BeginUpdate()
                     .Items.Clear()
+                    Dim rsData As SQLiteDataReader
+                    Dim SQL As String = ""
+
                     If PriceSystemUpdate Then
                         ' Base it off the data in the region cell
                         SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
                         SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                         SQL = SQL & "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
                         SQL = SQL & "ORDER BY solarSystemName"
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
                         rsData = DBCommand.ExecuteReader
 
                         ' Add all systems if it's the system
@@ -3315,6 +3333,8 @@ Tabs:
                                 .Items.Add("Jita/Perim")
                             End If
                         End While
+
+                        rsData.Close()
 
                     ElseIf PriceTypeUpdate Then
                         ' Manually enter these
@@ -4516,9 +4536,6 @@ Tabs:
         If Not IgnoreListViewItemChecks Then
             ' Process user checks, insert the item id and the check state in the bb list
             Dim CheckedItem As New BuildBuyItem
-            Dim TempBPItem As New BPBBItem
-            Dim FoundBPItem As New BPBBItem
-            Dim FoundItem As New BuildBuyItem
 
             CheckedItem.BuildItem = e.Item.Checked
             CheckedItem.ItemID = GetTypeID(RemoveItemNameRuns(e.Item.SubItems(0).Text))
@@ -4538,32 +4555,49 @@ Tabs:
                 IgnoreListViewItemChecks = True
                 e.Item.Checked = False
                 IgnoreListViewItemChecks = False
+                readerIT.Close()
                 Exit Sub
             End If
 
-            ' See if the BB Items for the BP are in the list
-            BPBBItemtoFind = SelectedBlueprint.GetBPID
-            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+            Dim FoundItem As New BuildBuyItem
 
-            ' See if the item checked is in the list, if so, update the temp, remove the old items and replace
-            If FoundBPItem.BPID <> 0 Then
-                ' In list, so just add the item to the found BP item if not there or update if there
-                For Each Item In FoundBPItem.BBItems
-                    If Item.ItemID = CheckedItem.ItemID Then
-                        ' just remove it then add later
-                        FoundBPItem.BBItems.Remove(Item)
-                        Exit For
-                    End If
-                Next
-                ' Add the item with current info
-                FoundBPItem.BBItems.Add(CheckedItem)
+            ' Look up the list of BB Items and add the ItemID if not in the list, else make sure we have the correct toggle option
+            BBItemtoFind = CheckedItem.ItemID
+            FoundItem = BBItems.Find(AddressOf FindBBItem)
+
+            ' If found, then update the preference
+            If FoundItem.ItemID <> 0 Then
+                Call BBItems.Remove(FoundItem)
+                FoundItem.BuildItem = CheckedItem.BuildItem
+                Call BBItems.Add(FoundItem)
             Else
-                ' New item to add, now add the item that was toggled
-                TempBPItem.BPID = SelectedBlueprint.GetBPID
-                TempBPItem.BBItems = New List(Of BuildBuyItem)
-                TempBPItem.BBItems.Add(CheckedItem)
-                Call BPBBItems.Add(TempBPItem)
+                ' new item, so just add it
+                Call BBItems.Add(CheckedItem)
             End If
+
+            '' See if the BB Items for the BP are in the list
+            'BPBBItemtoFind = SelectedBlueprint.GetBPID
+            'FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
+
+            '' See if the item checked is in the list, if so, update the temp, remove the old items and replace
+            'If FoundBPItem.BPID <> 0 Then
+            '    ' In list, so just add the item to the found BP item if not there or update if there
+            '    For Each Item In FoundBPItem.BBItems
+            '        If Item.ItemID = CheckedItem.ItemID Then
+            '            ' just remove it then add later
+            '            FoundBPItem.BBItems.Remove(Item)
+            '            Exit For
+            '        End If
+            '    Next
+            '    ' Add the item with current info
+            '    FoundBPItem.BBItems.Add(CheckedItem)
+            'Else
+            '    ' New item to add, now add the item that was toggled
+            '    TempBPItem.BPID = SelectedBlueprint.GetBPID
+            '    TempBPItem.BBItems = New List(Of BuildBuyItem)
+            '    TempBPItem.BBItems.Add(CheckedItem)
+            '    Call BPBBItems.Add(TempBPItem)
+            'End If
 
             If Not FirstLoad And Not IgnoreRefresh Then
                 Call RefreshBP()
@@ -4743,8 +4777,8 @@ Tabs:
 
                 Dim GroupID As Integer = rsBP.GetInt32(2)
                 Dim CategoryID As Integer = rsBP.GetInt32(3)
-                Dim BPName As String = rsBP.GetString(4
-                                                    )
+                Dim BPName As String = rsBP.GetString(4)
+
                 rsBP.Close()
 
                 Dim SelectedActivity As String = ""
@@ -4777,7 +4811,8 @@ Tabs:
 
     Private Sub btnBPListMats_Click(sender As Object, e As EventArgs) Handles btnBPListMats.Click
         If Not IsNothing(SelectedBlueprint) Then
-            Dim f1 As New frmMaterialListViewer(SelectedBlueprint.GetExcessMaterials)
+            Dim BFI As BrokerFeeInfo = GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate)
+            Dim f1 As New frmMaterialListViewer(SelectedBlueprint.GetExcessMaterials, chkBPTaxes.Checked, BFI)
             Call f1.Show()
         End If
     End Sub
@@ -5811,7 +5846,7 @@ Tabs:
                 SaveBPType = BPType.Copy
             End If
 
-            Call UpdateBPinDB(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetName, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType,
+            Call UpdateBPinDB(SelectedBlueprint.GetTypeID, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType,
                               CInt(txtBPME.Text), CInt(txtBPTE.Text), False, False, AdditionalCost)
 
             Call RefreshBP()
@@ -5947,7 +5982,7 @@ Tabs:
         Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
 
         ' If they want to drill down on reactions, check all types
-        If BPHasProcRawMats(BPID, BuildMatType.RawMaterials) Then
+        If BPHasProcRawMats(BPID, BuildMatType.RawMaterials) Or Reaction Then
             ' Also enable the T2/T3 boxes for moon/gas mat types
             lblBPT2MatTypeSelector.Enabled = True
             rbtnBPAdvT2MatType.Enabled = True
@@ -5999,10 +6034,6 @@ Tabs:
 
             ResetBPTab = False ' Reset
         End If
-
-        readerBP.Close()
-        readerBP = Nothing
-        DBCommand = Nothing
 
         Application.DoEvents()
 
@@ -6116,6 +6147,8 @@ Tabs:
             End If
         End If
 
+        readerBP.Close()
+
         IgnoreRefresh = True
 
         If (BPTech <> 1 And TempBPType <> BPType.Original) Then
@@ -6210,7 +6243,6 @@ Tabs:
         Dim complstViewRow As ListViewItem
         Dim builtlistViewRow As ListViewItem
         Dim TempME As String = "0"
-        Dim TempPrice As Double = 0
         Dim BPCName As String = ""
 
         ' For Invention Copy data - set defaults here
@@ -6301,9 +6333,9 @@ Tabs:
         If SelectedBPText.Contains("Reaction Formula") Then
             'Need to use the manufacturing facility instead of component facility since they are more likely to make fuel blocks for reactions there
             ComponentFacility = BPTabFacility.GetFacility(ProductionType.Manufacturing)
-        ElseIf ((BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And Not BPGroupID = ItemIDs.CapitalComponentGroupID) Then
-            ' Use the reaction facility as the 'component facility' if it's T2 component item, since they will do reactions
-            ComponentFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
+            'ElseIf ((BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And Not BPGroupID = ItemIDs.CapitalComponentGroupID) Then
+            '    ' Use the reaction facility as the 'component facility' if it's T2 component item, since they will do reactions
+            '    ComponentFacility = BPTabFacility.GetFacility(ProductionType.Reactions)
         Else
             ComponentFacility = BPTabFacility.GetFacility(ProductionType.ComponentManufacturing)
         End If
@@ -6361,17 +6393,7 @@ Tabs:
         ' Get the Build/Buy preference list if needed
         Dim BPBuildBuyPref As List(Of BuildBuyItem)
         If chkBPBuildBuy.Checked Then
-            ' Look up the list of preferences if this bp is in the list
-            BPBBItemtoFind = BPID
-            Dim FoundBPItem As New BPBBItem
-            FoundBPItem = BPBBItems.Find(AddressOf FindBPBBItem)
-
-            If FoundBPItem.BPID <> 0 Then
-                BPBuildBuyPref = FoundBPItem.BBItems
-            Else
-                ' Not found
-                BPBuildBuyPref = Nothing
-            End If
+            BPBuildBuyPref = BBItems
         Else
             BPBuildBuyPref = Nothing
         End If
@@ -6390,7 +6412,8 @@ Tabs:
         End If
 
         ' Build the item and get the list of materials
-        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate), False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        Dim BFData As BrokerFeeInfo = GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate)
+        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, BFData, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -6455,15 +6478,13 @@ Tabs:
                 End If
 
                 complstViewRow.SubItems.Add(TempME)
-                TempPrice = BPComponentMats(i).GetCostPerItem
-
                 ' If the price is zero, highlight text as red
-                If TempPrice = 0 Then
+                If BPComponentMats(i).GetCostPerItem = 0 Then
                     complstViewRow.ForeColor = Color.Red
                 Else
                     complstViewRow.ForeColor = Color.Black
                 End If
-                complstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
+                complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetCostPerItem, 2))
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetTotalCost, 2))
                 Call lstBPComponentMats.Items.Add(complstViewRow)
             Next
@@ -6525,17 +6546,14 @@ Tabs:
                     End If
 
                     builtlistViewRow.SubItems.Add(TempME)
-
-                    TempPrice = BPBuiltItems(i).BuildMaterials.GetTotalMaterialsCost
-
                     ' If the price is zero, highlight text as red
-                    If TempPrice = 0 Then
+                    If BPBuiltItems(i).TotalBuildCost = 0 Then
                         builtlistViewRow.ForeColor = Color.Red
                     Else
                         builtlistViewRow.ForeColor = Color.Black
                     End If
-                    builtlistViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
-                    builtlistViewRow.SubItems.Add(FormatNumber(BPBuiltItems(i).BuildMaterials.GetTotalMaterialsCost, 2))
+                    builtlistViewRow.SubItems.Add(FormatNumber(BPBuiltItems(i).TotalExcessSellBuildCost, 2))
+                    builtlistViewRow.SubItems.Add(FormatNumber(BPBuiltItems(i).TotalBuildCost, 2))
                     Call lstBPBuiltComponents.Items.Add(builtlistViewRow)
 
                 Next
@@ -6584,14 +6602,13 @@ Tabs:
                 'The remaining columns are subitems  
                 rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetQuantity, 0))
                 rawlstViewRow.SubItems.Add(BPRawMats(i).GetItemME)
-                TempPrice = BPRawMats(i).GetCostPerItem
                 ' If the price is zero, highlight text as red
-                If TempPrice = 0 Then
+                If BPRawMats(i).GetCostPerItem = 0 Then
                     rawlstViewRow.ForeColor = Color.Red
                 Else
                     rawlstViewRow.ForeColor = Color.Black
                 End If
-                rawlstViewRow.SubItems.Add(FormatNumber(TempPrice, 2))
+                rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetCostPerItem, 2))
                 rawlstViewRow.SubItems.Add(FormatNumber(BPRawMats(i).GetTotalCost, 2))
                 Call lstBPRawMats.Items.Add(rawlstViewRow)
             Next
@@ -6878,7 +6895,14 @@ ExitForm:
 
         ' Check for the Tech Image
         If File.Exists(BPImage) Then
-            pictBP.Image = Image.FromFile(BPImage)
+            Dim fi As New IO.FileInfo(BPImage)
+            If fi.Length <> 0 Then
+                pictBP.Image = Image.FromFile(BPImage)
+            Else
+                ' This will cause errors so delete it until updated
+                File.Delete(BPImage)
+                pictBP.Image = Nothing
+            End If
         Else
             pictBP.Image = Nothing
         End If
@@ -7343,7 +7367,7 @@ ExitForm:
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         ' Reload all the facilities to get the change
-        Call BPTabFacility.InitializeControl(SelectedCharacter.ID, ProgramLocation.BlueprintTab, BPTabFacility.GetCurrentFacilityProductionType, Me)
+        Call LoadFacilities()
 
         ' Refresh the bp, which will reload the facility with the changes
         Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
@@ -7797,7 +7821,7 @@ ExitForm:
         chkMolecularForgedMaterials.CheckedChanged, chkPolymers.CheckedChanged, chkProcessedMats.CheckedChanged, chkRawMoonMats.CheckedChanged, chkBoosters.CheckedChanged,
         chkCapT2Components.CheckedChanged, chkComponents.CheckedChanged, chkFuelBlocks.CheckedChanged, chkProtectiveComponents.CheckedChanged, chkRAM.CheckedChanged,
         chkCapitalShipComponents.CheckedChanged, chkStructureComponents.CheckedChanged, chkSubsystemComponents.CheckedChanged, chkDeployables.CheckedChanged,
-        chkStructureModules.CheckedChanged, chkImplants.CheckedChanged, chkCelestials.CheckedChanged
+        chkStructureModules.CheckedChanged, chkImplants.CheckedChanged, chkCelestials.CheckedChanged, chkNoBuildItems.CheckedChanged
         Call UpdatePriceList()
     End Sub
 
@@ -8128,6 +8152,7 @@ ExitForm:
             chkFuelBlocks.Checked = .FuelBlocks
             chkProtectiveComponents.Checked = .ProtectiveComponents
             chkRAM.Checked = .RAM
+            chkNoBuildItems.Checked = .NoBuildItems
             chkCapitalShipComponents.Checked = .CapitalShipComponents
             chkStructureComponents.Checked = .StructureComponents
             chkSubsystemComponents.Checked = .SubsystemComponents
@@ -8355,6 +8380,7 @@ ExitForm:
             .FuelBlocks = chkFuelBlocks.Checked
             .ProtectiveComponents = chkProtectiveComponents.Checked
             .RAM = chkRAM.Checked
+            .NoBuildItems = chkNoBuildItems.Checked
             .CapitalShipComponents = chkCapitalShipComponents.Checked
             .StructureComponents = chkStructureComponents.Checked
             .SubsystemComponents = chkSubsystemComponents.Checked
@@ -8561,14 +8587,13 @@ ExitForm:
             End With
         Next
 
-        rsPP.Close()
-
         ' Sort by group name - don't enable column sorting here - use desc since the function flips it
         Call ListViewColumnSorter(0, CType(lstRawPriceProfile, ListView), 0, SortOrder.Descending)
         Call ListViewColumnSorter(0, CType(lstManufacturedPriceProfile, ListView), 0, SortOrder.Descending)
 
         lstRawPriceProfile.EndUpdate()
         lstManufacturedPriceProfile.EndUpdate()
+
     End Sub
 
     Private Sub lstPricesView_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstPricesView.MouseClick
@@ -8699,8 +8724,6 @@ ExitForm:
                 End If
 
                 readerSystems.Close()
-                readerSystems = Nothing
-                DBCommand = Nothing
 
             ElseIf SystemChecked Then
                 ' Get the system list string
@@ -8717,8 +8740,6 @@ ExitForm:
                 End If
 
                 readerSystems.Close()
-                readerSystems = Nothing
-                DBCommand = Nothing
             End If
         End If
 
@@ -8781,6 +8802,7 @@ ExitForm:
                             End If
                             TempItem.PriceModifier = rsPP.GetDouble(3)
                         End If
+                        rsPP.Close()
                     End If
 
                     ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
@@ -9105,8 +9127,6 @@ ExitSub:
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
                 readerPrices.Close()
-                readerPrices = Nothing
-                DBCommand = Nothing
             End If
 
             ' For each record, update the progress bar
@@ -9152,6 +9172,8 @@ ExitSub:
                 MinSellPrice = rsData.GetDouble(0)
             End If
         End If
+
+        rsData.Close()
 
         SQL = "SELECT MAX(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
@@ -9251,6 +9273,8 @@ ExitSub:
         While rsData.Read
             PriceList.Add(rsData.GetDouble(0))
         End While
+
+        rsData.Close()
 
         Return PriceList
 
@@ -9371,11 +9395,16 @@ ExitSub:
                         RGN = "Structures"
                     ElseIf CN = "Structure Rigs" Then
                         RGN = "Structure Rigs"
-                    Else
-                        RGN = CN
                     End If
             End Select
         End If
+
+        If RGN = "" Then
+            ' If no groupname, then set it as a nobuild item
+            RGN = "No Build Items"
+        End If
+
+        rsGroup.Close()
 
         Return RGN
 
@@ -9440,14 +9469,8 @@ ExitSub:
             If Not readerPriceCheck.HasRows Then
                 ' Not found
                 InsertRecord = True
-                readerPriceCheck.Close()
-                readerPriceCheck = Nothing
-                DBCommand = Nothing
             Else
                 readerPriceCheck.Close()
-                readerPriceCheck = Nothing
-                DBCommand = Nothing
-
                 ' There is a record, see if it needs to be updated (only update every 6 hours)
                 SQL = "SELECT UPDATEDATE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = '" & RegionSystem & "'"
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -9460,12 +9483,9 @@ ExitSub:
                         InsertRecord = True
                     End If
                 End If
-
-                readerPriceCheck.Close()
-                readerPriceCheck = Nothing
-                DBCommand = Nothing
-
             End If
+
+            readerPriceCheck.Close()
 
             ' Add to query item list for EVE Central
             If InsertRecord Then
@@ -9706,6 +9726,10 @@ ExitSub:
             SQL &= "ITEM_NAME LIKE 'R.A.M.%' OR "
             ItemChecked = True
         End If
+        If chkNoBuildItems.Checked Then
+            SQL &= "MANUFACTURE = -1 OR "
+            ItemChecked = True
+        End If
         If chkCapitalShipComponents.Checked Then
             SQL &= "ITEM_GROUP = 'Capital Construction Components' OR "
             ItemChecked = True
@@ -9896,8 +9920,6 @@ ExitSub:
             End While
 
             readerMats.Close()
-            readerMats = Nothing
-            DBCommand = Nothing
 
             ' Now sort this
             Dim TempType As SortOrder
@@ -9984,8 +10006,6 @@ ExitSub:
         End While
 
         readerShipType.Close()
-        readerShipType = Nothing
-        DBCommand = Nothing
 
         cmbPriceShipTypes.Text = "All Ship Types"
 
@@ -10013,8 +10033,6 @@ ExitSub:
         End While
 
         readerChargeType.Close()
-        readerChargeType = Nothing
-        DBCommand = Nothing
 
         cmbPriceChargeTypes.Text = "All Charge Types"
 
@@ -13629,8 +13647,6 @@ CheckTechs:
             Application.DoEvents()
 
             readerBPs.Close()
-            readerBPs = Nothing
-            DBCommand = Nothing
 
             TotalItemCount = BaseItems.Count
 
@@ -14590,6 +14606,7 @@ ExitCalc:
     Private Function CalculateTotalItemsSold(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer) As Long
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
+        Dim Volume As Long = 0
 
         SQL = "SELECT SUM(TOTAL_VOLUME_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
         SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
@@ -14598,10 +14615,12 @@ ExitCalc:
         rsItems = DBCommand.ExecuteReader
 
         If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
-            Return rsItems.GetInt64(0)
-        Else
-            Return 0
+            Volume = rsItems.GetInt64(0)
         End If
+
+        rsItems.Close()
+
+        Return Volume
 
     End Function
 
@@ -14609,6 +14628,7 @@ ExitCalc:
     Private Function CalculateTotalOrdersFilled(ByVal TypeID As Long, ByVal RegionID As Long, DaysfromToday As Integer) As Long
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
+        Dim Volume As Long = 0
 
         SQL = "SELECT SUM(TOTAL_ORDERS_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
         SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
@@ -14617,10 +14637,12 @@ ExitCalc:
         rsItems = DBCommand.ExecuteReader
 
         If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
-            Return rsItems.GetInt64(0)
-        Else
-            Return 0
+            Volume = rsItems.GetInt64(0)
         End If
+
+        rsItems.Close()
+
+        Return Volume
 
     End Function
 
@@ -14642,6 +14664,8 @@ ExitCalc:
                 BuyOrders = rsItems.GetInt64(1)
             End If
         End While
+
+        rsItems.Close()
 
     End Sub
 
@@ -14713,7 +14737,7 @@ ExitCalc:
             If readerAssets.HasRows And Not IsDBNull(readerAssets.GetValue(0)) Then
                 ItemQuantity += readerAssets.GetInt32(0) ' sum up
             End If
-
+            readerAssets.Close()
         Next
 
         Return ItemQuantity
@@ -14724,6 +14748,7 @@ ExitCalc:
     Private Function GetTotalItemsinProduction(ByVal TypeID As Long) As Integer
         Dim SQL As String
         Dim rsItems As SQLiteDataReader
+        Dim Volume As Integer = 0
 
         SQL = "SELECT SUM(runs * PORTION_SIZE) FROM INDUSTRY_JOBS, ALL_BLUEPRINTS WHERE INDUSTRY_JOBS.productTypeID = ALL_BLUEPRINTS.ITEM_ID "
         SQL = SQL & "And productTypeID = " & CStr(TypeID) & " And status = 'active' And activityID IN (1,11) "
@@ -14733,10 +14758,12 @@ ExitCalc:
         rsItems = DBCommand.ExecuteReader
 
         If rsItems.Read() And Not IsDBNull(rsItems.GetValue(0)) Then
-            Return rsItems.GetInt32(0)
-        Else
-            Return 0
+            Volume = rsItems.GetInt32(0)
         End If
+
+        rsItems.Close()
+
+        Return Volume
 
     End Function
 
@@ -14795,6 +14822,8 @@ ExitCalc:
         While readerTypes.Read
             cmbCalcBPTypeFilter.Items.Add(readerTypes.GetString(0))
         End While
+
+        readerTypes.Close()
 
     End Sub
 
@@ -15196,8 +15225,6 @@ ExitCalc:
                     End While
 
                     readerT1s.Close()
-                    readerT1s = Nothing
-                    DBCommand = Nothing
 
                     ' Set the list of T2 BPC's we want and allow for User ID 0 (not owned but invented) or the User ID (OWNED)
                     If InventedBPs.Count <> 0 And T2Query <> "" Then
@@ -15885,6 +15912,8 @@ ExitCalc:
             Else
                 TempPoint.Y_Price = rsMarketHistory.GetDouble(1)
             End If
+
+            rsMarketHistory.Close()
 
             ' Since we are looping through the data, just do the summation calcs now
             a_value += (counter * TempPoint.Y_Price)
@@ -17013,7 +17042,6 @@ ExitCalc:
                 DCAgentRecord.DataCoreID = 0
             End If
             readerDC2.Close()
-            readerDC2 = Nothing
 
             DCAgentRecord.DataCoreSkill = readerDC.GetString(7)
             DCAgentRecord.DataCoreSkillLevel = CoreSkillLevel
@@ -17033,8 +17061,6 @@ ExitCalc:
         End While
 
         readerDC.Close()
-        readerDC = Nothing
-        DBCommand = Nothing
 
         pnlProgressBar.Visible = False
         Application.DoEvents()
@@ -17111,8 +17137,6 @@ ExitCalc:
                 TempDCAgentList.Add(DCAgentRecord)
 
                 readerDC2.Close()
-                readerDC2 = Nothing
-                DBCommand = Nothing
             Next
 
         ElseIf rbtnDCSystemPrices.Checked Then ' Use the max buy price for the system the Agent is located
@@ -17165,8 +17189,6 @@ ExitCalc:
                 TempDCAgentList.Add(DCAgentRecord)
 
                 readerDC2.Close()
-                readerDC2 = Nothing
-                DBCommand = Nothing
             Next
 
         End If
@@ -17448,8 +17470,6 @@ Leave:
             End While
 
             readerReg.Close()
-            readerReg = Nothing
-            DBCommand = Nothing
 
             cmbDCRegions.Text = "All Regions"
             DCRegionsLoaded = True
@@ -18103,6 +18123,7 @@ Leave:
             Else
                 cmbMineDroneSpecSkill.Enabled = True
             End If
+            Call UpdateShipMiningDrones()
             Call UpdateShipMiningDroneStats()
         End If
     End Sub
@@ -18115,18 +18136,21 @@ Leave:
             Else
                 cmbMineBoosterDroneSpecSkill.Enabled = True
             End If
+            Call UpdateBoosterMiningDrones()
             Call UpdateBoosterMiningDroneStats()
         End If
     End Sub
 
     Private Sub cmbMineDroneSpecSkill_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineDroneSpecSkill.SelectedIndexChanged
         If Not FirstLoad Then
+            Call UpdateShipMiningDrones()
             Call UpdateShipMiningDroneStats()
         End If
     End Sub
 
     Private Sub cmbMineBoosterDroneSpecSkill_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineBoosterDroneSpecSkill.SelectedIndexChanged
         If Not FirstLoad Then
+            Call UpdateBoosterMiningDrones()
             Call UpdateBoosterMiningDroneStats()
         End If
     End Sub
@@ -18164,8 +18188,9 @@ Leave:
     Private Const IceHarvestingDroneOperationSkillTypeID As Integer = 43702
     Private Const IceHarvestingDroneSpecializationSkillTypeID As Integer = 43703
 
-    Dim MiningDronem3Hr As Double
-    Dim BoosterMiningDronem3Hr As Double
+    Private MiningDronem3Hr As Double
+    Private BoosterMiningDronem3Hr As Double
+    Private DroneNamesLoaded As Boolean
 
     Private Enum MiningShipTypeID
         Venture = 32880
@@ -18427,6 +18452,7 @@ Leave:
         Call UpdateMiningShipForm(True)
 
         ' Set drones now that everything else is loaded
+        DroneNamesLoaded = False
         Call UpdateShipMiningDrones()
         Call UpdateBoosterMiningDrones()
 
@@ -18644,6 +18670,8 @@ Leave:
             TempOre.UnitsToRefine = readerMine.GetInt32(3)
             TempOre.Space = readerMine.GetString(4)
             TempOre.BeltType = readerMine.GetString(5)
+
+            readerMine.Close()
 
             ' If not using a hauler, adjust the cycle time based on round trip time
             If chkMineUseHauler.Checked = False Then
@@ -19468,6 +19496,7 @@ Leave:
             Call UpdateMiningDrones(cmbMineOreType.Text, cmbMineBoosterDroneName, UserMiningTabSettings.BoosterMiningDrone,
                                     UserMiningTabSettings.BoosterIceMiningDrone, cmbMineBoosterDroneOpSkill, cmbMineBoosterDroneSpecSkill,
                                     cmbMineBoosterShipName.Text, tabBoosterDrones, cmbMineBoosterNumMiningDrones)
+            Call UpdateBoosterDroneRigChecks() ' May need to be reset based on fleet options
         End If
     End Sub
 
@@ -19475,11 +19504,12 @@ Leave:
     Private Sub UpdateMiningDrones(OreType As String, DroneNameCombo As ComboBox, DefaultDroneName As String, DefaultIceDroneName As String, DroneSkillCombo As ComboBox,
                                    DroneSpecSkillCombo As ComboBox, ShipName As String, DroneTab As TabPage, NumDroneCombo As ComboBox)
 
+        Dim SavedDroneSelection As String = DroneNameCombo.Text
+
         ' Load up drones into the combo based on skills selected
         DroneNameCombo.BeginUpdate()
         DroneNameCombo.Items.Clear()
         DroneNameCombo.Items.Add(None) ' Always add none
-        DroneNameCombo.Text = None ' Set as default and we can change below
 
         Select Case OreType
             Case "Ore"
@@ -19489,7 +19519,7 @@ Leave:
                     DroneNameCombo.Items.Add("Mining Drone I")
                     DroneNameCombo.Items.Add("Harvester Mining Drone")
                 End If
-                If CInt(DroneSkillCombo.Text) >= 1 And DroneSpecSkillCombo.Enabled = True Then
+                If CInt(DroneSkillCombo.Text) >= 1 And DroneSpecSkillCombo.Enabled = True And CInt(DroneSpecSkillCombo.Text) >= 1 Then
                     DroneNameCombo.Items.Add("Mining Drone II")
                     DroneNameCombo.Items.Add("'Augmented' Mining Drone")
                     If ShipName = Rorqual Then
@@ -19497,8 +19527,12 @@ Leave:
                     End If
                 End If
 
-                If DroneNameCombo.Items.Contains(DefaultDroneName) Then
+                If DroneNameCombo.Items.Contains(SavedDroneSelection) Then
+                    DroneNameCombo.Text = SavedDroneSelection
+                ElseIf DroneNameCombo.Items.Contains(DefaultDroneName) Then
                     DroneNameCombo.Text = DefaultDroneName
+                Else
+                    DroneNameCombo.Text = None
                 End If
 
             Case "Ice"
@@ -19506,7 +19540,7 @@ Leave:
                 If CInt(DroneSkillCombo.Text) >= 1 Then
                     DroneNameCombo.Items.Add("Ice Harvesting Drone I")
                 End If
-                If CInt(DroneSpecSkillCombo.Text) >= 1 And DroneSpecSkillCombo.Enabled = True Then
+                If CInt(DroneSpecSkillCombo.Text) >= 1 And DroneSpecSkillCombo.Enabled = True And CInt(DroneSpecSkillCombo.Text) >= 1 Then
                     DroneNameCombo.Items.Add("Ice Harvesting Drone II")
                     DroneNameCombo.Items.Add("'Augmented' Ice Harvesting Drone")
                     If ShipName = Rorqual Then
@@ -19514,8 +19548,12 @@ Leave:
                     End If
                 End If
 
-                If DroneNameCombo.Items.Contains(DefaultIceDroneName) Then
+                If DroneNameCombo.Items.Contains(SavedDroneSelection) Then
+                    DroneNameCombo.Text = SavedDroneSelection
+                ElseIf DroneNameCombo.Items.Contains(DefaultIceDroneName) Then
                     DroneNameCombo.Text = DefaultIceDroneName
+                Else
+                    DroneNameCombo.Text = None
                 End If
 
             Case "Gas"
@@ -19593,7 +19631,7 @@ Leave:
         MiningAmtVariable = 0
 
         ' Calculate the m3 and range based on ship selected
-        If DroneName <> None And DroneSkill <> "0" Then
+        If DroneName <> None And DroneSkill <> "0" And OreType <> "Gas" Then
             Dim AttribLookup As New EVEAttributes
             Dim DroneMiningAmountpCycle As Double = 0
             ' Update the optimal range for this drone first
@@ -19601,8 +19639,8 @@ Leave:
             RangeLabel.Text = "Ideal Range: " & FormatNumber(AttribLookup.GetAttribute(DroneName, ItemAttributes.maxRange) * NavigationBonus, 0) & " m"
 
             ' Start adding in the rest of the skill bonuses
-            Dim MiningDroneOpLevel As Integer = CInt(DroneSkill)
-            Dim MiningDroneOpSpecLevel As Integer = CInt(DroneSpecSkill)
+            Dim MiningDroneOpLevel As Integer = If(DroneSkill <> "", CInt(DroneSkill), 0)
+            Dim MiningDroneOpSpecLevel As Integer = If(DroneSkill <> "", CInt(DroneSpecSkill), 0)
 
             DroneMiningAmountpCycle = AttribLookup.GetAttribute(DroneName, ItemAttributes.miningAmount)
 
@@ -19985,6 +20023,7 @@ Leave:
             chkMineBoosterDroneRig1.Enabled = False
             chkMineBoosterDroneRig2.Enabled = False
             chkMineBoosterDroneRig3.Enabled = False
+            tabBoosterDrones.Enabled = False
         Else
             ' Enable checks
             chkMineBoosterUseDrones.Enabled = True
@@ -20116,6 +20155,8 @@ Leave:
 
                 End If
 
+                rsMiners.Close()
+
                 ' Turn on the num lasers
                 lblMineLaserNumber.Enabled = True
                 cmbMineNumLasers.Enabled = True
@@ -20182,6 +20223,8 @@ Leave:
                         MaxStrip = T1Module
                     End If
 
+                    rsMiners.Close()
+
                 ElseIf cmbMineOreType.Text = "Gas" Then
                     ' Only venture and other ships
                     SQL &= "AND INVENTORY_TYPES.groupID = 737 " ' Gas harvesters
@@ -20206,6 +20249,8 @@ Leave:
                         MaxStrip = T1Module
                     End If
 
+                    rsMiners.Close()
+
                 ElseIf cmbMineOreType.Text = "Ice" And (ShipName = Endurance Or ShipName = Prospect Or ShipName = Venture) Then
                     SQL &= "AND INVENTORY_TYPES.groupID = 54 AND typeName LIKE '%Ice%' "
                     If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
@@ -20228,6 +20273,8 @@ Leave:
                     Else
                         MaxStrip = T1Module
                     End If
+
+                    rsMiners.Close()
 
                 End If
 
@@ -20694,6 +20741,8 @@ Leave:
                 OreLookup = TempOreName
             End If
 
+            rsOreType.Close()
+
             OreProcessingSkill = GetOreProcessingSkill(OreLookup)
 
             ' See if they have T1 or T2 - and use T1 if they select T2 but can't use them
@@ -21136,7 +21185,6 @@ Leave:
                     End If
                 End If
                 rsCheck.Close()
-                DBCommand = Nothing
             End If
         Next
 
@@ -21265,12 +21313,15 @@ Leave:
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerHW = DBCommand.ExecuteReader
 
+        Dim ReturnValue As Double = 0
+
         If readerHW.Read Then
             ' Return cost for one hour (cycle is 5 minutes)
-            Return HWUsage * readerHW.GetDouble(0) * 12
-        Else
-            Return 0
+            ReturnValue = HWUsage * readerHW.GetDouble(0) * 12
         End If
+        readerHW.Close()
+
+        Return ReturnValue
 
     End Function
 

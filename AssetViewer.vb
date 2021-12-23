@@ -260,6 +260,7 @@ Public Class AssetViewer
             chkFuelBlocks.Checked = .FuelBlocks
             chkProtectiveComponents.Checked = .ProtectiveComponents
             chkRAM.Checked = .RAM
+            chkNobuild.Checked = .NoBuildItems
             chkCapitalShipComponents.Checked = .CapitalShipComponents
             chkStructureComponents.Checked = .StructureComponents
             chkSubsystemComponents.Checked = .SubsystemComponents
@@ -485,8 +486,6 @@ Public Class AssetViewer
             End While
 
             readerMats.Close()
-            readerMats = Nothing
-            DBCommand = Nothing
 
         Else
             ' Want just building materials (from prices)
@@ -504,7 +503,7 @@ Public Class AssetViewer
                                                               chkStructureComponents, chkStructureModules, chkStructureRigs, chkStructures,
                                                               chkSubsystemComponents, chkSubsystems, cmbPriceChargeTypes, cmbPriceShipTypes,
                                                               chkItemsT1, PriceCheckT1Enabled, chkItemsT2, PriceCheckT2Enabled, chkItemsT3, PriceCheckT3Enabled,
-                                                              chkItemsT4, PriceCheckT4Enabled, chkItemsT5, PriceCheckT5Enabled, chkItemsT6, PriceCheckT6Enabled)
+                                                              chkItemsT4, PriceCheckT4Enabled, chkItemsT5, PriceCheckT5Enabled, chkItemsT6, PriceCheckT6Enabled, chkNobuild)
 
             ' Leave function if no items checked
             If GroupSQL <> "" Then
@@ -523,8 +522,7 @@ Public Class AssetViewer
                 End While
 
                 readerMats.Close()
-                readerMats = Nothing
-                DBCommand = Nothing
+
             End If
 
             ' Blueprint Copies
@@ -545,8 +543,6 @@ Public Class AssetViewer
                 End While
 
                 readerMats.Close()
-                readerMats = Nothing
-                DBCommand = Nothing
 
             End If
 
@@ -755,6 +751,7 @@ Public Class AssetViewer
             .FuelBlocks = chkFuelBlocks.Checked
             .ProtectiveComponents = chkProtectiveComponents.Checked
             .RAM = chkRAM.Checked
+            .NoBuildItems = chkNobuild.Checked
             .CapitalShipComponents = chkCapitalShipComponents.Checked
             .StructureComponents = chkStructureComponents.Checked
             .SubsystemComponents = chkSubsystemComponents.Checked
@@ -1270,8 +1267,6 @@ Public Class AssetViewer
         End While
 
         readerShipType.Close()
-        readerShipType = Nothing
-        DBCommand = Nothing
 
         cmbPriceShipTypes.Text = "All Ship Types"
 
@@ -1299,8 +1294,6 @@ Public Class AssetViewer
         End While
 
         readerChargeType.Close()
-        readerChargeType = Nothing
-        DBCommand = Nothing
 
         cmbPriceChargeTypes.Text = "All Charge Types"
 

@@ -277,13 +277,8 @@ Public Class frmIceBeltFlip
                     ' Save the total cost separate so we take into account taxes and fees
                     TotalCost = TotalCost + RefinedMaterials.GetTotalMaterialsCost
 
-                    If chkIncludeTaxes.Checked Then
-                        TotalCost -= GetSalesTax(TotalCost)
-                    End If
-
-                    If chkBrokerFees.Checked Then
-                        TotalCost -= GetSalesBrokerFee(TotalCost, GetBrokerFeeData(chkBrokerFees, txtBrokerFeeRate))
-                    End If
+                    ' Apply taxes and fees
+                    TotalCost = AdjustPriceforTaxesandFees(TotalCost, chkIncludeTaxes.Checked, GetBrokerFeeData(chkBrokerFees, txtBrokerFeeRate))
 
                     ' Reset the value of the refined materials
                     TotalRefinedMinerals.ResetTotalValue(TotalCost)

@@ -196,9 +196,6 @@ Public Class StructureProcessor
                 End With
             End If
 
-            DBCommand = Nothing
-            rsData = Nothing
-
         Catch ex As Exception
             If ex.Message <> "Thread was being aborted." Then
                 MsgBox("An error occured when importing structure data: " & ex.Message, vbInformation, Application.ProductName)
@@ -234,7 +231,6 @@ Public Class StructureProcessor
         End While
 
         rsStations.Close()
-        DBCommand = Nothing
 
         Return ReturnData
 
