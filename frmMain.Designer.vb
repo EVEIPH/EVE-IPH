@@ -28,6 +28,7 @@ Partial Class frmMain
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectionAddChar = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectionManageCharacters = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuViewErrorLog = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuSelectionExit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
@@ -211,7 +212,7 @@ Partial Class frmMain
         Me.chkMineBoosterUseDrones = New System.Windows.Forms.CheckBox()
         Me.pictMineFleetBoostShip = New System.Windows.Forms.PictureBox()
         Me.chkMineForemanLaserRangeBoost = New System.Windows.Forms.CheckBox()
-        Me.chkMineRorqDeployedMode = New System.Windows.Forms.CheckBox()
+        Me.chkMineIndyCoreDeployedMode = New System.Windows.Forms.CheckBox()
         Me.cmbMineBoosterShipSkill = New System.Windows.Forms.ComboBox()
         Me.chkMineForemanMindlink = New System.Windows.Forms.CheckBox()
         Me.cmbMineBoosterShipName = New System.Windows.Forms.ComboBox()
@@ -225,95 +226,62 @@ Partial Class frmMain
         Me.cmbMineIndustReconfig = New System.Windows.Forms.ComboBox()
         Me.lblMineIndustrialReconfig = New System.Windows.Forms.Label()
         Me.gbMineRefining = New System.Windows.Forms.GroupBox()
+        Me.gbMineCrystalType = New System.Windows.Forms.GroupBox()
+        Me.chkMineTypeC = New System.Windows.Forms.CheckBox()
+        Me.chkMineTypeB = New System.Windows.Forms.CheckBox()
+        Me.chkMineTypeA = New System.Windows.Forms.CheckBox()
         Me.gbMineOreStuctureRates = New System.Windows.Forms.GroupBox()
         Me.lblMineFacilityOreRate = New System.Windows.Forms.Label()
         Me.lblMineFacilityMoonOreRate = New System.Windows.Forms.Label()
         Me.lblMineFacilityOreRate1 = New System.Windows.Forms.Label()
         Me.lblMineFacilityMoonOreRate1 = New System.Windows.Forms.Label()
+        Me.gbMineCrystals = New System.Windows.Forms.GroupBox()
+        Me.chkMineT2Crystals = New System.Windows.Forms.CheckBox()
+        Me.chkMineT1Crystals = New System.Windows.Forms.CheckBox()
         Me.cmbMineRefining = New System.Windows.Forms.ComboBox()
         Me.lblMineRefining = New System.Windows.Forms.Label()
         Me.cmbMineRefineryEff = New System.Windows.Forms.ComboBox()
         Me.lblMineRefineryEfficiency = New System.Windows.Forms.Label()
         Me.tabMiningProcessingSkills = New System.Windows.Forms.TabControl()
         Me.tabPageOres = New System.Windows.Forms.TabPage()
-        Me.cmbOreProcessing3 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing5 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing7 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing6 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing9 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing2 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing14 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing12 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing8 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing11 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing1 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing16 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing4 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing15 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing13 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing10 = New System.Windows.Forms.ComboBox()
-        Me.lblOreProcessing1 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing7 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing8 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing5 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing8 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing4 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing3 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing7 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing16 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing2 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing3 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing6 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing15 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing6 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing14 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing5 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing2 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing4 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing13 = New System.Windows.Forms.CheckBox()
         Me.chkOreProcessing1 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing12 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing11 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing12 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing13 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing14 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing15 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing16 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing9 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing11 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing9 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing10 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing10 = New System.Windows.Forms.Label()
+        Me.cmbOreProcessing2 = New System.Windows.Forms.ComboBox()
+        Me.lblOreProcessing2 = New System.Windows.Forms.Label()
+        Me.chkOreProcessing3 = New System.Windows.Forms.CheckBox()
+        Me.chkOreProcessing2 = New System.Windows.Forms.CheckBox()
+        Me.chkOreProcessing6 = New System.Windows.Forms.CheckBox()
+        Me.cmbOreProcessing1 = New System.Windows.Forms.ComboBox()
+        Me.lblOreProcessing1 = New System.Windows.Forms.Label()
+        Me.lblOreProcessing6 = New System.Windows.Forms.Label()
+        Me.chkOreProcessing5 = New System.Windows.Forms.CheckBox()
+        Me.cmbOreProcessing6 = New System.Windows.Forms.ComboBox()
+        Me.lblOreProcessing3 = New System.Windows.Forms.Label()
+        Me.lblOreProcessing5 = New System.Windows.Forms.Label()
+        Me.cmbOreProcessing4 = New System.Windows.Forms.ComboBox()
+        Me.cmbOreProcessing3 = New System.Windows.Forms.ComboBox()
+        Me.chkOreProcessing4 = New System.Windows.Forms.CheckBox()
+        Me.lblOreProcessing4 = New System.Windows.Forms.Label()
+        Me.cmbOreProcessing5 = New System.Windows.Forms.ComboBox()
         Me.tabPageMoonOres = New System.Windows.Forms.TabPage()
-        Me.lblOreProcessing21 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing18 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing19 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing18 = New System.Windows.Forms.CheckBox()
-        Me.cmbOreProcessing22 = New System.Windows.Forms.ComboBox()
-        Me.chkOreProcessing21 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing22 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing20 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing22 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing19 = New System.Windows.Forms.CheckBox()
-        Me.cmbOreProcessing21 = New System.Windows.Forms.ComboBox()
-        Me.chkOreProcessing20 = New System.Windows.Forms.CheckBox()
-        Me.cmbOreProcessing19 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing18 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing20 = New System.Windows.Forms.ComboBox()
+        Me.lblOreProcessing7 = New System.Windows.Forms.Label()
+        Me.lblOreProcessing8 = New System.Windows.Forms.Label()
+        Me.lblOreProcessing10 = New System.Windows.Forms.Label()
+        Me.lblOreProcessing11 = New System.Windows.Forms.Label()
+        Me.cmbOreProcessing11 = New System.Windows.Forms.ComboBox()
+        Me.chkOreProcessing9 = New System.Windows.Forms.CheckBox()
+        Me.lblOreProcessing9 = New System.Windows.Forms.Label()
+        Me.chkOreProcessing8 = New System.Windows.Forms.CheckBox()
+        Me.cmbOreProcessing10 = New System.Windows.Forms.ComboBox()
+        Me.cmbOreProcessing7 = New System.Windows.Forms.ComboBox()
+        Me.chkOreProcessing10 = New System.Windows.Forms.CheckBox()
+        Me.chkOreProcessing7 = New System.Windows.Forms.CheckBox()
+        Me.cmbOreProcessing9 = New System.Windows.Forms.ComboBox()
+        Me.chkOreProcessing11 = New System.Windows.Forms.CheckBox()
+        Me.cmbOreProcessing8 = New System.Windows.Forms.ComboBox()
         Me.tabPageIce = New System.Windows.Forms.TabPage()
-        Me.cmbOreProcessing17 = New System.Windows.Forms.ComboBox()
-        Me.chkOreProcessing17 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing17 = New System.Windows.Forms.Label()
-        Me.tabPageTrigOres = New System.Windows.Forms.TabPage()
-        Me.lblOreProcessing23 = New System.Windows.Forms.Label()
-        Me.lblOreProcessing25 = New System.Windows.Forms.Label()
-        Me.cmbOreProcessing24 = New System.Windows.Forms.ComboBox()
-        Me.chkOreProcessing23 = New System.Windows.Forms.CheckBox()
-        Me.chkOreProcessing24 = New System.Windows.Forms.CheckBox()
-        Me.lblOreProcessing24 = New System.Windows.Forms.Label()
-        Me.chkOreProcessing25 = New System.Windows.Forms.CheckBox()
-        Me.cmbOreProcessing23 = New System.Windows.Forms.ComboBox()
-        Me.cmbOreProcessing25 = New System.Windows.Forms.ComboBox()
+        Me.cmbOreProcessing12 = New System.Windows.Forms.ComboBox()
+        Me.lblOreProcessing12 = New System.Windows.Forms.Label()
+        Me.chkOreProcessing12 = New System.Windows.Forms.CheckBox()
         Me.gbMineShipSetup = New System.Windows.Forms.GroupBox()
         Me.gbMineSelectShip = New System.Windows.Forms.GroupBox()
         Me.pictMineSelectedShip = New System.Windows.Forms.PictureBox()
@@ -329,10 +297,6 @@ Partial Class frmMain
         Me.cmbMineMiningRig1 = New System.Windows.Forms.ComboBox()
         Me.cmbMineMiningRig2 = New System.Windows.Forms.ComboBox()
         Me.cmbMineMiningLaser = New System.Windows.Forms.ComboBox()
-        Me.lblMineMiningUpgrade = New System.Windows.Forms.Label()
-        Me.gbMineCrystals = New System.Windows.Forms.GroupBox()
-        Me.rbtnMineT1Crystals = New System.Windows.Forms.RadioButton()
-        Me.rbtnMineT2Crystals = New System.Windows.Forms.RadioButton()
         Me.cmbMineNumMiningUpgrades = New System.Windows.Forms.ComboBox()
         Me.cmbMineNumLasers = New System.Windows.Forms.ComboBox()
         Me.cmbMineMiningUpgrade = New System.Windows.Forms.ComboBox()
@@ -342,6 +306,7 @@ Partial Class frmMain
         Me.lblMineLaserNumber = New System.Windows.Forms.Label()
         Me.lblMineNumMiningUpgrades = New System.Windows.Forms.Label()
         Me.lblMineMinerTurret = New System.Windows.Forms.Label()
+        Me.lblMineMiningUpgrade = New System.Windows.Forms.Label()
         Me.gbMineSkills = New System.Windows.Forms.GroupBox()
         Me.cmbMineGasIceHarvesting = New System.Windows.Forms.ComboBox()
         Me.lblMineGasIceHarvesting = New System.Windows.Forms.Label()
@@ -971,7 +936,6 @@ Partial Class frmMain
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.MineRefineFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
-        Me.mnuViewErrorLog = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -991,18 +955,18 @@ Partial Class frmMain
         CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.gbMineRefining.SuspendLayout()
+        Me.gbMineCrystalType.SuspendLayout()
         Me.gbMineOreStuctureRates.SuspendLayout()
+        Me.gbMineCrystals.SuspendLayout()
         Me.tabMiningProcessingSkills.SuspendLayout()
         Me.tabPageOres.SuspendLayout()
         Me.tabPageMoonOres.SuspendLayout()
         Me.tabPageIce.SuspendLayout()
-        Me.tabPageTrigOres.SuspendLayout()
         Me.gbMineShipSetup.SuspendLayout()
         Me.gbMineSelectShip.SuspendLayout()
         CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.gbMineShipEquipment.SuspendLayout()
         Me.gbMiningRigs.SuspendLayout()
-        Me.gbMineCrystals.SuspendLayout()
         Me.gbMineSkills.SuspendLayout()
         Me.gbMineMain.SuspendLayout()
         Me.gbMineIncludeOres.SuspendLayout()
@@ -1120,6 +1084,12 @@ Partial Class frmMain
         Me.mnuSelectionManageCharacters.Name = "mnuSelectionManageCharacters"
         Me.mnuSelectionManageCharacters.Size = New System.Drawing.Size(170, 22)
         Me.mnuSelectionManageCharacters.Text = "Manage Accounts"
+        '
+        'mnuViewErrorLog
+        '
+        Me.mnuViewErrorLog.Name = "mnuViewErrorLog"
+        Me.mnuViewErrorLog.Size = New System.Drawing.Size(170, 22)
+        Me.mnuViewErrorLog.Text = "View Error Log"
         '
         'ToolStripSeparator1
         '
@@ -1374,6 +1344,7 @@ Partial Class frmMain
         Me.mnuOreFlips.Name = "mnuOreFlips"
         Me.mnuOreFlips.Size = New System.Drawing.Size(219, 22)
         Me.mnuOreFlips.Text = "Mining Belt Flip Calculators"
+        Me.mnuOreFlips.Visible = False
         '
         'mnuAnomalyOreBelts
         '
@@ -2500,7 +2471,7 @@ Partial Class frmMain
         Me.gbMineBooster.Controls.Add(Me.chkMineBoosterUseDrones)
         Me.gbMineBooster.Controls.Add(Me.pictMineFleetBoostShip)
         Me.gbMineBooster.Controls.Add(Me.chkMineForemanLaserRangeBoost)
-        Me.gbMineBooster.Controls.Add(Me.chkMineRorqDeployedMode)
+        Me.gbMineBooster.Controls.Add(Me.chkMineIndyCoreDeployedMode)
         Me.gbMineBooster.Controls.Add(Me.cmbMineBoosterShipSkill)
         Me.gbMineBooster.Controls.Add(Me.chkMineForemanMindlink)
         Me.gbMineBooster.Controls.Add(Me.cmbMineBoosterShipName)
@@ -2598,16 +2569,16 @@ Partial Class frmMain
         Me.chkMineForemanLaserRangeBoost.ThreeState = True
         Me.chkMineForemanLaserRangeBoost.UseVisualStyleBackColor = True
         '
-        'chkMineRorqDeployedMode
+        'chkMineIndyCoreDeployedMode
         '
-        Me.chkMineRorqDeployedMode.AutoSize = True
-        Me.chkMineRorqDeployedMode.Location = New System.Drawing.Point(18, 80)
-        Me.chkMineRorqDeployedMode.Name = "chkMineRorqDeployedMode"
-        Me.chkMineRorqDeployedMode.Size = New System.Drawing.Size(134, 17)
-        Me.chkMineRorqDeployedMode.TabIndex = 4
-        Me.chkMineRorqDeployedMode.Text = "Industrial Core Inactive"
-        Me.chkMineRorqDeployedMode.ThreeState = True
-        Me.chkMineRorqDeployedMode.UseVisualStyleBackColor = True
+        Me.chkMineIndyCoreDeployedMode.AutoSize = True
+        Me.chkMineIndyCoreDeployedMode.Location = New System.Drawing.Point(18, 80)
+        Me.chkMineIndyCoreDeployedMode.Name = "chkMineIndyCoreDeployedMode"
+        Me.chkMineIndyCoreDeployedMode.Size = New System.Drawing.Size(134, 17)
+        Me.chkMineIndyCoreDeployedMode.TabIndex = 4
+        Me.chkMineIndyCoreDeployedMode.Text = "Industrial Core Inactive"
+        Me.chkMineIndyCoreDeployedMode.ThreeState = True
+        Me.chkMineIndyCoreDeployedMode.UseVisualStyleBackColor = True
         '
         'cmbMineBoosterShipSkill
         '
@@ -2726,7 +2697,9 @@ Partial Class frmMain
         '
         'gbMineRefining
         '
+        Me.gbMineRefining.Controls.Add(Me.gbMineCrystalType)
         Me.gbMineRefining.Controls.Add(Me.gbMineOreStuctureRates)
+        Me.gbMineRefining.Controls.Add(Me.gbMineCrystals)
         Me.gbMineRefining.Controls.Add(Me.cmbMineRefining)
         Me.gbMineRefining.Controls.Add(Me.lblMineRefining)
         Me.gbMineRefining.Controls.Add(Me.cmbMineRefineryEff)
@@ -2739,6 +2712,54 @@ Partial Class frmMain
         Me.gbMineRefining.TabIndex = 8
         Me.gbMineRefining.TabStop = False
         Me.gbMineRefining.Text = "Refining Settings:"
+        '
+        'gbMineCrystalType
+        '
+        Me.gbMineCrystalType.Controls.Add(Me.chkMineTypeC)
+        Me.gbMineCrystalType.Controls.Add(Me.chkMineTypeB)
+        Me.gbMineCrystalType.Controls.Add(Me.chkMineTypeA)
+        Me.gbMineCrystalType.Location = New System.Drawing.Point(329, 204)
+        Me.gbMineCrystalType.Name = "gbMineCrystalType"
+        Me.gbMineCrystalType.Size = New System.Drawing.Size(83, 85)
+        Me.gbMineCrystalType.TabIndex = 8
+        Me.gbMineCrystalType.TabStop = False
+        Me.gbMineCrystalType.Text = "Crystal Type:"
+        '
+        'chkMineTypeC
+        '
+        Me.chkMineTypeC.AutoSize = True
+        Me.chkMineTypeC.Checked = True
+        Me.chkMineTypeC.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineTypeC.Location = New System.Drawing.Point(7, 59)
+        Me.chkMineTypeC.Name = "chkMineTypeC"
+        Me.chkMineTypeC.Size = New System.Drawing.Size(60, 17)
+        Me.chkMineTypeC.TabIndex = 2
+        Me.chkMineTypeC.Text = "Type C"
+        Me.chkMineTypeC.UseVisualStyleBackColor = True
+        '
+        'chkMineTypeB
+        '
+        Me.chkMineTypeB.AutoSize = True
+        Me.chkMineTypeB.Checked = True
+        Me.chkMineTypeB.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineTypeB.Location = New System.Drawing.Point(7, 39)
+        Me.chkMineTypeB.Name = "chkMineTypeB"
+        Me.chkMineTypeB.Size = New System.Drawing.Size(60, 17)
+        Me.chkMineTypeB.TabIndex = 0
+        Me.chkMineTypeB.Text = "Type B"
+        Me.chkMineTypeB.UseVisualStyleBackColor = True
+        '
+        'chkMineTypeA
+        '
+        Me.chkMineTypeA.AutoSize = True
+        Me.chkMineTypeA.Checked = True
+        Me.chkMineTypeA.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineTypeA.Location = New System.Drawing.Point(7, 19)
+        Me.chkMineTypeA.Name = "chkMineTypeA"
+        Me.chkMineTypeA.Size = New System.Drawing.Size(60, 17)
+        Me.chkMineTypeA.TabIndex = 1
+        Me.chkMineTypeA.Text = "Type A"
+        Me.chkMineTypeA.UseVisualStyleBackColor = True
         '
         'gbMineOreStuctureRates
         '
@@ -2791,6 +2812,41 @@ Partial Class frmMain
         Me.lblMineFacilityMoonOreRate1.TabIndex = 125
         Me.lblMineFacilityMoonOreRate1.Text = "Moon:"
         '
+        'gbMineCrystals
+        '
+        Me.gbMineCrystals.Controls.Add(Me.chkMineT2Crystals)
+        Me.gbMineCrystals.Controls.Add(Me.chkMineT1Crystals)
+        Me.gbMineCrystals.Location = New System.Drawing.Point(329, 138)
+        Me.gbMineCrystals.Name = "gbMineCrystals"
+        Me.gbMineCrystals.Size = New System.Drawing.Size(83, 60)
+        Me.gbMineCrystals.TabIndex = 4
+        Me.gbMineCrystals.TabStop = False
+        Me.gbMineCrystals.Text = "Crystal Tech:"
+        '
+        'chkMineT2Crystals
+        '
+        Me.chkMineT2Crystals.AutoSize = True
+        Me.chkMineT2Crystals.Checked = True
+        Me.chkMineT2Crystals.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineT2Crystals.Location = New System.Drawing.Point(7, 35)
+        Me.chkMineT2Crystals.Name = "chkMineT2Crystals"
+        Me.chkMineT2Crystals.Size = New System.Drawing.Size(78, 17)
+        Me.chkMineT2Crystals.TabIndex = 9
+        Me.chkMineT2Crystals.Text = "T2 Crystals"
+        Me.chkMineT2Crystals.UseVisualStyleBackColor = True
+        '
+        'chkMineT1Crystals
+        '
+        Me.chkMineT1Crystals.AutoSize = True
+        Me.chkMineT1Crystals.Checked = True
+        Me.chkMineT1Crystals.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.chkMineT1Crystals.Location = New System.Drawing.Point(7, 18)
+        Me.chkMineT1Crystals.Name = "chkMineT1Crystals"
+        Me.chkMineT1Crystals.Size = New System.Drawing.Size(78, 17)
+        Me.chkMineT1Crystals.TabIndex = 10
+        Me.chkMineT1Crystals.Text = "T1 Crystals"
+        Me.chkMineT1Crystals.UseVisualStyleBackColor = True
+        '
         'cmbMineRefining
         '
         Me.cmbMineRefining.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
@@ -2833,775 +2889,388 @@ Partial Class frmMain
         Me.tabMiningProcessingSkills.Controls.Add(Me.tabPageOres)
         Me.tabMiningProcessingSkills.Controls.Add(Me.tabPageMoonOres)
         Me.tabMiningProcessingSkills.Controls.Add(Me.tabPageIce)
-        Me.tabMiningProcessingSkills.Controls.Add(Me.tabPageTrigOres)
-        Me.tabMiningProcessingSkills.Location = New System.Drawing.Point(6, 124)
+        Me.tabMiningProcessingSkills.Location = New System.Drawing.Point(7, 123)
         Me.tabMiningProcessingSkills.Name = "tabMiningProcessingSkills"
         Me.tabMiningProcessingSkills.SelectedIndex = 0
-        Me.tabMiningProcessingSkills.Size = New System.Drawing.Size(406, 170)
+        Me.tabMiningProcessingSkills.Size = New System.Drawing.Size(318, 170)
         Me.tabMiningProcessingSkills.TabIndex = 121
         '
         'tabPageOres
         '
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing3)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing5)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing7)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing6)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing9)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing2)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing14)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing12)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing8)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing11)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing1)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing16)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing4)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing15)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing13)
-        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing10)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing1)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing7)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing8)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing5)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing8)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing4)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing3)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing7)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing16)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing2)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing3)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing6)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing15)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing6)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing14)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing5)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing2)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing4)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing13)
         Me.tabPageOres.Controls.Add(Me.chkOreProcessing1)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing12)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing11)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing12)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing13)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing14)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing15)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing16)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing9)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing11)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing9)
-        Me.tabPageOres.Controls.Add(Me.chkOreProcessing10)
-        Me.tabPageOres.Controls.Add(Me.lblOreProcessing10)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing2)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing2)
+        Me.tabPageOres.Controls.Add(Me.chkOreProcessing3)
+        Me.tabPageOres.Controls.Add(Me.chkOreProcessing2)
+        Me.tabPageOres.Controls.Add(Me.chkOreProcessing6)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing1)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing1)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing6)
+        Me.tabPageOres.Controls.Add(Me.chkOreProcessing5)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing6)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing3)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing5)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing4)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing3)
+        Me.tabPageOres.Controls.Add(Me.chkOreProcessing4)
+        Me.tabPageOres.Controls.Add(Me.lblOreProcessing4)
+        Me.tabPageOres.Controls.Add(Me.cmbOreProcessing5)
         Me.tabPageOres.Location = New System.Drawing.Point(4, 22)
         Me.tabPageOres.Name = "tabPageOres"
         Me.tabPageOres.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabPageOres.Size = New System.Drawing.Size(398, 144)
+        Me.tabPageOres.Size = New System.Drawing.Size(310, 144)
         Me.tabPageOres.TabIndex = 0
         Me.tabPageOres.Text = "Ore Processing"
         Me.tabPageOres.UseVisualStyleBackColor = True
         '
-        'cmbOreProcessing3
-        '
-        Me.cmbOreProcessing3.FormattingEnabled = True
-        Me.cmbOreProcessing3.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing3.Location = New System.Drawing.Point(222, 30)
-        Me.cmbOreProcessing3.Name = "cmbOreProcessing3"
-        Me.cmbOreProcessing3.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing3.TabIndex = 104
-        '
-        'cmbOreProcessing5
-        '
-        Me.cmbOreProcessing5.FormattingEnabled = True
-        Me.cmbOreProcessing5.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing5.Location = New System.Drawing.Point(222, 74)
-        Me.cmbOreProcessing5.Name = "cmbOreProcessing5"
-        Me.cmbOreProcessing5.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing5.TabIndex = 112
-        '
-        'cmbOreProcessing7
-        '
-        Me.cmbOreProcessing7.FormattingEnabled = True
-        Me.cmbOreProcessing7.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing7.Location = New System.Drawing.Point(222, 96)
-        Me.cmbOreProcessing7.Name = "cmbOreProcessing7"
-        Me.cmbOreProcessing7.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing7.TabIndex = 120
-        '
-        'cmbOreProcessing6
-        '
-        Me.cmbOreProcessing6.FormattingEnabled = True
-        Me.cmbOreProcessing6.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing6.Location = New System.Drawing.Point(222, 52)
-        Me.cmbOreProcessing6.Name = "cmbOreProcessing6"
-        Me.cmbOreProcessing6.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing6.TabIndex = 116
-        '
-        'cmbOreProcessing9
-        '
-        Me.cmbOreProcessing9.FormattingEnabled = True
-        Me.cmbOreProcessing9.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing9.Location = New System.Drawing.Point(222, 8)
-        Me.cmbOreProcessing9.Name = "cmbOreProcessing9"
-        Me.cmbOreProcessing9.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing9.TabIndex = 98
-        '
-        'cmbOreProcessing2
-        '
-        Me.cmbOreProcessing2.FormattingEnabled = True
-        Me.cmbOreProcessing2.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing2.Location = New System.Drawing.Point(353, 8)
-        Me.cmbOreProcessing2.Name = "cmbOreProcessing2"
-        Me.cmbOreProcessing2.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing2.TabIndex = 100
-        '
-        'cmbOreProcessing14
-        '
-        Me.cmbOreProcessing14.FormattingEnabled = True
-        Me.cmbOreProcessing14.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing14.Location = New System.Drawing.Point(353, 74)
-        Me.cmbOreProcessing14.Name = "cmbOreProcessing14"
-        Me.cmbOreProcessing14.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing14.TabIndex = 118
-        '
-        'cmbOreProcessing12
-        '
-        Me.cmbOreProcessing12.FormattingEnabled = True
-        Me.cmbOreProcessing12.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing12.Location = New System.Drawing.Point(353, 52)
-        Me.cmbOreProcessing12.Name = "cmbOreProcessing12"
-        Me.cmbOreProcessing12.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing12.TabIndex = 110
-        '
-        'cmbOreProcessing8
-        '
-        Me.cmbOreProcessing8.FormattingEnabled = True
-        Me.cmbOreProcessing8.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing8.Location = New System.Drawing.Point(353, 96)
-        Me.cmbOreProcessing8.Name = "cmbOreProcessing8"
-        Me.cmbOreProcessing8.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing8.TabIndex = 124
-        '
-        'cmbOreProcessing11
-        '
-        Me.cmbOreProcessing11.FormattingEnabled = True
-        Me.cmbOreProcessing11.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing11.Location = New System.Drawing.Point(353, 30)
-        Me.cmbOreProcessing11.Name = "cmbOreProcessing11"
-        Me.cmbOreProcessing11.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing11.TabIndex = 106
-        '
-        'cmbOreProcessing1
-        '
-        Me.cmbOreProcessing1.FormattingEnabled = True
-        Me.cmbOreProcessing1.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing1.Location = New System.Drawing.Point(91, 8)
-        Me.cmbOreProcessing1.Name = "cmbOreProcessing1"
-        Me.cmbOreProcessing1.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing1.TabIndex = 96
-        '
-        'cmbOreProcessing16
-        '
-        Me.cmbOreProcessing16.FormattingEnabled = True
-        Me.cmbOreProcessing16.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing16.Location = New System.Drawing.Point(91, 118)
-        Me.cmbOreProcessing16.Name = "cmbOreProcessing16"
-        Me.cmbOreProcessing16.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing16.TabIndex = 126
-        '
-        'cmbOreProcessing4
-        '
-        Me.cmbOreProcessing4.FormattingEnabled = True
-        Me.cmbOreProcessing4.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing4.Location = New System.Drawing.Point(91, 52)
-        Me.cmbOreProcessing4.Name = "cmbOreProcessing4"
-        Me.cmbOreProcessing4.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing4.TabIndex = 108
-        '
-        'cmbOreProcessing15
-        '
-        Me.cmbOreProcessing15.FormattingEnabled = True
-        Me.cmbOreProcessing15.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing15.Location = New System.Drawing.Point(91, 96)
-        Me.cmbOreProcessing15.Name = "cmbOreProcessing15"
-        Me.cmbOreProcessing15.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing15.TabIndex = 122
-        '
-        'cmbOreProcessing13
-        '
-        Me.cmbOreProcessing13.FormattingEnabled = True
-        Me.cmbOreProcessing13.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing13.Location = New System.Drawing.Point(91, 74)
-        Me.cmbOreProcessing13.Name = "cmbOreProcessing13"
-        Me.cmbOreProcessing13.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing13.TabIndex = 114
-        '
-        'cmbOreProcessing10
-        '
-        Me.cmbOreProcessing10.FormattingEnabled = True
-        Me.cmbOreProcessing10.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing10.Location = New System.Drawing.Point(91, 30)
-        Me.cmbOreProcessing10.Name = "cmbOreProcessing10"
-        Me.cmbOreProcessing10.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing10.TabIndex = 102
-        '
-        'lblOreProcessing1
-        '
-        Me.lblOreProcessing1.Location = New System.Drawing.Point(29, 12)
-        Me.lblOreProcessing1.Name = "lblOreProcessing1"
-        Me.lblOreProcessing1.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing1.TabIndex = 127
-        Me.lblOreProcessing1.Text = "Veldspar"
-        '
-        'chkOreProcessing7
-        '
-        Me.chkOreProcessing7.AutoSize = True
-        Me.chkOreProcessing7.Location = New System.Drawing.Point(141, 99)
-        Me.chkOreProcessing7.Name = "chkOreProcessing7"
-        Me.chkOreProcessing7.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing7.TabIndex = 119
-        Me.chkOreProcessing7.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing8
-        '
-        Me.chkOreProcessing8.AutoSize = True
-        Me.chkOreProcessing8.Location = New System.Drawing.Point(272, 99)
-        Me.chkOreProcessing8.Name = "chkOreProcessing8"
-        Me.chkOreProcessing8.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing8.TabIndex = 123
-        Me.chkOreProcessing8.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing5
-        '
-        Me.chkOreProcessing5.AutoSize = True
-        Me.chkOreProcessing5.Location = New System.Drawing.Point(141, 77)
-        Me.chkOreProcessing5.Name = "chkOreProcessing5"
-        Me.chkOreProcessing5.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing5.TabIndex = 111
-        Me.chkOreProcessing5.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing8
-        '
-        Me.lblOreProcessing8.Location = New System.Drawing.Point(291, 100)
-        Me.lblOreProcessing8.Name = "lblOreProcessing8"
-        Me.lblOreProcessing8.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing8.TabIndex = 136
-        Me.lblOreProcessing8.Text = "Arkonor"
-        '
-        'chkOreProcessing4
-        '
-        Me.chkOreProcessing4.AutoSize = True
-        Me.chkOreProcessing4.Location = New System.Drawing.Point(10, 55)
-        Me.chkOreProcessing4.Name = "chkOreProcessing4"
-        Me.chkOreProcessing4.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing4.TabIndex = 107
-        Me.chkOreProcessing4.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing3
-        '
-        Me.chkOreProcessing3.AutoSize = True
-        Me.chkOreProcessing3.Location = New System.Drawing.Point(141, 33)
-        Me.chkOreProcessing3.Name = "chkOreProcessing3"
-        Me.chkOreProcessing3.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing3.TabIndex = 103
-        Me.chkOreProcessing3.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing7
-        '
-        Me.lblOreProcessing7.Location = New System.Drawing.Point(160, 100)
-        Me.lblOreProcessing7.Name = "lblOreProcessing7"
-        Me.lblOreProcessing7.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing7.TabIndex = 135
-        Me.lblOreProcessing7.Text = "Bistot"
-        '
-        'chkOreProcessing16
-        '
-        Me.chkOreProcessing16.AutoSize = True
-        Me.chkOreProcessing16.Location = New System.Drawing.Point(10, 121)
-        Me.chkOreProcessing16.Name = "chkOreProcessing16"
-        Me.chkOreProcessing16.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing16.TabIndex = 125
-        Me.chkOreProcessing16.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing2
-        '
-        Me.chkOreProcessing2.AutoSize = True
-        Me.chkOreProcessing2.Location = New System.Drawing.Point(272, 11)
-        Me.chkOreProcessing2.Name = "chkOreProcessing2"
-        Me.chkOreProcessing2.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing2.TabIndex = 99
-        Me.chkOreProcessing2.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing3
-        '
-        Me.lblOreProcessing3.Location = New System.Drawing.Point(160, 34)
-        Me.lblOreProcessing3.Name = "lblOreProcessing3"
-        Me.lblOreProcessing3.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing3.TabIndex = 129
-        Me.lblOreProcessing3.Text = "Omber"
-        '
-        'lblOreProcessing6
-        '
-        Me.lblOreProcessing6.Location = New System.Drawing.Point(160, 56)
-        Me.lblOreProcessing6.Name = "lblOreProcessing6"
-        Me.lblOreProcessing6.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing6.TabIndex = 137
-        Me.lblOreProcessing6.Text = "Hedbergite"
-        '
-        'chkOreProcessing15
-        '
-        Me.chkOreProcessing15.AutoSize = True
-        Me.chkOreProcessing15.Location = New System.Drawing.Point(10, 99)
-        Me.chkOreProcessing15.Name = "chkOreProcessing15"
-        Me.chkOreProcessing15.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing15.TabIndex = 121
-        Me.chkOreProcessing15.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing6
-        '
-        Me.chkOreProcessing6.AutoSize = True
-        Me.chkOreProcessing6.Location = New System.Drawing.Point(141, 55)
-        Me.chkOreProcessing6.Name = "chkOreProcessing6"
-        Me.chkOreProcessing6.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing6.TabIndex = 115
-        Me.chkOreProcessing6.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing14
-        '
-        Me.chkOreProcessing14.AutoSize = True
-        Me.chkOreProcessing14.Location = New System.Drawing.Point(272, 77)
-        Me.chkOreProcessing14.Name = "chkOreProcessing14"
-        Me.chkOreProcessing14.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing14.TabIndex = 117
-        Me.chkOreProcessing14.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing5
-        '
-        Me.lblOreProcessing5.Location = New System.Drawing.Point(160, 78)
-        Me.lblOreProcessing5.Name = "lblOreProcessing5"
-        Me.lblOreProcessing5.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing5.TabIndex = 131
-        Me.lblOreProcessing5.Text = "Dark Ochre"
-        '
-        'lblOreProcessing2
-        '
-        Me.lblOreProcessing2.Location = New System.Drawing.Point(291, 12)
-        Me.lblOreProcessing2.Name = "lblOreProcessing2"
-        Me.lblOreProcessing2.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing2.TabIndex = 128
-        Me.lblOreProcessing2.Text = "Pyroxeres"
-        '
-        'lblOreProcessing4
-        '
-        Me.lblOreProcessing4.Location = New System.Drawing.Point(29, 56)
-        Me.lblOreProcessing4.Name = "lblOreProcessing4"
-        Me.lblOreProcessing4.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing4.TabIndex = 130
-        Me.lblOreProcessing4.Text = "Hemorphite"
-        '
-        'chkOreProcessing13
-        '
-        Me.chkOreProcessing13.AutoSize = True
-        Me.chkOreProcessing13.Location = New System.Drawing.Point(10, 77)
-        Me.chkOreProcessing13.Name = "chkOreProcessing13"
-        Me.chkOreProcessing13.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing13.TabIndex = 113
-        Me.chkOreProcessing13.UseVisualStyleBackColor = True
-        '
         'chkOreProcessing1
         '
         Me.chkOreProcessing1.AutoSize = True
-        Me.chkOreProcessing1.Location = New System.Drawing.Point(10, 11)
+        Me.chkOreProcessing1.Location = New System.Drawing.Point(10, 10)
         Me.chkOreProcessing1.Name = "chkOreProcessing1"
         Me.chkOreProcessing1.Size = New System.Drawing.Size(15, 14)
         Me.chkOreProcessing1.TabIndex = 95
         Me.chkOreProcessing1.UseVisualStyleBackColor = True
         '
-        'chkOreProcessing12
+        'cmbOreProcessing2
         '
-        Me.chkOreProcessing12.AutoSize = True
-        Me.chkOreProcessing12.Location = New System.Drawing.Point(272, 55)
-        Me.chkOreProcessing12.Name = "chkOreProcessing12"
-        Me.chkOreProcessing12.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing12.TabIndex = 109
-        Me.chkOreProcessing12.UseVisualStyleBackColor = True
+        Me.cmbOreProcessing2.FormattingEnabled = True
+        Me.cmbOreProcessing2.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing2.Location = New System.Drawing.Point(168, 29)
+        Me.cmbOreProcessing2.Name = "cmbOreProcessing2"
+        Me.cmbOreProcessing2.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing2.TabIndex = 102
         '
-        'chkOreProcessing11
+        'lblOreProcessing2
         '
-        Me.chkOreProcessing11.AutoSize = True
-        Me.chkOreProcessing11.Location = New System.Drawing.Point(272, 33)
-        Me.chkOreProcessing11.Name = "chkOreProcessing11"
-        Me.chkOreProcessing11.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing11.TabIndex = 105
-        Me.chkOreProcessing11.UseVisualStyleBackColor = True
+        Me.lblOreProcessing2.Location = New System.Drawing.Point(32, 32)
+        Me.lblOreProcessing2.Name = "lblOreProcessing2"
+        Me.lblOreProcessing2.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing2.TabIndex = 133
+        Me.lblOreProcessing2.Text = "Coherent Ore Processing"
         '
-        'lblOreProcessing12
+        'chkOreProcessing3
         '
-        Me.lblOreProcessing12.Location = New System.Drawing.Point(291, 56)
-        Me.lblOreProcessing12.Name = "lblOreProcessing12"
-        Me.lblOreProcessing12.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing12.TabIndex = 138
-        Me.lblOreProcessing12.Text = "Jaspet"
+        Me.chkOreProcessing3.AutoSize = True
+        Me.chkOreProcessing3.Location = New System.Drawing.Point(10, 54)
+        Me.chkOreProcessing3.Name = "chkOreProcessing3"
+        Me.chkOreProcessing3.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing3.TabIndex = 107
+        Me.chkOreProcessing3.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing13
+        'chkOreProcessing2
         '
-        Me.lblOreProcessing13.Location = New System.Drawing.Point(29, 78)
-        Me.lblOreProcessing13.Name = "lblOreProcessing13"
-        Me.lblOreProcessing13.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing13.TabIndex = 139
-        Me.lblOreProcessing13.Text = "Gneiss"
+        Me.chkOreProcessing2.AutoSize = True
+        Me.chkOreProcessing2.Location = New System.Drawing.Point(10, 32)
+        Me.chkOreProcessing2.Name = "chkOreProcessing2"
+        Me.chkOreProcessing2.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing2.TabIndex = 101
+        Me.chkOreProcessing2.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing14
+        'chkOreProcessing6
         '
-        Me.lblOreProcessing14.Location = New System.Drawing.Point(291, 78)
-        Me.lblOreProcessing14.Name = "lblOreProcessing14"
-        Me.lblOreProcessing14.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing14.TabIndex = 140
-        Me.lblOreProcessing14.Text = "Spodumain"
+        Me.chkOreProcessing6.AutoSize = True
+        Me.chkOreProcessing6.Location = New System.Drawing.Point(10, 120)
+        Me.chkOreProcessing6.Name = "chkOreProcessing6"
+        Me.chkOreProcessing6.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing6.TabIndex = 125
+        Me.chkOreProcessing6.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing15
+        'cmbOreProcessing1
         '
-        Me.lblOreProcessing15.Location = New System.Drawing.Point(29, 100)
-        Me.lblOreProcessing15.Name = "lblOreProcessing15"
-        Me.lblOreProcessing15.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing15.TabIndex = 141
-        Me.lblOreProcessing15.Text = "Crokite"
+        Me.cmbOreProcessing1.FormattingEnabled = True
+        Me.cmbOreProcessing1.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing1.Location = New System.Drawing.Point(168, 7)
+        Me.cmbOreProcessing1.Name = "cmbOreProcessing1"
+        Me.cmbOreProcessing1.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing1.TabIndex = 96
         '
-        'lblOreProcessing16
+        'lblOreProcessing1
         '
-        Me.lblOreProcessing16.Location = New System.Drawing.Point(29, 122)
-        Me.lblOreProcessing16.Name = "lblOreProcessing16"
-        Me.lblOreProcessing16.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing16.TabIndex = 142
-        Me.lblOreProcessing16.Text = "Mercoxit"
+        Me.lblOreProcessing1.Location = New System.Drawing.Point(32, 10)
+        Me.lblOreProcessing1.Name = "lblOreProcessing1"
+        Me.lblOreProcessing1.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing1.TabIndex = 127
+        Me.lblOreProcessing1.Text = "Simple Ore Processing"
         '
-        'chkOreProcessing9
+        'lblOreProcessing6
         '
-        Me.chkOreProcessing9.AutoSize = True
-        Me.chkOreProcessing9.Location = New System.Drawing.Point(141, 11)
-        Me.chkOreProcessing9.Name = "chkOreProcessing9"
-        Me.chkOreProcessing9.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing9.TabIndex = 97
-        Me.chkOreProcessing9.UseVisualStyleBackColor = True
+        Me.lblOreProcessing6.Location = New System.Drawing.Point(32, 120)
+        Me.lblOreProcessing6.Name = "lblOreProcessing6"
+        Me.lblOreProcessing6.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing6.TabIndex = 142
+        Me.lblOreProcessing6.Text = "Mercoxit Ore Processing"
         '
-        'lblOreProcessing11
+        'chkOreProcessing5
         '
-        Me.lblOreProcessing11.Location = New System.Drawing.Point(291, 34)
-        Me.lblOreProcessing11.Name = "lblOreProcessing11"
-        Me.lblOreProcessing11.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing11.TabIndex = 134
-        Me.lblOreProcessing11.Text = "Kernite"
+        Me.chkOreProcessing5.AutoSize = True
+        Me.chkOreProcessing5.Location = New System.Drawing.Point(10, 98)
+        Me.chkOreProcessing5.Name = "chkOreProcessing5"
+        Me.chkOreProcessing5.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing5.TabIndex = 121
+        Me.chkOreProcessing5.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing9
+        'cmbOreProcessing6
         '
-        Me.lblOreProcessing9.Location = New System.Drawing.Point(160, 12)
-        Me.lblOreProcessing9.Name = "lblOreProcessing9"
-        Me.lblOreProcessing9.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing9.TabIndex = 132
-        Me.lblOreProcessing9.Text = "Scordite"
+        Me.cmbOreProcessing6.FormattingEnabled = True
+        Me.cmbOreProcessing6.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing6.Location = New System.Drawing.Point(168, 117)
+        Me.cmbOreProcessing6.Name = "cmbOreProcessing6"
+        Me.cmbOreProcessing6.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing6.TabIndex = 126
         '
-        'chkOreProcessing10
+        'lblOreProcessing3
         '
-        Me.chkOreProcessing10.AutoSize = True
-        Me.chkOreProcessing10.Location = New System.Drawing.Point(10, 33)
-        Me.chkOreProcessing10.Name = "chkOreProcessing10"
-        Me.chkOreProcessing10.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing10.TabIndex = 101
-        Me.chkOreProcessing10.UseVisualStyleBackColor = True
+        Me.lblOreProcessing3.Location = New System.Drawing.Point(32, 54)
+        Me.lblOreProcessing3.Name = "lblOreProcessing3"
+        Me.lblOreProcessing3.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing3.TabIndex = 130
+        Me.lblOreProcessing3.Text = "Variegated Ore Processing"
         '
-        'lblOreProcessing10
+        'lblOreProcessing5
         '
-        Me.lblOreProcessing10.Location = New System.Drawing.Point(29, 34)
-        Me.lblOreProcessing10.Name = "lblOreProcessing10"
-        Me.lblOreProcessing10.Size = New System.Drawing.Size(63, 13)
-        Me.lblOreProcessing10.TabIndex = 133
-        Me.lblOreProcessing10.Text = "Plagioclase"
+        Me.lblOreProcessing5.Location = New System.Drawing.Point(32, 98)
+        Me.lblOreProcessing5.Name = "lblOreProcessing5"
+        Me.lblOreProcessing5.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing5.TabIndex = 141
+        Me.lblOreProcessing5.Text = "Abyssal Ore Processing"
+        '
+        'cmbOreProcessing4
+        '
+        Me.cmbOreProcessing4.FormattingEnabled = True
+        Me.cmbOreProcessing4.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing4.Location = New System.Drawing.Point(168, 73)
+        Me.cmbOreProcessing4.Name = "cmbOreProcessing4"
+        Me.cmbOreProcessing4.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing4.TabIndex = 114
+        '
+        'cmbOreProcessing3
+        '
+        Me.cmbOreProcessing3.FormattingEnabled = True
+        Me.cmbOreProcessing3.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing3.Location = New System.Drawing.Point(168, 51)
+        Me.cmbOreProcessing3.Name = "cmbOreProcessing3"
+        Me.cmbOreProcessing3.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing3.TabIndex = 108
+        '
+        'chkOreProcessing4
+        '
+        Me.chkOreProcessing4.AutoSize = True
+        Me.chkOreProcessing4.Location = New System.Drawing.Point(10, 76)
+        Me.chkOreProcessing4.Name = "chkOreProcessing4"
+        Me.chkOreProcessing4.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing4.TabIndex = 113
+        Me.chkOreProcessing4.UseVisualStyleBackColor = True
+        '
+        'lblOreProcessing4
+        '
+        Me.lblOreProcessing4.Location = New System.Drawing.Point(32, 76)
+        Me.lblOreProcessing4.Name = "lblOreProcessing4"
+        Me.lblOreProcessing4.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing4.TabIndex = 139
+        Me.lblOreProcessing4.Text = "Complex Ore Processing"
+        '
+        'cmbOreProcessing5
+        '
+        Me.cmbOreProcessing5.FormattingEnabled = True
+        Me.cmbOreProcessing5.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing5.Location = New System.Drawing.Point(168, 95)
+        Me.cmbOreProcessing5.Name = "cmbOreProcessing5"
+        Me.cmbOreProcessing5.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing5.TabIndex = 122
         '
         'tabPageMoonOres
         '
-        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing21)
-        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing18)
-        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing19)
-        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing18)
-        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing22)
-        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing21)
-        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing22)
-        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing20)
-        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing22)
-        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing19)
-        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing21)
-        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing20)
-        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing19)
-        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing18)
-        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing20)
+        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing7)
+        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing8)
+        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing10)
+        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing11)
+        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing11)
+        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing9)
+        Me.tabPageMoonOres.Controls.Add(Me.lblOreProcessing9)
+        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing8)
+        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing10)
+        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing7)
+        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing10)
+        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing7)
+        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing9)
+        Me.tabPageMoonOres.Controls.Add(Me.chkOreProcessing11)
+        Me.tabPageMoonOres.Controls.Add(Me.cmbOreProcessing8)
         Me.tabPageMoonOres.Location = New System.Drawing.Point(4, 22)
         Me.tabPageMoonOres.Name = "tabPageMoonOres"
-        Me.tabPageMoonOres.Size = New System.Drawing.Size(398, 144)
+        Me.tabPageMoonOres.Size = New System.Drawing.Size(310, 144)
         Me.tabPageMoonOres.TabIndex = 2
         Me.tabPageMoonOres.Text = "Moon Ore Processing"
         Me.tabPageMoonOres.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing21
+        'lblOreProcessing7
         '
-        Me.lblOreProcessing21.Location = New System.Drawing.Point(31, 12)
-        Me.lblOreProcessing21.Name = "lblOreProcessing21"
-        Me.lblOreProcessing21.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing21.TabIndex = 133
-        Me.lblOreProcessing21.Text = "Ubiquitous Moon Ore"
+        Me.lblOreProcessing7.Location = New System.Drawing.Point(31, 10)
+        Me.lblOreProcessing7.Name = "lblOreProcessing7"
+        Me.lblOreProcessing7.Size = New System.Drawing.Size(167, 13)
+        Me.lblOreProcessing7.TabIndex = 148
+        Me.lblOreProcessing7.Text = "Ubiquitous Moon Ore Processing"
         '
-        'lblOreProcessing18
+        'lblOreProcessing8
         '
-        Me.lblOreProcessing18.Location = New System.Drawing.Point(236, 12)
-        Me.lblOreProcessing18.Name = "lblOreProcessing18"
-        Me.lblOreProcessing18.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing18.TabIndex = 130
-        Me.lblOreProcessing18.Text = "Common Moon Ore"
+        Me.lblOreProcessing8.Location = New System.Drawing.Point(31, 32)
+        Me.lblOreProcessing8.Name = "lblOreProcessing8"
+        Me.lblOreProcessing8.Size = New System.Drawing.Size(167, 13)
+        Me.lblOreProcessing8.TabIndex = 149
+        Me.lblOreProcessing8.Text = "Uncommon Moon Ore Processing"
         '
-        'lblOreProcessing19
+        'lblOreProcessing10
         '
-        Me.lblOreProcessing19.Location = New System.Drawing.Point(31, 56)
-        Me.lblOreProcessing19.Name = "lblOreProcessing19"
-        Me.lblOreProcessing19.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing19.TabIndex = 131
-        Me.lblOreProcessing19.Text = "Exceptional Moon Ore"
+        Me.lblOreProcessing10.Location = New System.Drawing.Point(31, 76)
+        Me.lblOreProcessing10.Name = "lblOreProcessing10"
+        Me.lblOreProcessing10.Size = New System.Drawing.Size(167, 13)
+        Me.lblOreProcessing10.TabIndex = 145
+        Me.lblOreProcessing10.Text = "Common Moon Ore Processing"
         '
-        'chkOreProcessing18
+        'lblOreProcessing11
         '
-        Me.chkOreProcessing18.AutoSize = True
-        Me.chkOreProcessing18.Location = New System.Drawing.Point(215, 11)
-        Me.chkOreProcessing18.Name = "chkOreProcessing18"
-        Me.chkOreProcessing18.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing18.TabIndex = 119
-        Me.chkOreProcessing18.UseVisualStyleBackColor = True
+        Me.lblOreProcessing11.Location = New System.Drawing.Point(31, 98)
+        Me.lblOreProcessing11.Name = "lblOreProcessing11"
+        Me.lblOreProcessing11.Size = New System.Drawing.Size(167, 13)
+        Me.lblOreProcessing11.TabIndex = 147
+        Me.lblOreProcessing11.Text = "Rare Moon Ore Processing"
         '
-        'cmbOreProcessing22
+        'cmbOreProcessing11
         '
-        Me.cmbOreProcessing22.FormattingEnabled = True
-        Me.cmbOreProcessing22.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing22.Location = New System.Drawing.Point(152, 30)
-        Me.cmbOreProcessing22.Name = "cmbOreProcessing22"
-        Me.cmbOreProcessing22.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing22.TabIndex = 128
+        Me.cmbOreProcessing11.FormattingEnabled = True
+        Me.cmbOreProcessing11.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing11.Location = New System.Drawing.Point(202, 95)
+        Me.cmbOreProcessing11.Name = "cmbOreProcessing11"
+        Me.cmbOreProcessing11.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing11.TabIndex = 140
         '
-        'chkOreProcessing21
+        'chkOreProcessing9
         '
-        Me.chkOreProcessing21.AutoSize = True
-        Me.chkOreProcessing21.Location = New System.Drawing.Point(10, 11)
-        Me.chkOreProcessing21.Name = "chkOreProcessing21"
-        Me.chkOreProcessing21.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing21.TabIndex = 125
-        Me.chkOreProcessing21.UseVisualStyleBackColor = True
+        Me.chkOreProcessing9.AutoSize = True
+        Me.chkOreProcessing9.Location = New System.Drawing.Point(10, 54)
+        Me.chkOreProcessing9.Name = "chkOreProcessing9"
+        Me.chkOreProcessing9.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing9.TabIndex = 137
+        Me.chkOreProcessing9.UseVisualStyleBackColor = True
         '
-        'chkOreProcessing22
+        'lblOreProcessing9
         '
-        Me.chkOreProcessing22.AutoSize = True
-        Me.chkOreProcessing22.Location = New System.Drawing.Point(10, 33)
-        Me.chkOreProcessing22.Name = "chkOreProcessing22"
-        Me.chkOreProcessing22.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing22.TabIndex = 127
-        Me.chkOreProcessing22.UseVisualStyleBackColor = True
+        Me.lblOreProcessing9.Location = New System.Drawing.Point(31, 54)
+        Me.lblOreProcessing9.Name = "lblOreProcessing9"
+        Me.lblOreProcessing9.Size = New System.Drawing.Size(167, 13)
+        Me.lblOreProcessing9.TabIndex = 146
+        Me.lblOreProcessing9.Text = "Exceptional Moon Ore Processing"
         '
-        'lblOreProcessing20
+        'chkOreProcessing8
         '
-        Me.lblOreProcessing20.Location = New System.Drawing.Point(236, 34)
-        Me.lblOreProcessing20.Name = "lblOreProcessing20"
-        Me.lblOreProcessing20.Size = New System.Drawing.Size(77, 13)
-        Me.lblOreProcessing20.TabIndex = 132
-        Me.lblOreProcessing20.Text = "Rare Moon Ore"
+        Me.chkOreProcessing8.AutoSize = True
+        Me.chkOreProcessing8.Location = New System.Drawing.Point(10, 32)
+        Me.chkOreProcessing8.Name = "chkOreProcessing8"
+        Me.chkOreProcessing8.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing8.TabIndex = 143
+        Me.chkOreProcessing8.UseVisualStyleBackColor = True
         '
-        'lblOreProcessing22
+        'cmbOreProcessing10
         '
-        Me.lblOreProcessing22.Location = New System.Drawing.Point(31, 34)
-        Me.lblOreProcessing22.Name = "lblOreProcessing22"
-        Me.lblOreProcessing22.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing22.TabIndex = 134
-        Me.lblOreProcessing22.Text = "Uncommon Moon Ore"
+        Me.cmbOreProcessing10.FormattingEnabled = True
+        Me.cmbOreProcessing10.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing10.Location = New System.Drawing.Point(202, 73)
+        Me.cmbOreProcessing10.Name = "cmbOreProcessing10"
+        Me.cmbOreProcessing10.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing10.TabIndex = 136
         '
-        'chkOreProcessing19
+        'cmbOreProcessing7
         '
-        Me.chkOreProcessing19.AutoSize = True
-        Me.chkOreProcessing19.Location = New System.Drawing.Point(10, 55)
-        Me.chkOreProcessing19.Name = "chkOreProcessing19"
-        Me.chkOreProcessing19.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing19.TabIndex = 121
-        Me.chkOreProcessing19.UseVisualStyleBackColor = True
+        Me.cmbOreProcessing7.FormattingEnabled = True
+        Me.cmbOreProcessing7.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing7.Location = New System.Drawing.Point(202, 7)
+        Me.cmbOreProcessing7.Name = "cmbOreProcessing7"
+        Me.cmbOreProcessing7.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing7.TabIndex = 142
         '
-        'cmbOreProcessing21
+        'chkOreProcessing10
         '
-        Me.cmbOreProcessing21.FormattingEnabled = True
-        Me.cmbOreProcessing21.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing21.Location = New System.Drawing.Point(152, 8)
-        Me.cmbOreProcessing21.Name = "cmbOreProcessing21"
-        Me.cmbOreProcessing21.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing21.TabIndex = 126
+        Me.chkOreProcessing10.AutoSize = True
+        Me.chkOreProcessing10.Location = New System.Drawing.Point(10, 76)
+        Me.chkOreProcessing10.Name = "chkOreProcessing10"
+        Me.chkOreProcessing10.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing10.TabIndex = 135
+        Me.chkOreProcessing10.UseVisualStyleBackColor = True
         '
-        'chkOreProcessing20
+        'chkOreProcessing7
         '
-        Me.chkOreProcessing20.AutoSize = True
-        Me.chkOreProcessing20.Location = New System.Drawing.Point(215, 33)
-        Me.chkOreProcessing20.Name = "chkOreProcessing20"
-        Me.chkOreProcessing20.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing20.TabIndex = 123
-        Me.chkOreProcessing20.UseVisualStyleBackColor = True
+        Me.chkOreProcessing7.AutoSize = True
+        Me.chkOreProcessing7.Location = New System.Drawing.Point(10, 10)
+        Me.chkOreProcessing7.Name = "chkOreProcessing7"
+        Me.chkOreProcessing7.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing7.TabIndex = 141
+        Me.chkOreProcessing7.UseVisualStyleBackColor = True
         '
-        'cmbOreProcessing19
+        'cmbOreProcessing9
         '
-        Me.cmbOreProcessing19.FormattingEnabled = True
-        Me.cmbOreProcessing19.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing19.Location = New System.Drawing.Point(152, 52)
-        Me.cmbOreProcessing19.Name = "cmbOreProcessing19"
-        Me.cmbOreProcessing19.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing19.TabIndex = 122
+        Me.cmbOreProcessing9.FormattingEnabled = True
+        Me.cmbOreProcessing9.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing9.Location = New System.Drawing.Point(202, 51)
+        Me.cmbOreProcessing9.Name = "cmbOreProcessing9"
+        Me.cmbOreProcessing9.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing9.TabIndex = 138
         '
-        'cmbOreProcessing18
+        'chkOreProcessing11
         '
-        Me.cmbOreProcessing18.FormattingEnabled = True
-        Me.cmbOreProcessing18.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing18.Location = New System.Drawing.Point(357, 8)
-        Me.cmbOreProcessing18.Name = "cmbOreProcessing18"
-        Me.cmbOreProcessing18.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing18.TabIndex = 120
+        Me.chkOreProcessing11.AutoSize = True
+        Me.chkOreProcessing11.Location = New System.Drawing.Point(10, 98)
+        Me.chkOreProcessing11.Name = "chkOreProcessing11"
+        Me.chkOreProcessing11.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing11.TabIndex = 139
+        Me.chkOreProcessing11.UseVisualStyleBackColor = True
         '
-        'cmbOreProcessing20
+        'cmbOreProcessing8
         '
-        Me.cmbOreProcessing20.FormattingEnabled = True
-        Me.cmbOreProcessing20.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing20.Location = New System.Drawing.Point(357, 30)
-        Me.cmbOreProcessing20.Name = "cmbOreProcessing20"
-        Me.cmbOreProcessing20.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing20.TabIndex = 124
+        Me.cmbOreProcessing8.FormattingEnabled = True
+        Me.cmbOreProcessing8.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing8.Location = New System.Drawing.Point(202, 29)
+        Me.cmbOreProcessing8.Name = "cmbOreProcessing8"
+        Me.cmbOreProcessing8.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing8.TabIndex = 144
         '
         'tabPageIce
         '
-        Me.tabPageIce.Controls.Add(Me.cmbOreProcessing17)
-        Me.tabPageIce.Controls.Add(Me.chkOreProcessing17)
-        Me.tabPageIce.Controls.Add(Me.lblOreProcessing17)
+        Me.tabPageIce.Controls.Add(Me.cmbOreProcessing12)
+        Me.tabPageIce.Controls.Add(Me.lblOreProcessing12)
+        Me.tabPageIce.Controls.Add(Me.chkOreProcessing12)
         Me.tabPageIce.Location = New System.Drawing.Point(4, 22)
         Me.tabPageIce.Name = "tabPageIce"
         Me.tabPageIce.Padding = New System.Windows.Forms.Padding(3)
-        Me.tabPageIce.Size = New System.Drawing.Size(398, 144)
-        Me.tabPageIce.TabIndex = 1
+        Me.tabPageIce.Size = New System.Drawing.Size(310, 144)
+        Me.tabPageIce.TabIndex = 3
         Me.tabPageIce.Text = "Ice Processing"
         Me.tabPageIce.UseVisualStyleBackColor = True
         '
-        'cmbOreProcessing17
+        'cmbOreProcessing12
         '
-        Me.cmbOreProcessing17.FormattingEnabled = True
-        Me.cmbOreProcessing17.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing17.Location = New System.Drawing.Point(91, 8)
-        Me.cmbOreProcessing17.Name = "cmbOreProcessing17"
-        Me.cmbOreProcessing17.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing17.TabIndex = 118
+        Me.cmbOreProcessing12.FormattingEnabled = True
+        Me.cmbOreProcessing12.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
+        Me.cmbOreProcessing12.Location = New System.Drawing.Point(168, 7)
+        Me.cmbOreProcessing12.Name = "cmbOreProcessing12"
+        Me.cmbOreProcessing12.Size = New System.Drawing.Size(36, 21)
+        Me.cmbOreProcessing12.TabIndex = 147
         '
-        'chkOreProcessing17
+        'lblOreProcessing12
         '
-        Me.chkOreProcessing17.AutoSize = True
-        Me.chkOreProcessing17.Location = New System.Drawing.Point(10, 11)
-        Me.chkOreProcessing17.Name = "chkOreProcessing17"
-        Me.chkOreProcessing17.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing17.TabIndex = 117
-        Me.chkOreProcessing17.UseVisualStyleBackColor = True
+        Me.lblOreProcessing12.Location = New System.Drawing.Point(29, 11)
+        Me.lblOreProcessing12.Name = "lblOreProcessing12"
+        Me.lblOreProcessing12.Size = New System.Drawing.Size(133, 13)
+        Me.lblOreProcessing12.TabIndex = 148
+        Me.lblOreProcessing12.Text = "Ice Processing"
         '
-        'lblOreProcessing17
+        'chkOreProcessing12
         '
-        Me.lblOreProcessing17.Location = New System.Drawing.Point(29, 12)
-        Me.lblOreProcessing17.Name = "lblOreProcessing17"
-        Me.lblOreProcessing17.Size = New System.Drawing.Size(60, 13)
-        Me.lblOreProcessing17.TabIndex = 119
-        Me.lblOreProcessing17.Text = "Ice"
-        '
-        'tabPageTrigOres
-        '
-        Me.tabPageTrigOres.Controls.Add(Me.lblOreProcessing23)
-        Me.tabPageTrigOres.Controls.Add(Me.lblOreProcessing25)
-        Me.tabPageTrigOres.Controls.Add(Me.cmbOreProcessing24)
-        Me.tabPageTrigOres.Controls.Add(Me.chkOreProcessing23)
-        Me.tabPageTrigOres.Controls.Add(Me.chkOreProcessing24)
-        Me.tabPageTrigOres.Controls.Add(Me.lblOreProcessing24)
-        Me.tabPageTrigOres.Controls.Add(Me.chkOreProcessing25)
-        Me.tabPageTrigOres.Controls.Add(Me.cmbOreProcessing23)
-        Me.tabPageTrigOres.Controls.Add(Me.cmbOreProcessing25)
-        Me.tabPageTrigOres.Location = New System.Drawing.Point(4, 22)
-        Me.tabPageTrigOres.Name = "tabPageTrigOres"
-        Me.tabPageTrigOres.Size = New System.Drawing.Size(398, 144)
-        Me.tabPageTrigOres.TabIndex = 3
-        Me.tabPageTrigOres.Text = "Trig Ore Processing"
-        Me.tabPageTrigOres.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing23
-        '
-        Me.lblOreProcessing23.Location = New System.Drawing.Point(31, 12)
-        Me.lblOreProcessing23.Name = "lblOreProcessing23"
-        Me.lblOreProcessing23.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing23.TabIndex = 142
-        Me.lblOreProcessing23.Text = "Talassonite"
-        '
-        'lblOreProcessing25
-        '
-        Me.lblOreProcessing25.Location = New System.Drawing.Point(31, 56)
-        Me.lblOreProcessing25.Name = "lblOreProcessing25"
-        Me.lblOreProcessing25.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing25.TabIndex = 141
-        Me.lblOreProcessing25.Text = "Bezdnacine"
-        '
-        'cmbOreProcessing24
-        '
-        Me.cmbOreProcessing24.FormattingEnabled = True
-        Me.cmbOreProcessing24.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing24.Location = New System.Drawing.Point(152, 30)
-        Me.cmbOreProcessing24.Name = "cmbOreProcessing24"
-        Me.cmbOreProcessing24.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing24.TabIndex = 140
-        '
-        'chkOreProcessing23
-        '
-        Me.chkOreProcessing23.AutoSize = True
-        Me.chkOreProcessing23.Location = New System.Drawing.Point(10, 11)
-        Me.chkOreProcessing23.Name = "chkOreProcessing23"
-        Me.chkOreProcessing23.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing23.TabIndex = 137
-        Me.chkOreProcessing23.UseVisualStyleBackColor = True
-        '
-        'chkOreProcessing24
-        '
-        Me.chkOreProcessing24.AutoSize = True
-        Me.chkOreProcessing24.Location = New System.Drawing.Point(10, 33)
-        Me.chkOreProcessing24.Name = "chkOreProcessing24"
-        Me.chkOreProcessing24.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing24.TabIndex = 139
-        Me.chkOreProcessing24.UseVisualStyleBackColor = True
-        '
-        'lblOreProcessing24
-        '
-        Me.lblOreProcessing24.Location = New System.Drawing.Point(31, 34)
-        Me.lblOreProcessing24.Name = "lblOreProcessing24"
-        Me.lblOreProcessing24.Size = New System.Drawing.Size(115, 13)
-        Me.lblOreProcessing24.TabIndex = 143
-        Me.lblOreProcessing24.Text = "Rakovene"
-        '
-        'chkOreProcessing25
-        '
-        Me.chkOreProcessing25.AutoSize = True
-        Me.chkOreProcessing25.Location = New System.Drawing.Point(10, 55)
-        Me.chkOreProcessing25.Name = "chkOreProcessing25"
-        Me.chkOreProcessing25.Size = New System.Drawing.Size(15, 14)
-        Me.chkOreProcessing25.TabIndex = 135
-        Me.chkOreProcessing25.UseVisualStyleBackColor = True
-        '
-        'cmbOreProcessing23
-        '
-        Me.cmbOreProcessing23.FormattingEnabled = True
-        Me.cmbOreProcessing23.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing23.Location = New System.Drawing.Point(152, 8)
-        Me.cmbOreProcessing23.Name = "cmbOreProcessing23"
-        Me.cmbOreProcessing23.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing23.TabIndex = 138
-        '
-        'cmbOreProcessing25
-        '
-        Me.cmbOreProcessing25.FormattingEnabled = True
-        Me.cmbOreProcessing25.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbOreProcessing25.Location = New System.Drawing.Point(152, 52)
-        Me.cmbOreProcessing25.Name = "cmbOreProcessing25"
-        Me.cmbOreProcessing25.Size = New System.Drawing.Size(36, 21)
-        Me.cmbOreProcessing25.TabIndex = 136
+        Me.chkOreProcessing12.AutoSize = True
+        Me.chkOreProcessing12.Location = New System.Drawing.Point(10, 10)
+        Me.chkOreProcessing12.Name = "chkOreProcessing12"
+        Me.chkOreProcessing12.Size = New System.Drawing.Size(15, 14)
+        Me.chkOreProcessing12.TabIndex = 146
+        Me.chkOreProcessing12.UseVisualStyleBackColor = True
         '
         'gbMineShipSetup
         '
@@ -3701,8 +3370,6 @@ Partial Class frmMain
         '
         Me.gbMineShipEquipment.Controls.Add(Me.gbMiningRigs)
         Me.gbMineShipEquipment.Controls.Add(Me.cmbMineMiningLaser)
-        Me.gbMineShipEquipment.Controls.Add(Me.lblMineMiningUpgrade)
-        Me.gbMineShipEquipment.Controls.Add(Me.gbMineCrystals)
         Me.gbMineShipEquipment.Controls.Add(Me.cmbMineNumMiningUpgrades)
         Me.gbMineShipEquipment.Controls.Add(Me.cmbMineNumLasers)
         Me.gbMineShipEquipment.Controls.Add(Me.cmbMineMiningUpgrade)
@@ -3712,6 +3379,7 @@ Partial Class frmMain
         Me.gbMineShipEquipment.Controls.Add(Me.lblMineLaserNumber)
         Me.gbMineShipEquipment.Controls.Add(Me.lblMineNumMiningUpgrades)
         Me.gbMineShipEquipment.Controls.Add(Me.lblMineMinerTurret)
+        Me.gbMineShipEquipment.Controls.Add(Me.lblMineMiningUpgrade)
         Me.gbMineShipEquipment.Location = New System.Drawing.Point(122, 13)
         Me.gbMineShipEquipment.Name = "gbMineShipEquipment"
         Me.gbMineShipEquipment.Size = New System.Drawing.Size(290, 174)
@@ -3770,53 +3438,12 @@ Partial Class frmMain
         Me.cmbMineMiningLaser.Size = New System.Drawing.Size(218, 21)
         Me.cmbMineMiningLaser.TabIndex = 0
         '
-        'lblMineMiningUpgrade
-        '
-        Me.lblMineMiningUpgrade.AutoSize = True
-        Me.lblMineMiningUpgrade.Location = New System.Drawing.Point(1, 47)
-        Me.lblMineMiningUpgrade.Name = "lblMineMiningUpgrade"
-        Me.lblMineMiningUpgrade.Size = New System.Drawing.Size(85, 13)
-        Me.lblMineMiningUpgrade.TabIndex = 132
-        Me.lblMineMiningUpgrade.Text = "Mining Upgrade:"
-        '
-        'gbMineCrystals
-        '
-        Me.gbMineCrystals.Controls.Add(Me.rbtnMineT1Crystals)
-        Me.gbMineCrystals.Controls.Add(Me.rbtnMineT2Crystals)
-        Me.gbMineCrystals.Location = New System.Drawing.Point(205, 37)
-        Me.gbMineCrystals.Name = "gbMineCrystals"
-        Me.gbMineCrystals.Size = New System.Drawing.Size(80, 54)
-        Me.gbMineCrystals.TabIndex = 4
-        Me.gbMineCrystals.TabStop = False
-        '
-        'rbtnMineT1Crystals
-        '
-        Me.rbtnMineT1Crystals.AutoSize = True
-        Me.rbtnMineT1Crystals.Location = New System.Drawing.Point(5, 11)
-        Me.rbtnMineT1Crystals.Name = "rbtnMineT1Crystals"
-        Me.rbtnMineT1Crystals.Size = New System.Drawing.Size(77, 17)
-        Me.rbtnMineT1Crystals.TabIndex = 0
-        Me.rbtnMineT1Crystals.TabStop = True
-        Me.rbtnMineT1Crystals.Text = "T1 Crystals"
-        Me.rbtnMineT1Crystals.UseVisualStyleBackColor = True
-        '
-        'rbtnMineT2Crystals
-        '
-        Me.rbtnMineT2Crystals.AutoSize = True
-        Me.rbtnMineT2Crystals.Location = New System.Drawing.Point(5, 30)
-        Me.rbtnMineT2Crystals.Name = "rbtnMineT2Crystals"
-        Me.rbtnMineT2Crystals.Size = New System.Drawing.Size(77, 17)
-        Me.rbtnMineT2Crystals.TabIndex = 1
-        Me.rbtnMineT2Crystals.TabStop = True
-        Me.rbtnMineT2Crystals.Text = "T2 Crystals"
-        Me.rbtnMineT2Crystals.UseVisualStyleBackColor = True
-        '
         'cmbMineNumMiningUpgrades
         '
         Me.cmbMineNumMiningUpgrades.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineNumMiningUpgrades.FormattingEnabled = True
         Me.cmbMineNumMiningUpgrades.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineNumMiningUpgrades.Location = New System.Drawing.Point(166, 69)
+        Me.cmbMineNumMiningUpgrades.Location = New System.Drawing.Point(249, 69)
         Me.cmbMineNumMiningUpgrades.Name = "cmbMineNumMiningUpgrades"
         Me.cmbMineNumMiningUpgrades.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineNumMiningUpgrades.TabIndex = 3
@@ -3826,7 +3453,7 @@ Partial Class frmMain
         Me.cmbMineNumLasers.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineNumLasers.FormattingEnabled = True
         Me.cmbMineNumLasers.Items.AddRange(New Object() {"0", "1", "2", "3", "4", "5"})
-        Me.cmbMineNumLasers.Location = New System.Drawing.Point(55, 69)
+        Me.cmbMineNumLasers.Location = New System.Drawing.Point(101, 69)
         Me.cmbMineNumLasers.Name = "cmbMineNumLasers"
         Me.cmbMineNumLasers.Size = New System.Drawing.Size(36, 21)
         Me.cmbMineNumLasers.TabIndex = 2
@@ -3836,9 +3463,9 @@ Partial Class frmMain
         Me.cmbMineMiningUpgrade.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMineMiningUpgrade.FormattingEnabled = True
         Me.cmbMineMiningUpgrade.Items.AddRange(New Object() {"None", "5% (T1)", "8% (M1)", "9% (T2)", "9% (M6)", "10% (M6)"})
-        Me.cmbMineMiningUpgrade.Location = New System.Drawing.Point(92, 44)
+        Me.cmbMineMiningUpgrade.Location = New System.Drawing.Point(55, 42)
         Me.cmbMineMiningUpgrade.Name = "cmbMineMiningUpgrade"
-        Me.cmbMineMiningUpgrade.Size = New System.Drawing.Size(110, 21)
+        Me.cmbMineMiningUpgrade.Size = New System.Drawing.Size(230, 21)
         Me.cmbMineMiningUpgrade.TabIndex = 1
         '
         'cmbMineHighwallImplant
@@ -3872,18 +3499,18 @@ Partial Class frmMain
         Me.lblMineLaserNumber.AutoSize = True
         Me.lblMineLaserNumber.Location = New System.Drawing.Point(1, 73)
         Me.lblMineLaserNumber.Name = "lblMineLaserNumber"
-        Me.lblMineLaserNumber.Size = New System.Drawing.Size(51, 13)
+        Me.lblMineLaserNumber.Size = New System.Drawing.Size(94, 13)
         Me.lblMineLaserNumber.TabIndex = 125
-        Me.lblMineLaserNumber.Text = "# Miners:"
+        Me.lblMineLaserNumber.Text = "# Mining Modules:"
         '
         'lblMineNumMiningUpgrades
         '
         Me.lblMineNumMiningUpgrades.AutoSize = True
-        Me.lblMineNumMiningUpgrades.Location = New System.Drawing.Point(97, 73)
+        Me.lblMineNumMiningUpgrades.Location = New System.Drawing.Point(143, 73)
         Me.lblMineNumMiningUpgrades.Name = "lblMineNumMiningUpgrades"
-        Me.lblMineNumMiningUpgrades.Size = New System.Drawing.Size(66, 13)
+        Me.lblMineNumMiningUpgrades.Size = New System.Drawing.Size(100, 13)
         Me.lblMineNumMiningUpgrades.TabIndex = 129
-        Me.lblMineNumMiningUpgrades.Text = "# Upgrades:"
+        Me.lblMineNumMiningUpgrades.Text = "# Mining Upgrades:"
         '
         'lblMineMinerTurret
         '
@@ -3893,6 +3520,15 @@ Partial Class frmMain
         Me.lblMineMinerTurret.Size = New System.Drawing.Size(67, 13)
         Me.lblMineMinerTurret.TabIndex = 131
         Me.lblMineMinerTurret.Text = "Miner Name:"
+        '
+        'lblMineMiningUpgrade
+        '
+        Me.lblMineMiningUpgrade.AutoSize = True
+        Me.lblMineMiningUpgrade.Location = New System.Drawing.Point(1, 47)
+        Me.lblMineMiningUpgrade.Name = "lblMineMiningUpgrade"
+        Me.lblMineMiningUpgrade.Size = New System.Drawing.Size(51, 13)
+        Me.lblMineMiningUpgrade.TabIndex = 132
+        Me.lblMineMiningUpgrade.Text = "Upgrade:"
         '
         'gbMineSkills
         '
@@ -10547,12 +10183,6 @@ Partial Class frmMain
         Me.MineRefineFacility.Size = New System.Drawing.Size(303, 108)
         Me.MineRefineFacility.TabIndex = 122
         '
-        'mnuViewErrorLog
-        '
-        Me.mnuViewErrorLog.Name = "mnuViewErrorLog"
-        Me.mnuViewErrorLog.Size = New System.Drawing.Size(170, 22)
-        Me.mnuViewErrorLog.Text = "View Error Log"
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -10606,8 +10236,12 @@ Partial Class frmMain
         CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).EndInit()
         Me.gbMineRefining.ResumeLayout(False)
         Me.gbMineRefining.PerformLayout()
+        Me.gbMineCrystalType.ResumeLayout(False)
+        Me.gbMineCrystalType.PerformLayout()
         Me.gbMineOreStuctureRates.ResumeLayout(False)
         Me.gbMineOreStuctureRates.PerformLayout()
+        Me.gbMineCrystals.ResumeLayout(False)
+        Me.gbMineCrystals.PerformLayout()
         Me.tabMiningProcessingSkills.ResumeLayout(False)
         Me.tabPageOres.ResumeLayout(False)
         Me.tabPageOres.PerformLayout()
@@ -10615,8 +10249,6 @@ Partial Class frmMain
         Me.tabPageMoonOres.PerformLayout()
         Me.tabPageIce.ResumeLayout(False)
         Me.tabPageIce.PerformLayout()
-        Me.tabPageTrigOres.ResumeLayout(False)
-        Me.tabPageTrigOres.PerformLayout()
         Me.gbMineShipSetup.ResumeLayout(False)
         Me.gbMineSelectShip.ResumeLayout(False)
         Me.gbMineSelectShip.PerformLayout()
@@ -10624,8 +10256,6 @@ Partial Class frmMain
         Me.gbMineShipEquipment.ResumeLayout(False)
         Me.gbMineShipEquipment.PerformLayout()
         Me.gbMiningRigs.ResumeLayout(False)
-        Me.gbMineCrystals.ResumeLayout(False)
-        Me.gbMineCrystals.PerformLayout()
         Me.gbMineSkills.ResumeLayout(False)
         Me.gbMineSkills.PerformLayout()
         Me.gbMineMain.ResumeLayout(False)
@@ -10927,7 +10557,7 @@ Partial Class frmMain
     Friend WithEvents chkMineForemanLaserRangeBoost As CheckBox
     Friend WithEvents cmbMineIndustReconfig As ComboBox
     Friend WithEvents lblMineIndustrialReconfig As Label
-    Friend WithEvents chkMineRorqDeployedMode As CheckBox
+    Friend WithEvents chkMineIndyCoreDeployedMode As CheckBox
     Friend WithEvents cmbMineBoosterShipSkill As ComboBox
     Friend WithEvents chkMineForemanMindlink As CheckBox
     Friend WithEvents cmbMineBoosterShipName As ComboBox
@@ -10939,21 +10569,6 @@ Partial Class frmMain
     Friend WithEvents lblMineMiningForeman As Label
     Friend WithEvents lblMineBoosterShipSkill As Label
     Friend WithEvents gbMineRefining As GroupBox
-    Friend WithEvents cmbOreProcessing22 As ComboBox
-    Friend WithEvents chkOreProcessing22 As CheckBox
-    Friend WithEvents lblOreProcessing22 As Label
-    Friend WithEvents cmbOreProcessing21 As ComboBox
-    Friend WithEvents cmbOreProcessing19 As ComboBox
-    Friend WithEvents cmbOreProcessing20 As ComboBox
-    Friend WithEvents cmbOreProcessing18 As ComboBox
-    Friend WithEvents chkOreProcessing20 As CheckBox
-    Friend WithEvents chkOreProcessing19 As CheckBox
-    Friend WithEvents lblOreProcessing20 As Label
-    Friend WithEvents chkOreProcessing21 As CheckBox
-    Friend WithEvents lblOreProcessing19 As Label
-    Friend WithEvents lblOreProcessing18 As Label
-    Friend WithEvents lblOreProcessing21 As Label
-    Friend WithEvents chkOreProcessing18 As CheckBox
     Friend WithEvents cmbMineRefining As ComboBox
     Friend WithEvents lblMineRefining As Label
     Friend WithEvents cmbMineRefineryEff As ComboBox
@@ -10972,8 +10587,6 @@ Partial Class frmMain
     Friend WithEvents cmbMineMiningLaser As ComboBox
     Friend WithEvents lblMineMiningUpgrade As Label
     Friend WithEvents gbMineCrystals As GroupBox
-    Friend WithEvents rbtnMineT1Crystals As RadioButton
-    Friend WithEvents rbtnMineT2Crystals As RadioButton
     Friend WithEvents cmbMineNumMiningUpgrades As ComboBox
     Friend WithEvents cmbMineNumLasers As ComboBox
     Friend WithEvents cmbMineMiningUpgrade As ComboBox
@@ -11614,72 +11227,7 @@ Partial Class frmMain
     Friend WithEvents lblMineBoosterDroneInterfacingSkill As Label
     Friend WithEvents lblMineBoosterDroneName As Label
     Friend WithEvents cmbMineBoosterDroneInterfacingSkill As ComboBox
-    Friend WithEvents tabMiningProcessingSkills As TabControl
-    Friend WithEvents tabPageOres As TabPage
-    Friend WithEvents cmbOreProcessing3 As ComboBox
-    Friend WithEvents cmbOreProcessing5 As ComboBox
-    Friend WithEvents cmbOreProcessing7 As ComboBox
-    Friend WithEvents cmbOreProcessing6 As ComboBox
-    Friend WithEvents cmbOreProcessing9 As ComboBox
-    Friend WithEvents cmbOreProcessing2 As ComboBox
-    Friend WithEvents cmbOreProcessing14 As ComboBox
-    Friend WithEvents cmbOreProcessing12 As ComboBox
-    Friend WithEvents cmbOreProcessing8 As ComboBox
-    Friend WithEvents cmbOreProcessing11 As ComboBox
-    Friend WithEvents cmbOreProcessing1 As ComboBox
-    Friend WithEvents cmbOreProcessing16 As ComboBox
-    Friend WithEvents cmbOreProcessing4 As ComboBox
-    Friend WithEvents cmbOreProcessing15 As ComboBox
-    Friend WithEvents cmbOreProcessing13 As ComboBox
-    Friend WithEvents cmbOreProcessing10 As ComboBox
-    Friend WithEvents lblOreProcessing1 As Label
-    Friend WithEvents chkOreProcessing7 As CheckBox
-    Friend WithEvents chkOreProcessing8 As CheckBox
-    Friend WithEvents chkOreProcessing5 As CheckBox
-    Friend WithEvents lblOreProcessing8 As Label
-    Friend WithEvents chkOreProcessing4 As CheckBox
-    Friend WithEvents chkOreProcessing3 As CheckBox
-    Friend WithEvents lblOreProcessing7 As Label
-    Friend WithEvents chkOreProcessing16 As CheckBox
-    Friend WithEvents chkOreProcessing2 As CheckBox
-    Friend WithEvents lblOreProcessing3 As Label
-    Friend WithEvents lblOreProcessing6 As Label
-    Friend WithEvents chkOreProcessing15 As CheckBox
-    Friend WithEvents chkOreProcessing6 As CheckBox
-    Friend WithEvents chkOreProcessing14 As CheckBox
-    Friend WithEvents lblOreProcessing5 As Label
-    Friend WithEvents lblOreProcessing2 As Label
-    Friend WithEvents lblOreProcessing4 As Label
-    Friend WithEvents chkOreProcessing13 As CheckBox
-    Friend WithEvents chkOreProcessing1 As CheckBox
-    Friend WithEvents chkOreProcessing12 As CheckBox
-    Friend WithEvents chkOreProcessing11 As CheckBox
-    Friend WithEvents lblOreProcessing12 As Label
-    Friend WithEvents lblOreProcessing13 As Label
-    Friend WithEvents lblOreProcessing14 As Label
-    Friend WithEvents lblOreProcessing15 As Label
-    Friend WithEvents lblOreProcessing16 As Label
-    Friend WithEvents chkOreProcessing9 As CheckBox
-    Friend WithEvents lblOreProcessing11 As Label
-    Friend WithEvents lblOreProcessing9 As Label
-    Friend WithEvents chkOreProcessing10 As CheckBox
-    Friend WithEvents lblOreProcessing10 As Label
-    Friend WithEvents tabPageMoonOres As TabPage
-    Friend WithEvents tabPageIce As TabPage
-    Friend WithEvents tabPageTrigOres As TabPage
     Friend WithEvents MineRefineFacility As ManufacturingFacility
-    Friend WithEvents cmbOreProcessing17 As ComboBox
-    Friend WithEvents chkOreProcessing17 As CheckBox
-    Friend WithEvents lblOreProcessing17 As Label
-    Friend WithEvents lblOreProcessing23 As Label
-    Friend WithEvents lblOreProcessing25 As Label
-    Friend WithEvents cmbOreProcessing24 As ComboBox
-    Friend WithEvents chkOreProcessing23 As CheckBox
-    Friend WithEvents chkOreProcessing24 As CheckBox
-    Friend WithEvents lblOreProcessing24 As Label
-    Friend WithEvents chkOreProcessing25 As CheckBox
-    Friend WithEvents cmbOreProcessing23 As ComboBox
-    Friend WithEvents cmbOreProcessing25 As ComboBox
     Friend WithEvents chkMineBoosterDroneRig3 As CheckBox
     Friend WithEvents cmbMineMiningRig3 As ComboBox
     Friend WithEvents cmbMineMiningRig2 As ComboBox
@@ -11726,4 +11274,50 @@ Partial Class frmMain
     Friend WithEvents gbReprocessables As GroupBox
     Friend WithEvents chkNoBuildItems As CheckBox
     Friend WithEvents mnuViewErrorLog As ToolStripMenuItem
+    Friend WithEvents gbMineCrystalType As GroupBox
+    Friend WithEvents chkMineTypeC As CheckBox
+    Friend WithEvents chkMineTypeB As CheckBox
+    Friend WithEvents chkMineTypeA As CheckBox
+    Friend WithEvents chkMineT2Crystals As CheckBox
+    Friend WithEvents chkMineT1Crystals As CheckBox
+    Friend WithEvents tabMiningProcessingSkills As TabControl
+    Friend WithEvents tabPageOres As TabPage
+    Friend WithEvents chkOreProcessing1 As CheckBox
+    Friend WithEvents cmbOreProcessing2 As ComboBox
+    Friend WithEvents lblOreProcessing2 As Label
+    Friend WithEvents chkOreProcessing3 As CheckBox
+    Friend WithEvents chkOreProcessing2 As CheckBox
+    Friend WithEvents chkOreProcessing6 As CheckBox
+    Friend WithEvents cmbOreProcessing1 As ComboBox
+    Friend WithEvents lblOreProcessing1 As Label
+    Friend WithEvents lblOreProcessing6 As Label
+    Friend WithEvents chkOreProcessing5 As CheckBox
+    Friend WithEvents cmbOreProcessing6 As ComboBox
+    Friend WithEvents lblOreProcessing3 As Label
+    Friend WithEvents lblOreProcessing5 As Label
+    Friend WithEvents cmbOreProcessing4 As ComboBox
+    Friend WithEvents cmbOreProcessing3 As ComboBox
+    Friend WithEvents chkOreProcessing4 As CheckBox
+    Friend WithEvents lblOreProcessing4 As Label
+    Friend WithEvents cmbOreProcessing5 As ComboBox
+    Friend WithEvents tabPageMoonOres As TabPage
+    Friend WithEvents lblOreProcessing7 As Label
+    Friend WithEvents lblOreProcessing8 As Label
+    Friend WithEvents lblOreProcessing10 As Label
+    Friend WithEvents lblOreProcessing11 As Label
+    Friend WithEvents cmbOreProcessing11 As ComboBox
+    Friend WithEvents chkOreProcessing9 As CheckBox
+    Friend WithEvents lblOreProcessing9 As Label
+    Friend WithEvents chkOreProcessing8 As CheckBox
+    Friend WithEvents cmbOreProcessing10 As ComboBox
+    Friend WithEvents cmbOreProcessing7 As ComboBox
+    Friend WithEvents chkOreProcessing10 As CheckBox
+    Friend WithEvents chkOreProcessing7 As CheckBox
+    Friend WithEvents cmbOreProcessing9 As ComboBox
+    Friend WithEvents chkOreProcessing11 As CheckBox
+    Friend WithEvents cmbOreProcessing8 As ComboBox
+    Friend WithEvents tabPageIce As TabPage
+    Friend WithEvents cmbOreProcessing12 As ComboBox
+    Friend WithEvents lblOreProcessing12 As Label
+    Friend WithEvents chkOreProcessing12 As CheckBox
 End Class

@@ -376,6 +376,8 @@ Public Class frmSettings
 
     Private Sub LoadFormSettings()
 
+        Dim AttribLookup As New EVEAttributes
+
         With UserApplicationSettings
             ' General Settings
             chkCheckUpdatesStartup.Checked = .CheckforUpdatesonStart
@@ -430,11 +432,11 @@ Public Class frmSettings
             If .ManufacturingImplantValue > 0 Then
                 chkBeanCounterManufacturing.Checked = True
                 Select Case .ManufacturingImplantValue
-                    Case (-1 * GetAttribute("manufacturingTimeBonus", Defaults.MBeanCounterName & "1") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "1", ItemAttributes.manufacturingTimeBonus) / 100)
                         cmbBeanCounterManufacturing.Text = Defaults.MBeanCounterName & "1"
-                    Case (-1 * GetAttribute("manufacturingTimeBonus", Defaults.MBeanCounterName & "2") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "2", ItemAttributes.manufacturingTimeBonus) / 100)
                         cmbBeanCounterManufacturing.Text = Defaults.MBeanCounterName & "2"
-                    Case (-1 * GetAttribute("manufacturingTimeBonus", Defaults.MBeanCounterName & "4") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "4", ItemAttributes.manufacturingTimeBonus) / 100)
                         cmbBeanCounterManufacturing.Text = Defaults.MBeanCounterName & "4"
                 End Select
             Else
@@ -444,11 +446,11 @@ Public Class frmSettings
             If .RefiningImplantValue > 0 Then
                 chkBeanCounterRefining.Checked = True
                 Select Case .RefiningImplantValue
-                    Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "1") / 100)
+                    Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "1", ItemAttributes.refiningYieldMutator) / 100)
                         cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "1"
-                    Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "2") / 100)
+                    Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "2", ItemAttributes.refiningYieldMutator) / 100)
                         cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "2"
-                    Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "4") / 100)
+                    Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "4", ItemAttributes.refiningYieldMutator) / 100)
                         cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "4"
                 End Select
             Else
@@ -458,11 +460,11 @@ Public Class frmSettings
             If .CopyImplantValue > 0 Then
                 chkBeanCounterCopy.Checked = True
                 Select Case .CopyImplantValue
-                    Case (-1 * GetAttribute("copySpeedBonus", Defaults.CBeanCounterName & "1") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "1", ItemAttributes.copySpeedBonus) / 100)
                         cmbBeanCounterCopy.Text = Defaults.CBeanCounterName & "1"
-                    Case (-1 * GetAttribute("copySpeedBonus", Defaults.CBeanCounterName & "3") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "3", ItemAttributes.copySpeedBonus) / 100)
                         cmbBeanCounterCopy.Text = Defaults.CBeanCounterName & "3"
-                    Case (-1 * GetAttribute("copySpeedBonus", Defaults.CBeanCounterName & "5") / 100)
+                    Case (-1 * AttribLookup.GetAttribute(Defaults.MBeanCounterName & "5", ItemAttributes.copySpeedBonus) / 100)
                         cmbBeanCounterCopy.Text = Defaults.CBeanCounterName & "5"
                 End Select
             Else
@@ -547,6 +549,7 @@ Public Class frmSettings
 
         Dim Settings As New ProgramSettings
         Dim ReloadFacilties As Boolean = False
+        Dim AttribLookup As New EVEAttributes
 
         If btnSave.Text = "Save" Then
 
@@ -560,15 +563,15 @@ Public Class frmSettings
 
             ' Get the implant values if set
             If chkBeanCounterManufacturing.Checked Then
-                ManufacturingImplantValue = -1 * GetAttribute("manufacturingTimeBonus", cmbBeanCounterManufacturing.Text) / 100
+                ManufacturingImplantValue = -1 * AttribLookup.GetAttribute(cmbBeanCounterManufacturing.Text, ItemAttributes.manufacturingTimeBonus) / 100
             End If
 
             If chkBeanCounterRefining.Checked Then
-                RefineImplantValue = GetAttribute("refiningYieldMutator", cmbBeanCounterRefining.Text) / 100
+                RefineImplantValue = AttribLookup.GetAttribute(cmbBeanCounterRefining.Text, ItemAttributes.refiningYieldMutator) / 100
             End If
 
             If chkBeanCounterCopy.Checked Then
-                CopyImplantValue = -1 * GetAttribute("copySpeedBonus", cmbBeanCounterCopy.Text) / 100
+                CopyImplantValue = -1 * AttribLookup.GetAttribute(cmbBeanCounterCopy.Text, ItemAttributes.copySpeedBonus) / 100
             End If
 
             With TempSettings
@@ -737,13 +740,13 @@ Public Class frmSettings
                     Call CType(Application.OpenForms.Item("frmReprocessingPlant"), frmReprocessingPlant).InitializeReprocessingFacility()
                 End If
 
-                If IceBeltFlipOpen Then
-                    Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
-                End If
+                'If IceBeltFlipOpen Then
+                '    Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
+                'End If
 
-                If OreBeltFlipOpen Then
-                    Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
-                End If
+                'If OreBeltFlipOpen Then
+                '    Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
+                'End If
             End If
 
             ' Re-init any tabs that have settings changes before displaying dialog

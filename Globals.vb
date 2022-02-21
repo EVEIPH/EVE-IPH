@@ -378,6 +378,100 @@ Public Module Public_Variables
         Dim BuildItem As Boolean ' True, we build it regardless, False we do not regardless. If not in list, we don't do anything differently
     End Structure
 
+    ' Returns the ReactionGroupID number if sent is a reaction, else -1
+    Public Function ReactionGroupID(CheckID As Integer) As Integer
+        Select Case CheckID
+            Case ItemIDs.ReactionBiochemicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID, ItemIDs.ReactionMolecularForgedGroupID
+                Return CheckID
+            Case Else
+                Return -1
+        End Select
+    End Function
+
+    Public Function IsReaction(ByVal ItemGroupID As Integer) As Boolean
+        If ReactionGroupID(ItemGroupID) <> -1 Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    Public Enum ItemIDs
+        None = 0
+
+        ' These are all the capital ships that use capital parts
+        CapitalIndustrialShipGroupID = 883
+        CarrierGroupID = 547
+        DreadnoughtGroupID = 485
+        FreighterGroupID = 513
+        IndustrialCommandShipGroupID = 941
+        JumpFreighterGroupID = 902
+        SupercarrierGroupID = 659
+        FAXGroupID = 1538
+        TitanGroupID = 30
+        BoosterGroupID = 303
+        BoosterCategoryID = 20
+
+        ' T3 items
+        StrategicCruiserGroupID = 963
+        TacticalDestroyerGroupID = 1305
+        SubsystemCategoryID = 32
+
+        ' T3 Bps for facility updates
+        StrategicCruiserBPGroupID = 996
+        TacticalDestroyerBPGroupID = 1309
+        SubsystemBPGroupID = 973
+
+        ShipCategoryID = 6 ' for loading invention and copying and basic t1
+        FrigateGroupID = 25
+
+        ' Reactions
+        ReactionsIntermediateGroupID = 428
+        ReactionCompositesGroupID = 429
+        ReactionPolymersGroupID = 974
+        ReactionBiochemicalsGroupID = 712
+        ReactionMolecularForgedGroupID = 4096
+
+        ConstructionComponentsGroupID = 334 ' Use this for all non-capital components
+        ComponentCategoryID = 17
+        CapitalComponentGroupID = 873
+        AdvCapitalComponentGroupID = 913
+        ProtectiveComponentGroupID = -3 ' My manual group ID until they fix it in the SDE
+
+        BlueprintCategoryID = 9
+        FrigateBlueprintGroupID = 105
+
+        AsteroidsCategoryID = 25 ' category for asteroids,ice,moons = 25
+        ' Ice group id = 465
+        IceGroupID = 465
+
+        ' Groupids for moon ores - 1884, 1920, 1921, 1922, 1923
+        CommonMoonAsteroids = 1920
+        ExceptionalMoonAsteroids = 1923
+        RareMoonAsteroids = 1922
+        UbiquitousMoonAsteroids = 1884
+        UncommonMoonAsteroids = 1921
+
+        ' Groupid's for asteroid types - regular ore
+        Arkonor = 450
+        Bistot = 451
+        Crokite = 452
+        DarkOchre = 453
+        Gneiss = 467
+        Hedbergite = 454
+        Hemorphite = 455
+        Jaspet = 456
+        Kernite = 457
+        Mercoxit = 468
+        Omber = 469
+        Plagioclase = 458
+        Pyroxeres = 459
+        Scordite = 460
+        Spodumain = 461
+        Veldspar = 462
+
+    End Enum
+
 #Region "Taxes/Fees"
 
     Public Function AdjustPriceforTaxesandFees(ByVal OriginalPrice As Double, ByVal SetTax As Boolean, ByVal BrokerFeeData As BrokerFeeInfo) As Double
@@ -1253,14 +1347,6 @@ SkipItem:
 
     End Sub
 
-    Public Function IsReaction(ByVal ItemGroupID As Integer) As Boolean
-        If ItemGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionPolymersGroupID Or ItemGroupID = ItemIDs.ReactionsIntermediateGroupID Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
     ' Enables Cut, Copy, Paste, and Select all from shortcut key entry for the sent text box
     Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As System.Windows.Forms.KeyEventArgs) As Boolean
 
@@ -2084,6 +2170,44 @@ SkipItem:
 
     End Function
 
+    ' Returns the ore processing skill level from the objects on the tab for the ore name sent 
+    Public Function GetFormOreProcessingSkill(ByVal OreName As String, Labels As Label(), Combos As ComboBox()) As Integer
+        Dim i As Integer
+        Dim CurrentProcessingLabel As String
+
+        For i = 1 To Combos.Count - 1
+            CurrentProcessingLabel = Labels(i).Text
+
+            If Combos(i).Enabled = True And CBool(InStr(GetOreProcessingSkillName(OreName), CurrentProcessingLabel)) Then
+                ' Found it, return value
+                Return CInt(Combos(i).Text)
+            End If
+        Next
+
+        Return 0
+
+    End Function
+
+    Public Function GetOreProcessingSkillName(OreName As String) As String
+        Dim rsCheck As SQLiteDataReader
+        Dim SQL As String
+        Dim FoundOreName As String = ""
+
+        SQL = "SELECT value FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT WHERE TA.typeID = IT.typeID AND attributeID = " & CStr(ItemAttributes.reprocessingSkillType)
+        SQL &= " AND typeName = '" & OreName & "'"
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsCheck = DBCommand.ExecuteReader
+
+        If rsCheck.Read Then
+            FoundOreName = GetTypeName(CInt(rsCheck.GetDouble(0)))
+        End If
+
+        rsCheck.Close()
+
+        Return FoundOreName
+
+    End Function
+
     Private Function CheckNull(ByVal inVariable As Object) As Object
         If IsNothing(inVariable) Then
             Return "null"
@@ -2142,7 +2266,7 @@ SkipItem:
         Dim T1BPID As Long = 0
 
         ' Look up the blueprint we used to invent from the sent blueprint ID
-        SQL = "SELECT blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & BlueprintID & " AND activityID = 8"
+        SQL = "Select blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & BlueprintID & " And activityID = 8"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
@@ -2152,7 +2276,7 @@ SkipItem:
             readerLookup.Close()
 
             ' Select all materials now
-            SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & T1BPID
+            SQL = "Select ITEM_ID, ITEM_NAME, ITEM_GROUP FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID =" & T1BPID
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerLookup = DBCommand.ExecuteReader
@@ -2177,12 +2301,12 @@ SkipItem:
         Dim InventItemTypeID As Long = 0
 
         ' What is the item we are using to invent?
-        SQL = "SELECT blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
-        SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8"
+        SQL = "Select blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
+        SQL = SQL & "And typeID = blueprintTypeID And activityID = 8"
 
         If RelicName <> "" Then
             ' Need to add the relic variant to the query for just one item
-            SQL = SQL & " AND typeName LIKE '%" & RelicName & "%'"
+            SQL = SQL & " And typeName Like '%" & RelicName & "%'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -2212,31 +2336,6 @@ SkipItem:
         End If
 
         rsLookup.Close()
-
-    End Function
-
-    ' Gets the attribute by the name sent for the typeid or typename sent, if typeid sent, will use that first
-    Public Function GetAttribute(ByVal AttributeName As String, ByVal TypeName As String) As Double
-        Dim SQL As String
-        Dim readerAttribute As SQLiteDataReader
-
-        SQL = "SELECT value, ATTRIBUTE_TYPES.displayNameID "
-        SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
-        SQL = SQL & "WHERE INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
-        SQL = SQL & "AND INVENTORY_TYPES.typeName ='" & FormatDBString(TypeName) & "' "
-        SQL = SQL & "AND (ATTRIBUTE_TYPES.displayNameID = '" & AttributeName & "' OR ATTRIBUTE_TYPES.attributeName = '" & AttributeName & "')"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerAttribute = DBCommand.ExecuteReader
-
-        If readerAttribute.Read Then
-            readerAttribute.Close()
-            Return readerAttribute.GetDouble(0)
-        Else
-            readerAttribute.Close()
-            Return Nothing
-        End If
 
     End Function
 

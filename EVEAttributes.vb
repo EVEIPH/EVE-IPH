@@ -7,39 +7,26 @@ Public Class EVEAttributes
     Public Function GetAttribute(ByVal TypeName As String, ByVal AttributeCode As ItemAttributes) As Double
         Dim SQL As String
         Dim readerSearch As SQLiteDataReader
+        Dim ReturnValue As Double
 
-        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerSearch = DBCommand.ExecuteReader
-
-        If readerSearch.Read Then
-            readerSearch.Close()
-            Return GetAttribute(readerSearch.GetInt32(0), AttributeCode)
-        Else
-            readerSearch.Close()
-            Return Nothing
-        End If
-
-    End Function
-
-    ' Gets the attributes by the name sent for the typename sent
-    Public Function GetAttributes(ByVal TypeName As String) As List(Of AttributeRecord)
-        Dim SQL As String
-        Dim readerSearch As SQLiteDataReader
-
-        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
+        SQL = "SELECT value FROM TYPE_ATTRIBUTES, INVENTORY_TYPES "
+        SQL &= "WHERE typeName = '" & FormatDBString(TypeName) & "' "
+        SQL &= "AND TYPE_ATTRIBUTES.typeID = INVENTORY_TYPES.typeID "
+        SQL &= "AND attributeID = " & AttributeCode
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSearch = DBCommand.ExecuteReader
 
         If readerSearch.Read Then
-            readerSearch.Close()
-            Return GetAttributes(readerSearch.GetInt32(0))
+            ReturnValue = readerSearch.GetDouble(0)
         Else
             readerSearch.Close()
             Return Nothing
         End If
+
+        readerSearch.Close()
+
+        Return ReturnValue
 
     End Function
 
@@ -47,6 +34,7 @@ Public Class EVEAttributes
     Public Function GetAttribute(ByVal TypeID As Integer, ByVal AttributeCode As ItemAttributes) As Double
         Dim SQL As String
         Dim readerAttribute As SQLiteDataReader
+        Dim ReturnValue As Double
 
         SQL = "SELECT value FROM TYPE_ATTRIBUTES "
         SQL = SQL & "WHERE typeID = " & TypeID & " "
@@ -56,12 +44,39 @@ Public Class EVEAttributes
         readerAttribute = DBCommand.ExecuteReader
 
         If readerAttribute.Read Then
-            readerAttribute.Close()
-            Return readerAttribute.GetDouble(0)
+            ReturnValue = readerAttribute.GetDouble(0)
         Else
             readerAttribute.Close()
             Return Nothing
         End If
+
+        readerAttribute.Close()
+
+        Return ReturnValue
+
+    End Function
+
+    ' Gets the attributes by the name sent for the typename sent
+    Public Function GetAttributes(ByVal TypeName As String) As List(Of AttributeRecord)
+        Dim SQL As String
+        Dim readerSearch As SQLiteDataReader
+        Dim ReturnData As List(Of AttributeRecord)
+
+        SQL = "SELECT typeID FROM INVENTORY_TYPES WHERE typeName = '" & FormatDBString(TypeName) & "'"
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerSearch = DBCommand.ExecuteReader
+
+        If readerSearch.Read Then
+            ReturnData = GetAttributes(readerSearch.GetInt32(0))
+        Else
+            readerSearch.Close()
+            Return Nothing
+        End If
+
+        readerSearch.Close()
+
+        Return ReturnData
 
     End Function
 
@@ -97,6 +112,7 @@ Public Class EVEAttributes
 End Class
 
 Public Enum ItemAttributes
+    attributeName   '='	attributeID
     isOnline = 2
     damage = 3
     mass = 4
@@ -244,7 +260,7 @@ Public Enum ItemAttributes
     warpCapacitorNeedMultiplier = 186
     repairCostMultiplier = 187
     cargoScanResistance = 188
-    targetGroup = 189
+    targetFilterTypelistID = 189
     corporationMemberLimit = 190
     corporationMemberBonus = 191
     maxLockedTargets = 192
@@ -588,7 +604,7 @@ Public Enum ItemAttributes
     scanResolutionBonus = 566
     speedBoostFactor = 567
     eliteBonusInterceptor = 568
-    eliteBonusCoverOps1 = 569
+    eliteBonusCovertOps1 = 569
     eliteBonusBombers = 570
     eliteBonusGunships = 571
     eliteBonusdestroyers = 573
@@ -641,7 +657,7 @@ Public Enum ItemAttributes
     entityArmorRepairDuration = 630
     entityArmorRepairAmount = 631
     interceptorGF = 632
-    metaLevel = 633
+    metaLevelOld = 633
     newAgility = 634
     turnAngle = 635
     entityShieldBoostDuration = 636
@@ -649,7 +665,6 @@ Public Enum ItemAttributes
     entityArmorRepairDelayChance = 638
     entityShieldBoostDelayChance = 639
     entityGroupRespawnChance = 640
-    prereqimplant = 641
     armingTime = 643
     aimedLaunch = 644
     missileEntityVelocityMultiplier = 645
@@ -778,8 +793,8 @@ Public Enum ItemAttributes
     structureMissileExplosionDelayBonus = 778
     entityFlyRangeMultiplier = 779
     iceHarvestCycleBonus = 780
-    specialisationAsteroidGroup = 781
-    specialisationAsteroidYieldMultiplier = 782
+    specializationAsteroidGroup = 781
+    specializationAsteroidYieldMultiplier = 782
     crystalVolatilityChance = 783
     crystalVolatilityDamage = 784
     unfitCapCost = 785
@@ -790,7 +805,7 @@ Public Enum ItemAttributes
     reprocessingSkillType = 790
     scanAnalyzeCount = 791
     controlTowerMissileVelocityBonus = 792
-    shipBonusPirateFaction = 793
+    shipBonusRole7 = 793
     probesInGroup = 794
     shipBonusABC1 = 795
     massAddition = 796
@@ -824,7 +839,7 @@ Public Enum ItemAttributes
     wingCommandBonus = 834
     stealthBomberLauncherPower = 837
     implantSetGuristas = 838
-    eliteBonusCoverOps2 = 839
+    eliteBonusCovertOps2 = 839
     agentID = 840
     agentCommRange = 841
     reactionGroup1 = 842
@@ -847,8 +862,8 @@ Public Enum ItemAttributes
     missileEntityAoeFalloffMultiplier = 860
     canJump = 861
     usageWeighting = 862
-    implantSetAngel = 863
-    implantSetSansha = 864
+    implantSetHalo = 863
+    implantSetAmulet = 864
     planetAnchorDistance = 865
     jumpDriveConsumptionType = 866
     jumpDriveRange = 867
@@ -887,13 +902,9 @@ Public Enum ItemAttributes
     hasFleetHangars = 911
     fleetHangarCapacity = 912
     gallenteNavyBonus = 913
-    gallenteNavyBonusMultiplier = 914
     caldariNavyBonus = 915
-    caldariNavyBonusMultiplier = 916
     amarrNavyBonus = 917
-    amarrNavyBonusMulitplier = 918
     republicFleetBonus = 919
-    republicFleetBonusMultiplier = 920
     oreCompression = 921
     eliteBonusBarge1 = 924
     eliteBonusBarge2 = 925
@@ -904,7 +915,7 @@ Public Enum ItemAttributes
     ECMEntityChance = 930
     energyNeutralizerEntityChance = 931
     entitySensorDampenDurationChance = 932
-    entityTrackingDisruptDurationChance = 933
+    npcTrackingDisruptorActivationChance = 933
     entityTargetPaintDurationChance = 935
     ECMRangeOptimal = 936
     entityCapacitorDrainMaxRange = 937
@@ -1077,7 +1088,7 @@ Public Enum ItemAttributes
     boosterArmorHPPenalty = 1141
     boosterArmorRepairAmountPenalty = 1142
     boosterShieldCapacityPenalty = 1143
-    boosterTurretOptimalRange = 1144
+    boosterTurretOptimalRangePenalty = 1144
     boosterTurretTrackingPenalty = 1145
     boosterTurretFalloffPenalty = 1146
     boosterAOEVelocityPenalty = 1147
@@ -1139,7 +1150,6 @@ Public Enum ItemAttributes
     heatDamageBonus = 1213
     posStructureControlDistanceMax = 1214
     shieldTransportCpuNeedBonus = 1216
-    remoteArmorPowerNeedBonus = 1217
     powerTransferPowerNeedBonus = 1218
     droneArmorDamageAmountBonus = 1219
     droneShieldBonusBonus = 1220
@@ -1335,22 +1345,22 @@ Public Enum ItemAttributes
     passiveHullKineticDamageResonance = 1428
     passiveHullThermalDamageResonance = 1429
     lightColor = 1430
-    subsystemBonusAmarrEngineering = 1431
+    subsystemBonusAmarrCore = 1431
     subsystemBonusAmarrElectronic = 1432
     subsystemBonusAmarrDefensive = 1433
     subsystemBonusAmarrOffensive = 1434
     subsystemBonusAmarrPropulsion = 1435
-    subsystemBonusGallenteEngineering = 1436
+    subsystemBonusGallenteCore = 1436
     subsystemBonusGallenteElectronic = 1437
     subsystemBonusGallenteDefensive = 1438
     subsystemBonusGallenteOffensive = 1439
     subsystemBonusGallentePropulsion = 1440
-    subsystemBonusCaldariEngineering = 1441
+    subsystemBonusCaldariCore = 1441
     subsystemBonusCaldariElectronic = 1442
     subsystemBonusCaldariDefensive = 1443
     subsystemBonusCaldariOffensive = 1444
     subsystemBonusCaldariPropulsion = 1445
-    subsystemBonusMinmatarEngineering = 1446
+    subsystemBonusMinmatarCore = 1446
     subsystemBonusMinmatarElectronic = 1447
     subsystemBonusMinmatarDefensive = 1448
     subsystemBonusMinmatarOffensive = 1449
@@ -1404,29 +1414,29 @@ Public Enum ItemAttributes
     rechargeRateMultiplier = 1500
     npcRemoteArmorRepairMaxTargets = 1501
     npcRemoteShieldBoostMaxTargets = 1502
-    shipBonusStrategicCruiserAmarr = 1503
-    shipBonusStrategicCruiserCaldari = 1504
-    shipBonusStrategicCruiserGallente = 1505
-    shipBonusStrategicCruiserMinmatar = 1506
+    shipBonusStrategicCruiserAmarr1 = 1503
+    shipBonusStrategicCruiserCaldari1 = 1504
+    shipBonusStrategicCruiserGallente1 = 1505
+    shipBonusStrategicCruiserMinmatar1 = 1506
     subsystemBonusAmarrDefensive2 = 1507
     subsystemBonusAmarrElectronic2 = 1508
-    subsystemBonusAmarrEngineering2 = 1509
+    subsystemBonusAmarrCore2 = 1509
     subsystemBonusCaldariOffensive2 = 1510
     subsystemBonusAmarrOffensive2 = 1511
     subsystemBonusAmarrPropulsion2 = 1512
     subsystemBonusCaldariPropulsion2 = 1513
     subsystemBonusCaldariElectronic2 = 1514
-    subsystemBonusCaldariEngineering2 = 1515
+    subsystemBonusCaldariCore2 = 1515
     subsystemBonusCaldariDefensive2 = 1516
     subsystemBonusGallenteDefensive2 = 1517
     subsystemBonusGallenteElectronic2 = 1518
-    subsystemBonusGallenteEngineering2 = 1519
+    subsystemBonusGallenteCore2 = 1519
     subsystemBonusGallentePropulsion2 = 1520
     subsystemBonusGallenteOffensive2 = 1521
     subsystemBonusMinmatarOffensive2 = 1522
     subsystemBonusMinmatarPropulsion2 = 1523
     subsystemBonusMinmatarElectronic2 = 1524
-    subsystemBonusMinmatarEngineering2 = 1525
+    subsystemBonusMinmatarCore2 = 1525
     subsystemBonusMinmatarDefensive2 = 1526
     armorMaxDamageResonance = 1527
     shieldMaxDamageResonance = 1528
@@ -1452,7 +1462,7 @@ Public Enum ItemAttributes
     implantSetFederationNavy = 1553
     implantSetRepublicFleet = 1554
     fwLpKill = 1555
-    specialOreHoldCapacity = 1556
+    generalMiningHoldCapacity = 1556
     specialGasHoldCapacity = 1557
     specialMineralHoldCapacity = 1558
     specialSalvageHoldCapacity = 1559
@@ -1474,7 +1484,7 @@ Public Enum ItemAttributes
     shipBonusATC2 = 1575
     shipBonusATF1 = 1576
     shipBonusATF2 = 1577
-    eliteBonusCoverOps3 = 1578
+    eliteBonusCovertOps3 = 1578
     effectDeactivationDelay = 1579
     maxDefenseBunkers = 1580
     eliteBonusAssaultShips1 = 1581
@@ -1560,7 +1570,7 @@ Public Enum ItemAttributes
     ecuOverlapFactor = 1685
     systemEffectDamageReduction = 1686
     ecuNoiseFactor = 1687
-    shipBonusPirateFaction2 = 1688
+    shipBonusRole8 = 1688
     ecuAreaOfInfluence = 1689
     ecuExtractorHeadCPU = 1690
     ecuExtractorHeadPower = 1691
@@ -1694,11 +1704,13 @@ Public Enum ItemAttributes
     miniProfessionRangeBonus = 1838
     damageDelayDuration = 1839
     energyTransferAmountBonus = 1840
-    shipBonusOREfrig1 = 1842
+    miningFrigatesBonusOreMiningYield = 1842
     shipBonusOREfrig2 = 1843
     orbitalStrikeAccuracy = 1844
     orbitalStrikeDamage = 1845
     cargoGroup2 = 1846
+    _902a = 1847
+    _902b = 1848
     resistanceShiftAmount = 1849
     sensorStrengthBonus = 1851
     canBeJettisoned = 1852
@@ -1812,7 +1824,7 @@ Public Enum ItemAttributes
     shipBonusTacticalDestroyerAmarr1 = 1986
     shipBonusTacticalDestroyerAmarr2 = 1987
     shipBonusTacticalDestroyerAmarr3 = 1988
-    roleBonusTacticalDestroyer1 = 1989
+    roleBonusT3ProbeCPU = 1989
     modeMaxRangePostDiv = 1990
     modeMaxTargetRangePostDiv = 1991
     modeRadarStrengthPostDiv = 1992
@@ -1841,6 +1853,7 @@ Public Enum ItemAttributes
     shipBonusTacticalDestroyerCaldari1 = 2015
     shipBonusTacticalDestroyerCaldari2 = 2016
     shipBonusTacticalDestroyerCaldari3 = 2017
+    _2015 = 2018
     allowRefills = 2019
     shipBonusAT = 2020
     entosisDurationMultiplier = 2021
@@ -2214,13 +2227,13 @@ Public Enum ItemAttributes
     structureRigEwarOptimalBonus = 2440
     structureRigEwarFalloffBonus = 2441
     structureRigEwarCapUseBonus = 2442
-    refiningYieldBasicOres = 2444
-    refiningYieldAdvancedOres = 2445
+    refiningYieldNormalOres = 2444
+    refiningYieldMoonOres = 2445
     refiningYieldCalAmarrIce = 2446
     refiningYieldGalMinIce = 2447
-    refiningYieldSpecialIce = 2448
+    refiningYieldIce = 2448
     structureRigMissileExplosionRadiusBonus = 2449
-    skillIsObsolete = 2450
+    isSkillIObsolete = 2450
     energyNeutralizerSignatureResolution = 2451
     energyNeutralizerRangeFalloff = 2452
     disallowDriveJumping = 2453
@@ -2235,7 +2248,6 @@ Public Enum ItemAttributes
     roleBonusRepairRange = 2462
     canFitShipType7 = 2463
     affectedByIndustrialInvulnModule = 2464
-    nosferatuCpuNeedBonus = 2465
     specialCorpseHoldCapacity = 2467
     warfareBuff1ID = 2468
     warfareBuff1Value = 2469
@@ -2259,7 +2271,7 @@ Public Enum ItemAttributes
     canFitShipType9 = 2487
     canFitShipType10 = 2488
     behaviorMiningAmount = 2489
-    behaviorMiningCycleTime = 2490
+    behaviorMiningDuration = 2490
     behaviorRemoteArmorRepairDuration = 2491
     behaviorRemoteArmorRepairRange = 2492
     behaviorRemoteArmorRepairFalloff = 2493
@@ -2280,14 +2292,14 @@ Public Enum ItemAttributes
     behaviorWarpScrambleDischarge = 2508
     behaviorWarpScrambleStrength = 2509
     behaviorWarpDisruptStrength = 2510
-    behaviorGuidanceDisruptorDuration = 2511
-    behaviorGuidanceDisruptorRange = 2512
-    behaviorGuidanceDisruptorFalloff = 2513
-    behaviorGuidanceDisruptorDischarge = 2514
-    behaviorTrackingDisruptorDuration = 2515
-    behaviorTrackingDisruptorRange = 2516
-    behaviorTrackingDisruptorFalloff = 2517
-    behaviorTrackingDisruptorDischarge = 2518
+    npcGuidanceDisruptorDuration = 2511
+    npcGuidanceDisruptorRange = 2512
+    npcGuidanceDisruptorFalloff = 2513
+    npcGuidanceDisruptorDischarge = 2514
+    npcTrackingDisruptorDuration = 2515
+    npcTrackingDisruptorRange = 2516
+    npcTrackingDisruptorFalloff = 2517
+    npcTrackingDisruptorDischarge = 2518
     behaviorEnergyNeutralizerDuration = 2519
     behaviorEnergyNeutralizerRange = 2520
     behaviorEnergyNeutralizerFalloff = 2521
@@ -2351,6 +2363,7 @@ Public Enum ItemAttributes
     industrialBonusDroneDamage = 2580
     onlineMaxSecurityClass = 2581
     shipBonusORECapital5 = 2582
+    industrialCoreBonusDroneDamageHP = 2583
     industrialCoreBonusDroneVelocity = 2584
     industrialCoreBonusDroneMining = 2585
     industrialCoreBonusDroneIceHarvesting = 2586
@@ -2377,7 +2390,6 @@ Public Enum ItemAttributes
     industrialCoreLocalLogisticsAmountBonus = 2607
     minVelocityActivationLimit = 2608
     doomsdayEnergyNeutResistanceID = 2609
-    attributeName   '='	attributeID
     pilotSecurityStatus = 2610
     AI_TankingModifierFighter = 2612
     chargeRateMultiplier = 2613
@@ -2489,6 +2501,8 @@ Public Enum ItemAttributes
     BehaviorSiegeMissileDamageModifier = 2730
     eliteBonusCovertOps4 = 2731
     stealthBomberLauncherCPU = 2732
+    damageMultiplierBonusPerCycle = 2733
+    damageMultiplierBonusMax = 2734
     npcStructureStasisWebificationBonus = 2735
     npcStructureEnergyWarfareBonus = 2736
     fighterStandupLightSlots = 2737
@@ -2622,8 +2636,97 @@ Public Enum ItemAttributes
     onlyTractorCorpses = 3102
     reclonerFuelQuantity = 3104
     reclonerFuelType = 3105
-
-
+    ImplantSetRapture = 3107
+    bastionMissileROFBonus = 3108
+    bastionTurretROFBonus = 3109
+    specAccessDifficultyBonus = 3110
+    signatureSuppressorSignatureRadiusBonusPassive = 3113
+    signatureSuppressorSignatureRadiusBonusActive = 3114
+    durationHighisGood = 3115
+    cloakStabilizationStrength = 3117
+    stabilizeCloakDuration = 3118
+    warpBubbleImmuneBonus = 3120
+    canActivateInGateCloak = 3123
+    droneBandwidthPercentage = 3124
+    enableOpenJumpPortal = 3125
+    enablePerformConduitJump = 3126
+    groupJumpConsumptionType = 3130
+    conduitJumpDriveConsumptionAmount = 3131
+    monumentCorporationID = 3132
+    conduitJumpPassengerCount = 3133
+    stabilizeCloakDurationBonus = 3134
+    specialIceHoldCapacity = 3136
+    specializationAsteroidTypeList = 3148
+    miningWastedVolumeMultiplier = 3153
+    miningWasteProbability = 3154
+    gallenteIndustrialBonusIceHoldCapacity = 3157
+    shipBonusGasHold = 3158
+    specializationCrystalMiningWastedVolumeMultiplierBonus = 3159
+    specializationCrystalMiningWasteProbabilityBonus = 3160
+    specializationAsteroidDurationMultiplier = 3161
+    dropChanceOverwrite = 3164
+    shipRoleBonusScanProbeBonus = 3165
+    expeditionFrigateBonusMiningLaserDuration = 3166
+    expeditionFrigateBonusIceHarvestingDuration = 3167
+    expeditionFrigateBonusGasHarvestingDuration = 3168
+    expeditionFrigateBonusArmorResistance = 3169
+    expeditionFrigateBonusLightDronesDamage_DEPRICATED = 3170
+    expeditionFrigateBonusMediumDronesDamage_DEPRICATED = 3171
+    shipRoleBonusOreMiningDroneCycleTime = 3172
+    shipRoleBonusIceMiningDroneCycleTime = 3173
+    targetLockSilently = 3176
+    shipRoleBonusOreMiningYield = 3177
+    shipRoleBonusIceHarvestingDuration = 3178
+    shipRoleBonusLightDroneDamage = 3179
+    shipRoleBonusMediumDroneDamage = 3180
+    miningBargeBonusOreMiningYield = 3181
+    miningBargeBonusIceHarvestingDuration = 3182
+    miningBargeBonusGasHarvestingDuration = 3183
+    miningBargeBonusOreMiningRange = 3184
+    miningBargeBonusIceHarvestingRange = 3185
+    miningBargeBonusGeneralMiningHoldCapacity = 3187
+    miningBargeBonusShieldCapacity = 3188
+    miningBargeBonusArmorHP = 3189
+    expeditionFrigateBonusSignatureRadius = 3190
+    expeditionFrigateBonusOreMiningYield = 3191
+    expeditionFrigateBonusShieldResistance = 3192
+    exhumersBonusOreMiningDuration = 3193
+    exhumersBonusIceHarvestingDuration = 3194
+    exhumersBonusSingatureRadius = 3195
+    exhumersBonusOreMiningYield = 3197
+    exhumersBonusGeneralMiningHoldCapacity = 3198
+    exhumersBonusShieldResistance = 3199
+    exhumersBonusArmorResistance = 3200
+    exhumersBonusLightDroneDamage = 3201
+    exhumersBonusMediumDronesDamage = 3202
+    industrialCommandBonusDroneDamage = 3203
+    industrialCommandBonusFuelConsuptionCompactIndustrialCore = 3204
+    industrialCommandBonusMiningForemanBurstRange = 3205
+    stasisWebRangeAdd = 3206
+    industrialCommandBonusGasHoldCapacity = 3208
+    industrialCommandBonusIceHoldCapacity = 3209
+    minmatarIndustrialBonusGasHoldCapacity = 3210
+    industrialCommandBonusShipCargoCapacity = 3211
+    industrialCommandBonusGeneralMiningHoldCapacity = 3212
+    expeditionFrigateBonusLightDronesDamage = 3213
+    expeditionFrigateBonusMediumDroneDamage = 3214
+    industrialCommandBonusDroneOreMiningYield = 3221
+    industrialCommandBonusDroneIceHarvestingCycleTime = 3222
+    capitalIndustrialShipBonusDroneOreMiningYield = 3223
+    capitalIndustrialShipBonusDroneIceCycleTime = 3224
+    shipRoleBonusGasHarvesterDuration = 3225
+    exhumersBonusGasHarvestingDuration = 3226
+    specialAsteroidHoldCapacity = 3227
+    shipRoleBonusStripMinerActivationCost = 3228
+    shipRoleBonusIceHarvesterActivationCost = 3229
+    shipRoleBonusOreMiningDuration = 3230
+    shipRoleBonusGeneralMiningHoldCapacity = 3231
+    capitalIndustrialShipBonusDroneHitPoints = 3233
+    industrialCommandBonusDroneHitPoints = 3235
+    ignoreMiningWaste = 3236
+    miningFrigateBonusGasCloudHarvestingDuration = 3237
+    shipRoleBonusGasHarvestingYield = 3239
+    miningFrigateBonusIceHarvestingDuration = 3240
 End Enum
 
 Public Structure AttributeRecord

@@ -89,12 +89,12 @@ Public Class ConvertToOre
                     TempOre.Price = rsOre.GetDouble(4)
                     TempOre.Group = Ore.OreGroup
                     TempOre.BaseName = Ore.OreName
+                    ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel(GetOreProcessingSkillName(Ore.OreName))
+                    ' Set the refining rate based on ice or ore
                     If Ore.OreGroup = "Ice" Then
-                        ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel("Ice Processing")
-                        TempOre.RefineRate = Refinery.GetFacilility.IceFacilityRefineRate ' Set the refining rate too
+                        TempOre.RefineRate = Refinery.GetFacilility.IceFacilityRefineRate
                     Else
-                        ProcessingSkill = SelectedCharacter.Skills.GetSkillLevel(Ore.OreName & " Processing")
-                        TempOre.RefineRate = Refinery.GetFacilility.OreFacilityRefineRate ' Set the refining rate too
+                        TempOre.RefineRate = Refinery.GetFacilility.OreFacilityRefineRate
                     End If
 
                     Refinery.GetFacilility.MaterialMultiplier = TempOre.RefineRate

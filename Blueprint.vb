@@ -79,7 +79,7 @@ Public Class Blueprint
     ' Character skills we are making this blueprint with
     Private BPCharacter As Character ' The character for this BP
     Private IndustrySkill As Integer ' Industry skill level of character
-    Private AdvancedIndustrySkill As Integer ' Old Production Efficiency skill, now reduces TE on building and researching
+    Private AdvancedIndustrySkill As Integer ' Old Production Efficiency skill, now reduces TE on building, reactions, researching
     Private ScienceSkill As Integer
     Private AIImplantValue As Double ' Advanced Industry Implant on character
     Private CopyImplantValue As Double ' Copy implant value for this character
@@ -305,7 +305,13 @@ Public Class Blueprint
         BPCharacter = UserCharacter
 
         ' Set the skills to use for this blueprint - changed to type ID's due to name changes (1/29/2014)
-        AdvancedIndustrySkill = BPCharacter.Skills.GetSkillLevel(3388)
+        If IsReaction(ItemGroupID) Then
+            ' Advanced industry only affects manufacturing and research times
+            AdvancedIndustrySkill = 0
+        Else
+            AdvancedIndustrySkill = BPCharacter.Skills.GetSkillLevel(3388)
+        End If
+
         IndustrySkill = BPCharacter.Skills.GetSkillLevel(3380)
         ScienceSkill = BPCharacter.Skills.GetSkillLevel(3402)
 
@@ -648,7 +654,7 @@ Public Class Blueprint
                         JobFee += .GetJobFee
 
                         Select Case BatchBlueprint.GetItemGroupID
-                            Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                            Case ReactionGroupID(BatchBlueprint.GetItemGroupID)
                                 ReactionFacilityUsage += .GetReactionFacilityUsage
                             Case Else
                                 ' How much it costs to use each facility to manufacture items 
@@ -709,7 +715,7 @@ Public Class Blueprint
                     ElseIf IsT1BaseItemforT2(CInt(CategoryID)) Then
                         ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
                         TempComponentFacility = MainManufacturingFacility
-                    ElseIf GroupID = ItemIDs.ReactionBiochmeicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
+                        'ElseIf GroupID = ItemIDs.ReactionBiochemicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
                         TempComponentFacility = ReactionFacility
                     Else ' Components
                         TempComponentFacility = ComponentManufacturingFacility
@@ -806,7 +812,7 @@ Public Class Blueprint
                 Select Case GroupID
                     Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                         CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                    Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                    Case ReactionGroupID(GroupID)
                         TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
                     Case Else
                         If ReactionBPGroups.Contains(BlueprintGroupID) Then
@@ -993,11 +999,11 @@ Public Class Blueprint
                 End If
 
                 If Not IsDBNull(readerBP.GetValue(10)) Then
-                        ComponentBPPortionSize = readerBP.GetInt32(10)
-                        ' Divide by the portion size if this item has one (component buildable) for the build quantity
-                        BuildQuantity = CLng(Math.Ceiling(AdjCurrentMatQuantity / ComponentBPPortionSize))
-                    Else
-                        BuildQuantity = AdjCurrentMatQuantity
+                    ComponentBPPortionSize = readerBP.GetInt32(10)
+                    ' Divide by the portion size if this item has one (component buildable) for the build quantity
+                    BuildQuantity = CLng(Math.Ceiling(AdjCurrentMatQuantity / ComponentBPPortionSize))
+                Else
+                    BuildQuantity = AdjCurrentMatQuantity
                     ComponentBPPortionSize = 1
                 End If
 
@@ -1006,9 +1012,9 @@ Public Class Blueprint
                 ' If this is an advanced composite reaction, and the advanced option is selected, then don't build anything and add as raw material
                 If ItemGroupID = ItemIDs.ReactionCompositesGroupID And T2T3MaterialType = BuildMatType.AdvMaterials Then
                     IgnoreBuild = True
-                ElseIf (BlueprintName.Contains("Standard") Or BlueprintName.Contains("Synth")) And T2T3MaterialType = BuildMatType.ProcessedMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochmeicalsGroupID Then
+                ElseIf (BlueprintName.Contains("Standard") Or BlueprintName.Contains("Synth")) And T2T3MaterialType = BuildMatType.ProcessedMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochemicalsGroupID Then
                     IgnoreBuild = True
-                ElseIf (BlueprintName.Contains("Improved") Or BlueprintName.Contains("Strong")) And T2T3MaterialType <> BuildMatType.RawMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochmeicalsGroupID Then
+                ElseIf (BlueprintName.Contains("Improved") Or BlueprintName.Contains("Strong")) And T2T3MaterialType <> BuildMatType.RawMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochemicalsGroupID Then
                     IgnoreBuild = True
                 End If
 
@@ -1024,7 +1030,7 @@ Public Class Blueprint
                         If T2T3MaterialType = BuildMatType.RawMaterials Then ' Or (ItemGroupID = ItemIDs.ReactionCompositesGroupID And T2T3MaterialType = BuildMatType.AdvMaterials) Then
                             UsesReactions = True
                         End If
-                    Case ItemIDs.ReactionBiochmeicalsGroupID
+                    Case ItemIDs.ReactionBiochemicalsGroupID
                         ' Special processing for boosters
                         If CurrentMaterial.GetMaterialName.Contains("Improved") Or CurrentMaterial.GetMaterialName.Contains("Strong") Then
                             ' This has intermediate material types
@@ -1066,7 +1072,7 @@ Public Class Blueprint
                         Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                             ' Use capital component facility
                             TempComponentFacility = CapitalComponentManufacturingFacility
-                        Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                        Case ReactionGroupID(CurrentMaterialGroupID)
                             TempComponentFacility = ReactionFacility
                         Case Else
                             If IsT1BaseItemforT2(CurrentMaterialCategoryID) Then
@@ -1170,7 +1176,7 @@ Public Class Blueprint
                         Select Case ComponentBlueprint.GetItemGroupID
                             Case ItemIDs.AdvCapitalComponentGroupID, ItemIDs.CapitalComponentGroupID
                                 CapComponentFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage
-                            Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                            Case ReactionGroupID(ComponentBlueprint.GetItemGroupID)
                                 ' Save reaction and fuel block usage for reaction bps
                                 TotalReactionFacilityUsage += ComponentBlueprint.GetReactionFacilityUsage
                                 ManufacturingFacilityUsage += ComponentBlueprint.GetManufacturingFacilityUsage

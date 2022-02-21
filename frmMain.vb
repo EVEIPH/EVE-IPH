@@ -264,9 +264,9 @@ Public Class frmMain
     Private IgnoreMarketFocus As Boolean
 
     ' Column width consts - may change depending on Ore, Ice or Gas so change the widths of the columns based on these and use them to add and move
-    Private Const MineOreNameColumnWidth As Integer = 120
+    Private Const MineOreNameColumnWidth As Integer = 114
     Private Const MineRefineYieldColumnWidth As Integer = 70
-    Private Const MineCrystalColumnWidth As Integer = 45
+    Private Const MineCrystalColumnWidth As Integer = 55
     Private Const PriceListHeaderCSV As String = "Group Name,Item Name,Price,Price Type,Raw Material,Type ID"
     Private Const PriceListHeaderTXT As String = "Group Name|Item Name|Price|Price Type|Raw Material|Type ID"
     Private Const PriceListHeaderSSV As String = "Group Name;Item Name;Price;Price Type;Raw Material;Type ID"
@@ -746,16 +746,20 @@ Public Class frmMain
         '****************************************
         '**** Mining Tab Initializations ********
         '****************************************
+        ' Width 700, 21 for scrollbar - 679 total space
         lstMineGrid.Columns.Add("Ore ID", 0, HorizontalAlignment.Right) ' Hidden
         lstMineGrid.Columns.Add("Ore Name", MineOreNameColumnWidth, HorizontalAlignment.Left)
         lstMineGrid.Columns.Add("Refine Type", 70, HorizontalAlignment.Left)
-        lstMineGrid.Columns.Add("Unit Price", 77, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Unit Price", 67, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("Refine Yield", MineRefineYieldColumnWidth, HorizontalAlignment.Center)
         lstMineGrid.Columns.Add("Crystal", MineCrystalColumnWidth, HorizontalAlignment.Left)
-        lstMineGrid.Columns.Add("m3/Cycle", 60, HorizontalAlignment.Right)
+        ' lstMineGrid.Columns.Add("m3/Cycle", 60, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("RP", 47, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("RV", 27, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("Drone yield", 65, HorizontalAlignment.Right)
-        lstMineGrid.Columns.Add("Units/Hour", 65, HorizontalAlignment.Right)
-        lstMineGrid.Columns.Add("Isk per Hour", 107, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Units/Hour", 64, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Isk per Hour", 100, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("CycleTime", 0, HorizontalAlignment.Right) ' Hidden
 
         MineProcessingCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkOreProcessing"), CheckBox())
         MineProcessingLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblOreProcessing"), Label())
@@ -765,13 +769,13 @@ Public Class frmMain
 
         ' Tool Tips
         If UserApplicationSettings.ShowToolTips Then
-            ttMining.SetToolTip(rbtnMineT2Crystals, "Use T2 Crystals when skills and equipment allow")
+            ttMining.SetToolTip(chkMineT2Crystals, "Use T2 Crystals when skills and equipment allow")
             ttMining.SetToolTip(gbMineHauling, "If no hauling, results will take into account Round Trip time to the station based on M3 of Ship and fill times")
             ttMining.SetToolTip(btnMineSaveAllSettings, "Saves all current options on Mining Screen")
             ttMining.SetToolTip(chkMineForemanLaserOpBoost, "Click to cycle through No Booster, T1 or T2")
             ttMining.SetToolTip(chkMineForemanLaserRangeBoost, "Click to cycle through No Booster, T1 or T2")
             ttMining.SetToolTip(cmbMineIndustReconfig, "Select skill level to include Heavy Water costs per hour, set to 0 to ignore")
-            ttMining.SetToolTip(chkMineRorqDeployedMode, "To include Heavy Water costs for deployed mode, select Industrial Reconfiguration skill other than 0")
+            ttMining.SetToolTip(chkMineIndyCoreDeployedMode, "To include Heavy Water costs for deployed mode, select Industrial Reconfiguration skill other than 0")
             ttMining.SetToolTip(lblMineExhumers, "For Prospect Mining Frigate, use the Exhumers Combobox to set the Expedition Frigate skill level.")
             ttMining.SetToolTip(chkMineBoosterDroneRig1, "Check again for T2 Links")
             ttMining.SetToolTip(chkMineBoosterDroneRig2, "Check again for T2 Links")
@@ -1089,7 +1093,7 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub rbtnDCSystemPrices_MouseEnter(sender As System.Object, e As System.EventArgs) Handles rbtnDCSystemPrices.mouseenter
+    Private Sub rbtnDCSystemPrices_MouseEnter(sender As System.Object, e As System.EventArgs) Handles rbtnDCSystemPrices.MouseEnter
         If UserApplicationSettings.ShowToolTips Then
             ttBP.SetToolTip(rbtnDCSystemPrices, "Max Buy Order from System used for Datacore Price")
         End If
@@ -3321,7 +3325,7 @@ Tabs:
                         SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                         SQL = SQL & "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
                         SQL = SQL & "ORDER BY solarSystemName"
-                        DBCommand = New SQLiteCommand(Sql, EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsData = DBCommand.ExecuteReader
 
                         ' Add all systems if it's the system
@@ -5307,7 +5311,7 @@ Tabs:
     End Sub
 
     Private Sub UpdateSelectedBPText(bpName As String)
-        If bpName.Contains("Blueprint") Then
+        If bpName.Contains("Blueprint") Or bpName.Contains("Reaction Formula") Then
             RemoveHandler cmbBPBlueprintSelection.TextChanged, AddressOf cmbBPBlueprintSelection_TextChanged
             cmbBPBlueprintSelection.Text = bpName
             SelectedBPText = bpName
@@ -7362,7 +7366,6 @@ ExitForm:
         End If
 
         rsCheck.Close()
-        DBCommand = Nothing
 
         Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -9371,7 +9374,7 @@ ExitSub:
                         RGN = "Ancient Relics"
                     ElseIf CN = "Deployable" Then
                         RGN = "Deployables"
-                    ElseIf CN = "Asteroid" Or gn = "Abyssal Materials" Then
+                    ElseIf CN = "Asteroid" Or GN = "Abyssal Materials" Then
                         RGN = "Raw Materials"
                     ElseIf CN = "Ship" Then
                         RGN = "Ships"
@@ -13071,6 +13074,10 @@ CheckTechs:
         Dim CompareValue As Double ' IPH or profit
     End Structure
 
+    Private Function ReturnNumber() As Integer
+        Return 1
+    End Function
+
     ' Displays the results of the options on the screen. If Calculate is true, then it will run the calculations. If not, just a preview of the data
     Private Sub DisplayManufacturingResults(ByVal Calculate As Boolean)
         Dim SQL As String
@@ -13387,7 +13394,9 @@ CheckTechs:
                 InsertItem.SavedBPRuns = readerBPs.GetInt32(25)
 
                 Select Case InsertItem.ItemGroupID
-                    Case ItemIDs.ReactionBiochmeicalsGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionsIntermediateGroupID
+                    Case ReturnNumber()
+                        ItemIsReaction = False
+                    Case ReactionGroupID(InsertItem.ItemGroupID)
                         ItemIsReaction = True
                     Case Else
                         ItemIsReaction = False
@@ -14168,7 +14177,7 @@ CheckTechs:
                             ' Usage
                             ' If it's a reaction, we don't want to add the manufacturing usage for any fuel blocks if it's a component
                             Select Case InsertItem.ItemGroupID
-                                Case ItemIDs.ReactionsIntermediateGroupID, ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionPolymersGroupID, ItemIDs.ReactionBiochmeicalsGroupID
+                                Case ReactionGroupID(InsertItem.ItemGroupID)
                                     InsertItem.BuildFacilityUsage = 0
                                 Case Else
                                     InsertItem.BuildFacilityUsage = ManufacturingBlueprint.GetManufacturingFacilityUsage
@@ -15913,8 +15922,6 @@ ExitCalc:
                 TempPoint.Y_Price = rsMarketHistory.GetDouble(1)
             End If
 
-            rsMarketHistory.Close()
-
             ' Since we are looping through the data, just do the summation calcs now
             a_value += (counter * TempPoint.Y_Price)
             ' Grab the sum here too
@@ -15924,6 +15931,8 @@ ExitCalc:
 
             GraphData.Add(TempPoint)
         End While
+
+        rsMarketHistory.Close()
 
         ' Set the n_value from the loop
         If counter <= 1 Then
@@ -17508,14 +17517,10 @@ Leave:
     End Sub
 
     Private Sub OreCheckProcessing_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged, chkOreProcessing2.CheckedChanged, chkOreProcessing3.CheckedChanged,
-                                                                                                                    chkOreProcessing4.CheckedChanged, chkOreProcessing5.CheckedChanged, chkOreProcessing6.CheckedChanged,
-                                                                                                                    chkOreProcessing7.CheckedChanged, chkOreProcessing8.CheckedChanged, chkOreProcessing9.CheckedChanged,
-                                                                                                                    chkOreProcessing10.CheckedChanged, chkOreProcessing11.CheckedChanged, chkOreProcessing12.CheckedChanged,
-                                                                                                                    chkOreProcessing13.CheckedChanged, chkOreProcessing14.CheckedChanged, chkOreProcessing15.CheckedChanged,
-                                                                                                                    chkOreProcessing16.CheckedChanged, chkOreProcessing17.CheckedChanged, chkOreProcessing18.CheckedChanged,
-                                                                                                                    chkOreProcessing19.CheckedChanged, chkOreProcessing20.CheckedChanged, chkOreProcessing21.CheckedChanged,
-                                                                                                                    chkOreProcessing22.CheckedChanged, chkOreProcessing23.CheckedChanged, chkOreProcessing24.CheckedChanged,
-                                                                                                                    chkOreProcessing25.CheckedChanged
+                                                                                                                      chkOreProcessing4.CheckedChanged, chkOreProcessing5.CheckedChanged, chkOreProcessing6.CheckedChanged,
+                                                                                                                      chkOreProcessing7.CheckedChanged, chkOreProcessing8.CheckedChanged, chkOreProcessing9.CheckedChanged,
+                                                                                                                      chkOreProcessing10.CheckedChanged, chkOreProcessing11.CheckedChanged, chkOreProcessing12.CheckedChanged
+
 
         Call UpdateProcessingSkillBoxes(CInt(CType(sender, CheckBox).Name.Substring(16)), CType(sender, CheckBox).Checked)
     End Sub
@@ -17634,8 +17639,6 @@ Leave:
             Else
                 gbMineRefining.Enabled = False
             End If
-
-            gbMineRefining.Enabled = True
 
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
@@ -17886,16 +17889,26 @@ Leave:
     End Sub
 
     Private Sub cmbMineMiningLaser_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbMineMiningLaser.SelectedIndexChanged
-        Select Case cmbMineMiningLaser.Text
-            Case "Modulated Deep Core Miner II", "Modulated Deep Core Strip Miner II", "Modulated Strip Miner II"
-                gbMineCrystals.Enabled = True
-                rbtnMineT1Crystals.Enabled = True
-                rbtnMineT2Crystals.Enabled = True
-            Case Else
-                gbMineCrystals.Enabled = False
-                rbtnMineT1Crystals.Enabled = False
-                rbtnMineT2Crystals.Enabled = False
-        End Select
+        Dim rsLookup As SQLiteDataReader
+        Dim SQL As String
+
+        SQL = "SELECT 'X' FROM ATTRIB_LOOKUP WHERE typeName = '" & cmbMineMiningLaser.Text & "' "
+        SQL &= "AND attributeID IN (604,605) AND value IN (663,482)" ' 604 and 605 are used with charge groups...and the values returned are groupIDs for mercoxit mining crystal or mining crystal resp
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsLookup = DBCommand.ExecuteReader
+
+        If rsLookup.HasRows Then
+            ' Enable the crystal group boxes
+            gbMineCrystals.Enabled = True
+            gbMineCrystalType.Enabled = True
+        Else
+            gbMineCrystals.Enabled = False
+            gbMineCrystalType.Enabled = False
+        End If
+
+        rsLookup.Close()
+
     End Sub
 
     Private Sub txtMineBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineBrokerFeeRate.KeyDown
@@ -17981,7 +17994,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub chkMineRorqDeployedMode_Click(sender As Object, e As EventArgs) Handles chkMineRorqDeployedMode.Click
+    Private Sub chkMineRorqDeployedMode_Click(sender As Object, e As EventArgs) Handles chkMineIndyCoreDeployedMode.Click
         Call UpdateIndustrialCoreCheck()
         Call UpdateShipMiningDroneStats()
         Call UpdateBoosterMiningDroneStats()
@@ -18016,7 +18029,7 @@ Leave:
             Case Drake
                 ImageFile = MiningShipTypeID.Drake
             Case Gnosis
-                ImageFile = MiningShipTypeID.gnosis
+                ImageFile = MiningShipTypeID.Gnosis
             Case Rokh
                 ImageFile = MiningShipTypeID.Rokh
             Case Prospect
@@ -18210,17 +18223,6 @@ Leave:
         Endurance = 37135
     End Enum
 
-    Private Enum MiningAttributeIDs
-        MaxRange = 54
-        MiningDroneDuration = 73
-        MiningAmount = 77 ' in m3
-        DroneBandwith = 1271
-        DroneBandwithNeeded = 1272
-        DroneCapacity = 283 ' ships capacity
-        MiningAmountBonus = 434
-        RateofFireBonus = 293 ' For ice harvesting drones
-    End Enum
-
     Private Sub InitMiningTab()
         Call LoadMiningTab()
     End Sub
@@ -18296,11 +18298,11 @@ Leave:
 
             Select Case .CheckRorqDeployed
                 Case 2
-                    chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate
+                    chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate
                 Case 1
-                    chkMineRorqDeployedMode.Checked = True
+                    chkMineIndyCoreDeployedMode.Checked = True
                 Case 0
-                    chkMineRorqDeployedMode.Checked = False
+                    chkMineIndyCoreDeployedMode.Checked = False
             End Select
 
             Call UpdateIndustrialCoreCheck()
@@ -18414,13 +18416,33 @@ Leave:
 
             If .OreType = "Ore" Then
                 gbMineCrystals.Enabled = True
-                If .T2Crystals Then
-                    rbtnMineT1Crystals.Checked = False
-                    rbtnMineT2Crystals.Checked = True
+                If .T1Crystals Then
+                    chkMineT1Crystals.Checked = True
                 Else
-                    rbtnMineT1Crystals.Checked = True
-                    rbtnMineT2Crystals.Checked = False
+                    chkMineT1Crystals.Checked = False
                 End If
+                If .T2Crystals Then
+                    chkMineT2Crystals.Checked = True
+                Else
+                    chkMineT2Crystals.Checked = False
+                End If
+
+                If .CrystalTypeA Then
+                    chkMineTypeA.Checked = True
+                Else
+                    chkMineTypeA.Checked = False
+                End If
+                If .CrystalTypeB Then
+                    chkMineTypeB.Checked = True
+                Else
+                    chkMineTypeB.Checked = False
+                End If
+                If .CrystalTypeC Then
+                    chkMineTypeC.Checked = True
+                Else
+                    chkMineTypeC.Checked = False
+                End If
+
             Else
                 gbMineCrystals.Enabled = False
             End If
@@ -18430,7 +18452,7 @@ Leave:
 
             ' Load the ore processing skills
             For i = 1 To MineProcessingCheckBoxes.Count - 1
-                TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(MineProcessingLabels(i).Text & " Processing"))
+                TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(MineProcessingLabels(i).Text))
                 If TempSkillLevel <> 0 Then
                     MineProcessingCombos(i).Text = CStr(TempSkillLevel)
                     MineProcessingCheckBoxes(i).Checked = True
@@ -18464,27 +18486,40 @@ Leave:
 
     End Sub
 
+    Private Enum MiningOreType
+        Ore = 1
+        Ice = 2
+        Gas = 3
+    End Enum
+
     ' Main grid function for loading ores to mine
     Public Sub LoadMiningGrid()
         Dim SQL As String
+        Dim SQLMain As String
         Dim readerMine As SQLiteDataReader
+        Dim readerCrystal As SQLiteDataReader
         Dim readerOre As SQLiteDataReader
         Dim i As Integer
         Dim lstOreRow As ListViewItem
-
-        Dim IceMining As Boolean
-        Dim GasMining As Boolean
+        Dim AttribLookup As New EVEAttributes
+        Dim MiningType As MiningOreType
 
         Dim ShipMiningYield As Double
         Dim BaseCycleTime As Double
+        Dim CycleTimeLabel As String = ""
         Dim CycleTime As Double
         Dim CrystalMiningYield As Double
         Dim OreList As New List(Of MiningOre)
         Dim TempOre As MiningOre = Nothing
-        Dim CrystalType As String = "" ' For reference out of getting crystals
 
         Dim Orem3PerSecond As Double
         Dim OrePerSecond As Double
+
+        Dim ResidueProbability As Double = 0
+        Dim ModuleResidueProbability As Double = 0
+        Dim ResidueVolumeMuliplier As Double = 0
+        Dim ModuleResidueVolumeMuliplier As Double = 0
+        Dim MiningLaserBaseCycleTime As Double = 0
 
         ' Ice stuff
         Dim IceCylesPerHour As Integer
@@ -18507,6 +18542,8 @@ Leave:
 
         Dim MoonType As String = ""
 
+        Dim CycletimeNoCrystal As Double = 0 ' If this is zero, then use the calculated rate, else use the base time because it takes crystal time into account
+
         ' Determine multiplier - assume all additional mining ships have the same yield and other costs
         Dim MinerMultiplier As Integer = CInt(txtMineNumberMiners.Text)
 
@@ -18515,22 +18552,25 @@ Leave:
             Exit Sub
         End If
 
-        If cmbMineOreType.Text = "Ice" Then
-            IceMining = True
-        Else
-            IceMining = False
-        End If
+        lstMineGrid.Items.Clear()
+        lstMineGrid.BeginUpdate()
+        lblMineCycleTime.Text = ""
+        lblMineRange.Text = ""
+        Me.Cursor = Cursors.WaitCursor
+        Application.DoEvents()
 
-        If cmbMineOreType.Text = "Gas" Then
-            GasMining = True
-        Else
-            GasMining = False
-        End If
+        Select Case cmbMineOreType.Text
+            Case "Ore"
+                MiningType = MiningOreType.Ore
+            Case "Ice"
+                MiningType = MiningOreType.Ice
+            Case "Gas"
+                MiningType = MiningOreType.Gas
+        End Select
 
         ' First determine what type of stuff we are mining
-        SQL = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE, BELT_TYPE "
-        SQL &= "FROM ORES, ORE_LOCATIONS "
-        SQL &= "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID AND COMPRESSED = 0 "
+        SQLMain = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE, BELT_TYPE FROM ORES, ORE_LOCATIONS "
+        SQL = "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
             SQL &= "AND (BELT_TYPE = '" & cmbMineOreType.Text & "' OR BELT_TYPE LIKE '%Moon Asteroid%') "
         Else
@@ -18538,9 +18578,9 @@ Leave:
         End If
 
         ' See if we want High yield ores
-        If IceMining Then
+        If MiningType = MiningOreType.Ice Then
             SQL &= "AND ORES.HIGH_YIELD_ORE = -1 "
-        ElseIf GasMining Then
+        ElseIf MiningType = MiningOreType.Gas Then
             SQL &= "AND ORES.HIGH_YIELD_ORE = -2 "
         Else
             If chkMineIncludeHighYieldOre.Checked = False Then
@@ -18613,274 +18653,409 @@ Leave:
         SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
         ' Group them
-        SQL &= "GROUP BY ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
+        Dim SQLGroup As String = "GROUP BY ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE "
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerMine = DBCommand.ExecuteReader
+        ' Based on the crystal types selected, they could have 7 different types of returns - no crystal, and T1, T2, with all 3 types (A,B,C)
+        ' So set the loops we need 
+        ' NEED TO LOOK UP CRYSTAL TYPE FOR EACH ORE
+        Dim CrystalList As New List(Of String)
 
-        ' Process 
-        ' Calculate the mining amount from all the stuff chosen except crystals
-
-        ' Calculate cycle time for one laser
-
-        ' Loop through ore, and determine the amount of ore the person can get per minute and include crystal amount
-        ' because it's dependant on the ore type (and crystal type) and then we can look up skills on screen
-
-        ' Adjust for hauling
-
-        ' Then refine 60 minutes (ore per hour) of ore for each all in same loop
-
-        ' For jumping amount - TBD
-
-        ' Get the mining yield first (this is without crystals and no mercoxit)
-        If MiningShipSelected() Then
-            ShipMiningYield = CalculateMiningAmount()
-            ' Duration is in milliseconds
-            BaseCycleTime = CalculateMiningCycleTime(GetAttribute("duration", cmbMineMiningLaser.Text) / 1000)
-            lblMineCycleTime.Text = FormatNumber(BaseCycleTime, 1) & " s"
+        If gbMineCrystals.Enabled And gbMineCrystalType.Enabled Then
+            If chkMineT1Crystals.Checked Then
+                If chkMineTypeA.Checked Then
+                    CrystalList.Add("Type A I")
+                End If
+                If chkMineTypeB.Checked Then
+                    CrystalList.Add("Type B I")
+                End If
+                If chkMineTypeC.Checked Then
+                    CrystalList.Add("Type C I")
+                End If
+            End If
+            If chkMineT2Crystals.Checked Then
+                If chkMineTypeA.Checked Then
+                    CrystalList.Add("Type A II")
+                End If
+                If chkMineTypeB.Checked Then
+                    CrystalList.Add("Type B II")
+                End If
+                If chkMineTypeC.Checked Then
+                    CrystalList.Add("Type C II")
+                End If
+            End If
+            If chkMineT1Crystals.Checked = False And chkMineT2Crystals.Checked = False Then
+                ' They can't have a type without a tech, so just set to none
+                CrystalList.Add(None)
+            End If
         Else
-            ShipMiningYield = 0
-            lblMineCycleTime.Text = "N/A"
-            BaseCycleTime = 1 ' For not dividing by zero
+            ' No crystals for this module so just run one time
+            CrystalList.Add(None)
         End If
 
         ' Get Heavy Water costs
-        If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
+        If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
             ' Add (subtract from total isk) the heavy water cost
             HeavyWaterCost = CalculateRorqDeployedCost(CInt(cmbMineIndustReconfig.Text), CInt(cmbMineBoosterShipSkill.Text))
         End If
 
-        Me.Cursor = Cursors.WaitCursor
-
-        ' Set up the two types of refining facilities we may need by looking up the rigs for the types of materials to refine
-        Dim ImplantValue As Double = CDbl(UserApplicationSettings.RefiningImplantValue)
-
         ' Refining
         Dim ReprocessedMaterials As New Materials
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(MineRefineFacility.GetFacility(ProductionType.Reprocessing), ImplantValue)
+        Dim ReprocessingStation As New ReprocessingPlant(MineRefineFacility.GetFacility(ProductionType.Reprocessing), CDbl(UserApplicationSettings.RefiningImplantValue))
+
+        ' Set the progress bar on the main tab
+        pnlProgressBar.Value = 0
+        pnlProgressBar.Minimum = 0
+        pnlProgressBar.Maximum = 0
+
+        ' Get the total count of rows for the progressbar - start with multplier
+        Dim OreTypes As Integer = 0
+        If chkMineRefinedOre.Checked And Not MiningType = MiningOreType.Gas Then
+            OreTypes += 1
+        End If
+        If chkMineUnrefinedOre.Checked Or MiningType = MiningOreType.Gas Then
+            OreTypes += 1
+        End If
+
+        ' If they have 0 ore types, then they must want compressed
+        If OreTypes <> 0 Then
+            ' Get the count of all non-compressed items 
+            DBCommand = New SQLiteCommand("SELECT COUNT(*) FROM (SELECT DISTINCT ORE_NAME FROM ORES, ORE_LOCATIONS " & SQL & " AND COMPRESSED = 0)", EVEDB.DBREf)
+            readerMine = DBCommand.ExecuteReader
+            readerMine.Read()
+
+            ' Set the initial max value without compressed ores taken into account
+            pnlProgressBar.Maximum = (readerMine.GetInt32(0) * (CrystalList.Count) * OreTypes)
+            readerMine.Close()
+        End If
+
+        ' Get the count of all compressed items if checked
+        If chkMineCompressedOre.Checked And Not MiningType = MiningOreType.Gas Then
+            DBCommand = New SQLiteCommand("SELECT COUNT(*) FROM (SELECT DISTINCT ORE_NAME FROM ORES, ORE_LOCATIONS " & SQL & " AND COMPRESSED = 1)", EVEDB.DBREf)
+            readerMine = DBCommand.ExecuteReader
+            readerMine.Read()
+            ' Add the count and adjust for crystals
+            pnlProgressBar.Maximum += (readerMine.GetInt32(0) * (CrystalList.Count))
+            readerMine.Close()
+        End If
+
+        pnlProgressBar.Maximum -= 1
+        pnlProgressBar.Visible = True
+        pnlStatus.Text = "Calculating Mining Values..."
+
+        Application.DoEvents()
+
+        ' Run for main query - Only get the ore list of base ores and add compressed values later
+        DBCommand = New SQLiteCommand(SQLMain & SQL & " AND COMPRESSED = 0 " & SQLGroup, EVEDB.DBREf)
+        readerMine = DBCommand.ExecuteReader
+
+        Dim CrystalYieldModifier As Double
+        Dim CrystalAsteroidDurationMultiplier As Double
+
+        ' Get the module state values
+        ModuleResidueProbability = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.miningWasteProbability)
+        ModuleResidueVolumeMuliplier = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.miningWastedVolumeMultiplier)
+        MiningLaserBaseCycleTime = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.duration)
 
         ' Loop through all the ores and determine ore amount, refine, 
         While readerMine.Read
-            Application.DoEvents()
-            ' DB Data
-            TempOre.OreID = readerMine.GetInt64(0)
-            TempOre.OreName = readerMine.GetString(1)
-            TempOre.OreVolume = readerMine.GetDouble(2)
-            TempOre.UnitsToRefine = readerMine.GetInt32(3)
-            TempOre.Space = readerMine.GetString(4)
-            TempOre.BeltType = readerMine.GetString(5)
+            ' For each crystal type and tech, calculate a row
+            For Each Crystal In CrystalList
+                Application.DoEvents()
 
-            readerMine.Close()
+                ' Reset these
+                ResidueProbability = ModuleResidueProbability
+                ResidueVolumeMuliplier = ModuleResidueVolumeMuliplier
 
-            ' If not using a hauler, adjust the cycle time based on round trip time
-            If chkMineUseHauler.Checked = False Then
+                ' DB Data
+                TempOre.OreID = readerMine.GetInt64(0)
+                TempOre.OreName = readerMine.GetString(1)
+                TempOre.OreVolume = readerMine.GetDouble(2)
+                TempOre.UnitsToRefine = readerMine.GetInt32(3)
+                TempOre.Space = readerMine.GetString(4)
+                TempOre.BeltType = readerMine.GetString(5)
 
-                If TempOre.OreVolume > CDbl(txtMineHaulerM3.Text) Then
-                    ' You can't use this hauler for this amount of ore
-                    ' So no point in going on
-                    MsgBox("The volume of the hauler is too small to use for this setup.", vbExclamation, Application.ProductName)
-                    txtMineHaulerM3.Focus()
-                    Exit Sub
+                CrystalYieldModifier = 1
+                CrystalAsteroidDurationMultiplier = 1
+
+                If Crystal <> None Then
+                    ' Get the crystal id from the list and look up crystal mining bonus, residue probability and volume, and cycle time bonus
+                    Dim CSQL As String
+                    CSQL = "Select attributeID, value from TYPE_ATTRIBUTES WHERE typeID In "
+                    CSQL &= "(Select IT.typeID FROM TYPE_ATTRIBUTES As TA, INVENTORY_TYPES As IT "
+                    CSQL &= "WHERE value In (Select value FROM TYPE_ATTRIBUTES As TA, INVENTORY_TYPES As IT "
+                    CSQL &= "WHERE TA.typeID = IT.typeID And attributeID = 790 And typeName = '" & TempOre.OreName & "') "
+                    CSQL &= "AND TA.typeID = IT.typeID AND attributeID = 182 AND IT.typeName LIKE '%" & Crystal & "') "
+                    CSQL &= "AND attributeID IN (782,3159,3160,3161)"
+                    DBCommand = New SQLiteCommand(CSQL, EVEDB.DBREf)
+                    readerCrystal = DBCommand.ExecuteReader
+                    readerCrystal.Read()
+
+                    While readerCrystal.Read
+                        Select Case readerCrystal.GetInt32(0)
+                            Case ItemAttributes.specializationAsteroidYieldMultiplier
+                                CrystalYieldModifier = readerCrystal.GetDouble(1)
+                                ' Add rig value for mercoxit if used (32817 = rig typeid)
+                                If cmbMineMiningRig1.Text = "Mercoxit Opt" And TempOre.OreName.Contains("Mercoxit") Then
+                                    CrystalYieldModifier += AttribLookup.GetAttribute(32817, ItemAttributes.miningAmountBonus) / 100
+                                End If
+                            Case ItemAttributes.specializationAsteroidDurationMultiplier
+                                CrystalAsteroidDurationMultiplier = readerCrystal.GetDouble(1)
+                            Case ItemAttributes.specializationCrystalMiningWasteProbabilityBonus
+                                ResidueProbability += readerCrystal.GetDouble(1)
+                            Case ItemAttributes.specializationCrystalMiningWastedVolumeMultiplierBonus
+                                ResidueVolumeMuliplier += readerCrystal.GetDouble(1)
+                        End Select
+                    End While
+                    readerCrystal.Close()
                 End If
 
-                ' Get Round Trip Time (RTT) to station to drop off ore - User entered, in seconds
-                RTTimetoStationSeconds = (CInt(txtMineRTMin.Text) * 60) + CInt(txtMineRTSec.Text)
+                ' Save values
+                TempOre.ResidueProbability = ResidueProbability
+                TempOre.ResidueVolumeMuliplier = ResidueVolumeMuliplier
 
-            End If
-
-            ' Ore amount
-            If Not IceMining And Not GasMining Then
-                ' Determine crystal amount
-                CrystalMiningYield = ShipMiningYield * GetMiningCrystalBonus(TempOre.OreName, CrystalType)
-                ' Save the crystal type
-                TempOre.CrystalType = CrystalType
-                TempOre.OreUnitsPerCycle = CrystalMiningYield
-
-                ' Calculate the m3 per second for this ore including mining drone input
-                TotalDroneOrePerHour = MiningDronem3Hr
-                If chkMineBoosterUseDrones.Checked Then
-                    TotalDroneOrePerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
-                End If
-                Orem3PerSecond = (CrystalMiningYield / BaseCycleTime) + (TotalDroneOrePerHour / 3600)
-
-                ' This is the m3 per second, but need to get this ORE per second based on it's volume
-                OrePerSecond = Orem3PerSecond / TempOre.OreVolume
-
-            ElseIf IceMining Then
-                TempOre.CrystalType = None
-                IceCylesPerHour = CInt(Math.Floor(3600 / BaseCycleTime))
-
-                ' Total ice blocks per hour
-                TotalDroneIceBlocksPerHour = CInt(Math.Floor(MiningDronem3Hr / 1000))
-                If chkMineBoosterUseDrones.Checked Then
-                    TotalDroneIceBlocksPerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
+                ' Get the mining yield first (this is without crystals and no mercoxit)
+                If MiningShipSelected() Then
+                    ShipMiningYield = CalculateMiningAmount()
+                    ' Duration is in milliseconds - add in crystal bonus too
+                    CycletimeNoCrystal = CalculateMiningCycleTime(MiningLaserBaseCycleTime / 1000)
+                    BaseCycleTime = CycletimeNoCrystal * CrystalAsteroidDurationMultiplier
+                    If CrystalAsteroidDurationMultiplier = 1 Then
+                        CycleTimeLabel = FormatNumber(BaseCycleTime, 1) & " s"
+                        ttMining.SetToolTip(lblMineCycleTime, "")
+                    Else
+                        CycleTimeLabel = FormatNumber(CycletimeNoCrystal, 1) & " s*"
+                        ttMining.SetToolTip(lblMineCycleTime, "* Base Cycle time without Crystal Bonus")
+                    End If
+                Else
+                    ShipMiningYield = 0
+                    CycleTimeLabel = "N/A"
+                    BaseCycleTime = 1 ' For not dividing by zero
                 End If
 
-                If ShipMiningYield = 0 Then
-                    ' This is just drone yield
-                    ShipMiningYield = TotalDroneIceBlocksPerHour / 3600
-                End If
-                IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                TempOre.CycleTime = BaseCycleTime
 
-                ' Total ice blocks per cycle
-                TempOre.OreUnitsPerCycle = ShipMiningYield * 1000 ' Ice is 1000 m3
+                ' If not using a hauler, adjust the cycle time based on round trip time
+                If chkMineUseHauler.Checked = False Then
 
-            ElseIf GasMining Then
-                TempOre.CrystalType = None
-
-                TempOre.OreUnitsPerCycle = ShipMiningYield
-                Orem3PerSecond = ShipMiningYield / BaseCycleTime
-
-                ' This is the m3 per second, but need to get this ORE per second based on it's volume
-                OrePerSecond = Orem3PerSecond / TempOre.OreVolume
-            End If
-
-            If chkMineUseHauler.Checked = False Then
-                ' Treat Ore and Gas the same
-                If Not IceMining Then
-                    ' How long to fill the cargo?
-                    SecondstoFill = CDbl(txtMineHaulerM3.Text) / Orem3PerSecond
-                    ' How many cycles where in this session?
-                    FillCycles = SecondstoFill / BaseCycleTime
-
-                    ' Add on the round trip time and recalculate cycle time
-                    CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
-
-                    ' Recalculate with new cycle time
-                    If cmbMineOreType.Text = "Ore" Then
-                        Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(TotalDroneOrePerHour) / 3600)
-                    Else ' Gas
-                        Orem3PerSecond = ShipMiningYield / CycleTime
+                    If TempOre.OreVolume > CDbl(txtMineHaulerM3.Text) Then
+                        ' You can't use this hauler for this amount of ore
+                        ' So no point in going on
+                        MsgBox("The volume of the hauler is too small to use for this setup.", vbExclamation, Application.ProductName)
+                        txtMineHaulerM3.Focus()
+                        Exit Sub
                     End If
 
-                    ' This is the m3 per second, but need to get CycleTime ORE per second based on it's volume
+                    ' Get Round Trip Time (RTT) to station to drop off ore - User entered, in seconds
+                    RTTimetoStationSeconds = (CInt(txtMineRTMin.Text) * 60) + CInt(txtMineRTSec.Text)
+
+                End If
+
+                ' Ore amount
+                If Not MiningType = MiningOreType.Ice And Not MiningType = MiningOreType.Gas Then
+                    ' Determine crystal amount
+                    CrystalMiningYield = ShipMiningYield * CrystalYieldModifier
+                    ' Save the crystal type
+                    TempOre.CrystalType = Crystal
+                    TempOre.OreUnitsPerCycle = CrystalMiningYield
+
+                    ' Calculate the m3 per second for this ore including mining drone input
+                    TotalDroneOrePerHour = MiningDronem3Hr
+                    If chkMineBoosterUseDrones.Checked Then
+                        TotalDroneOrePerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
+                    End If
+                    Orem3PerSecond = (CrystalMiningYield / BaseCycleTime) + (TotalDroneOrePerHour / 3600)
+
+                    ' This is the m3 per second, but need to get this ORE per second based on it's volume
                     OrePerSecond = Orem3PerSecond / TempOre.OreVolume
 
-                Else ' Ice
-                    ' How much can fit in cargo?
-                    IceBlocksPerLoad = CInt(Math.Floor(CDbl(txtMineHaulerM3.Text) / TempOre.OreVolume))
-
-                    ' How many full cycles to fill the cargo?
-                    FillCycles = CInt(Math.Ceiling(IceBlocksPerLoad / ShipMiningYield))
-
-                    ' Add on the round trip time and recalculate cycle time
-                    CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
-
-                    ' Recalculate with new cycle time
-                    IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+                ElseIf MiningType = MiningOreType.Ice Then
+                    TempOre.CrystalType = None
+                    IceCylesPerHour = CInt(Math.Floor(3600 / BaseCycleTime))
 
                     ' Total ice blocks per hour
+                    TotalDroneIceBlocksPerHour = CInt(Math.Floor(MiningDronem3Hr / 1000))
+                    If chkMineBoosterUseDrones.Checked Then
+                        TotalDroneIceBlocksPerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
+                    End If
+
+                    If ShipMiningYield = 0 Then
+                        ' This is just drone yield
+                        ShipMiningYield = TotalDroneIceBlocksPerHour / 3600
+                    End If
                     IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
-                End If
-            End If
 
-            If IceMining Then
-                TempOre.UnitsPerHour = IceBlocksPerHour
-            Else
-                TempOre.UnitsPerHour = OrePerSecond * 3600
-            End If
+                    ' Total ice blocks per cycle
+                    TempOre.OreUnitsPerCycle = ShipMiningYield * 1000 ' Ice is 1000 m3
 
-            ' Only refine ore or ice
-            If chkMineRefinedOre.Checked And Not GasMining Then
+                ElseIf MiningType = MiningOreType.Gas Then
+                    TempOre.CrystalType = None
 
-                Dim BFI As BrokerFeeInfo = GetBrokerFeeData(chkMineIncludeBrokerFees, txtMineBrokerFeeRate)
+                    TempOre.OreUnitsPerCycle = ShipMiningYield
+                    Orem3PerSecond = ShipMiningYield / BaseCycleTime
 
-                ' Update the material modifier based on the type of ore
-                If TempOre.BeltType.Contains("Moon") Then
-                    ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.MoonOreFacilityRefineRate
-                ElseIf TempOre.BeltType = "Ore" Then
-                    ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.OreFacilityRefineRate
-                ElseIf TempOre.BeltType = "Ice" Then
-                    ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.IceFacilityRefineRate
+                    ' This is the m3 per second, but need to get this ORE per second based on it's volume
+                    OrePerSecond = Orem3PerSecond / TempOre.OreVolume
                 End If
 
-                ' Refine total Ore we mined for an hour and save the total isk/hour
-                ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
-                                                                        TempOre.UnitsPerHour, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, ReprocessingTax)
+                If chkMineUseHauler.Checked = False Then
+                    ' Treat Ore and Gas the same
+                    If Not MiningType = MiningOreType.Ice Then
+                        ' How long to fill the cargo?
+                        SecondstoFill = CDbl(txtMineHaulerM3.Text) / Orem3PerSecond
+                        ' How many cycles where in this session?
+                        FillCycles = SecondstoFill / BaseCycleTime
 
-                TempOre.RefineYield = ReprocessingYield
+                        ' Add on the round trip time and recalculate cycle time
+                        CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
 
-                If ReprocessingStation.GetFacilility.IncludeActivityUsage Then
-                    TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost - ReprocessingTax
+                        ' Recalculate with new cycle time
+                        If cmbMineOreType.Text = "Ore" Then
+                            Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(TotalDroneOrePerHour) / 3600)
+                        Else ' Gas
+                            Orem3PerSecond = ShipMiningYield / CycleTime
+                        End If
+
+                        ' This is the m3 per second, but need to get CycleTime ORE per second based on it's volume
+                        OrePerSecond = Orem3PerSecond / TempOre.OreVolume
+
+                    Else ' Ice
+                        ' How much can fit in cargo?
+                        IceBlocksPerLoad = CInt(Math.Floor(CDbl(txtMineHaulerM3.Text) / TempOre.OreVolume))
+
+                        ' How many full cycles to fill the cargo?
+                        FillCycles = CInt(Math.Ceiling(IceBlocksPerLoad / ShipMiningYield))
+
+                        ' Add on the round trip time and recalculate cycle time
+                        CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
+
+                        ' Recalculate with new cycle time
+                        IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+
+                        ' Total ice blocks per hour
+                        IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                    End If
+                End If
+
+                If MiningType = MiningOreType.Ice Then
+                    TempOre.UnitsPerHour = IceBlocksPerHour
                 Else
-                    TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
+                    TempOre.UnitsPerHour = OrePerSecond * 3600
                 End If
 
-                If (chkMineRorqDeployedMode.Checked Or chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
-                    ' Add (subtract from total isk) the heavy water cost
-                    TempOre.IPH = TempOre.IPH - HeavyWaterCost
-                End If
+                ' Only refine ore or ice
+                If chkMineRefinedOre.Checked And Not MiningType = MiningOreType.Gas Then
 
-                'Drone yield included in total ore so just for display
-                TempOre.DroneYield = GetDroneYield(IceMining, GasMining, MinerMultiplier)
+                    Dim BFI As BrokerFeeInfo = GetBrokerFeeData(chkMineIncludeBrokerFees, txtMineBrokerFeeRate)
+                    Dim TempOreProcessingSkill As Integer = GetFormOreProcessingSkill(TempOre.OreName, MineProcessingLabels, MineProcessingCombos)
 
-                ' Calculate the unit price by refining one batch
-                ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), GetOreProcessingSkill(TempOre.OreName),
-                                                                        TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, Nothing)
-                TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
-                TempOre.RefineType = "Refined"
-                OreList.Add(TempOre)
+                    ' Update the material modifier based on the type of ore
+                    If TempOre.BeltType.Contains("Moon") Then
+                        ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.MoonOreFacilityRefineRate
+                    ElseIf TempOre.BeltType = "Ore" Then
+                        ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.OreFacilityRefineRate
+                    ElseIf TempOre.BeltType = "Ice" Then
+                        ReprocessingStation.GetFacilility.MaterialMultiplier = ReprocessingStation.GetFacilility.IceFacilityRefineRate
+                    End If
 
-            End If
+                    ' Refine total Ore we mined for an hour and save the total isk/hour
+                    ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), TempOreProcessingSkill,
+                                                                            TempOre.UnitsPerHour, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, ReprocessingTax)
 
-            If chkMineCompressedOre.Checked And Not GasMining Then
-                ' First, get the unit price and volume for the compressed ore
-                SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & TempOre.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerOre = DBCommand.ExecuteReader
+                    TempOre.RefineYield = ReprocessingYield
 
-                If readerOre.Read() Then
-                    TempOre.OreUnitPrice = readerOre.GetDouble(0)
-                    ' Reset the units mined
-                    Dim SavedUnits As Double = TempOre.UnitsPerHour
-                    If Not IceMining Then
-                        ' All ores are 100 to 1 compressed block, ice is 1 to 1
-                        TempOre.UnitsPerHour = TempOre.UnitsPerHour / 100
+                    If ReprocessingStation.GetFacilility.IncludeActivityUsage Then
+                        TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost - ReprocessingTax
+                    Else
+                        TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
+                    End If
+
+                    If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
+                        ' Add (subtract from total isk) the heavy water cost
+                        TempOre.IPH = TempOre.IPH - HeavyWaterCost
                     End If
 
                     'Drone yield included in total ore so just for display
-                    TempOre.DroneYield = GetDroneYield(IceMining, GasMining, MinerMultiplier)
+                    TempOre.DroneYield = GetDroneYield(MiningType = MiningOreType.Ice, MiningType = MiningOreType.Gas, MinerMultiplier)
 
-                    ' Units we mined, times unit price is IPH
-                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
-                    TempOre.RefineYield = 0
-                    TempOre.RefineType = "Compressed"
-                    OreList.Add(TempOre)
-                    ' Reset the units if we do unrefined
-                    TempOre.UnitsPerHour = SavedUnits
-                End If
-
-                readerOre.Close()
-
-            End If
-
-            If chkMineUnrefinedOre.Checked Or GasMining Then ' Just use the Ore prices since we are selling it straight
-                ' First, get the unit price for the ore
-                SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = '" & TempOre.OreName & "'"
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerOre = DBCommand.ExecuteReader
-
-                If readerOre.Read() Then
-                    TempOre.OreUnitPrice = readerOre.GetDouble(0)
-                    ' Units we mined, times unit price is IPH 
-                    TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
-                    TempOre.DroneYield = GetDroneYield(IceMining, GasMining, MinerMultiplier)
-                    TempOre.RefineYield = 0
-                    TempOre.RefineType = "Unrefined"
+                    ' Calculate the unit price by refining one batch
+                    ReprocessedMaterials = ReprocessingStation.Reprocess(TempOre.OreID, CInt(cmbMineRefining.Text), CInt(cmbMineRefineryEff.Text), TempOreProcessingSkill,
+                                                                            TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, Nothing)
+                    TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
+                    TempOre.RefineType = "Refined"
+                    ' For each record, update the progress bar
+                    Call IncrementToolStripProgressBar(pnlProgressBar)
                     OreList.Add(TempOre)
                 End If
 
-                readerOre.Close()
+                If chkMineCompressedOre.Checked And Not MiningType = MiningOreType.Gas Then
+                    ' First, get the unit price and volume for the compressed ore
+                    SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & TempOre.OreName & "'"
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerOre = DBCommand.ExecuteReader
 
-            End If
+                    If readerOre.Read() Then
+                        TempOre.OreUnitPrice = readerOre.GetDouble(0)
+                        ' Reset the units mined
+                        Dim SavedUnits As Double = TempOre.UnitsPerHour
+                        If Not MiningType = MiningOreType.Ice Then
+                            ' All ores are 100 to 1 compressed block, ice is 1 to 1
+                            TempOre.UnitsPerHour = TempOre.UnitsPerHour / 100
+                        End If
 
+                        'Drone yield included in total ore so just for display
+                        TempOre.DroneYield = GetDroneYield(MiningType = MiningOreType.Ice, MiningType = MiningOreType.Gas, MinerMultiplier)
+
+                        ' Units we mined, times unit price is IPH
+                        TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
+                        TempOre.RefineYield = 0
+                        TempOre.RefineType = "Compressed"
+                        ' For each record, update the progress bar
+                        Call IncrementToolStripProgressBar(pnlProgressBar)
+                        OreList.Add(TempOre)
+                        ' Reset the units if we do unrefined
+                        TempOre.UnitsPerHour = SavedUnits
+                    End If
+
+                    readerOre.Close()
+
+                End If
+
+                If chkMineUnrefinedOre.Checked Or MiningType = MiningOreType.Gas Then ' Just use the Ore prices since we are selling it straight
+                    ' First, get the unit price for the ore
+                    SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = '" & TempOre.OreName & "'"
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerOre = DBCommand.ExecuteReader
+
+                    If readerOre.Read() Then
+                        TempOre.OreUnitPrice = readerOre.GetDouble(0)
+                        ' Units we mined, times unit price is IPH 
+                        TempOre.IPH = (TempOre.UnitsPerHour * TempOre.OreUnitPrice)
+                        TempOre.DroneYield = GetDroneYield(MiningType = MiningOreType.Ice, MiningType = MiningOreType.Gas, MinerMultiplier)
+                        TempOre.RefineYield = 0
+                        TempOre.RefineType = "Unrefined"
+                        ' For each record, update the progress bar
+                        Call IncrementToolStripProgressBar(pnlProgressBar)
+                        OreList.Add(TempOre)
+                    End If
+
+                    readerOre.Close()
+
+                End If
+                Application.DoEvents()
+            Next
         End While
+
+        ' Now update the progress panel for the list
+        pnlStatus.Text = "Updating Mining List..."
+        pnlProgressBar.Value = 0
+        pnlProgressBar.Maximum = OreList.Count
+        Application.DoEvents()
 
         ' Sort the ore List by the iph
         OreList.Sort(New MiningOreIPHComparer)
 
-        lstMineGrid.Items.Clear()
+        readerMine.Close()
 
         ' Update column widths based on type - Ice, don't show Crystal, Gas, don't show Refine or Crystal
         Select Case cmbMineOreType.Text
@@ -18898,8 +19073,6 @@ Leave:
                 lstMineGrid.Columns(5).Width = 0 ' Hide
         End Select
 
-        ' Finally load the list
-        lstMineGrid.BeginUpdate()
         For i = 0 To OreList.Count - 1
             ' Make sure we want to add Mercoxit
             If Not OreList(i).OreName.Contains("Mercoxit") Or (OreList(i).OreName.Contains("Mercoxit") And cmbMineMiningLaser.Text.Contains("Deep Core")) Then
@@ -18930,14 +19103,20 @@ Leave:
                     lstOreRow.SubItems.Add(FormatPercent(OreList(i).RefineYield, 3))
                 End If
                 lstOreRow.SubItems.Add(OreList(i).CrystalType)
+                ' Add residue values
+                lstOreRow.SubItems.Add(FormatPercent(OreList(i).ResidueProbability / 100, 1))
+                lstOreRow.SubItems.Add(FormatNumber(OreList(i).ResidueVolumeMuliplier, 0))
                 ' Modify all three by mining multiplier
-                lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitsPerCycle * MinerMultiplier, 2))
-                ' For drone yeild, we only apply the miner multipler to drone yield from mining ships, not booster
+                'lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitsPerCycle * MinerMultiplier, 2))
+                ' For drone yield, we only apply the miner multipler to drone yield from mining ships, not booster
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 1)) ' Multiplier for drone mining calculated above
                 lstOreRow.SubItems.Add(FormatNumber(Math.Round(OreList(i).UnitsPerHour * MinerMultiplier), 0))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).IPH * MinerMultiplier, 2))
+                lstOreRow.SubItems.Add(FormatNumber(OreList(i).CycleTime, 1) & " s")
                 Call lstMineGrid.Items.Add(lstOreRow)
             End If
+            Call IncrementToolStripProgressBar(pnlProgressBar)
+            Application.DoEvents()
         Next
 
         ' Now sort this
@@ -18952,11 +19131,15 @@ Leave:
 
         lstMineGrid.EndUpdate()
 
-        ' Last thing, calculate the mining range of the mining lasers selected
-        lblMineRange.Text = FormatNumber(CalculateMiningRange(GetAttribute("Optimal Range", cmbMineMiningLaser.Text)) / 1000, 2) & " km"
+        ' Update the mining range of the mining lasers selected
+        lblMineRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text) / 1000, 2) & " km"
+        lblMineCycleTime.Text = CycleTimeLabel
 
         i = 0
         Me.Cursor = Cursors.Default
+        pnlStatus.Text = ""
+        pnlProgressBar.Visible = False
+        Application.DoEvents()
 
     End Sub
 
@@ -19057,7 +19240,7 @@ Leave:
             Else
                 cmbMineBoosterDroneInterfacingSkill.Text = UserMiningTabSettings.BoosterIceDroneInterfaceSkill
             End If
-        ElseIf cmbMineOreType.Text = "Ore" Then
+        Else 'If cmbMineOreType.Text = "Ore" Then
             ' Ship
             If UserMiningTabSettings.DroneOpSkill = AllSettings.DefaultDroneSkills Then
                 cmbMineDroneOpSkill.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(MiningDroneOperationSkillTypeID))
@@ -19174,7 +19357,11 @@ Leave:
                     .NumOreMiners = CInt(cmbMineNumLasers.Text)
                     .NumOreUpgrades = CInt(cmbMineNumMiningUpgrades.Text)
                     .OreImplant = cmbMineHighwallImplant.Text
-                    .T2Crystals = rbtnMineT2Crystals.Checked
+                    .T1Crystals = chkMineT1Crystals.Checked
+                    .T2Crystals = chkMineT2Crystals.Checked
+                    .CrystalTypeA = chkMineTypeA.Checked
+                    .CrystalTypeB = chkMineTypeB.Checked
+                    .CrystalTypeC = chkMineTypeC.Checked
                 End If
                 ' Ship
                 .ShipDroneRig1 = cmbMineMiningRig1.Text
@@ -19234,9 +19421,9 @@ Leave:
             .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
             .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
             .BoosterUseDrones = chkMineBoosterUseDrones.Checked
-            If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+            If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
                 .CheckRorqDeployed = 2
-            ElseIf chkMineRorqDeployedMode.Checked = True Then
+            ElseIf chkMineIndyCoreDeployedMode.Checked = True Then
                 .CheckRorqDeployed = 1
             Else
                 .CheckRorqDeployed = 0
@@ -19332,11 +19519,7 @@ Leave:
     ' Sets the screen settings for ore type selected
     Private Sub SetOreRefineChecks()
         If cmbMineOreType.Text <> "Gas" Then
-            If chkMineRefinedOre.Checked Then
-                gbMineRefining.Enabled = True
-            Else
-                gbMineRefining.Enabled = False
-            End If
+            gbMineRefining.Enabled = True
         Else
             gbMineRefining.Enabled = False
             If cmbMineOreType.Text = "Gas" Then
@@ -19404,6 +19587,7 @@ Leave:
     ' Loads the implants for the mining type
     Private Sub UpdateMiningImplants()
         Dim ReqSkill As Integer
+        Dim AttribLookup As New EVEAttributes
 
         ' Clear implants
         cmbMineHighwallImplant.Items.Clear()
@@ -19437,7 +19621,7 @@ Leave:
             End If
 
             ' Michi Implant
-            ReqSkill = CInt(GetAttribute("requiredSkill1Level", "Michi's Excavation Augmentor"))
+            ReqSkill = CInt(AttribLookup.GetAttribute("Michi's Excavation Augmentor", ItemAttributes.requiredSkill1Level))
             If ReqSkill <> SelectedCharacter.Skills.GetSkillLevel(3411) Then
                 chkMineMichiImplant.ForeColor = Color.Red
                 If UserApplicationSettings.ShowToolTips Then
@@ -19656,13 +19840,18 @@ Leave:
 
                 ' Only the mining industrials have bonuses to mining drones based on main ship skill
                 Select Case ShipName
-                    Case Porpoise, Orca, Rorqual
-                        DroneMiningAmountpCycle *= (1 + (0.1 * CInt(BaseShipSkill)))
+                    Case Porpoise, Orca
+                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneOreMiningYield) * CInt(BaseShipSkill)))
+                    Case Rorqual
+                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneOreMiningYield) * CInt(BaseShipSkill)))
                 End Select
+
+                ' Add role bonus 
+                DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.roleBonusDroneMiningYield) / 100))
 
                 ' Adjust with the core bonus if boosted and using the rorq drones
                 If BoosterDrones Then
-                    DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(CoreBonus.OreDroneMiningYield))
+                    DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(cmbMineShipName.Text, CoreBonus.OreDroneMiningYield))
                 End If
 
                 ' Amount of cycles we can do in an hour times the amount per cycle
@@ -19684,13 +19873,15 @@ Leave:
 
                 ' Only the mining industrials have bonuses to mining drones based on main ship skill
                 Select Case ShipName
-                    Case Porpoise, Orca, Rorqual
-                        IceHarvestDroneCycleTime *= (1 - (0.1 * CInt(BaseShipSkill)))
+                    Case Porpoise, Orca
+                        IceHarvestDroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneIceHarvestingCycleTime) / 100) * CInt(BaseShipSkill)))
+                    Case Rorqual
+                        IceHarvestDroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneIceCycleTime) / 100) * CInt(BaseShipSkill)))
                 End Select
 
                 ' Adjust with the core bonus if boosted
                 If BoosterDrones Then
-                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(CoreBonus.IceDroneHarvestingSpeed))
+                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(cmbMineShipName.Text, CoreBonus.IceDroneHarvestingSpeed))
                 End If
 
                 MiningAmtVariable = CInt(NumDrones) * (3600 / (IceHarvestDroneCycleTime / 1000) * DroneMiningAmountpCycle)
@@ -19730,7 +19921,7 @@ Leave:
 
                 If DroneType = "Ore" Then
                     RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.miningAmountBonus) / 100
-                Else
+                Else ' Ice
                     RigBonus = AttribLookup.GetAttribute(RigName & RigTech, ItemAttributes.rofBonus) / 100
                 End If
             End If
@@ -19830,7 +20021,7 @@ Leave:
                 lblMineGasIceHarvesting.Text = "Gas Harv:"
                 lblMineGasIceHarvesting.Enabled = True
                 cmbMineGasIceHarvesting.Enabled = True
-                cmbMineAstrogeology.Enabled = False
+                cmbMineAstrogeology.Enabled = True
             ElseIf cmbMineOreType.Text = "Ore" Then
                 lblMineGasIceHarvesting.Enabled = False
                 cmbMineGasIceHarvesting.Enabled = False
@@ -19945,30 +20136,30 @@ Leave:
             cmbMineShipName.Items.Add("Other")
         End If
 
+        ' Exhumers and Mining Barges - Load for Ice, Ore, and Gas
+        ' 3 for Mining barge, Procurer, 4 for Retriever, 5 for Covetor
+        ' 5 for Exhumers and Deep core mining
+        'Covetor, Retriever, Procurer. Hulk, Skiff, Mackinaw
+        If CInt(cmbMineAstrogeology.Text) >= 3 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) >= 1 Then
+            cmbMineShipName.Items.Add(Procurer)
+            MaxShipName = Procurer
+            cmbMineShipName.Items.Add(Retriever)
+            MaxShipName = Retriever
+            cmbMineShipName.Items.Add(Covetor)
+            MaxShipName = Covetor
+        End If
+
+        If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineAdvShipSkill.Text) >= 1 And cmbMineAdvShipSkill.Enabled Then
+            cmbMineShipName.Items.Add(Skiff)
+            MaxShipName = Skiff
+            cmbMineShipName.Items.Add(Mackinaw)
+            MaxShipName = Mackinaw
+            cmbMineShipName.Items.Add(Hulk)
+            MaxShipName = Hulk
+        End If
+
+        ' Add all three cap mining vessels - have ore and ice bonuses 
         If cmbMineOreType.Text <> "Gas" Then
-            ' Exhumers and Mining Barges - Load for both Ice and Ore
-            ' 3 for Mining barge, Procurer, 4 for Retriever, 5 for Covetor
-            ' 5 for Exhumers and Deep core mining
-            'Covetor, Retriever, Procurer. Hulk, Skiff, Mackinaw
-            If CInt(cmbMineAstrogeology.Text) >= 3 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) >= 1 Then
-                cmbMineShipName.Items.Add(Procurer)
-                MaxShipName = Procurer
-                cmbMineShipName.Items.Add(Retriever)
-                MaxShipName = Retriever
-                cmbMineShipName.Items.Add(Covetor)
-                MaxShipName = Covetor
-            End If
-
-            If CInt(cmbMineAstrogeology.Text) = 5 And cmbMineAstrogeology.Enabled = True And CInt(cmbMineBaseShipSkill.Text) = 5 And CInt(cmbMineAdvShipSkill.Text) >= 1 And cmbMineAdvShipSkill.Enabled Then
-                cmbMineShipName.Items.Add(Skiff)
-                MaxShipName = Skiff
-                cmbMineShipName.Items.Add(Mackinaw)
-                MaxShipName = Mackinaw
-                cmbMineShipName.Items.Add(Hulk)
-                MaxShipName = Hulk
-            End If
-
-            ' Add all three cap mining vessels - have ore and ice bonuses 
             If CInt(cmbMineBaseShipSkill.Text) >= 1 Then
                 cmbMineShipName.Items.Add(Porpoise)
                 MaxShipName = Porpoise
@@ -20050,9 +20241,12 @@ Leave:
         Dim T1Module As String = ""
         Dim ShipName As String
         Dim DeepCoreLoaded As Boolean = False
+        Dim AttribLookup As New EVEAttributes
 
         Dim SQL As String
         Dim rsMiners As SQLiteDataReader
+
+        Dim BargeSelected As Boolean = False
 
         ' Load up the main mining laser query - set groupID for search in processing
         SQL = "SELECT typeName, CASE WHEN metaGroupID IS NULL THEN 1 ELSE metaGroupID END AS TECH "
@@ -20069,10 +20263,11 @@ Leave:
 
         Select Case ShipName
             Case Hulk, Mackinaw, Skiff, Covetor, Retriever, Procurer
+                BargeSelected = True
                 Call SetEquipmentObjects(True)
                 ' Get the numbers
-                LaserCount = CInt(GetAttribute("High Slots", ShipName))
-                MLUCount = CInt(GetAttribute("Low Slots", ShipName))
+                LaserCount = CInt(AttribLookup.GetAttribute(ShipName, ItemAttributes.hiSlots))
+                MLUCount = CInt(AttribLookup.GetAttribute(ShipName, ItemAttributes.lowSlots))
 
                 Select Case ShipName
                     Case Hulk, Mackinaw, Skiff
@@ -20089,16 +20284,16 @@ Leave:
                     SQL &= "AND INVENTORY_TYPES.groupID IN (464, 483) AND typeName NOT LIKE '%Ice%' "
                     If CInt(cmbMineSkill.Text) < 5 Then
                         SQL &= "AND TECH <> 2 AND typeName NOT LIKE '%Deep Core%' " ' Don't load the deep core or tech 2
-                        rbtnMineT1Crystals.Enabled = False
-                        rbtnMineT2Crystals.Enabled = False
+                        chkMineT1Crystals.Enabled = False
+                        chkMineT2Crystals.Enabled = False
                     ElseIf CInt(cmbMineSkill.Text) = 5 And cmbMineDeepCore.Enabled = False Then
                         SQL &= " AND typeName NOT LIKE '%Deep Core%' " ' Don't load the deep core
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
+                        chkMineT1Crystals.Enabled = True
+                        chkMineT2Crystals.Enabled = True
                     ElseIf CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
                         ' Load them all
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
+                        chkMineT1Crystals.Enabled = True
+                        chkMineT2Crystals.Enabled = True
                     End If
                     SQL &= "ORDER BY typeName"
 
@@ -20121,7 +20316,9 @@ Leave:
                     ' Update the first mining rig to include mercoxit
                     cmbMineMiningRig1.Items.Add("Mercoxit Opt")
 
-                Else
+                    rsMiners.Close()
+
+                ElseIf cmbMineOreType.Text = "Ice" Then
                     ' Ice harvesting skill
                     ' 1 for T1 strip
                     ' 5 for T2 strips
@@ -20141,8 +20338,8 @@ Leave:
                         End If
                     End While
 
-                    rbtnMineT1Crystals.Enabled = False
-                    rbtnMineT2Crystals.Enabled = False
+                    chkMineT1Crystals.Enabled = False
+                    chkMineT2Crystals.Enabled = False
 
                     If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
                         MaxStrip = UserMiningTabSettings.OreStrip
@@ -20153,9 +20350,34 @@ Leave:
                     ' Update the first mining rig to include ice harvesting
                     cmbMineMiningRig1.Items.Add("Ice Harvesting")
 
-                End If
+                    rsMiners.Close()
 
-                rsMiners.Close()
+                ElseIf cmbMineOreType.Text = "Gas" Then
+                    ' Only venture and other ships
+                    SQL &= "AND INVENTORY_TYPES.groupID = 4138 " ' Gas harvesters - Scoops require turret hardpoints
+                    If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
+                        SQL &= "AND TECH <> 2 " ' Don't load the tech 2
+                    End If
+                    SQL &= "ORDER BY typeName"
+
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsMiners = DBCommand.ExecuteReader
+
+                    While rsMiners.Read
+                        cmbMineMiningLaser.Items.Add(rsMiners.GetString(0))
+                        If rsMiners.GetInt32(1) = 1 Then
+                            T1Module = rsMiners.GetString(0)
+                        End If
+                    End While
+
+                    If cmbMineMiningLaser.Items.Contains(UserMiningTabSettings.OreStrip) Then
+                        MaxStrip = UserMiningTabSettings.OreStrip
+                    Else
+                        MaxStrip = T1Module
+                    End If
+
+                    rsMiners.Close()
+                End If
 
                 ' Turn on the num lasers
                 lblMineLaserNumber.Enabled = True
@@ -20171,8 +20393,8 @@ Leave:
 
             Case Else ' Other ships that are not mining barges
                 Call SetEquipmentObjects(True)
-                LaserCount = CInt(GetAttribute("Turret Hardpoints", ShipName)) ' Use turret hardpoints for this
-                MLUCount = CInt(GetAttribute("Low Slots", ShipName))
+                LaserCount = CInt(AttribLookup.GetAttribute(ShipName, ItemAttributes.turretSlotsLeft)) ' Use turret hardpoints for this
+                MLUCount = CInt(AttribLookup.GetAttribute(ShipName, ItemAttributes.lowSlots))
 
                 Select Case ShipName
                     Case Prospect, Endurance ' T2 ships
@@ -20186,8 +20408,8 @@ Leave:
                 cmbMineNumLasers.Visible = True
 
                 If cmbMineOreType.Text = "Ore" Then
-                    rbtnMineT1Crystals.Enabled = False
-                    rbtnMineT2Crystals.Enabled = False
+                    chkMineT1Crystals.Enabled = False
+                    chkMineT2Crystals.Enabled = False
 
                     ' Add all the basic mining lasers
                     SQL &= "AND (INVENTORY_TYPES.groupID = 54 OR (INVENTORY_TYPES.groupID = 483 AND typeName NOT LIKE '%Strip%')) AND typeName NOT LIKE '%Ice%' "
@@ -20202,8 +20424,8 @@ Leave:
                         SQL &= " AND typeName NOT LIKE '%Modulated Deep Core%'" ' Don't load the modulated deep core
                     ElseIf CInt(cmbMineDeepCore.Text) >= 2 And cmbMineDeepCore.Enabled = True Then
                         ' Deep core is fine
-                        rbtnMineT1Crystals.Enabled = True
-                        rbtnMineT2Crystals.Enabled = True
+                        chkMineT1Crystals.Enabled = True
+                        chkMineT2Crystals.Enabled = True
                     End If
                     SQL &= "ORDER BY typeName"
 
@@ -20227,7 +20449,7 @@ Leave:
 
                 ElseIf cmbMineOreType.Text = "Gas" Then
                     ' Only venture and other ships
-                    SQL &= "AND INVENTORY_TYPES.groupID = 737 " ' Gas harvesters
+                    SQL &= "AND INVENTORY_TYPES.groupID = 737 " ' Gas Cloud Scoops
                     If CInt(cmbMineGasIceHarvesting.Text) < 5 Then
                         SQL &= "AND TECH <> 2 " ' Don't load the tech 2
                     End If
@@ -20281,7 +20503,7 @@ Leave:
         End Select
 
         ' Set crystals
-        rbtnMineT2Crystals.Checked = UserMiningTabSettings.T2Crystals
+        chkMineT2Crystals.Checked = UserMiningTabSettings.T2Crystals
 
         ' Set Strip name
         cmbMineMiningLaser.Text = MaxStrip
@@ -20294,7 +20516,7 @@ Leave:
         If ShipName = "Other" And cmbMineOreType.Text <> "Gas" And cmbMineOreType.Text <> "Ice" Then
             MLUCount = 8
             LaserCount = 8
-        ElseIf cmbMineOreType.Text = "Gas" Then
+        ElseIf cmbMineOreType.Text = "Gas" And Not BargeSelected Then
             MLUCount = 0
             ' Update laser count based on skills - max of 5 but no more than turrets 
             If cmbMineShipName.Text = Venture Or cmbMineShipName.Text = Prospect Or cmbMineShipName.Text = Endurance Then
@@ -20312,6 +20534,9 @@ Leave:
             cmbMineNumMiningUpgrades.Items.Add(CStr(i))
         Next
 
+        ' Load the available upgrades
+        Call LoadMiningUpgrades()
+
         ' Set the number of Strip miners available
         cmbMineNumLasers.Items.Clear()
 
@@ -20321,102 +20546,132 @@ Leave:
         Next
 
         ' Choose options for None ships first, these should be just clear settings
-        If cmbMineShipName.Text = None Then
+        cmbMineNumMiningUpgrades.Text = "0"
+        cmbMineMiningUpgrade.Text = None
+        cmbMineNumLasers.Text = "0"
+        cmbMineMiningLaser.Text = None
 
-            cmbMineNumMiningUpgrades.Text = "0"
-            cmbMineMiningUpgrade.Text = None
-            cmbMineNumLasers.Text = "0"
-            cmbMineMiningLaser.Text = None
+        ' Normal ship or "other"
+        ' Load settings, only change to user settings if the ship is the same as the one selected
 
-        Else ' Normal ship or "other"
-            ' Load settings, only change to user settings if the ship is the same as the one selected
-
-            ' Set the names and numbers for upgrades and strips
-            If cmbMineOreType.Text = "Ore" Then
-                ' Set the number of MLUs
-                If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> UserMiningTabSettings.OreMiningShip Then
-                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
-                Else
-                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumOreUpgrades)
-                End If
-
-                ' Set the MLU Text - These are hardcoded so just use the default or user setting
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.OreUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> UserMiningTabSettings.OreMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumOreMiners)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.OreStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.OreStrip
-                End If
-
-                cmbMineMiningRig1.Text = UserMiningTabSettings.ShipDroneRig1
-                cmbMineMiningRig2.Text = UserMiningTabSettings.ShipDroneRig2
-                cmbMineMiningRig3.Text = UserMiningTabSettings.ShipDroneRig3
-
-            ElseIf cmbMineOreType.Text = "Ice" Then
-                ' Set the number of MLUs
-                If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> UserMiningTabSettings.IceMiningShip Then
-                    cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
-                Else
-                    cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumIceUpgrades)
-                End If
-
-                ' Set the MLU Text - These are hardcoded so just use the default or user setting
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.IceUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> UserMiningTabSettings.IceMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    ' Update with the user settings they have, up to the max the ship can use
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumIceMiners)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.IceStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.IceStrip
-                End If
-
-                cmbMineMiningRig1.Text = UserMiningTabSettings.ShipIceDroneRig1
-                cmbMineMiningRig2.Text = UserMiningTabSettings.ShipIceDroneRig2
-                cmbMineMiningRig3.Text = UserMiningTabSettings.ShipIceDroneRig3
-
-            ElseIf cmbMineOreType.Text = "Gas" Then
-                ' No MLUs for gas
-                cmbMineNumMiningUpgrades.Enabled = False
-                cmbMineMiningUpgrade.Text = UserMiningTabSettings.GasUpgrade
-
-                ' Set number of strips
-                If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> UserMiningTabSettings.GasMiningShip Then
-                    cmbMineNumLasers.Text = CStr(LaserCount)
-                Else
-                    cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumGasHarvesters)
-                End If
-
-                ' Set Strip name
-                If UserMiningTabSettings.IceStrip = "" Then
-                    cmbMineMiningLaser.Text = MaxStrip
-                Else
-                    cmbMineMiningLaser.Text = UserMiningTabSettings.GasHarvester
-                End If
+        ' Set the names and numbers for upgrades and strips
+        If cmbMineOreType.Text = "Ore" Then
+            ' Set the number of MLUs
+            If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+                cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
+            Else
+                cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumOreUpgrades)
             End If
 
+            ' Set the MLU Text - These are hardcoded so just use the default or user setting
+            cmbMineMiningUpgrade.Text = UserMiningTabSettings.OreUpgrade
+
+            ' Set number of strips
+            If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+                cmbMineNumLasers.Text = CStr(LaserCount)
+            Else
+                cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumOreMiners)
+            End If
+
+            ' Set Strip name
+            If UserMiningTabSettings.OreStrip = "" Then
+                cmbMineMiningLaser.Text = MaxStrip
+            Else
+                cmbMineMiningLaser.Text = UserMiningTabSettings.OreStrip
+            End If
+
+            cmbMineMiningRig1.Text = UserMiningTabSettings.ShipDroneRig1
+            cmbMineMiningRig2.Text = UserMiningTabSettings.ShipDroneRig2
+            cmbMineMiningRig3.Text = UserMiningTabSettings.ShipDroneRig3
+
+        ElseIf cmbMineOreType.Text = "Ice" Then
+            ' Set the number of MLUs
+            If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+                cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
+            Else
+                cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumIceUpgrades)
+            End If
+
+            ' Set the MLU Text - These are hardcoded so just use the default or user setting
+            cmbMineMiningUpgrade.Text = UserMiningTabSettings.IceUpgrade
+
+            ' Set number of strips
+            If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+                cmbMineNumLasers.Text = CStr(LaserCount)
+            Else
+                ' Update with the user settings they have, up to the max the ship can use
+                cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumIceMiners)
+            End If
+
+            ' Set Strip name
+            If UserMiningTabSettings.IceStrip = "" Then
+                cmbMineMiningLaser.Text = MaxStrip
+            Else
+                cmbMineMiningLaser.Text = UserMiningTabSettings.IceStrip
+            End If
+
+            cmbMineMiningRig1.Text = UserMiningTabSettings.ShipIceDroneRig1
+            cmbMineMiningRig2.Text = UserMiningTabSettings.ShipIceDroneRig2
+            cmbMineMiningRig3.Text = UserMiningTabSettings.ShipIceDroneRig3
+
+        ElseIf cmbMineOreType.Text = "Gas" Then
+            ' No MLUs for gas
+            cmbMineNumMiningUpgrades.Enabled = False
+            cmbMineMiningUpgrade.Text = UserMiningTabSettings.GasUpgrade
+
+            ' Set number of strips
+            If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> UserMiningTabSettings.GasMiningShip Then
+                cmbMineNumLasers.Text = CStr(LaserCount)
+            Else
+                cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumGasHarvesters)
+            End If
+
+            ' Set Strip name
+            If UserMiningTabSettings.IceStrip = "" Then
+                cmbMineMiningLaser.Text = MaxStrip
+            Else
+                cmbMineMiningLaser.Text = UserMiningTabSettings.GasHarvester
+            End If
         End If
 
         Call RefreshHaulerM3()
 
         lblMineCycleTime.Text = ""
         lblMineRange.Text = ""
+
+    End Sub
+
+    ' Loads the mining upgrades for the type of ore selected
+    Private Sub LoadMiningUpgrades()
+        Dim SQL As String
+        Dim rsEq As SQLiteDataReader
+
+        cmbMineMiningUpgrade.BeginUpdate()
+        cmbMineMiningUpgrade.Items.Clear()
+        cmbMineMiningUpgrade.Items.Add(None) ' Always add none
+
+        SQL = "SELECT typeName, value FROM INVENTORY_TYPES, TYPE_ATTRIBUTES WHERE groupID = 546 and published <> 0 and INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
+
+        Select Case cmbMineOreType.Text
+            Case "Ore"
+                SQL &= "AND attributeID = " & CStr(ItemAttributes.miningAmountBonus)
+            Case "Ice"
+                SQL &= "AND attributeID = " & CStr(ItemAttributes.iceHarvestCycleBonus)
+            Case Else
+                GoTo ProcExit
+        End Select
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsEq = DBCommand.ExecuteReader
+
+        While rsEq.Read
+            cmbMineMiningUpgrade.Items.Add(rsEq.GetString(0) & " (" & CStr(rsEq.GetValue(1)) & "%)")
+        End While
+
+        rsEq.Close()
+
+ProcExit:
+        cmbMineMiningUpgrade.EndUpdate()
 
     End Sub
 
@@ -20465,49 +20720,36 @@ Leave:
             If cmbMineRefining.Text = "4" Or cmbMineRefining.Text = "5" Then
                 ' Veld, Scordite, Pyroxeres, and Plag
                 Call EnableOreProcessingGroup(1, True)
-                Call EnableOreProcessingGroup(2, True)
-                Call EnableOreProcessingGroup(9, True)
-                Call EnableOreProcessingGroup(10, True)
 
                 ' Reprocessing 4 is needed for this instead of 5
                 cmbMineRefineryEff.Enabled = True
             End If
 
             If cmbMineRefining.Text = "5" Then
-                ' Hemo, Jaspet, Kernite, Omber, Refinery Effy
-                Call EnableOreProcessingGroup(3, True)
-                Call EnableOreProcessingGroup(4, True)
-                Call EnableOreProcessingGroup(11, True)
-                Call EnableOreProcessingGroup(12, True)
+                ' Hemo, Hed, Jaspet, Kernite, Omber, Refinery Effy
+                Call EnableOreProcessingGroup(2, True)
             End If
 
             If cmbMineRefineryEff.Text = "4" Or cmbMineRefineryEff.Text = "5" Then
-                ' Dark Ochre, Gneiss, Hedb, Spod
-                Call EnableOreProcessingGroup(5, True)
-                Call EnableOreProcessingGroup(6, True)
-                Call EnableOreProcessingGroup(13, True)
-                Call EnableOreProcessingGroup(14, True)
+                ' Dark Ochre, Gneiss, Crokite
+                Call EnableOreProcessingGroup(3, True)
             End If
 
             If cmbMineRefineryEff.Text = "5" Then
-                ' Ark, Bisot, Crokite, Mercoxit
-                Call EnableOreProcessingGroup(7, True)
-                Call EnableOreProcessingGroup(8, True)
-                Call EnableOreProcessingGroup(15, True)
-                Call EnableOreProcessingGroup(16, True)
+                ' Ark, Bisot, Spod,
+                Call EnableOreProcessingGroup(4, True)
+                Call EnableOreProcessingGroup(6, True) ' Mercoxit
                 ' Moon mining
                 If chkMineMoonMining.Checked Then
-                    Call EnableOreProcessingGroup(18, True)
-                    Call EnableOreProcessingGroup(19, True)
-                    Call EnableOreProcessingGroup(20, True)
-                    Call EnableOreProcessingGroup(21, True)
-                    Call EnableOreProcessingGroup(22, True)
+                    Call EnableOreProcessingGroup(7, True)
+                    Call EnableOreProcessingGroup(8, True)
+                    Call EnableOreProcessingGroup(9, True)
+                    Call EnableOreProcessingGroup(10, True)
+                    Call EnableOreProcessingGroup(11, True)
                 End If
                 ' Trig mining
                 If chkMineTriglavian.Checked Then
-                    Call EnableOreProcessingGroup(23, True)
-                    Call EnableOreProcessingGroup(24, True)
-                    Call EnableOreProcessingGroup(25, True)
+                    Call EnableOreProcessingGroup(5, True)
                 End If
             End If
 
@@ -20518,7 +20760,7 @@ Leave:
             End If
 
             If cmbMineRefineryEff.Enabled And cmbMineRefineryEff.Text = "5" Then
-                Call EnableOreProcessingGroup(17, True)
+                Call EnableOreProcessingGroup(12, True)
             End If
 
         Else ' Gas
@@ -20616,11 +20858,11 @@ Leave:
             End If
 
             If cmbMineBoosterShipName.Text = Rorqual Then
-                chkMineRorqDeployedMode.Enabled = True
+                chkMineIndyCoreDeployedMode.Enabled = True
                 cmbMineIndustReconfig.Enabled = True
                 lblMineIndustrialReconfig.Enabled = True
             Else
-                chkMineRorqDeployedMode.Enabled = False
+                chkMineIndyCoreDeployedMode.Enabled = False
                 cmbMineIndustReconfig.Enabled = False
                 lblMineIndustrialReconfig.Enabled = False
             End If
@@ -20634,7 +20876,7 @@ Leave:
             chkMineForemanLaserRangeBoost.Enabled = False
             lblMineBoosterShipSkill.Enabled = False
             cmbMineBoosterShipSkill.Enabled = False
-            chkMineRorqDeployedMode.Enabled = False
+            chkMineIndyCoreDeployedMode.Enabled = False
             cmbMineIndustReconfig.Enabled = False
             lblMineIndustrialReconfig.Enabled = False
         End If
@@ -20687,10 +20929,16 @@ Leave:
             Return False
         End If
 
+        If (chkMineT1Crystals.Checked Or chkMineT2Crystals.Checked) And (chkMineTypeA.Checked = False And chkMineTypeB.Checked = False And chkMineTypeC.Checked = False) Then
+            MsgBox("You must select a Crystal Type when selecting T1 or T2 crystals", vbExclamation, Application.ProductName)
+            txtMineNumberMiners.Focus()
+            Return False
+        End If
+
         ' Make sure a refine type is selected for ice and ore
         If chkMineRefinedOre.Checked = False And chkMineCompressedOre.Checked = False And chkMineUnrefinedOre.Checked = False And cmbMineOreType.Text <> "Gas" Then
             ' Can't calculate nothing
-            MsgBox("You must select one ore type to calculate.", vbExclamation, Application.ProductName)
+            MsgBox("You must select one ore Processing Type to calculate.", vbExclamation, Application.ProductName)
             chkMineRefinedOre.Focus()
             Return False
         End If
@@ -20706,81 +20954,6 @@ Leave:
 
     End Function
 
-    ' Returns the Mining bonus multiplier for crystals
-    Private Function GetMiningCrystalBonus(ByVal OreName As String, ByRef CrystalType As String) As Double
-        Dim BonusValue As Double = 1
-        Dim TempCrystalType As String = ""
-        Dim OreProcessingSkill As Integer
-        Dim OreLookup As String = ""
-        Dim rsOreType As SQLiteDataReader
-        Dim SQL As String
-        Dim AttribLookup As New EVEAttributes
-        Dim CrystalTech As String = ""
-
-        Dim TempOreName As String = ""
-
-        ' Reset the ore name if it's high yield
-        If OreName.Contains(" ") And Not OreName.Contains("Ochre") Then
-            TempOreName = OreName.Substring(InStr(OreName, " "))
-        ElseIf OreName.Contains("Ochre") Then
-            TempOreName = "Dark Ochre"
-        Else
-            TempOreName = OreName
-        End If
-
-        If TempOreName <> "Talassonite" And TempOreName <> "Bezdnacine" And TempOreName <> "Rakovene" Then
-            SQL = "SELECT BELT_TYPE FROM ORES WHERE ORE_NAME = '" & TempOreName & "' "
-            SQL &= "AND BELT_TYPE LIKE '%Moon Asteroids' AND BELT_TYPE <> 'Moon Asteroids'"
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsOreType = DBCommand.ExecuteReader
-
-            If rsOreType.Read Then
-                ' These are moon mining ore skills - in the table I labeled them asteroids and on the labels for the skills 'Ore'
-                OreLookup = rsOreType.GetString(0).Replace("Asteroids", "Ore")
-            Else
-                OreLookup = TempOreName
-            End If
-
-            rsOreType.Close()
-
-            OreProcessingSkill = GetOreProcessingSkill(OreLookup)
-
-            ' See if they have T1 or T2 - and use T1 if they select T2 but can't use them
-            If (OreProcessingSkill >= 3 And rbtnMineT1Crystals.Checked And rbtnMineT1Crystals.Enabled = True) _
-                Or (rbtnMineT2Crystals.Checked And OreProcessingSkill = 3 And rbtnMineT2Crystals.Enabled = True) Then
-                CrystalTech = "I"
-                TempCrystalType = "T1"
-            ElseIf OreProcessingSkill >= 4 And rbtnMineT2Crystals.Checked And rbtnMineT2Crystals.Enabled = True Then
-                CrystalTech = "II"
-                TempCrystalType = "T2"
-            End If
-
-            If TempCrystalType <> "" Then
-                CrystalType = TempCrystalType
-                ' Look up crystal bonus value
-                Dim TempCyrstalOreName As String
-                If OreLookup.Contains("Moon") Then
-                    TempCyrstalOreName = OreLookup
-                Else
-                    TempCyrstalOreName = TempOreName
-                End If
-                BonusValue = AttribLookup.GetAttribute(TempCyrstalOreName & " Mining Crystal " & CrystalTech, ItemAttributes.specialisationAsteroidYieldMultiplier)
-            Else
-                CrystalType = None
-            End If
-
-            ' Add rig value for mercoxit
-            If cmbMineMiningRig1.Text = "Mercoxit Opt" And OreName.Contains("Mercoxit") Then
-                BonusValue += AttribLookup.GetAttribute(32817, ItemAttributes.miningAmountBonus) / 100
-            End If
-        Else
-            CrystalType = None
-        End If
-
-        Return BonusValue
-
-    End Function
-
     ' Loads the cargo m3 for hauler if selected
     Private Sub RefreshHaulerM3()
         ' If the hauler is not checked and they don't have a m3 set, load the M3 of the ship selected
@@ -20789,12 +20962,13 @@ Leave:
             ' Load the ore hold of the ship selected
             Select Case cmbMineShipName.Text
                 Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.specialOreHoldCapacity), 2)
+                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity), 2)
                 Case Mackinaw, Retriever
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.specialOreHoldCapacity) * (1 + (CInt(cmbMineBaseShipSkill.Text) * 0.05)), 2)
+                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) _
+                                                        * (1 + (CInt(cmbMineBaseShipSkill.Text) * (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGeneralMiningHoldCapacity) / 100))), 2)
                 Case Orca, Rorqual, Porpoise
                     ' Use special ore hold, fleet hanger - like to use cargo too but that's not in attributes?
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.specialOreHoldCapacity) + AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.fleetHangarCapacity), 2)
+                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) + AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.fleetHangarCapacity), 2)
                 Case Else
                     txtMineHaulerM3.Text = "0.00"
             End Select
@@ -20806,7 +20980,7 @@ Leave:
         Dim Mining As Double
         Dim Astrogeology As Double
         Dim BaseShipBonus As Double
-        Dim Exhumers As Double
+        Dim AdvancedShipBonus As Double
         Dim MiningUpgrades As Double
         Dim HighwallImplant As Double
         Dim MichiImplant As Double
@@ -20814,9 +20988,10 @@ Leave:
         Dim AttribLookup As New EVEAttributes
 
         Dim m3YieldperCycle As Double
+        Dim MiningLasers As Integer = CInt(cmbMineNumLasers.Text)
 
         ' Get base yield and multiply by number of lasers
-        m3YieldperCycle = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.miningAmount) * CInt(cmbMineNumLasers.Text)
+        m3YieldperCycle = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.miningAmount) * MiningLasers
 
         If cmbMineOreType.Text = "Ore" Then
 
@@ -20833,41 +21008,17 @@ Leave:
                 Astrogeology = 0
             End If
 
-            If chkMineMichiImplant.Enabled = True And chkMineMichiImplant.Checked = True Then
-                MichiImplant = AttribLookup.GetAttribute(chkMineMichiImplant.Text, ItemAttributes.miningAmountBonus)
-            Else
-                MichiImplant = 0
-            End If
-
-            ' Yield
-            If cmbMineShipName.Enabled = True Then
-                ' Can't look up the bonuses easily
-                Select Case cmbMineShipName.Text
-                    Case Venture, Prospect
-                        ' 5% per level plus 100% role bonus
-                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
-                        RoleBonus = 2
-                    Case Endurance
-                        ' 5% per level plus 300% role bonus
-                        BaseShipBonus = 0.05 * CInt(cmbMineBaseShipSkill.Text)
-                        RoleBonus = 4
-                    Case Else
-                        BaseShipBonus = 0
-                        RoleBonus = 1
-                End Select
-            Else
-                BaseShipBonus = 0
-            End If
-
-            ' Look up each based on bonus
+            ' Mining Upgrades - Look up the upgrade bonus from text selected
             If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
                 ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                MiningUpgrades = CInt(TempUpgradeText.Substring(0, 2))
+                Dim S As Integer = InStr(cmbMineMiningUpgrade.Text, "(")
+                Dim E As Integer = InStr(cmbMineMiningUpgrade.Text, "%") - 1
+                MiningUpgrades = CInt(cmbMineMiningUpgrade.Text.Substring(S, E - S))
             Else
                 MiningUpgrades = 0
             End If
 
+            ' Implant bonus
             If cmbMineHighwallImplant.Text <> None Then
                 'Inherent Implants 'Highwall' Mining MX-1001
                 HighwallImplant = AttribLookup.GetAttribute("Inherent Implants 'Highwall' Mining " & cmbMineHighwallImplant.Text.Substring(11), ItemAttributes.miningAmountBonus)
@@ -20875,44 +21026,59 @@ Leave:
                 HighwallImplant = 0
             End If
 
-            If cmbMineAdvShipSkill.Enabled = True Then
-                Select Case cmbMineShipName.Text
-                    Case Prospect
-                        ' 5% per level plus for the expedition frigate skill (we'll use exhumers combo)
-                        Exhumers = 0.05 * CInt(cmbMineAdvShipSkill.Text)
-                    Case Else
-                        Exhumers = 0
-                End Select
+            ' Michii Implant bonus
+            If chkMineMichiImplant.Enabled = True And chkMineMichiImplant.Checked = True Then
+                MichiImplant = AttribLookup.GetAttribute(chkMineMichiImplant.Text, ItemAttributes.miningAmountBonus)
             Else
-                Exhumers = 0
+                MichiImplant = 0
             End If
 
+            ' Base ship yield bonus
+            If cmbMineShipName.Enabled = True Then
+                ' Just look both up for any ship and it will find the bonus regardless
+                BaseShipBonus = AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningFrigatesBonusOreMiningYield)
+                BaseShipBonus += AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusOreMiningYield)
+                BaseShipBonus *= CInt(cmbMineBaseShipSkill.Text)
+            Else
+                BaseShipBonus = 0
+            End If
+
+            ' Advanced ship bonus 
+            If cmbMineAdvShipSkill.Enabled = True Then
+                ' Just look both up for any ship and it will find the bonus regardless
+                AdvancedShipBonus = AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusOreMiningYield)
+                AdvancedShipBonus += AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusOreMiningYield)
+                AdvancedShipBonus *= CInt(cmbMineAdvShipSkill.Text)
+            Else
+                AdvancedShipBonus = 0
+            End If
+
+            ' Role bonus
+            RoleBonus = (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusOreMiningYield) / 100 + 1)
+
             ' Add skills
-            m3YieldperCycle = m3YieldperCycle * (1 + (AttribLookup.GetAttribute(MiningSkillTypeID, ItemAttributes.miningAmountBonus) * Mining) / 100)
-            m3YieldperCycle = m3YieldperCycle * (1 + (AttribLookup.GetAttribute(AstrogeologySkillTypeID, ItemAttributes.miningAmountBonus) * Astrogeology) / 100)
-            m3YieldperCycle = m3YieldperCycle * (1 + (MichiImplant / 100))
-            m3YieldperCycle = m3YieldperCycle * (1 + (HighwallImplant / 100))
-            m3YieldperCycle = m3YieldperCycle * ((1 + (MiningUpgrades / 100)) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-            m3YieldperCycle = m3YieldperCycle * (1 + BaseShipBonus)
-            m3YieldperCycle = m3YieldperCycle * (1 + Exhumers)
-            m3YieldperCycle = m3YieldperCycle * RoleBonus
+            m3YieldperCycle *= (1 + (AttribLookup.GetAttribute(MiningSkillTypeID, ItemAttributes.miningAmountBonus) * Mining) / 100)
+            m3YieldperCycle *= (1 + (AttribLookup.GetAttribute(AstrogeologySkillTypeID, ItemAttributes.miningAmountBonus) * Astrogeology) / 100)
+            m3YieldperCycle *= (1 + (MichiImplant / 100))
+            m3YieldperCycle *= (1 + (HighwallImplant / 100))
+            m3YieldperCycle *= ((1 + (MiningUpgrades / 100)) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+            m3YieldperCycle *= (1 + (BaseShipBonus / 100))
+            m3YieldperCycle *= (1 + (AdvancedShipBonus / 100))
+            m3YieldperCycle *= RoleBonus
 
             Return m3YieldperCycle
 
         ElseIf cmbMineOreType.Text = "Ice" Then
-            ' One block per cycle
-            Return (1 * CInt(cmbMineNumLasers.Text))
+            ' One block per cycle - no yield bonus currently
+            Return (1 * MiningLasers)
 
         ElseIf cmbMineOreType.Text = "Gas" Then
 
-            ' Role(Bonus)
-            ' 100% bonus to mining yield and gas cloud harvesting
-            Select Case cmbMineShipName.Text
-                Case Prospect, Venture
-                    m3YieldperCycle = m3YieldperCycle * 2
-            End Select
+            ' Look up any bonuses for role yield
+            m3YieldperCycle *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusGasHarvestingYield) / 100 + 1)
 
             Return m3YieldperCycle
+
         End If
 
         Return 0
@@ -20929,8 +21095,10 @@ Leave:
     Private Const MiningDirectorSkillID As Integer = 22552
     Private Const MiningForemanBurst1_ID As Integer = 42528
     Private Const MiningForemanBurst2_ID As Integer = 43551
-    Private Const IndustrialCore1_ID As Integer = 28583
-    Private Const IndustrialCore2_ID As Integer = 42890
+    Private Const CapitalIndustrialCore1_ID As Integer = 28583
+    Private Const CapitalIndustrialCore2_ID As Integer = 42890
+    Private Const LargeIndustrialCore1_ID As Integer = 58945
+    Private Const LargeIndustrialCore2_ID As Integer = 58950
 
     ' Calculates the total burst bonus from ships and charges
     Private Function CalculateBurstBonus(BurstType As BurstBonusType, BoostCheckRef As CheckBox) As Double
@@ -20969,15 +21137,16 @@ Leave:
             GangBurstBonus = 0
         End If
 
-        ' Ship boost to bursts - all in traits so hard code here
+        ' Add Industrial core bonus
+        GangBurstBonus *= (1 + GetIndustrialCorebonus(cmbMineBoosterShipName.Text, CoreBonus.BurstStrength))
+
+        ' Ship boost to bursts - attributes aren't clear for these bonuses so hardcode
         Select Case cmbMineBoosterShipName.Text
             Case Porpoise
                 GangBurstBonus *= (1 + (0.02 * CInt(cmbMineBoosterShipSkill.Text)))
             Case Orca
                 GangBurstBonus *= (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
             Case Rorqual
-                ' Rorq industrial core bonus first
-                GangBurstBonus *= (1 + GetIndustrialCorebonus(CoreBonus.BurstStrength))
                 GangBurstBonus *= (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% per level ship bonus
         End Select
 
@@ -20986,8 +21155,10 @@ Leave:
     End Function
 
     ' Calculates the range for the miner selected and boosts applied
-    Private Function CalculateMiningRange(BaseRange As Double) As Double
+    Private Function CalculateMiningRange(BaseRange As Double, OreType As String) As Double
         Dim CalculatedRange As Double
+        Dim Attriblookup As New EVEAttributes
+        Dim BaseShipLevel As Integer = CInt(cmbMineBaseShipSkill.Text)
 
         ' Calc range with bursts
         If chkMineUseFleetBooster.Checked Then
@@ -20996,11 +21167,11 @@ Leave:
             CalculatedRange = BaseRange
         End If
 
-        ' Finally, if we have a hulk or covetor, then add the range bonus
-        Select Case cmbMineShipName.Text
-            Case Covetor, Hulk
-                CalculatedRange = CalculatedRange * (1 + (0.05 * CInt(cmbMineBaseShipSkill.Text)))
-        End Select
+        If OreType = "Ore" Then
+            CalculatedRange *= (BaseShipLevel * (Attriblookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusOreMiningRange)) / 100 + 1)
+        ElseIf OreType = "Ice" Then
+            CalculatedRange *= (BaseShipLevel * (Attriblookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusIceHarvestingRange)) / 100 + 1)
+        End If
 
         Return CalculatedRange
 
@@ -21012,18 +21183,29 @@ Leave:
         BurstStrength = 2
     End Enum
 
-    ' Returns the bonus as a percentage for the industrial core for the type sent
-    Private Function GetIndustrialCorebonus(BonusType As CoreBonus) As Double
+    ' Returns the bonus as a percentage for the industrial core for the type sent - only for orca and rorq
+    Private Function GetIndustrialCorebonus(ShipName As String, BonusType As CoreBonus) As Double
         Dim ReturnBonus As Double = 0
         Dim AttribLookup As New EVEAttributes
         Dim CoreID As Integer
 
         ' Only return the bonus if it's on and we are using a booster
-        If chkMineUseFleetBooster.Checked And chkMineRorqDeployedMode.Checked <> False Then
-            If chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
-                CoreID = IndustrialCore2_ID
+        If chkMineUseFleetBooster.Checked And chkMineIndyCoreDeployedMode.Checked <> False Then
+            If ShipName = Rorqual Then
+                If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
+                    CoreID = CapitalIndustrialCore2_ID
+                Else
+                    CoreID = CapitalIndustrialCore1_ID
+                End If
+            ElseIf ShipName = Orca Then
+
+                If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
+                    CoreID = LargeIndustrialCore2_ID
+                Else
+                    CoreID = LargeIndustrialCore1_ID
+                End If
             Else
-                CoreID = IndustrialCore1_ID
+                Return ReturnBonus
             End If
 
             Select Case BonusType
@@ -21046,6 +21228,9 @@ Leave:
         Dim TempCycleTime As Double
         Dim AttribLookup As New EVEAttributes
 
+        Dim BaseShipLevel As Integer = CInt(cmbMineBaseShipSkill.Text)
+        Dim AdvShipLevel As Integer = CInt(cmbMineAdvShipSkill.Text)
+
         ' Boosters use one module and charges for boosting - Ascension
         If chkMineUseFleetBooster.Checked Then
             GangBurstBonus = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
@@ -21056,139 +21241,78 @@ Leave:
         ' Get the adjusted time with bursts
         TempCycleTime = BaseCycleTime * (1 + GangBurstBonus)
 
-        ' Changed with YC.118.9.1 - 9/2016
-        Select Case cmbMineShipName.Text
-            Case Procurer
-                ' 2% reduction per level
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-            Case Retriever
-                ' 2% reduction per level
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-            Case Covetor
-                ' 2% reduction
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02))
-                TempCycleTime = TempCycleTime * (1 - 0.25) ' 25% role bonus
-            Case Skiff
-                ' 2% reduction per level for barges and 2% reduction for exhumers
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineAdvShipSkill.Text) * 0.02))
-            Case Mackinaw
-                ' 2% reduction per level for barges and 2% reduction for exhumers
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineAdvShipSkill.Text) * 0.02))
-            Case Hulk
-                ' 2% reduction for mining barges and 3% reduction for exhumers
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.02)) * (1 - (CDec(cmbMineAdvShipSkill.Text) * 0.03))
-                TempCycleTime = TempCycleTime * (1 - 0.25) ' 25% role bonus
-            Case Endurance
-                ' 5% reduction for Expedition Frigate level and 5% for mining frigate level plus 50% role bonus
-                If cmbMineOreType.Text = "Ice" Then
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05)) * (1 - (CDec(cmbMineAdvShipSkill.Text) * 0.05)) * (1 - 0.5)
+        Select Case cmbMineOreType.Text
+            Case "Ore"
+                ' Frigate bonus
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusMiningLaserDuration) / 100 * AdvShipLevel) + 1)
+                ' Exhumer bonus
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusOreMiningDuration) / 100 * AdvShipLevel) + 1)
+                ' Role bonus
+                TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusOreMiningDuration) / 100 + 1)
+
+            Case "Ice"
+                ' Frigate bonus
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningFrigateBonusIceHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusIceHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                ' Mining Barge and Exhumer bonuses
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusIceHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusIceHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                ' Role bonus
+                TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusIceHarvestingDuration) / 100 + 1)
+
+                ' For Ice, check for duration reduction bonus, implant, and upgrades
+                If cmbMineGasIceHarvesting.Enabled Then
+                    ' Apply the ice harvesting bonus
+                    TempCycleTime *= (CDec(cmbMineGasIceHarvesting.Text) * AttribLookup.GetAttribute(16281, ItemAttributes.iceHarvestCycleBonus) / 100) + 1
                 End If
+
+                ' Apply the upgrades
+                If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
+                    ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
+                    Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
+                    Dim TextStart As Integer = InStr(TempUpgradeText, "(")
+                    Dim TextLength As Integer = InStr(TempUpgradeText, ")") - TextStart - 1
+                    TempCycleTime *= ((1 + (CDbl(TempUpgradeText.Substring(TextStart, TextLength)) / 100)) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
+                End If
+
+                ' Inherent Implants 'Yeti' Ice Harvesting IH-1001
+                Select Case cmbMineHighwallImplant.Text
+                    Case "'Yeti' IH-1001"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(27103, ItemAttributes.iceHarvestCycleBonus) / 100)
+                    Case "'Yeti' IH-1003"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(22570, ItemAttributes.iceHarvestCycleBonus) / 100)
+                    Case "'Yeti' IH-1005"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(22571, ItemAttributes.iceHarvestCycleBonus) / 100)
+                End Select
+
+                ' Apply the rig bonus if selected
+                If cmbMineMiningRig1.Text = "Ice Harvesting" Then
+                    ' 12% cycle reduction
+                    TempCycleTime = TempCycleTime * ((1 + AttribLookup.GetAttribute(32819, ItemAttributes.iceHarvestCycleBonus) / 100))
+                End If
+
+            Case "Gas"
+                ' Frigate bonus
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                ' Mining Barge and Exhumer bonuses
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGasHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                ' Role bonus
+                TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusGasHarvesterDuration) / 100 + 1)
+
+                ' Gas Harvesting Duration Implants Eifyr and Co. 'Alchemist' Gas Harvesting GH-801
+                Select Case cmbMineHighwallImplant.Text
+                    Case "'Alchemist' GH-801"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(27240, ItemAttributes.durationBonus) / 100)
+                    Case "'Alchemist' GH-803"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(27238, ItemAttributes.durationBonus) / 100)
+                    Case "'Alchemist' GH-805"
+                        TempCycleTime *= (1 + AttribLookup.GetAttribute(27239, ItemAttributes.durationBonus) / 100)
+                End Select
+
         End Select
 
-        If cmbMineOreType.Text = "Ice" Then
-            ' For Ice, check for duration reduction bonus, implant, and upgrades
-            If cmbMineGasIceHarvesting.Enabled Then
-                ' Apply the ice harvesting bonus
-                TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineGasIceHarvesting.Text) * 0.05))
-            End If
-
-            ' Apply the upgrades
-            If cmbMineMiningUpgrade.Enabled = True And cmbMineMiningUpgrade.Text <> None Then
-                ' Replace the percent if it's in the string so we can take the 9 or 10% bonus easier
-                Dim TempUpgradeText As String = cmbMineMiningUpgrade.Text.Replace("%", "")
-                TempCycleTime = TempCycleTime * ((1 - (CDec(CDbl(TempUpgradeText.Substring(0, 2)) / 100))) ^ CInt(cmbMineNumMiningUpgrades.Text)) ' Diminishing returns
-            End If
-
-            ' Finally include the implant value
-            Dim ImplantBonus As Double = 0
-            'Inherent Implants 'Yeti' Ice Harvesting IH-1001
-            Select Case cmbMineHighwallImplant.Text
-                Case "'Yeti' IH-1001"
-                    ImplantBonus = AttribLookup.GetAttribute(27103, ItemAttributes.iceHarvestCycleBonus) / 100
-                Case "'Yeti' IH-1003"
-                    ImplantBonus = AttribLookup.GetAttribute(22570, ItemAttributes.iceHarvestCycleBonus) / 100
-                Case "'Yeti' IH-1005"
-                    ImplantBonus = AttribLookup.GetAttribute(22571, ItemAttributes.iceHarvestCycleBonus) / 100
-            End Select
-            TempCycleTime = TempCycleTime * (1 + ImplantBonus)
-
-            ' Apply the rig bonus if selected
-            If cmbMineMiningRig1.Text = "Ice Harvesting" Then
-                ' 12% cycle reduction
-                TempCycleTime = TempCycleTime * ((1 + AttribLookup.GetAttribute(32819, ItemAttributes.iceHarvestCycleBonus) / 100))
-            End If
-
-        ElseIf cmbMineOreType.Text = "Gas" Then
-            ' Gas, look for venture ship and implant
-
-            Select Case cmbMineShipName.Text
-                Case Prospect, Venture, Endurance
-                    ' 5% reduction to gas cloud harvesting duration per level
-                    TempCycleTime = TempCycleTime * (1 - (CDec(cmbMineBaseShipSkill.Text) * 0.05))
-            End Select
-
-            ' Finally include the implant value
-            Dim ImplantBonus As Double = 0
-            'Eifyr and Co. 'Alchemist' Gas Harvesting GH-801
-            Select Case cmbMineHighwallImplant.Text
-                Case "'Alchemist' GH-801"
-                    ImplantBonus = AttribLookup.GetAttribute(27240, ItemAttributes.durationBonus) / 100
-                Case "'Alchemist' GH-803"
-                    ImplantBonus = AttribLookup.GetAttribute(27238, ItemAttributes.durationBonus) / 100
-                Case "'Alchemist' GH-805"
-                    ImplantBonus = AttribLookup.GetAttribute(27239, ItemAttributes.durationBonus) / 100
-            End Select
-
-            TempCycleTime = TempCycleTime * (1 + ImplantBonus)
-
-        End If
-
         Return TempCycleTime
-
-    End Function
-
-    ' Returns the ore processing skill level on the screen for the ore name sent
-    Private Function GetOreProcessingSkill(ByVal OreName As String) As Integer
-        Dim i As Integer
-        Dim CurrentProcessingLabel As String
-
-        If cmbMineOreType.Text = "Ice" Then
-            OreName = "Ice Processing"
-        End If
-
-        If OreName.Contains("Ochre") Then
-            OreName = "Dark Ochre"
-        End If
-
-        For i = 1 To MineProcessingCombos.Count - 1
-            CurrentProcessingLabel = MineProcessingLabels(i).Text
-
-            ' Special processing for Dark Ochre
-            If CurrentProcessingLabel = "Dark" Then
-                CurrentProcessingLabel = "Dark Ochre"
-            End If
-
-            If MineProcessingCombos(i).Enabled = True And CBool(InStr(OreName, CurrentProcessingLabel)) Then
-                ' Found it, return value
-                Return CInt(MineProcessingCombos(i).Text)
-            Else
-                ' If it didn't find it, it might be a moon ore - look up the type and check each of those
-                Dim rsCheck As SQLiteDataReader
-                DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG WHERE IT.groupID = IG.groupID and typeName = '" & OreName & "'", EVEDB.DBREf)
-                rsCheck = DBCommand.ExecuteReader
-
-                If rsCheck.Read Then
-                    If rsCheck.GetString(0).Contains(" ") Then
-                        If CurrentProcessingLabel.Contains(rsCheck.GetString(0).Substring(0, InStr(rsCheck.GetString(0), " ") - 1)) Then
-                            Return CInt(MineProcessingCombos(i).Text)
-                        End If
-                    End If
-                End If
-                rsCheck.Close()
-            End If
-        Next
-
-        Return 0
 
     End Function
 
@@ -21249,19 +21373,19 @@ Leave:
     ' Processes the industrial core checks
     Private Sub UpdateIndustrialCoreCheck()
 
-        If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then ' Show T2
-            chkMineRorqDeployedMode.Text = "Industrial Core II Active"
-            chkMineRorqDeployedMode.ForeColor = Color.DarkOrange
-        ElseIf chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Checked Then ' Show T1 
-            chkMineRorqDeployedMode.Text = "Industrial Core I Active"
-            chkMineRorqDeployedMode.ForeColor = Color.Black
+        If chkMineIndyCoreDeployedMode.Checked And chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then ' Show T2
+            chkMineIndyCoreDeployedMode.Text = "Industrial Core II Active"
+            chkMineIndyCoreDeployedMode.ForeColor = Color.DarkOrange
+        ElseIf chkMineIndyCoreDeployedMode.Checked And chkMineIndyCoreDeployedMode.CheckState = CheckState.Checked Then ' Show T1 
+            chkMineIndyCoreDeployedMode.Text = "Industrial Core I Active"
+            chkMineIndyCoreDeployedMode.ForeColor = Color.Black
         Else
             ' Inactive
-            chkMineRorqDeployedMode.Text = "Industrial Core Inactive"
-            chkMineRorqDeployedMode.ForeColor = Color.Black
+            chkMineIndyCoreDeployedMode.Text = "Industrial Core Inactive"
+            chkMineIndyCoreDeployedMode.ForeColor = Color.Black
         End If
 
-        If chkMineRorqDeployedMode.Checked = True Then
+        If chkMineIndyCoreDeployedMode.Checked = True Then
             lblMineIndustrialReconfig.Enabled = True
             cmbMineIndustReconfig.Enabled = True
         Else
@@ -21281,11 +21405,11 @@ Leave:
 
         Dim HWUsage As Double = 0
 
-        If chkMineRorqDeployedMode.Enabled = True Then
-            If chkMineRorqDeployedMode.Checked And chkMineRorqDeployedMode.CheckState = CheckState.Indeterminate Then
+        If chkMineIndyCoreDeployedMode.Enabled = True Then
+            If chkMineIndyCoreDeployedMode.Checked And chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
                 ' Checked T2
                 HWUsage = T2CoreHWUsage
-            ElseIf chkMineRorqDeployedMode.Checked Then
+            ElseIf chkMineIndyCoreDeployedMode.Checked Then
                 ' Checked T1
                 HWUsage = T1CoreHWUsage
             Else
@@ -21344,11 +21468,14 @@ Leave:
         Dim IPH As Double
         Dim UnitsPerHour As Double
         Dim OreUnitsPerCycle As Double
+        Dim ResidueProbability As Double
+        Dim ResidueVolumeMuliplier As Double
         Dim DroneYield As Double
         Dim UnitsToRefine As Integer
         Dim RefineType As String
         Dim Space As String ' Location
         Dim BeltType As String ' What type of ore it is - Moon, Ice, Ore
+        Dim CycleTime As Double
     End Structure
 
     ' For sorting a list of Mining Ore
@@ -21362,6 +21489,21 @@ Leave:
         End Function
 
     End Class
+
+    Private Sub cmbMineMiningUpgrade_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbMineMiningUpgrade.SelectedIndexChanged
+        If cmbMineMiningUpgrade.Text = None Then
+            cmbMineNumMiningUpgrades.Enabled = False
+        Else
+            cmbMineNumMiningUpgrades.Enabled = True
+        End If
+    End Sub
+
+    Private Sub lstMineGrid_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstMineGrid.SelectedIndexChanged
+        If lstMineGrid.SelectedIndices.Count <> 0 Then
+            ' Set the cycle time for the line selected
+            lblMineCycleTime.Text = lstMineGrid.SelectedItems(0).SubItems(11).Text
+        End If
+    End Sub
 
 #End Region
 

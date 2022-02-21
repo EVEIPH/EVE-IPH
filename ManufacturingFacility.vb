@@ -890,7 +890,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Long, BPCategoryID As Long, BlueprintTech As Integer, BPID As Integer,
+    Public Sub LoadFacilityActivities(BPGroupID As Integer, BPCategoryID As Integer, BlueprintTech As Integer, BPID As Integer,
                                       BuildMatTypeSelection As BuildMatType)
 
         LoadingActivities = True
@@ -899,8 +899,7 @@ Public Class ManufacturingFacility
         cmbFacilityActivities.BeginUpdate()
 
         ' If it's a reaction, only load that activity and manufacturing for fuel blocks
-        If BPGroupID = ItemIDs.ReactionBiochmeicalsGroupID Or BPGroupID = ItemIDs.ReactionCompositesGroupID Or BPGroupID = ItemIDs.ReactionPolymersGroupID Or
-            BPGroupID = ItemIDs.ReactionsIntermediateGroupID Or BPCategoryID = ItemIDs.BoosterCategoryID Then
+        If IsReaction(BPGroupID) Or BPCategoryID = ItemIDs.BoosterCategoryID Then
             cmbFacilityActivities.Items.Clear()
             cmbFacilityActivities.Items.Add(ActivityReactions)
             cmbFacilityActivities.Items.Add(ActivityManufacturing)
@@ -2153,11 +2152,11 @@ Public Class ManufacturingFacility
                     Case ProgramLocation.MiningTab
                         Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
                     Case ProgramLocation.ReprocessingPlant
-                        Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
-                    Case ProgramLocation.SovBelts
-                        Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
-                    Case ProgramLocation.IceBelts
-                        Call CType(SelectedControlForm, frmIceBeltFlip).RefreshGrids()
+                        '    Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
+                        'Case ProgramLocation.SovBelts
+                        '    Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
+                        'Case ProgramLocation.IceBelts
+                        '    Call CType(SelectedControlForm, frmIceBeltFlip).RefreshGrids()
                 End Select
             End If
         End If
@@ -3802,81 +3801,6 @@ Public Enum RefineMaterialType
     Scrapmetal = 4
 End Enum
 
-Public Enum ItemIDs
-    None = 0
-
-    ' These are all the capital ships that use capital parts
-    CapitalIndustrialShipGroupID = 883
-    CarrierGroupID = 547
-    DreadnoughtGroupID = 485
-    FreighterGroupID = 513
-    IndustrialCommandShipGroupID = 941
-    JumpFreighterGroupID = 902
-    SupercarrierGroupID = 659
-    FAXGroupID = 1538
-    TitanGroupID = 30
-    BoosterGroupID = 303
-    BoosterCategoryID = 20
-
-    ' T3 items
-    StrategicCruiserGroupID = 963
-    TacticalDestroyerGroupID = 1305
-    SubsystemCategoryID = 32
-
-    ' T3 Bps for facility updates
-    StrategicCruiserBPGroupID = 996
-    TacticalDestroyerBPGroupID = 1309
-    SubsystemBPGroupID = 973
-
-    ShipCategoryID = 6 ' for loading invention and copying and basic t1
-    FrigateGroupID = 25
-
-    ' Reactions
-    ReactionsIntermediateGroupID = 428
-    ReactionCompositesGroupID = 429
-    ReactionPolymersGroupID = 974
-    ReactionBiochmeicalsGroupID = 712
-
-    ConstructionComponentsGroupID = 334 ' Use this for all non-capital components
-    ComponentCategoryID = 17
-    CapitalComponentGroupID = 873
-    AdvCapitalComponentGroupID = 913
-    ProtectiveComponentGroupID = -3 ' My manual group ID until they fix it in the SDE
-
-    BlueprintCategoryID = 9
-    FrigateBlueprintGroupID = 105
-
-    AsteroidsCategoryID = 25 ' category for asteroids,ice,moons = 25
-    ' Ice group id = 465
-    IceGroupID = 465
-
-    ' Groupids for moon ores - 1884, 1920, 1921, 1922, 1923
-    CommonMoonAsteroids = 1920
-    ExceptionalMoonAsteroids = 1923
-    RareMoonAsteroids = 1922
-    UbiquitousMoonAsteroids = 1884
-    UncommonMoonAsteroids = 1921
-
-    ' Groupid's for asteroid types - regular ore
-    Arkonor = 450
-    Bistot = 451
-    Crokite = 452
-    DarkOchre = 453
-    Gneiss = 467
-    Hedbergite = 454
-    Hemorphite = 455
-    Jaspet = 456
-    Kernite = 457
-    Mercoxit = 468
-    Omber = 469
-    Plagioclase = 458
-    Pyroxeres = 459
-    Scordite = 460
-    Spodumain = 461
-    Veldspar = 462
-
-End Enum
-
 Public Enum FacilityTypes
     None = -1
     Station = 0
@@ -4517,13 +4441,13 @@ ExitBlock:
                         Call CType(Application.OpenForms.Item("frmReprocessingPlant"), frmReprocessingPlant).InitializeReprocessingFacility()
                     End If
 
-                    If Location <> ProgramLocation.IceBelts And IceBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
-                        Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
-                    End If
+                    'If Location <> ProgramLocation.IceBelts And IceBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
+                    '    Call CType(Application.OpenForms.Item("frmIceBeltFlip"), frmIceBeltFlip).InitializeReprocessingFacility()
+                    'End If
 
-                    If Location <> ProgramLocation.SovBelts And OreBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
-                        Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
-                    End If
+                    'If Location <> ProgramLocation.SovBelts And OreBeltFlipOpen And FacilityProductionType = ProductionType.Reprocessing Then
+                    '    Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
+                    'End If
                 Else
                     ' non- reprocessing is just limited to bp and manufacturing tab
                     If Location = ProgramLocation.BlueprintTab Then

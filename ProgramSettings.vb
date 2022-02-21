@@ -385,7 +385,8 @@ Public Class ProgramSettings
     Public DefaultMiningNumIceUpgrades As Integer = 0
     Public DefaultMiningNumGasUpgrades As Integer = 0
     Public DefaultMiningMichiiImplant As Boolean = False
-    Public DefaultMiningT2Crystals As Boolean = False
+    Public DefaultMiningCrystals As Boolean = False
+    Public DefaultMiningCrystalType As Boolean = False
     Public DefaultMiningOreImplant As String = None
     Public DefaultMiningIceImplant As String = None
     Public DefaultMiningGasImplant As String = None
@@ -2585,7 +2586,8 @@ Public Class ProgramSettings
                     .NumIceUpgrades = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumIceUpgrades", DefaultMiningNumIceUpgrades))
                     .NumGasUpgrades = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "NumGasUpgrades", DefaultMiningNumGasUpgrades))
                     .MichiiImplant = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "MichiiImplant", DefaultMiningMichiiImplant))
-                    .T2Crystals = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "T2Crystals", DefaultMiningT2Crystals))
+                    .T1Crystals = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "T1Crystals", DefaultMiningCrystals))
+                    .T2Crystals = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "T2Crystals", DefaultMiningCrystals))
                     .OreImplant = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "OreImplant", DefaultMiningOreImplant))
                     .IceImplant = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "IceImplant", DefaultMiningIceImplant))
                     .GasImplant = CStr(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeString, MiningSettingsFileName, "GasImplant", DefaultMiningGasImplant))
@@ -2650,6 +2652,9 @@ Public Class ProgramSettings
                     .BoosterIceDroneRig1 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig1", DefaultBoosterDroneRigs))
                     .BoosterIceDroneRig2 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig2", DefaultBoosterDroneRigs))
                     .BoosterIceDroneRig3 = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "BoosterIceDroneRig3", DefaultBoosterDroneRigs))
+                    .CrystalTypeA = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CrystalTypeA", DefaultMiningCrystalType))
+                    .CrystalTypeB = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CrystalTypeB", DefaultMiningCrystalType))
+                    .CrystalTypeC = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CrystalTypeC", DefaultMiningCrystalType))
                 End With
 
             Else
@@ -2712,7 +2717,11 @@ Public Class ProgramSettings
             .NumIceUpgrades = DefaultMiningNumIceUpgrades
             .NumGasUpgrades = DefaultMiningNumGasUpgrades
             .MichiiImplant = DefaultMiningMichiiImplant
-            .T2Crystals = DefaultMiningT2Crystals
+            .T1Crystals = DefaultMiningCrystals
+            .T2Crystals = DefaultMiningCrystals
+            .CrystalTypeA = DefaultMiningCrystalType
+            .CrystalTypeB = DefaultMiningCrystalType
+            .CrystalTypeC = DefaultMiningCrystalType
             .OreImplant = DefaultMiningOreImplant
             .IceImplant = DefaultMiningIceImplant
             .GasImplant = DefaultMiningGasImplant
@@ -2783,7 +2792,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(93) As Setting
+        Dim MiningSettingsList(97) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2887,6 +2896,12 @@ Public Class ProgramSettings
             MiningSettingsList(91) = New Setting("BoosterIceDroneOpSkill", CStr(SentSettings.BoosterIceDroneOpSkill))
             MiningSettingsList(92) = New Setting("BoosterIceDroneSpecSkill", CStr(SentSettings.BoosterIceDroneSpecSkill))
             MiningSettingsList(93) = New Setting("BoosterIceDroneInterfaceSkill", CStr(SentSettings.BoosterIceDroneInterfaceSkill))
+
+            MiningSettingsList(94) = New Setting("T1Crystals", CStr(SentSettings.T1Crystals))
+
+            MiningSettingsList(95) = New Setting("CrystalTypeA", CStr(SentSettings.CrystalTypeA))
+            MiningSettingsList(96) = New Setting("CrystalTypeB", CStr(SentSettings.CrystalTypeB))
+            MiningSettingsList(97) = New Setting("CrystalTypeC", CStr(SentSettings.CrystalTypeC))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5793,7 +5808,12 @@ Public Structure MiningTabSettings
     Dim BoosterIceDroneInterfaceSkill As String
 
     Dim MichiiImplant As Boolean
+    Dim T1Crystals As Boolean
     Dim T2Crystals As Boolean
+
+    Dim CrystalTypeA As Boolean
+    Dim CrystalTypeB As Boolean
+    Dim CrystalTypeC As Boolean
 
     Dim CheckUseHauler As Boolean
     Dim RoundTripMin As Integer

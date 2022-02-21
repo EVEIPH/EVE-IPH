@@ -61,7 +61,7 @@ Public Class frmAddCharacter
         ESIScopesString = "esi-skills.read_skills.v1 " & ESIScopesString
 
         ' Set the new character data first. This will load the data in the table or update it if they choose a character already loaded
-        If ESIConnection.SetCharacterData(CharacterData, "", False, True) Then
+        If ESIConnection.SetCharacterData(False, CharacterData, "", False, True) Then
 
             ' Refresh the token data to get new scopes list if they added/removed
             If SelectedCharacter.ID <> DummyCharacterID And SelectedCharacter.ID > 0 Then

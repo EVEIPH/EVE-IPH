@@ -230,6 +230,9 @@ Public Class frmManageAccounts
             Dim CharacterTokenData As New SavedTokenData
             Dim ESIData As New ESI
 
+            Me.Cursor = Cursors.WaitCursor
+            Application.DoEvents()
+
             CharacterTokenData.CharacterID = CLng(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
             CharacterTokenData.Scopes = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
             CharacterTokenData.AccessToken = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
@@ -237,7 +240,7 @@ Public Class frmManageAccounts
             CharacterTokenData.TokenType = lstAccounts.SelectedItems.Item(0).SubItems(8).Text
             CharacterTokenData.RefreshToken = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
 
-            If ESIData.SetCharacterData(CharacterTokenData, "", True) Then
+            If ESIData.SetCharacterData(True, CharacterTokenData, "", True) Then
                 ' Need to reload the data and set access flags based on scopes
                 Application.UseWaitCursor = True
                 Dim SelectedIndex As Integer = lstAccounts.SelectedIndices(0)
@@ -256,8 +259,11 @@ Public Class frmManageAccounts
                 lstAccounts.Enabled = True
                 lstScopes.Enabled = True
                 lstAccounts.Items(SelectedIndex).Selected = True
+                Me.Cursor = Cursors.Default
                 Application.DoEvents()
             Else
+                Me.Cursor = Cursors.Default
+                Application.DoEvents()
                 MsgBox("Unable to update Token Data.", vbInformation, Application.ProductName)
             End If
 

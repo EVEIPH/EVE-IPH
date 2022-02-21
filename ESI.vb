@@ -282,16 +282,20 @@ Public Class ESI
 
             ' Parse the data to the class
             Output = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+
+            ' Now strip off some key data to return from JWT
             Dim JWToken As New JwtSecurityTokenHandler
             Dim TokenData As JwtSecurityToken = JWToken.ReadJwtToken(Output.access_token)
             Dim ScopeList As List(Of String) = JsonConvert.DeserializeObject(Of List(Of String))(TokenData.Payload("scp").ToString)
 
             ' Get the character ID from the JWT
             TokenCharacterID = CLng(TokenData.Subject.Substring(14))
+            ' Return the scopes as well
             For Each entry In ScopeList
                 TokenScopes &= entry & " "
             Next
             TokenScopes = Trim(TokenScopes)
+
             Success = True
 
         Catch ex As WebException
@@ -304,6 +308,9 @@ Public Class ESI
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
                 Output = GetAccessToken(Token, Refresh, TokenCharacterID, TokenScopes)
+                If Not IsNothing(Output) Then
+                    Success = True
+                End If
             End If
 
         Catch ex As Exception
@@ -551,7 +558,7 @@ Public Class ESI
     ''' access for a new character first logging in. If the character has already been loaded, then update the data.
     ''' </summary>
     ''' <returns>Returns boolean if the function was successful in setting character data.</returns>    
-    Public Function SetCharacterData(Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
+    Public Function SetCharacterData(ByVal AccountRefresh As Boolean, Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
                                      Optional ByVal ManualAuthToken As String = "",
                                      Optional ByVal IgnoreCacheDate As Boolean = False,
                                      Optional ByVal SupressMessages As Boolean = False) As Boolean
@@ -585,7 +592,19 @@ Public Class ESI
                 End If
 
                 If IsNothing(TokenData) Then
-                    Return False
+                    ' They tried to refresh from account data, so open the web auth if it's an invalid token
+                    If AccountRefresh Then
+                        ' First, reset the scope list based on what they have now
+                        ESIScopesString = CharacterTokenData.Scopes
+                        TokenData = GetAccessToken(GetAuthorizationToken(), False, CharacterID, Scopes)
+                        ' Now that we have the token data, make sure they selected the same character as we wanted to update and didn't select a different one
+                        If CharacterID <> CharacterTokenData.CharacterID Then
+                            MsgBox("You must select the same character on the Character Select webpage as the one you select in IPH. Please try again.", vbExclamation, Application.ProductName)
+                            Return False
+                        End If
+                    Else
+                        Return False
+                    End If
                 End If
 
                 ' Update the local copy with the new information
@@ -622,10 +641,10 @@ Public Class ESI
                         SQL = String.Format(SQL, .corporation_id,
                         FormatDBString(FormatNullString(.description)),
                         FormatDBString(CharacterTokenData.Scopes),
-                        FormatDBString(TokenData.access_token),
+                        FormatDBString(CharacterTokenData.AccessToken),
                         Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
-                        FormatDBString(TokenData.token_type),
-                        FormatDBString(TokenData.refresh_token),
+                        FormatDBString(CharacterTokenData.TokenType),
+                        FormatDBString(CharacterTokenData.RefreshToken),
                         CharacterTokenData.CharacterID)
                     End With
                 Else
@@ -644,10 +663,10 @@ Public Class ESI
                         .bloodline_id,
                         FormatNullInteger(.ancestry_id),
                         FormatDBString(FormatNullString(.description)),
-                        FormatDBString(TokenData.access_token),
+                        FormatDBString(CharacterTokenData.AccessToken),
                         Format(CharacterTokenData.TokenExpiration, SQLiteDateFormat),
-                        FormatDBString(TokenData.token_type),
-                        FormatDBString(TokenData.refresh_token),
+                        FormatDBString(CharacterTokenData.TokenType),
+                        FormatDBString(CharacterTokenData.RefreshToken),
                         FormatDBString(CharacterTokenData.Scopes),
                         0, 0) ' Don't set default yet or override skills
                     End With
@@ -1971,6 +1990,11 @@ Public Class ESIErrorProcessor
         ' This is the error we get if you switch corps and the old corp id is attached to your account info, which may not need to be updated
         ' The change in corp number seems to take a bit to complete, so they will have to wait until this info is refereshed in ESI - so we will supress this error
         If ErrorResponse = "Received bad session variable(s): ""corporation_id"" " And URL.Contains("/corporations/") Then
+            Exit Sub
+        End If
+
+        ' If a refresh token expires, then we should just exit and the error log will capture it to tell them to reset
+        If ErrorResponse.Contains("Invalid refresh token. Token missing/expired") Then
             Exit Sub
         End If
 

@@ -70,13 +70,13 @@ Public Class frmReprocessingPlant
         ProcessingCombos = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "cmbOreProcessing"), ComboBox())
 
         ' Load all the skills
-        cmbRefining.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3385))
-        cmbRefineryEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3389))
+        cmbReprocessing.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3385))
+        cmbReprocessingEff.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(3389))
         cmbScrapMetalProcessing.Text = CStr(SelectedCharacter.Skills.GetSkillLevel(12196))
 
         Dim TempSkillLevel As Integer
         For i = 1 To ProcessingCheckBoxes.Count - 1
-            TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(ProcessingLabels(i).Text & " Processing"))
+            TempSkillLevel = SelectedCharacter.Skills.GetSkillLevel(SelectedCharacter.Skills.GetSkillTypeID(ProcessingLabels(i).Text))
             If TempSkillLevel <> 0 Then
                 ProcessingCombos(i).Text = CStr(TempSkillLevel)
                 ProcessingCheckBoxes(i).Checked = True
@@ -86,13 +86,14 @@ Public Class frmReprocessingPlant
             End If
         Next
 
+        Dim AttribLookup As New EVEAttributes
         Dim Defaults As New ProgramSettings
         Select Case UserApplicationSettings.RefiningImplantValue
-            Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "1") / 100)
+            Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "1", ItemAttributes.refiningYieldMutator) / 100)
                 cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "1"
-            Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "2") / 100)
+            Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "2", ItemAttributes.refiningYieldMutator) / 100)
                 cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "2"
-            Case (GetAttribute("refiningYieldMutator", Defaults.RBeanCounterName & "4") / 100)
+            Case (AttribLookup.GetAttribute(Defaults.RBeanCounterName & "4", ItemAttributes.refiningYieldMutator) / 100)
                 cmbBeanCounterRefining.Text = Defaults.RBeanCounterName & "4"
             Case Else
                 cmbBeanCounterRefining.Text = None
@@ -126,14 +127,10 @@ Public Class frmReprocessingPlant
     End Property
 
     Private Sub OreCheckProcessing_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged, chkOreProcessing2.CheckedChanged, chkOreProcessing3.CheckedChanged,
-                                                                                                                    chkOreProcessing4.CheckedChanged, chkOreProcessing5.CheckedChanged, chkOreProcessing6.CheckedChanged,
-                                                                                                                    chkOreProcessing7.CheckedChanged, chkOreProcessing8.CheckedChanged, chkOreProcessing9.CheckedChanged,
-                                                                                                                    chkOreProcessing10.CheckedChanged, chkOreProcessing11.CheckedChanged, chkOreProcessing12.CheckedChanged,
-                                                                                                                    chkOreProcessing13.CheckedChanged, chkOreProcessing14.CheckedChanged, chkOreProcessing15.CheckedChanged,
-                                                                                                                    chkOreProcessing16.CheckedChanged, chkOreProcessing17.CheckedChanged, chkOreProcessing18.CheckedChanged,
-                                                                                                                    chkOreProcessing19.CheckedChanged, chkOreProcessing20.CheckedChanged, chkOreProcessing21.CheckedChanged,
-                                                                                                                    chkOreProcessing22.CheckedChanged, chkOreProcessing23.CheckedChanged, chkOreProcessing24.CheckedChanged,
-                                                                                                                    chkOreProcessing25.CheckedChanged
+                                                                                                                      chkOreProcessing4.CheckedChanged, chkOreProcessing5.CheckedChanged, chkOreProcessing6.CheckedChanged,
+                                                                                                                      chkOreProcessing7.CheckedChanged, chkOreProcessing8.CheckedChanged, chkOreProcessing9.CheckedChanged,
+                                                                                                                      chkOreProcessing10.CheckedChanged, chkOreProcessing11.CheckedChanged, chkOreProcessing12.CheckedChanged
+
 
         Call UpdateProcessingSkillBoxes(CInt(CType(sender, CheckBox).Name.Substring(16)), CType(sender, CheckBox).Checked)
     End Sub
@@ -163,55 +160,43 @@ Public Class frmReprocessingPlant
             ProcessingLabels(i).Enabled = False
         Next
 
-        If cmbRefining.Text = "4" Or cmbRefining.Text = "5" Then
-            ' Veld, Scordite, Pyroxeres, and Plag
+        If cmbReprocessing.Text = "4" Or cmbReprocessing.Text = "5" Then
+            ' Simple - Veld, Scordite, Pyroxeres, and Plag
             Call EnableOreProcessingGroup(1, True)
+        End If
+
+        If cmbReprocessing.Text = "5" Then
+            ' Coherent - Hemo, Hedbergite, Jaspet, Kernite, Omber
             Call EnableOreProcessingGroup(2, True)
-            Call EnableOreProcessingGroup(9, True)
-            Call EnableOreProcessingGroup(10, True)
         End If
 
-        If cmbRefining.Text = "5" Then
-            ' Hemo, Jaspet, Kernite, Omber, Refinery Effy
+        If cmbReprocessingEff.Text = "4" Or cmbReprocessingEff.Text = "5" Then
+            ' Variegated - Crokite, Dark Ochre, Gneiss
             Call EnableOreProcessingGroup(3, True)
+        End If
+
+        If cmbReprocessingEff.Text = "5" Then
+            ' Complex - Ark, Bisot, Spod
             Call EnableOreProcessingGroup(4, True)
-            Call EnableOreProcessingGroup(11, True)
-            Call EnableOreProcessingGroup(12, True)
-        End If
-
-        If cmbRefineryEff.Text = "4" Or cmbRefineryEff.Text = "5" Then
-            ' Dark Ochre, Gneiss, Hedb, Spod
-            Call EnableOreProcessingGroup(5, True)
+            ' Mercoxit
             Call EnableOreProcessingGroup(6, True)
-            Call EnableOreProcessingGroup(13, True)
-            Call EnableOreProcessingGroup(14, True)
-        End If
-
-        If cmbRefineryEff.Text = "5" Then
-            ' Ark, Bisot, Crokite, Mercoxit
+            ' Moon mining
             Call EnableOreProcessingGroup(7, True)
             Call EnableOreProcessingGroup(8, True)
-            Call EnableOreProcessingGroup(15, True)
-            Call EnableOreProcessingGroup(16, True)
-            ' Moon mining
-
-            Call EnableOreProcessingGroup(18, True)
-            Call EnableOreProcessingGroup(19, True)
-            Call EnableOreProcessingGroup(20, True)
-            Call EnableOreProcessingGroup(21, True)
-            Call EnableOreProcessingGroup(22, True)
+            Call EnableOreProcessingGroup(9, True)
+            Call EnableOreProcessingGroup(10, True)
+            Call EnableOreProcessingGroup(11, True)
             ' Trig mining
-            Call EnableOreProcessingGroup(23, True)
-            Call EnableOreProcessingGroup(24, True)
-            Call EnableOreProcessingGroup(25, True)
+            Call EnableOreProcessingGroup(5, True)
         End If
 
-        If cmbRefining.Text = "4" Then
-            cmbRefineryEff.Enabled = True
+        If cmbReprocessing.Text = "4" Then
+            cmbReprocessingEff.Enabled = True
         End If
 
-        If cmbRefineryEff.Enabled And cmbRefineryEff.Text = "5" Then
-            Call EnableOreProcessingGroup(17, True)
+        ' Ice
+        If cmbReprocessingEff.Enabled And cmbReprocessingEff.Text = "5" Then
+            Call EnableOreProcessingGroup(12, True)
         End If
 
     End Sub
@@ -354,15 +339,15 @@ Public Class frmReprocessingPlant
     End Sub
 
     ' Refines all materials in the item list and updates the item list with return amount of refining and the output list of materials
-    Private Sub btnRefine_Click(sender As Object, e As EventArgs) Handles btnRefine.Click
-        Call Refine()
+    Private Sub btnReprocess_Click(sender As Object, e As EventArgs) Handles btnReprocess.Click
+        Call Reprocess()
     End Sub
 
-    Private Sub btnRefine2_Click(sender As Object, e As EventArgs) Handles btnRefine2.Click
-        Call Refine()
+    Private Sub btnReprocess2_Click(sender As Object, e As EventArgs) Handles btnReprocess2.Click
+        Call Reprocess()
     End Sub
 
-    Private Sub Refine()
+    Private Sub Reprocess()
         Dim ReprocessedMaterials As New Materials
         Dim ReprocessedCost As Double
         Dim ReprocessingUsage As Double
@@ -464,7 +449,9 @@ Public Class frmReprocessingPlant
         Dim LocalReprocessingUsage As Double = 0
 
         ' These will only set up base refine rates, we need to adjust with the rig updated rates
-        Dim ReprocessingStation As New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), GetAttribute("refiningYieldMutator", cmbBeanCounterRefining.Text) / 100)
+        Dim Attriblookup As New EVEAttributes
+        Dim ImplantValue As Double = Attriblookup.GetAttribute(cmbBeanCounterRefining.Text, ItemAttributes.refiningYieldMutator) / 100
+        Dim ReprocessingStation As New ReprocessingPlant(ReprocessingFacility.GetFacility(ProductionType.Reprocessing), ImplantValue)
 
         ' Update the material modifier based on the type of ore
         If ItemGroup.Contains("Moon") Then
@@ -479,12 +466,12 @@ Public Class frmReprocessingPlant
 
         Dim RefineryEfficency As Integer = 0
 
-        If cmbRefineryEff.Enabled = True Then
-            RefineryEfficency = CInt(cmbRefineryEff.Text)
+        If cmbReprocessingEff.Enabled = True Then
+            RefineryEfficency = CInt(cmbReprocessingEff.Text)
         End If
 
         ' Refine the first item
-        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbRefining.Text), RefineryEfficency, GetProcessingSkill(ItemName, ItemGroup),
+        TempOutputs = ReprocessingStation.Reprocess(ItemID, CInt(cmbReprocessing.Text), RefineryEfficency, GetProcessingSkill(ItemName, ItemGroup),
                                                     ItemQuantity, False, BFI, ReprocessingYield, ReprocessingUsage)
         LocalReprocessingUsage = ReprocessingUsage
 
@@ -669,49 +656,14 @@ Public Class frmReprocessingPlant
 
     ' Returns the ore processing skill level on the screen for the ore name sent
     Private Function GetProcessingSkill(ByVal ItemName As String, ByVal ItemGroup As String) As Integer
-        Dim i As Integer
-        Dim CurrentProcessingLabel As String
-
         If ItemGroup = "Ice" Then
-            Return CInt(cmbOreProcessing17.Text)
+            Return CInt(cmbOreProcessing12.Text)
         ElseIf ItemGroup = "Scrap" Then
             Return CInt(cmbScrapMetalProcessing.Text)
         End If
 
-        If ItemName.Contains("Ochre") Then
-            ItemName = "Dark Ochre"
-        End If
-
-        For i = 1 To ProcessingCombos.Count - 1
-            CurrentProcessingLabel = ProcessingLabels(i).Text
-
-            ' Special processing for Dark Ochre
-            If CurrentProcessingLabel = "Dark" Then
-                CurrentProcessingLabel = "Dark Ochre"
-            End If
-
-            If ProcessingCombos(i).Enabled = True And CBool(InStr(ItemName, CurrentProcessingLabel)) Then
-                ' Found it, return value
-                Return CInt(ProcessingCombos(i).Text)
-            Else
-                ' If it didn't find it, it might be a moon ore - look up the type and check each of those
-                Dim rsCheck As SQLiteDataReader
-                DBCommand = New SQLiteCommand("SELECT groupName FROM INVENTORY_TYPES AS IT, INVENTORY_GROUPS AS IG WHERE IT.groupID = IG.groupID and typeName = '" & ItemName & "'", EVEDB.DBREf)
-                rsCheck = DBCommand.ExecuteReader
-
-                If rsCheck.Read Then
-                    If rsCheck.GetString(0).Contains(" ") Then
-                        If CurrentProcessingLabel.Contains(rsCheck.GetString(0).Substring(0, InStr(rsCheck.GetString(0), " ") - 1)) Then
-                            Return CInt(ProcessingCombos(i).Text)
-                        End If
-                    End If
-                End If
-                rsCheck.Close()
-                DBCommand = Nothing
-            End If
-        Next
-
-        Return 0
+        ' It's an ore, so just return the processing value
+        Return GetFormOreProcessingSkill(ItemName, ProcessingLabels, ProcessingCombos)
 
     End Function
 
@@ -764,18 +716,19 @@ Public Class frmReprocessingPlant
         ReprocessingPlantOpen = False
     End Sub
 
-    Private Sub cmbRefining_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbRefining.SelectedIndexChanged
-        If CInt(cmbRefining.Text) >= 4 Then
-            cmbRefineryEff.Enabled = True
+    Private Sub cmbRefining_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbReprocessing.SelectedIndexChanged
+        If CInt(cmbReprocessing.Text) >= 4 Then
+            cmbReprocessingEff.Enabled = True
         Else
-            cmbRefineryEff.Enabled = False
+            cmbReprocessingEff.Enabled = False
         End If
         ' Update the ore processing skills
         Call UpdateProcessingSkills()
     End Sub
 
-    Private Sub cmbRefineryEff_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbRefineryEff.SelectedIndexChanged
+    Private Sub cmbRefineryEff_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbReprocessingEff.SelectedIndexChanged
         ' Update the ore processing skills
         Call UpdateProcessingSkills()
     End Sub
+
 End Class

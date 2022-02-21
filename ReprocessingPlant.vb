@@ -76,6 +76,7 @@ Class ReprocessingPlant
 
         If ScrapReprocessing Then
             ' Base Station Equipment x (1 + Scrapmetal Processing x 0.02) - scrapmetal processing is only modifier that applies
+            ' **** GET THE VALUES FROM ATTTRIBUTES - change to take an override processing skill or look it up if null based on the item
             TotalYield = ReprocessingFacility.BaseME * (1 + (0.02 * ProcessingSkill))
         Else
             TotalYield = ReprocessingFacility.MaterialMultiplier * (1 + (0.03 * ReprocessingSkill)) * (1 + (0.02 * ReprocessingEfficiencySkill)) * (1 + (0.02 * ProcessingSkill)) * (1 + ImplantBonus)

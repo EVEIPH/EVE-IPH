@@ -242,7 +242,7 @@ Public Class Character
                 If ID <> DummyCharacterID Then
                     Dim TempESI As New ESI
                     ' Only ignore the cache date if we aren't updating industry jobs
-                    If TempESI.SetCharacterData(CharacterTokenData) Then
+                    If TempESI.SetCharacterData(False, CharacterTokenData) Then
                         CharacterCorporation = New Corporation()
                         ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
                         If .GetInt64(2) > 2000000 Then
@@ -253,14 +253,17 @@ Public Class Character
                         IsDefault = CBool(.GetInt32(15))
                     Else
                         ' Check the error that caused this not to update
-                        If ESIErrorHandler.ErrorResponse.Contains("token") Then
+                        If ESIErrorHandler.ErrorResponse.Contains("Token missing/expired") Then
+                            ' The refresh token expired - 30 days of no use
+                            MsgBox("Your refresh token has expired. To use updated account information you must update your tokens through re-authorizing them in Manage Accounts under the File Menu.", vbExclamation, Application.ProductName)
+                        ElseIf ESIErrorHandler.ErrorResponse.Contains("token") Then
                             ' They have some issue with their token or log
                             MsgBox("IPH is unable to refresh your character data - " & ESIErrorHandler.ErrorResponse & vbCrLf & vbCrLf & "Please recheck your registration information and try again.", vbInformation, Application.ProductName)
                         End If
                         ' Now leave since everything below will fail
                         Return True
                     End If
-                End If
+                    End If
 
             End With
 
