@@ -1559,7 +1559,7 @@ SkipItem:
             ItemChecked = True
         End If
         If Gas.Checked Then
-            SQL &= "ITEM_GROUP = 'Harvestable Cloud' OR "
+            SQL &= "ITEM_GROUP IN ('Harvestable Cloud','Compressed Gas') OR "
             ItemChecked = True
         End If
         If IceProducts.Checked Then
@@ -1704,7 +1704,7 @@ SkipItem:
             ItemChecked = True
         End If
         If Celestials.Checked Then
-            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
+            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP NOT IN ('Harvestable Cloud','Compressed Gas')) OR "
             ItemChecked = True
         End If
 

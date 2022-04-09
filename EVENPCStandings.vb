@@ -219,27 +219,13 @@ Public Class EVENPCStandings
                         End If
                     Next
 
-                    ' Get the faction names
-                    ReturnFactionData = ESIData.GetFactionData()
+                    If NonFactionIDs.Count > 0 Then
+                        ' Get the faction names
+                        ReturnFactionData = ESIData.GetFactionData()
 
-                    For Each Record In ReturnFactionData
-                        ' Update the Standings list with name
-                        IDtoFind = Record.faction_id
-                        TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
-                        If Not IsNothing(TempStanding) Then
-                            Call TempStandings.NPCStandings.Remove(TempStanding)
-                            TempStanding.NPCName = Record.name
-                            Call TempStandings.NPCStandings.Add(TempStanding)
-                        End If
-                    Next
-
-                    ' Get the corp and agent names
-                    ReturnNameData = ESIData.GetNameData(NonFactionIDs)
-
-                    If Not IsNothing(ReturnNameData) Then
-                        For Each Record In ReturnNameData
+                        For Each Record In ReturnFactionData
                             ' Update the Standings list with name
-                            IDtoFind = Record.id
+                            IDtoFind = Record.faction_id
                             TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
                             If Not IsNothing(TempStanding) Then
                                 Call TempStandings.NPCStandings.Remove(TempStanding)
@@ -247,28 +233,43 @@ Public Class EVENPCStandings
                                 Call TempStandings.NPCStandings.Add(TempStanding)
                             End If
                         Next
-                    End If
 
-                    Call EVEDB.BeginSQLiteTransaction()
+                        ' Get the corp and agent names
+                        ReturnNameData = ESIData.GetNameData(NonFactionIDs)
 
-                    ' Delete the old standings data
-                    SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & ID
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                        If Not IsNothing(ReturnNameData) Then
+                            For Each Record In ReturnNameData
+                                ' Update the Standings list with name
+                                IDtoFind = Record.id
+                                TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
+                                If Not IsNothing(TempStanding) Then
+                                    Call TempStandings.NPCStandings.Remove(TempStanding)
+                                    TempStanding.NPCName = Record.name
+                                    Call TempStandings.NPCStandings.Add(TempStanding)
+                                End If
+                            Next
+                        End If
 
-                    ' Insert new standings data
-                    For i = 0 To TempStandings.NumStandings - 1
-                        SQL = "INSERT INTO CHARACTER_STANDINGS (CHARACTER_ID, NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING) "
-                        SQL = SQL & " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
-                        SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
-                        SQL = SQL & "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
-                        SQL = SQL & "'," & TempStandings.GetStandingsList(i).Standing & ")"
+                        Call EVEDB.BeginSQLiteTransaction()
+
+                        ' Delete the old standings data
+                        SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & ID
                         Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    Next
 
-                    DBCommand = Nothing
+                        ' Insert new standings data
+                        For i = 0 To TempStandings.NumStandings - 1
+                            SQL = "INSERT INTO CHARACTER_STANDINGS (CHARACTER_ID, NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING) "
+                            SQL = SQL & " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
+                            SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
+                            SQL = SQL & "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
+                            SQL = SQL & "'," & TempStandings.GetStandingsList(i).Standing & ")"
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+                        Next
 
-                    Call EVEDB.CommitSQLiteTransaction()
+                        DBCommand = Nothing
 
+                        Call EVEDB.CommitSQLiteTransaction()
+                    End If
                 End If
                 ' Update cache date now that it's all set
                 Call CB.UpdateCacheDate(CacheDateType.Standings, CacheDate, ID)

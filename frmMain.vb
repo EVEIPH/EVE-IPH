@@ -4116,58 +4116,60 @@ Tabs:
     End Sub
 
     Private Sub chkBPIgnoreInvention_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreInvention.CheckedChanged
-        UpdatingInventionChecks = True
 
-        If chkBPIgnoreInvention.Checked Then
-            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                ' Disable all first
-                Call SetInventionEnabled("T2", False)
-                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
+        If Not UpdatingInventionChecks Then
+            UpdatingInventionChecks = True
 
-            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                ' Disable all first
-                Call SetInventionEnabled("T3", False)
-                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
-            End If
-
-        Else ' Set it on the user settings
-            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                ' Enable all first
-                Call SetInventionEnabled("T2", True)
-                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
-
-            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                ' Enable all first
-                Call SetInventionEnabled("T3", True)
-                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
-            End If
-
-        End If
-
-        ' Reset the ME/TE for the BP based on the invention check
-        If Not IsNothing(SelectedBlueprint) Then
-            With SelectedBlueprint
-                Call SetInventionData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID))
-            End With
-        End If
-
-        UpdatingInventionChecks = False
-
-        ' If we are inventing, make sure we add or remove the activity based on the check
-        If tabBPInventionEquip.Contains(tabInventionCalcs) Or tabBPInventionEquip.Contains(tabT3Calcs) Then
             If chkBPIgnoreInvention.Checked Then
-                txtBPME.Enabled = True
-                txtBPTE.Enabled = True
-            Else
-                txtBPME.Enabled = False
-                txtBPTE.Enabled = False
+                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                    ' Disable all first
+                    Call SetInventionEnabled("T2", False)
+                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
+
+                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                    ' Disable all first
+                    Call SetInventionEnabled("T3", False)
+                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
+                End If
+
+            Else ' Set it on the user settings
+                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                    ' Enable all first
+                    Call SetInventionEnabled("T2", True)
+                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
+
+                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                    ' Enable all first
+                    Call SetInventionEnabled("T3", True)
+                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
+                End If
+
+            End If
+
+            ' Reset the ME/TE for the BP based on the invention check
+            If Not IsNothing(SelectedBlueprint) Then
+                With SelectedBlueprint
+                    Call SetInventionData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID))
+                End With
+            End If
+
+            UpdatingInventionChecks = False
+
+            ' If we are inventing, make sure we add or remove the activity based on the check
+            If tabBPInventionEquip.Contains(tabInventionCalcs) Or tabBPInventionEquip.Contains(tabT3Calcs) Then
+                If chkBPIgnoreInvention.Checked Then
+                    txtBPME.Enabled = True
+                    txtBPTE.Enabled = True
+                Else
+                    txtBPME.Enabled = False
+                    txtBPTE.Enabled = False
+                End If
+            End If
+
+            If Not FirstLoad And Not IgnoreRefresh Then
+                Call RefreshBP()
             End If
         End If
-
-        If Not FirstLoad And Not IgnoreRefresh Then
-            Call RefreshBP()
-        End If
-
     End Sub
 
     Private Sub chkBPIgnoreMinerals_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIgnoreMinerals.CheckedChanged
@@ -6104,13 +6106,17 @@ Tabs:
 
         If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
             ' Use owned settings
-            txtBPME.Text = CStr(readerBP.GetInt32(0))
-            OwnedBPME = txtBPME.Text
-            txtBPTE.Text = CStr(readerBP.GetInt32(1))
-            OwnedBPPE = txtBPTE.Text
-            OwnedBP = True
-            txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
-            OwnedBPRuns = readerBP.GetInt32(3)
+            If chkBPIgnoreInvention.Checked Then
+                txtBPME.Text = CStr(readerBP.GetInt32(0))
+                OwnedBPME = txtBPME.Text
+                txtBPTE.Text = CStr(readerBP.GetInt32(1))
+                OwnedBPPE = txtBPTE.Text
+                OwnedBP = True
+                txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
+                OwnedBPRuns = readerBP.GetInt32(3)
+            ElseIf BPTech <> 1 Then
+                Call SelectDecryptor(cmbBPInventionDecryptor.Text)
+            End If
         Else ' If sent from manufacturing tab, use the values set from there or it's not owned
             OwnedBP = False
             OwnedBPRuns = 1
@@ -6156,8 +6162,8 @@ Tabs:
         IgnoreRefresh = True
 
         If (BPTech <> 1 And TempBPType <> BPType.Original) Then
-            If BPTech = 2 And TempBPType = BPType.Copy Then
-                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention
+            If BPTech = 2 And TempBPType = BPType.Copy And NewBP Then
+                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention when BP is first loaded
                 chkBPIgnoreInvention.Checked = True
             End If
 
@@ -9619,7 +9625,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkGas.Checked Then
-            SQL &= "ITEM_GROUP = 'Harvestable Cloud' OR "
+            SQL &= "ITEM_GROUP IN ('Harvestable Cloud','Compressed Gas') OR "
             ItemChecked = True
         End If
         If chkIceProducts.Checked Then
@@ -9764,7 +9770,7 @@ ExitSub:
             ItemChecked = True
         End If
         If chkCelestials.Checked Then
-            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP <> 'Harvestable Cloud') OR "
+            SQL &= "(ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures','Station','Accessories','Infrastructure Upgrades')  AND ITEM_GROUP NOT IN ('Harvestable Cloud','Compressed Gas')) OR "
             ItemChecked = True
         End If
 
@@ -17615,7 +17621,6 @@ Leave:
 
         If cmbMineOreType.Text = "Ice" Then
             chkMineIncludeHighYieldOre.Enabled = False
-            gbMineOreProcessingType.Enabled = True
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Text = "High Yield Ice"
             chkMineIncludeHighSec.Text = "High Sec Ice"
@@ -17625,6 +17630,8 @@ Leave:
             lblMineFacilityOreRate1.Text = "Ice:"
             tabMiningDrones.Enabled = True
             chkMineMoonMining.Enabled = False ' Can't moon mine ice
+            chkMineRefinedOre.Enabled = True
+
             ' No ice in wormholes
             chkMineWH.Enabled = False
             chkMineC1.Enabled = False
@@ -17643,7 +17650,6 @@ Leave:
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Enabled = True
-            gbMineOreProcessingType.Enabled = True
             chkMineIncludeHighYieldOre.Text = "High Yield Ores"
             chkMineIncludeHighSec.Text = "High Sec Ore"
             chkMineIncludeLowSec.Text = "Low Sec Ore"
@@ -17652,6 +17658,7 @@ Leave:
             lblMineFacilityOreRate1.Text = "Ore:"
             tabMiningDrones.Enabled = True
             chkMineMoonMining.Enabled = True ' Moon mining
+            chkMineRefinedOre.Enabled = True
 
             chkMineWH.Enabled = True
             If chkMineWH.Checked Then
@@ -17679,7 +17686,6 @@ Leave:
         ElseIf cmbMineOreType.Text = "Gas" Then
             gbMiningRigs.Enabled = False
             chkMineIncludeHighYieldOre.Enabled = False
-            gbMineOreProcessingType.Enabled = False
             chkMineIncludeHighYieldOre.Text = "High Yield Gas"
             chkMineIncludeHighSec.Text = "High Sec Gas"
             chkMineIncludeLowSec.Text = "Low Sec Gas"
@@ -17696,6 +17702,11 @@ Leave:
 
             ' No refining for Gas
             gbMineRefining.Enabled = False
+            chkMineRefinedOre.Enabled = False
+            If chkMineRefinedOre.Checked Then
+                ' Auto select if they had refined checked
+                chkMineUnrefinedOre.Checked = True
+            End If
 
             chkMineMoonMining.Enabled = False ' Can't moon mine gas
 
@@ -17941,18 +17952,6 @@ Leave:
         Else
             txtMineBrokerFeeRate.Visible = False
         End If
-    End Sub
-
-    Private Sub chkMineRefinedOre_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineRefinedOre.CheckedChanged
-        Call SetOreRefineChecks()
-    End Sub
-
-    Private Sub chkMineUnrefinedOre_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineUnrefinedOre.CheckedChanged
-        Call SetOreRefineChecks()
-    End Sub
-
-    Private Sub chkMineCompressedOre_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMineCompressedOre.CheckedChanged
-        Call SetOreRefineChecks()
     End Sub
 
     Private Sub chkMineForemanLaserRangeBoost_Click(sender As Object, e As System.EventArgs) Handles chkMineForemanLaserRangeBoost.Click
@@ -18333,8 +18332,6 @@ Leave:
             chkMineUnrefinedOre.Checked = .UnrefinedOre
             chkMineCompressedOre.Checked = .CompressedOre
 
-            Call SetOreRefineChecks()
-
             ' Hauler
             If .CheckUseHauler Then
                 lblMineHaulerM3.Enabled = False
@@ -18695,7 +18692,7 @@ Leave:
         ' Get Heavy Water costs
         If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
             ' Add (subtract from total isk) the heavy water cost
-            HeavyWaterCost = CalculateRorqDeployedCost(CInt(cmbMineIndustReconfig.Text), CInt(cmbMineBoosterShipSkill.Text))
+            HeavyWaterCost = CalculateIndyCoreDeployedCost(CInt(cmbMineIndustReconfig.Text), CInt(cmbMineBoosterShipSkill.Text))
         End If
 
         ' Refining
@@ -18730,7 +18727,7 @@ Leave:
         End If
 
         ' Get the count of all compressed items if checked
-        If chkMineCompressedOre.Checked And Not MiningType = MiningOreType.Gas Then
+        If chkMineCompressedOre.Checked Then
             DBCommand = New SQLiteCommand("SELECT COUNT(*) FROM (SELECT DISTINCT ORE_NAME FROM ORES, ORE_LOCATIONS " & SQL & " AND COMPRESSED = 1)", EVEDB.DBREf)
             readerMine = DBCommand.ExecuteReader
             readerMine.Read()
@@ -18861,8 +18858,8 @@ Leave:
 
                     ' Calculate the m3 per second for this ore including mining drone input
                     TotalDroneOrePerHour = MiningDronem3Hr
-                    If chkMineBoosterUseDrones.Checked Then
-                        TotalDroneOrePerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
+                    If chkMineBoosterUseDrones.Checked And chkMineUseFleetBooster.Checked Then
+                        TotalDroneOrePerHour += CInt(Math.Floor(BoosterMiningDronem3Hr))
                     End If
                     Orem3PerSecond = (CrystalMiningYield / BaseCycleTime) + (TotalDroneOrePerHour / 3600)
 
@@ -18875,7 +18872,7 @@ Leave:
 
                     ' Total ice blocks per hour
                     TotalDroneIceBlocksPerHour = CInt(Math.Floor(MiningDronem3Hr / 1000))
-                    If chkMineBoosterUseDrones.Checked Then
+                    If chkMineBoosterUseDrones.Checked And chkMineUseFleetBooster.Checked Then
                         TotalDroneIceBlocksPerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
                     End If
 
@@ -18988,7 +18985,7 @@ Leave:
                     OreList.Add(TempOre)
                 End If
 
-                If chkMineCompressedOre.Checked And Not MiningType = MiningOreType.Gas Then
+                If chkMineCompressedOre.Checked Then
                     ' First, get the unit price and volume for the compressed ore
                     SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME LIKE 'Compressed " & TempOre.OreName & "'"
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -18998,10 +18995,11 @@ Leave:
                         TempOre.OreUnitPrice = readerOre.GetDouble(0)
                         ' Reset the units mined
                         Dim SavedUnits As Double = TempOre.UnitsPerHour
-                        If Not MiningType = MiningOreType.Ice Then
-                            ' All ores are 100 to 1 compressed block, ice is 1 to 1
-                            TempOre.UnitsPerHour = TempOre.UnitsPerHour / 100
-                        End If
+                        ' Now all blocks are 1 unit, you need 100 units to refine to get the same yield
+                        'If Not MiningType = MiningOreType.Ice Then
+                        '    ' All ores are 100 to 1 compressed block, ice is 1 to 1
+                        '    TempOre.UnitsPerHour = TempOre.UnitsPerHour / 100
+                        'End If
 
                         'Drone yield included in total ore so just for display
                         TempOre.DroneYield = GetDroneYield(MiningType = MiningOreType.Ice, MiningType = MiningOreType.Gas, MinerMultiplier)
@@ -19516,21 +19514,6 @@ Leave:
         End If
     End Sub
 
-    ' Sets the screen settings for ore type selected
-    Private Sub SetOreRefineChecks()
-        If cmbMineOreType.Text <> "Gas" Then
-            gbMineRefining.Enabled = True
-        Else
-            gbMineRefining.Enabled = False
-            If cmbMineOreType.Text = "Gas" Then
-                ' Can't refine gas
-                chkMineRefinedOre.Checked = False
-                chkMineUnrefinedOre.Checked = False
-                chkMineCompressedOre.Checked = False
-            End If
-        End If
-    End Sub
-
     ' Loads the Fleet Boost Ship image
     Private Sub LoadFleetBoosterImage()
         If chkMineUseFleetBooster.Checked Then
@@ -19841,17 +19824,17 @@ Leave:
                 ' Only the mining industrials have bonuses to mining drones based on main ship skill
                 Select Case ShipName
                     Case Porpoise, Orca
-                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneOreMiningYield) * CInt(BaseShipSkill)))
+                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneOreMiningYield) * CInt(BaseShipSkill)) / 100)
                     Case Rorqual
-                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneOreMiningYield) * CInt(BaseShipSkill)))
+                        DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneOreMiningYield) * CInt(BaseShipSkill)) / 100)
                 End Select
 
                 ' Add role bonus 
                 DroneMiningAmountpCycle *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.roleBonusDroneMiningYield) / 100))
 
-                ' Adjust with the core bonus if boosted and using the rorq drones
+                ' Adjust with the core bonus if boosted and using the drones
                 If BoosterDrones Then
-                    DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(cmbMineShipName.Text, CoreBonus.OreDroneMiningYield))
+                    DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.OreDroneMiningYield))
                 End If
 
                 ' Amount of cycles we can do in an hour times the amount per cycle
@@ -19881,7 +19864,7 @@ Leave:
 
                 ' Adjust with the core bonus if boosted
                 If BoosterDrones Then
-                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(cmbMineShipName.Text, CoreBonus.IceDroneHarvestingSpeed))
+                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.IceDroneHarvestingSpeed))
                 End If
 
                 MiningAmtVariable = CInt(NumDrones) * (3600 / (IceHarvestDroneCycleTime / 1000) * DroneMiningAmountpCycle)
@@ -20857,15 +20840,16 @@ ProcExit:
                 cmbMineBoosterShipSkill.Enabled = False
             End If
 
-            If cmbMineBoosterShipName.Text = Rorqual Then
-                chkMineIndyCoreDeployedMode.Enabled = True
-                cmbMineIndustReconfig.Enabled = True
-                lblMineIndustrialReconfig.Enabled = True
-            Else
-                chkMineIndyCoreDeployedMode.Enabled = False
-                cmbMineIndustReconfig.Enabled = False
-                lblMineIndustrialReconfig.Enabled = False
-            End If
+            Select Case cmbMineBoosterShipName.Text
+                Case Rorqual, Orca, Porpoise
+                    chkMineIndyCoreDeployedMode.Enabled = True
+                    cmbMineIndustReconfig.Enabled = True
+                    lblMineIndustrialReconfig.Enabled = True
+                Case Else
+                    chkMineIndyCoreDeployedMode.Enabled = False
+                    cmbMineIndustReconfig.Enabled = False
+                    lblMineIndustrialReconfig.Enabled = False
+            End Select
 
         Else
             cmbMineBoosterShipName.Enabled = False
@@ -21099,6 +21083,8 @@ ProcExit:
     Private Const CapitalIndustrialCore2_ID As Integer = 42890
     Private Const LargeIndustrialCore1_ID As Integer = 58945
     Private Const LargeIndustrialCore2_ID As Integer = 58950
+    Private Const MediumIndustrialCore1_ID As Integer = 62590
+    Private Const MediumIndustrialCore2_ID As Integer = 62591
 
     ' Calculates the total burst bonus from ships and charges
     Private Function CalculateBurstBonus(BurstType As BurstBonusType, BoostCheckRef As CheckBox) As Double
@@ -21140,14 +21126,12 @@ ProcExit:
         ' Add Industrial core bonus
         GangBurstBonus *= (1 + GetIndustrialCorebonus(cmbMineBoosterShipName.Text, CoreBonus.BurstStrength))
 
-        ' Ship boost to bursts - attributes aren't clear for these bonuses so hardcode
+        ' Ship boost to bursts
         Select Case cmbMineBoosterShipName.Text
-            Case Porpoise
-                GangBurstBonus *= (1 + (0.02 * CInt(cmbMineBoosterShipSkill.Text)))
-            Case Orca
-                GangBurstBonus *= (1 + (0.03 * CInt(cmbMineBoosterShipSkill.Text)))
+            Case Porpoise, Orca
+                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusICS2) / 100))
             Case Rorqual
-                GangBurstBonus *= (1 + (0.05 * CInt(cmbMineBoosterShipSkill.Text))) ' 5% per level ship bonus
+                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusORECapital2) / 100))
         End Select
 
         Return GangBurstBonus
@@ -21198,11 +21182,16 @@ ProcExit:
                     CoreID = CapitalIndustrialCore1_ID
                 End If
             ElseIf ShipName = Orca Then
-
                 If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
                     CoreID = LargeIndustrialCore2_ID
                 Else
                     CoreID = LargeIndustrialCore1_ID
+                End If
+            ElseIf ShipName = Porpoise Then
+                If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
+                    CoreID = MediumIndustrialCore2_ID
+                Else
+                    CoreID = MediumIndustrialCore1_ID
                 End If
             Else
                 Return ReturnBonus
@@ -21292,11 +21281,17 @@ ProcExit:
                 End If
 
             Case "Gas"
-                ' Frigate bonus
-                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
-                ' Mining Barge and Exhumer bonuses
-                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGasHarvestingDuration) / 100 * BaseShipLevel) + 1)
-                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                ' Frigate bonuses
+                Select Case cmbMineShipName.Text
+                    Case Venture, Prospect, Endurance
+                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningFrigateBonusGasCloudHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                    Case Prospect, Retriever, Covetor
+                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGasHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                    Case Skiff, Mackinaw, Hulk
+                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+                End Select
+
                 ' Role bonus
                 TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusGasHarvesterDuration) / 100 + 1)
 
@@ -21396,25 +21391,38 @@ ProcExit:
     End Sub
 
     ' Calculates the cost for one hour of heavy water for boosting with a Rorqual
-    Private Function CalculateRorqDeployedCost(IndustrialReconfigSkill As Integer, CapIndustrialShipSkill As Integer) As Double
+    Private Function CalculateIndyCoreDeployedCost(IndustrialReconfigSkill As Integer, ShipSkill As Integer) As Double
         Dim SQL As String
         Dim readerHW As SQLiteDataReader
-
-        Const T1CoreHWUsage As Double = 1000 ' 1000 base use for T1 Core
-        Const T2CoreHWUsage As Double = 1500 ' 1500 base use for T1 Core
-
         Dim HWUsage As Double = 0
+        Dim AttribLookup As New EVEAttributes
+        Dim CoreTypeID As Integer = 0
+
+        ' Look up usage for the module selected by the ship
+        If chkMineIndyCoreDeployedMode.Checked And chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
+            ' Checked T2
+            Select Case cmbMineShipName.Text
+                Case Porpoise
+                    CoreTypeID = MediumIndustrialCore2_ID
+                Case Orca
+                    CoreTypeID = LargeIndustrialCore2_ID
+                Case Rorqual
+                    CoreTypeID = CapitalIndustrialCore2_ID
+            End Select
+        ElseIf chkMineIndyCoreDeployedMode.Checked Then
+            ' Checked T1
+            Select Case cmbMineShipName.Text
+                Case Porpoise
+                    CoreTypeID = MediumIndustrialCore1_ID
+                Case Orca
+                    CoreTypeID = LargeIndustrialCore1_ID
+                Case Rorqual
+                    CoreTypeID = CapitalIndustrialCore1_ID
+            End Select
+        End If
 
         If chkMineIndyCoreDeployedMode.Enabled = True Then
-            If chkMineIndyCoreDeployedMode.Checked And chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
-                ' Checked T2
-                HWUsage = T2CoreHWUsage
-            ElseIf chkMineIndyCoreDeployedMode.Checked Then
-                ' Checked T1
-                HWUsage = T1CoreHWUsage
-            Else
-                HWUsage = 0
-            End If
+            HWUsage = CInt(AttribLookup.GetAttribute(CoreTypeID, ItemAttributes.consumptionQuantity))
         Else
             HWUsage = 0
         End If
@@ -21430,7 +21438,7 @@ ProcExit:
 
         ' Capital Industrial Ships skill bonuses:
         ' -5% reduction in fuel consumption for industrial cores per level
-        HWUsage = HWUsage - (HWUsage * 0.05 * CapIndustrialShipSkill)
+        HWUsage = HWUsage - (HWUsage * 0.05 * ShipSkill)
 
         ' Look up the cost for Heavy Water
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = 'Heavy Water'"

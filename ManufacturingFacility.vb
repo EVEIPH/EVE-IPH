@@ -1924,7 +1924,7 @@ Public Class ManufacturingFacility
 
                     Case FacilityTypes.UpwellStructure
 
-                        ' Get the base facilility multipler - reprocessing is always base modified by the structure multiplier
+                        ' Get the base facilility multipler - reprocessing is always base modified by the structure multiplier - REPLACE WITH ATTRIBUTES!
                         SQL = "SELECT CASE WHEN ACTIVITY_ID = -2 THEN " & CStr(BaseRefineRate) & " * (1 + MATERIAL_MULTIPLIER) ELSE MATERIAL_MULTIPLIER END,"
                         SQL &= "TIME_MULTIPLIER, COST_MULTIPLIER FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
 
