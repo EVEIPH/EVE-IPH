@@ -17641,12 +17641,6 @@ Leave:
             chkMineC5.Enabled = False
             chkMineC6.Enabled = False
 
-            If chkMineRefinedOre.Checked Then
-                gbMineRefining.Enabled = True
-            Else
-                gbMineRefining.Enabled = False
-            End If
-
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Enabled = True
@@ -17677,12 +17671,6 @@ Leave:
                 chkMineC6.Enabled = False
             End If
 
-            If chkMineRefinedOre.Checked Then
-                gbMineRefining.Enabled = True
-            Else
-                gbMineRefining.Enabled = False
-            End If
-
         ElseIf cmbMineOreType.Text = "Gas" Then
             gbMiningRigs.Enabled = False
             chkMineIncludeHighYieldOre.Enabled = False
@@ -17700,15 +17688,15 @@ Leave:
             chkMineC5.Enabled = True
             chkMineC6.Enabled = True
 
-            ' No refining for Gas
-            gbMineRefining.Enabled = False
+            chkMineMoonMining.Enabled = False ' Can't moon mine gas
+
+            ' Dont allow refining for gas
             chkMineRefinedOre.Enabled = False
             If chkMineRefinedOre.Checked Then
                 ' Auto select if they had refined checked
                 chkMineUnrefinedOre.Checked = True
+                chkMineRefinedOre.Checked = False
             End If
-
-            chkMineMoonMining.Enabled = False ' Can't moon mine gas
 
         End If
 
@@ -18736,7 +18724,9 @@ Leave:
             readerMine.Close()
         End If
 
-        pnlProgressBar.Maximum -= 1
+        If pnlProgressBar.Maximum > 0 Then
+            pnlProgressBar.Maximum -= 1
+        End If
         pnlProgressBar.Visible = True
         pnlStatus.Text = "Calculating Mining Values..."
 
@@ -20920,7 +20910,8 @@ ProcExit:
         End If
 
         ' Make sure a refine type is selected for ice and ore
-        If chkMineRefinedOre.Checked = False And chkMineCompressedOre.Checked = False And chkMineUnrefinedOre.Checked = False And cmbMineOreType.Text <> "Gas" Then
+        If (chkMineRefinedOre.Checked = False And chkMineCompressedOre.Checked = False And chkMineUnrefinedOre.Checked = False And cmbMineOreType.Text <> "Gas") _
+            Or (chkMineCompressedOre.Checked = False And chkMineUnrefinedOre.Checked = False And cmbMineOreType.Text = "Gas") Then
             ' Can't calculate nothing
             MsgBox("You must select one ore Processing Type to calculate.", vbExclamation, Application.ProductName)
             chkMineRefinedOre.Focus()
@@ -21511,6 +21502,15 @@ ProcExit:
             ' Set the cycle time for the line selected
             lblMineCycleTime.Text = lstMineGrid.SelectedItems(0).SubItems(11).Text
         End If
+    End Sub
+
+    Private Sub chkMineRefinedOre_CheckedChanged(sender As Object, e As EventArgs) Handles chkMineRefinedOre.CheckedChanged
+        If chkMineRefinedOre.Checked And chkMineRefinedOre.Enabled Then
+            gbMineRefining.Enabled = True
+        Else
+            gbMineRefining.Enabled = False
+        End If
+        Call UpdateProcessingSkills()
     End Sub
 
 #End Region
