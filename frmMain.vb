@@ -2346,8 +2346,9 @@ Public Class frmMain
     End Sub
 
     Private Sub btnOpenMarketBrowser_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOpenMarketBrowser.Click
+        Call Process.Start("https://evetycoon.com/market")
         ' Take them to eve marketer page
-        Call Process.Start("https://evemarketer.com/")
+        'Call Process.Start("https://evemarketer.com/")
     End Sub
 
     Private Sub mnuSelectionExit_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles mnuSelectionExit.Click
@@ -7808,12 +7809,15 @@ ExitForm:
 
     End Function
 
-    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEVEMarketer.CheckedChanged, rbtnPriceSourceCCPData.CheckedChanged
+    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSource3rdparty.CheckedChanged, rbtnPriceSourceCCPData.CheckedChanged
         If rbtnPriceSourceCCPData.Checked Then
             btnAddStructureIDs.Visible = True
+            cmbPriceSystems.Enabled = True
         Else
             btnAddStructureIDs.Visible = False
             btnViewSavedStructures.Visible = False
+            cmbPriceSystems.Enabled = False ' For Fuzzwork, only allow region selection or main hubs
+            cmbPriceSystems.Text = AllSystems
         End If
     End Sub
 
@@ -8181,7 +8185,7 @@ ExitForm:
             If .UseESIData Then
                 rbtnPriceSourceCCPData.Checked = True
             Else
-                rbtnPriceSourceEVEMarketer.Checked = True
+                rbtnPriceSource3rdparty.Checked = True
             End If
             If .UsePriceProfile Then
                 rbtnPriceSettingPriceProfile.Checked = True
@@ -8682,7 +8686,7 @@ ExitForm:
             GoTo ExitSub
         End If
 
-        If (Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo)) And rbtnPriceSettingSingleSelect.Checked Then
+        If (Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo)) And rbtnPriceSettingSingleSelect.Checked And cmbPriceSystems.Enabled Then
             MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
             GoTo ExitSub
         End If
@@ -9024,7 +9028,7 @@ ExitSub:
                 RegionorSystemList = SentItems(i).SystemID
             End If
 
-            If rbtnPriceSourceEVEMarketer.Checked Then
+            If rbtnPriceSource3rdparty.Checked Then
                 Dim SQLPricetype As String = ""
                 If PriceType <> "splitPrice" Then
                     ' If it's Jita Perimeter, we need to do functions on the values - just take averages of non-min/max values
@@ -9424,8 +9428,8 @@ ExitSub:
         Dim TypeIDUpdatePriceList As New List(Of Long)
         Dim i As Integer
         Dim SQL As String = ""
-        Dim PriceRecords As List(Of EVEMarketerPrice)
-        Dim EVEMarketerPrices = New EVEMarketer
+        Dim PriceRecords As List(Of FuzzworksMarketPrice)
+        Dim FuzzworksMarketPrices = New FuzzworksMarket
         Dim EVEMarketerError As MyError
 
         Dim RegionSystem As String = "" ' Used for querying the Price Cache for regions
@@ -9470,7 +9474,7 @@ ExitSub:
             End If
 
             ' See if the record is in the cache first
-            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " And RegionOrSystem = '" & RegionSystem & "'"
+            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = '" & RegionSystem & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPriceCheck = DBCommand.ExecuteReader
@@ -9488,7 +9492,7 @@ ExitSub:
                 ' If no record or the max date
                 If readerPriceCheck.Read Then
                     ' If older than the interval, add a new record
-                    If DateTime.ParseExact(readerPriceCheck.GetString(0), SQLiteDateFormat, LocalCulture) < DateAdd(DateInterval.Hour, -1 * UserApplicationSettings.EVEMarketerRefreshInterval, Now) Then
+                    If DateTime.ParseExact(readerPriceCheck.GetString(0), SQLiteDateFormat, LocalCulture) < DateAdd(DateInterval.Minute, -1 * UserApplicationSettings.FuzzworksMarketRefreshInterval, Now) Then
                         InsertRecord = True
                     End If
                 End If
@@ -9526,12 +9530,12 @@ ExitSub:
             Application.DoEvents()
 
             ' Get the list of records to insert
-            PriceRecords = EVEMarketerPrices.GetPrices(TypeIDUpdatePriceList, RegionID, SystemID)
+            PriceRecords = FuzzworksMarketPrices.GetPrices(TypeIDUpdatePriceList, RegionID, SystemID)
 
             If IsNothing(PriceRecords) Then
                 ' There was an error in the request 
-                EVEMarketerError = EVEMarketerPrices.GetErrorData
-                MsgBox("EVE Marketer Server is Unavailable" & Chr(13) & EVEMarketerError.Description & Chr(13) & "Please try again later", vbExclamation, Me.Text)
+                EVEMarketerError = FuzzworksMarketPrices.GetErrorData
+                MsgBox("Fuzzworks Market Server is Unavailable" & Chr(13) & EVEMarketerError.Description & Chr(13) & "Please try again later", vbExclamation, Me.Text)
                 UpdatePricesCache = False
                 Exit Function
             End If
@@ -9553,15 +9557,15 @@ ExitSub:
                 ' Insert record in Cache
                 With PriceRecords(i)
                     ' First, delete the record
-                    SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND RegionOrSystem = '" & .RegionOrSystem & "'"
+                    SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND RegionOrSystem = '" & .PriceLocation & "'"
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Insert new data
                     SQL = "INSERT INTO ITEM_PRICES_CACHE (typeID, buyVolume, buyAvg, buyweightedAvg, buyMax, buyMin, buyStdDev, buyMedian, buyPercentile, buyVariance, "
                     SQL = SQL & "sellVolume, sellAvg, sellweightedAvg, sellMax, sellMin, sellStdDev, sellMedian, sellPercentile, sellVariance, RegionOrSystem, UpdateDate) VALUES "
-                    SQL = SQL & "(" & CStr(.TypeID) & "," & CStr(.BuyVolume) & "," & CStr(.BuyAvgPrice) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyMaxPrice) & "," & CStr(.BuyMinPrice) & "," & CStr(.BuyStdDev) & "," & CStr(.BuyMedian) & "," & CStr(.BuyPercentile) & "," & CStr(.BuyVariance) & ","
-                    SQL = SQL & CStr(.SellVolume) & "," & CStr(.SellAvgPrice) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellMaxPrice) & "," & CStr(.SellMinPrice) & "," & CStr(.SellStdDev) & "," & CStr(.SellMedian) & "," & CStr(.SellPercentile) & "," & CStr(.SellVariance) & ","
-                    SQL = SQL & "'" & .RegionOrSystem & "','" & Format(Now, SQLiteDateFormat) & "')"
+                    SQL = SQL & "(" & CStr(.TypeID) & "," & CStr(.BuyVolume) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyMaxPrice) & "," & CStr(.BuyMinPrice) & "," & CStr(.BuyStdDev) & "," & CStr(.BuyMedian) & "," & CStr(.BuyPercentile) & "," & "0" & ","
+                    SQL = SQL & CStr(.SellVolume) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellMaxPrice) & "," & CStr(.SellMinPrice) & "," & CStr(.SellStdDev) & "," & CStr(.SellMedian) & "," & CStr(.SellPercentile) & "," & "0" & ","
+                    SQL = SQL & "'" & .PriceLocation & "','" & Format(Now, SQLiteDateFormat) & "')"
 
                 End With
 
@@ -11391,10 +11395,19 @@ CheckTechs:
     Private Sub chkCalcProfitThreshold_Click(sender As Object, e As EventArgs) Handles chkCalcProfitThreshold.Click
 
         ' Save the value
-        If chkCalcProfitThreshold.Text.Contains("%") Then
-            ProfitPercentText = txtCalcProfitThreshold.Text
+        If txtCalcProfitThreshold.Text.Contains("%") Then
+            ProfitPercentText = Trim(txtCalcProfitThreshold.Text)
+            If Not IsNumeric(ProfitPercentText.Replace("%", "")) Then
+                ProfitPercentText = "0.0%"
+            End If
         Else
-            ProfitText = txtCalcProfitThreshold.Text
+            ProfitText = Trim(txtCalcProfitThreshold.Text)
+            If ProfitText.Contains("%") Then
+                ProfitText = ProfitText.Replace("%", "")
+            End If
+            If Not IsNumeric(ProfitText) Then
+                ProfitText = "0.00"
+            End If
         End If
 
         ' Change the name based on the check state
@@ -18461,7 +18474,9 @@ Leave:
         ' Set drones now that everything else is loaded
         DroneNamesLoaded = False
         Call UpdateShipMiningDrones()
+        Call UpdateShipMiningDroneStats()
         Call UpdateBoosterMiningDrones()
+        Call UpdateBoosterMiningDroneStats()
 
         ' Load up the ship image
         Call LoadMiningshipImage()
@@ -18678,9 +18693,11 @@ Leave:
         End If
 
         ' Get Heavy Water costs
-        If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
+        If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 And chkMineUseFleetBooster.Checked Then
             ' Add (subtract from total isk) the heavy water cost
             HeavyWaterCost = CalculateIndyCoreDeployedCost(CInt(cmbMineIndustReconfig.Text), CInt(cmbMineBoosterShipSkill.Text))
+        Else
+            HeavyWaterCost = 0
         End If
 
         ' Refining
@@ -18776,7 +18793,6 @@ Leave:
                     CSQL &= "AND attributeID IN (782,3159,3160,3161)"
                     DBCommand = New SQLiteCommand(CSQL, EVEDB.DBREf)
                     readerCrystal = DBCommand.ExecuteReader
-                    readerCrystal.Read()
 
                     While readerCrystal.Read
                         Select Case readerCrystal.GetInt32(0)
@@ -18957,10 +18973,8 @@ Leave:
                         TempOre.IPH = ReprocessedMaterials.GetTotalMaterialsCost
                     End If
 
-                    If (chkMineIndyCoreDeployedMode.Checked Or chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate) And CInt(cmbMineIndustReconfig.Text) <> 0 Then
-                        ' Add (subtract from total isk) the heavy water cost
-                        TempOre.IPH = TempOre.IPH - HeavyWaterCost
-                    End If
+                    ' Add (subtract from total isk) the heavy water cost
+                    TempOre.IPH = TempOre.IPH - HeavyWaterCost
 
                     'Drone yield included in total ore so just for display
                     TempOre.DroneYield = GetDroneYield(MiningType = MiningOreType.Ice, MiningType = MiningOreType.Gas, MinerMultiplier)
@@ -20524,6 +20538,10 @@ Leave:
         cmbMineNumLasers.Text = "0"
         cmbMineMiningLaser.Text = None
 
+        RemoveHandler cmbMineMiningRig1.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
+        RemoveHandler cmbMineMiningRig2.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
+        RemoveHandler cmbMineMiningRig3.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
+
         ' Normal ship or "other"
         ' Load settings, only change to user settings if the ship is the same as the one selected
 
@@ -20611,6 +20629,10 @@ Leave:
 
         lblMineCycleTime.Text = ""
         lblMineRange.Text = ""
+
+        AddHandler cmbMineMiningRig1.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
+        AddHandler cmbMineMiningRig2.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
+        AddHandler cmbMineMiningRig3.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
 
     End Sub
 
@@ -21117,12 +21139,18 @@ ProcExit:
         ' Add Industrial core bonus
         GangBurstBonus *= (1 + GetIndustrialCorebonus(cmbMineBoosterShipName.Text, CoreBonus.BurstStrength))
 
+        Dim ShipSkillLevel As Integer = 1
+
+        If cmbMineBoosterShipSkill.Text <> "" Then
+            ShipSkillLevel = CInt(cmbMineBoosterShipSkill.Text)
+        End If
+
         ' Ship boost to bursts
         Select Case cmbMineBoosterShipName.Text
             Case Porpoise, Orca
-                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusICS2) / 100))
+                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusICS2) / 100) * ShipSkillLevel)
             Case Rorqual
-                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusORECapital2) / 100))
+                GangBurstBonus *= (1 + (AttribLookup.GetAttribute(cmbMineBoosterShipName.Text, ItemAttributes.shipBonusORECapital2) / 100) * ShipSkillLevel)
         End Select
 
         Return GangBurstBonus

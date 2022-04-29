@@ -196,6 +196,7 @@
     <Compile Include="Character.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
+    <Compile Include="FuzzworksMarket.vb" />
     <Compile Include="EVEMarketer.vb" />
     <Compile Include="frmAddCharacter.Designer.vb">
       <DependentUpon>frmAddCharacter.vb</DependentUpon>

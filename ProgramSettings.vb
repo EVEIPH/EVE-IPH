@@ -158,8 +158,8 @@ Public Class ProgramSettings
     Public FacilityDefaultIncludeCost As Boolean = False ' Only for Invention, Copy, and RE so let this get set 
     Public FacilityDefaultIncludeTime As Boolean = False ' Only for Invention, Copy, and RE so let this get set 
 
-    ' Set here, but use in Update Prices - 6 hours to refresh prices
-    Public DefaultEVEMarketerRefreshInterval As Integer = 6
+    ' Set here, but use in Update Prices - 10 minutes
+    Public DefaultFuzzworksMarketRefreshInterval As Integer = 10
 
     Public DefaultBuiltMatsType As Integer = 1 ' use enum BuildMatType - both BP and Manufacturing tabs
 
@@ -1258,7 +1258,7 @@ Public Class ProgramSettings
                     .ShopListIncludeInventMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
-                    .EVEMarketerRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "EVEMarketerRefreshInterval", DefaultEVEMarketerRefreshInterval))
+                    .FuzzworksMarketRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "FuzzworksMarketRefreshInterval", DefaultFuzzworksMarketRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                     .AlwaysBuyFuelBlocks = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyFuelBlocks", DefaultAlwaysBuyFuelBlocks))
@@ -1341,7 +1341,7 @@ Public Class ProgramSettings
             .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
             .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
-            .EVEMarketerRefreshInterval = DefaultEVEMarketerRefreshInterval
+            .FuzzworksMarketRefreshInterval = DefaultFuzzworksMarketRefreshInterval
 
             .IgnoreSVRThresholdValue = DefaultIgnoreSVRThresholdValue
             .SVRAveragePriceRegion = DefaultSVRAveragePriceRegion
@@ -1384,7 +1384,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(13) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
             ApplicationSettingsList(14) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
             ApplicationSettingsList(15) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
-            ApplicationSettingsList(16) = New Setting("EVEMarketerRefreshInterval", CStr(SentSettings.EVEMarketerRefreshInterval))
+            ApplicationSettingsList(16) = New Setting("FuzzworksMarketRefreshInterval", CStr(SentSettings.FuzzworksMarketRefreshInterval))
             ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
             ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
             ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
@@ -5393,8 +5393,8 @@ Public Structure ApplicationSettings
     Dim ShopListIncludeInventMats As Boolean
     Dim ShopListIncludeCopyMats As Boolean
 
-    ' The interval for allowing refresh of prices from EVE Central - no less than 1 hour
-    Dim EVEMarketerRefreshInterval As Integer
+    ' The interval for allowing refresh of prices from EVE Central - 10 min?
+    Dim FuzzworksMarketRefreshInterval As Integer
 
     ' Filter variables for svr
     Dim IgnoreSVRThresholdValue As Double

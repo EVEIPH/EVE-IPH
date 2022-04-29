@@ -65,9 +65,9 @@ Partial Class frmSettings
         Me.gbShoppingList = New System.Windows.Forms.GroupBox()
         Me.chkIncludeShopListInventMats = New System.Windows.Forms.CheckBox()
         Me.chkIncludeShopListCopyMats = New System.Windows.Forms.CheckBox()
-        Me.gbEVEMarketer = New System.Windows.Forms.GroupBox()
-        Me.txtEVEMarketerInterval = New System.Windows.Forms.TextBox()
-        Me.chkEVEMarketerInterval = New System.Windows.Forms.CheckBox()
+        Me.gb3rdpartyMarketRefresh = New System.Windows.Forms.GroupBox()
+        Me.txtFuzzworksMarketInterval = New System.Windows.Forms.TextBox()
+        Me.chkFuzzworksMarketInterval = New System.Windows.Forms.CheckBox()
         Me.gbImplants = New System.Windows.Forms.GroupBox()
         Me.gbStartupOptions = New System.Windows.Forms.GroupBox()
         Me.chkSupressESImsgs = New System.Windows.Forms.CheckBox()
@@ -100,7 +100,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.SuspendLayout()
         Me.gbDefaultMEPE.SuspendLayout()
         Me.gbShoppingList.SuspendLayout()
-        Me.gbEVEMarketer.SuspendLayout()
+        Me.gb3rdpartyMarketRefresh.SuspendLayout()
         Me.gbImplants.SuspendLayout()
         Me.gbStartupOptions.SuspendLayout()
         Me.gbExportOptions.SuspendLayout()
@@ -514,33 +514,33 @@ Partial Class frmSettings
         Me.chkIncludeShopListCopyMats.Text = "Include Copy Mats"
         Me.chkIncludeShopListCopyMats.UseVisualStyleBackColor = True
         '
-        'gbEVEMarketer
+        'gb3rdpartyMarketRefresh
         '
-        Me.gbEVEMarketer.Controls.Add(Me.txtEVEMarketerInterval)
-        Me.gbEVEMarketer.Controls.Add(Me.chkEVEMarketerInterval)
-        Me.gbEVEMarketer.Location = New System.Drawing.Point(246, 142)
-        Me.gbEVEMarketer.Name = "gbEVEMarketer"
-        Me.gbEVEMarketer.Size = New System.Drawing.Size(160, 56)
-        Me.gbEVEMarketer.TabIndex = 38
-        Me.gbEVEMarketer.TabStop = False
-        Me.gbEVEMarketer.Text = "EVE Marketer Price Updates:"
+        Me.gb3rdpartyMarketRefresh.Controls.Add(Me.txtFuzzworksMarketInterval)
+        Me.gb3rdpartyMarketRefresh.Controls.Add(Me.chkFuzzworksMarketInterval)
+        Me.gb3rdpartyMarketRefresh.Location = New System.Drawing.Point(246, 142)
+        Me.gb3rdpartyMarketRefresh.Name = "gb3rdpartyMarketRefresh"
+        Me.gb3rdpartyMarketRefresh.Size = New System.Drawing.Size(160, 56)
+        Me.gb3rdpartyMarketRefresh.TabIndex = 38
+        Me.gb3rdpartyMarketRefresh.TabStop = False
+        Me.gb3rdpartyMarketRefresh.Text = "Fuzzworks Price Updates:"
         '
-        'txtEVEMarketerInterval
+        'txtFuzzworksMarketInterval
         '
-        Me.txtEVEMarketerInterval.Location = New System.Drawing.Point(110, 25)
-        Me.txtEVEMarketerInterval.Name = "txtEVEMarketerInterval"
-        Me.txtEVEMarketerInterval.Size = New System.Drawing.Size(41, 20)
-        Me.txtEVEMarketerInterval.TabIndex = 24
-        Me.txtEVEMarketerInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtFuzzworksMarketInterval.Location = New System.Drawing.Point(110, 25)
+        Me.txtFuzzworksMarketInterval.Name = "txtFuzzworksMarketInterval"
+        Me.txtFuzzworksMarketInterval.Size = New System.Drawing.Size(41, 20)
+        Me.txtFuzzworksMarketInterval.TabIndex = 24
+        Me.txtFuzzworksMarketInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
-        'chkEVEMarketerInterval
+        'chkFuzzworksMarketInterval
         '
-        Me.chkEVEMarketerInterval.Location = New System.Drawing.Point(9, 18)
-        Me.chkEVEMarketerInterval.Name = "chkEVEMarketerInterval"
-        Me.chkEVEMarketerInterval.Size = New System.Drawing.Size(105, 34)
-        Me.chkEVEMarketerInterval.TabIndex = 23
-        Me.chkEVEMarketerInterval.Text = "Refresh Interval (Hours):"
-        Me.chkEVEMarketerInterval.UseVisualStyleBackColor = True
+        Me.chkFuzzworksMarketInterval.Location = New System.Drawing.Point(9, 18)
+        Me.chkFuzzworksMarketInterval.Name = "chkFuzzworksMarketInterval"
+        Me.chkFuzzworksMarketInterval.Size = New System.Drawing.Size(105, 34)
+        Me.chkFuzzworksMarketInterval.TabIndex = 23
+        Me.chkFuzzworksMarketInterval.Text = "Refresh Interval (Minutes):"
+        Me.chkFuzzworksMarketInterval.UseVisualStyleBackColor = True
         '
         'gbImplants
         '
@@ -840,7 +840,7 @@ Partial Class frmSettings
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
         Me.Controls.Add(Me.gbImplants)
-        Me.Controls.Add(Me.gbEVEMarketer)
+        Me.Controls.Add(Me.gb3rdpartyMarketRefresh)
         Me.Controls.Add(Me.btnReset)
         Me.Controls.Add(Me.btnSave)
         Me.Controls.Add(Me.btnCancel)
@@ -865,8 +865,8 @@ Partial Class frmSettings
         Me.gbDefaultMEPE.PerformLayout()
         Me.gbShoppingList.ResumeLayout(False)
         Me.gbShoppingList.PerformLayout()
-        Me.gbEVEMarketer.ResumeLayout(False)
-        Me.gbEVEMarketer.PerformLayout()
+        Me.gb3rdpartyMarketRefresh.ResumeLayout(False)
+        Me.gb3rdpartyMarketRefresh.PerformLayout()
         Me.gbImplants.ResumeLayout(False)
         Me.gbImplants.PerformLayout()
         Me.gbStartupOptions.ResumeLayout(False)
@@ -912,9 +912,9 @@ Partial Class frmSettings
     Friend WithEvents chkIncludeShopListCopyMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkIncludeShopListInventMats As System.Windows.Forms.CheckBox
     Friend WithEvents chkSuggestBuildwhenBPnotOwned As System.Windows.Forms.CheckBox
-    Friend WithEvents gbEVEMarketer As System.Windows.Forms.GroupBox
-    Friend WithEvents txtEVEMarketerInterval As System.Windows.Forms.TextBox
-    Friend WithEvents chkEVEMarketerInterval As System.Windows.Forms.CheckBox
+    Friend WithEvents gb3rdpartyMarketRefresh As System.Windows.Forms.GroupBox
+    Friend WithEvents txtFuzzworksMarketInterval As System.Windows.Forms.TextBox
+    Friend WithEvents chkFuzzworksMarketInterval As System.Windows.Forms.CheckBox
     Friend WithEvents chkRefreshAssetsonStartup As System.Windows.Forms.CheckBox
     Friend WithEvents gbImplants As System.Windows.Forms.GroupBox
     Friend WithEvents chkDisableSound As System.Windows.Forms.CheckBox

@@ -75,7 +75,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub txtEVEMarketerInterval_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtEVEMarketerInterval.KeyPress
+    Private Sub txtEVEMarketerInterval_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtFuzzworksMarketInterval.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             ' Only integer values
@@ -139,13 +139,13 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkEVEMarketerInterval_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkEVEMarketerInterval.CheckedChanged
-        If chkEVEMarketerInterval.Checked = True Then
-            txtEVEMarketerInterval.Enabled = True
-            txtEVEMarketerInterval.Focus()
+    Private Sub chkEVEMarketerInterval_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkFuzzworksMarketInterval.CheckedChanged
+        If chkFuzzworksMarketInterval.Checked = True Then
+            txtFuzzworksMarketInterval.Enabled = True
+            txtFuzzworksMarketInterval.Focus()
         Else
-            txtEVEMarketerInterval.Enabled = False
-            txtEVEMarketerInterval.Text = FormatNumber(Defaults.DefaultEVEMarketerRefreshInterval, 0)
+            txtFuzzworksMarketInterval.Enabled = False
+            txtFuzzworksMarketInterval.Text = FormatNumber(Defaults.DefaultFuzzworksMarketRefreshInterval, 0)
         End If
         btnSave.Text = "Save"
     End Sub
@@ -358,7 +358,7 @@ Public Class frmSettings
                 .SetToolTip(gbImplants, "Select implants to use with selected characters for industry calculations")
                 .SetToolTip(gbDefaultMEPE, "On the BP and Manufacturing tabs, these default ME and TE values will be used for non-owned blueprints")
                 .SetToolTip(gbShoppingList, "If checked, then IPH will send invention or copy materials needed to the shopping list when saving the build information for a blueprint")
-                .SetToolTip(gbEVEMarketer, "The value stored here is the cache date (how often IPH will update) for EVE Marketer prices")
+                .SetToolTip(gb3rdpartyMarketRefresh, "The value stored here is the cache date (how often IPH will update) for EVE Marketer prices")
                 .SetToolTip(gbStationStandings, "Station standings affect broker fees and some other industry related fees based on standing. These values here will be used in those calculations.")
                 .SetToolTip(gbProxySettings, "When proxy information is in both the port and address, IPH will use this to connect to CCP servers. Note this information will also be used with the EVE IPH updater")
 
@@ -512,14 +512,14 @@ Public Class frmSettings
                 txtDefaultTE.Enabled = True
             End If
 
-            If .EVEMarketerRefreshInterval <> Defaults.DefaultEVEMarketerRefreshInterval Then
-                chkEVEMarketerInterval.Checked = True
-                txtEVEMarketerInterval.Enabled = True
-                txtEVEMarketerInterval.Text = CStr(.EVEMarketerRefreshInterval)
+            If .FuzzworksMarketRefreshInterval <> Defaults.DefaultFuzzworksMarketRefreshInterval Then
+                chkFuzzworksMarketInterval.Checked = True
+                txtFuzzworksMarketInterval.Enabled = True
+                txtFuzzworksMarketInterval.Text = CStr(.FuzzworksMarketRefreshInterval)
             Else
-                chkEVEMarketerInterval.Checked = False
-                txtEVEMarketerInterval.Enabled = False
-                txtEVEMarketerInterval.Text = CStr(Defaults.DefaultEVEMarketerRefreshInterval)
+                chkFuzzworksMarketInterval.Checked = False
+                txtFuzzworksMarketInterval.Enabled = False
+                txtFuzzworksMarketInterval.Text = CStr(Defaults.DefaultFuzzworksMarketRefreshInterval)
             End If
 
             cmbSVRRegion.Text = .SVRAveragePriceRegion
@@ -687,7 +687,7 @@ Public Class frmSettings
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
-                .EVEMarketerRefreshInterval = CInt(txtEVEMarketerInterval.Text)
+                .FuzzworksMarketRefreshInterval = CInt(txtFuzzworksMarketInterval.Text)
 
                 .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 
@@ -801,19 +801,19 @@ Public Class frmSettings
             GoTo InvalidData
         End If
 
-        If (Not IsNumeric(txtEVEMarketerInterval.Text) Or Trim(txtEVEMarketerInterval.Text) = "") And chkEVEMarketerInterval.Checked Then
-            TempTextBox = txtEVEMarketerInterval
-            TempCheckBox = chkEVEMarketerInterval
+        If (Not IsNumeric(txtFuzzworksMarketInterval.Text) Or Trim(txtFuzzworksMarketInterval.Text) = "") And chkFuzzworksMarketInterval.Checked Then
+            TempTextBox = txtFuzzworksMarketInterval
+            TempCheckBox = chkFuzzworksMarketInterval
             GoTo InvalidData
-        ElseIf CInt(txtEVEMarketerInterval.Text) <= 0 Then
+        ElseIf CInt(txtFuzzworksMarketInterval.Text) <= 0 Then
             MsgBox("Cannot set EVE Central Update Interval less than 1 Hour", vbExclamation, Application.ProductName)
-            txtEVEMarketerInterval.Focus()
-            Call txtEVEMarketerInterval.SelectAll()
+            txtFuzzworksMarketInterval.Focus()
+            Call txtFuzzworksMarketInterval.SelectAll()
             Return False
-        ElseIf CInt(txtEVEMarketerInterval.Text) > 99 Then
+        ElseIf CInt(txtFuzzworksMarketInterval.Text) > 99 Then
             MsgBox("Cannot set EVE Central Update Interval greater than 99 hours", vbExclamation, Application.ProductName)
-            txtEVEMarketerInterval.Focus()
-            Call txtEVEMarketerInterval.SelectAll()
+            txtFuzzworksMarketInterval.Focus()
+            Call txtFuzzworksMarketInterval.SelectAll()
             Return False
         End If
 
